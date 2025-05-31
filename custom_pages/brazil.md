@@ -6,8 +6,424 @@ metadata:
   title: ''
   description: ''
 ---
-[block:html]
-{
-  "html": "<style>\n  :root {\n    /* for text */\n    --yuno-purple: #513CE1;\n\n    /* available */\n    --yuno-purple-90: #624fe4;\n    --yuno-purple-80: #7362e7;\n    --yuno-purple-70: #8576ea;\n    --yuno-purple-60: #968aed;\n    --yuno-purple-50: #a89df0;\n    --yuno-purple-40: #b9b1f3;\n    --yuno-purple-30: #cac4f6;\n    --yuno-purple-20: #dcd8f9;\n\n    /* for card shadows */\n    --yuno-purple-10: #edebfc;\n\n    --yuno-white: #ffffff;\n\n    --yuno-black-text: #313131;\n    --yuno-black-background: #222222;\n\n    /* for card background */\n    --yuno-card-background: #F6F7FB;\n  }\n\n  #content-head {\n    display: none !important;\n  }\n\n  .shelf-country-connections {\n    margin: 2rem 0rem;\n  }\n\n  .country-connections-card {\n    border-radius: 10px;\n  }\n\n  .country-connections-card .country-connections-card-header {\n    display: flex;\n    align-items: center;\n  }\n\n  .country-connections-card .country-connections-card-header h2 {\n    margin: 30px 0 0 10px;\n  }\n\n  .country-connections-card .country-connections-card-logo {\n    max-width: 50px;\n    margin: 30px 0 0 30px;\n  }\n\n  .detail-country-connections-card {\n    padding: 0px 30px 30px 30px;\n  }\n\n  .detail-country-connections-card-title .title {\n    margin: 2rem 0 1rem 0;\n    font-weight: 600;\n    font-size: 0.85rem;\n    color: var(--yuno-black-text);\n    border-bottom: 1px solid #BABABA;\n    padding-bottom: 4px !important;\n  }\n\n\n\n  .detail-country-connections-card-content {\n    display: grid;\n    grid-template-columns: repeat(6, 1fr);\n    grid-template-rows: 1fr;\n    column-gap: 7px;\n    row-gap: 7px;\n    align-items: center;\n    font-size: 0.85rem;\n  }\n\n  @media only screen and (max-width: 1100px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(5, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 950px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(4, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 750px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(3, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 650px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(2, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 400px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(1, 1fr);\n    }\n  }\n\n  .details-card {\n    border: 1px solid var(--yuno-purple-50);\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    padding: 0.6rem;\n    border-radius: 7px;\n  }\n\n  .details-card-on-click-effects {\n    cursor: pointer;\n  }\n\n  .details-card-on-click-effects:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px var(--yuno-purple-10);\n  }\n\n  .details-card .card-logo div {\n    height: 23px;\n    width: 30px;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n\n  .details-card .card-name {\n    grid-area: name;\n    align-self: center;\n  }\n\n  .details-card img {\n    max-height: 23px;\n    max-width: 23px;\n  }\n\n  .details-card .card-title {\n    display: inline-block;\n    ;\n    padding: 0;\n    margin: 0;\n  }\n</style>\n\n<body class=\"custom-page-country\">\n  <div class=\"shelf-country-connections\">\n    <div class=\"country-connections-card\">\n      <div class=\"country-connections-card-header\">\n        <img class=\"country-connections-card-logo\" src=\"https://img.icons8.com/color/344/brazil-circular.png\">\n        <h2>Available Connections in Brazil</h2>\n      </div>\n      <section class=\"detail-country-connections-card \">\n        <div class=\"detail-country-connections-card-title\">\n          <!-- <div class=\"icon sumary-icon\"\n           style=\"background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/09baa05c6ec36a37a0d41c8f6ddd3e5abcf623a2/yuno-icons/webpage.svg')\">\n         </div> -->\n          <p class=\"title\">Processors</p>\n        </div>\n        <div class=\"detail-country-connections-card-content\">\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/adyen';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/adyen_logosimbolo.png\" alt=\"adyen logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Adyen\n              </span>\n            </div>\n          </div>\n\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/dlocal';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/dlocal_logosimbolo.png\" alt=\"dlocal logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                dLocal\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/mercado-pago';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/mercadopago_logosimbolo.png\" alt=\"mercado pago logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Mercado Pago\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/paymentez';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/paymentez_logosimbolo.png\" alt=\"paymentez logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Paymentez\n              </span>\n            </div>\n          </div>\n\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/payu';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/payu_logosimbolo.png\" alt=\"payu logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                PayU\n              </span>\n            </div>\n          </div>\n\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/safetypay';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/safetypay_logosimbolo.png\" alt=\"safety pay logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Safetypay\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/stripe';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/stripe_logosimbolo.png\" alt=\"stripe logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Stripe\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/worldline';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/worldline_logosimbolo.png\" alt=\"paypal logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Worldline\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/worldpay';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/worldpay_logosimbolo.png\" alt=\"worldpay logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Worldpay\n              </span>\n            </div>\n          </div>\n\n        </div>\n        <div class=\"detail-country-connections-card-title\">\n          <!-- <div class=\"icon sumary-icon\"\n           style=\"background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/4baa08426d27941706d05b5c61e7b2e2dcc5c22b/yuno-icons/development.svg')\">\n         </div> -->\n          <p class=\"title\">Payment Methods</p>\n        </div>\n        <div class=\"detail-country-connections-card-content\">\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/addi';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/addi_logosimbolo.png\" alt=\"Addi logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Addi\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/nupay';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/nubank_logosimbolo.png\" alt=\"nupay logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                NuPay\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/paypal';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/paypal_logosimbolo.png\" alt=\"paypal logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                PayPal\n              </span>\n            </div>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/nupay-pix';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/pix_logosimbolo.png\" alt=\"pix logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                Pix\n              </span>\n            </div>\n          </div>\n        </div>\n        <div class=\"detail-country-connections-card-title\">\n          <!-- <div class=\"icon sumary-icon\"\n           style=\"background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/47e683b43964ce49fd31c307ee84b7676bf5ec31/yuno-icons/coronavirus.svg')\">\n         </div> -->\n          <p class=\"title\">Acquirers</p>\n        </div>\n        <div class=\"detail-country-connections-card-content\">\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/cielo';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/cielo_logosimbolo.png\n                       \" alt=\"cielo-logo\">\n              </div>\n            </div>\n            <span class='card-title'>\n              Cielo\n            </span>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/pagseguro';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/pagseguro_logosimbolo.png\" alt=\"pagseguro logo\">\n              </div>\n            </div>\n            <div class=\"card-name\">\n              <span class='card-title'>\n                PagSeguro\n              </span>\n            </div>\n          </div>\n        </div>\n        <div class=\"detail-country-connections-card-title\">\n          <!-- <div class=\"icon sumary-icon\"\n           style=\"background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/b9c6c343a13b3814cf4f70099fe2a0dfb17b1a16/yuno-icons/money.svg')\">\n         </div> -->\n          <p class=\"title\">Fraud Prevention</p>\n        </div>\n        <div class=\"detail-country-connections-card-content\">\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/clearsale';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/clearsale_logosimbolo.png\n                           \" alt=\"ClearSale logo\">\n              </div>\n            </div>\n            <span class='card-title'>\n              ClearSale\n            </span>\n          </div>\n          <div class=\"details-card details-card-on-click-effects\"\n            onclick=\"window.location='https://docs.y.uno/docs/cybersource';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/cybersource_logosimbolo.png\n                           \" alt=\"CyberSource logo\">\n              </div>\n            </div>\n            <span class='card-title'>\n              CyberSource\n            </span>\n          </div>\n        </div>\n      </section>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  :root {
+    /* for text */
+    --yuno-purple: #513CE1;
+
+    /* available */
+    --yuno-purple-90: #624fe4;
+    --yuno-purple-80: #7362e7;
+    --yuno-purple-70: #8576ea;
+    --yuno-purple-60: #968aed;
+    --yuno-purple-50: #a89df0;
+    --yuno-purple-40: #b9b1f3;
+    --yuno-purple-30: #cac4f6;
+    --yuno-purple-20: #dcd8f9;
+
+    /* for card shadows */
+    --yuno-purple-10: #edebfc;
+
+    --yuno-white: #ffffff;
+
+    --yuno-black-text: #313131;
+    --yuno-black-background: #222222;
+
+    /* for card background */
+    --yuno-card-background: #F6F7FB;
+  }
+
+  #content-head {
+    display: none !important;
+  }
+
+  .shelf-country-connections {
+    margin: 2rem 0rem;
+  }
+
+  .country-connections-card {
+    border-radius: 10px;
+  }
+
+  .country-connections-card .country-connections-card-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .country-connections-card .country-connections-card-header h2 {
+    margin: 30px 0 0 10px;
+  }
+
+  .country-connections-card .country-connections-card-logo {
+    max-width: 50px;
+    margin: 30px 0 0 30px;
+  }
+
+  .detail-country-connections-card {
+    padding: 0px 30px 30px 30px;
+  }
+
+  .detail-country-connections-card-title .title {
+    margin: 2rem 0 1rem 0;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--yuno-black-text);
+    border-bottom: 1px solid #BABABA;
+    padding-bottom: 4px !important;
+  }
+
+
+
+  .detail-country-connections-card-content {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: 1fr;
+    column-gap: 7px;
+    row-gap: 7px;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  @media only screen and (max-width: 1100px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 950px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 750px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 650px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 400px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+
+  .details-card {
+    border: 1px solid var(--yuno-purple-50);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem;
+    border-radius: 7px;
+  }
+
+  .details-card-on-click-effects {
+    cursor: pointer;
+  }
+
+  .details-card-on-click-effects:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px var(--yuno-purple-10);
+  }
+
+  .details-card .card-logo div {
+    height: 23px;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .details-card .card-name {
+    grid-area: name;
+    align-self: center;
+  }
+
+  .details-card img {
+    max-height: 23px;
+    max-width: 23px;
+  }
+
+  .details-card .card-title {
+    display: inline-block;
+    ;
+    padding: 0;
+    margin: 0;
+  }
+</style>
+
+<body class="custom-page-country">
+  <div class="shelf-country-connections">
+    <div class="country-connections-card">
+      <div class="country-connections-card-header">
+        <img class="country-connections-card-logo" src="https://img.icons8.com/color/344/brazil-circular.png">
+        <h2>Available Connections in Brazil</h2>
+      </div>
+      <section class="detail-country-connections-card ">
+        <div class="detail-country-connections-card-title">
+          <!-- <div class="icon sumary-icon"
+           style="background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/09baa05c6ec36a37a0d41c8f6ddd3e5abcf623a2/yuno-icons/webpage.svg')">
+         </div> -->
+          <p class="title">Processors</p>
+        </div>
+        <div class="detail-country-connections-card-content">
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/adyen';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/adyen_logosimbolo.png" alt="adyen logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Adyen
+              </span>
+            </div>
+          </div>
+
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/dlocal';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/dlocal_logosimbolo.png" alt="dlocal logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                dLocal
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/mercado-pago';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/mercadopago_logosimbolo.png" alt="mercado pago logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Mercado Pago
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/paymentez';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/paymentez_logosimbolo.png" alt="paymentez logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Paymentez
+              </span>
+            </div>
+          </div>
+
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/payu';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/payu_logosimbolo.png" alt="payu logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                PayU
+              </span>
+            </div>
+          </div>
+
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/safetypay';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/safetypay_logosimbolo.png" alt="safety pay logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Safetypay
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/stripe';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/stripe_logosimbolo.png" alt="stripe logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Stripe
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/worldline';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/worldline_logosimbolo.png" alt="paypal logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Worldline
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/worldpay';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/worldpay_logosimbolo.png" alt="worldpay logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Worldpay
+              </span>
+            </div>
+          </div>
+
+        </div>
+        <div class="detail-country-connections-card-title">
+          <!-- <div class="icon sumary-icon"
+           style="background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/4baa08426d27941706d05b5c61e7b2e2dcc5c22b/yuno-icons/development.svg')">
+         </div> -->
+          <p class="title">Payment Methods</p>
+        </div>
+        <div class="detail-country-connections-card-content">
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/addi';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/addi_logosimbolo.png" alt="Addi logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Addi
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/nupay';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/nubank_logosimbolo.png" alt="nupay logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                NuPay
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/paypal';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/paypal_logosimbolo.png" alt="paypal logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                PayPal
+              </span>
+            </div>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/nupay-pix';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/pix_logosimbolo.png" alt="pix logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                Pix
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="detail-country-connections-card-title">
+          <!-- <div class="icon sumary-icon"
+           style="background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/47e683b43964ce49fd31c307ee84b7676bf5ec31/yuno-icons/coronavirus.svg')">
+         </div> -->
+          <p class="title">Acquirers</p>
+        </div>
+        <div class="detail-country-connections-card-content">
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/cielo';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/cielo_logosimbolo.png
+                       " alt="cielo-logo">
+              </div>
+            </div>
+            <span class='card-title'>
+              Cielo
+            </span>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/pagseguro';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/pagseguro_logosimbolo.png" alt="pagseguro logo">
+              </div>
+            </div>
+            <div class="card-name">
+              <span class='card-title'>
+                PagSeguro
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="detail-country-connections-card-title">
+          <!-- <div class="icon sumary-icon"
+           style="background-image: url('https://raw.githubusercontent.com/cassianomoraes/yuno_card_images/b9c6c343a13b3814cf4f70099fe2a0dfb17b1a16/yuno-icons/money.svg')">
+         </div> -->
+          <p class="title">Fraud Prevention</p>
+        </div>
+        <div class="detail-country-connections-card-content">
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/clearsale';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/clearsale_logosimbolo.png
+                           " alt="ClearSale logo">
+              </div>
+            </div>
+            <span class='card-title'>
+              ClearSale
+            </span>
+          </div>
+          <div class="details-card details-card-on-click-effects"
+            onclick="window.location='https://docs.y.uno/docs/cybersource';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/cybersource_logosimbolo.png
+                           " alt="CyberSource logo">
+              </div>
+            </div>
+            <span class='card-title'>
+              CyberSource
+            </span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
