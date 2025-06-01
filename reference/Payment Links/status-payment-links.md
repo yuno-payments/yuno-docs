@@ -19,28 +19,47 @@ Yuno's payment links solution enables businesses to accept payments effortlessly
 
 In the following workflow, you can find the different payment link statuses and how they can be updated. 
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/749df69-Image_payment_link.png",
-        null,
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/749df69-Image_payment_link.png" />
 
 ## Payment links status
 
 The payment links can have the status described in the table below.
 
-[block:html]
-{
-  "html": "<table>\n<thead>\n  <tr>\n    <th>Status</th>\n    <th>Description</th>\n  </tr>\n</thead>\n<tbody>\n  <tr>\n    <td>CREATED</td>\n    <td>The payment link is active and can be used to make a payment.</td>\n  </tr>\n  <tr>\n    <td>USED</td>\n    <td>The payment link has already been used.</td>\n  </tr>\n  <tr>\n    <td>CANCELED</td>\n    <td>Payment link canceled.</td>\n  </tr>\n  <tr>\n    <td>EXPIRED</td>\n    <td>The link expired before your customer was able to pay for it.</td>\n  </tr>\n  <tr>\n    <td>ERROR</td>\n    <td>An error occurred in the process.</td>\n  </tr>\n</tbody>\n</table>\n\n<style>\n  table th {\n    text-align: left;\n  }\n</style>"
-}
-[/block]
+<HTMLBlock>{`
+<table>
+<thead>
+  <tr>
+    <th>Status</th>
+    <th>Description</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>CREATED</td>
+    <td>The payment link is active and can be used to make a payment.</td>
+  </tr>
+  <tr>
+    <td>USED</td>
+    <td>The payment link has already been used.</td>
+  </tr>
+  <tr>
+    <td>CANCELED</td>
+    <td>Payment link canceled.</td>
+  </tr>
+  <tr>
+    <td>EXPIRED</td>
+    <td>The link expired before your customer was able to pay for it.</td>
+  </tr>
+  <tr>
+    <td>ERROR</td>
+    <td>An error occurred in the process.</td>
+  </tr>
+</tbody>
+</table>
+
+<style>
+  table th {
+    text-align: left;
+  }
+</style>
+`}</HTMLBlock>
