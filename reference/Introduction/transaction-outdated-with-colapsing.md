@@ -36,48 +36,640 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ### Succeeded status
 
-[block:html]
-{
-  "html": "<style>\n  * {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n  }\n\n\n  .table-card {\n    border-radius: 10px;\n    border: 1px solid #614ad623;\n    display: flex;\n    transition: all .2s;\n  }\n\n  .table-card:hover {\n    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);\n  }\n\n  .table-card .control-icon {\n    fill: rebeccapurple;\n    transition: .3s ease;\n    pointer-events: none;\n  }\n\n  .table-card .control-icon-close {\n    display: none;\n  }\n\n  details[open] .control-icon-close {\n    display: initial;\n    transition: .3s ease;\n  }\n\n  details[open] .control-icon-expand {\n    display: none;\n  }\n\n  details[open] summary {\n    border: 1px solid #614ad623;\n  }\n\n\n  .table-card summary {\n    padding: 0.8rem 1rem;\n    border-radius: 10px;\n    display: flex;\n    justify-content: flex-start;\n    align-items: center;\n    cursor: pointer;\n  }\n\n  .table-card summary .table-call {\n    display: block;\n    padding: 0;\n    margin: 0;\n    font-size: 1rem;\n\n  }\n\n\n  .table-card summary .sumary-icon {\n    display: flex;\n    justify-content: flex-end;\n    flex-grow: 1;\n  }\n  \n  .table-card .table-div {\n    margin: 0.5rem 0;\n    padding: 0 0.5rem;\n  }\n  \n  .table-card .table-div table{\n    margin: 0 !important;\n  }\n\n\n\n  details[open] div {\n    animation: sweep .3s ease-in-out;\n  }\n\n  @keyframes sweep {\n    0% {\n      opacity: 0;\n      margin-left: -10px\n    }\n\n    100% {\n      opacity: 1;\n      margin-left: 0px\n    }\n  }\n</style>\n\n<body>\n  <details class=\"table-card\">\n    <summary>\n      <span class=\"table-call\"><code>SUCCEEDED</code> status details </span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n      <table>\n        <thead>\n          <tr>\n            <th>Type</th>\n            <th>response_code</th>\n            <th>Description - response_message</th>\n            <th>ISO 8583 Code</th>\n            <th>Hard/Soft decline</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td>AUTHORIZE</td>\n            <td>AUTHORIZED</td>\n            <td>Transaction authorized.</td>\n            <td>10,11</td>\n            <td>N/A</td>\n          </tr>\n          <tr>\n            <td>PURCHASE</td>\n            <td>SUCCESSFUL</td>\n            <td>Transaction was successful.</td>\n            <td>00</td>\n            <td>N/A</td>\n          </tr>\n          <tr>\n            <td>VERIFY</td>\n            <td>VERIFIED</td>\n            <td>Transaction verified.</td>\n            <td>85</td>\n            <td>N/A</td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n  </details>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
 
+  .table-card {
+    border-radius: 10px;
+    border: 1px solid #614ad623;
+    display: flex;
+    transition: all .2s;
+  }
+
+  .table-card:hover {
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .table-card .control-icon {
+    fill: rebeccapurple;
+    transition: .3s ease;
+    pointer-events: none;
+  }
+
+  .table-card .control-icon-close {
+    display: none;
+  }
+
+  details[open] .control-icon-close {
+    display: initial;
+    transition: .3s ease;
+  }
+
+  details[open] .control-icon-expand {
+    display: none;
+  }
+
+  details[open] summary {
+    border: 1px solid #614ad623;
+  }
+
+
+  .table-card summary {
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .table-card summary .table-call {
+    display: block;
+    padding: 0;
+    margin: 0;
+    font-size: 1rem;
+
+  }
+
+
+  .table-card summary .sumary-icon {
+    display: flex;
+    justify-content: flex-end;
+    flex-grow: 1;
+  }
+  
+  .table-card .table-div {
+    margin: 0.5rem 0;
+    padding: 0 0.5rem;
+  }
+  
+  .table-card .table-div table{
+    margin: 0 !important;
+  }
+
+
+
+  details[open] div {
+    animation: sweep .3s ease-in-out;
+  }
+
+  @keyframes sweep {
+    0% {
+      opacity: 0;
+      margin-left: -10px
+    }
+
+    100% {
+      opacity: 1;
+      margin-left: 0px
+    }
+  }
+</style>
+
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call"><code>SUCCEEDED</code> status details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>response_code</th>
+            <th>Description - response_message</th>
+            <th>ISO 8583 Code</th>
+            <th>Hard/Soft decline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AUTHORIZE</td>
+            <td>AUTHORIZED</td>
+            <td>Transaction authorized.</td>
+            <td>10,11</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>PURCHASE</td>
+            <td>SUCCESSFUL</td>
+            <td>Transaction was successful.</td>
+            <td>00</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>VERIFY</td>
+            <td>VERIFIED</td>
+            <td>Transaction verified.</td>
+            <td>85</td>
+            <td>N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
 
 ### Pending status
 
-[block:html]
-{
-  "html": "<body>\n  <details class=\"table-card\">\n    <summary>\n      <span class=\"table-call\"><code>PENDING</code> status details </span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n      <table>\n        <thead>\n          <tr>\n            <th>Type</th>\n            <th>response_code</th>\n            <th>Description - response_message</th>\n            <th>ISO 8583 Code</th>\n            <th>Hard/Soft decline</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td>PURCHASE</td>\n            <td>PENDING_PROVIDER_<br>CONFIRMATION</td>\n            <td>Transaction awaiting confirmation.</td>\n            <td></td>\n            <td></td>\n          </tr>\n          <tr>\n            <td>PURCHASE</td>\n            <td>PENDING_REVIEW</td>\n            <td>Transaction waiting for fraud review confirmation.</td>\n            <td></td>\n            <td></td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n  </details>\n</body>"
-}
-[/block]
-
-
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call"><code>PENDING</code> status details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>response_code</th>
+            <th>Description - response_message</th>
+            <th>ISO 8583 Code</th>
+            <th>Hard/Soft decline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PURCHASE</td>
+            <td>PENDING_PROVIDER_<br>CONFIRMATION</td>
+            <td>Transaction awaiting confirmation.</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>PURCHASE</td>
+            <td>PENDING_REVIEW</td>
+            <td>Transaction waiting for fraud review confirmation.</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
 
 ### Declined status
 
-[block:html]
-{
-  "html": "\n\n<body>\n    <details class=\"table-card\">\n      <summary>\n        <span class=\"table-call\"><code>DECLINED</code> status details</span>\n        <div class=\"sumary-icon\">\n          <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n            viewBox=\"0 0 16 16\">\n            <path fill-rule=\"evenodd\"\n              d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n          </svg>\n          <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n            viewBox=\"0 0 16 16\">\n            <path fill-rule=\"evenodd\"\n              d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n          </svg>\n        </div>\n      </summary>\n      <div class=\"table-div\">\n       <table>\n        <thead>\n          <tr>\n            <th>Type</th>\n            <th>response_code</th>\n            <th>Description - response_message</th>\n            <th>ISO 8583 Code</th>\n            <th>Hard/Soft decline</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>\n\n            <td>DECLINED_BY_BANK</td>\n            <td>Rejected by the bank. Refer to the card issuer.</td>\n            <td>01</td>\n            <td>Soft</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>INVALID_MERCHANT</td>\n            <td>Invalid merchant or service provider.</td>\n            <td>03</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>\n\n            <td>DO_NOT_HONOR</td>\n            <td>Do not honor.</td>\n            <td>05</td>\n            <td>Soft</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>INVALID_TRANSACTION</td>\n            <td>Invalid transaction.<br>The transaction being attempted is invalid. <br>For example, you are trying to use a\n              debit card for a credit transaction.</td>\n            <td>12</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>INVALID_ISSUER</td>\n            <td>No such customer.</td>\n            <td>15</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>\n\n            <td>ACQUIRE_CONTINGENCY</td>\n            <td>Acquire service unavailable.</td>\n            <td>22,80,<br>90,91,<br>92,96</td>\n            <td>Soft</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>DUPLICATED_<br>TRANSACTION</td>\n            <td>Duplicate transmission of the transaction.</td>\n            <td>94</td>\n            <td>Soft</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>BAD_FILLED_INFO</td>\n            <td>The card does not match the parameters of <br>the issuer.</td>\n            <td>30,89</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>BANK_NOT_SUPPORTED</td>\n            <td>Bank not supported by switch.</td>\n            <td>31</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>INVALID_CREDENTIALS</td>\n            <td>Invalid credentials.</td>\n            <td></td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>INVALID_SECURITY_<br>CODE</td>\n            <td>Invalid card´s security code.</td>\n            <td>39</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>\n\n            <td>UNSUPPORTED_<br>OPERATION</td>\n            <td>The requested function not supported.</td>\n            <td>40,62</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>REPORTED_LOST</td>\n            <td>Lost card.</td>\n            <td>41</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>REPORTED_STOLEN</td>\n            <td>Stolen card, pick-up.</td>\n            <td>43</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>INSUFFICIENT_FOUNDS</td>\n            <td>Not sufficient funds.</td>\n            <td>51</td>\n            <td>Soft</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>CHECKING_ACCOUNT</td>\n            <td>No checking account.</td>\n            <td>52</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>REJECTED_SAVING<br />_ACCOUNT</td>\n            <td>No saving account.</td>\n            <td>53</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>EXPIRED</td>\n            <td>Expired card or the alternative payment method.</td>\n            <td>54</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>PIN_ERROR</td>\n            <td>Incorrect PIN for the card.</td>\n            <td>55,86</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>DENIED</td>\n            <td>No card record.</td>\n            <td>56</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>\n\n            <td>USER_RESTRICTION</td>\n            <td>The transaction is not permitted for cardholders.</td>\n            <td>57</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE<br>/AUTHORIZE/<br>VERIFY/<br>REFUND</td>\n\n            <td>TERMINAL_ERROR</td>\n            <td>Your merchant account is not properly configured for the transaction.</td>\n            <td>58</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>INVALID_AMOUNT</td>\n            <td>The original amount is incorrect. The invalid amount for the operation.</td>\n            <td>61</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>FRAUD_VALIDATION</td>\n            <td>Security violation.</td>\n            <td>59,63,<br>64</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>CALL_FOR_AUTHORIZE</td>\n            <td>Card acceptor call the acquirer's security department.</td>\n            <td>66</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>TIMEOUT</td>\n            <td>Response received too late by provider.</td>\n            <td>68</td>\n            <td>Soft</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>FIRST_USE</td>\n            <td>Blocked first use.</td>\n            <td>78</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>ISSUER_VIOLATION</td>\n            <td>The issuing bank rejected the transaction due to some violation related to the account.</td>\n            <td>93</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n\n            <td>REJECTED_3D_SECURE_<br>REQUIRED</td>\n            <td>3DS validation rejection.</td>\n            <td></td>\n            <td>Hard</td>\n          </tr>\n        </tbody>\n      </table>\n      </div>\n    </details>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+    <details class="table-card">
+      <summary>
+        <span class="table-call"><code>DECLINED</code> status details</span>
+        <div class="sumary-icon">
+          <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+          </svg>
+          <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+          </svg>
+        </div>
+      </summary>
+      <div class="table-div">
+       <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>response_code</th>
+            <th>Description - response_message</th>
+            <th>ISO 8583 Code</th>
+            <th>Hard/Soft decline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>
 
+            <td>DECLINED_BY_BANK</td>
+            <td>Rejected by the bank. Refer to the card issuer.</td>
+            <td>01</td>
+            <td>Soft</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
 
+            <td>INVALID_MERCHANT</td>
+            <td>Invalid merchant or service provider.</td>
+            <td>03</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>
+
+            <td>DO_NOT_HONOR</td>
+            <td>Do not honor.</td>
+            <td>05</td>
+            <td>Soft</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>INVALID_TRANSACTION</td>
+            <td>Invalid transaction.<br>The transaction being attempted is invalid. <br>For example, you are trying to use a
+              debit card for a credit transaction.</td>
+            <td>12</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>INVALID_ISSUER</td>
+            <td>No such customer.</td>
+            <td>15</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>
+
+            <td>ACQUIRE_CONTINGENCY</td>
+            <td>Acquire service unavailable.</td>
+            <td>22,80,<br>90,91,<br>92,96</td>
+            <td>Soft</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>DUPLICATED_<br>TRANSACTION</td>
+            <td>Duplicate transmission of the transaction.</td>
+            <td>94</td>
+            <td>Soft</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>BAD_FILLED_INFO</td>
+            <td>The card does not match the parameters of <br>the issuer.</td>
+            <td>30,89</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>BANK_NOT_SUPPORTED</td>
+            <td>Bank not supported by switch.</td>
+            <td>31</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>INVALID_CREDENTIALS</td>
+            <td>Invalid credentials.</td>
+            <td></td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>INVALID_SECURITY_<br>CODE</td>
+            <td>Invalid card´s security code.</td>
+            <td>39</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>
+
+            <td>UNSUPPORTED_<br>OPERATION</td>
+            <td>The requested function not supported.</td>
+            <td>40,62</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>REPORTED_LOST</td>
+            <td>Lost card.</td>
+            <td>41</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>REPORTED_STOLEN</td>
+            <td>Stolen card, pick-up.</td>
+            <td>43</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>INSUFFICIENT_FOUNDS</td>
+            <td>Not sufficient funds.</td>
+            <td>51</td>
+            <td>Soft</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>CHECKING_ACCOUNT</td>
+            <td>No checking account.</td>
+            <td>52</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>REJECTED_SAVING<br />_ACCOUNT</td>
+            <td>No saving account.</td>
+            <td>53</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>EXPIRED</td>
+            <td>Expired card or the alternative payment method.</td>
+            <td>54</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>PIN_ERROR</td>
+            <td>Incorrect PIN for the card.</td>
+            <td>55,86</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>DENIED</td>
+            <td>No card record.</td>
+            <td>56</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>
+
+            <td>USER_RESTRICTION</td>
+            <td>The transaction is not permitted for cardholders.</td>
+            <td>57</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE<br>/AUTHORIZE/<br>VERIFY/<br>REFUND</td>
+
+            <td>TERMINAL_ERROR</td>
+            <td>Your merchant account is not properly configured for the transaction.</td>
+            <td>58</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>INVALID_AMOUNT</td>
+            <td>The original amount is incorrect. The invalid amount for the operation.</td>
+            <td>61</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>FRAUD_VALIDATION</td>
+            <td>Security violation.</td>
+            <td>59,63,<br>64</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>CALL_FOR_AUTHORIZE</td>
+            <td>Card acceptor call the acquirer's security department.</td>
+            <td>66</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>TIMEOUT</td>
+            <td>Response received too late by provider.</td>
+            <td>68</td>
+            <td>Soft</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>FIRST_USE</td>
+            <td>Blocked first use.</td>
+            <td>78</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>ISSUER_VIOLATION</td>
+            <td>The issuing bank rejected the transaction due to some violation related to the account.</td>
+            <td>93</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+
+            <td>REJECTED_3D_SECURE_<br>REQUIRED</td>
+            <td>3DS validation rejection.</td>
+            <td></td>
+            <td>Hard</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </details>
+</body>
+`}</HTMLBlock>
 
 ### Rejected status
 
-[block:html]
-{
-  "html": "\n<body>\n  <details class=\"table-card\">\n    <summary>\n      <span class=\"table-call\"><code>REJECTED</code> status details </span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n     <table>\n        <thead>\n          <tr>\n            <th>Type</th>\n            <th>response_code</th>\n            <th>Description - response_message</th>\n            <th>ISO 8583 Code</th>\n            <th>Hard/Soft decline</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>INVALID_TRANSACTION</td>\n            <td>Invalid transaction.<br>The transaction being attempted is invalid. <br>For example, you are trying to use a\n              debit card for a credit transaction.</td>\n            <td>12</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>INVALID_ACCOUNT</td>\n            <td>Invalid account number.</td>\n            <td>14</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>INVALID_ISSUER</td>\n            <td>No such customer.</td>\n            <td>15</td>\n            <td>Hard</td>\n          </tr>\n\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>DUPLICATED_PAYMENT</td>\n            <td>Duplicate transmission of the transaction.</td>\n            <td>26</td>\n            <td>Soft</td>\n          </tr>\n\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>\n            <td>UNSUPPORTED_<br>OPERATION</td>\n            <td>The requested function not supported.</td>\n            <td>40,62</td>\n            <td>Hard</td>\n          </tr>\n\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>INVALID_AMOUNT</td>\n            <td>The original amount is incorrect. The invalid amount for the operation.</td>\n            <td>61</td>\n            <td>Hard</td>\n          </tr>\n\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>DISABLED</td>\n            <td>Restricted card.</td>\n            <td>36</td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>REJECTED_3D_SECURE_<br>REQUIRED</td>\n            <td>3DS validation rejection.</td>\n            <td></td>\n            <td>Hard</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>REFUND_IN_PROCESS</td>\n            <td>There is already a refund in process for the transaction.</td>\n            <td></td>\n            <td>Hard</td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n  </details>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call"><code>REJECTED</code> status details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+     <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>response_code</th>
+            <th>Description - response_message</th>
+            <th>ISO 8583 Code</th>
+            <th>Hard/Soft decline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>INVALID_TRANSACTION</td>
+            <td>Invalid transaction.<br>The transaction being attempted is invalid. <br>For example, you are trying to use a
+              debit card for a credit transaction.</td>
+            <td>12</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>INVALID_ACCOUNT</td>
+            <td>Invalid account number.</td>
+            <td>14</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>INVALID_ISSUER</td>
+            <td>No such customer.</td>
+            <td>15</td>
+            <td>Hard</td>
+          </tr>
 
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>DUPLICATED_PAYMENT</td>
+            <td>Duplicate transmission of the transaction.</td>
+            <td>26</td>
+            <td>Soft</td>
+          </tr>
 
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/<br>REFUND</td>
+            <td>UNSUPPORTED_<br>OPERATION</td>
+            <td>The requested function not supported.</td>
+            <td>40,62</td>
+            <td>Hard</td>
+          </tr>
+
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>INVALID_AMOUNT</td>
+            <td>The original amount is incorrect. The invalid amount for the operation.</td>
+            <td>61</td>
+            <td>Hard</td>
+          </tr>
+
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>DISABLED</td>
+            <td>Restricted card.</td>
+            <td>36</td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>REJECTED_3D_SECURE_<br>REQUIRED</td>
+            <td>3DS validation rejection.</td>
+            <td></td>
+            <td>Hard</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>REFUND_IN_PROCESS</td>
+            <td>There is already a refund in process for the transaction.</td>
+            <td></td>
+            <td>Hard</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
 
 ### Error status
 
-[block:html]
-{
-  "html": "<body>\n  <details class=\"table-card\">\n    <summary>\n      <span class=\"table-call\"><code>ERROR</code> status details </span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n      <table>\n        <thead>\n          <tr>\n            <th>Type</th>\n            <th>response_code</th>\n            <th>Description - response_message</th>\n            <th>ISO 8583 Code</th>\n            <th>Hard/Soft decline</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/REFUND/<br>CAPTURE</td>\n            <td>ERROR</td>\n            <td>Error. An unknown error occurred during the <br>authorization.</td>\n            <td>06</td>\n            <td>Soft</td>\n          </tr>\n          <tr>\n            <td>PURCHASE/<br>AUTHORIZE</td>\n            <td>TIMEOUT</td>\n            <td>Response received too late by Yuno.</td>\n            <td>68</td>\n            <td>Soft</td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n  </details>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call"><code>ERROR</code> status details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>response_code</th>
+            <th>Description - response_message</th>
+            <th>ISO 8583 Code</th>
+            <th>Hard/Soft decline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE/<br>VERIFY/REFUND/<br>CAPTURE</td>
+            <td>ERROR</td>
+            <td>Error. An unknown error occurred during the <br>authorization.</td>
+            <td>06</td>
+            <td>Soft</td>
+          </tr>
+          <tr>
+            <td>PURCHASE/<br>AUTHORIZE</td>
+            <td>TIMEOUT</td>
+            <td>Response received too late by Yuno.</td>
+            <td>68</td>
+            <td>Soft</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
