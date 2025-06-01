@@ -14,8 +14,187 @@ This object represents a recipient who will receive part of a [split payment](do
 
 ## Attributes
 
-[block:html]
-{
-  "html": "<div>\n  <div class=\"yuno\">\n    <p><strong><code>id</code></strong> <small>string</small>\n      <br/>The unique identifier of the recipient (MAX 64 ; MIN 36).\n      <br/><small> Example: 9104911d-5df9-429e-8488-ad41abea1a4b. </small>\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n  <p><strong><code>account_id</code></strong> <small>string</small>\n    <br />The unique identifier of the account (MAX 64; MIN 36).\n    <br/><small> Example: 4323f8a0-7699-4a5b-8293-f4d712312eb3bd. </small>\n    </p>\n\t</div>\n  \n  <details class=\"yuno\">\n    <summary><strong><code>providers</code></strong> <small>array of objects</small>\n      <br/><p>Specifies the provider object. Only necessary when using a third party split. If not, you´ll need to complete the rest of the recipient fields.</p>\n    </summary>\n    <div>\n      <p><strong><code>recipient_id</code></strong> <small>string</small>\n        <br/>The unique identifier of the provider's recipient.\n        <br/><small> Example: 12445. </small>\n      </p>\n      <p><strong><code>id</code></strong> <small>string</small>\n        <br/>The unique identifier of the provider.\n        <br/><small> Example: PAGARME. </small>\n      </p>\n    </div>\n  </details>\n  \n  <div class=\"yuno\">\n    <p><strong><code>merchant_recipient_id</code></strong> <small>string</small>\n      <br/>The unique identifier of the recipient for the marketplace owner (MAX 255; MIN 3).\n      <br/><small> Example: AAAA01. </small>\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n    <p><strong><code>national_entity</code></strong> <small>string</small>\n      <br/>Beneficiary's national entity type. Could be INDIVIDUAL or ENTITY (MAX 64 ; MIN 36).\n      <br/><small> Example: INDIVIDUAL. </small>\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n    <p><strong><code>first_name</code></strong> <small>string</small>\n      <br/>The recipient's first name (MAX 255; MIN 3).\n      <br/><small> Example: John. </small>\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n    <p><strong><code>last_name</code></strong> <small>string</small>\n      <br/>The recipient's last name (MAX 255; MIN 3).\n      <br/><small> Example: Doe. </small>\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n    <p><strong><code>legal_name</code></strong> <small>string</small>\n      <br/>Beneficiary's name. (Max: 80) Only necessary when national entity is ENTITY (MAX 64 ; MIN 36).\n      <br/><small> Example: Arcos dorados S.A. </small>\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n    <p><strong><code>email</code></strong> <small>string</small>\n      <br/>The recipient's e-mail (MAX 255; MIN 3).\n      <br/><small> Example: john.doe@email.com. </small>\n    </p>\t\n  </div>\n  \n    <div class=\"yuno\">\n    <p><strong><code>country</code></strong> <small>enum</small>\n      <br/>The recipient's country (MAX 2; MIN 2; <a href=\"https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1\">ISO 3166-1</a>).\n      <br/><small> Possible enum values: Check the <a href=\"https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1\">Country Code List</a>.  </small>\n      </p>\t\n  </div>\n  \n  <details class=\"yuno\">\n    <summary><strong><code>document</code></strong> <small>object</small>\n      <br/><p>Specifies the recipient's document object, including its number and type.</p>\n    </summary>\n    <div>\n      <p><strong><code>document_number</code></strong> <small>string</small>\n        <br/>The recipient's document number (MAX 40; MIN 3).\n        <br/><small> Example: 1093333333.  </small>  </p>\n      </p>\n      <p><strong><code>document_type</code></strong> <small>enum</small>\n        <br/>The recipient's document type (MAX 6, MIN 2).\n        <br/><small> Possible enum values: Check the <a href=\"https://docs.y.uno/reference/customer-object#document-type-list\">Document Type List</a>.  </small>\n    </p>\n    </div>\n  </details>\n  \n  <details class=\"yuno\">\n    <summary><strong><code>phone</code></strong> <small>object</small>\n      <br/><p>Specifies the recipient's phone number object.</p>\n    </summary>\n    <div>\n      <p><strong><code>country_code</code></strong> <small>string</small>\n        <br/>The country code of the recipient's phone (MAX 3; MIN 2).\n        <br/><small> Example: 57.  </small>  \n      </p>\n      <p><strong><code>number</code></strong> <small>string</small>\n        <br/>The recipient's phone number, without the country code (MAX 32; MIN 1).\n        <br/><small> Example: 3132450765.  </small>  \n      </p>\n    </div>\n  </details>\n  \n  <details class=\"yuno\">\n    <summary><strong><code>address</code></strong> <small>object</small>\n      <br/><p>Specifies the recipient's billing address object.</p>\n    </summary>\n    <div>\n      <p><strong><code>address_line_1</code></strong> <small>string</small>\n        <br/>The primary billing address line of the recipient (MAX 255; MIN 3).\n        <br/><small> Example: Calle 34 # 56 - 78.  </small>  \n      </p>\n      <p><strong><code>address_line_2</code></strong> <small>string</small>\n        <br/>The secondary billing address line of the recipient (MAX 255; MIN 3).\n        <br/><small> Example: Apartamento 502, Torre I. </small>  \n      </p>\n      <p><strong><code>city</code></strong> <small>string</small>\n        <br/>The city considered for the billing address (MAX 255; MIN 3).\n        <br/><small> Example: Bogotá.  </small>  \n      </p>\n      <p><strong><code>country</code></strong> <small>enum</small>\n        <br/>The country considered for the billing address (MAX 2; MIN 2; <a href=\"https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1\">ISO 3166-1</a>).\n        <br/><small> Possible enum values: Check the <a href=\"https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1\">Country Code List</a>.</small>\n      </p>\n      <p><strong><code>state</code></strong> <small>string</small>\n        <br/>The state considered for the billing address (MAX 255; MIN 3).\n        <br/><small> Example: Cundinamarca.  </small>  \n      </p>  \n      <p><strong><code>zip_code</code></strong> <small>string</small>\n        <br/>The zipcode considered for the billing address (MAX 11; MIN 4).\n        <br/><small> Example: 111111.  </small>  \n      </p>  \n    </div>\n  </details>\n  \n  \n  <div class=\"yuno\">\n    <p><strong><code>created_at</code></strong> <small>timestamp</small>\n      <br/>Recipient creation date and time (MAX 27; MIN 27; <a href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601</a>).\n      <br/><small> Example: 2022-05-09T20:46:54.786342Z.  </small>\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n    <p><strong><code>updated_at</code></strong> <small>timestamp</small>\n      <br/>Last recipient update date and time (MAX 27; MIN 27; <a href=\"https://en.wikipedia.org/wiki/ISO_8601\">ISO 8601</a>).\n      <br/><small> Example: 2022-05-09T20:46:54.786342Z.  </small>\n</p>\t\n  </div>\n  \n</div>\n\n<style>\n  :root {\n    --yuno-main-color: #614AD6;\n    --yellow: #CEE65A;\n  }\n  details {\n    display: flex;\n    overflow: hidden;\n  }\n    p {\n      margin-left: 20px;\n    }\n    .yuno {\n   \t  --highlight: var(#eee) ;\n    \tbackground: #eee;\n      margin: 1.5em;\n      border-radius: 5px;\n      border-left: 15px solid var(--yuno-main-color);\n      padding: 0.25em;\n    }\n</style>"
-}
-[/block]
+<HTMLBlock>{`
+<div>
+  <div class="yuno">
+    <p><strong><code>id</code></strong> <small>string</small>
+      <br/>The unique identifier of the recipient (MAX 64 ; MIN 36).
+      <br/><small> Example: 9104911d-5df9-429e-8488-ad41abea1a4b. </small>
+    </p>	
+  </div>
+  
+  <div class="yuno">
+  <p><strong><code>account_id</code></strong> <small>string</small>
+    <br />The unique identifier of the account (MAX 64; MIN 36).
+    <br/><small> Example: 4323f8a0-7699-4a5b-8293-f4d712312eb3bd. </small>
+    </p>
+	</div>
+  
+  <details class="yuno">
+    <summary><strong><code>providers</code></strong> <small>array of objects</small>
+      <br/><p>Specifies the provider object. Only necessary when using a third party split. If not, you´ll need to complete the rest of the recipient fields.</p>
+    </summary>
+    <div>
+      <p><strong><code>recipient_id</code></strong> <small>string</small>
+        <br/>The unique identifier of the provider's recipient.
+        <br/><small> Example: 12445. </small>
+      </p>
+      <p><strong><code>id</code></strong> <small>string</small>
+        <br/>The unique identifier of the provider.
+        <br/><small> Example: PAGARME. </small>
+      </p>
+    </div>
+  </details>
+  
+  <div class="yuno">
+    <p><strong><code>merchant_recipient_id</code></strong> <small>string</small>
+      <br/>The unique identifier of the recipient for the marketplace owner (MAX 255; MIN 3).
+      <br/><small> Example: AAAA01. </small>
+    </p>	
+  </div>
+  
+  <div class="yuno">
+    <p><strong><code>national_entity</code></strong> <small>string</small>
+      <br/>Beneficiary's national entity type. Could be INDIVIDUAL or ENTITY (MAX 64 ; MIN 36).
+      <br/><small> Example: INDIVIDUAL. </small>
+    </p>	
+  </div>
+  
+  <div class="yuno">
+    <p><strong><code>first_name</code></strong> <small>string</small>
+      <br/>The recipient's first name (MAX 255; MIN 3).
+      <br/><small> Example: John. </small>
+    </p>	
+  </div>
+  
+  <div class="yuno">
+    <p><strong><code>last_name</code></strong> <small>string</small>
+      <br/>The recipient's last name (MAX 255; MIN 3).
+      <br/><small> Example: Doe. </small>
+    </p>	
+  </div>
+  
+  <div class="yuno">
+    <p><strong><code>legal_name</code></strong> <small>string</small>
+      <br/>Beneficiary's name. (Max: 80) Only necessary when national entity is ENTITY (MAX 64 ; MIN 36).
+      <br/><small> Example: Arcos dorados S.A. </small>
+    </p>	
+  </div>
+  
+  <div class="yuno">
+    <p><strong><code>email</code></strong> <small>string</small>
+      <br/>The recipient's e-mail (MAX 255; MIN 3).
+      <br/><small> Example: john.doe@email.com. </small>
+    </p>	
+  </div>
+  
+    <div class="yuno">
+    <p><strong><code>country</code></strong> <small>enum</small>
+      <br/>The recipient's country (MAX 2; MIN 2; <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">ISO 3166-1</a>).
+      <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">Country Code List</a>.  </small>
+      </p>	
+  </div>
+  
+  <details class="yuno">
+    <summary><strong><code>document</code></strong> <small>object</small>
+      <br/><p>Specifies the recipient's document object, including its number and type.</p>
+    </summary>
+    <div>
+      <p><strong><code>document_number</code></strong> <small>string</small>
+        <br/>The recipient's document number (MAX 40; MIN 3).
+        <br/><small> Example: 1093333333.  </small>  </p>
+      </p>
+      <p><strong><code>document_type</code></strong> <small>enum</small>
+        <br/>The recipient's document type (MAX 6, MIN 2).
+        <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/customer-object#document-type-list">Document Type List</a>.  </small>
+    </p>
+    </div>
+  </details>
+  
+  <details class="yuno">
+    <summary><strong><code>phone</code></strong> <small>object</small>
+      <br/><p>Specifies the recipient's phone number object.</p>
+    </summary>
+    <div>
+      <p><strong><code>country_code</code></strong> <small>string</small>
+        <br/>The country code of the recipient's phone (MAX 3; MIN 2).
+        <br/><small> Example: 57.  </small>  
+      </p>
+      <p><strong><code>number</code></strong> <small>string</small>
+        <br/>The recipient's phone number, without the country code (MAX 32; MIN 1).
+        <br/><small> Example: 3132450765.  </small>  
+      </p>
+    </div>
+  </details>
+  
+  <details class="yuno">
+    <summary><strong><code>address</code></strong> <small>object</small>
+      <br/><p>Specifies the recipient's billing address object.</p>
+    </summary>
+    <div>
+      <p><strong><code>address_line_1</code></strong> <small>string</small>
+        <br/>The primary billing address line of the recipient (MAX 255; MIN 3).
+        <br/><small> Example: Calle 34 # 56 - 78.  </small>  
+      </p>
+      <p><strong><code>address_line_2</code></strong> <small>string</small>
+        <br/>The secondary billing address line of the recipient (MAX 255; MIN 3).
+        <br/><small> Example: Apartamento 502, Torre I. </small>  
+      </p>
+      <p><strong><code>city</code></strong> <small>string</small>
+        <br/>The city considered for the billing address (MAX 255; MIN 3).
+        <br/><small> Example: Bogotá.  </small>  
+      </p>
+      <p><strong><code>country</code></strong> <small>enum</small>
+        <br/>The country considered for the billing address (MAX 2; MIN 2; <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">ISO 3166-1</a>).
+        <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">Country Code List</a>.</small>
+      </p>
+      <p><strong><code>state</code></strong> <small>string</small>
+        <br/>The state considered for the billing address (MAX 255; MIN 3).
+        <br/><small> Example: Cundinamarca.  </small>  
+      </p>  
+      <p><strong><code>zip_code</code></strong> <small>string</small>
+        <br/>The zipcode considered for the billing address (MAX 11; MIN 4).
+        <br/><small> Example: 111111.  </small>  
+      </p>  
+    </div>
+  </details>
+  
+  
+  <div class="yuno">
+    <p><strong><code>created_at</code></strong> <small>timestamp</small>
+      <br/>Recipient creation date and time (MAX 27; MIN 27; <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>).
+      <br/><small> Example: 2022-05-09T20:46:54.786342Z.  </small>
+    </p>	
+  </div>
+  
+  <div class="yuno">
+    <p><strong><code>updated_at</code></strong> <small>timestamp</small>
+      <br/>Last recipient update date and time (MAX 27; MIN 27; <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>).
+      <br/><small> Example: 2022-05-09T20:46:54.786342Z.  </small>
+</p>	
+  </div>
+  
+</div>
+
+<style>
+  :root {
+    --yuno-main-color: #614AD6;
+    --yellow: #CEE65A;
+  }
+  details {
+    display: flex;
+    overflow: hidden;
+  }
+    p {
+      margin-left: 20px;
+    }
+    .yuno {
+   	  --highlight: var(#eee) ;
+    	background: #eee;
+      margin: 1.5em;
+      border-radius: 5px;
+      border-left: 15px solid var(--yuno-main-color);
+      padding: 0.25em;
+    }
+</style>
+`}</HTMLBlock>
