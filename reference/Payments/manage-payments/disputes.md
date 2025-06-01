@@ -16,11 +16,11 @@ next:
 This request enables clients to [submit dispute documentation for chargeback management](doc:chargeback-management), allowing Yuno to forward these documents to the appropriate issuers for processing. 
 
 > 📘 Evidence requirements
-> 
+>
 > The uploaded files must meet the following criteria:
-> 
-> _Format_: File must be in PDF format, encoded as base64.  
-> _Size_: File must be no larger than 1 MB in size.  
-> _Language_: Dispute should be written in English or the country’s local language.
+>
+> *Format*: File must be in PDF format, encoded as base64.\
+> *Size*: File must be no larger than 1 MB in size.\
+> *Language*: Dispute should be written in English or the country’s local language.
 
 Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](ref:authentication#idempotency) page for more information.
