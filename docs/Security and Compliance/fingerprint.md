@@ -31,7 +31,7 @@ Fingerprinting involves creating an identifier for a specific payment method wit
 
 Fingerprints are highly valuable for:
 
-- Tracking if a user is using the same card for multiple customer-present payments, suggesting that a vault could greatly improve the user experience.
-- Checking if a particular card is being used by multiple customers, which could indicate fraud.
+* Tracking if a user is using the same card for multiple customer-present payments, suggesting that a vault could greatly improve the user experience.
+* Checking if a particular card is being used by multiple customers, which could indicate fraud.
 
 You will also find the fingerprint in the payment response when a transaction is made using an enrolled credit card.
