@@ -12,12 +12,20 @@ next:
 ---
 This page outlines the steps to integrate the Lite Flutter SDK payment functionalities into your project. Follow these instructions to add, configure, and use the Yuno Flutter SDK.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tEnsure all required Flutter SDK dependencies are included in your project before following the setup example. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <div class="contentContainer">
+        <p>
+					Ensure all required Flutter SDK dependencies are included in your project before following the setup example. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 1: Add the SDK Dependency
 
@@ -47,37 +55,101 @@ await Yuno.init(
 
 Below is a table describing the parameters required for initializing the Yuno SDK in your Flutter application. These settings allow you to customize the SDK behavior to align with your application needs:
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`apiKey`",
-    "0-1": "Your unique public API key for authentication.",
-    "1-0": "`country_code`",
-    "1-1": "The user’s country code. Refer to the [Country Coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page for a complete list of supported country codes.",
-    "2-0": "`yunoConfig`",
-    "2-1": "Configures various SDK settings. Contains additional parameters listed below.",
-    "3-0": "`lang`",
-    "3-1": "The language for SDK content. Supported options include: <br> `en` - English <br> `es` - Spanish <br> `pt` - Portuguese <br> `ms` - Malay <br> `id` - Indonesian <br> `th` - Thai",
-    "4-0": "`cardflow`",
-    "4-1": "Defines the card flow type for the payment process. The default is `CardFlow.multiStep`.",
-    "5-0": "`saveCardEnable`",
-    "5-1": "Specifies whether to enable the \"Save Card\" option. Defaults to `true`.",
-    "6-0": "`keepLoader`",
-    "6-1": "Controls whether to keep the loader visible. Defaults to `true`.",
-    "7-0": "`iosConfig`",
-    "7-1": "Optional iOS-specific configurations. If omitted, the default configuration is used."
-  },
-  "cols": 2,
-  "rows": 8,
-  "align": [
-    null,
-    null
-  ]
-}
-[/block]
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `apiKey`
+      </td>
+
+      <td>
+        Your unique public API key for authentication.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        The user’s country code. Refer to the [Country Coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page for a complete list of supported country codes.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoConfig`
+      </td>
+
+      <td>
+        Configures various SDK settings. Contains additional parameters listed below.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `lang`
+      </td>
+
+      <td>
+        The language for SDK content. Supported options include: <br> `en` - English <br> `es` - Spanish <br> `pt` - Portuguese <br> `ms` - Malay <br> `id` - Indonesian <br> `th` - Thai
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `cardflow`
+      </td>
+
+      <td>
+        Defines the card flow type for the payment process. The default is `CardFlow.multiStep`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `saveCardEnable`
+      </td>
+
+      <td>
+        Specifies whether to enable the "Save Card" option. Defaults to `true`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `keepLoader`
+      </td>
+
+      <td>
+        Controls whether to keep the loader visible. Defaults to `true`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `iosConfig`
+      </td>
+
+      <td>
+        Optional iOS-specific configurations. If omitted, the default configuration is used.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ## Step 3: Start Payment Lite
 
@@ -107,27 +179,54 @@ void initiatePayment() async {
 
 The functions used in `Yuno.startPaymentLite` are described in the table below.
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`checkoutSession`",
-    "0-1": "Unique identifier for the current payment's checkout session. This is generated when calling the [Create Payment endpoint](ref:create-payment).",
-    "1-0": "`showPaymentStatus`",
-    "1-1": "Boolean to determine if payment status should be displayed (`true`) or not (`false`).",
-    "2-0": "`methodSelected`",
-    "2-1": "An instance of `MethodSelected` that includes:  \n  \n- `paymentMethodType`: Type of payment method selected by the customer. For the complete available options, access the [Payment types](ref:payment-type-list)  page.\n- `VaultedToken`:  The vaulted token from a previously enrolled payment method."
-  },
-  "cols": 2,
-  "rows": 3,
-  "align": [
-    null,
-    null
-  ]
-}
-[/block]
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `checkoutSession`
+      </td>
+
+      <td>
+        Unique identifier for the current payment's checkout session. This is generated when calling the [Create Payment endpoint](ref:create-payment).
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `showPaymentStatus`
+      </td>
+
+      <td>
+        Boolean to determine if payment status should be displayed (`true`) or not (`false`).
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `methodSelected`
+      </td>
+
+      <td>
+        An instance of `MethodSelected` that includes:  
+
+        * `paymentMethodType`: Type of payment method selected by the customer. For the complete available options, access the [Payment types](ref:payment-type-list)  page.
+        * `VaultedToken`:  The vaulted token from a previously enrolled payment method.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 By using the `methodSelected` parameter, the merchant specifies the payment method chosen by the customer. 
 
@@ -150,12 +249,21 @@ YunoPaymentListener(
 
 Once you have obtained the one-time token, create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), using both the one-time token and the checkout session.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Continue method</h3>\n      <div class=\"contentContainer\">\n        <p>\n          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Continue method</h3>
+      <div class="contentContainer">
+        <p>
+          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 Some asynchronous payment methods require additional customer actions after the payment initiation. The response from the Create Payment endpoint will indicate this with the `sdk_action_required` attribute, which will be set to `true` if further action is needed. When this occurs, you can use the `Yuno.continuePayment()` function to guide the customer through the necessary steps:
 
