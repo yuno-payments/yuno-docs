@@ -18,18 +18,42 @@ next:
 
 Where:
 
-- **Merchant Plugin Interface (MPI)** initiates the verification process by facilitating the secure exchange of information between the merchant, scheme Directory Server, and the cardholder’s issuing bank.
-- **Scheme Directory Server (DS)** acts as a centralized database and facilitates the identification of the appropriate cardholder’s issuing bank and the corresponding authentication method to be used.
-- **Issuer Access Control Server (ACS)** is responsible for verifying and validating the cardholder’s identity during a 3DS transaction. The Issuer ACS receives authentication requests and performs risk assessments and authentication checks based on the bank’s predefined rules and policies.
+* **Merchant Plugin Interface (MPI)** initiates the verification process by facilitating the secure exchange of information between the merchant, scheme Directory Server, and the cardholder’s issuing bank.
+* **Scheme Directory Server (DS)** acts as a centralized database and facilitates the identification of the appropriate cardholder’s issuing bank and the corresponding authentication method to be used.
+* **Issuer Access Control Server (ACS)** is responsible for verifying and validating the cardholder’s identity during a 3DS transaction. The Issuer ACS receives authentication requests and performs risk assessments and authentication checks based on the bank’s predefined rules and policies.
 
 3D Secure 2, or 3DS2, published in 2016, is an updated version of the original 3DS protocol and uses dynamic authentication methods such as biometrics and token-based authentication, whereas the original 3DS protocol relies on static passwords. 3DS2 aims to provide a better user experience with a more fluid flow for end users during authentication. EMVCo, an organization owned by major card brands, developed and managed both protocols. All major card brands stopped supporting the first version of 3DS in October 2022. Therefore, integrating the 3DS2 verification step is essential to ensure your customers' experience and security. Yuno already provides an easy 3DS2 integration for your business.
 
-[block:html]
-{
-  "html": "<style>\n    .psp-card .psp-card-logo {\n    max-width: 60px;\n  }\n  \n  .psp-card .detail-psp-card-content {\n    display: flex;\n    justify-content: space-evenly;\n  }\n</style>\n\n<body>\n  <div class=\"shelf\">\n    <div class=\" psp-card\">\n      <section class=\"detail-psp-card \">\n        <div class=\" detail-psp-card-content\">\n     \t\t\t <img class=\"psp-card-logo\" src=\"https://icons.prod.y.uno/visa_logosimbolo.png\">\n            <img class=\"psp-card-logo\" src=\"https://icons.prod.y.uno/mastercard_logosimbolo.png\">\n          \t<img class=\"psp-card-logo\" src=\"https://icons.prod.y.uno/amex_logosimbolo.png\">\n            <img class=\"psp-card-logo\" src=\"https://icons.prod.y.uno/jcb_logosimbolo.png\">\n          \t<img class=\"psp-card-logo\" src=\"https://icons.prod.y.uno/dinnersclub_logosimbolo.png\">\n          \t<img class=\"psp-card-logo\" src=\"https://icons.prod.y.uno/unionpay_logosimbolo.png\">\n          <img class=\"psp-card-logo\" src=\"https://icons.prod.y.uno/cartabancaire_logosimbolo.png\">\n\t\t    </div>\n      </section>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+    .psp-card .psp-card-logo {
+    max-width: 60px;
+  }
+  
+  .psp-card .detail-psp-card-content {
+    display: flex;
+    justify-content: space-evenly;
+  }
+</style>
 
+<body>
+  <div class="shelf">
+    <div class=" psp-card">
+      <section class="detail-psp-card ">
+        <div class=" detail-psp-card-content">
+     			 <img class="psp-card-logo" src="https://icons.prod.y.uno/visa_logosimbolo.png">
+            <img class="psp-card-logo" src="https://icons.prod.y.uno/mastercard_logosimbolo.png">
+          	<img class="psp-card-logo" src="https://icons.prod.y.uno/amex_logosimbolo.png">
+            <img class="psp-card-logo" src="https://icons.prod.y.uno/jcb_logosimbolo.png">
+          	<img class="psp-card-logo" src="https://icons.prod.y.uno/dinnersclub_logosimbolo.png">
+          	<img class="psp-card-logo" src="https://icons.prod.y.uno/unionpay_logosimbolo.png">
+          <img class="psp-card-logo" src="https://icons.prod.y.uno/cartabancaire_logosimbolo.png">
+		    </div>
+      </section>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Benefits of 3D Secure 2
 
@@ -87,21 +111,36 @@ To create payments with the 3DS DIRECT workflow, you need to fulfill some requir
 
 Before using 3DS DIRECT, you need to enable 3DS in your [Yuno Dashboard](https://dashboard.y.uno/) and specify the scenarios in which you want your customers to be able to use it. These scenarios must be indicated on your CARD route. Additionally, you will require the following 3DS setup data in the payment provider connection:
 
-- **Acquirer BIN**: This is the Bank Identification Number (BIN) used to clear and settle the transaction, along with the country in which it is licensed for use.
-- **Merchant ID**: This is the affiliation number provided by the acquirer.
-- **Merchant Category Code (MCC)**: The acquirer will provide a specific code representing your merchant category.
-- **Merchant's Name**: Refers to the official name or business name of the company or entity conducting the commercial transaction.
-- **Merchant URL**: The merchant's website or online platform.
-- **Country Code**: The country where the payment needs to be processed, following the [ISO 3166-1](ref:country-reference) Standard Country Codes.
+* **Acquirer BIN**: This is the Bank Identification Number (BIN) used to clear and settle the transaction, along with the country in which it is licensed for use.
+* **Merchant ID**: This is the affiliation number provided by the acquirer.
+* **Merchant Category Code (MCC)**: The acquirer will provide a specific code representing your merchant category.
+* **Merchant's Name**: Refers to the official name or business name of the company or entity conducting the commercial transaction.
+* **Merchant URL**: The merchant's website or online platform.
+* **Country Code**: The country where the payment needs to be processed, following the [ISO 3166-1](ref:country-reference) Standard Country Codes.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer \">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Using an external MPI for authentication</h3>\n      <div class=\"contentContainer\">\n        <div>\n           If you are using an external MPI to perform the authentication, the following parameters are required for a successful connection with the provider:\n          <ul>\n            <li>Acquirer BIN</li>\n            <li>Acquirer country code</li>\n            <li>Merchant ID</li>\n            <li>MCC</li>\n          </ul>\n        </div>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Using an external MPI for authentication</h3>
+      <div class="contentContainer">
+        <div>
+           If you are using an external MPI to perform the authentication, the following parameters are required for a successful connection with the provider:
+          <ul>
+            <li>Acquirer BIN</li>
+            <li>Acquirer country code</li>
+            <li>Merchant ID</li>
+            <li>MCC</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
-
-## 
+##
 
 ## Yuno 3D Secure 2 integration
 
@@ -112,7 +151,7 @@ In general terms, a 3DS integration requires a `setup_id`/`device_fingerprint` f
 Therefore, depending on your Yuno integration, you have three different options:
 
 1. **Checkout integration**: The Checkout workflow is part of the [Checkout](doc:build-your-integration#checkout) solution provided by Yuno. Use our SDKs so we can handle all the logic regarding external provider requirements and executions for 3DS. If you want to define specific cases for 3DS analysis, you can define that in the CARD route of your Yuno dashboard.
-2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](ref:create-payment) (card_data - eci, cryptogram, etc). Only available for PCI-compliant merchants. 
+2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](ref:create-payment) (card\_data - eci, cryptogram, etc). Only available for PCI-compliant merchants. 
 3. **Direct integration**: The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. For each payment you'll have a:
    1. `PENDING/WAITING_ADDITIONAL_STEP` status/sub status.
    2. `sdk_action_required` set as `true`.
@@ -124,15 +163,15 @@ For every scenario the Yuno [webhooks](doc:configuring-yuno-webhooks) will promp
 
 After executing the 3DS for each scenario, you'll receive all the necessary information in the payment's response inside the `payment_method.detail.card.card_data.three_d_secure` object: 
 
-| Field                           | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Example                                                                                      |
-| :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| version                         | Refers to the protocol version of the EMV 3-D Secure specification used. 1.0, 2.0, 2.1.0, 2.2.0, 2.2.1.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 2.2.1                                                                                        |
-| electronic_commerce_indicator   | This field must be completed with the result of the ECI field provided by the 3d Secure service. The Electronic Commerce Indicator (ECI) informs the card issuer if the transaction was protected by a security protocol like VbV or MCSC. It is mandated by Visa and MasterCard that all 3-D Secure transactions have this value populated in the authorization request (MAX: 2, MIN: 0).                                                                                                                                                                                                                                                                                                                              | 04                                                                                           |
-| cryptogram                      | This field must be completed with the result of the cryptogram field provided by the 3DSecure service. In Visa transactions, it represents the Cardholder Authentication Verification Value (CAVV), a cryptographic value generated by the Issuer as evidence of payment authentication during online purchase to qualify for chargeback protection. MasterCard transactions have a similar value called Accountholder Authentication Value (AAV) or the Universal Cardholder Authentication Field (UCAF). When submitting a transaction for authorization, the merchant must include the CAVV or AAV/UCAF to demonstrate that the cardholder has been authenticated. It is typically base64-encoded (MAX: 40, MIN: 0). | BA0BB1Z3N5Q4kjkBU3c3ELGUsJY =                                                                |
-| transaction_id                  | For 3DS v1: This is the Unique Transaction Identifier. It is automatically generated by the MPI. It is typically 28 bytes in length and base64-encoded. Is commonly referred to as XID (MAX: 40, MIN: 0). For 3DS v2: Universally unique transaction identifier assigned by the DS to identify a single transaction. (MAX: 36, MIN:36).                                                                                                                                                                                                                                                                                                                                                                                 | Ex for V1: “TjY0MjAxRjA4MD4987DUzMzYyNjU=” Ex for V2: “c4e59ceb-a382-4d6a-bc87-385d591fa09d” |
-| directory_server_transaction_id | Transaction ID generated by the Mastercard directory server during authentication (MAX 255; MIN 3).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | f38e6948-5388-41a6-bca4-b49723c19437                                                         |
-| pares_status                    | Indicates the outcome of the cardholder authentication during the 3-D Secure process. It informs you whether the authentication was successful (Y), failed (N), could not be completed (U), or was only attempted (A).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Y                                                                                            |
-| acs_id                          | Unique identifier provided by the Access Control Server (ACS) during the 3-D Secure authentication process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | ACS-1234567890                                                                               |
+| Field                              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Example                                                                                      |
+| :--------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| version                            | Refers to the protocol version of the EMV 3-D Secure specification used. 1.0, 2.0, 2.1.0, 2.2.0, 2.2.1.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | 2.2.1                                                                                        |
+| electronic\_commerce\_indicator    | This field must be completed with the result of the ECI field provided by the 3d Secure service. The Electronic Commerce Indicator (ECI) informs the card issuer if the transaction was protected by a security protocol like VbV or MCSC. It is mandated by Visa and MasterCard that all 3-D Secure transactions have this value populated in the authorization request (MAX: 2, MIN: 0).                                                                                                                                                                                                                                                                                                                              | 04                                                                                           |
+| cryptogram                         | This field must be completed with the result of the cryptogram field provided by the 3DSecure service. In Visa transactions, it represents the Cardholder Authentication Verification Value (CAVV), a cryptographic value generated by the Issuer as evidence of payment authentication during online purchase to qualify for chargeback protection. MasterCard transactions have a similar value called Accountholder Authentication Value (AAV) or the Universal Cardholder Authentication Field (UCAF). When submitting a transaction for authorization, the merchant must include the CAVV or AAV/UCAF to demonstrate that the cardholder has been authenticated. It is typically base64-encoded (MAX: 40, MIN: 0). | BA0BB1Z3N5Q4kjkBU3c3ELGUsJY =                                                                |
+| transaction\_id                    | For 3DS v1: This is the Unique Transaction Identifier. It is automatically generated by the MPI. It is typically 28 bytes in length and base64-encoded. Is commonly referred to as XID (MAX: 40, MIN: 0). For 3DS v2: Universally unique transaction identifier assigned by the DS to identify a single transaction. (MAX: 36, MIN:36).                                                                                                                                                                                                                                                                                                                                                                                 | Ex for V1: “TjY0MjAxRjA4MD4987DUzMzYyNjU=” Ex for V2: “c4e59ceb-a382-4d6a-bc87-385d591fa09d” |
+| directory\_server\_transaction\_id | Transaction ID generated by the Mastercard directory server during authentication (MAX 255; MIN 3).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | f38e6948-5388-41a6-bca4-b49723c19437                                                         |
+| pares\_status                      | Indicates the outcome of the cardholder authentication during the 3-D Secure process. It informs you whether the authentication was successful (Y), failed (N), could not be completed (U), or was only attempted (A).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Y                                                                                            |
+| acs\_id                            | Unique identifier provided by the Access Control Server (ACS) during the 3-D Secure authentication process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | ACS-1234567890                                                                               |
 
 ```json Example
 [...]
@@ -182,16 +221,16 @@ After executing the 3DS for each scenario, you'll receive all the necessary info
 
 A 3DS transaction functions similarly to a regular purchase transaction. It progresses through different states that represent the authorization process. Once the 3DS transaction is marked as SUCCEEDED, Yuno proceeds to the processor and generates a PURCHASE transaction to charge the client. The following table describes all possible states and their descriptions.
 
-| Status     | Description                                                            |
-| :--------- | :--------------------------------------------------------------------- |
-| CREATED    | Payment is created and waiting for Yuno's SDK session id.              |
-| PENDING    | The challenge is required, and the `redirect_url` is returned by Yuno. |
-| IN_PROCESS | The user is completing the challenge.                                  |
-| SUCCEEDED  | The challenge was completed correctly.                                 |
-| DECLINED   | The challenge was completed but declined by the bank.                  |
-| ERROR      | An error occurred while redirecting to the user's challenge.           |
+| Status      | Description                                                            |
+| :---------- | :--------------------------------------------------------------------- |
+| CREATED     | Payment is created and waiting for Yuno's SDK session id.              |
+| PENDING     | The challenge is required, and the `redirect_url` is returned by Yuno. |
+| IN\_PROCESS | The user is completing the challenge.                                  |
+| SUCCEEDED   | The challenge was completed correctly.                                 |
+| DECLINED    | The challenge was completed but declined by the bank.                  |
+| ERROR       | An error occurred while redirecting to the user's challenge.           |
 
-As mentioned before, if the payment is PENDING/WAITING_ADDITIONAL_STEP, the 3DS transaction will be PENDING when a Challenge is required. After the challenge is completed, either successfully or not, the payment and transaction will be updated to the corresponding states (SUCCEEDED or DECLINED).
+As mentioned before, if the payment is PENDING/WAITING\_ADDITIONAL\_STEP, the 3DS transaction will be PENDING when a Challenge is required. After the challenge is completed, either successfully or not, the payment and transaction will be updated to the corresponding states (SUCCEEDED or DECLINED).
 
 ### Using 3DS for Specific Scenarios
 
