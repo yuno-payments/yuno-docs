@@ -26,12 +26,10 @@ curl --request <Method> \
      --header 'public-api-key: <Your public-api-key>'
 ```
 
-
-
 The `x-idempotency-key` of a transaction and the status returned for making that order are both stored by Yuno's idempotency system. To ensure that requests made within 24 hours of establishing the first order are not created twice, we save this data regardless of the outcome of this transaction (caught, authorized, or failed). As a result, responses to requests received with the same key will consist of a single transaction.
 
 > ⚠️ Requests with the same key and different contents in the body
-> 
+>
 > It is crucial to stress that the API will only generate one request even if two requests are sent with the same key in the header and different contents in the body.
 
 In some circumstances, it's possible that some requests are sent at the same time. As a result, it is possible that the application receives a second request before it responds to the first one. When this happens, the second request will be met with the 409 code - Conflict, indicating that there is an open call for the same `x-idempotency-key`.
