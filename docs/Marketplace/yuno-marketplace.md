@@ -14,9 +14,9 @@ The Yuno's Marketplace solution offers an easy and fast way to integrate payment
 
 ### Basic concepts
 
-- Marketplace:  An e-commerce site that connects sellers and buyers in a unique environment. The owner of the marketplace should integrate the split.  
-- Recipient: The object that represents the sellers inside your marketplace.
-- Split: The structure that defines how the money should be split between the recipients involved. 
+* Marketplace:  An e-commerce site that connects sellers and buyers in a unique environment. The owner of the marketplace should integrate the split.  
+* Recipient: The object that represents the sellers inside your marketplace.
+* Split: The structure that defines how the money should be split between the recipients involved. 
 
 ### How does it work?
 
@@ -28,6 +28,6 @@ To add the solution you will need to follow the next steps to guarantee a fricti
 2. Get or create [recipients](https://docs.y.uno/reference/the-recipient-object) that will receive the funds from the transactions. 
 3. Create a [payment](https://docs.y.uno/reference/split-payments) with your recipient's information and a split structure that indicates how the money should be split between the parts involved. 
 
-> 📘 
-> 
+> 📘
+>
 > Refunds and chargebacks will use the same split information sent in the payment creation.
