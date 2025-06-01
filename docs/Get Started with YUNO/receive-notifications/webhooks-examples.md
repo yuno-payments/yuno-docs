@@ -14,11 +14,66 @@ next:
 
 The attributes of the JSON for the Yuno webhooks are listed below:
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"yuno\">\n    <p><strong>account_id</strong> <small>string </small>\n      <br />The unique identifier of the account in Yuno (MAX 64 ; MIN 36).\n    </p>\n  </div>\n  <div class=\"yuno\">\n    <p><strong>type</strong> <small>string </small>\n      <br />Specifies the notification type.\n    </p>\n  </div>\n  <div class=\"yuno\">\n    <p><strong>type.event</strong> <small>string </small>\n      <br />Specifies the event notification type.\n    </p>\n  </div>\n  <div class=\"yuno\">\n    <p><strong>version</strong> <small>string </small>\n      <br />Specifies the version of the webhook sent. Currently 2. \n    </p>\n  </div>\n  <div class=\"yuno\">\n    <p><strong>retry</strong> <small>string </small>\n      <br />Specifies the number of retries for that notification. \n    </p>\n  </div>\n  <div class=\"yuno\">\n    <p><strong>data</strong> <small>string </small>\n      <p>Specifies the <a\n          href=\"the-payment-object\">payment</a> (for payment type) or <a\n          href=\"the-payment-method-object-checkout\">payment method object</a> (for enrollment).</p>\n    </p>\n  </div>\n</body>\n<style>\n  :root {\n    --yuno-main-color: #614AD6;\n    --yellow: #CEE65A;\n  }\n\n  details {\n    display: flex;\n    overflow: hidden;\n  }\n\n  p {\n    margin-left: 20px;\n  }\n\n  .yuno {\n    --highlight: var(#eee);\n    background: #eee;\n    margin: 1.5em;\n    border-radius: 5px;\n    border-left: 15px solid var(--yuno-main-color);\n    padding: 0.25em;\n  }\n</style>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="yuno">
+    <p><strong>account_id</strong> <small>string </small>
+      <br />The unique identifier of the account in Yuno (MAX 64 ; MIN 36).
+    </p>
+  </div>
+  <div class="yuno">
+    <p><strong>type</strong> <small>string </small>
+      <br />Specifies the notification type.
+    </p>
+  </div>
+  <div class="yuno">
+    <p><strong>type.event</strong> <small>string </small>
+      <br />Specifies the event notification type.
+    </p>
+  </div>
+  <div class="yuno">
+    <p><strong>version</strong> <small>string </small>
+      <br />Specifies the version of the webhook sent. Currently 2. 
+    </p>
+  </div>
+  <div class="yuno">
+    <p><strong>retry</strong> <small>string </small>
+      <br />Specifies the number of retries for that notification. 
+    </p>
+  </div>
+  <div class="yuno">
+    <p><strong>data</strong> <small>string </small>
+      <p>Specifies the <a
+          href="the-payment-object">payment</a> (for payment type) or <a
+          href="the-payment-method-object-checkout">payment method object</a> (for enrollment).</p>
+    </p>
+  </div>
+</body>
+<style>
+  :root {
+    --yuno-main-color: #614AD6;
+    --yellow: #CEE65A;
+  }
+
+  details {
+    display: flex;
+    overflow: hidden;
+  }
+
+  p {
+    margin-left: 20px;
+  }
+
+  .yuno {
+    --highlight: var(#eee);
+    background: #eee;
+    margin: 1.5em;
+    border-radius: 5px;
+    border-left: 15px solid var(--yuno-main-color);
+    padding: 0.25em;
+  }
+</style>
+`}</HTMLBlock>
 
 # Examples
 
