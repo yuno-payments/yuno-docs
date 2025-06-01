@@ -12,25 +12,34 @@ next:
 ---
 The Headless Android SDK provides a flexible, low-level integration option that gives you complete control over the payment UI and flow. 
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Recommended SDKs</h3>\n      <div class=\"contentContainer\">\n        <p>\n         We recommend using the <a href=\"full-checkout-android\">Android Full SDK</a> or the <a href=\"lite-checkout-android\">Android Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Recommended SDKs</h3>
+      <div class="contentContainer">
+        <p>
+         We recommend using the <a href="full-checkout-android">Android Full SDK</a> or the <a href="lite-checkout-android">Android Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 This SDK is ideal for merchants who:
 
-- Need full control over the payment UI and user experience
-- Want to build custom payment flows
-- Require advanced integration capabilities
+* Need full control over the payment UI and user experience
+* Want to build custom payment flows
+* Require advanced integration capabilities
 
 The Headless SDK includes core features like:
 
-- Direct API access for payment processing
-- Token generation for payment methods
-- 3DS authentication handling
-- Fraud prevention data collection
+* Direct API access for payment processing
+* Token generation for payment methods
+* 3DS authentication handling
+* Fraud prevention data collection
 
 For merchants preferring a pre-built UI solution, consider using our [Full SDK](doc:full-checkout-android) or [Lite SDK](doc:lite-checkout-android) instead.
 
@@ -38,26 +47,35 @@ For merchants preferring a pre-built UI solution, consider using our [Full SDK](
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-- You must have an active Yuno account.
-- To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
-  - Create a `customer`, which is required before initiating payments
-  - Create a `checkout_session`, which initializes the payment flow
-  - Create the payment associated with the session
+* You must have an active Yuno account.
+* To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
+  * Create a `customer`, which is required before initiating payments
+  * Create a `checkout_session`, which initializes the payment flow
+  * Create the payment associated with the session
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>SDK Version</h3>\n      <div class=\"contentContainer\">\n        <p>\n        Access the <a href=\"release-notes-android-sdk\">Release notes</a> or the <a href=\"https://github.com/yuno-payments/yuno-sdk-android\">Yuno Android SDK repository</a> to verify the last SDK version available.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>SDK Version</h3>
+      <div class="contentContainer">
+        <p>
+        Access the <a href="release-notes-android-sdk">Release notes</a> or the <a href="https://github.com/yuno-payments/yuno-sdk-android">Yuno Android SDK repository</a> to verify the last SDK version available.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 1: Create a customer
 
 Before initiating payments, you need to create a customer using the [Create customer endpoint](ref:create-customer). This step is required to:
 
-- Identify the person making the payment
-- Enable saved payment method functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved payment method functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -65,8 +83,8 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in later steps
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in later steps
 
 The `checkout_session` is unique for each payment attempt and cannot be reused.
 
@@ -92,7 +110,7 @@ Yuno SDK includes, by default, the `INTERNET` permission, which is required to m
 
 ## Step 4: Initialize headless SDK with the public key
 
-To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC_API_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard. 
+To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard. 
 
 Create a custom application if you haven't already. In the `onCreate()` method of your application class, initialize the SDK by calling the `Yuno.initialize()` function, as shown in the following example:
 
@@ -115,25 +133,42 @@ To start the checkout process, call the `apiClientPayment` function after your c
 
 The table below describes the required parameters:
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`country_code`",
-    "0-1": "This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.",
-    "1-0": "`checkout_session`",
-    "1-1": "Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint.  \n`Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`"
-  },
-  "cols": 2,
-  "rows": 2,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `checkout_session`
+      </td>
+
+      <td>
+        Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint.\
+        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 The following code block presents an example of the parameter configuration.
 
@@ -278,12 +313,21 @@ apiClientPayment.generateToken(
 
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>PCI Compliance</h3>\n      <div class=\"contentContainer\">\n        <p>\n        Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>PCI Compliance</h3>
+      <div class="contentContainer">
+        <p>
+        Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 The **apiClientPayment.generateToken** function returns an Observable type, which is a subclass of `LiveData`. As a result, you can observe the response as a common `LiveData` with the following type `SingleLiveEvent<Map<String, Any?>>`, which is a `LiveData` that only emits once. The response type is  a `Map` containing the whole response. The following code block presents the examples of response after calling the `apiClientPayment.generateToken` function.
 
@@ -392,16 +436,16 @@ After generating the one-time token, create the payment by calling the [Create P
 
 The endpoint response includes the `sdk_action_required` parameter that indicates whether additional actions are needed to complete the payment:
 
-- For synchronous payment methods, the payment completes instantly. In this case, `sdk_action_required` will be `false` in the API response and the payment process ends
-- For payment flows requiring additional SDK interaction, `sdk_action_required` will be `true`. When this happens, proceed to [Step 8](doc:headless-sdk-payment-android#step-8-get-the-3ds-challenge-url) for next steps
+* For synchronous payment methods, the payment completes instantly. In this case, `sdk_action_required` will be `false` in the API response and the payment process ends
+* For payment flows requiring additional SDK interaction, `sdk_action_required` will be `true`. When this happens, proceed to [Step 8](doc:headless-sdk-payment-android#step-8-get-the-3ds-challenge-url) for next steps
 
 ## Step 8: Get the 3DS challenge URL (if required)
 
  When a payment requires 3DS authentication, an additional challenge may be needed to verify the customer's identity. For more details about this process, see the [3DS Card Verification (old version)](doc:3ds-card-verification-copy) page. If a 3DS verification challenge is required, the Create Payment endpoint response will include the following:
 
-- A `THREE_D_SECURE `transaction type
-- Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
-- `sdk_action_required = true`
+* A `THREE_D_SECURE `transaction type
+* Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
+* `sdk_action_required = true`
 
 To get the 3DS challenge URL, call the `getThreeDSecureChallenge` function and provide the `checkoutSession` used to create the payment. After obtaining the URL, redirect your customer to complete the challenge. The code block below shows how to use the `getThreeDSecureChallenge` function.
 
@@ -425,8 +469,8 @@ data class ThreeDSecureChallengeResponse(
 
 The `type` can return `ERROR` or `URL`, defining if the function returned a valid URL for the challenge:
 
-- If `type = URL`, `data` will contain the URL your customer needs to access to complete the 3DS challenge.  
-- If `type = ERROR`, `data` will contain the error message, informing the source of the problem.
+* If `type = URL`, `data` will contain the URL your customer needs to access to complete the 3DS challenge.  
+* If `type = ERROR`, `data` will contain the error message, informing the source of the problem.
 
 The code block below presents an example of how you can observe the response from `ThreeDSecureChallengeResponse`:
 
@@ -472,8 +516,8 @@ The JavaScript interface must use the name `messageFromWeb(data : String?)` and 
 To complete the Headless SDK payment flow:
 
 1. Use [Yuno Webhooks](doc:configure-webhooks) to receive notifications about:
-   - The outcome of the 3DS challenge 
-   - The final payment status
+   * The outcome of the 3DS challenge 
+   * The final payment status
 
 2. Optionally, retrieve payment details using the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint.
 
@@ -491,8 +535,18 @@ The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the 
 
 You can change the SDK appearance to match your brand. For more information, access the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tIn addition to the code examples provided, you can access the <a href=\"https://github.com/yuno-payments/yuno-sdk-android/tree/master\">Yuno repository</a> to complete Yuno Android SDKs implementation.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+				In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-android/tree/master">Yuno repository</a> to complete Yuno Android SDKs implementation.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
