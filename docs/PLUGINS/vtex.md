@@ -20,12 +20,21 @@ Yuno and VTEX have joined forces to simplify payment processes for merchants wor
 
 By integrating Yuno's payment orchestration platform with VTEX's e-commerce solution, merchants can easily manage payments and offer diverse payment options. Yuno ensures customers can choose their preferred payment method from local cards to digital wallets. Yuno's plugin allows your store to accept payments seamlessly without redirecting customers to external pages, enhancing the shopping experience and increasing the conversion rate.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineDanger\"></div>\n    <div>\n      <h3>Payments with two cards</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tTo enable your customers to pay using two cards in VTEX, you must contact the Yuno supporting team in advance.       \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineDanger"></div>
+    <div>
+      <h3>Payments with two cards</h3>
+      <div class="contentContainer">
+        <p>
+					To enable your customers to pay using two cards in VTEX, you must contact the Yuno supporting team in advance.       
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 Yuno's plugin for VTEX is PCI compliant, ensuring that Yuno meets rigorous security standards when handling card data. Merchants can have peace of mind knowing that their customers' payment information is handled with utmost security and privacy.
 
@@ -39,11 +48,11 @@ All the payment methods that Yuno offers are available in VTEX, including credit
 
 To start using the Yuno plugin on your VTEX store, you will need two essential elements:
 
-1. A VTEX store.  
+1. A VTEX store.\
    You will use the Application Key and the Application Token from your store account. Check the VTEX [Application Keys](https://help.vtex.com/tutorial/application-keys--2iffYzlvvz4BDMr6WGUtet#) tutorials to understand how to set and access this information.
    1. Application Key: a private key generated when the Yuno account became productive. 
    2. Application Token: a productive public key generated when the Conekta account became productive.
-2. A Yuno account.  
+2. A Yuno account.\
    If you don't have a Yuno account, sign up at the [Yuno Merchant Dashboard](https://auth.y.uno/u/signup). You will use your Account ID, Public API Key, and Private API Key from your Yuno account. Access the [Developers](doc:developers) tab on the Yuno dashboard to access your credentials.
 
 Once you have this information, you can register the Yuno plugin affiliation. Follow the steps outlined in the [Configure Yuno as Provider](doc:configure-yuno-as-provider) page. After completing the configuration processes, you'll enable your clients on VTEX to access the Yuno checkout to make payments on their orders.
