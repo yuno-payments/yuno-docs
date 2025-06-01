@@ -19,8 +19,8 @@ Apple Pay is a cutting-edge mobile payment solution designed exclusively for iOS
 
 Yuno presents an effortless way to incorporate Apple Pay as a payment method in your app. You have two integration options:
 
-- Utilize our user-friendly SDK;
-- Directly integrate with our API.
+* Utilize our user-friendly SDK;
+* Directly integrate with our API.
 
 Yuno streamlines the process of accepting Apple Pay payments and provides the flexibility to route payments to any payment service provider. By incorporating Apple Pay, you can elevate the customer experience and boost conversions within your app.
 
@@ -28,5 +28,5 @@ Yuno streamlines the process of accepting Apple Pay payments and provides the fl
 
 To integrate Apple Pay using Yuno, you must first complete the [Prerequisites ](doc:prerequisites-apple-pay) process. After, choose the integration option that best fits you and access the respective integration documentation:
 
-- [SDK Integration](doc:sdk-integration-apple)
-- [Direct Integration](doc:direct-integration)
+* [SDK Integration](doc:sdk-integration-apple)
+* [Direct Integration](doc:direct-integration)
