@@ -12,15 +12,6 @@ metadata:
 next:
   description: ''
 ---
-The error "not a valid file" for an MDX file often indicates issues with **syntax, unsupported features, or incorrect formatting**. MDX combines Markdown with JSX (JavaScript XML), so valid JSX within the Markdown is crucial.
-
-Looking at your provided content, the most likely culprits for the error are the `[block:html]` sections. These are not standard MDX or Markdown syntax and appear to be a custom extension or a remnant from a specific platform (like ReadMe.io). Standard MDX parsers won't understand them, leading to a "not valid file" error.
-
-To fix this, you need to **remove or convert these `[block:html]` blocks**.
-
-Here's the corrected MDX file, with the `[block:html]` sections replaced with standard Markdown and JSX where appropriate. I've used standard Markdown blockquotes for the "info block" style content.
-
-````mdx
 The Yuno Android SDK enables you to modify multiple styles, allowing you to align the design of payment forms and the checkout flow with your brand guidelines and UX/UI principles. While the structure of each element remains uniform, you can adjust colors, text, buttons, and much more.
 
 ## General Guidelines
@@ -620,5 +611,3 @@ The following configurations are only available for SDK v1.10.0 and higher.
     android:id="@+id/spinner_gender"
     android:visibility="gone" />
 ```
-
-
