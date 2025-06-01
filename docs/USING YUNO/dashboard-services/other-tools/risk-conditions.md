@@ -28,9 +28,9 @@ Yuno's **Risk conditions** empower merchants with advanced fraud prevention tool
 
 Currently, the Risk conditions section provides three main tabs:
 
-- [Rules](#rules)
-- [Blocklists](#blocklists) 
-- [Allowlists](#allowlists) 
+* [Rules](#rules)
+* [Blocklists](#blocklists) 
+* [Allowlists](#allowlists) 
 
 ## Rules
 
@@ -38,36 +38,59 @@ Yuno offers customizable velocity rules to help detect and respond to suspicious
 
 With Yuno, you can create protection rules tailored to your specific business needs. These rules monitor transaction frequency and volume per individual account, allowing you to detect unusual activity in real time. You can select from multiple rule types and combine them to target specific fraudulent behaviours with precision.
 
-[block:html]
-{
-  "html": "<style>\n.infoBlockContainer h3 {\n  margin: 0;\n  }\n</style>\n\n<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <h3>Rule example</h3>\n        <p>\n\t\t\t\t\tBlock payments if the number of payments per user exceeds 5, with an amount greater than 50 USD per payment, within a 10-minute timeframe, at the account level in Colombia. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+.infoBlockContainer h3 {
+  margin: 0;
+  }
+</style>
 
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <div class="contentContainer">
+        <h3>Rule example</h3>
+        <p>
+					Block payments if the number of payments per user exceeds 5, with an amount greater than 50 USD per payment, within a 10-minute timeframe, at the account level in Colombia. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video src=\"https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/routing-v2.mp4\" loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
-
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/routing-v2.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
 
 In addition to blocking fraudulent payments, Yuno's rules also help identify secure transactions. You can automatically bypass Fraud Screening or 3DS for verified payments to streamline the user experience. However, it's important to configure these rules carefully, as incorrect settings may lead to security gaps or unintended transaction blocks.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Remove rules and lists (blocklists and allowlist)</h3>\n      <div class=\"contentContainer\">\n        <p>\n          You can't delete allowlists, blocklists, or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or a list, you only need to remove it from your routes.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>\n\n"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Remove rules and lists (blocklists and allowlist)</h3>
+      <div class="contentContainer">
+        <p>
+          You can't delete allowlists, blocklists, or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or a list, you only need to remove it from your routes.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 Within the **Rules** tab, select **Create rule** to configure your own rules. Set the following parameters based on your needs:
 
-- **Name**: Give your rule a memorable name and description.
-- **Rule type**: Track the number of payments or cards used by a user within a specific timeframe. Add conditions to track shipping changes, IP addresses, card brands, and more.
-- **Settings**: Define the parameter used to count users, the types of payments to include (succeded, declined, etc.), and whether to count payments across the organization or the only current account.
-- **Outcome**: Choose to allow, block, review, or test payments when a rule is triggered.
-- **Apply this list to other accounts**: Choose whether to apply the rule to other accounts.
+* **Name**: Give your rule a memorable name and description.
+* **Rule type**: Track the number of payments or cards used by a user within a specific timeframe. Add conditions to track shipping changes, IP addresses, card brands, and more.
+* **Settings**: Define the parameter used to count users, the types of payments to include (succeded, declined, etc.), and whether to count payments across the organization or the only current account.
+* **Outcome**: Choose to allow, block, review, or test payments when a rule is triggered.
+* **Apply this list to other accounts**: Choose whether to apply the rule to other accounts.
 
 ## Blocklists
 
@@ -75,26 +98,26 @@ Blocklists help prevent fraudulent activity by automatically declining payments 
 
 A payment will be blocked if it matches any of the following:
 
-- Email
-- Phone number
-- Card BIN
-- IP address
-- Merchant customer ID
-- Card BIN + last 4 digits
-- Document number
-- Customer ID
-- Card/bank account holder name
-- Device ID
-- Shipping address
+* Email
+* Phone number
+* Card BIN
+* IP address
+* Merchant customer ID
+* Card BIN + last 4 digits
+* Document number
+* Customer ID
+* Card/bank account holder name
+* Device ID
+* Shipping address
 
 From the **Blocklists** tab, click **Create blocklist** to configure these parameters:
 
 1. **List name**: Enter a clear, descriptive name for the blocklist.
 2. **List type**: Select the parameter you want to block by (email, phone number, card BIN, device ID, etc.).
 3. **Add emails**: You can either:
-   - Enter individual values directly into the field (separated by commas or tabs), or
-   - Upload a CSV file containing a batch of entries.
-   - Optionally, enable the setting to **automatically remove entries** after a specified period of time.
+   * Enter individual values directly into the field (separated by commas or tabs), or
+   * Upload a CSV file containing a batch of entries.
+   * Optionally, enable the setting to **automatically remove entries** after a specified period of time.
 4. **Apply this list to other accounts**: Select which accounts the blocklist should apply to. By default, it only applies to the current account, but you can include other accounts by checking them from the list.
 
 ## Allowlists
@@ -103,26 +126,26 @@ Allowlists let you automatically approve transactions from trusted users based o
 
 Users can be allowlisted based on:
 
-- Email
-- Phone number
-- Card BIN
-- IP address
-- Merchant customer ID
-- Card BIN + Last 4 digits
-- Document number
-- Customer ID
-- Card/bank account holder name
-- Device ID
-- Shipping address
+* Email
+* Phone number
+* Card BIN
+* IP address
+* Merchant customer ID
+* Card BIN + Last 4 digits
+* Document number
+* Customer ID
+* Card/bank account holder name
+* Device ID
+* Shipping address
 
 From the **Allowlists** tab, click **Create allowlist** to configure these parameters:
 
 1. **List name**: Enter a descriptive name for the allowlist.
 2. **List type**: Choose the parameter to match against, such as an email, card BIN, or device ID.
 3. **List outcome**: Select what happens when a match is found:
-   - Skip fraud screening
-   - Skip 3DS
-   - Skip both fraud screening and 3DS
+   * Skip fraud screening
+   * Skip 3DS
+   * Skip both fraud screening and 3DS
 4. **Add emails**: Add addresses manually (separated by commas or tabs) or upload a CSV file.
 5. **Auto-remove**: Optionally enable automatic removal after a defined period of time.
 6. **Apply to accounts**: Choose which accounts the list should apply to. By default, it's limited to the current account, but you can apply it to others as needed.
@@ -136,15 +159,24 @@ You must configure the **Risk conditions** connection to enable rules and lists.
 3. Access **Routing** in the dashboard, select a route and add **Risk conditions** to it. From here, you can select which rules and lists to use for that payment method.
 4. Publish your route to activate the changes.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video src=\"https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/risk_routing.mp4\" loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/risk_routing.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
 
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Remove rules and blocklists</h3>\n      <div class=\"contentContainer\">\n        <p>\n          You can't delete blocklists or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or blocklist, you only need to remove it from your routes.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>\n\n"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Remove rules and blocklists</h3>
+      <div class="contentContainer">
+        <p>
+          You can't delete blocklists or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or blocklist, you only need to remove it from your routes.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
