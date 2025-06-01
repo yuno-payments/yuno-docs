@@ -12,17 +12,17 @@ next:
 ---
 The custom payment is an alternative to the standard options offered by Payments. It allows you to create up to 15 new forms of payment, such as cash on delivery or payment with the store's card, for example. This VTEX feature lets you create custom payment methods to complement your checkout offer. Most common used cases are related to adding new Card processors to the checkout flow, such as: 
 
-- ALELO
-- SODEXO
-- VR
+* ALELO
+* SODEXO
+* VR
 
 ## Creating a custom payment method
 
 The first [configuration in VTEX](https://help.vtex.com/en/tutorial/setting-up-payments-with-store-card-cobranded) step will be the creation of the custom payment (cobranded) store card.
 
-1. In the VTEX Admin, go to** Store Settings > Payment > Settings**, or type Settings in the search bar at the top of the page.
+1. In the VTEX Admin, go to **Store Settings > Payment > Settings**, or type Settings in the search bar at the top of the page.
 2. Click on the **Custom Payments** tab.
-   1. [block:image]{"images":[{"image":["https://files.readme.io/822a422-Screenshot_2024-07-10_at_11.57.05_AM.png","",""],"align":"center"}]}[/block]
+   1. <Image align="center" src="https://files.readme.io/822a422-Screenshot_2024-07-10_at_11.57.05_AM.png" />
 3. In (**cobranded) store cards**, click on one of the five configuration boxes.
 4. In **Name**, fill in the name of the card. Options available for processing in Yuno: 
    1. ALELO
