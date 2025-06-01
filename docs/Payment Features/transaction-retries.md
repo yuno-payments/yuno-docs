@@ -14,21 +14,21 @@ Yuno allows merchants to retry capture and refund transactions that received an 
 
 #### Capture transactions
 
-| Payment while retry is ongoing       | Payment after succeeded retries                                     | Payment after failed retries             |
-| :----------------------------------- | :------------------------------------------------------------------ | :--------------------------------------- |
-| SUCCEEDED / CAPTURE_RETRY_IN_PROCESS | SUCCEEDED / CAPTURED or PARTIALLY_CAPTURED depending on the amount. | SUCCEEDED / CAPTURE_RETRY_PROCESS_FAILED |
+| Payment while retry is ongoing          | Payment after succeeded retries                                      | Payment after failed retries                |
+| :-------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------ |
+| SUCCEEDED / CAPTURE\_RETRY\_IN\_PROCESS | SUCCEEDED / CAPTURED or PARTIALLY\_CAPTURED depending on the amount. | SUCCEEDED / CAPTURE\_RETRY\_PROCESS\_FAILED |
 
 #### Refund transactions
 
-| Payment while retry is ongoing      | Payment after succeeded retries                                                | Payment after failed retries |
-| :---------------------------------- | :----------------------------------------------------------------------------- | :--------------------------- |
-| SUCCEEDED / REFUND_RETRY_IN_PROCESS | REFUNDED / REFUNDED or SUCCEEDED / PARTIALLY_REFUNDED depending on the amount. | SUCCEEDED / APPROVED         |
+| Payment while retry is ongoing         | Payment after succeeded retries                                                 | Payment after failed retries |
+| :------------------------------------- | :------------------------------------------------------------------------------ | :--------------------------- |
+| SUCCEEDED / REFUND\_RETRY\_IN\_PROCESS | REFUNDED / REFUNDED or SUCCEEDED / PARTIALLY\_REFUNDED depending on the amount. | SUCCEEDED / APPROVED         |
 
 ## Benefits
 
-- **Improved Transaction Success Rates**: Automatic retries increase the likelihood of successful transaction completions, leading to higher approval rates and revenue generation.
-- **Enhanced User Experience**: Reduces user friction by automatically retrying failed transactions, improving overall customer satisfaction and retention.
-- **Operational Efficiency**: Automating retry attempts optimizes time and resources by reducing manual intervention for failed transactions, allowing teams to focus on strategic tasks.
+* **Improved Transaction Success Rates**: Automatic retries increase the likelihood of successful transaction completions, leading to higher approval rates and revenue generation.
+* **Enhanced User Experience**: Reduces user friction by automatically retrying failed transactions, improving overall customer satisfaction and retention.
+* **Operational Efficiency**: Automating retry attempts optimizes time and resources by reducing manual intervention for failed transactions, allowing teams to focus on strategic tasks.
 
 ## Retry scheme
 
