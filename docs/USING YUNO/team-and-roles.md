@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-Create your team  
+Create your team\
 Configure with who you would be working with, their roles and permissions.
 
 Please, take into consideration that you will have to create a team for each account you have created.
@@ -24,9 +24,6 @@ Step 3. Define the user by adding email address and role
 Step 4. Confirm your request
 
 There are 4 types of roles:
-
-
-
 
 | Roles     | Description                                                              |
 | :-------- | :----------------------------------------------------------------------- |
