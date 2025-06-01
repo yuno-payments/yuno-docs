@@ -28,7 +28,7 @@ If you want to use your own font family, you can override our fonts. An example 
 </style>
 ```
 
-> These are our font styles you can override:  
+> These are our font styles you can override:\
 > -YunoRegularFont -YunoMediumFont -YunoBoldFont
 
 ### Button styles
@@ -43,10 +43,10 @@ If you want to use your own button styles, you can override our styles. An examp
 </style>
 ```
 
-> These are our button styles you can override:  
-> -Button.Normal.White  
-> -Button.Normal.Green  
-> -Button.Normal.Purple  
+> These are our button styles you can override:\
+> -Button.Normal.White\
+> -Button.Normal.Green\
+> -Button.Normal.Purple\
 > -Button.Normal.Purple.Big
 
 ### Color styles
@@ -58,5 +58,5 @@ If you want to use your own color styles, you can override our styles. An exampl
 <color name="yuno_purple_light">YOUR OWN COLOR ( EX: HEXCODE OR RESOURCE )</color>
 ```
 
-> These are our color styles you can override:  
-> -yuno_purple_light
+> These are our color styles you can override:\
+> -yuno\_purple\_light
