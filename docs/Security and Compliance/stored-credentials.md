@@ -41,34 +41,12 @@ Defining whether a transaction is initiated by the merchant or the customer has 
 
 In order to indicate a [payment](ref:create-payment) specifying the processing type, use the structure `stored_credentials` inside the `payment_method.detail.card` while creating a payment.
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Type",
-    "h-2": "Description",
-    "0-0": "`reason`",
-    "0-1": "enum",
-    "0-2": "Indicates the store credentials reason for the transaction.  \n`CARD_ON_FILE`  \n`SUBSCRIPTION`  \n`UNSCHEDULED_CARD_ON_FILE`",
-    "1-0": "`usage`",
-    "1-1": "enum",
-    "1-2": "A credit card could be stored with or without a first initial payment. This field Iets you indicate if this is the first time the vaulted_token/network_token is used for a payment or if it has already been used for a previous payment.  \n`FIRST`  \n`USED`",
-    "2-0": "`subscription_agreement_id`",
-    "2-1": "string",
-    "2-2": "ID of the agreement with the customer mandatory for certain markets (MX for example)",
-    "3-0": "`network_transaction_id`",
-    "3-1": "string",
-    "3-2": "The ID provided by Visa/Mastercard in the response of the initial payment, which is highly recommended for future use in Merchant Initiated Transactions (MIT)."
-  },
-  "cols": 3,
-  "rows": 4,
-  "align": [
-    "left",
-    "left",
-    "left"
-  ]
-}
-[/block]
+| Parameter                   | Type   | Description                                                                                                                                                                             |
+|----------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `reason`                   | enum   | Indicates the store credentials reason for the transaction. <br/> `CARD_ON_FILE` <br/> `SUBSCRIPTION` <br/> `UNSCHEDULED_CARD_ON_FILE`                                                    |
+| `usage`                    | enum   | A credit card could be stored with or without a first initial payment. This field lets you indicate if this is the first time the vaulted_token/network_token is used or reused. <br/> `FIRST` <br/> `USED` |
+| `subscription_agreement_id`| string | ID of the agreement with the customer, mandatory for certain markets (MX for example).                                                                                                 |
+| `network_transaction_id`   | string | The ID provided by Visa/Mastercard in the response of the initial payment, which is highly recommended for future use in Merchant Initiated Transactions (MIT).                        |
 
 Store credential reasons
 
