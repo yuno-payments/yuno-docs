@@ -57,12 +57,21 @@ Yuno.initialize(
 
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>UISceneDelegate</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tIf your app is using a UISceneDelegate you will need to put your Yuno initialization code into your SceneDelegate.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>UISceneDelegate</h3>
+      <div class="contentContainer">
+        <p>
+				If your app is using a UISceneDelegate you will need to put your Yuno initialization code into your SceneDelegate.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
 
@@ -84,12 +93,21 @@ Below, you find a description of each configuration variable available.
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
 | `keepLoadere`     | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Accessing Your API Key</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tYou can retrieve your API Key from the <a href=\"https://docs.y.uno/docs/developers-credentials\">Developers section</a> in the Yuno Dashboard.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Accessing Your API Key</h3>
+      <div class="contentContainer">
+        <p>
+				You can retrieve your API Key from the <a href="https://docs.y.uno/docs/developers-credentials">Developers section</a> in the Yuno Dashboard.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 3: Start the checkout process
 
@@ -121,42 +139,110 @@ class ViewController: YunoPaymentDelegate {
 
 The following table presents all the protocol requirements you have to provide and their descriptions.
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`checkoutSession`",
-    "0-1": "Refers to the current payment's checkout session.",
-    "1-0": "`country_code`",
-    "1-1": "This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk)  page.",
-    "2-0": "`language`",
-    "2-1": "Defines the language to be used in the payment forms. You can set it to one of the available language options:  \n  \n- en (English)\n- es (Spanish)\n- pt (Portuguese)",
-    "3-0": "`navigationController`",
-    "3-1": "This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance.",
-    "4-0": "`yunoCreatePayment(with token: String)`",
-    "4-1": "This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token.",
-    "5-0": "`yunoCreatePayment(with token: String, information: [String: Any])`",
-    "5-1": "This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary.",
-    "6-0": "`yunoPaymentResult(\\_ result: Yuno.Result)`",
-    "6-1": "This method is called when the payment process is completed, providing the result of the payment as a parameter of type `Yuno.Result`."
-  },
-  "cols": 2,
-  "rows": 7,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tYou can call <code>yunoCreatePayment</code> with or without the <code>information</code> parameter based on your needs. However, use only one version in your code, as calling both is not required and may cause issues.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+  <tbody>
+    <tr>
+      <td>
+        `checkoutSession`
+      </td>
 
+      <td>
+        Refers to the current payment's checkout session.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk)  page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `language`
+      </td>
+
+      <td>
+        Defines the language to be used in the payment forms. You can set it to one of the available language options:  
+
+        * en (English)
+        * es (Spanish)
+        * pt (Portuguese)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `navigationController`
+      </td>
+
+      <td>
+        This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoCreatePayment(with token: String)`
+      </td>
+
+      <td>
+        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoCreatePayment(with token: String, information: [String: Any])`
+      </td>
+
+      <td>
+        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoPaymentResult(\_ result: Yuno.Result)`
+      </td>
+
+      <td>
+        This method is called when the payment process is completed, providing the result of the payment as a parameter of type `Yuno.Result`.
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <div class="contentContainer">
+        <p>
+					You can call <code>yunoCreatePayment</code> with or without the <code>information</code> parameter based on your needs. However, use only one version in your code, as calling both is not required and may cause issues.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 4: Add the SDK view to the checkout
 
@@ -180,7 +266,7 @@ The following table describes the functions available:
 | `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br>- `success`: `true` if it worked, `false` if it didn’t. |
 | `yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)`       | Called when `getPaymentMethodView()` is invoked and whenever the view's height changes.              |
 
-[](<>)To display the payment methods, call the following method and pass your view model or controller as the delegate.
+[]()To display the payment methods, call the following method and pass your view model or controller as the delegate.
 
 ```swift
 Yuno.getPaymentMethodView(delegate:)
@@ -188,8 +274,8 @@ Yuno.getPaymentMethodView(delegate:)
 
 This method will automatically return the correct type of view depending on the UI framework you are using:
 
-- If you're using **UIKit**, it returns a `UIView`.
-- If you're using **SwiftUI**, it returns a `some View`.
+* If you're using **UIKit**, it returns a `UIView`.
+* If you're using **SwiftUI**, it returns a `some View`.
 
 This makes it easy to integrate the SDK into any iOS project, no matter which UI framework you use.
 
@@ -213,12 +299,21 @@ func yunoCreatePayment(with token: String) { ... }
 
 Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session. 
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Continue method</h3>\n      <div class=\"contentContainer\">\n        <p>\n          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Continue method</h3>
+      <div class="contentContainer">
+        <p>
+          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ```swift
 Yuno.continuePayment(showPaymentStatus: Bool)
@@ -226,21 +321,42 @@ Yuno.continuePayment(showPaymentStatus: Bool)
 
 The `showPaymentStatus` parameter is used to determine whether the payment status should be displayed or not. By passing `true` as an argument, the payment status might be shown, while passing `false` could indicate that the payment status should not be displayed.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Note</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tIn Yuno's iOS Full SDK, the default value for <code>showPaymentStatus</code> is <code>true</code>.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Note</h3>
+      <div class="contentContainer">
+        <p>
+					In Yuno's iOS Full SDK, the default value for <code>showPaymentStatus</code> is <code>true</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 8: Handle Payment Status (Optional)
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Deep Links and Mercado Pago Checkout Pro</h3>\n      <div class=\"contentContainer\">\n        <p>\n          This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro.\n        </p>\n        <p>\n          If your payment methods don’t use deep links, you can skip this step.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Deep Links and Mercado Pago Checkout Pro</h3>
+      <div class="contentContainer">
+        <p>
+          This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro.
+        </p>
+        <p>
+          If your payment methods don’t use deep links, you can skip this step.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back to your app using a deep link. The SDK uses this deep link to check what happened, checking if the payment was successful, failed, or canceled, and can show a status screen to the user.
 
@@ -291,47 +407,29 @@ func yunoEnrollmentResult(_ result: Yuno.Result) { ... }
 
 Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand or to configure the loader.
 
-- [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
-- **Save card for future payments**: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below you can find examples of the checkbox for both card form renders.
+* [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
+* **Save card for future payments**: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below you can find examples of the checkbox for both card form renders.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/ae235ca04eda2c260442c375617e64950bed2a0564578771fcc3403de7ca965e-Card___save_for_future_payments.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
+<Image align="center" src="https://files.readme.io/ae235ca04eda2c260442c375617e64950bed2a0564578771fcc3403de7ca965e-Card___save_for_future_payments.png" />
 
+* You also can choose one of the render options for the card form. Below you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
 
-- You also can choose one of the render options for the card form. Below you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
+<Image align="center" src="https://files.readme.io/0a1e67430bc9765920c9252731b79626f3777c96322a66a760f682dafc72c637-Full_SDK_ios.png" />
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/0a1e67430bc9765920c9252731b79626f3777c96322a66a760f682dafc72c637-Full_SDK_ios.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
+* [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
-
-- [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=\"contentContainer\">\n        <p>\n          In addition to the code examples provided, you can access the <a href=\"https://github.com/yuno-payments/yuno-sdk-ios\">Yuno repository</a> for a complete implementation of Yuno iOS SDKs.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+          In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-ios">Yuno repository</a> for a complete implementation of Yuno iOS SDKs.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
