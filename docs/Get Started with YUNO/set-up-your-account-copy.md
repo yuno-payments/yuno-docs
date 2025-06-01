@@ -16,11 +16,11 @@ In this section, you will create a Yuno account and make all the necessary confi
 
 Go to our [dashboard](https://dashboard.y.uno/), click on **Sign Up** and create a user using your company's email. Then you will receive an email to verify your identity. Once you are verified, you can log into the dashboard.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px\">\n  <image src=\"https://github.com/writechoiceorg/yuno-images/blob/main/doc/set_up_you_account/register_yuno.png?raw=true\" style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></image>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px">
+  <image src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/set_up_you_account/register_yuno.png?raw=true" style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></image>
+</div>
+`}</HTMLBlock>
 
 Now you have access to the dashboard. Follow the next configuration steps to turn on a payment method. You will follow these steps always you add a new payment method. 
 
@@ -32,11 +32,11 @@ Now you have access to the dashboard. Follow the next configuration steps to tur
 
 You will see a confirmation that your new connection was added.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video src=\"https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_low.mp4\" loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_low.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
 
 ### Step 3: Set up the route for your new connection
 
@@ -51,11 +51,11 @@ When you have a new connection, you need to add it to a route. A route defines t
 
 Now you can find the new route in the Published tab, which means that the Card payment method will process all the transactions through the route you previously configured.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video src=\"https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_low.mp4\"  loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_low.mp4"  loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
 
 ### Step 4: Enable the payment method in the checkout builder
 
@@ -65,11 +65,11 @@ Once you have created a connection and set it up in a route, you must turn on th
 2. Turn on the Card toggle to show the payment method in your checkout.
 3. Click the purple **Publish** button in the upper right corner, and you are all set.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video src=\"https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/checkout_low.mp4\" loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/checkout_low.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
 
 ### Step 5: Get your API credentials
 
@@ -78,10 +78,10 @@ Now everything is set, and you need to get your API credentials. Note that these
 1. Go to the [Developers](https://dashboard.y.uno/developers) section on the left sidebar of the dashboard. Here you can find the Developers' tools.
 2. You can find the API credentials you will need to complete this guide here.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video src=\"https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/set_up_you_account/developer_low.mp4\" loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/set_up_you_account/developer_low.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
 
 Everything is set in the dashboard. Now you can go to the [Create Your First Payment](doc:step-2-your-first-payment) section, where you will find the steps to complete this guide.
