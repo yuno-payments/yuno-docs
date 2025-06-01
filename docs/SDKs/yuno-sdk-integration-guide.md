@@ -16,25 +16,34 @@ This guide walks you through integrating the Yuno Web SDK into your application.
 
 Before diving into the implementation details, let's help you choose the integration method that best suits your needs. Each approach has its own advantages, and selecting the right one depends on your development environment, technical requirements, and preferences.
 
-- **[Method 1 (HTML)](#1-add-the-sdk-script-directly-in-html)**: The simplest integration method - just add a single script tag to your HTML file. Ideal for basic implementations and quick prototypes.
-- **[Method 2 (Dynamic JavaScript)](#2-inject-the-sdk-dynamically-using-javascript)**: Provides programmatic control over SDK loading and initialization. Best for applications requiring custom error handling and loading states.
-- **[Method 3 (NPM)](#3-use-the-npm-module)**: The recommended approach for modern JavaScript applications. Offers proper dependency management, tree-shaking, and TypeScript support.
+* **[Method 1 (HTML)](#1-add-the-sdk-script-directly-in-html)**: The simplest integration method - just add a single script tag to your HTML file. Ideal for basic implementations and quick prototypes.
+* **[Method 2 (Dynamic JavaScript)](#2-inject-the-sdk-dynamically-using-javascript)**: Provides programmatic control over SDK loading and initialization. Best for applications requiring custom error handling and loading states.
+* **[Method 3 (NPM)](#3-use-the-npm-module)**: The recommended approach for modern JavaScript applications. Offers proper dependency management, tree-shaking, and TypeScript support.
 
 ### 1. Add the SDK script directly in HTML
 
 The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your HTML file. This method provides a quick implementation while maintaining proper asynchronous loading. The SDK exposes an event that notifies when it's fully loaded, ensuring you can safely initialize and use its features at the right time.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer \">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Important</h3>\n      <div class=\"contentContainer\">\n        <p>\n          While the <code>defer</code> attribute ensures the script is executed after the HTML is parsed, it does not guarantee that the SDK script will always load last. In some cases, if the SDK loads faster than expected and the event listener is declared afterward, the <code>yuno-sdk-ready</code> event may have already fired — and your listener won't catch it. To avoid this, always define the listener before loading the SDK script.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Important</h3>
+      <div class="contentContainer">
+        <p>
+          While the <code>defer</code> attribute ensures the script is executed after the HTML is parsed, it does not guarantee that the SDK script will always load last. In some cases, if the SDK loads faster than expected and the event listener is declared afterward, the <code>yuno-sdk-ready</code> event may have already fired — and your listener won't catch it. To avoid this, always define the listener before loading the SDK script.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ```html
 <!-- First, set up the event listener -->
 <script>
-  window.addEventListener('yuno-sdk-ready', () => {
+  window.addEventListener('yuno-sdk-ready', async () => {
     console.log('SDK loaded'); // The SDK is ready to use
     await yuno.initialize('publicKey');
   });
@@ -48,11 +57,11 @@ The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your
 
 For developers who need more control over the SDK loading process, the dynamic JavaScript injection method provides enhanced flexibility. This approach allows you to:
 
-- Programmatically load the SDK when needed
-- Handle loading states and manage errors gracefully
-- Control exactly when and how the SDK becomes available
-- Coordinate SDK initialization with other application logic
-- Implement custom error handling strategies
+* Programmatically load the SDK when needed
+* Handle loading states and manage errors gracefully
+* Control exactly when and how the SDK becomes available
+* Coordinate SDK initialization with other application logic
+* Implement custom error handling strategies
 
 This method is particularly useful when you need precise control over the SDK's loading and initialization process.
 
@@ -113,12 +122,11 @@ await yuno.initialize('publicKey');
 
 ## Improve Performance: Using `preconnect`
 
-To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the <head> tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
+To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the `<head>` tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
 
 ````html
 <!-- Improve performance with preconnect -->
 <link rel="preconnect" href="https://sdk-web.y.uno" />
 <link rel="preconnect" href="https://api.y.uno" />
-<link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />```
- 
+<link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
 ````
