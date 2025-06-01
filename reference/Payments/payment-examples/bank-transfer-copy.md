@@ -18,12 +18,211 @@ To test the creation of each payment, you can copy the content from the request 
 
 ## Bank Transfer available examples
 
-[block:html]
-{
-  "html": "<style>\n  \n\n  .table-of-contents-btn-shelf {\n    margin: 0 0 0 0;\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    grid-template-rows: 1fr;\n    gap: 10px;\n  }\n\n  @media only screen and (max-width: 800px) {\n    .table-of-contents-btn-shelf {\n      grid-template-columns: repeat(2, 1fr);\n    }\n  }\n\n\n  .table-of-contents-btn {\n    font-size: 0.85rem;\n    border: 1px solid var(--yuno-purple-50);\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    padding: 0.6rem;\n    border-radius: 7px;\n    font-size: 0.85rem;\n    color: var(--yuno-purple);\n    font-weight: 600;\n    transition: transform .1s;\n  }\n\n  .table-of-contents-btn-on-click-effects {\n    cursor: pointer;\n  }\n\n  .table-of-contents-btn-on-click-effects:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px var(--yuno-purple-10);\n  }\n\n  .table-of-contents-btn .card-logo div {\n    height: 23px;\n    width: 30px;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n\n  /* .table-of-contents-btn .card-name {\n    grid-area: name;\n    align-self: center;\n  } */\n\n  .table-of-contents-btn img {\n    max-height: 23px;\n    max-width: 23px;\n  }\n\n  .table-of-contents-btn .card-title {\n    display: inline-block;\n    ;\n    padding: 0;\n    margin: 0;\n  }\n\n  /* ------------------------ define the configuration for DARK Mode ------------------------  */\n\n  @media (prefers-color-scheme: dark) {\n    .table-of-contents-btn-on-click-effects:hover {\n      box-shadow: none !important;\n    }\n  }\n\n  [data-color-mode=\"dark\"] .table-of-contents-btn-on-click-effects:hover {\n    box-shadow: none !important;\n  }\n</style>\n\n<body>\n  <section class=\"table-of-contents-btn-shelf\">\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#bancolombia-button';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/bancolombia_logosimbolo.png\" alt=\"Bancolombia Button logo\">\n          </div>\n        </div>\n        <span class='card-title'>Bancolombia Button</span>\n      </div>\n    </div>\n    \n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#daviplata';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/daviplata_logosimbolo.png\" alt=\"Daviplata logo\">\n          </div>\n        </div>\n        <span class='card-title'>Daviplata</span>\n      </div>\n    </div>\n    \n        <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#pix';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/pix_logosimbolo.png\" alt=\"PIX logo\">\n          </div>\n        </div>\n        <span class='card-title'>PIX</span>\n      </div>\n    </div>\n    \n    <!-- <div class=\"table-of-contents-btn\" onclick=\"window.location='/reference/bank-transfer-examples#pse';\">\n      <p>\n        PSE\n      </p>\n    </div> -->\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#pse';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/pse_logosimbolo.png\" alt=\"PSE logo\">\n          </div>\n        </div>\n        <span class='card-title'>PSE</span>\n      </div>\n    </div>\n    <!-- <div class=\"table-of-contents-btn\" onclick=\"window.location='/reference/bank-transfer-examples#safetypay';\">\n      <p>\n        SafetyPay\n      </p>\n    </div> -->\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#safetypay';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/safetypay_logosimbolo.png\" alt=\"SafetyPay logo\">\n          </div>\n        </div>\n        <span class='card-title'>SafetyPay</span>\n      </div>\n    </div>\n    <!-- <div class=\"table-of-contents-btn\" onclick=\"window.location='/reference/bank-transfer-examples#spei-direct';\">\n      <p>\n        SPEI Direct\n      </p>\n    </div> -->\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#spei';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/spei_logosimbolo.png\" alt=\"SPEI Direct logo\">\n          </div>\n        </div>\n        <span class='card-title'>SPEI</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#codi';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/codi_logosimbolo.png\" alt=\"Codi logo\">\n          </div>\n        </div>\n        <span class='card-title'>Codi</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#nupay';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/nubank_logosimbolo.png\" alt=\"Nupay logo\">\n          </div>\n        </div>\n        <span class='card-title'>NuPay</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='bank-transfer-copy#yappy';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/yappy_logosimbolo.png\" alt=\"Yappy logo\">\n          </div>\n        </div>\n        <span class='card-title'>Yappy</span>\n      </div>\n    </div>\n\n\n  </section>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  
 
+  .table-of-contents-btn-shelf {
+    margin: 0 0 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr;
+    gap: 10px;
+  }
+
+  @media only screen and (max-width: 800px) {
+    .table-of-contents-btn-shelf {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+
+  .table-of-contents-btn {
+    font-size: 0.85rem;
+    border: 1px solid var(--yuno-purple-50);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    color: var(--yuno-purple);
+    font-weight: 600;
+    transition: transform .1s;
+  }
+
+  .table-of-contents-btn-on-click-effects {
+    cursor: pointer;
+  }
+
+  .table-of-contents-btn-on-click-effects:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px var(--yuno-purple-10);
+  }
+
+  .table-of-contents-btn .card-logo div {
+    height: 23px;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* .table-of-contents-btn .card-name {
+    grid-area: name;
+    align-self: center;
+  } */
+
+  .table-of-contents-btn img {
+    max-height: 23px;
+    max-width: 23px;
+  }
+
+  .table-of-contents-btn .card-title {
+    display: inline-block;
+    ;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* ------------------------ define the configuration for DARK Mode ------------------------  */
+
+  @media (prefers-color-scheme: dark) {
+    .table-of-contents-btn-on-click-effects:hover {
+      box-shadow: none !important;
+    }
+  }
+
+  [data-color-mode="dark"] .table-of-contents-btn-on-click-effects:hover {
+    box-shadow: none !important;
+  }
+</style>
+
+<body>
+  <section class="table-of-contents-btn-shelf">
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#bancolombia-button';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/bancolombia_logosimbolo.png" alt="Bancolombia Button logo">
+          </div>
+        </div>
+        <span class='card-title'>Bancolombia Button</span>
+      </div>
+    </div>
+    
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#daviplata';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/daviplata_logosimbolo.png" alt="Daviplata logo">
+          </div>
+        </div>
+        <span class='card-title'>Daviplata</span>
+      </div>
+    </div>
+    
+        <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#pix';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/pix_logosimbolo.png" alt="PIX logo">
+          </div>
+        </div>
+        <span class='card-title'>PIX</span>
+      </div>
+    </div>
+    
+    <!-- <div class="table-of-contents-btn" onclick="window.location='/reference/bank-transfer-examples#pse';">
+      <p>
+        PSE
+      </p>
+    </div> -->
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#pse';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/pse_logosimbolo.png" alt="PSE logo">
+          </div>
+        </div>
+        <span class='card-title'>PSE</span>
+      </div>
+    </div>
+    <!-- <div class="table-of-contents-btn" onclick="window.location='/reference/bank-transfer-examples#safetypay';">
+      <p>
+        SafetyPay
+      </p>
+    </div> -->
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#safetypay';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/safetypay_logosimbolo.png" alt="SafetyPay logo">
+          </div>
+        </div>
+        <span class='card-title'>SafetyPay</span>
+      </div>
+    </div>
+    <!-- <div class="table-of-contents-btn" onclick="window.location='/reference/bank-transfer-examples#spei-direct';">
+      <p>
+        SPEI Direct
+      </p>
+    </div> -->
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#spei';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/spei_logosimbolo.png" alt="SPEI Direct logo">
+          </div>
+        </div>
+        <span class='card-title'>SPEI</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#codi';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/codi_logosimbolo.png" alt="Codi logo">
+          </div>
+        </div>
+        <span class='card-title'>Codi</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#nupay';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/nubank_logosimbolo.png" alt="Nupay logo">
+          </div>
+        </div>
+        <span class='card-title'>NuPay</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='bank-transfer-copy#yappy';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/yappy_logosimbolo.png" alt="Yappy logo">
+          </div>
+        </div>
+        <span class='card-title'>Yappy</span>
+      </div>
+    </div>
+
+
+  </section>
+</body>
+`}</HTMLBlock>
 
 ### Bancolombia Button
 
@@ -214,7 +413,7 @@ curl --request POST \
 }
 ```
 
-### Daviplata 
+### Daviplata
 
 Example of a request for a Bank Transfer payment using Daviplata. Below you find the JSON body request example.
 
@@ -505,7 +704,7 @@ curl --request POST \
 }
 ```
 
-### 
+###
 
 ### PIX
 
