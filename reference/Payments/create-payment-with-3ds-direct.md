@@ -11,13 +11,13 @@ next:
   description: ''
 ---
 > 📘 Pre-requisites:
-> 
-> - Enable 3DS in your Yuno dashboard and indicate in your CARD routing for which scenarios you want your customers to be able to use it.
-> - 3DS data required for setup: 
->   - Acquirer BIN:  This is the Bank Identification Number (BIN) that is used to clear and settle the transaction and the country in which it is licensed for use.
->   - Merchant ID: Affiliation number provided by the acquirer
->   - Merchant Category Code (MCC):  Merchant Category Code provided by the acquirer.
->   - Country Code:  The country where the payment must be processed (ISO 3166-1 Standard Country Codes)
+>
+> * Enable 3DS in your Yuno dashboard and indicate in your CARD routing for which scenarios you want your customers to be able to use it.
+> * 3DS data required for setup: 
+>   * Acquirer BIN:  This is the Bank Identification Number (BIN) that is used to clear and settle the transaction and the country in which it is licensed for use.
+>   * Merchant ID: Affiliation number provided by the acquirer
+>   * Merchant Category Code (MCC):  Merchant Category Code provided by the acquirer.
+>   * Country Code:  The country where the payment must be processed (ISO 3166-1 Standard Country Codes)
 
 ## How does it work?
 
@@ -38,14 +38,14 @@ next:
 
 A 3DS transaction behaves similar to a regular purchase transaction. It has different states that represent how the authorization is going. Once the 3DS transaction is SUCCEEDED, we'll to go to the processor and generate a PURCHASE transaction to charge the client. 
 
-| Status     | Description                                                |
-| :--------- | :--------------------------------------------------------- |
-| CREATED    | Payment is created and waiting for Yuno's SDK session id.  |
-| PENDING    | Challenge is required and the init_url is returned by Yuno |
-| IN_PROCESS | Challenge is being completed by the user                   |
-| SUCCEEDED  | Challenge is completed correctly                           |
-| DECLINED   | Challenge is completed and declined by the bank            |
-| ERROR      | An error occurred while redirecting to the users challenge |
+| Status      | Description                                                 |
+| :---------- | :---------------------------------------------------------- |
+| CREATED     | Payment is created and waiting for Yuno's SDK session id.   |
+| PENDING     | Challenge is required and the init\_url is returned by Yuno |
+| IN\_PROCESS | Challenge is being completed by the user                    |
+| SUCCEEDED   | Challenge is completed correctly                            |
+| DECLINED    | Challenge is completed and declined by the bank             |
+| ERROR       | An error occurred while redirecting to the users challenge  |
 
 ## 3DS with Split Payment Methods
 
