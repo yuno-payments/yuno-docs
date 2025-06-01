@@ -12,9 +12,9 @@ next:
 ---
 This document describes the `/declined-payments/external` endpoint, which is used to initiate large-scale processing of calls and WhatsApp mensagges related to declined payments. The endpoint receives an array containing detailed information about the rejected payments.
 
-- **Endpoint**: `https://prod.y.uno/ai-caller-ms/declined-payments/external`  
-- **Method**: `POST`  
-- **Content-Type**: `application/json`
+* **Endpoint**: `https://prod.y.uno/ai-caller-ms/declined-payments/external`  
+* **Method**: `POST`  
+* **Content-Type**: `application/json`
 
 ## Request Body
 
@@ -73,10 +73,10 @@ The body of the request must be a JSON object with the following structure:
 
 ## Root Object Fields
 
-- `organization_code` (string): Unique code that identifies the organization.  
+* `organization_code` (string): Unique code that identifies the organization.\
   **Example**: `"e4c03f29-b0f6-403a-8814-9aee1a88d60e"`
 
-- `external_data` (array): An array of objects, where each object contains the information of a declined payment along with its associated transactions and customer information.
+* `external_data` (array): An array of objects, where each object contains the information of a declined payment along with its associated transactions and customer information.
 
 ### `external_data` Object Fields
 
@@ -86,43 +86,43 @@ Each object within the `external_data` array contains the following structure:
 
 ### `payment` Object Fields
 
-- `organization_code` (string\*): Unique code that identifies the organization (duplicated from the root object for consistency).  
+* `organization_code` (string\*): Unique code that identifies the organization (duplicated from the root object for consistency).\
   **Example**: `"e4c03f29-b0f6-403a-8814-9aee1a88d60e"`
 
-- `id` (string\*): Unique identifier of the declined payment.  
+* `id` (string\*): Unique identifier of the declined payment.\
   **Example**: `"553855156"`
 
-- `code` (string): Internal code or reference of the payment.  
+* `code` (string): Internal code or reference of the payment.\
   **Example**: `"f1fbad16-93c1-4335-b735-2b01ec94ea9e"`
 
-- `order_id` (string\*): Identifier of the order associated with the payment.  
+* `order_id` (string\*): Identifier of the order associated with the payment.\
   **Example**: `"MX_Verification_50708779"`
 
-- `country` (string\*): Code of the country where the payment was made (ISO 3166-1 alpha-2).  
+* `country` (string\*): Code of the country where the payment was made (ISO 3166-1 alpha-2).\
   **Example**: `"MX"`
 
-- `status` (string\*): Current status of the payment.  
+* `status` (string\*): Current status of the payment.\
   **Example**: `"DECLINED"`
 
-- `sub_status` (string): Sub-status of the payment, provides more detailed information.  
+* `sub_status` (string): Sub-status of the payment, provides more detailed information.\
   **Example**: `"DECLINED"`
 
-- `description` (string\*): Description of the payment.  
+* `description` (string\*): Description of the payment.\
   **Example**: `"rappi referencia MX Verification 50708779"`
 
-- `amount_value` (number\*): Amount value of the payment.  
+* `amount_value` (number\*): Amount value of the payment.\
   **Example**: `23.79`
 
-- `currency_code` (string\*): Currency code of the payment (ISO 4217).  
+* `currency_code` (string\*): Currency code of the payment (ISO 4217).\
   **Example**: `"MXN"`
 
-- `reject_reason` (string\*): Main reason why the payment was rejected.  
+* `reject_reason` (string\*): Main reason why the payment was rejected.\
   **Example**: `"invalid cvv"`
 
-- `additional_data` (object): JSON object for additional data related to the payment.  
+* `additional_data` (object): JSON object for additional data related to the payment.\
   **Example**: `"fraud_score": 0.85`, `"ip_address": "192.168.1.1"`
 
-- `created_at` (string): Date and time of the transaction record creation in `YYYY-MM-DD HH:MM:SS` format.  
+* `created_at` (string): Date and time of the transaction record creation in `YYYY-MM-DD HH:MM:SS` format.\
   **Example**: `"2025-04-10 15:05:52"`
 
 ### `transactions` (array)
@@ -131,70 +131,70 @@ An array of objects representing the transactions associated with the declined p
 
 #### Transaction Object Fields
 
-- `id` (string\*): Unique identifier of the transaction.  
+* `id` (string\*): Unique identifier of the transaction.\
   **Example**: `"603948738"`
 
-- `card` (object): Object that contains information about the card used in the transaction.
+* `card` (object): Object that contains information about the card used in the transaction.
 
 ##### Card Object Fields
 
-- `id` (integer): Unique identifier of the card.  
+* `id` (integer): Unique identifier of the card.\
   **Example**: `458342406`
 
-- `card_iin` (string): Issuer Identification Number of the card (first digits).  
+* `card_iin` (string): Issuer Identification Number of the card (first digits).\
   **Example**: `"63631818"`
 
-- `card_lfd` (string): Last digits of the card.  
+* `card_lfd` (string): Last digits of the card.\
   **Example**: `"2671"`
 
-- `card_type` (string): Type of card (e.g., `"CREDIT"`, `"DEBIT"`).  
+* `card_type` (string): Type of card (e.g., `"CREDIT"`, `"DEBIT"`).\
   **Example**: `"CREDIT"`
 
-- `issuer_name` (string): Name of the card issuer.  
+* `issuer_name` (string): Name of the card issuer.\
   **Example**: `"SCOTIABANK"`
 
-- `transaction_id` (integer): Identifier of the transaction associated with the card.  
+* `transaction_id` (integer): Identifier of the transaction associated with the card.\
   **Example**: `603948738`
 
-- `card_expiration_year` (integer): Year of card expiration.  
+* `card_expiration_year` (integer): Year of card expiration.\
   **Example**: `2030`
 
-- `card_expiration_month` (integer): Month of card expiration.  
+* `card_expiration_month` (integer): Month of card expiration.\
   **Example**: `12`
 
 #### Additional Transaction Fields
 
-- `code` (string): Internal code or reference of the transaction.  
+* `code` (string): Internal code or reference of the transaction.\
   **Example**: `"2e9083ec-6f1d-43d1-8677-abc36b2063a6"`
 
-- `type` (string): Type of transaction (e.g., `"PURCHASE"`, `"AUTHORIZATION"`).  
+* `type` (string): Type of transaction (e.g., `"PURCHASE"`, `"AUTHORIZATION"`).\
   **Example**: `"PURCHASE"`
 
-- `amount` (number\*): Transaction amount.  
+* `amount` (number\*): Transaction amount.\
   **Example**: `23.79`
 
-- `status` (string\*): Transaction status.  
+* `status` (string\*): Transaction status.\
   **Example**: `"DECLINED"`
 
-- `provider` (string): Transaction provider (e.g., `"STRIPE"`, `"ADYEN"`).  
+* `provider` (string): Transaction provider (e.g., `"STRIPE"`, `"ADYEN"`).\
   **Example**: `"STRIPE"`
 
-- `category` (string): Transaction category (e.g., `"CARD"`, `"PSE"`).  
+* `category` (string): Transaction category (e.g., `"CARD"`, `"PSE"`).\
   **Example**: `"CARD"`
 
-- `payment_method_type` (string\*): Type of payment method used (e.g., `"CARD"`, `"BANK_TRANSFER"`).  
+* `payment_method_type` (string\*): Type of payment method used (e.g., `"CARD"`, `"BANK_TRANSFER"`).\
   **Example**: `"CARD"`
 
-- `description` (string\*): Transaction description.  
+* `description` (string\*): Transaction description.\
   **Example**: `"order from restaurants"`
 
-- `reject_reason` (string): Reason why the transaction was rejected.  
+* `reject_reason` (string): Reason why the transaction was rejected.\
   **Example**: `"invalid cvv"`
 
-- `additional_data` (object): JSON object for additional data related to the transaction.  
+* `additional_data` (object): JSON object for additional data related to the transaction.\
   **Example**:`"acquirer_reference": "123456"`, `"eci": "05"`
 
-- `created_at` (string): Date and time of the transaction record creation in `YYYY-MM-DD HH:MM:SS` format.  
+* `created_at` (string): Date and time of the transaction record creation in `YYYY-MM-DD HH:MM:SS` format.\
   **Example**: `"2025-04-10 15:05:52"`
 
 ### `customer_payer` (object)
@@ -203,16 +203,16 @@ Object that contains information about the customer who made the payment.
 
 #### Fields
 
-- `name` (string\*): Full name of the customer.  
+* `name` (string\*): Full name of the customer.\
   **Example**: `"LUCY ROBLES"`
 
-- `phone_number` (string\*): Customer phone number.  
+* `phone_number` (string\*): Customer phone number.\
   **Example**: `"3183497646"`
 
-- `phone_country_code` (string\*): Country code of the phone number.  
+* `phone_country_code` (string\*): Country code of the phone number.\
   **Example**: `"57"`
 
-- `additional_data` (object): JSON object for additional data related to the customer.  
+* `additional_data` (object): JSON object for additional data related to the customer.\
   **Example**: `"email": "lucy.robles@example.com"`, `"customer_id": "cust_123"`
 
 ## Request Examples (Mocked Code)
