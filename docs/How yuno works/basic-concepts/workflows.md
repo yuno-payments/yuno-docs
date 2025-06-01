@@ -17,8 +17,8 @@ A workflow is a series of sequential steps crafted to handle a specific use case
 
 You can use the Yuno payment solutions through two types of workflows:
 
-- **Checkout**: Yuno Checkout is an integration solution based on SDKs. 
-- **Direct**: The Direct is a back-to-back integration solution based entirely on API endpoints usage. 
+* **Checkout**: Yuno Checkout is an integration solution based on SDKs. 
+* **Direct**: The Direct is a back-to-back integration solution based entirely on API endpoints usage. 
 
 In addition to those two workflows, Yuno also provides integration through e-commerce plugins.
 
