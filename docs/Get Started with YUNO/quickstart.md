@@ -31,22 +31,22 @@ Once you have completed the initial steps on the Dashboard, the next step is to 
 
 After determining the ideal integration that meets your requirements, it is time to initiate the process. Access the integration page using the links below to gain a comprehensive understanding of all the steps involved in the integration, as well as the necessary procedures for processing payments:
 
-- [Full Checkout](doc:the-ultimate-checkout-full) 
-- [Lite Checkout](doc:the-ultimate-checkout-lite)
-- [Secure Fields](doc:secure-fields)
-- [Direct Flow](doc:direct-flow)
-- [Yuno Plugins](doc:vtex)
+* [Full Checkout](doc:the-ultimate-checkout-full) 
+* [Lite Checkout](doc:the-ultimate-checkout-lite)
+* [Secure Fields](doc:secure-fields)
+* [Direct Flow](doc:direct-flow)
+* [Yuno Plugins](doc:vtex)
 
 ## Step 4: Test your integration
 
 The test stage is essential to ensure your integration runs accordingly and connects perfectly with Yuno solutions. To make this process easier, you find on the Yuno Docs step-by-step guides on how to manage payments. The following guides walk you through all steps to complete each process.
 
-- [Enroll payment methods](doc:enroll-payment-methods).
-- [Create payments](doc:create-payments) using different payment methods and functionalities, such as 3DS and split payments.
-- Test card payments using the [Yuno Test Gateway](doc:test-card-payments-with-yuno-testing-gateway).
-- [Cancel payments](doc:cancel-payments).
-- [Refund payments](doc:refund-payments).
-- [Build reports](doc:build-reports).
+* [Enroll payment methods](doc:enroll-payment-methods).
+* [Create payments](doc:create-payments) using different payment methods and functionalities, such as 3DS and split payments.
+* Test card payments using the [Yuno Test Gateway](doc:test-card-payments-with-yuno-testing-gateway).
+* [Cancel payments](doc:cancel-payments).
+* [Refund payments](doc:refund-payments).
+* [Build reports](doc:build-reports).
 
 When you use Yuno Docs, you can perform all API requests directly through the [Yuno API Reference endpoints](ref:introduction). If it is your first time using Yuno Docs, check the [How to use Yuno Docs endpoints](ref:how-to-use-yuno-docs-endpoints) guide to learn how to perform requests directly through the documentation.
 
@@ -54,9 +54,9 @@ When you use Yuno Docs, you can perform all API requests directly through the [Y
 
 Monitoring the payment operation is another essential portion of managing payments. Yuno provides a webhooks system that provides:
 
-- **Real-time updates**: Unlike polling, which requires you to check for updates periodically, Webhooks are triggered in real-time by events, so you'll always be up-to-date on the status of your payments.
-- **Efficiency**: Webhooks are more efficient as they only send notifications when something happens, saving you time and resources.
-- **Flexibility**: You can use the notifications from the Webhooks can be used to trigger a variety of actions, such as sending emails, updating databases, or launching workflows. This gives you the freedom to handle payment notifications in your preferred way.
+* **Real-time updates**: Unlike polling, which requires you to check for updates periodically, Webhooks are triggered in real-time by events, so you'll always be up-to-date on the status of your payments.
+* **Efficiency**: Webhooks are more efficient as they only send notifications when something happens, saving you time and resources.
+* **Flexibility**: You can use the notifications from the Webhooks can be used to trigger a variety of actions, such as sending emails, updating databases, or launching workflows. This gives you the freedom to handle payment notifications in your preferred way.
 
 Using webhooks to receive notifications is not required to perform payment operations on the Yuno systems. However, Yuno strongly recommends you use this solution. Check the [Configuring Yuno Webhooks](doc:configuring-yuno-webhooks) to learn all the necessary configuration steps to receive event notifications in real-time.
 
