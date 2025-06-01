@@ -10,18 +10,26 @@ metadata:
 next:
   description: ''
 ---
-This guide provides a step-by-step approach to integrating the Lite Flutter SDK for enrollment functionalities into your application.  
+This guide provides a step-by-step approach to integrating the Lite Flutter SDK for enrollment functionalities into your application.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tEnsure all required Flutter SDK dependencies are included in your project before proceeding with the setup. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <div class="contentContainer">
+        <p>
+					Ensure all required Flutter SDK dependencies are included in your project before proceeding with the setup. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## **Step 1: Add the SDK Dependency**
 
-To add the Yuno SDK to your Flutter project, run the following command:  
+To add the Yuno SDK to your Flutter project, run the following command:
 
 ```sh
 dart pub add yuno
@@ -29,7 +37,7 @@ dart pub add yuno
 
 ## **Step 2: Initialize the SDK with the Public Key**
 
-Create an instance of `Yuno.init` by providing a valid `PUBLIC_API_KEY`. Refer to the [Yuno documentation](https://docs.y.uno/) for details on obtaining [API credentials](https://docs.y.uno/docs/developers-credentials).  
+Create an instance of `Yuno.init` by providing a valid `PUBLIC_API_KEY`. Refer to the [Yuno documentation](https://docs.y.uno/) for details on obtaining [API credentials](https://docs.y.uno/docs/developers-credentials).
 
 ```dart
 await Yuno.init(
@@ -45,43 +53,90 @@ await Yuno.init(
 );
 ```
 
-Below is a table describing the parameters required for initializing the Yuno SDK in your Flutter application. These settings allow you to customize the SDK behavior to align with your application needs.  
+Below is a table describing the parameters required for initializing the Yuno SDK in your Flutter application. These settings allow you to customize the SDK behavior to align with your application needs.
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`apiKey`",
-    "0-1": "Your unique public API key for authentication.",
-    "1-0": "`countryCode`",
-    "1-1": "The user’s country code (ISO 3166-1 alpha-2). Refer to the [Country Coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page for supported countries.",
-    "2-0": "`yunoConfig`",
-    "2-1": "Configures various SDK settings. Contains additional parameters listed below.",
-    "3-0": "`lang`",
-    "3-1": "The language for SDK content: <br> `en` - English <br> `es` - Spanish <br> `pt` - Portuguese <br> `ms` - Malay <br> `id` - Indonesian <br> `th` - Thai",
-    "4-0": "`cardflow`",
-    "4-1": "Defines the card flow type for the payment process. The default is `CardFlow.multiStep`.",
-    "5-0": "`saveCardEnable`",
-    "5-1": "Specifies whether to enable the \"Save Card\" option. Defaults to `true`.",
-    "6-0": "`keepLoader`",
-    "6-1": "Controls whether to keep the loader visible. Defaults to `true`.",
-    "7-0": "`iosConfig`",
-    "7-1": "Optional iOS-specific configurations. If omitted, the default configuration is used."
-  },
-  "cols": 2,
-  "rows": 8,
-  "align": [
-    null,
-    null
-  ]
-}
-[/block]
-
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        `apiKey`
+      </td>
+      <td>
+        Your unique public API key for authentication.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        `countryCode`
+      </td>
+      <td>
+        The user’s country code (ISO 3166-1 alpha-2). Refer to the [Country Coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page for supported countries.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        `yunoConfig`
+      </td>
+      <td>
+        Configures various SDK settings. Contains additional parameters listed below.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        `lang`
+      </td>
+      <td>
+        The language for SDK content: <br> `en` - English <br> `es` - Spanish <br> `pt` - Portuguese <br> `ms` - Malay <br> `id` - Indonesian <br> `th` - Thai
+      </td>
+    </tr>
+    <tr>
+      <td>
+        `cardflow`
+      </td>
+      <td>
+        Defines the card flow type for the payment process. The default is `CardFlow.multiStep`.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        `saveCardEnable`
+      </td>
+      <td>
+        Specifies whether to enable the "Save Card" option. Defaults to `true`.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        `keepLoader`
+      </td>
+      <td>
+        Controls whether to keep the loader visible. Defaults to `true`.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        `iosConfig`
+      </td>
+      <td>
+        Optional iOS-specific configurations. If omitted, the default configuration is used.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ## **Step 3: Add the SDK Widget Handler**
 
-Integrate `YunoEnrollmentListener` to track and manage enrollment state changes in your application.  
+Integrate `YunoEnrollmentListener` to track and manage enrollment state changes in your application.
 
 ```dart
 YunoEnrollmentListener(
@@ -95,7 +150,7 @@ YunoEnrollmentListener(
 
 ## **Step 4: Enroll a New Payment Method**
 
-To enroll a new payment method, use the `enrollmentPayment` method:  
+To enroll a new payment method, use the `enrollmentPayment` method:
 
 ```dart
 await Yuno.enrollmentPayment(
@@ -107,7 +162,7 @@ await Yuno.enrollmentPayment(
 );
 ```
 
-The following table presents all the required parameters and their descriptions.  
+The following table presents all the required parameters and their descriptions.
 
 | Parameter           | Description                                                                                                                                                                                         |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -117,7 +172,7 @@ The following table presents all the required parameters and their descriptions.
 
 ## **Step 5: Enrollment Status**
 
-The possible enrollment states are listed below:  
+The possible enrollment states are listed below:
 
 | Status            | Description                                                             |
 | ----------------- | ----------------------------------------------------------------------- |
