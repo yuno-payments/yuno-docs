@@ -17,19 +17,35 @@ next:
 
 Dynamic routing is a payment orchestration technique that enhances users' payment experience while automating the process of increasing approval rates. It involves directing payment transactions to the most suitable payment service provider or acquiring bank based on various factors such as card type, transaction amount, currency, and payment origin. You can also use the [Smart Routing](#smart-routing) feature, which uses artificial intelligence to identify the optimal conversion rate and allocate transactions to the most suitable provider.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tIf you’re using our Embedded or Semi-lite checkout integrations, you can configure the routing of your enabled payment methods after setting the conditions for when each method should be displayed. However, if you’re using the Lite version, all available payment methods will be immediately accessible, allowing you to start configuring how each payment is processed. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <div class="contentContainer">
+        <p>
+					If you’re using our Embedded or Semi-lite checkout integrations, you can configure the routing of your enabled payment methods after setting the conditions for when each method should be displayed. However, if you’re using the Lite version, all available payment methods will be immediately accessible, allowing you to start configuring how each payment is processed. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tYou can't create a monitor in published routes. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <div class="contentContainer">
+        <p>
+					You can't create a monitor in published routes. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Why use dynamic routing?
 
@@ -64,12 +80,11 @@ Dynamic routing ensures efficient and speedy transaction processing. Directing t
 7. For each new connection, you can define paths for each possible case (**Succeeded**, **Declined**, and **Error**). New steps can be connected to each scenario to build a complete routing that meets your demands.
 8. After adding all steps of the payment process route, you can publish it using the **Publish** button, making it available for the respective payment method.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video  src=\"https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/routing_V3.mp4\" loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
-
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video  src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/routing_V3.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
 
 ## Smart Routing
 
@@ -77,15 +92,15 @@ Smart Routing is a solution designed to intelligently optimize payment performan
 
 Smart Routing can optimize your payments in two ways:
 
-- **Conversion rate and latency**: Make intelligent decisions to optimize processing time while also achieving the highest conversion rate.
-- **Conversion rate and costs**: Make smart decisions to optimize costs while also achieving the highest conversion rate. Input the costs associated with each provider through the [Connections](https://docs.y.uno/docs/connections) section. Smart Routing uses the costs you set up on the connection page to optimize your costs.
+* **Conversion rate and latency**: Make intelligent decisions to optimize processing time while also achieving the highest conversion rate.
+* **Conversion rate and costs**: Make smart decisions to optimize costs while also achieving the highest conversion rate. Input the costs associated with each provider through the [Connections](https://docs.y.uno/docs/connections) section. Smart Routing uses the costs you set up on the connection page to optimize your costs.
 
 You only need to specify which providers you want to work with and which variable you want to optimize, and Smart Routing will route each payment through the optimal path.
 
 Smart routing can be applied automatically, optimizing payment distribution for you. Alternatively, manual control lets you define the exact percentage of transactions to route through each connection.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;\">\n  <video  src=\"https://github.com/writechoiceorg/yuno-images/raw/refs/heads/main/doc/yourPaymentsOperationSystem/smart-routing.mp4\" loop autoplay muted playsinline style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></video>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
+  <video  src="https://github.com/writechoiceorg/yuno-images/raw/refs/heads/main/doc/yourPaymentsOperationSystem/smart-routing.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
+</div>
+`}</HTMLBlock>
