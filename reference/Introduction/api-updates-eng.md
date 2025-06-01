@@ -18,12 +18,12 @@ When a disruptive modification is implemented in the Yuno's API, a new dated ver
 
 We consider the following alterations to maintain compatibility:
 
-- Adding new API resources.
-- Adding new optional request parameters to existing API methods.
-- Adding new properties to existing API responses.
-- Modifying the order of properties in existing API responses.
-- Altering the length or format of opaque strings, such as object IDs, error messages, and other human-readable strings. This encompasses the addition or removal of fixed prefixes.
-- Introducing new event types. Ensure your webhook listener adeptly handles unfamiliar event types.
+* Adding new API resources.
+* Adding new optional request parameters to existing API methods.
+* Adding new properties to existing API responses.
+* Modifying the order of properties in existing API responses.
+* Altering the length or format of opaque strings, such as object IDs, error messages, and other human-readable strings. This encompasses the addition or removal of fixed prefixes.
+* Introducing new event types. Ensure your webhook listener adeptly handles unfamiliar event types.
 
 ### Stay up to date
 
