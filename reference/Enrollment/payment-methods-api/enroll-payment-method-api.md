@@ -23,12 +23,23 @@ Check the [Available payment methods in Yuno](ref:payment-type-list). You'll nee
 
 Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](ref:authentication#idempotency) page for more information.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Webhooks</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\t We recommend listening to \n          <a href=\"configure-webhooks\">Webhooks</a>\n          to stay up to date to the state of the enrolled payment methods of your customers.\n        </p>\n  </div>  \n</div>  \n</div>  \n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Webhooks</h3>
+      <div class="contentContainer">
+        <p>
+					 We recommend listening to 
+          <a href="configure-webhooks">Webhooks</a>
+          to stay up to date to the state of the enrolled payment methods of your customers.
+        </p>
+  </div>  
+</div>  
+</div>  
+</body>
+`}</HTMLBlock>
 
 In case a customer enrolls the same card twice but with new expiration date or cardholder info, we will unenroll the previously enrolled card and keep the new one.
 
