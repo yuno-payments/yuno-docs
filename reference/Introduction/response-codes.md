@@ -15,7 +15,7 @@ next:
 ---
 This section outlines the common error codes and resolutions you may encounter while using the Yuno API.
 
-Yuno uses standard HTTP response codes to indicate the success or failure of API requests. 
+Yuno uses standard HTTP response codes to indicate the success or failure of API requests.
 
 Codes in the 2xx range usually indicate success. Codes in the 4xx range indicate an error that occurred based on the information provided (e.g., a missing parameter, etc.), and codes in the 5xx range indicate an internal error.
 
@@ -32,12 +32,41 @@ Codes in the 2xx range usually indicate success. Codes in the 4xx range indicate
 
 ## Response attributes for errors
 
-[block:html]
-{
-  "html": "<div>\n  <div class=\"yuno\">\n    <p><code>code</code> <small>string</small>\n      <br/>Attribute for error code state.\n    </p>\t\n  </div>\n  \n  <div class=\"yuno\">\n    <p><code>message</code> <small>array of strings</small>\n      <br/>Error message that is returned.\n    </p>\t\n  </div>\n  \n</div>\n\n<style>\n  :root {\n    --yuno-main-color: #614AD6;\n    --yellow: #CEE65A;\n  }\n  details {\n    display: flex;\n    overflow: hidden;\n  }\n   .yuno  p {\n      margin-left: 20px;\n    }\n    .yuno {\n   \t  --highlight: var(#eee) ;\n    \tbackground: #eee;\n      margin: 1.5em;\n      border-radius: 5px;\n      border-left: 15px solid var(--yuno-main-color);\n      padding: 0.25em; \n    }\n</style>"
-}
-[/block]
+<div>
+  <div class="yuno">
+    <p><code>code</code> <small>string</small>
+      <br/>Attribute for error code state.
+    </p>  
+  </div>
+  
+  <div class="yuno">
+    <p><code>message</code> <small>array of strings</small>
+      <br/>Error message that is returned.
+    </p>  
+  </div>
+</div>
 
+<style>
+  :root {
+    --yuno-main-color: #614AD6;
+    --yellow: #CEE65A;
+  }
+  details {
+    display: flex;
+    overflow: hidden;
+  }
+   .yuno  p {
+      margin-left: 20px;
+    }
+    .yuno {
+      --highlight: var(--eee) ;
+      background: #eee;
+      margin: 1.5em;
+      border-radius: 5px;
+      border-left: 15px solid var(--yuno-main-color);
+      padding: 0.25em; 
+    }
+</style>
 
 See what codes are returned by Yuno's Rest API.
 
