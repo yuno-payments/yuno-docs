@@ -17,6 +17,4 @@ Split your payments between two or more recipients using Yuno´s [marketplace](h
 
 ***
 
-
-
 This request creates a payment after you have created a checkout session.
