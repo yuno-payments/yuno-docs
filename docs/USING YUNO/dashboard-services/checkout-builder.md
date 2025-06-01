@@ -14,32 +14,18 @@ next:
 ---
 The Checkout Builder is a no-code tool designed to customize your checkout experience. It includes two main modules:
 
-- **Payment method settings**: Enable payment methods with a published route to show to your customers. Additionally, you can define under which circumstances specific payment methods are displayed.
-- **Checkout styling**: Adjust the checkout's visual elements for desktop and mobile devices, including colors and typography. This ensures the checkout experience is consistent with yoru brand.
+* **Payment method settings**: Enable payment methods with a published route to show to your customers. Additionally, you can define under which circumstances specific payment methods are displayed.
+* **Checkout styling**: Adjust the checkout's visual elements for desktop and mobile devices, including colors and typography. This ensures the checkout experience is consistent with yoru brand.
 
 Any changes made using the Checkout Builder are immediately reflected in the user-facing checkout, providing a straightforward way to manage and adapt the checkout experience to meet your business requirements.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/5a0a03a-manage_checkout_view.png",
-        null,
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/5a0a03a-manage_checkout_view.png" />
 
 ## Advantages of using Checkout Builder
 
-- **Customization with no code**: Enjoy the flexibility of tailoring your checkout experience without the need for complex coding. This empowers you to create a checkout process that aligns seamlessly with your brand and business objectives.
-- **Payment method flexibility**: Easily enable, organize, and display the payment methods that best suit your customer base and market.
-- **Intuitive user interface**: Yuno's interface makes it a breeze to configure payment methods, set display conditions, and customize styling.
+* **Customization with no code**: Enjoy the flexibility of tailoring your checkout experience without the need for complex coding. This empowers you to create a checkout process that aligns seamlessly with your brand and business objectives.
+* **Payment method flexibility**: Easily enable, organize, and display the payment methods that best suit your customer base and market.
+* **Intuitive user interface**: Yuno's interface makes it a breeze to configure payment methods, set display conditions, and customize styling.
 
 ## Payment method settings
 
@@ -95,29 +81,92 @@ Match your brand's unique look and feel using the Checkout Styling module. Chang
 
 The General Styling section allows you to adjust key visual elements, creating a consistent and professional look throughout the checkout experience. In this section, you can customize the following elements:
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Customizable Element",
-    "h-1": "Description",
-    "0-0": "**Background Color**",
-    "0-1": "Set the background color applied across all checkout forms, establishing a base that reflects your brand’s aesthetic. This background color serves as the foundation of the entire checkout interface.",
-    "1-0": "**Accent Color**",
-    "1-1": "Select an accent color to highlight interactive elements, enhancing the user experience and adding brand-specific touches. The accent color applies to:  \n  \n- The background color of the primary button\n- The border color of the secondary button\n- Checkbox colors",
-    "2-0": "**Primary Text Color**",
-    "2-1": "Define the main text color for high-visibility elements. This color will apply to:  \n  \n- Titles and subtitle\n- User input fields\n- Dropdown values\n- Text on secondary buttons\n- Checkbox text",
-    "3-0": "**Secondary Text Color**",
-    "3-1": "Choose a secondary text color for supporting text elements. This color applies to:  \n  \n- Field descriptions\n- Placeholder text\n- Help text for additional form guidance",
-    "4-0": "**Primary Button Text Color**",
-    "4-1": "Set the text color for the primary button to ensure the call-to-action is noticeable and accessible.",
-    "5-0": "**Typography**",
-    "5-1": "Select your preferred font."
-  },
-  "cols": 2,
-  "rows": 6,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Customizable Element
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        **Background Color**
+      </td>
+
+      <td>
+        Set the background color applied across all checkout forms, establishing a base that reflects your brand’s aesthetic. This background color serves as the foundation of the entire checkout interface.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **Accent Color**
+      </td>
+
+      <td>
+        Select an accent color to highlight interactive elements, enhancing the user experience and adding brand-specific touches. The accent color applies to:  
+
+        * The background color of the primary button
+        * The border color of the secondary button
+        * Checkbox colors
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **Primary Text Color**
+      </td>
+
+      <td>
+        Define the main text color for high-visibility elements. This color will apply to:  
+
+        * Titles and subtitle
+        * User input fields
+        * Dropdown values
+        * Text on secondary buttons
+        * Checkbox text
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **Secondary Text Color**
+      </td>
+
+      <td>
+        Choose a secondary text color for supporting text elements. This color applies to:  
+
+        * Field descriptions
+        * Placeholder text
+        * Help text for additional form guidance
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **Primary Button Text Color**
+      </td>
+
+      <td>
+        Set the text color for the primary button to ensure the call-to-action is noticeable and accessible.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **Typography**
+      </td>
+
+      <td>
+        Select your preferred font.
+      </td>
+    </tr>
+  </tbody>
+</Table>
