@@ -82,19 +82,34 @@ The parameter`showPaymentStatus`is used to determine whether the payment status 
 
 The class `ViewController ` is a subclass of `UIViewController `and conforms to the `YunoEnrollmentDelegate `protocol. It includes a function called` enrollPayment(with delegate: YunoEnrollmentDelegate, showPaymentStatus: Bool)`, which parameters are described below: 
 
-- `delegate: YunoEnrollmentDelegate` : The delegate object that handles enrollment callbacks.
-- `showPaymentStatus: Bool`: A Boolean flag that determines whether to display status views during the payment enrollment process.
+* `delegate: YunoEnrollmentDelegate` : The delegate object that handles enrollment callbacks.
+* `showPaymentStatus: Bool`: A Boolean flag that determines whether to display status views during the payment enrollment process.
 
 The method `enrollPayment` initiates the payment enrollment process. You should call It in response to user interactions, such as pressing a button. The method utilizes the provided `delegate `to manage enrollment events and, based on the parameter `showPaymentStatus `decides whether to show visual feedback about the enrollment status.
 
 ## Step 3: Enrollment status
 
-[block:html]
-{
-  "html": "<style> \n  .noMargin {\n    margin: 0 !important;\n  }\n  </style>\n\n<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <h3  class=\"noMargin\">This feature is for payment methods executing deep links</h3>\n        <p>\n          This feature is only used if you enroll in a payment method that executes deep links. If you are not enrolling in a payment method that executes deep links, you can ignore Step 3.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style> 
+  .noMargin {
+    margin: 0 !important;
+  }
+  </style>
 
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <div class="contentContainer">
+        <h3  class="noMargin">This feature is for payment methods executing deep links</h3>
+        <p>
+          This feature is only used if you enroll in a payment method that executes deep links. If you are not enrolling in a payment method that executes deep links, you can ignore Step 3.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 If you use a payment method that requires a deep link to return to your app, use the method described in the following code block to obtain the enrollment status in your AppDelegate. The `url.scheme` should be the same as the `callback_url` used when creating the `customer_session`.
 
@@ -117,26 +132,12 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 
 When presenting the enrollment, you can also choose one of the render options for the card form. You have the following options:
 
-- `ONE_STEP` 
-- `STEP_BY_STEP`
+* `ONE_STEP` 
+* `STEP_BY_STEP`
 
 To change the render option, set the `cardFormType` equal one of the available options. Each option is presented below.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/ff9a74d50d3a8d3a4e550be1b917832bd6b8daa28cc4249d9ec22edef2f410bc-Full_SDK_ios.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/ff9a74d50d3a8d3a4e550be1b917832bd6b8daa28cc4249d9ec22edef2f410bc-Full_SDK_ios.png" />
 
 ### Loader
 
@@ -146,8 +147,18 @@ Control the use of the [Loader](https://docs.y.uno/docs/loader-1).
 
 Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=\"contentContainer\">\n        <p>\n          In addition to the code examples provided, you can access the <a href=\"https://github.com/yuno-payments/yuno-sdk-ios\">Yuno repository</a> for a complete implementation of Yuno iOS SDKs.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+          In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-ios">Yuno repository</a> for a complete implementation of Yuno iOS SDKs.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
