@@ -262,8 +262,8 @@ The following table describes the functions available:
 
 | Function                                                      | Description                                                                                          |
 | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)` | Called when the user selects a payment method. <br>- `paymentMethod`: The method the user chose.     |
-| `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br>- `success`: `true` if it worked, `false` if it didn’t. |
+| `yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)` | Called when the user selects a payment method. <br/>- `paymentMethod`: The method the user chose.     |
+| `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br/>- `success`: `true` if it worked, `false` if it didn’t. |
 | `yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)`       | Called when `getPaymentMethodView()` is invoked and whenever the view's height changes.              |
 
 []()To display the payment methods, call the following method and pass your view model or controller as the delegate.
