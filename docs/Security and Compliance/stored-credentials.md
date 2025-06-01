@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-Depending on how and when a payment is being processed, it can be considered to have two different origins: Customer Initiated Transactions (CIT) or Merchant Initiated Transactions (MIT).  
+Depending on how and when a payment is being processed, it can be considered to have two different origins: Customer Initiated Transactions (CIT) or Merchant Initiated Transactions (MIT).
 
 To guarantee the responsible storage and utilization of cardholder information, Visa and Mastercard have implemented guidelines and regulations for stored credentials.
 
@@ -69,7 +69,6 @@ In order to indicate a [payment](ref:create-payment) specifying the processing t
   ]
 }
 [/block]
-
 
 Store credential reasons
 
@@ -144,7 +143,7 @@ For certain markets (MX for example) and payment processors, when a subscription
 
 Is a unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle.
 
-If the transaction is customer-initiated (CIT), the Network Transaction Reference will be available in the `card.stored_credentials.network_transaction_id` field, representing the transaction ID for VISA and the traceID for Mastercard that are recommended for future subscription payments. 
+If the transaction is customer-initiated (CIT), the Network Transaction Reference will be available in the `card.stored_credentials.network_transaction_id` field, representing the transaction ID for VISA and the traceID for Mastercard that are recommended for future subscription payments.
 
 ```json
 "payment_method": {
@@ -164,16 +163,16 @@ If the transaction is customer-initiated (CIT), the Network Transaction Referenc
 
 ### Usage
 
-We associate the `network_transaction_id` to the `vaulted_token` for future transactions so you don't have to manage the logic for each case. We will do the association when a payment is created with: 
+We associate the `network_transaction_id` to the `vaulted_token` for future transactions so you don't have to manage the logic for each case. We will do the association when a payment is created with:
 
-- _Payment method_: 
-  - A card`vaulted_token` or 
-  - card data with `vault_on_success` in `true` 
-- _Stored credentials_: 
-  - `usage` with `FIRST` value. 
+- _Payment method_:
+  - A card`vaulted_token` or
+  - card data with `vault_on_success` in `true`
+- _Stored credentials_:
+  - `usage` with `FIRST` value.
 
-If you already have the `network_transaction_id` for the card you can send it in the payment as well in the corresponding field, if not, for MIT payments (with stored_credentials.usage=USED) we will send the `network_transaction_id` associated to the `vaulted_token` to the provider. 
+If you already have the `network_transaction_id` for the card you can send it in the payment as well in the corresponding field, if not, for MIT payments (with stored_credentials.usage=USED) we will send the `network_transaction_id` associated to the `vaulted_token` to the provider.
 
-> ❗️ 
-> 
+> ❗️
+>
 > Remember to specify the usage in the stored_credentials section, as we trigger the network_transaction_id logic based on those fields.
