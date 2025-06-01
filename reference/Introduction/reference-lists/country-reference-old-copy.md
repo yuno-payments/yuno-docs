@@ -15,1531 +15,6592 @@ next:
 ---
 On this page, you will find the country's information you need when using Yuno API endpoints. The below table provides standard codes for the country's identification, currencies, document types used in each country, and phone codes. Use this page to understand and have access to standard values for each piece of information. Use the buttons below to go directly to the desired country list region.
 
-[block:html]
-{
-  "html": "<style>\n  .region-buttons-shelf {\n    display: grid;\n    grid-template-columns: repeat(4, 1fr);\n    grid-auto-rows: 1fr;\n    gap: 3%;\n    margin-bottom: 40px;\n  }\n\n  .region-buttons {\n    padding: 10px;\n    border-radius: 7px;\n    border: 1px solid var(--yuno-purple);\n    transition: transform .2s;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n\n  @media only screen and (max-width: 700px) {\n    .region-buttons-shelf {\n      grid-template-columns: 1fr 1fr;\n      gap: 3%;\n    }\n  }\n\n  @media only screen and (max-width: 400px) {\n    .region-buttons-shelf {\n      grid-template-columns: 1fr;\n      gap: 2%;\n    }\n  }\n\n\n\n  .region-buttons:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px var(--yuno-purple-10);\n    cursor: pointer;\n  }\n\n  .region-buttons .container-region-img {\n    border-radius: 50%;\n    background-color: rgba(197, 78, 230, 0.1);\n    padding: 0.4rem;\n    margin-bottom: 15px;\n  }\n\n  .region-buttons svg,\n  .region-buttons img {\n    color: var(--yuno-purple);\n    height: 50px;\n    /* width: 45px; */\n  }\n  \n  .region-buttons .central-america-map {\n    height: 50px;\n    width: 45px;\n  }\n\n  .region-buttons h3 {\n    font-size: 0.9rem;\n    color: var(--yuno-purple);\n    margin: 0 0 0 0;\n    text-align: center;\n  }\n  \n   /* ------------------------ define the configuration for DARK Mode ------------------------  */\n\n  @media (prefers-color-scheme: dark) {\n    .region-buttons {\n      border: 1px solid var(--yuno-purple-50);\n    }\n\n      .region-buttons:hover {\n      box-shadow: none;\n    }\n\n      .region-buttons .container-region-img {\n      background-color: var(--yuno-off-white);\n    }\n\n      .region-buttons svg,\n    .region-buttons img {\n      color: var(--yuno-purple-50);\n\n    }\n\n      .region-buttons h3 {\n      color: var(--yuno-purple-50);\n    }\n  }\n\n  [data-color-mode=\"dark\"] .region-buttons {\n      border: 1px solid var(--yuno-purple-50);\n    }\n\n     [data-color-mode=\"dark\"]  .region-buttons:hover {\n      box-shadow: none;\n    }\n\n     [data-color-mode=\"dark\"]  .region-buttons .container-region-img {\n      background-color: var(--yuno-off-white);\n    }\n\n     [data-color-mode=\"dark\"]  .region-buttons svg,\n    [data-color-mode=\"dark\"] .region-buttons img {\n      color: var(--yuno-purple-50);\n\n    }\n\n     [data-color-mode=\"dark\"]  .region-buttons h3 {\n      color: var(--yuno-purple-50);\n    }\n</style>\n\n<body>\n  <section class=\"region-buttons-shelf\">\n     <div class=\"region-buttons\" onclick=\"window.location='country-reference#america';\">\n      <div class=\"container-region-img\">\n        <img class=\"county-img\"\n          src=\"https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/south-america-min.png?raw=true\"\n          alt=\"America map\">\n      </div>\n      <h3>\n        America\n      </h3>\n    </div>\n    \n    <div class=\"region-buttons\" onclick=\"window.location='country-reference#africa';\">\n      <div class=\"container-region-img\">\n        <img class=\"county-img\"\n          src=\"https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/africa-min.png?raw=true\"\n          alt=\"Africa map\">\n      </div>\n      <h3>\n        Africa\n      </h3>\n    </div>\n   \n    <div class=\"region-buttons\" onclick=\"window.location='country-reference#asia-pacific';\">\n      <div class=\"container-region-img\">\n        <img class=\"county-img\"\n          src=\"https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/asia-min.png?raw=true\"\n          alt=\"Asia-Pacific map\">\n      </div>\n      <h3>\n        Asia Pacific\n      </h3>\n    </div>\n    <!--<div class=\"region-buttons\" onclick=\"window.location='yuno-connections#central-america-and-caribbean-region-country-list';\">\n      <div class=\"container-region-img\">\n        <img class=\"county-img\"\n          src=\"https://github.com/cassianomoraes/yuno_card_images/blob/main/yuno-icons/central-america-caribbean-min.png?raw=true\"\n          alt=\"Central America and Caribbean Region map\">\n      </div>\n      <h3>\n        Central America and Caribbean Region\n      </h3>\n    </div>-->\n    <div class=\"region-buttons\" onclick=\"window.location='country-reference#europe';\">\n      <div class=\"container-region-img\">\n        <img class=\"county-img\"\n          src=\"https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/europe-min.png?raw=true\"\n          alt=\"Europe map\">\n      </div>\n      <h3>\n        Europe\n      </h3>\n    </div>\n    <!--<div class=\"region-buttons\" onclick=\"window.location='yuno-connections#north-america-country-list';\">\n      <div class=\"container-region-img\">\n        <img class=\"county-img\"\n          src=\"https://github.com/cassianomoraes/yuno_card_images/blob/main/yuno-icons/north-america-min.png?raw=true\"\n          alt=\"North America map\">\n      </div>\n      <h3>\n        North America\n      </h3>\n    </div>\n    <div class=\"region-buttons\" onclick=\"window.location='yuno-connections#south-america-country-list';\">\n      <div class=\"container-region-img\">\n        <img class=\"county-img\"\n          src=\"https://github.com/cassianomoraes/yuno_card_images/blob/main/yuno-icons/south-america-min.png?raw=true\"\n          alt=\"South America map\">\n      </div>\n      <h3>\n        South America\n      </h3>\n    </div>-->\n  </section>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .region-buttons-shelf {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 3%;
+    margin-bottom: 40px;
+  }
 
+  .region-buttons {
+    padding: 10px;
+    border-radius: 7px;
+    border: 1px solid var(--yuno-purple);
+    transition: transform .2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @media only screen and (max-width: 700px) {
+    .region-buttons-shelf {
+      grid-template-columns: 1fr 1fr;
+      gap: 3%;
+    }
+  }
+
+  @media only screen and (max-width: 400px) {
+    .region-buttons-shelf {
+      grid-template-columns: 1fr;
+      gap: 2%;
+    }
+  }
+
+
+
+  .region-buttons:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px var(--yuno-purple-10);
+    cursor: pointer;
+  }
+
+  .region-buttons .container-region-img {
+    border-radius: 50%;
+    background-color: rgba(197, 78, 230, 0.1);
+    padding: 0.4rem;
+    margin-bottom: 15px;
+  }
+
+  .region-buttons svg,
+  .region-buttons img {
+    color: var(--yuno-purple);
+    height: 50px;
+    /* width: 45px; */
+  }
+  
+  .region-buttons .central-america-map {
+    height: 50px;
+    width: 45px;
+  }
+
+  .region-buttons h3 {
+    font-size: 0.9rem;
+    color: var(--yuno-purple);
+    margin: 0 0 0 0;
+    text-align: center;
+  }
+  
+   /* ------------------------ define the configuration for DARK Mode ------------------------  */
+
+  @media (prefers-color-scheme: dark) {
+    .region-buttons {
+      border: 1px solid var(--yuno-purple-50);
+    }
+
+      .region-buttons:hover {
+      box-shadow: none;
+    }
+
+      .region-buttons .container-region-img {
+      background-color: var(--yuno-off-white);
+    }
+
+      .region-buttons svg,
+    .region-buttons img {
+      color: var(--yuno-purple-50);
+
+    }
+
+      .region-buttons h3 {
+      color: var(--yuno-purple-50);
+    }
+  }
+
+  [data-color-mode="dark"] .region-buttons {
+      border: 1px solid var(--yuno-purple-50);
+    }
+
+     [data-color-mode="dark"]  .region-buttons:hover {
+      box-shadow: none;
+    }
+
+     [data-color-mode="dark"]  .region-buttons .container-region-img {
+      background-color: var(--yuno-off-white);
+    }
+
+     [data-color-mode="dark"]  .region-buttons svg,
+    [data-color-mode="dark"] .region-buttons img {
+      color: var(--yuno-purple-50);
+
+    }
+
+     [data-color-mode="dark"]  .region-buttons h3 {
+      color: var(--yuno-purple-50);
+    }
+</style>
+
+<body>
+  <section class="region-buttons-shelf">
+     <div class="region-buttons" onclick="window.location='country-reference#america';">
+      <div class="container-region-img">
+        <img class="county-img"
+          src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/south-america-min.png?raw=true"
+          alt="America map">
+      </div>
+      <h3>
+        America
+      </h3>
+    </div>
+    
+    <div class="region-buttons" onclick="window.location='country-reference#africa';">
+      <div class="container-region-img">
+        <img class="county-img"
+          src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/africa-min.png?raw=true"
+          alt="Africa map">
+      </div>
+      <h3>
+        Africa
+      </h3>
+    </div>
+   
+    <div class="region-buttons" onclick="window.location='country-reference#asia-pacific';">
+      <div class="container-region-img">
+        <img class="county-img"
+          src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/asia-min.png?raw=true"
+          alt="Asia-Pacific map">
+      </div>
+      <h3>
+        Asia Pacific
+      </h3>
+    </div>
+    <!--<div class="region-buttons" onclick="window.location='yuno-connections#central-america-and-caribbean-region-country-list';">
+      <div class="container-region-img">
+        <img class="county-img"
+          src="https://github.com/cassianomoraes/yuno_card_images/blob/main/yuno-icons/central-america-caribbean-min.png?raw=true"
+          alt="Central America and Caribbean Region map">
+      </div>
+      <h3>
+        Central America and Caribbean Region
+      </h3>
+    </div>-->
+    <div class="region-buttons" onclick="window.location='country-reference#europe';">
+      <div class="container-region-img">
+        <img class="county-img"
+          src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/coverage/europe-min.png?raw=true"
+          alt="Europe map">
+      </div>
+      <h3>
+        Europe
+      </h3>
+    </div>
+    <!--<div class="region-buttons" onclick="window.location='yuno-connections#north-america-country-list';">
+      <div class="container-region-img">
+        <img class="county-img"
+          src="https://github.com/cassianomoraes/yuno_card_images/blob/main/yuno-icons/north-america-min.png?raw=true"
+          alt="North America map">
+      </div>
+      <h3>
+        North America
+      </h3>
+    </div>
+    <div class="region-buttons" onclick="window.location='yuno-connections#south-america-country-list';">
+      <div class="container-region-img">
+        <img class="county-img"
+          src="https://github.com/cassianomoraes/yuno_card_images/blob/main/yuno-icons/south-america-min.png?raw=true"
+          alt="South America map">
+      </div>
+      <h3>
+        South America
+      </h3>
+    </div>-->
+  </section>
+</body>
+`}</HTMLBlock>
 
 ## America
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Name",
-    "h-1": "Country code (ISO 3166-1 Alpha 2)",
-    "h-2": "Currency code (ISO 4217 Alpha 3)",
-    "h-3": "Currency decimal digits<sup>(1)</sup>",
-    "h-4": "Document type",
-    "h-5": "Phone country calling code",
-    "0-0": "Anguilla",
-    "0-1": "AI",
-    "0-2": "XCD",
-    "0-3": "2",
-    "0-4": "**PAS** (Passport)",
-    "0-5": "1",
-    "1-0": "Antigua And Barbuda",
-    "1-1": "AG",
-    "1-2": "XCD",
-    "1-3": "2",
-    "1-4": "**PAS** (Passport)",
-    "1-5": "1",
-    "2-0": "Argentina",
-    "2-1": "AR",
-    "2-2": "ARS",
-    "2-3": "2",
-    "2-4": "**DNI** (National Identity Document)  \n**CI** (Identity Card)  \n**LC** (Civic Notebook)  \n**LE** (Book Enlistment)  \n**CUIT** (Single Tax Identification)  \n**CUIL** (Unique Labor Identification Code)  \n**PAS** (Passport)",
-    "2-5": "54",
-    "3-0": "Aruba",
-    "3-1": "AW",
-    "3-2": "AWG",
-    "3-3": "2",
-    "3-4": "**PAS** (Passport)  \n**PIN** (individual Identity number)",
-    "3-5": "297",
-    "4-0": "Bahamas",
-    "4-1": "BS",
-    "4-2": "BSD",
-    "4-3": "2",
-    "4-4": "**PAS** (Passport)",
-    "4-5": "1",
-    "5-0": "Barbados",
-    "5-1": "BB",
-    "5-2": "BBD",
-    "5-3": "2",
-    "5-4": "**PAS** (Passport)  \nNational ID Card",
-    "5-5": "1",
-    "6-0": "Belize",
-    "6-1": "BZ",
-    "6-2": "BZD",
-    "6-3": "2",
-    "6-4": "**PAS** (Passport)  \nSocial Security Card  \nDriver's license",
-    "6-5": "501",
-    "7-0": "Bermuda",
-    "7-1": "BM",
-    "7-2": "BMD",
-    "7-3": "2",
-    "7-4": "**PAS** (Passport)",
-    "7-5": "1",
-    "8-0": "Bolivia",
-    "8-1": "BO",
-    "8-2": "BOB  \nBOV",
-    "8-3": "2  \n2",
-    "8-4": "**CI** (Identity Card)  \n**PAS** (Passport)",
-    "8-5": "591",
-    "9-0": "Brazil",
-    "9-1": "BR",
-    "9-2": "BRL",
-    "9-3": "2",
-    "9-4": "**RG** (Identity Card)  \n**CPF** (Natural Persons Register)  \n**CNH** (Driver License)  \n**CNPJ** (National Registry of Legal Entities)  \n**PAS** (Passport)",
-    "9-5": "55",
-    "10-0": "Canada",
-    "10-1": "CA",
-    "10-2": "CAD",
-    "10-3": "2",
-    "10-4": "**PAS** (Passport)  \nDriver's license  \nNational ID Card",
-    "10-5": "1",
-    "11-0": "Cayman Islands",
-    "11-1": "KY",
-    "11-2": "KYD",
-    "11-3": "2",
-    "11-4": "Voter ID Card  \nDriver's License  \n**PAS** (Passport)",
-    "11-5": "1",
-    "12-0": "Chile",
-    "12-1": "CL",
-    "12-2": "CLP  \nCLF",
-    "12-3": "0  \n0",
-    "12-4": "**CI** (Identity Card)  \n**RUT** (Unique Tax Role)  \n**RUN** (Unique National Role)  \n**PAS** (Passport)",
-    "12-5": "56",
-    "13-0": "Colombia",
-    "13-1": "CO",
-    "13-2": "COP  \nCOU",
-    "13-3": "2  \n2",
-    "13-4": "**CC** (Citizenship Card)  \n**CE** (Foreign Certificate)  \n**NIT** (Tax Identification Number)  \n**PAS** (Passport)",
-    "13-5": "57",
-    "14-0": "Costa Rica",
-    "14-1": "CR",
-    "14-2": "CRC",
-    "14-3": "2",
-    "14-4": "**CI** (Identity Card)  \n**PAS** (Passport)",
-    "14-5": "506",
-    "15-0": "Cuba",
-    "15-1": "CU",
-    "15-2": "CUP  \nCUC",
-    "15-3": "2  \n2",
-    "15-4": "**PAS** (Passport)",
-    "15-5": "53",
-    "16-0": "Curacao",
-    "16-1": "CW",
-    "16-2": "ANG",
-    "16-3": "2",
-    "16-4": "**PAS** (Passport)  \nIdentity Card  \nDriver's license",
-    "16-5": "599",
-    "17-0": "Dominica",
-    "17-1": "DM",
-    "17-2": "XCD",
-    "17-3": "2",
-    "17-4": "**PAS** (Passport)  \nNational ID Card",
-    "17-5": "1",
-    "18-0": "Dominican Republic",
-    "18-1": "DO",
-    "18-2": "DOP",
-    "18-3": "2",
-    "18-4": "**CI** (Identity Card)  \nCédula de menor",
-    "18-5": "1",
-    "19-0": "Ecuador",
-    "19-1": "EC",
-    "19-2": "USD",
-    "19-3": "2",
-    "19-4": "**CI** (Identity Card)  \n**PAS** (Passport)",
-    "19-5": "593",
-    "20-0": "El Salvador",
-    "20-1": "SV",
-    "20-2": "USD",
-    "20-3": "2",
-    "20-4": "**DUI** (Unique Identity Document)  \n**PIC**  \n**PAS** (Passport)",
-    "20-5": "503",
-    "21-0": "Falkland Islands",
-    "21-1": "FK",
-    "21-2": "FKP",
-    "21-3": "2",
-    "21-4": "**PAS** (Passport)  \nNational ID Card",
-    "21-5": "500",
-    "22-0": "French Guiana",
-    "22-1": "GF",
-    "22-2": "EUR",
-    "22-3": "2",
-    "22-4": "**PAS** (Passport)  \nNational ID Card",
-    "22-5": "594",
-    "23-0": "Grenada",
-    "23-1": "GD",
-    "23-2": "XCD",
-    "23-3": "2",
-    "23-4": "**PAS** (Passport)  \nNational ID Card",
-    "23-5": "473",
-    "24-0": "Guadeloupe",
-    "24-1": "GP",
-    "24-2": "EUR",
-    "24-3": "2",
-    "24-4": "**PAS** (Passport)  \nNational ID Card",
-    "24-5": "590",
-    "25-0": "Guatemala",
-    "25-1": "GT",
-    "25-2": "GTQ",
-    "25-3": "2",
-    "25-4": "**DPI** (Personal Identification Document)  \n**CUI** (Unique Identification Code)  \n**PAS** (Passport)",
-    "25-5": "502",
-    "26-0": "Guyana",
-    "26-1": "GY",
-    "26-2": "GYD",
-    "26-3": "2",
-    "26-4": "**PAS** (Passport)",
-    "26-5": "592",
-    "27-0": "Haiti",
-    "27-1": "HT",
-    "27-2": "HTG  \nUSD",
-    "27-3": "2  \n2",
-    "27-4": "**CIN**(Carte d'Identification Nationale)",
-    "27-5": "509",
-    "28-0": "Honduras",
-    "28-1": "HN",
-    "28-2": "HNL",
-    "28-3": "2",
-    "28-4": "**PAS** (Passport)  \n**DNI** (National Identification Document)",
-    "28-5": "504",
-    "29-0": "Jamaica",
-    "29-1": "JM",
-    "29-2": "JMD",
-    "29-3": "2",
-    "29-4": "National ID Card",
-    "29-5": "1",
-    "30-0": "Martinique",
-    "30-1": "MQ",
-    "30-2": "EUR",
-    "30-3": "2",
-    "30-4": "**PAS** (Passport)",
-    "30-5": "596",
-    "31-0": "Mexico",
-    "31-1": "MX",
-    "31-2": "MXN  \nMXV",
-    "31-3": "2  \n2",
-    "31-4": "**IFE** (Federal Electoral Institute)  \n**INE** (National Electoral Institute)  \n**CP** (Professional ID)  \n**PAS** (Passport)  \n**RFC** (Federal Taxpayer Registry)  \n**CURP** (Unique Population Registry Code)",
-    "31-5": "52",
-    "32-0": "Montserrat",
-    "32-1": "MS",
-    "32-2": "XCD",
-    "32-3": "2",
-    "32-4": "**PAS** (Passport)",
-    "32-5": "1",
-    "33-0": "Nicaragua",
-    "33-1": "NI",
-    "33-2": "NIO",
-    "33-3": "2",
-    "33-4": "**CI** (Identity Card)  \n**PAS** (Passport)",
-    "33-5": "505",
-    "34-0": "Panama",
-    "34-1": "PA",
-    "34-2": "PAB  \nUSD",
-    "34-3": "2  \n2",
-    "34-4": "**CIP** (Identity Card)  \n**PAS** (Passport)",
-    "34-5": "507",
-    "35-0": "Paraguay",
-    "35-1": "PY",
-    "35-2": "PYG",
-    "35-3": "0",
-    "35-4": "**CIC**  \n**CI** (Identity Card)  \n**PAS** (Passport)",
-    "35-5": "595",
-    "36-0": "Peru",
-    "36-1": "PE",
-    "36-2": "PEN",
-    "36-3": "2",
-    "36-4": "**DNI** (National Identification Document)  \n**CE** (Immigration Card)  \n**RUC** (Single Registry of Taxpayers)",
-    "36-5": "51",
-    "37-0": "Puerto Rico",
-    "37-1": "PR",
-    "37-2": "USD",
-    "37-3": "2",
-    "37-4": "**NIS** (Numero de identificacion social)  \n**LC** (Licencia de conducir)",
-    "37-5": "1",
-    "38-0": "Saint Kitts And Nevis",
-    "38-1": "KN",
-    "38-2": "XCD",
-    "38-3": "2",
-    "38-4": "National ID Card",
-    "38-5": "1",
-    "39-0": "Saint Lucia",
-    "39-1": "LC",
-    "39-2": "XCD",
-    "39-3": "2",
-    "39-4": "National ID Card",
-    "39-5": "1",
-    "40-0": "Saint Martin",
-    "40-1": "MF",
-    "40-2": "EUR",
-    "40-3": "2",
-    "40-4": "**PAS** (Passport)  \nNational ID Card",
-    "40-5": "590",
-    "41-0": "Saint Pierre And Miquelon",
-    "41-1": "PM",
-    "41-2": "EUR",
-    "41-3": "2",
-    "41-4": "**PAS** (Passport)",
-    "41-5": "508",
-    "42-0": "Saint Vincent And The Grenadines",
-    "42-1": "VC",
-    "42-2": "XCD",
-    "42-3": "2",
-    "42-4": "**PAS** (Passport)",
-    "42-5": "1",
-    "43-0": "Suriname",
-    "43-1": "SR",
-    "43-2": "SRD",
-    "43-3": "2",
-    "43-4": "**PAS** (Passport)",
-    "43-5": "597",
-    "44-0": "Trinidad And Tobago",
-    "44-1": "TT",
-    "44-2": "TTD",
-    "44-3": "2",
-    "44-4": "**PAS** (Passport)",
-    "44-5": "1",
-    "45-0": "Turks And Caicos Islands",
-    "45-1": "TC",
-    "45-2": "USD",
-    "45-3": "2",
-    "45-4": "**PAS** (Passport)",
-    "45-5": "1",
-    "46-0": "United States",
-    "46-1": "US",
-    "46-2": "USD",
-    "46-3": "2",
-    "46-4": "**PAS** (Passport)",
-    "46-5": "1",
-    "47-0": "United States Minor Outlying Islands",
-    "47-1": "UM",
-    "47-2": "USD",
-    "47-3": "2",
-    "47-4": "**PAS** (Passport)",
-    "47-5": "1",
-    "48-0": "Uruguay",
-    "48-1": "UY",
-    "48-2": "UYU  \nUYI",
-    "48-3": "2  \n2",
-    "48-4": " **PAS** (Passport)  \n**CI** (Identity Card)",
-    "48-5": "598",
-    "49-0": "Venezuela",
-    "49-1": "VE",
-    "49-2": "VEF",
-    "49-3": "2",
-    "49-4": "**PAS** (Passport)",
-    "49-5": "58",
-    "50-0": "Virgin Islands (British)",
-    "50-1": "VG",
-    "50-2": "USD",
-    "50-3": "2",
-    "50-4": "**PAS** (Passport)",
-    "50-5": "1",
-    "51-0": "Virgin Islands (US)",
-    "51-1": "VI",
-    "51-2": "USD",
-    "51-3": "2",
-    "51-4": "**PAS** (Passport)",
-    "51-5": "1"
-  },
-  "cols": 6,
-  "rows": 52,
-  "align": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-  ]
-}
-[/block]
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Name
+      </th>
 
+      <th>
+        Country code (ISO 3166-1 Alpha 2)
+      </th>
 
-**(1)** _The number of digits after the decimal separator_.
+      <th>
+        Currency code (ISO 4217 Alpha 3)
+      </th>
+
+      <th>
+        Currency decimal digits
+
+        <sup>
+
+        (1)
+
+        </sup>
+      </th>
+
+      <th>
+        Document type
+      </th>
+
+      <th>
+        Phone country calling code
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        Anguilla
+      </td>
+
+      <td>
+        AI
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Antigua And Barbuda
+      </td>
+
+      <td>
+        AG
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Argentina
+      </td>
+
+      <td>
+        AR
+      </td>
+
+      <td>
+        ARS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*DNI\*\* (National Identity Document)  
+        * \*CI\*\* (Identity Card)  
+        * \*LC\*\* (Civic Notebook)  
+        * \*LE\*\* (Book Enlistment)  
+        * \*CUIT\*\* (Single Tax Identification)  
+        * \*CUIL\*\* (Unique Labor Identification Code)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        54
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Aruba
+      </td>
+
+      <td>
+        AW
+      </td>
+
+      <td>
+        AWG
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  
+        * \*PIN\*\* (individual Identity number)
+      </td>
+
+      <td>
+        297
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bahamas
+      </td>
+
+      <td>
+        BS
+      </td>
+
+      <td>
+        BSD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Barbados
+      </td>
+
+      <td>
+        BB
+      </td>
+
+      <td>
+        BBD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Belize
+      </td>
+
+      <td>
+        BZ
+      </td>
+
+      <td>
+        BZD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Social Security Card\
+          Driver's license
+      </td>
+
+      <td>
+        501
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bermuda
+      </td>
+
+      <td>
+        BM
+      </td>
+
+      <td>
+        BMD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bolivia
+      </td>
+
+      <td>
+        BO
+      </td>
+
+      <td>
+        BOB\
+        BOV
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*CI\*\* (Identity Card)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        591
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Brazil
+      </td>
+
+      <td>
+        BR
+      </td>
+
+      <td>
+        BRL
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*RG\*\* (Identity Card)  
+        * \*CPF\*\* (Natural Persons Register)  
+        * \*CNH\*\* (Driver License)  
+        * \*CNPJ\*\* (National Registry of Legal Entities)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        55
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Canada
+      </td>
+
+      <td>
+        CA
+      </td>
+
+      <td>
+        CAD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Driver's license\
+          National ID Card
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cayman Islands
+      </td>
+
+      <td>
+        KY
+      </td>
+
+      <td>
+        KYD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Voter ID Card\
+        Driver's License  
+
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Chile
+      </td>
+
+      <td>
+        CL
+      </td>
+
+      <td>
+        CLP\
+        CLF
+      </td>
+
+      <td>
+        0\
+        0
+      </td>
+
+      <td>
+        * \*CI\*\* (Identity Card)  
+        * \*RUT\*\* (Unique Tax Role)  
+        * \*RUN\*\* (Unique National Role)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        56
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Colombia
+      </td>
+
+      <td>
+        CO
+      </td>
+
+      <td>
+        COP\
+        COU
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*CC\*\* (Citizenship Card)  
+        * \*CE\*\* (Foreign Certificate)  
+        * \*NIT\*\* (Tax Identification Number)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        57
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Costa Rica
+      </td>
+
+      <td>
+        CR
+      </td>
+
+      <td>
+        CRC
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*CI\*\* (Identity Card)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        506
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cuba
+      </td>
+
+      <td>
+        CU
+      </td>
+
+      <td>
+        CUP\
+        CUC
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        53
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Curacao
+      </td>
+
+      <td>
+        CW
+      </td>
+
+      <td>
+        ANG
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Identity Card\
+          Driver's license
+      </td>
+
+      <td>
+        599
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Dominica
+      </td>
+
+      <td>
+        DM
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Dominican Republic
+      </td>
+
+      <td>
+        DO
+      </td>
+
+      <td>
+        DOP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*CI\*\* (Identity Card)\
+          Cédula de menor
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Ecuador
+      </td>
+
+      <td>
+        EC
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*CI\*\* (Identity Card)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        593
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        El Salvador
+      </td>
+
+      <td>
+        SV
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*DU&#x49;**(Unique Identity Document)\&#xA;**&#x50;IC\*\*  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        503
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Falkland Islands
+      </td>
+
+      <td>
+        FK
+      </td>
+
+      <td>
+        FKP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        500
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        French Guiana
+      </td>
+
+      <td>
+        GF
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        594
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Grenada
+      </td>
+
+      <td>
+        GD
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        473
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Guadeloupe
+      </td>
+
+      <td>
+        GP
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        590
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Guatemala
+      </td>
+
+      <td>
+        GT
+      </td>
+
+      <td>
+        GTQ
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*DPI\*\* (Personal Identification Document)  
+        * \*CUI\*\* (Unique Identification Code)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        502
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Guyana
+      </td>
+
+      <td>
+        GY
+      </td>
+
+      <td>
+        GYD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        592
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Haiti
+      </td>
+
+      <td>
+        HT
+      </td>
+
+      <td>
+        HTG\
+        USD
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*CIN\*\*(Carte d'Identification Nationale)
+      </td>
+
+      <td>
+        509
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Honduras
+      </td>
+
+      <td>
+        HN
+      </td>
+
+      <td>
+        HNL
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  
+        * \*DNI\*\* (National Identification Document)
+      </td>
+
+      <td>
+        504
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Jamaica
+      </td>
+
+      <td>
+        JM
+      </td>
+
+      <td>
+        JMD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Martinique
+      </td>
+
+      <td>
+        MQ
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        596
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Mexico
+      </td>
+
+      <td>
+        MX
+      </td>
+
+      <td>
+        MXN\
+        MXV
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*IFE\*\* (Federal Electoral Institute)  
+        * \*INE\*\* (National Electoral Institute)  
+        * \*CP\*\* (Professional ID)  
+        * \*PAS\*\* (Passport)  
+        * \*RFC\*\* (Federal Taxpayer Registry)  
+        * \*CURP\*\* (Unique Population Registry Code)
+      </td>
+
+      <td>
+        52
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Montserrat
+      </td>
+
+      <td>
+        MS
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Nicaragua
+      </td>
+
+      <td>
+        NI
+      </td>
+
+      <td>
+        NIO
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*CI\*\* (Identity Card)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        505
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Panama
+      </td>
+
+      <td>
+        PA
+      </td>
+
+      <td>
+        PAB\
+        USD
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*CIP\*\* (Identity Card)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        507
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Paraguay
+      </td>
+
+      <td>
+        PY
+      </td>
+
+      <td>
+        PYG
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        **CIC**  
+
+        * \*CI\*\* (Identity Card)  
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        595
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Peru
+      </td>
+
+      <td>
+        PE
+      </td>
+
+      <td>
+        PEN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*DNI\*\* (National Identification Document)  
+        * \*CE\*\* (Immigration Card)  
+        * \*RUC\*\* (Single Registry of Taxpayers)
+      </td>
+
+      <td>
+        51
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Puerto Rico
+      </td>
+
+      <td>
+        PR
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*NIS\*\* (Numero de identificacion social)  
+        * \*LC\*\* (Licencia de conducir)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Saint Kitts And Nevis
+      </td>
+
+      <td>
+        KN
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Saint Lucia
+      </td>
+
+      <td>
+        LC
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Saint Martin
+      </td>
+
+      <td>
+        MF
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        590
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Saint Pierre And Miquelon
+      </td>
+
+      <td>
+        PM
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        508
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Saint Vincent And The Grenadines
+      </td>
+
+      <td>
+        VC
+      </td>
+
+      <td>
+        XCD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Suriname
+      </td>
+
+      <td>
+        SR
+      </td>
+
+      <td>
+        SRD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        597
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Trinidad And Tobago
+      </td>
+
+      <td>
+        TT
+      </td>
+
+      <td>
+        TTD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Turks And Caicos Islands
+      </td>
+
+      <td>
+        TC
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        United States
+      </td>
+
+      <td>
+        US
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        United States Minor Outlying Islands
+      </td>
+
+      <td>
+        UM
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Uruguay
+      </td>
+
+      <td>
+        UY
+      </td>
+
+      <td>
+        UYU\
+        UYI
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  
+        * \*CI\*\* (Identity Card)
+      </td>
+
+      <td>
+        598
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Venezuela
+      </td>
+
+      <td>
+        VE
+      </td>
+
+      <td>
+        VEF
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        58
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Virgin Islands (British)
+      </td>
+
+      <td>
+        VG
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Virgin Islands (US)
+      </td>
+
+      <td>
+        VI
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+**(1)** *The number of digits after the decimal separator*.
 
 ## Africa
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Name",
-    "h-1": "Country code (ISO 3166-1 Alpha 2)",
-    "h-2": "Currency code (ISO 4217 Alpha 3)",
-    "h-3": "Currency decimal digits<sup>(1)</sup>",
-    "h-4": "Document type",
-    "h-5": "Phone country calling code",
-    "0-0": "Algeria",
-    "0-1": "DZ",
-    "0-2": "DZD",
-    "0-3": "2",
-    "0-4": "**PAS** (Passport)",
-    "0-5": "213",
-    "1-0": "Angola",
-    "1-1": "AO",
-    "1-2": "AOA",
-    "1-3": "2",
-    "1-4": "National Identity Card",
-    "1-5": "244",
-    "2-0": "Benin",
-    "2-1": "BJ",
-    "2-2": "XOF",
-    "2-3": "0",
-    "2-4": "**CNIP** (Carte Nationale d'Identité Personnelle)",
-    "2-5": "229",
-    "3-0": "Botswana",
-    "3-1": "BW",
-    "3-2": "BWP",
-    "3-3": "2",
-    "3-4": "**ID** (National Identity Card)",
-    "3-5": "267",
-    "4-0": "Burkina Faso",
-    "4-1": "BF",
-    "4-2": "XOF",
-    "4-3": "0",
-    "4-4": "**CNI** (Carte Nationale d'Identité)",
-    "4-5": "226",
-    "5-0": "Burundi",
-    "5-1": "BI",
-    "5-2": "BIF",
-    "5-3": "0",
-    "5-4": "**CNI** (Carte Nationale d'Identité)",
-    "5-5": "257",
-    "6-0": "Cameroon",
-    "6-1": "CM",
-    "6-2": "XAF",
-    "6-3": "0",
-    "6-4": "**CNI** (Carte Nationale d'Identité)",
-    "6-5": "237",
-    "7-0": "Cape Verde",
-    "7-1": "CV",
-    "7-2": "CVE",
-    "7-3": "0",
-    "7-4": "**BI** (Bilhete de Identidade)",
-    "7-5": "238",
-    "8-0": "Central African Republic",
-    "8-1": "CF",
-    "8-2": "XAF",
-    "8-3": "0",
-    "8-4": "**PAS** (Passport)  National ID Card",
-    "8-5": "236",
-    "9-0": "Chad",
-    "9-1": "TD",
-    "9-2": "XAF",
-    "9-3": "0",
-    "9-4": "**PAS** (Passport)",
-    "9-5": "235",
-    "10-0": "Comoros",
-    "10-1": "KM",
-    "10-2": "KMF",
-    "10-3": "0",
-    "10-4": "Carte d'Identité Nationale",
-    "10-5": "269",
-    "11-0": "Democratic Republic Of Congo",
-    "11-1": "CD",
-    "11-2": "CDF",
-    "11-3": "2",
-    "11-4": "**PAS**(Passport)  \nNational ID Card",
-    "11-5": "243",
-    "12-0": "Djibouti",
-    "12-1": "DJ",
-    "12-2": "DJF",
-    "12-3": "0",
-    "12-4": "**PAS** (Passport)  National ID Card",
-    "12-5": "253",
-    "13-0": "Egypt",
-    "13-1": "EG",
-    "13-2": "EGP",
-    "13-3": "2",
-    "13-4": "**PAS** (Passport)  National ID Card  \nDriver's license",
-    "13-5": "20",
-    "14-0": "Equatorial Guinea",
-    "14-1": "GQ",
-    "14-2": "XAF",
-    "14-3": "0",
-    "14-4": "**PAS** (Passport)  National ID Card",
-    "14-5": "240",
-    "15-0": "Eritrea",
-    "15-1": "ER",
-    "15-2": "ERN",
-    "15-3": "2",
-    "15-4": "**PAS** (Passport)  National ID Card",
-    "15-5": "291",
-    "16-0": "Ethiopia",
-    "16-1": "ET",
-    "16-2": "ETB",
-    "16-3": "2",
-    "16-4": "**PAS** (Passport)  National ID Card  \nDriver's license",
-    "16-5": "251",
-    "17-0": "French Southern Territories",
-    "17-1": "TF",
-    "17-2": "EUR",
-    "17-3": "2",
-    "17-4": "**PAS** (Passport)",
-    "17-5": "262",
-    "18-0": "Gabon Republic",
-    "18-1": "GA",
-    "18-2": "XAF",
-    "18-3": "0",
-    "18-4": "**PAS** (Passport)  National ID Card",
-    "18-5": "241",
-    "19-0": "Gambia",
-    "19-1": "GM",
-    "19-2": "GMD",
-    "19-3": "2",
-    "19-4": "**PAS** (Passport)  National ID Card",
-    "19-5": "220",
-    "20-0": "Ghana",
-    "20-1": "GH",
-    "20-2": "GHS",
-    "20-3": "2",
-    "20-4": "**PAS** (Passport)  National ID Card  \nVoter ID Card",
-    "20-5": "233",
-    "21-0": "Guinea-bissau",
-    "21-1": "GW",
-    "21-2": "XOF",
-    "21-3": "0",
-    "21-4": "**PAS** (Passport)",
-    "21-5": "245",
-    "22-0": "Guinea",
-    "22-1": "GN",
-    "22-2": "GNF",
-    "22-3": "0",
-    "22-4": "**PAS** (Passport)  National ID Card",
-    "22-5": "224",
-    "23-0": "Kenya",
-    "23-1": "KE",
-    "23-2": "KES",
-    "23-3": "2",
-    "23-4": "National ID Card",
-    "23-5": "254",
-    "24-0": "Lesotho",
-    "24-1": "LS",
-    "24-2": "LSL  \nZAR",
-    "24-3": "2  \n2",
-    "24-4": "National ID Card",
-    "24-5": "266",
-    "25-0": "Liberia",
-    "25-1": "LR",
-    "25-2": "LRD",
-    "25-3": "2",
-    "25-4": "National Identification Registry Card",
-    "25-5": "231",
-    "26-0": "Libya",
-    "26-1": "LY",
-    "26-2": "LYD",
-    "26-3": "3",
-    "26-4": "National ID Card",
-    "26-5": "218",
-    "27-0": "Madagascar",
-    "27-1": "MG",
-    "27-2": "MGA",
-    "27-3": "0.7[8]",
-    "27-4": "National ID Card",
-    "27-5": "261",
-    "28-0": "Malawi",
-    "28-1": "MW",
-    "28-2": "MWK",
-    "28-3": "2",
-    "28-4": "**PAS** (Passport)",
-    "28-5": "265",
-    "29-0": "Mali",
-    "29-1": "ML",
-    "29-2": "XOF",
-    "29-3": "0",
-    "29-4": "**PAS** (Passport)",
-    "29-5": "223",
-    "30-0": "Mauritania",
-    "30-1": "MR",
-    "30-2": "MRO",
-    "30-3": "0.7[8]",
-    "30-4": "**PAS** (Passport)",
-    "30-5": "222",
-    "31-0": "Mauritius",
-    "31-1": "MU",
-    "31-2": "MUR",
-    "31-3": "2",
-    "31-4": "**PAS** (Passport)",
-    "31-5": "230",
-    "32-0": "Mayotte",
-    "32-1": "YT",
-    "32-2": "EUR",
-    "32-3": "2",
-    "32-4": "**PAS** (Passport)",
-    "32-5": "262",
-    "33-0": "Morocco",
-    "33-1": "MA",
-    "33-2": "MAD",
-    "33-3": "2",
-    "33-4": "National ID Card",
-    "33-5": "212",
-    "34-0": "Mozambique",
-    "34-1": "MZ",
-    "34-2": "MZN",
-    "34-3": "2",
-    "34-4": "**PAS** (Passport)",
-    "34-5": "258",
-    "35-0": "Namibia",
-    "35-1": "NA",
-    "35-2": "NAD  \nZAR",
-    "35-3": "2  \n2",
-    "35-4": "**PAS** (Passport)",
-    "35-5": "264",
-    "36-0": "Niger",
-    "36-1": "NE",
-    "36-2": "XOF",
-    "36-3": "0",
-    "36-4": "**PAS** (Passport)",
-    "36-5": "227",
-    "37-0": "Nigeria",
-    "37-1": "NG",
-    "37-2": "NGN",
-    "37-3": "2",
-    "37-4": "**PAS** (Passport)",
-    "37-5": "234",
-    "38-0": "Republic Of Congo",
-    "38-1": "CG",
-    "38-2": "XAF",
-    "38-3": "0",
-    "38-4": "**PAS** (Passport)  \nNational ID Card",
-    "38-5": "242",
-    "39-0": "Reunion",
-    "39-1": "RE",
-    "39-2": "EUR",
-    "39-3": "2",
-    "39-4": "**PAS** (Passport)",
-    "39-5": "262",
-    "40-0": "Rwanda",
-    "40-1": "RW",
-    "40-2": "RWF",
-    "40-3": "0",
-    "40-4": "**PAS** (Passport)",
-    "40-5": "250",
-    "41-0": "Saint Helena, Ascension And Tristan Da Cunha",
-    "41-1": "SH",
-    "41-2": "SHP",
-    "41-3": "2",
-    "41-4": "**PAS** (Passport)",
-    "41-5": "290",
-    "42-0": "São Tomé and Príncipe",
-    "42-1": "ST",
-    "42-2": "STD",
-    "42-3": "0",
-    "42-4": "**PAS** (Passport)",
-    "42-5": "239",
-    "43-0": "Senegal",
-    "43-1": "SN",
-    "43-2": "XOF",
-    "43-3": "0",
-    "43-4": "**PAS** (Passport)",
-    "43-5": "221",
-    "44-0": "Seychelles",
-    "44-1": "SC",
-    "44-2": "SCR",
-    "44-3": "2",
-    "44-4": "**PAS** (Passport)",
-    "44-5": "248",
-    "45-0": "Sierra Leone",
-    "45-1": "SL",
-    "45-2": "SLL",
-    "45-3": "0",
-    "45-4": "**PAS** (Passport)",
-    "45-5": "232",
-    "46-0": "Somalia",
-    "46-1": "SO",
-    "46-2": "SOS",
-    "46-3": "2",
-    "46-4": "**PAS** (Passport)",
-    "46-5": "252",
-    "47-0": "South Africa",
-    "47-1": "ZA",
-    "47-2": "ZAR",
-    "47-3": "2",
-    "47-4": "**PAS** (Passport)",
-    "47-5": "27",
-    "48-0": "South Sudan",
-    "48-1": "SS",
-    "48-2": "SSP",
-    "48-3": "2",
-    "48-4": "**PAS** (Passport)",
-    "48-5": "211",
-    "49-0": "Sudan",
-    "49-1": "SD",
-    "49-2": "SDG",
-    "49-3": "2",
-    "49-4": "**PAS** (Passport)",
-    "49-5": "249",
-    "50-0": "Swaziland",
-    "50-1": "SZ",
-    "50-2": "SZL",
-    "50-3": "2",
-    "50-4": "**PAS** (Passport)",
-    "50-5": "268",
-    "51-0": "Tanzania",
-    "51-1": "TZ",
-    "51-2": "TZS",
-    "51-3": "2",
-    "51-4": "**PAS** (Passport)",
-    "51-5": "255",
-    "52-0": "Togo",
-    "52-1": "TG",
-    "52-2": "XOF",
-    "52-3": "0",
-    "52-4": "**PAS** (Passport)",
-    "52-5": "228",
-    "53-0": "Tunisia",
-    "53-1": "TN",
-    "53-2": "TND",
-    "53-3": "3",
-    "53-4": "**PAS** (Passport)",
-    "53-5": "216",
-    "54-0": "Uganda",
-    "54-1": "UG",
-    "54-2": "UGX",
-    "54-3": "2",
-    "54-4": "**PAS** (Passport)",
-    "54-5": "256",
-    "55-0": "Western Sahara",
-    "55-1": "EH",
-    "55-2": "MAD",
-    "55-3": "2",
-    "55-4": "No se emiten documentos de identidad reconocidos",
-    "55-5": "212",
-    "56-0": "Zambia",
-    "56-1": "ZM",
-    "56-2": "ZMW",
-    "56-3": "2",
-    "56-4": "**PAS** (Passport)",
-    "56-5": "260"
-  },
-  "cols": 6,
-  "rows": 57,
-  "align": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-  ]
-}
-[/block]
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Name
+      </th>
 
+      <th>
+        Country code (ISO 3166-1 Alpha 2)
+      </th>
 
-**(1)** _The number of digits after the decimal separator_.
+      <th>
+        Currency code (ISO 4217 Alpha 3)
+      </th>
+
+      <th>
+        Currency decimal digits
+
+        <sup>
+
+        (1)
+
+        </sup>
+      </th>
+
+      <th>
+        Document type
+      </th>
+
+      <th>
+        Phone country calling code
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        Algeria
+      </td>
+
+      <td>
+        DZ
+      </td>
+
+      <td>
+        DZD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        213
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Angola
+      </td>
+
+      <td>
+        AO
+      </td>
+
+      <td>
+        AOA
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National Identity Card
+      </td>
+
+      <td>
+        244
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Benin
+      </td>
+
+      <td>
+        BJ
+      </td>
+
+      <td>
+        XOF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*CNIP\*\* (Carte Nationale d'Identité Personnelle)
+      </td>
+
+      <td>
+        229
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Botswana
+      </td>
+
+      <td>
+        BW
+      </td>
+
+      <td>
+        BWP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*ID\*\* (National Identity Card)
+      </td>
+
+      <td>
+        267
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Burkina Faso
+      </td>
+
+      <td>
+        BF
+      </td>
+
+      <td>
+        XOF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*CNI\*\* (Carte Nationale d'Identité)
+      </td>
+
+      <td>
+        226
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Burundi
+      </td>
+
+      <td>
+        BI
+      </td>
+
+      <td>
+        BIF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*CNI\*\* (Carte Nationale d'Identité)
+      </td>
+
+      <td>
+        257
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cameroon
+      </td>
+
+      <td>
+        CM
+      </td>
+
+      <td>
+        XAF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*CNI\*\* (Carte Nationale d'Identité)
+      </td>
+
+      <td>
+        237
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cape Verde
+      </td>
+
+      <td>
+        CV
+      </td>
+
+      <td>
+        CVE
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*BI\*\* (Bilhete de Identidade)
+      </td>
+
+      <td>
+        238
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Central African Republic
+      </td>
+
+      <td>
+        CF
+      </td>
+
+      <td>
+        XAF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        236
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Chad
+      </td>
+
+      <td>
+        TD
+      </td>
+
+      <td>
+        XAF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        235
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Comoros
+      </td>
+
+      <td>
+        KM
+      </td>
+
+      <td>
+        KMF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        Carte d'Identité Nationale
+      </td>
+
+      <td>
+        269
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Democratic Republic Of Congo
+      </td>
+
+      <td>
+        CD
+      </td>
+
+      <td>
+        CDF
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\*(Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        243
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Djibouti
+      </td>
+
+      <td>
+        DJ
+      </td>
+
+      <td>
+        DJF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        253
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Egypt
+      </td>
+
+      <td>
+        EG
+      </td>
+
+      <td>
+        EGP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        20
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Equatorial Guinea
+      </td>
+
+      <td>
+        GQ
+      </td>
+
+      <td>
+        XAF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        240
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Eritrea
+      </td>
+
+      <td>
+        ER
+      </td>
+
+      <td>
+        ERN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        291
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Ethiopia
+      </td>
+
+      <td>
+        ET
+      </td>
+
+      <td>
+        ETB
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        251
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        French Southern Territories
+      </td>
+
+      <td>
+        TF
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        262
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Gabon Republic
+      </td>
+
+      <td>
+        GA
+      </td>
+
+      <td>
+        XAF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        241
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Gambia
+      </td>
+
+      <td>
+        GM
+      </td>
+
+      <td>
+        GMD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        220
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Ghana
+      </td>
+
+      <td>
+        GH
+      </td>
+
+      <td>
+        GHS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card\
+          Voter ID Card
+      </td>
+
+      <td>
+        233
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Guinea-bissau
+      </td>
+
+      <td>
+        GW
+      </td>
+
+      <td>
+        XOF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        245
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Guinea
+      </td>
+
+      <td>
+        GN
+      </td>
+
+      <td>
+        GNF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        224
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Kenya
+      </td>
+
+      <td>
+        KE
+      </td>
+
+      <td>
+        KES
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        254
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Lesotho
+      </td>
+
+      <td>
+        LS
+      </td>
+
+      <td>
+        LSL\
+        ZAR
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        266
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Liberia
+      </td>
+
+      <td>
+        LR
+      </td>
+
+      <td>
+        LRD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National Identification Registry Card
+      </td>
+
+      <td>
+        231
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Libya
+      </td>
+
+      <td>
+        LY
+      </td>
+
+      <td>
+        LYD
+      </td>
+
+      <td>
+        3
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        218
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Madagascar
+      </td>
+
+      <td>
+        MG
+      </td>
+
+      <td>
+        MGA
+      </td>
+
+      <td>
+        0.7[8]
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        261
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Malawi
+      </td>
+
+      <td>
+        MW
+      </td>
+
+      <td>
+        MWK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        265
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Mali
+      </td>
+
+      <td>
+        ML
+      </td>
+
+      <td>
+        XOF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        223
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Mauritania
+      </td>
+
+      <td>
+        MR
+      </td>
+
+      <td>
+        MRO
+      </td>
+
+      <td>
+        0.7[8]
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        222
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Mauritius
+      </td>
+
+      <td>
+        MU
+      </td>
+
+      <td>
+        MUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        230
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Mayotte
+      </td>
+
+      <td>
+        YT
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        262
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Morocco
+      </td>
+
+      <td>
+        MA
+      </td>
+
+      <td>
+        MAD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        212
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Mozambique
+      </td>
+
+      <td>
+        MZ
+      </td>
+
+      <td>
+        MZN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        258
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Namibia
+      </td>
+
+      <td>
+        NA
+      </td>
+
+      <td>
+        NAD\
+        ZAR
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        264
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Niger
+      </td>
+
+      <td>
+        NE
+      </td>
+
+      <td>
+        XOF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        227
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Nigeria
+      </td>
+
+      <td>
+        NG
+      </td>
+
+      <td>
+        NGN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        234
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Republic Of Congo
+      </td>
+
+      <td>
+        CG
+      </td>
+
+      <td>
+        XAF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        242
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Reunion
+      </td>
+
+      <td>
+        RE
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        262
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Rwanda
+      </td>
+
+      <td>
+        RW
+      </td>
+
+      <td>
+        RWF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        250
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Saint Helena, Ascension And Tristan Da Cunha
+      </td>
+
+      <td>
+        SH
+      </td>
+
+      <td>
+        SHP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        290
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        São Tomé and Príncipe
+      </td>
+
+      <td>
+        ST
+      </td>
+
+      <td>
+        STD
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        239
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Senegal
+      </td>
+
+      <td>
+        SN
+      </td>
+
+      <td>
+        XOF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        221
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Seychelles
+      </td>
+
+      <td>
+        SC
+      </td>
+
+      <td>
+        SCR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        248
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Sierra Leone
+      </td>
+
+      <td>
+        SL
+      </td>
+
+      <td>
+        SLL
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        232
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Somalia
+      </td>
+
+      <td>
+        SO
+      </td>
+
+      <td>
+        SOS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        252
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        South Africa
+      </td>
+
+      <td>
+        ZA
+      </td>
+
+      <td>
+        ZAR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        27
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        South Sudan
+      </td>
+
+      <td>
+        SS
+      </td>
+
+      <td>
+        SSP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        211
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Sudan
+      </td>
+
+      <td>
+        SD
+      </td>
+
+      <td>
+        SDG
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        249
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Swaziland
+      </td>
+
+      <td>
+        SZ
+      </td>
+
+      <td>
+        SZL
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        268
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Tanzania
+      </td>
+
+      <td>
+        TZ
+      </td>
+
+      <td>
+        TZS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        255
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Togo
+      </td>
+
+      <td>
+        TG
+      </td>
+
+      <td>
+        XOF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        228
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Tunisia
+      </td>
+
+      <td>
+        TN
+      </td>
+
+      <td>
+        TND
+      </td>
+
+      <td>
+        3
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        216
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Uganda
+      </td>
+
+      <td>
+        UG
+      </td>
+
+      <td>
+        UGX
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        256
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Western Sahara
+      </td>
+
+      <td>
+        EH
+      </td>
+
+      <td>
+        MAD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        No se emiten documentos de identidad reconocidos
+      </td>
+
+      <td>
+        212
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Zambia
+      </td>
+
+      <td>
+        ZM
+      </td>
+
+      <td>
+        ZMW
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        260
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+**(1)** *The number of digits after the decimal separator*.
 
 ## Asia Pacific
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Name",
-    "h-1": "Country code (ISO 3166-1 Alpha 2)",
-    "h-2": "Currency code (ISO 4217 Alpha 3)",
-    "h-3": "Currency decimal digits<sup>(1)</sup>",
-    "h-4": "Document type",
-    "h-5": "Phone country calling code",
-    "0-0": "Afghanistan",
-    "0-1": "AF",
-    "0-2": "AFN",
-    "0-3": "2",
-    "0-4": "Tazkira",
-    "0-5": "93",
-    "1-0": "Armenia",
-    "1-1": "AM",
-    "1-2": "AMD",
-    "1-3": "2",
-    "1-4": "Tarjeta de Identidad",
-    "1-5": "374",
-    "2-0": "Australia",
-    "2-1": "AU",
-    "2-2": "AUD",
-    "2-3": "2",
-    "2-4": "**PAS** (Passport)  \nID Card",
-    "2-5": "61",
-    "3-0": "Azerbaijan",
-    "3-1": "AZ",
-    "3-2": "AZN",
-    "3-3": "2",
-    "3-4": "**PAS** (Passport)  National ID Card",
-    "3-5": "994",
-    "4-0": "Bahrain",
-    "4-1": "BH",
-    "4-2": "BHD",
-    "4-3": "3",
-    "4-4": "**PAS** (Passport)",
-    "4-5": "973",
-    "5-0": "Bangladesh",
-    "5-1": "BD",
-    "5-2": "BDT",
-    "5-3": "2",
-    "5-4": "**PAS** (Passport)  National ID Card",
-    "5-5": "880",
-    "6-0": "Bhutan",
-    "6-1": "BT",
-    "6-2": "INR  \nBTN",
-    "6-3": "2  \n2",
-    "6-4": "**PAS** (Passport)",
-    "6-5": "975",
-    "7-0": "Brunei Darussalam",
-    "7-1": "BN",
-    "7-2": "BND",
-    "7-3": "2",
-    "7-4": "**PAS** (Passport)",
-    "7-5": "673",
-    "8-0": "Cambodia",
-    "8-1": "KH",
-    "8-2": "KHR",
-    "8-3": "2",
-    "8-4": "National ID Card",
-    "8-5": "855",
-    "9-0": "China",
-    "9-1": "CN",
-    "9-2": "CNY",
-    "9-3": "2",
-    "9-4": "**PAS** (Passport)",
-    "9-5": "86",
-    "10-0": "Christmas Island",
-    "10-1": "CX",
-    "10-2": "AUD",
-    "10-3": "2",
-    "10-4": "**PAS** (Passport)  \nAustralian driver's license",
-    "10-5": "61",
-    "11-0": "Cocos (Keeling) Islands",
-    "11-1": "CC",
-    "11-2": "AUD",
-    "11-3": "2",
-    "11-4": "**PAS** (Passport)  \nAustralian driver's licenses",
-    "11-5": "61",
-    "12-0": "Cook Islands",
-    "12-1": "CK",
-    "12-2": "NZD",
-    "12-3": "2",
-    "12-4": "**PAS** (Passport)  \nDriver's license  \nNational ID Card  \nBirth certificate",
-    "12-5": "682",
-    "13-0": "Fiji",
-    "13-1": "FJ",
-    "13-2": "FJD",
-    "13-3": "2",
-    "13-4": "**PAS** (Passport)",
-    "13-5": "679",
-    "14-0": "French Polynesia",
-    "14-1": "PF",
-    "14-2": "XPF",
-    "14-3": "0",
-    "14-4": "**PAS** (Passport)",
-    "14-5": "689",
-    "15-0": "Guam",
-    "15-1": "GU",
-    "15-2": "USD",
-    "15-3": "2",
-    "15-4": "**PAS** (Passport)",
-    "15-5": "1",
-    "16-0": "Hong Kong",
-    "16-1": "HK",
-    "16-2": "HKD",
-    "16-3": "2",
-    "16-4": "**PAS** (Passport)",
-    "16-5": "852",
-    "17-0": "India",
-    "17-1": "IN",
-    "17-2": "INR",
-    "17-3": "2",
-    "17-4": "Aadhaar Card",
-    "17-5": "91",
-    "18-0": "Indonesia",
-    "18-1": "ID",
-    "18-2": "IDR",
-    "18-3": "2",
-    "18-4": "**KTP** (Kartu Tanda Penduduk)",
-    "18-5": "62",
-    "19-0": "Iran",
-    "19-1": "IR",
-    "19-2": "IRR",
-    "19-3": "0",
-    "19-4": "National Card",
-    "19-5": "98",
-    "20-0": "Iraq",
-    "20-1": "IQ",
-    "20-2": "IQD",
-    "20-3": "3",
-    "20-4": "National Card",
-    "20-5": "964",
-    "21-0": "Israel",
-    "21-1": "IL",
-    "21-2": "ILS",
-    "21-3": "2",
-    "21-4": "Teudat Zehut",
-    "21-5": "972",
-    "22-0": "Japan",
-    "22-1": "JP",
-    "22-2": "JPY",
-    "22-3": "0",
-    "22-4": "My Number Card",
-    "22-5": "81",
-    "23-0": "Jordan",
-    "23-1": "JO",
-    "23-2": "JOD",
-    "23-3": "3",
-    "23-4": "National ID Card",
-    "23-5": "962",
-    "24-0": "Kazakhstan",
-    "24-1": "KZ",
-    "24-2": "KZT",
-    "24-3": "2",
-    "24-4": "National ID Card",
-    "24-5": "7",
-    "25-0": "Kiribati",
-    "25-1": "KI",
-    "25-2": "AUD",
-    "25-3": "2",
-    "25-4": "**PAS** (Passport)",
-    "25-5": "686",
-    "26-0": "Kuwait",
-    "26-1": "KW",
-    "26-2": "KWD",
-    "26-3": "3",
-    "26-4": "Civil ID Card",
-    "26-5": "965",
-    "27-0": "Kyrgyzstan",
-    "27-1": "KG",
-    "27-2": "KGS",
-    "27-3": "2",
-    "27-4": "National ID Card",
-    "27-5": "996",
-    "28-0": "Lebanon",
-    "28-1": "LB",
-    "28-2": "LBP",
-    "28-3": "0",
-    "28-4": "National ID Card",
-    "28-5": "961",
-    "29-0": "Macao",
-    "29-1": "MO",
-    "29-2": "MOP",
-    "29-3": "2",
-    "29-4": "**PAS** (Passport)",
-    "29-5": "853",
-    "30-0": "Malaysia",
-    "30-1": "MY",
-    "30-2": "MYR",
-    "30-3": "2",
-    "30-4": "**PAS** (Passport)",
-    "30-5": "60",
-    "31-0": "Maldives",
-    "31-1": "MV",
-    "31-2": "MVR",
-    "31-3": "2",
-    "31-4": "**PAS** (Passport)",
-    "31-5": "960",
-    "32-0": "Marshall Islands",
-    "32-1": "MH",
-    "32-2": "USD",
-    "32-3": "2",
-    "32-4": "**PAS** (Passport)",
-    "32-5": "692",
-    "33-0": "Micronesia",
-    "33-1": "FM",
-    "33-2": "USD",
-    "33-3": "2",
-    "33-4": "**PAS** (Passport)  \nNational ID Card",
-    "33-5": "691",
-    "34-0": "Mongolia",
-    "34-1": "MN",
-    "34-2": "MNT",
-    "34-3": "2",
-    "34-4": "**PAS** (Passport)",
-    "34-5": "976",
-    "35-0": "Myanmar",
-    "35-1": "MM",
-    "35-2": "MMK",
-    "35-3": "0",
-    "35-4": "**PAS** (Passport)",
-    "35-5": "95",
-    "36-0": "Nauru",
-    "36-1": "NR",
-    "36-2": "AUD",
-    "36-3": "2",
-    "36-4": "**PAS** (Passport)",
-    "36-5": "674",
-    "37-0": "Nepal",
-    "37-1": "NP",
-    "37-2": "NPR",
-    "37-3": "2",
-    "37-4": "**PAS** (Passport)",
-    "37-5": "977",
-    "38-0": "New Caledonia",
-    "38-1": "NC",
-    "38-2": "XPF",
-    "38-3": "0",
-    "38-4": "Carte d'identité de Nouvelle-Calédonie",
-    "38-5": "687",
-    "39-0": "New Zealand",
-    "39-1": "NZ",
-    "39-2": "NZD",
-    "39-3": "2",
-    "39-4": "**PAS** (Passport)  \nTarjeta de Identificación",
-    "39-5": "64",
-    "40-0": "Niue",
-    "40-1": "NU",
-    "40-2": "NZD",
-    "40-3": "2",
-    "40-4": "**PAS** (Passport)",
-    "40-5": "683",
-    "41-0": "Norfolk Island",
-    "41-1": "NF",
-    "41-2": "AUD",
-    "41-3": "2",
-    "41-4": "**PAS** (Passport)",
-    "41-5": "672",
-    "42-0": "Northern Mariana Islands",
-    "42-1": "MP",
-    "42-2": "USD",
-    "42-3": "2",
-    "42-4": "**PAS** (Passport)",
-    "42-5": "1",
-    "43-0": "Oman",
-    "43-1": "OM",
-    "43-2": "OMR",
-    "43-3": "3",
-    "43-4": "**PAS** (Passport)",
-    "43-5": "968",
-    "44-0": "Pakistan",
-    "44-1": "PK",
-    "44-2": "PKR",
-    "44-3": "2",
-    "44-4": "**PAS** (Passport)",
-    "44-5": "92",
-    "45-0": "Palau",
-    "45-1": "PW",
-    "45-2": "USD",
-    "45-3": "2",
-    "45-4": "**PAS** (Passport)",
-    "45-5": "680",
-    "46-0": "Papua New Guinea",
-    "46-1": "PG",
-    "46-2": "PGK",
-    "46-3": "2",
-    "46-4": "**PAS** (Passport)",
-    "46-5": "675",
-    "47-0": "Philippines",
-    "47-1": "PH",
-    "47-2": "PHP",
-    "47-3": "2",
-    "47-4": "**PAS** (Passport)",
-    "47-5": "63",
-    "48-0": "Pitcairn Islands",
-    "48-1": "PN",
-    "48-2": "NZD",
-    "48-3": "2",
-    "48-4": "**PAS** (Passport)",
-    "48-5": "872",
-    "49-0": "Qatar",
-    "49-1": "QA",
-    "49-2": "QAR",
-    "49-3": "2",
-    "49-4": "**PAS** (Passport)",
-    "49-5": "974",
-    "50-0": "Samoa",
-    "50-1": "WS",
-    "50-2": "WST",
-    "50-3": "2",
-    "50-4": "**PAS** (Passport)",
-    "50-5": "685",
-    "51-0": "Saudi Arabia",
-    "51-1": "SA",
-    "51-2": "SAR",
-    "51-3": "2",
-    "51-4": "**PAS** (Passport)",
-    "51-5": "966",
-    "52-0": "Singapore",
-    "52-1": "SG",
-    "52-2": "SGD",
-    "52-3": "2",
-    "52-4": "**PAS** (Passport)",
-    "52-5": "65",
-    "53-0": "Solomon Islands",
-    "53-1": "SB",
-    "53-2": "SBD",
-    "53-3": "2",
-    "53-4": "**PAS** (Passport)",
-    "53-5": "677",
-    "54-0": "South Korea",
-    "54-1": "KR",
-    "54-2": "KRW",
-    "54-3": "0",
-    "54-4": "**RRN**(Resident Registration Number)",
-    "54-5": "82",
-    "55-0": "Sri Lanka",
-    "55-1": "LK",
-    "55-2": "LKR",
-    "55-3": "2",
-    "55-4": "**PAS** (Passport)  \nNational ID Card",
-    "55-5": "94",
-    "56-0": "Syria",
-    "56-1": "SY",
-    "56-2": "SYP",
-    "56-3": "2",
-    "56-4": "**PAS** (Passport)",
-    "56-5": "963",
-    "57-0": "Taiwan",
-    "57-1": "TW",
-    "57-2": "TWD",
-    "57-3": "2",
-    "57-4": "**PAS** (Passport)",
-    "57-5": "886",
-    "58-0": "Tajikistan",
-    "58-1": "TJ",
-    "58-2": "TJS",
-    "58-3": "2",
-    "58-4": "**PAS** (Passport)",
-    "58-5": "992",
-    "59-0": "Thailand",
-    "59-1": "TH",
-    "59-2": "THB",
-    "59-3": "2",
-    "59-4": "**PAS** (Passport)",
-    "59-5": "66",
-    "60-0": "Tokelau",
-    "60-1": "TK",
-    "60-2": "NZD",
-    "60-3": "2",
-    "60-4": "**PAS** (Passport)",
-    "60-5": "690",
-    "61-0": "Tonga",
-    "61-1": "TO",
-    "61-2": "TOP",
-    "61-3": "2",
-    "61-4": "**PAS** (Passport)",
-    "61-5": "676",
-    "62-0": "Turkmenistan",
-    "62-1": "TM",
-    "62-2": "TMT",
-    "62-3": "2",
-    "62-4": "**PAS** (Passport)",
-    "62-5": "993",
-    "63-0": "Tuvalu",
-    "63-1": "TV",
-    "63-2": "AUD",
-    "63-3": "2",
-    "63-4": "**PAS** (Passport)",
-    "63-5": "688",
-    "64-0": "United Arab Emirates",
-    "64-1": "AE",
-    "64-2": "AED",
-    "64-3": "2",
-    "64-4": "Emirates ID",
-    "64-5": "971",
-    "65-0": "Uzbekistan",
-    "65-1": "UZ",
-    "65-2": "UZS",
-    "65-3": "2",
-    "65-4": "**PAS** (Passport)",
-    "65-5": "998",
-    "66-0": "Vanuatu",
-    "66-1": "VU",
-    "66-2": "VUV",
-    "66-3": "0",
-    "66-4": "**PAS** (Passport)",
-    "66-5": "678",
-    "67-0": "Vietnam",
-    "67-1": "VN",
-    "67-2": "VND",
-    "67-3": "0",
-    "67-4": "**PAS** (Passport)",
-    "67-5": "84",
-    "68-0": "Wallis and Futuna",
-    "68-1": "WF",
-    "68-2": "XPF",
-    "68-3": "0",
-    "68-4": "Carte d'identité territoriale de Wallis-et-Futuna",
-    "68-5": "681",
-    "69-0": "Yemen",
-    "69-1": "YE",
-    "69-2": "YER",
-    "69-3": "2",
-    "69-4": "**PAS** (Passport)",
-    "69-5": "967"
-  },
-  "cols": 6,
-  "rows": 70,
-  "align": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-  ]
-}
-[/block]
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Name
+      </th>
 
+      <th>
+        Country code (ISO 3166-1 Alpha 2)
+      </th>
 
-**(1)** _The number of digits after the decimal separator_.
+      <th>
+        Currency code (ISO 4217 Alpha 3)
+      </th>
+
+      <th>
+        Currency decimal digits
+
+        <sup>
+
+        (1)
+
+        </sup>
+      </th>
+
+      <th>
+        Document type
+      </th>
+
+      <th>
+        Phone country calling code
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        Afghanistan
+      </td>
+
+      <td>
+        AF
+      </td>
+
+      <td>
+        AFN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Tazkira
+      </td>
+
+      <td>
+        93
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Armenia
+      </td>
+
+      <td>
+        AM
+      </td>
+
+      <td>
+        AMD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Tarjeta de Identidad
+      </td>
+
+      <td>
+        374
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Australia
+      </td>
+
+      <td>
+        AU
+      </td>
+
+      <td>
+        AUD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          ID Card
+      </td>
+
+      <td>
+        61
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Azerbaijan
+      </td>
+
+      <td>
+        AZ
+      </td>
+
+      <td>
+        AZN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        994
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bahrain
+      </td>
+
+      <td>
+        BH
+      </td>
+
+      <td>
+        BHD
+      </td>
+
+      <td>
+        3
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        973
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bangladesh
+      </td>
+
+      <td>
+        BD
+      </td>
+
+      <td>
+        BDT
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)  National ID Card
+      </td>
+
+      <td>
+        880
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bhutan
+      </td>
+
+      <td>
+        BT
+      </td>
+
+      <td>
+        INR\
+        BTN
+      </td>
+
+      <td>
+        2\
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        975
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Brunei Darussalam
+      </td>
+
+      <td>
+        BN
+      </td>
+
+      <td>
+        BND
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        673
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cambodia
+      </td>
+
+      <td>
+        KH
+      </td>
+
+      <td>
+        KHR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        855
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        China
+      </td>
+
+      <td>
+        CN
+      </td>
+
+      <td>
+        CNY
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        86
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Christmas Island
+      </td>
+
+      <td>
+        CX
+      </td>
+
+      <td>
+        AUD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Australian driver's license
+      </td>
+
+      <td>
+        61
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cocos (Keeling) Islands
+      </td>
+
+      <td>
+        CC
+      </td>
+
+      <td>
+        AUD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Australian driver's licenses
+      </td>
+
+      <td>
+        61
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cook Islands
+      </td>
+
+      <td>
+        CK
+      </td>
+
+      <td>
+        NZD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Driver's license\
+          National ID Card\
+          Birth certificate
+      </td>
+
+      <td>
+        682
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Fiji
+      </td>
+
+      <td>
+        FJ
+      </td>
+
+      <td>
+        FJD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        679
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        French Polynesia
+      </td>
+
+      <td>
+        PF
+      </td>
+
+      <td>
+        XPF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        689
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Guam
+      </td>
+
+      <td>
+        GU
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Hong Kong
+      </td>
+
+      <td>
+        HK
+      </td>
+
+      <td>
+        HKD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        852
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        India
+      </td>
+
+      <td>
+        IN
+      </td>
+
+      <td>
+        INR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Aadhaar Card
+      </td>
+
+      <td>
+        91
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Indonesia
+      </td>
+
+      <td>
+        ID
+      </td>
+
+      <td>
+        IDR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*KTP\*\* (Kartu Tanda Penduduk)
+      </td>
+
+      <td>
+        62
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Iran
+      </td>
+
+      <td>
+        IR
+      </td>
+
+      <td>
+        IRR
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        National Card
+      </td>
+
+      <td>
+        98
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Iraq
+      </td>
+
+      <td>
+        IQ
+      </td>
+
+      <td>
+        IQD
+      </td>
+
+      <td>
+        3
+      </td>
+
+      <td>
+        National Card
+      </td>
+
+      <td>
+        964
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Israel
+      </td>
+
+      <td>
+        IL
+      </td>
+
+      <td>
+        ILS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Teudat Zehut
+      </td>
+
+      <td>
+        972
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Japan
+      </td>
+
+      <td>
+        JP
+      </td>
+
+      <td>
+        JPY
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        My Number Card
+      </td>
+
+      <td>
+        81
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Jordan
+      </td>
+
+      <td>
+        JO
+      </td>
+
+      <td>
+        JOD
+      </td>
+
+      <td>
+        3
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        962
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Kazakhstan
+      </td>
+
+      <td>
+        KZ
+      </td>
+
+      <td>
+        KZT
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        7
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Kiribati
+      </td>
+
+      <td>
+        KI
+      </td>
+
+      <td>
+        AUD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        686
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Kuwait
+      </td>
+
+      <td>
+        KW
+      </td>
+
+      <td>
+        KWD
+      </td>
+
+      <td>
+        3
+      </td>
+
+      <td>
+        Civil ID Card
+      </td>
+
+      <td>
+        965
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Kyrgyzstan
+      </td>
+
+      <td>
+        KG
+      </td>
+
+      <td>
+        KGS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        996
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Lebanon
+      </td>
+
+      <td>
+        LB
+      </td>
+
+      <td>
+        LBP
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        National ID Card
+      </td>
+
+      <td>
+        961
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Macao
+      </td>
+
+      <td>
+        MO
+      </td>
+
+      <td>
+        MOP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        853
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Malaysia
+      </td>
+
+      <td>
+        MY
+      </td>
+
+      <td>
+        MYR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        60
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Maldives
+      </td>
+
+      <td>
+        MV
+      </td>
+
+      <td>
+        MVR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        960
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Marshall Islands
+      </td>
+
+      <td>
+        MH
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        692
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Micronesia
+      </td>
+
+      <td>
+        FM
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        691
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Mongolia
+      </td>
+
+      <td>
+        MN
+      </td>
+
+      <td>
+        MNT
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        976
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Myanmar
+      </td>
+
+      <td>
+        MM
+      </td>
+
+      <td>
+        MMK
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        95
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Nauru
+      </td>
+
+      <td>
+        NR
+      </td>
+
+      <td>
+        AUD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        674
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Nepal
+      </td>
+
+      <td>
+        NP
+      </td>
+
+      <td>
+        NPR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        977
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        New Caledonia
+      </td>
+
+      <td>
+        NC
+      </td>
+
+      <td>
+        XPF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        Carte d'identité de Nouvelle-Calédonie
+      </td>
+
+      <td>
+        687
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        New Zealand
+      </td>
+
+      <td>
+        NZ
+      </td>
+
+      <td>
+        NZD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Tarjeta de Identificación
+      </td>
+
+      <td>
+        64
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Niue
+      </td>
+
+      <td>
+        NU
+      </td>
+
+      <td>
+        NZD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        683
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Norfolk Island
+      </td>
+
+      <td>
+        NF
+      </td>
+
+      <td>
+        AUD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        672
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Northern Mariana Islands
+      </td>
+
+      <td>
+        MP
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        1
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Oman
+      </td>
+
+      <td>
+        OM
+      </td>
+
+      <td>
+        OMR
+      </td>
+
+      <td>
+        3
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        968
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Pakistan
+      </td>
+
+      <td>
+        PK
+      </td>
+
+      <td>
+        PKR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        92
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Palau
+      </td>
+
+      <td>
+        PW
+      </td>
+
+      <td>
+        USD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        680
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Papua New Guinea
+      </td>
+
+      <td>
+        PG
+      </td>
+
+      <td>
+        PGK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        675
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Philippines
+      </td>
+
+      <td>
+        PH
+      </td>
+
+      <td>
+        PHP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        63
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Pitcairn Islands
+      </td>
+
+      <td>
+        PN
+      </td>
+
+      <td>
+        NZD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        872
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Qatar
+      </td>
+
+      <td>
+        QA
+      </td>
+
+      <td>
+        QAR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        974
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Samoa
+      </td>
+
+      <td>
+        WS
+      </td>
+
+      <td>
+        WST
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        685
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Saudi Arabia
+      </td>
+
+      <td>
+        SA
+      </td>
+
+      <td>
+        SAR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        966
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Singapore
+      </td>
+
+      <td>
+        SG
+      </td>
+
+      <td>
+        SGD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        65
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Solomon Islands
+      </td>
+
+      <td>
+        SB
+      </td>
+
+      <td>
+        SBD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        677
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        South Korea
+      </td>
+
+      <td>
+        KR
+      </td>
+
+      <td>
+        KRW
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*RRN\*\*(Resident Registration Number)
+      </td>
+
+      <td>
+        82
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Sri Lanka
+      </td>
+
+      <td>
+        LK
+      </td>
+
+      <td>
+        LKR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        94
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Syria
+      </td>
+
+      <td>
+        SY
+      </td>
+
+      <td>
+        SYP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        963
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Taiwan
+      </td>
+
+      <td>
+        TW
+      </td>
+
+      <td>
+        TWD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        886
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Tajikistan
+      </td>
+
+      <td>
+        TJ
+      </td>
+
+      <td>
+        TJS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        992
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Thailand
+      </td>
+
+      <td>
+        TH
+      </td>
+
+      <td>
+        THB
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        66
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Tokelau
+      </td>
+
+      <td>
+        TK
+      </td>
+
+      <td>
+        NZD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        690
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Tonga
+      </td>
+
+      <td>
+        TO
+      </td>
+
+      <td>
+        TOP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        676
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Turkmenistan
+      </td>
+
+      <td>
+        TM
+      </td>
+
+      <td>
+        TMT
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        993
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Tuvalu
+      </td>
+
+      <td>
+        TV
+      </td>
+
+      <td>
+        AUD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        688
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        United Arab Emirates
+      </td>
+
+      <td>
+        AE
+      </td>
+
+      <td>
+        AED
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Emirates ID
+      </td>
+
+      <td>
+        971
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Uzbekistan
+      </td>
+
+      <td>
+        UZ
+      </td>
+
+      <td>
+        UZS
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        998
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Vanuatu
+      </td>
+
+      <td>
+        VU
+      </td>
+
+      <td>
+        VUV
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        678
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Vietnam
+      </td>
+
+      <td>
+        VN
+      </td>
+
+      <td>
+        VND
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        84
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Wallis and Futuna
+      </td>
+
+      <td>
+        WF
+      </td>
+
+      <td>
+        XPF
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        Carte d'identité territoriale de Wallis-et-Futuna
+      </td>
+
+      <td>
+        681
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Yemen
+      </td>
+
+      <td>
+        YE
+      </td>
+
+      <td>
+        YER
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        967
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+**(1)** *The number of digits after the decimal separator*.
 
 ## Europe
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Name",
-    "h-1": "Country code (ISO 3166-1 Alpha 2)",
-    "h-2": "Currency code (ISO 4217 Alpha 3)",
-    "h-3": "CCurrency decimal digits<sup>(1)</sup>",
-    "h-4": "Document type",
-    "h-5": "Phone country calling code",
-    "0-0": "Åland Islands",
-    "0-1": "AX",
-    "0-2": "EUR",
-    "0-3": "2",
-    "0-4": "**PAS** (Passport)  \nNational ID card",
-    "0-5": "358",
-    "1-0": "Albania",
-    "1-1": "AL",
-    "1-2": "ALL",
-    "1-3": "2",
-    "1-4": "Tarjeta de Identidad Electrónica",
-    "1-5": "355",
-    "2-0": "Andorra",
-    "2-1": "AD",
-    "2-2": "EUR",
-    "2-3": "2",
-    "2-4": "Targeta de Resident",
-    "2-5": "376",
-    "3-0": "Austria",
-    "3-1": "AT",
-    "3-2": "EUR",
-    "3-3": "2",
-    "3-4": "**PAS** (Passport)",
-    "3-5": "43",
-    "4-0": "Belarus",
-    "4-1": "BY",
-    "4-2": "BYR",
-    "4-3": "0",
-    "4-4": "**PAS** (Passport)  \nNational ID Card",
-    "4-5": "375",
-    "5-0": "Belgium",
-    "5-1": "BE",
-    "5-2": "EUR",
-    "5-3": "2",
-    "5-4": "**PAS** (Passport)  \nNational ID Card",
-    "5-5": "32",
-    "6-0": "Bosnia & Herzegovina",
-    "6-1": "BA",
-    "6-2": "BAM",
-    "6-3": "2",
-    "6-4": "**PAS** (Passport)  \nNational ID Card",
-    "6-5": "387",
-    "7-0": "Bulgaria",
-    "7-1": "BG",
-    "7-2": "BGN",
-    "7-3": "2",
-    "7-4": "**PAS** (Passport)",
-    "7-5": "359",
-    "8-0": "Croatia",
-    "8-1": "HR",
-    "8-2": "HRK",
-    "8-3": "2",
-    "8-4": "**OI** (Osobna iskaznica)",
-    "8-5": "385",
-    "9-0": "Cyprus",
-    "9-1": "CY",
-    "9-2": "EUR",
-    "9-3": "2",
-    "9-4": "**PAS** (Passport)  \nNational ID Card",
-    "9-5": "357",
-    "10-0": "Czech Republic",
-    "10-1": "CZ",
-    "10-2": "VZK",
-    "10-3": "2",
-    "10-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's license",
-    "10-5": "420",
-    "11-0": "Denmark",
-    "11-1": "DK",
-    "11-2": "DKK",
-    "11-3": "2",
-    "11-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's license",
-    "11-5": "45",
-    "12-0": "Estonia",
-    "12-1": "EE",
-    "12-2": "EUR",
-    "12-3": "2",
-    "12-4": "**PAS** (Passport)  \nNational ID Card",
-    "12-5": "372",
-    "13-0": "Faroe Islands",
-    "13-1": "FO",
-    "13-2": "DKK",
-    "13-3": "2",
-    "13-4": "**PAS** (Passport)  \nDriver's licenses  \nNational ID Card",
-    "13-5": "298",
-    "14-0": "Finland",
-    "14-1": "FI",
-    "14-2": "EUR",
-    "14-3": "2",
-    "14-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's license",
-    "14-5": "358",
-    "15-0": "France",
-    "15-1": "FR",
-    "15-2": "EUR",
-    "15-3": "2",
-    "15-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's license",
-    "15-5": "33",
-    "16-0": "Georgia",
-    "16-1": "GE",
-    "16-2": "GEL",
-    "16-3": "2",
-    "16-4": "**PAS** (Passport)  \nNational ID Card",
-    "16-5": "995",
-    "17-0": "Germany",
-    "17-1": "DE",
-    "17-2": "EUR",
-    "17-3": "2",
-    "17-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's license",
-    "17-5": "49",
-    "18-0": "Gibraltar",
-    "18-1": "GI",
-    "18-2": "GIP",
-    "18-3": "2",
-    "18-4": "**PAS** (Passport)  \nNational ID Card",
-    "18-5": "350",
-    "19-0": "Greece",
-    "19-1": "GR",
-    "19-2": "EUR",
-    "19-3": "2",
-    "19-4": "**PAS** (Passport)  \nNational ID Card",
-    "19-5": "30",
-    "20-0": "Greenland",
-    "20-1": "GL",
-    "20-2": "DKK",
-    "20-3": "2",
-    "20-4": "**PAS** (Passport)  \nNational ID Card",
-    "20-5": "299",
-    "21-0": "Guernsey",
-    "21-1": "GG",
-    "21-2": "GBP",
-    "21-3": "2",
-    "21-4": "**PAS** (Passport)  \nNational ID Card",
-    "21-5": "44",
-    "22-0": "Hungary",
-    "22-1": "HU",
-    "22-2": "HUF",
-    "22-3": "2",
-    "22-4": "**SZIG** (Személyazonosító igazolvány)",
-    "22-5": "36",
-    "23-0": "Iceland",
-    "23-1": "IS",
-    "23-2": "ISK",
-    "23-3": "0",
-    "23-4": "Kennitala",
-    "23-5": "354",
-    "24-0": "Ireland",
-    "24-1": "IE",
-    "24-2": "EUR",
-    "24-3": "2",
-    "24-4": "**PAS** (Passport)",
-    "24-5": "353",
-    "25-0": "Isle Of Man",
-    "25-1": "IM",
-    "25-2": "GBP",
-    "25-3": "2",
-    "25-4": "**PAS** (Passport)  \nDriving License",
-    "25-5": "44",
-    "26-0": "Italy",
-    "26-1": "IT",
-    "26-2": "EUR",
-    "26-3": "2",
-    "26-4": "Carta d'Identità",
-    "26-5": "39",
-    "27-0": "Jersey",
-    "27-1": "JE",
-    "27-2": "GBP",
-    "27-3": "2",
-    "27-4": "**PAS** (Passport)  \nDriving License",
-    "27-5": "44",
-    "28-0": "Latvia",
-    "28-1": "LV",
-    "28-2": "EUR",
-    "28-3": "2",
-    "28-4": "**PAS** (Passport)  \nPersonal ID Card",
-    "28-5": "371",
-    "29-0": "Liechtenstein",
-    "29-1": "LI",
-    "29-2": "CHF",
-    "29-3": "2",
-    "29-4": "**PAS** (Passport)  \nID Card  \nResident Permit",
-    "29-5": "423",
-    "30-0": "Lithuania",
-    "30-1": "LT",
-    "30-2": "EUR",
-    "30-3": "2",
-    "30-4": " **PAS** (Passport)  \nPersonal ID Card",
-    "30-5": "370",
-    "31-0": "Luxembourg",
-    "31-1": "LU",
-    "31-2": "EUR",
-    "31-3": "2",
-    "31-4": "**PAS** (Passport)  \nNational ID Card",
-    "31-5": "352",
-    "32-0": "Malta",
-    "32-1": "MT",
-    "32-2": "EUR",
-    "32-3": "2",
-    "32-4": "**PAS** (Passport)",
-    "32-5": "356",
-    "33-0": "Moldova",
-    "33-1": "MD",
-    "33-2": "MDL",
-    "33-3": "2",
-    "33-4": "**PAS** (Passport)  \nNational ID Card",
-    "33-5": "373",
-    "34-0": "Monaco",
-    "34-1": "MC",
-    "34-2": "EUR",
-    "34-3": "2",
-    "34-4": "**PAS** (Passport)  \nNational ID Card",
-    "34-5": "377",
-    "35-0": "Montenegro",
-    "35-1": "ME",
-    "35-2": "EUR",
-    "35-3": "2",
-    "35-4": "**PAS** (Passport)  \nID Card",
-    "35-5": "382",
-    "36-0": "Netherlands",
-    "36-1": "NL",
-    "36-2": "EUR",
-    "36-3": "2",
-    "36-4": "**PAS** (Passport)",
-    "36-5": "31",
-    "37-0": "North Macedonia",
-    "37-1": "MK",
-    "37-2": "MKD",
-    "37-3": "0",
-    "37-4": "**PAS** (Passport)",
-    "37-5": "389",
-    "38-0": "Norway",
-    "38-1": "NO",
-    "38-2": "NOK",
-    "38-3": "2",
-    "38-4": "**PAS** (Passport)",
-    "38-5": "47",
-    "39-0": "Poland",
-    "39-1": "PL",
-    "39-2": "PLN",
-    "39-3": "2",
-    "39-4": "**PAS** (Passport)",
-    "39-5": "48",
-    "40-0": "Portugal",
-    "40-1": "PT",
-    "40-2": "EUR",
-    "40-3": "2",
-    "40-4": "**PAS** (Passport)",
-    "40-5": "351",
-    "41-0": "Romania",
-    "41-1": "RO",
-    "41-2": "RON",
-    "41-3": "2",
-    "41-4": "**PAS** (Passport)",
-    "41-5": "40",
-    "42-0": "Russia",
-    "42-1": "RU",
-    "42-2": "RUB",
-    "42-3": "2",
-    "42-4": "**PAS** (Passport)",
-    "42-5": "7",
-    "43-0": "San Marino",
-    "43-1": "SM",
-    "43-2": "EUR",
-    "43-3": "2",
-    "43-4": "**PAS** (Passport)",
-    "43-5": "378",
-    "44-0": "Serbia",
-    "44-1": "RS",
-    "44-2": "RSD",
-    "44-3": "2",
-    "44-4": "**PAS** (Passport)",
-    "44-5": "381",
-    "45-0": "Slovakia",
-    "45-1": "SK",
-    "45-2": "EUR",
-    "45-3": "2",
-    "45-4": "**PAS** (Passport)",
-    "45-5": "421",
-    "46-0": "Slovenia",
-    "46-1": "SI",
-    "46-2": "EUR",
-    "46-3": "2",
-    "46-4": "**PAS** (Passport)",
-    "46-5": "386",
-    "47-0": "Spain",
-    "47-1": "ES",
-    "47-2": "EUR",
-    "47-3": "2",
-    "47-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's license",
-    "47-5": "34",
-    "48-0": "Svalbard and Jan Mayen",
-    "48-1": "SJ",
-    "48-2": "NOK",
-    "48-3": "2",
-    "48-4": "**PAS** (Passport)",
-    "48-5": "47",
-    "49-0": "Sweden",
-    "49-1": "SE",
-    "49-2": "SEK",
-    "49-3": "2",
-    "49-4": "**PAS** (Passport)",
-    "49-5": "46",
-    "50-0": "Switzerland",
-    "50-1": "CH",
-    "50-2": "CHF  \nCHE  \nCHW",
-    "50-3": "2  \n2  \n2",
-    "50-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's license",
-    "50-5": "41",
-    "51-0": "Turkey",
-    "51-1": "TR",
-    "51-2": "TRY",
-    "51-3": "2",
-    "51-4": "**PAS** (Passport)",
-    "51-5": "90",
-    "52-0": "Ukraine",
-    "52-1": "UA",
-    "52-2": "UAH",
-    "52-3": "2",
-    "52-4": "**PAS** (Passport)",
-    "52-5": "380",
-    "53-0": "United Kingdom",
-    "53-1": "GB",
-    "53-2": "GBP",
-    "53-3": "2",
-    "53-4": "**PAS** (Passport)  \nNational ID Card  \nDriver's licenses",
-    "53-5": "44",
-    "54-0": "Vatican City State",
-    "54-1": "VA",
-    "54-2": "EUR",
-    "54-3": "2",
-    "54-4": "",
-    "54-5": "379"
-  },
-  "cols": 6,
-  "rows": 55,
-  "align": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-  ]
-}
-[/block]
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Name
+      </th>
 
+      <th>
+        Country code (ISO 3166-1 Alpha 2)
+      </th>
 
-**(1)** _The number of digits after the decimal separator_.
+      <th>
+        Currency code (ISO 4217 Alpha 3)
+      </th>
 
-[block:html]
-{
-  "html": "<style>\n  td, th {\n    text-align: center !important;\n  }\n</style>"
-}
-[/block]
+      <th>
+        CCurrency decimal digits
+
+        <sup>
+
+        (1)
+
+        </sup>
+      </th>
+
+      <th>
+        Document type
+      </th>
+
+      <th>
+        Phone country calling code
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        Åland Islands
+      </td>
+
+      <td>
+        AX
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID card
+      </td>
+
+      <td>
+        358
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Albania
+      </td>
+
+      <td>
+        AL
+      </td>
+
+      <td>
+        ALL
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Tarjeta de Identidad Electrónica
+      </td>
+
+      <td>
+        355
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Andorra
+      </td>
+
+      <td>
+        AD
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Targeta de Resident
+      </td>
+
+      <td>
+        376
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Austria
+      </td>
+
+      <td>
+        AT
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        43
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Belarus
+      </td>
+
+      <td>
+        BY
+      </td>
+
+      <td>
+        BYR
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        375
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Belgium
+      </td>
+
+      <td>
+        BE
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        32
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bosnia & Herzegovina
+      </td>
+
+      <td>
+        BA
+      </td>
+
+      <td>
+        BAM
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        387
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Bulgaria
+      </td>
+
+      <td>
+        BG
+      </td>
+
+      <td>
+        BGN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        359
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Croatia
+      </td>
+
+      <td>
+        HR
+      </td>
+
+      <td>
+        HRK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*OI\*\* (Osobna iskaznica)
+      </td>
+
+      <td>
+        385
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Cyprus
+      </td>
+
+      <td>
+        CY
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        357
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Czech Republic
+      </td>
+
+      <td>
+        CZ
+      </td>
+
+      <td>
+        VZK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        420
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Denmark
+      </td>
+
+      <td>
+        DK
+      </td>
+
+      <td>
+        DKK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        45
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Estonia
+      </td>
+
+      <td>
+        EE
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        372
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Faroe Islands
+      </td>
+
+      <td>
+        FO
+      </td>
+
+      <td>
+        DKK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Driver's licenses\
+          National ID Card
+      </td>
+
+      <td>
+        298
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Finland
+      </td>
+
+      <td>
+        FI
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        358
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        France
+      </td>
+
+      <td>
+        FR
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        33
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Georgia
+      </td>
+
+      <td>
+        GE
+      </td>
+
+      <td>
+        GEL
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        995
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Germany
+      </td>
+
+      <td>
+        DE
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        49
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Gibraltar
+      </td>
+
+      <td>
+        GI
+      </td>
+
+      <td>
+        GIP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        350
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Greece
+      </td>
+
+      <td>
+        GR
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        30
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Greenland
+      </td>
+
+      <td>
+        GL
+      </td>
+
+      <td>
+        DKK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        299
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Guernsey
+      </td>
+
+      <td>
+        GG
+      </td>
+
+      <td>
+        GBP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        44
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Hungary
+      </td>
+
+      <td>
+        HU
+      </td>
+
+      <td>
+        HUF
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*SZIG\*\* (Személyazonosító igazolvány)
+      </td>
+
+      <td>
+        36
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Iceland
+      </td>
+
+      <td>
+        IS
+      </td>
+
+      <td>
+        ISK
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        Kennitala
+      </td>
+
+      <td>
+        354
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Ireland
+      </td>
+
+      <td>
+        IE
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        353
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Isle Of Man
+      </td>
+
+      <td>
+        IM
+      </td>
+
+      <td>
+        GBP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Driving License
+      </td>
+
+      <td>
+        44
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Italy
+      </td>
+
+      <td>
+        IT
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        Carta d'Identità
+      </td>
+
+      <td>
+        39
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Jersey
+      </td>
+
+      <td>
+        JE
+      </td>
+
+      <td>
+        GBP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Driving License
+      </td>
+
+      <td>
+        44
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Latvia
+      </td>
+
+      <td>
+        LV
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Personal ID Card
+      </td>
+
+      <td>
+        371
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Liechtenstein
+      </td>
+
+      <td>
+        LI
+      </td>
+
+      <td>
+        CHF
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          ID Card\
+          Resident Permit
+      </td>
+
+      <td>
+        423
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Lithuania
+      </td>
+
+      <td>
+        LT
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          Personal ID Card
+      </td>
+
+      <td>
+        370
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Luxembourg
+      </td>
+
+      <td>
+        LU
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        352
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Malta
+      </td>
+
+      <td>
+        MT
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        356
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Moldova
+      </td>
+
+      <td>
+        MD
+      </td>
+
+      <td>
+        MDL
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        373
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Monaco
+      </td>
+
+      <td>
+        MC
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card
+      </td>
+
+      <td>
+        377
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Montenegro
+      </td>
+
+      <td>
+        ME
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          ID Card
+      </td>
+
+      <td>
+        382
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Netherlands
+      </td>
+
+      <td>
+        NL
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        31
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        North Macedonia
+      </td>
+
+      <td>
+        MK
+      </td>
+
+      <td>
+        MKD
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        389
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Norway
+      </td>
+
+      <td>
+        NO
+      </td>
+
+      <td>
+        NOK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        47
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Poland
+      </td>
+
+      <td>
+        PL
+      </td>
+
+      <td>
+        PLN
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        48
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Portugal
+      </td>
+
+      <td>
+        PT
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        351
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Romania
+      </td>
+
+      <td>
+        RO
+      </td>
+
+      <td>
+        RON
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        40
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Russia
+      </td>
+
+      <td>
+        RU
+      </td>
+
+      <td>
+        RUB
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        7
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        San Marino
+      </td>
+
+      <td>
+        SM
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        378
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Serbia
+      </td>
+
+      <td>
+        RS
+      </td>
+
+      <td>
+        RSD
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        381
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Slovakia
+      </td>
+
+      <td>
+        SK
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        421
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Slovenia
+      </td>
+
+      <td>
+        SI
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        386
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Spain
+      </td>
+
+      <td>
+        ES
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        34
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Svalbard and Jan Mayen
+      </td>
+
+      <td>
+        SJ
+      </td>
+
+      <td>
+        NOK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        47
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Sweden
+      </td>
+
+      <td>
+        SE
+      </td>
+
+      <td>
+        SEK
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        46
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Switzerland
+      </td>
+
+      <td>
+        CH
+      </td>
+
+      <td>
+        CHF\
+        CHE\
+        CHW
+      </td>
+
+      <td>
+        2\
+        2\
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's license
+      </td>
+
+      <td>
+        41
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Turkey
+      </td>
+
+      <td>
+        TR
+      </td>
+
+      <td>
+        TRY
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        90
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Ukraine
+      </td>
+
+      <td>
+        UA
+      </td>
+
+      <td>
+        UAH
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)
+      </td>
+
+      <td>
+        380
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        United Kingdom
+      </td>
+
+      <td>
+        GB
+      </td>
+
+      <td>
+        GBP
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+        * \*PAS\*\* (Passport)\
+          National ID Card\
+          Driver's licenses
+      </td>
+
+      <td>
+        44
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Vatican City State
+      </td>
+
+      <td>
+        VA
+      </td>
+
+      <td>
+        EUR
+      </td>
+
+      <td>
+        2
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+        379
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+**(1)** *The number of digits after the decimal separator*.
+
+<HTMLBlock>{`
+<style>
+  td, th {
+    text-align: center !important;
+  }
+</style>
+`}</HTMLBlock>
