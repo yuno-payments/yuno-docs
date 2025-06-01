@@ -19,8 +19,8 @@ next:
 ---
 This guide shows you how to create your first payment using the Yuno SDK. You'll learn how to:
 
-- Set up and run the example project
-- Make a test payment using the SDK
+* Set up and run the example project
+* Make a test payment using the SDK
 
 The Yuno SDK enables you to integrate payment methods into your web application and process payments securely. By following this guide, you'll have your first payment up and running in under 5 minutes.
 
@@ -28,8 +28,8 @@ The Yuno SDK enables you to integrate payment methods into your web application 
 
 Before getting started, ensure you have the following installed on your system:
 
-- Git - Required for downloading the project. If you haven't used Git before, follow the [Git installation guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- Node.js - Required for running the project. If you haven't used Node.js before, download it from the [official Node.js website](https://nodejs.org/en/download)
+* Git - Required for downloading the project. If you haven't used Git before, follow the [Git installation guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+* Node.js - Required for running the project. If you haven't used Node.js before, download it from the [official Node.js website](https://nodejs.org/en/download)
 
 ### Step 2: Download the project
 
@@ -40,12 +40,21 @@ Download the [example project](https://github.com/yuno-payments/yuno-sdk-web/arc
 > cd yuno-sdk-web
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>SDK Integration Example</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tYuno provides a ready-to-use application built with the Web SDK. Explore <a href='https://github.com/yuno-payments/yuno-sdk-web'>this project</a> to see how fast and easy it is to integrate with Yuno. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>SDK Integration Example</h3>
+      <div class="contentContainer">
+        <p>
+					Yuno provides a ready-to-use application built with the Web SDK. Explore <a href='https://github.com/yuno-payments/yuno-sdk-web'>this project</a> to see how fast and easy it is to integrate with Yuno. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ### Step 3: Set up environment variables
 
@@ -53,9 +62,9 @@ To authenticate with the Yuno API, you need to configure your credentials in the
 
 1. Open the `.env` file in the root folder
 2. Add the following environment variables with your credentials from the dashboard's Developers section:
-   - `ACCOUNT_CODE`(will display as account_id in the dashboard) 
-   - `PUBLIC_API_KEY` 
-   - `PRIVATE_SECRET_KEY`
+   * `ACCOUNT_CODE`(will display as account\_id in the dashboard) 
+   * `PUBLIC_API_KEY` 
+   * `PRIVATE_SECRET_KEY`
 3. Save the file
 
 ```
@@ -91,10 +100,10 @@ After accessing the running project in your browser, you'll see a basic checkout
 1. Select the **Card** payment option
 2. Enter the test card information provided below
 
-- **Cardholder name**: Harry Potter
-- **Card Number**: 4242 4242 4242 4242
-- **Expiration Date**: 09/29
-- **CVV**: 123
+* **Cardholder name**: Harry Potter
+* **Card Number**: 4242 4242 4242 4242
+* **Expiration Date**: 09/29
+* **CVV**: 123
 
 ### Step 6: View payment details in the Dashboard
 
