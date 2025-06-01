@@ -15,7 +15,7 @@ next:
 ---
 The Yuno API employs the ApiKey security schema to authenticate HTTP requests. These keys are access credentials composed of alphanumeric characters that authorize the use of specific features of our API. 
 
-The requests need to include authorization headers such as `public-api-key`, `private-secret-key` and `X-idempotency-key`. You can find **your credentials**,  `public-api-key` and `private-secret-key`, in the _developers_ section at the [Yuno Merchant Dashboard](https://auth.y.uno/u/login?state=hKFo2SB1dGdwd0VYZWxrOHpaLVdWck5FYWYtaW5GN0hhM25MNaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIExidWxTMDRSNG5qYnZQQklTN3JtY0hyME5fZDBRa25xo2NpZNkgbGNIOEVyS3A3UUl2Tkx1Y0JUOXpEQlhrbXlaN25CSnc). On the other hand, the `X-idempotency-key` is composed of up to 64 characters. Check the [Idempotency](ref:authentication#idempotency) section for additional information. 
+The requests need to include authorization headers such as `public-api-key`, `private-secret-key` and `X-idempotency-key`. You can find **your credentials**,  `public-api-key` and `private-secret-key`, in the *developers* section at the [Yuno Merchant Dashboard](https://auth.y.uno/u/login?state=hKFo2SB1dGdwd0VYZWxrOHpaLVdWck5FYWYtaW5GN0hhM25MNaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIExidWxTMDRSNG5qYnZQQklTN3JtY0hyME5fZDBRa25xo2NpZNkgbGNIOEVyS3A3UUl2Tkx1Y0JUOXpEQlhrbXlaN25CSnc). On the other hand, the `X-idempotency-key` is composed of up to 64 characters. Check the [Idempotency](ref:authentication#idempotency) section for additional information. 
 
 Please check the request description to get the specific authorization headers' required details.
 
@@ -31,11 +31,21 @@ curl --request <Method> \
      --header 'public-api-key: <Your public-api-key>'
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <h3>Keep your keys safe</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tDo not share your secret API keys in public places like Github, Bitbucket, etc., because this opens space for malicious API calls.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <h3>Keep your keys safe</h3>
+      <div class="contentContainer">
+        <p>
+					Do not share your secret API keys in public places like Github, Bitbucket, etc., because this opens space for malicious API calls.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Idempotency
 
@@ -45,13 +55,21 @@ It is essential for idempotency to pass a nonce to the required API request. The
 
 The `X-Idempotency-Key` of a transaction and the status returned for making that order are both stored by Yuno's idempotency system. To ensure that requests made within 24 hours of establishing the first order are not created twice, we save this data regardless of the outcome of this transaction (caught, authorized, or failed). As a result, responses to requests received with the same key will consist of a single transaction.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <h3>Requests with the same key and different contents in the body</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tIt is crucial to stress that the API will only generate one request even if two requests are sent with the same key in the header and different contents in the body.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <h3>Requests with the same key and different contents in the body</h3>
+      <div class="contentContainer">
+        <p>
+				It is crucial to stress that the API will only generate one request even if two requests are sent with the same key in the header and different contents in the body.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 In some circumstances, it's possible that some requests are sent at the same time. As a result, it is possible that the application receives a second request before it responds to the first one. When this happens, the second request will be met with the 409 code - Conflict, indicating that there is an open call for the same `X-Idempotency-Key`.
 
