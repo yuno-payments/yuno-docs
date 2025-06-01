@@ -54,8 +54,13 @@ The most important benefit of plugin integrations is the ease of implementation.
 
 Currently, we support a plugin integration with the VTEX platform.
 
-[block:html]
-{
-  "html": "<style>\n  table tr td:not(:first-child){\n    text-align: center !important;\n  }\n  table tr th:not(:first-child){\n    text-align: center !important;\n  }\n<style>\n  "
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  table tr td:not(:first-child){
+    text-align: center !important;
+  }
+  table tr th:not(:first-child){
+    text-align: center !important;
+  }
+<style>
+`}</HTMLBlock>
