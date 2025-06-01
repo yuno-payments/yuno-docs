@@ -37,22 +37,9 @@ The settlement report will let you know the transactional composition and the fe
 
 The reports provided by Yuno are related. Below you will find a description of these relations:
 
-- Payments and Transactions reports are linked through `payment_id`. 
-- Transactions and settlements are linked via `transaction_id field`.
+* Payments and Transactions reports are linked through `payment_id`. 
+* Transactions and settlements are linked via `transaction_id field`.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/yourPaymentsOperationSystem/Reports/reports_1.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
+<Image align="center" src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/yourPaymentsOperationSystem/Reports/reports_1.png" />
 
 The transaction reconciliation report has no direct connection with the other three.
