@@ -20,11 +20,11 @@ Yuno enables any company to accept all the available payment methods and manage 
 
 Yuno lets you connect to several payment methods and acquirers, customizing each operation in a simple and intuitive dashboard. With Yuno, you have access to the following benefits:
 
-- One single integration that connects your company to all payment ecosystems and anti-fraud solutions.
-- Embedded checkout with full customization from our dashboard and user-based payment method tokenization. 
-- Workflows to control your payment stack with clicks and not with code. 
-- Tools to group all your transactional data in a single source of truth.
-- Commercial team to scale partnerships.
+* One single integration that connects your company to all payment ecosystems and anti-fraud solutions.
+* Embedded checkout with full customization from our dashboard and user-based payment method tokenization. 
+* Workflows to control your payment stack with clicks and not with code. 
+* Tools to group all your transactional data in a single source of truth.
+* Commercial team to scale partnerships.
 
 ## Hundreds of payment services in one integration
 
