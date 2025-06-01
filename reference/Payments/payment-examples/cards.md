@@ -19,12 +19,172 @@ To test the creation of each payment, you can copy the content from the request 
 
 ## Cards available examples
 
-[block:html]
-{
-  "html": "<style>\n  .table-of-contents-btn-shelf {\n    margin: 0 0 0 0;\n    display: grid;\n    grid-template-columns: repeat(2, 1fr);\n    grid-template-rows: 1fr;\n    gap: 10px;\n  }\n\n  @media only screen and (max-width: 800px) {\n    .table-of-contents-btn-shelf {\n      grid-template-columns: repeat(2, 1fr);\n    }\n  }\n\n\n  .table-of-contents-btn {\n    font-size: 0.85rem;\n    border: 1px solid var(--yuno-purple-50);\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    padding: 0.6rem;\n    border-radius: 7px;\n    font-size: 0.85rem;\n    color: var(--yuno-purple);\n    font-weight: 600;\n    transition: transform .1s;\n  }\n\n  .table-of-contents-btn-on-click-effects {\n    cursor: pointer;\n  }\n\n  .table-of-contents-btn-on-click-effects:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px var(--yuno-purple-10);\n  }\n\n  .table-of-contents-btn .card-logo div {\n    height: 23px;\n    width: 30px;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n\n  /* .table-of-contents-btn .card-name {\n    grid-area: name;\n    align-self: center;\n  } */\n\n  .table-of-contents-btn img {\n    max-height: 23px;\n    max-width: 23px;\n  }\n\n  .table-of-contents-btn .card-title {\n    display: inline-block;\n    ;\n    padding: 0;\n    margin: 0;\n  }\n\n  /* ------------------------ define the configuration for DARK Mode ------------------------  */\n\n  @media (prefers-color-scheme: dark) {\n    .table-of-contents-btn-on-click-effects:hover {\n      box-shadow: none !important;\n    }\n  }\n\n  [data-color-mode=\"dark\"] .table-of-contents-btn-on-click-effects:hover {\n    box-shadow: none !important;\n  }\n</style>\n\n<body>\n  <section class=\"table-of-contents-btn-shelf\">\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/cards#card-direct-for-authorization';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/card_logosimbolo.png\" alt=\"Card logo\">\n          </div>\n        </div>\n        <span class='card-title'>Card Direct for authorization</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/cards#card-direct-for-authorization-with-airline-data';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/card_logosimbolo.png\" alt=\"Card logo\">\n          </div>\n        </div>\n        <span class='card-title'>Card Direct for authorization with airline data</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/cards#card-direct-with-installments';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/card_logosimbolo.png\" alt=\"Card logo\">\n          </div>\n        </div>\n        <span class='card-title'>Card Direct with installments</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/cards#card-direct-with-vault-on-success';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/card_logosimbolo.png\" alt=\"Card logo\">\n          </div>\n        </div>\n        <span class='card-title'>Card Direct with vault on success</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/cards#card-direct-with-vaulted-token';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/card_logosimbolo.png\" alt=\"Card logo\">\n          </div>\n        </div>\n        <span class='card-title'>Card Direct with vaulted token</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/cards#card-direct-with-3ds';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/card_logosimbolo.png\" alt=\"Card logo\">\n          </div>\n        </div>\n        <span class='card-title'>Card Direct with 3DS</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/cards#card-direct-with-customer-billing-shipping-and-order-items';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/card_logosimbolo.png\" alt=\"Card logo\">\n          </div>\n        </div>\n        <span class='card-title'>Card Direct with customer, billing, shipping and order items</span>\n      </div>\n    </div>\n\n\n\n\n\n  </section>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .table-of-contents-btn-shelf {
+    margin: 0 0 0 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+    gap: 10px;
+  }
 
+  @media only screen and (max-width: 800px) {
+    .table-of-contents-btn-shelf {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+
+  .table-of-contents-btn {
+    font-size: 0.85rem;
+    border: 1px solid var(--yuno-purple-50);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    color: var(--yuno-purple);
+    font-weight: 600;
+    transition: transform .1s;
+  }
+
+  .table-of-contents-btn-on-click-effects {
+    cursor: pointer;
+  }
+
+  .table-of-contents-btn-on-click-effects:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px var(--yuno-purple-10);
+  }
+
+  .table-of-contents-btn .card-logo div {
+    height: 23px;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* .table-of-contents-btn .card-name {
+    grid-area: name;
+    align-self: center;
+  } */
+
+  .table-of-contents-btn img {
+    max-height: 23px;
+    max-width: 23px;
+  }
+
+  .table-of-contents-btn .card-title {
+    display: inline-block;
+    ;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* ------------------------ define the configuration for DARK Mode ------------------------  */
+
+  @media (prefers-color-scheme: dark) {
+    .table-of-contents-btn-on-click-effects:hover {
+      box-shadow: none !important;
+    }
+  }
+
+  [data-color-mode="dark"] .table-of-contents-btn-on-click-effects:hover {
+    box-shadow: none !important;
+  }
+</style>
+
+<body>
+  <section class="table-of-contents-btn-shelf">
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/cards#card-direct-for-authorization';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/card_logosimbolo.png" alt="Card logo">
+          </div>
+        </div>
+        <span class='card-title'>Card Direct for authorization</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/cards#card-direct-for-authorization-with-airline-data';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/card_logosimbolo.png" alt="Card logo">
+          </div>
+        </div>
+        <span class='card-title'>Card Direct for authorization with airline data</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/cards#card-direct-with-installments';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/card_logosimbolo.png" alt="Card logo">
+          </div>
+        </div>
+        <span class='card-title'>Card Direct with installments</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/cards#card-direct-with-vault-on-success';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/card_logosimbolo.png" alt="Card logo">
+          </div>
+        </div>
+        <span class='card-title'>Card Direct with vault on success</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/cards#card-direct-with-vaulted-token';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/card_logosimbolo.png" alt="Card logo">
+          </div>
+        </div>
+        <span class='card-title'>Card Direct with vaulted token</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/cards#card-direct-with-3ds';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/card_logosimbolo.png" alt="Card logo">
+          </div>
+        </div>
+        <span class='card-title'>Card Direct with 3DS</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/cards#card-direct-with-customer-billing-shipping-and-order-items';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/card_logosimbolo.png" alt="Card logo">
+          </div>
+        </div>
+        <span class='card-title'>Card Direct with customer, billing, shipping and order items</span>
+      </div>
+    </div>
+
+
+
+
+
+  </section>
+</body>
+`}</HTMLBlock>
 
 ### Card Direct for authorization
 
