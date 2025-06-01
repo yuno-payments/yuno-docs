@@ -16,21 +16,7 @@ next:
 
 In the following workflow, you can find the different reports' statuses and how they can be updated.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/067f178-report_status1.png",
-        null,
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/067f178-report_status1.png" />
 
 ## Report status
 
