@@ -105,7 +105,7 @@ Below is a table describing the parameters required for initializing the Yuno SD
       </td>
 
       <td>
-        The language for SDK content. Supported options include: <br> `en` - English <br> `es` - Spanish <br> `pt` - Portuguese <br> `ms` - Malay <br> `id` - Indonesian <br> `th` - Thai
+        The language for SDK content. Supported options include: <br/> `en` - English <br/> `es` - Spanish <br/> `pt` - Portuguese <br/> `ms` - Malay <br/> `id` - Indonesian <br/> `th` - Thai
       </td>
     </tr>
 
