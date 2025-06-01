@@ -15,11 +15,11 @@ next:
 The Yuno Android SDK enables you to modify multiple styles, allowing you to align the design of payment forms and the checkout flow with your brand guidelines and UX/UI principles. While the structure of each element remains uniform, you can adjust colors, text, buttons, and much more.
 
 ## General Guidelines
----
+
 Yuno Android SDK supports XML themes and styles, which should be defined within your application's styles. Android customizations are a work in progress and are continuously updated.
 
 ## Customizable Elements
----
+
 The following sections detail the elements that can be modified to achieve a personalized style. Some customizations are unavailable in previous versions, so we recommend using version 1.13.0 or higher.
 
 - [Font styles](#font-styles)
@@ -28,7 +28,7 @@ The following sections detail the elements that can be modified to achieve a per
 - [Text styles](#text-styles)
 
 ### Font styles
----
+
 You can override Yuno Android SDK fonts if you want to use your font family. You can override the following font styles:
 
 - `YunoRegularFont`
