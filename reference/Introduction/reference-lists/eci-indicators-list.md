@@ -1,0 +1,63 @@
+---
+title: ECI indicators list
+excerpt: ''
+deprecated: false
+hidden: false
+metadata:
+  title: ''
+  description: >-
+    An Electronic Commerce Indicator (ECI) is a response code used in 3D Secure
+    transactions, specifically in EMV 3D Secure. It helps merchants determine
+    the next steps to take in a transaction — proceed, reject the purchase, or
+    try again.
+  robots: index
+next:
+  description: ''
+---
+An Electronic Commerce Indicator (ECI) is a response code used in 3D Secure transactions, specifically in EMV 3D Secure. It helps merchants determine the next steps to take in a transaction — proceed, reject the purchase, or try again. Below you will find the possible responses and ECI values you can receive.
+
+## Successful authentication
+
+The card issuer has successfully verified the cardholder's identity and validated the EMV 3Ds protocol. Consequently, the transaction is authorized to proceed, and all parties can benefit from the security and safeguards provided by 3DS.
+
+[block:html]
+{
+  "html": "<style>\n  * {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n  }\n\n\n  .table-card {\n    border-radius: 10px;\n    border: 1px solid #614ad623;\n    display: flex;\n    transition: all .2s;\n  }\n\n  .table-card:hover {\n    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);\n  }\n\n  .table-card .control-icon {\n    fill: rebeccapurple;\n    transition: .3s ease;\n    pointer-events: none;\n  }\n\n  .table-card .control-icon-close {\n    display: none;\n  }\n\n  details[open] .control-icon-close {\n    display: initial;\n    transition: .3s ease;\n  }\n\n  details[open] .control-icon-expand {\n    display: none;\n  }\n\n  details[open] summary {\n    border: 1px solid #614ad623;\n  }\n\n\n  .table-card summary {\n    padding: 0.8rem 1rem;\n    border-radius: 10px;\n    display: flex;\n    justify-content: flex-start;\n    align-items: center;\n    cursor: pointer;\n  }\n\n  .table-card summary .table-call {\n    display: block;\n    padding: 0;\n    margin: 0;\n    font-size: 1rem;\n\n  }\n\n\n  .table-card summary .sumary-icon {\n    display: flex;\n    justify-content: flex-end;\n    flex-grow: 1;\n  }\n\n  .table-card .table-div {\n    margin: 0.5rem 0;\n    padding: 0 0.5rem;\n  }\n\n  .table-card .table-div table {\n    margin: 0 !important;\n  }\n\n  /*.table-card .table-div th {\n    text-align: left;\n  }*/\n  \n /* .table-card .table-div tbody tr {\n    font-size: 0.8rem;\n    overflow-wrap: break-word;\n  }\n  \n  .table-card .table-div tbody tr :first-child {\n\t\tfont-weight: 600;    \n  }*/\n  \n  table:only-child thead th {\n    text-align: left;\n  }\n  \n  \n  \n  \n  @media only screen and (max-width: 700px) {\n    .table-card .table-div table {\n      display: block !important;\n      overflow-x: auto !important;\n    }\n  }\n  \n\n\n\n  details[open] div {\n    animation: sweep .3s ease-in-out;\n  }\n\n  @keyframes sweep {\n    0% {\n      opacity: 0;\n      margin-left: -10px\n    }\n\n    100% {\n      opacity: 1;\n      margin-left: 0px\n    }\n  }\n</style>\n\n<body>\n  <details open class=\"table-card\">\n    <summary>\n      <span class=\"table-call\">Successful authentication codes</span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n      <table>\n        <thead>\n          <tr>\n            <th>Card type</th>\n            <th>ECI indicator</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td>Visa Secure</td>\n            <td>05</td>\n          </tr>\n          <tr>\n            <td>Mastercard IdentityCheck</td>\n            <td>02</td>\n          </tr>\n          <tr>\n            <td>JC J/Secure 2.0</td>\n            <td>05</td>\n          </tr>\n          <tr>\n            <td>American Express SafeKey 2.0</td>\n            <td>05</td>\n          </tr>\n          <tr>\n            <td>Discover ProtectBuy 2.0</td>\n            <td>05</td>\n          </tr>\n          <tr>\n            <td>Elo 3DS</td>\n            <td>05</td>\n          </tr>\n          <tr>\n            <td>eftpos*</td>\n            <td>05</td>\n          </tr>\n          <tr>\n            <td>Carte Bancaires Fast'r</td>\n            <td>05 / 02</td>\n          </tr>\n          <tr>\n            <td>UnionPay International*</td>\n            <td>05 / 02</td>\n          </tr>\n          <tr>\n            <td>ITMX (LSS) Local Switch Secure</td>\n            <td>05 / 02</td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n  </details>\n</body>"
+}
+[/block]
+
+## Attempted authentication
+
+The issuer's authentication service is currently unavailable. A merchant will receive this message when the customer is not enrolled in 3DS. This response serves as evidence that the merchant attempted authentication and fulfilled their due diligence as required by 3DS regulations.
+
+[block:html]
+{
+  "html": "\n<body>\n  <details open class=\"table-card\">\n    <summary>\n      <span class=\"table-call\">Attempted authentication codes</span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n    <table>\n      <thead>\n        <tr>\n          <th>Card type</th>\n          <th>ECI indicator</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr>\n          <td>Visa Secure</td>\n          <td>06</td>\n        </tr>\n        <tr>\n          <td>Mastercard IdentityCheck</td>\n          <td>01</td>\n        </tr>\n        <tr>\n          <td>JC J/Secure 2.0</td>\n          <td>06</td>\n        </tr>\n        <tr>\n          <td>American Express SafeKey 2.0</td>\n          <td>06</td>\n        </tr>\n        <tr>\n          <td>Discover ProtectBuy 2.0</td>\n          <td>06</td>\n        </tr>\n        <tr>\n          <td>Elo 3DS</td>\n          <td>06</td>\n        </tr>\n        <tr>\n          <td>eftpos*</td>\n          <td>06</td>\n        </tr>\n        <tr>\n          <td>Carte Bancaires Fast'r</td>\n          <td>06 / 01</td>\n        </tr>\n        <tr>\n          <td>UnionPay International*</td>\n          <td>06 / 01</td>\n        </tr>\n        <tr>\n          <td>ITMX (LSS) Local Switch Secure</td>\n          <td>06 / 01</td>\n        </tr>\n      </tbody>\n      </table>\n    </div>\n  </details>\n</body>"
+}
+[/block]
+
+## Failed authentication
+
+The issuer encountered challenges and could not authenticate the cardholder due to various factors. These may include instances where incorrect information was provided during the authentication process or when the cardholder themselves chose to cancel the authentication page. Other unspecified reasons could also contribute to the issuer's inability to complete the authentication successfully.
+
+[block:html]
+{
+  "html": "<body>\n  <details open class=\"table-card\">\n    <summary>\n      <span class=\"table-call\">Failed authentication codes</span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n<table>\n<thead>\n  <tr>\n    <th>Card type</th>\n    <th>ECI indicator</th>\n  </tr>\n</thead>\n<tbody>\n  <tr>\n    <td>Visa Secure</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Mastercard IdentityCheck</td>\n    <td>00</td>\n  </tr>\n  <tr>\n    <td>JC J/Secure 2.0</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>American Express SafeKey 2.0</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Discover ProtectBuy 2.0</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Elo 3DS</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>eftpos*</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Carte Bancaires Fast'r</td>\n    <td>07 / 00</td>\n  </tr>\n  <tr>\n    <td>UnionPay International*</td>\n    <td>07 / 00</td>\n  </tr>\n  <tr>\n    <td>ITMX (LSS) Local Switch Secure</td>\n    <td>07 / 00</td>\n  </tr>\n</tbody>\n</table>\n          </div>\n  </details>\n</body>"
+}
+[/block]
+
+## Not permitted authentication
+
+The authentication request encountered obstacles that prevented its completion for various reasons. These reasons may include the exclusion of the card type from authentication attempts, the inability of the ACS (Access Control Server) to process the authentication request message or other unspecified factors. As a result, the authentication process could not be allowed to proceed.
+
+[block:html]
+{
+  "html": "<body>\n  <details open class=\"table-card\">\n    <summary>\n      <span class=\"table-call\">Not permitted authentication codes</span>\n      <div class=\"sumary-icon\">\n        <svg class=\"control-icon control-icon-expand\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\" />\n        </svg>\n        <svg class=\"control-icon control-icon-close\" width=\"20\" height=\"20\" xmlns=\"http://www.w3.org/2000/svg\"\n          viewBox=\"0 0 16 16\">\n          <path fill-rule=\"evenodd\"\n            d=\"M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z\" />\n        </svg>\n      </div>\n    </summary>\n    <div class=\"table-div\">\n<table>\n<thead>\n  <tr>\n    <th>Card type</th>\n    <th>Supported Version(s)</th>\n  </tr>\n</thead>\n<tbody>\n  <tr>\n    <td>Visa Secure</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Mastercard IdentityCheck</td>\n    <td>00</td>\n  </tr>\n  <tr>\n    <td>JC J/Secure 2.0</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>American Express SafeKey 2.0</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Discover ProtectBuy 2.0</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Elo 3DS</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>eftpos*</td>\n    <td>07</td>\n  </tr>\n  <tr>\n    <td>Carte Bancaires Fast'r</td>\n    <td>07 / 00</td>\n  </tr>\n  <tr>\n    <td>UnionPay International*</td>\n    <td>07 / 00</td>\n  </tr>\n  <tr>\n    <td>ITMX (LSS) Local Switch Secure</td>\n    <td>07 / 00</td>\n  </tr>\n</tbody>\n</table>\n          </div>\n  </details>\n</body>"
+}
+[/block]
+
+***
+
+<small>eftpos: Although cobranded, transactions made through eftpos will receive ECI codes of 05/06/07, indicating the possible outcomes of authentication attempts.
+
+UnionPay International: Transactions falling within the BIN ranges overlapping with UnionPay International will receive both ECI values - 05/06/07 and 02/01/00. These values signify different authentication results.
