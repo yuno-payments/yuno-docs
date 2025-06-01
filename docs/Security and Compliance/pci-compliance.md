@@ -23,18 +23,17 @@ With Yuno's PCI-DSS Level 1 solution, you can securely tokenize your customers' 
 
 Tokenization involves collecting sensitive payment details and generating a short-term, single-use token representing this information. Yuno handles and secures sensitive payment data, thereby maintaining PCI compliance on your behalf.  Tokenization offers the following advantages:
 
-- **Enhanced checkout experience**: By storing payment methods as tokens, your customers can enjoy a smoother and faster checkout process.
-- **Support for subscription and recurring payments**: Tokenized payment methods can be easily utilized for recurring payment scenarios, enabling seamless subscription billing.
-- **User control over sensitive information**: Yuno enables users to manage their saved cards, giving them control and visibility over sensitive payment information.
+* **Enhanced checkout experience**: By storing payment methods as tokens, your customers can enjoy a smoother and faster checkout process.
+* **Support for subscription and recurring payments**: Tokenized payment methods can be easily utilized for recurring payment scenarios, enabling seamless subscription billing.
+* **User control over sensitive information**: Yuno enables users to manage their saved cards, giving them control and visibility over sensitive payment information.
 
 Yuno simplifies the process of making payments across different providers by tokenizing users' payment information. This means you only need to store a single token, making future payment transactions easier.
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px\">\n  <image src=\"https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/PCICompliance/pci_compliance1.png\" style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></image>\n</div>"
-}
-[/block]
-
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px">
+  <image src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/PCICompliance/pci_compliance1.png" style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></image>
+</div>
+`}</HTMLBlock>
 
 ## What is PCI compliance?
 
@@ -48,10 +47,10 @@ Any enterprise processing, transmitting, or storing individuals’ card data, no
 
 As a consequence of the company's variety and transaction volume, four PCI compliance levels were defined. Depending on the level of compliance the companies fit, a different amount of security validation is required. The four PCI compliance levels are:
 
-- Level 1: process more than 6M debit or credit card transactions annually
-- Level 2: process between 1M-6M transactions annually
-- Level 3: process between 20K-1M transactions annually
-- Level 4: process less than 20K transactions annually
+* Level 1: process more than 6M debit or credit card transactions annually
+* Level 2: process between 1M-6M transactions annually
+* Level 3: process between 20K-1M transactions annually
+* Level 4: process less than 20K transactions annually
 
 While Level 1 merchants must undergo an internal audit performed by an authorized Qualified Security Assessor (QSA) once a year, other level merchants usually have to submit an Annual Self-Assessment Questionnaire (SAQ).
 
@@ -75,21 +74,7 @@ In the case of your business integrating the Yuno [Direct Flow](doc:direct-flow)
 
 To leverage the capabilities of Yuno's PCI-DSS Level 1 solution, you can utilize one of our integration options based on Yuno SDKs. Choose from Full Checkout, Lite Checkout, and Secure Fields, each offering unique features to suit your specific requirements. These SDKs are available for both mobile and JavaScript versions. For detailed information on Yuno's SDKs, please refer to the [SDK guide](doc:yuno-sdks).
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/158b4066d79b53ccbaa13042a21a244745cc9dcd03ca9509d88c94ee93ab5283-PCI_complience.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/158b4066d79b53ccbaa13042a21a244745cc9dcd03ca9509d88c94ee93ab5283-PCI_complience.png" />
 
 ## Where you can find more information
 
