@@ -178,7 +178,7 @@ await yuno.initialize('publicKey');
 
 ## Improve Performance: Using `preconnect`
 
-To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the <head> tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
+To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the `<head>` tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
 
 ```html
 <!-- Improve performance with preconnect -->
