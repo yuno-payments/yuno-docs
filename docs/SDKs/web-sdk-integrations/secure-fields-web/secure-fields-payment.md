@@ -24,16 +24,25 @@ The integration guide provides three flexible methods:
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the secure fields functionality.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer \">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>TypeScript library</h3>\n      <div class=\"contentContainer\">\n        <p>\n          If you are using TypeScript, Yuno provides a <a href=\"https://www.npmjs.com/package/@yuno-payments/sdk-web-types\">library</a> that you can use to see all available methods available in the Yuno Web SDK. Access the <a href=\"/docs/secure-fields-complementary-features#configure-and-use-typescript\">Complementary Features</a> page to learn how to use it in your project.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>TypeScript library</h3>
+      <div class="contentContainer">
+        <p>
+          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK. Access the <a href="/docs/secure-fields-complementary-features#configure-and-use-typescript">Complementary Features</a> page to learn how to use it in your project.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 2: Initialize secure fields with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide. 
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide. 
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -49,27 +58,53 @@ The essential parameters are the `country_code`, which determines the country fo
 
 The following table lists all required parameters and their descriptions. 
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`country_code`",
-    "0-1": "This parameter specifies the country for which the payment process is being set up.  \nUse an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.",
-    "1-0": "`checkoutSession`",
-    "1-1": "Refers to the current payment's [checkout session](ref:create-checkout-session).  \n`Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`",
-    "2-0": "`installmentsEnable`",
-    "2-1": "This parameter is optional and is set false by default. If set True, the installments set for the account will be shown as a secure field."
-  },
-  "cols": 2,
-  "rows": 3,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        This parameter specifies the country for which the payment process is being set up.\
+        Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `checkoutSession`
+      </td>
+
+      <td>
+        Refers to the current payment's [checkout session](ref:create-checkout-session).\
+        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `installmentsEnable`
+      </td>
+
+      <td>
+        This parameter is optional and is set false by default. If set True, the installments set for the account will be shown as a secure field.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ```javascript
   const secureFields = yuno.secureFields({
@@ -86,12 +121,27 @@ The following table lists all required parameters and their descriptions.
   })
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Customer and merchant-initiated transactions</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tPayments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in <a href=\"/docs/stored-credentials\">Stored credentials</a>. \n        </p>\n        <p>\n\t\t\t\t\tThe step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.\n        </p>\n        <p>\n\t\t\t\t\tTo learn how to use the Secure Fields to perform MIT operations, access the <a href=\"/docs/secure-fields-merchant-initiated-transactions\">Merchant-initiated transactions</a> page. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Customer and merchant-initiated transactions</h3>
+      <div class="contentContainer">
+        <p>
+					Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in <a href="/docs/stored-credentials">Stored credentials</a>. 
+        </p>
+        <p>
+					The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
+        </p>
+        <p>
+					To learn how to use the Secure Fields to perform MIT operations, access the <a href="/docs/secure-fields-merchant-initiated-transactions">Merchant-initiated transactions</a> page. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 4: Mount the Secure Fields
 
@@ -328,22 +378,7 @@ Below, you find a GIF showing how you can configure the Secure Fields.
 
 <div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px; max-width:500px; margin:auto">
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif",
-        null,
-        ""
-      ],
-      "align": "center",
-      "sizing": "500px"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" width="500px" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" />
 
 </div>
 
@@ -351,12 +386,27 @@ Below, you find a GIF showing how you can configure the Secure Fields.
 
 With all user information in hand, you can start the payment. First, you need to create a One-Time Token using the function `secureFields.generateToken`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. Below is an example of creating an one-time token using **vaultedToken** information.
 
-[block:html]
-{
-  "html": "<style>\n  .contentContainer {\n    gap: 0;\n  }\n</style>\n\n<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <h3>Benefits of using a vaulted token</h3>\n        <p>\n          When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. In addition, you can add installment information and a security code if the provider requires it.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .contentContainer {
+    gap: 0;
+  }
+</style>
 
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <div class="contentContainer">
+        <h3>Benefits of using a vaulted token</h3>
+        <p>
+          When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. In addition, you can add installment information and a security code if the provider requires it.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ```javascript
 // Create one-time token
@@ -450,8 +500,8 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 
 After receiving the one-time token, you can create the payment using one of the two following options: 
 
-- Create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
-- Use the `createPayment` function.
+* Create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
+* Use the `createPayment` function.
 
 Both options require you to provide the `oneTimeToken` and the `checkoutSession`. As creating the payment may raise errors, Yuno recommends you use a try/catch function here. 
 
@@ -502,24 +552,33 @@ if (payment.checkout.sdk_action_required) {
 }
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=\"contentContainer\">\n        <p>\n          In addition to the code examples provided, you can access the <a href\"/docs/demo-app\">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href=\"https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html\">HTML<a/> and <a href=\"https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js\">JavaScript</a> checkout demos available on GitHub.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+          In addition to the code examples provided, you can access the <a href"/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js">JavaScript</a> checkout demos available on GitHub.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Complementary features
 
 Yuno Secure Fields provides additional services and configurations you can use to improve customers' experience:
 
-- [Configure and use TypeScript](#configure-and-use-typescript) 
-- [Persist credit card information to retry payments](doc:secure-fields-complementary-features#persist-credit-card-information-to-retry-payments)
-- [Clear the values entered in the card fields](doc:secure-fields-complementary-features#clear-the-values-entered-in-the-card-fields)
-- [Input focus](doc:secure-fields-complementary-features#input-focus)
-- [Force validation](doc:secure-fields-complementary-features#force-validation)
-- [Set custom error message](doc:secure-fields-complementary-features#set-custom-error-message)
-- [Set card type](doc:secure-fields-complementary-features#set-card-type)
+* [Configure and use TypeScript](#configure-and-use-typescript) 
+* [Persist credit card information to retry payments](doc:secure-fields-complementary-features#persist-credit-card-information-to-retry-payments)
+* [Clear the values entered in the card fields](doc:secure-fields-complementary-features#clear-the-values-entered-in-the-card-fields)
+* [Input focus](doc:secure-fields-complementary-features#input-focus)
+* [Force validation](doc:secure-fields-complementary-features#force-validation)
+* [Set custom error message](doc:secure-fields-complementary-features#set-custom-error-message)
+* [Set card type](doc:secure-fields-complementary-features#set-card-type)
 
 ### Configure and use TypeScript
 
@@ -563,8 +622,8 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 })
 ```
 
-2. In case the transaction is rejected, you will need to:  
-   i. Create a new checkout session.  
+2. In case the transaction is rejected, you will need to:\
+   i. Create a new checkout session.\
    ii. Generate a new one-time token. In the one-time token generation, send the new checkout session in the `checkoutSession` parameter.
 3. Continue with the new checkout and One Time Token with the regular payment flow.
 
@@ -617,6 +676,6 @@ secureFieldInstance.setCardType('CREDIT')
 
 Learn how to execute [MIT using the Secure Fields](doc:secure-fields-merchant-initiated-transactions), or for additional configurations from the Secure Fields SDK, access [complementary features](doc:secure-fields-complementary-features). You can also access other functions available on the Yuno Web SDK:
 
-- [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand.
-- [Payment Status](doc:payment-status): Update the user about the payment process.
-- [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow.
+* [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand.
+* [Payment Status](doc:payment-status): Update the user about the payment process.
+* [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow.
