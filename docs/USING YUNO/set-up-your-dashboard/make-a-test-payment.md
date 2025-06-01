@@ -47,7 +47,7 @@ Yuno offers two types of [SDK Checkout implementation](doc:build-your-integratio
 Below we present a payment example; however, you can use the same steps for all Yuno API requests.
 
 > 📘 Note
-> 
+>
 > In addition to performing requests using your system, you can use the Yuno Docs page. Yuno API routes are available for testing, with examples you can use. If it is your first time using Yuno Docs requests examples, please, access [How to Use Yuno Docs](https://docs.y.uno/reference/how-to-use-yuno-docs) for instructions.
 
 # Testing examples
@@ -395,8 +395,122 @@ In event of any error, the related information is returned by the Yuno API. Foll
 }
 ```
 
-[block:html]
-{
-  "html": "<style>\n  .navigation-button-shelf {\n    margin: 0 0 0 0;\n    display: flex;\n    justify-content: space-between;\n  }\n\n  .navigation-button {\n    padding: 0.3rem;\n    \n    border-radius: 5px;\n    border: 1px solid  var(--yuno-purple);\n    transition: transform .2s;\n    display: flex;\n    flex-direction: row;\n  }\n\n  .navigation-button:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px  var(--yuno-purple-10);\n    cursor: pointer;\n  }\n\n  .navigation-button svg {\n    color: var(--yuno-purple);\n    height: 25px;\n    width: 25px;\n  }\n\n  .navigation-button h4 {\n    font-size: 0.8rem;\n    color:  var(--yuno-purple);\n    margin: 0 0 0 10px;\n    display: flex;\n    align-items: center;\n  }\n\n  @media only screen and (max-width: 600px) {\n    .navigation-button h4 {\n      font-size: 0.7rem;\n    }\n\n    .navigation-button svg {\n      color:  var(--yuno-purple);\n      height: 20px;\n      width: 20px;\n    }\n  }\n  \n  nav.Pagination1KE9HXCXYd0E {\n    display: none !important;\n  }\n  \n  /* ------------------------ define the configuration for DARK Mode ------------------------  */\n\n  @media (prefers-color-scheme: dark) {\n    .navigation-button {\n      border: 1px solid  var(--yuno-purple-50);\n    }\n\n    .navigation-button:hover {\n      box-shadow: none ;\n    }\n\n    .navigation-button svg {\n      color: var(--yuno-purple-50);\n    }\n\n    .navigation-button h4 {\n      color:  var(--yuno-purple-50);\n    }\n  }\n\n  [data-color-mode=\"dark\"] .navigation-button {\n      border: 1px solid  var(--yuno-purple-50);\n    }\n\n  [data-color-mode=\"dark\"] .navigation-button:hover {\n    \tbox-shadow: none ;\n    }\n\n  [data-color-mode=\"dark\"] .navigation-button svg {\n      color: var(--yuno-purple-50);\n    }\n\n  [data-color-mode=\"dark\"] .navigation-button h4 {\n      color:  var(--yuno-purple-50);\n    }\n</style>\n\n<body>\n  <br />\n  <br />\n  <section class=\"navigation-button-shelf\">\n    \n    <div class=\"navigation-button\" onclick=\"window.location='manage-your-checkout';\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"100%\" fill=\"currentColor\" class=\"bi bi-toggles\"\n        viewBox=\"0 0 16 16\">\n        <path\n          d=\"M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z\" />\n      </svg>\n      <h4>\n        Manage your checkout\n      </h4>\n    </div>\n    <div class=\"navigation-button\" onclick=\"window.location='enable-live-mode';\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"100%\" fill=\"currentColor\" class=\"bi bi-globe\"\n        viewBox=\"0 0 16 16\">\n        <path\n          d=\"M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z\" />\n      </svg>\n      <h4>\n        Enable live mode\n      </h4>\n    </div>\n  </section>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .navigation-button-shelf {
+    margin: 0 0 0 0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .navigation-button {
+    padding: 0.3rem;
+    
+    border-radius: 5px;
+    border: 1px solid  var(--yuno-purple);
+    transition: transform .2s;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .navigation-button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px  var(--yuno-purple-10);
+    cursor: pointer;
+  }
+
+  .navigation-button svg {
+    color: var(--yuno-purple);
+    height: 25px;
+    width: 25px;
+  }
+
+  .navigation-button h4 {
+    font-size: 0.8rem;
+    color:  var(--yuno-purple);
+    margin: 0 0 0 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  @media only screen and (max-width: 600px) {
+    .navigation-button h4 {
+      font-size: 0.7rem;
+    }
+
+    .navigation-button svg {
+      color:  var(--yuno-purple);
+      height: 20px;
+      width: 20px;
+    }
+  }
+  
+  nav.Pagination1KE9HXCXYd0E {
+    display: none !important;
+  }
+  
+  /* ------------------------ define the configuration for DARK Mode ------------------------  */
+
+  @media (prefers-color-scheme: dark) {
+    .navigation-button {
+      border: 1px solid  var(--yuno-purple-50);
+    }
+
+    .navigation-button:hover {
+      box-shadow: none ;
+    }
+
+    .navigation-button svg {
+      color: var(--yuno-purple-50);
+    }
+
+    .navigation-button h4 {
+      color:  var(--yuno-purple-50);
+    }
+  }
+
+  [data-color-mode="dark"] .navigation-button {
+      border: 1px solid  var(--yuno-purple-50);
+    }
+
+  [data-color-mode="dark"] .navigation-button:hover {
+    	box-shadow: none ;
+    }
+
+  [data-color-mode="dark"] .navigation-button svg {
+      color: var(--yuno-purple-50);
+    }
+
+  [data-color-mode="dark"] .navigation-button h4 {
+      color:  var(--yuno-purple-50);
+    }
+</style>
+
+<body>
+  <br />
+  <br />
+  <section class="navigation-button-shelf">
+    
+    <div class="navigation-button" onclick="window.location='manage-your-checkout';">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="currentColor" class="bi bi-toggles"
+        viewBox="0 0 16 16">
+        <path
+          d="M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7h-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5H6.95zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7z" />
+      </svg>
+      <h4>
+        Manage your checkout
+      </h4>
+    </div>
+    <div class="navigation-button" onclick="window.location='enable-live-mode';">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="currentColor" class="bi bi-globe"
+        viewBox="0 0 16 16">
+        <path
+          d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 0 0 5.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 0 1 .64-1.539 6.7 6.7 0 0 1 .597-.933A7.025 7.025 0 0 0 2.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 0 0-.656 2.5h2.49zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 0 0-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 0 1-.597-.933A9.268 9.268 0 0 1 4.09 12H2.255a7.024 7.024 0 0 0 3.072 2.472zM3.82 11a13.652 13.652 0 0 1-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0 0 13.745 12H11.91a9.27 9.27 0 0 1-.64 1.539 6.688 6.688 0 0 1-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.65 13.65 0 0 1-.312 2.5zm2.802-3.5a6.959 6.959 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5h2.49zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.024 7.024 0 0 0-3.072-2.472c.218.284.418.598.597.933zM10.855 4a7.966 7.966 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4h2.355z" />
+      </svg>
+      <h4>
+        Enable live mode
+      </h4>
+    </div>
+  </section>
+</body>
+`}</HTMLBlock>
