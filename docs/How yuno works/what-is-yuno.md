@@ -15,9 +15,9 @@ next:
 ---
 Yuno allows businesses to accept all available payment methods and manage fraud detection and prevention through a single integration. It solves common challenges in payment performance and customer experience, such as:  
 
-- Low approval rates  
-- Lengthy and complicated payment processes  
-- Inefficient fraud management  
+* Low approval rates  
+* Lengthy and complicated payment processes  
+* Inefficient fraud management  
 
 With Yuno, these issues become a thing of the past. You can streamline the payment acceptance and management process, providing customers with a secure and seamless shopping experience.
 
@@ -31,11 +31,11 @@ Yuno simplifies connecting to payment methods and acquirers with an intuitive da
 
 With Yuno, your business gains access to a powerful payment infrastructure designed for efficiency, flexibility, and ease of use. Here's what you can expect:  
 
-- A single integration that connects your company to all payment ecosystems and anti-fraud solutions.  
-- Customizable payments managed directly from the dashboard, including user-based payment method tokenization.  
-- No-code payment workflows that let you enable and control payment methods in a few clicks.  
-- A centralized system to aggregate all transaction data into one place.  
-- A dedicated business team to help scale partnerships.  
-- Hundreds of payment services available in a single integration.  
+* A single integration that connects your company to all payment ecosystems and anti-fraud solutions.  
+* Customizable payments managed directly from the dashboard, including user-based payment method tokenization.  
+* No-code payment workflows that let you enable and control payment methods in a few clicks.  
+* A centralized system to aggregate all transaction data into one place.  
+* A dedicated business team to help scale partnerships.  
+* Hundreds of payment services available in a single integration.  
 
 Easily integrate and manage multiple payment methods on one platform. Need a specific provider? Let us know—we continuously add new integrations.
