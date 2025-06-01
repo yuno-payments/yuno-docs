@@ -10,8 +10,2243 @@ metadata:
 next:
   description: ''
 ---
-[block:html]
-{
-  "html": "<style>\n  .tabs {\n    display: flex;\n    border-bottom: 2px solid #ddd;\n    margin-bottom: 20px;\n  }\n\n  input[type=\"radio\"] {\n    display: none;\n  }\n\n  label {\n    text-decoration: none;\n    color: #333;\n    padding: 10px 20px;\n    transition: all 0.3s ease;\n    font-size: 16px;\n    margin-right: 10px;\n    border-bottom: 2px solid transparent;\n    cursor: pointer;\n  }\n\n  label:hover,\n  label:focus {\n    color: #000;\n  }\n\n  .tab-content {\n    display: none;\n  }\n\n  /* Show content when corresponding radio button is checked */\n  #webSDKv10:checked~.tab-content#webSDKv10,\n  #webSDKv11:checked~.tab-content#webSDKv11 {\n    display: block;\n  }\n\n  /* Style active tab */\n  #webSDKv10:checked~.tabs label[for=\"webSDKv10\"],\n  #webSDKv11:checked~.tabs label[for=\"webSDKv11\"] {\n    color: #000;\n    border-bottom: 2px solid #513CE1;\n  }\n</style>\n\n<body>\n  <input type=\"radio\" id=\"webSDKv11\" name=\"tabs\" checked>\n  <input type=\"radio\" id=\"webSDKv10\" name=\"tabs\">\n\n  <div class=\"tabs\">\n    <label for=\"webSDKv11\">Yuno Web SDK v1.1</label>\n    <label for=\"webSDKv10\">Yuno Web SDK v1.0</label>\n  </div>\n\n  <div class=\"tab-content\" id=\"webSDKv11\">\n    <div dehydrated=\"<p>Follow this step-by-step guide to implement and enable Yuno&amp;#x27;s Full Web SDK functionality in your application.</p>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-1-include-the-library-in-your-project&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-1-include-the-library-in-your-project&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 1: Include the library in your project</div><a aria-label=&quot;Skip link to Step 1: Include the library in your project&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-1-include-the-library-in-your-project&quot;></a></h2>\n<p>Before proceeding with the Full SDK implementation, please refer to the <a href=&quot;/docs/yuno-sdk-integration-guide&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;yuno-sdk-integration-guide&quot;>Yuno SDK Integration Guide</a> for detailed instructions on how to properly integrate the SDK into your project.</p>\n<p>The integration guide provides three flexible methods:</p>\n<ol>\n<li>Direct HTML script inclusion</li>\n<li>Dynamic JavaScript injection</li>\n<li>NPM module installation</li>\n</ol>\n<p>Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the full checkout functionality.</p>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer &quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>TypeScript library</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          If you are using TypeScript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> that you can use to see all available methods available in the Yuno Web SDK.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-2-initialize-sdk-with-the-public-key&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-2-initialize-sdk-with-the-public-key&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 2: Initialize SDK with the public key</div><a aria-label=&quot;Skip link to Step 2: Initialize SDK with the public key&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-2-initialize-sdk-with-the-public-key&quot;></a></h2>\n<p>In your JavaScript application, create an instance of the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Yuno</code> class by providing a valid <strong>PUBLIC_API_KEY</strong>. Check the <a href=&quot;/reference/get-your-api-credentials&quot; target=&quot;&quot; title=&quot;&quot;>Get your API credentials</a> guide.</p>\n<p>Like the example below, use the initialized class that is attributed to the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno</code>constant.</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const yuno = await Yuno.initialize(PUBLIC_API_KEY)\n</code></pre></div></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-3-start-the-checkout-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-3-start-the-checkout-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 3: Start the checkout process</div><a aria-label=&quot;Skip link to Step 3: Start the checkout process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-3-start-the-checkout-process&quot;></a></h2>\n<p>To start the checkout, you&amp;#x27;ll use the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout</code>, providing the necessary parameters.</p>\n<p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a href=&quot;https://docs.y.uno/docs/full-checkout-sdk#complementary-features&quot; target=&quot;&quot; title=&quot;&quot;>Complementary Features</a>.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>checkoutSession</code></td><td style=&quot;text-align:left&quot;>Refers to the current payment&amp;#x27;s <a href=&quot;/reference/create-checkout-session&quot; target=&quot;&quot; title=&quot;&quot;>checkout session</a>.<br/><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Example: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;</code></td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>countryCode</code></td><td style=&quot;text-align:left&quot;>This parameter specifies the country for which the payment process is being set up.<br/>\nUse an <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>ENUM</code> value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the <a href=&quot;/docs/country-coverage-yuno-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;country-coverage-yuno-sdk&quot;>Country Coverage</a>  page.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>language</code></td><td style=&quot;text-align:left&quot;>Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), or th (Thai).</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>onLoading</code></td><td style=&quot;text-align:left&quot;>Required to receive notifications about server calls or loading events during the payment process. </td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showLoading</code></td><td style=&quot;text-align:left&quot;>Control the visibility of the Yuno loading/spinner page during the payment process. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>issuersFormEnable</code></td><td style=&quot;text-align:left&quot;>Enables the issuer&amp;#x27;s form. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showPaymentStatus</code></td><td style=&quot;text-align:left&quot;>Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>card.isCreditCardProcessingOnly</code></td><td style=&quot;text-align:left&quot;>Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.<br/>\nTo enable, set the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>isCreditCardProcessingOnly</code> to <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code> to ensure that all card transactions are processed as credit.<br/>\nThis parameter is not required.</td></tr></tbody></table></div></div>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  checkoutSession: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;,\n  /**\n   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk\n  */\n  country_code: &amp;quot;FR&amp;quot;,\n  language: &amp;#x27;fr&amp;#x27;,\n  showLoading: true,\n  issuersFormEnable: true,\n  showPaymentStatus: true,\n\t/**\n   * Set isCreditCardProcessingOnly as true to process all card transactions are credit\n   * isCreditCardProcessingOnly: true | false | undefined\n  */\n  card: {\n    isCreditCardProcessingOnly: true,\n  }\n  onLoading: (args) =&amp;gt; {\n    console.log(args);\n  }\n  async yunoCreatePayment(oneTimeToken) {\n  \t/**\n    * The createPayment function calls the backend to create a payment in Yuno.\n    * It uses the following endpoint https://docs.y.uno/reference/create-payment\n  \t*/\n    await createPayment({ oneTimeToken, checkoutSession })\n    yuno.continuePayment({ showPaymentStatus: true })\n  },\n})\n</code></pre></div></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer &quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Rendering mode</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-4-mount-the-sdk&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-4-mount-the-sdk&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 4: Mount the SDK</div><a aria-label=&quot;Skip link to Step 4: Mount the SDK&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-4-mount-the-sdk&quot;></a></h2>\n<p>Display the payment methods by using the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.mountCheckout()</code> by selecting an HTML element and using a valid CSS selector (<button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>#</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>.</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>[data-*]</code>)</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**\n * Mount checkout in browser DOM\n */\nyuno.mountCheckout()\n</code></pre></div></div>\n<p>If you want to set a default payment method, use the following code to mount it:</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**\n * Mount checkout in browser DOM with a payment method selected by default\n * @optional\n */\nyuno.mountCheckout({\n  /**\n   * Optional, only needed if you would like this method type selected by default\n   * Can be one of &amp;#x27;PAYPAL&amp;#x27; | &amp;#x27;PIX&amp;#x27; | &amp;#x27;APPLE_PAY&amp;#x27; | &amp;#x27;GOOGLE_PAY&amp;#x27; | CARD\n   */\n  paymentMethodType: PAYMENT_METHOD_TYPE,\n  /**\n   * Optional\n   * Vaulted token related to payment method type\n   */\n  vaultedToken: VAULTED_TOKEN,\n})\n</code></pre></div></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-5-initiate-the-payment-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-5-initiate-the-payment-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 5: Initiate the payment process</div><a aria-label=&quot;Skip link to Step 5: Initiate the payment process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-5-initiate-the-payment-process&quot;></a></h2>\n<p>After the user has selected a payment method remember to call <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> to initiate the payment flow. Below you will find an example where <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> is called when the user clicks on <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>button-pay</code>:</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const PayButton = document.querySelector(&amp;#x27;#button-pay&amp;#x27;)\n\nPayButton.addEventListener(&amp;#x27;click&amp;#x27;, () =&amp;gt; {\n  yuno.startPayment()\n})\n</code></pre></div></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-6-get-the-ott-one-time-token&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-6-get-the-ott-one-time-token&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 6: Get the OTT (one-time token)</div><a aria-label=&quot;Skip link to Step 6: Get the OTT (one-time token)&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-6-get-the-ott-one-time-token&quot;></a></h2>\n<p>Once the customer fills out the requested data in Yuno&amp;#x27;s payment forms, the SDK provides the one-time token. The configuration function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.CreatePayment(oneTimeToken)</code> is then triggered with the one-time token.</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;> yunoCreatePayment(oneTimeToken)\n</code></pre></div></div>\n<p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such as installments or document type/number.</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yunoCreatePayment(oneTimeToken, tokenWithInformation)\n</code></pre></div></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer alert&quot;>\n    <div class=&quot;verticalLineAlert&quot;></div>\n    <div>\n      <h3>Important</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n\t\t\t\t\tThe merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-7-create-the-payment&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-7-create-the-payment&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 7: Create the Payment</div><a aria-label=&quot;Skip link to Step 7: Create the Payment&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-7-create-the-payment&quot;></a></h2>\n<p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the <a href=&quot;https://docs.y.uno/reference/create-payment&quot; target=&quot;&quot; title=&quot;&quot;>Create Payment endpoint</a>. The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.</p>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer&quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Complete the integration</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          After Step 7, you can complete the end-to-end integration by accessing <a href=&quot;https://docs.y.uno/docs/full-sdk-workflow&quot;>Step by Step integration of the Full SDK</a>.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer&quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Continue method</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario \n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;continuepayment-return-value-or-null&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-continue-payment-return-value-or-null&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>continuePayment</code> return value or null</div><a aria-label=&quot;Skip link to [object Object]&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#continuepayment-return-value-or-null&quot;></a></h2>\n<p>For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>await yuno.continuePayment()</code> method will return either an object with the following structure or null:</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>TypeScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-typescript theme-light&quot; data-lang=&quot;typescript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>{\n  action: &amp;#x27;REDIRECT_URL&amp;#x27;\n  type: string\n  redirect: {\n    init_url: string\n    success_url: string\n    error_url: string\n  }\n} | null\n</code></pre></div></div>\n<p>When the method returns an object, it allows you to handle your application&amp;#x27;s payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.</p>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer&quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          In addition to the code examples provided, you can access the <a href&quot;/docs/demo-app&quot;>Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html&quot;>HTML<a/> and <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js&quot;>JavaScript</a> checkout demos available on GitHub.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;complementary-features&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-complementary-features&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Complementary features</div><a aria-label=&quot;Skip link to Complementary features&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#complementary-features&quot;></a></h2>\n<p>Yuno Web SDK provides additional services and configurations you can use to improve customers&amp;#x27; experience:</p>\n<ul>\n<li><a href=&quot;/docs/complementary-features-full-sdk#loader-control-the-use-of-the-loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#loader-control-the-use-of-the-loader&quot;>Form loader</a></li>\n<li><a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode </a></li>\n<li><a href=&quot;/docs/complementary-features-full-sdk#card-form-configurations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#card-form-configurations&quot;>Card form configurations </a>\n<ul>\n<li><a href=&quot;/docs/complementary-features-full-sdk#save-card-for-future-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#save-card-for-future-payments&quot;>Save Card for future payments</a></li>\n<li><a href=&quot;/docs/complementary-features-full-sdk#rendering-modes&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#rendering-modes&quot;>Render mode</a></li>\n<li><a href=&quot;/docs/complementary-features-full-sdk#text-payment-form-buttons&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#text-payment-form-buttons&quot;>Text payment form buttons</a></li>\n<li><a href=&quot;/docs/complementary-features-full-sdk#persist-credit-card-form-to-retry-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#persist-credit-card-form-to-retry-payments&quot;>Persist credit card form to retry payments</a></li>\n<li><a href=&quot;/docs/complementary-features-full-sdk#hide-pay-button&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#hide-pay-button&quot;>Hide Pay button</a></li>\n</ul>\n</li>\n</ul>\n<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;form-loader&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-form-loader&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div><a href=&quot;/docs/loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;loader&quot;>Form loader</a></div><a aria-label=&quot;Skip link to [object Object]&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#form-loader&quot;></a></h3>\n<p>Control the use of the <a href=&quot;/docs/loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;loader&quot;>loader</a>.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showLoading</code></td><td style=&quot;text-align:left&quot;>You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>hideLoader()</code> or <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>continuePayment()</code> function is called.<br/>\nThe default value is true.</td></tr></tbody></table></div></div>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  showLoading: true,\n})\n</code></pre></div></div>\n<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;form-of-the-issuer&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-form-of-the-issuer&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Form of the issuer</div><a aria-label=&quot;Skip link to Form of the issuer&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#form-of-the-issuer&quot;></a></h3>\n\n\n\n\n\n\n\n\n\n\n\n\n\n<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>issuersFormEnable</code></td><td style=&quot;text-align:left&quot;>Through this parameter, you can configure the SDK to enable the issuer&amp;#x27;s form (bank list).</td></tr></tbody></table></div></div>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  issuersFormEnable: true,\n})\n</code></pre></div></div>\n<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;mode-of-form-rendering&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-mode-of-form-rendering&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Mode of form rendering</div><a aria-label=&quot;Skip link to Mode of form rendering&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#mode-of-form-rendering&quot;></a></h3>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>renderMode</code></td><td style=&quot;text-align:left&quot;>This parameter is optional. It determines the mode in which the payment forms will be displayed.<br/><br/>\n- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>type</code>: can be one of <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>modal</code> or <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>element</code>.<br/>\n- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>elementSelector</code>: Element where the form will be rendered. Only required if <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>type </code>is <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>element</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>elementSelector</code></td><td style=&quot;text-align:left&quot;>Required only if the type is <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>element</code>. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:<br/><br/>\n- <strong>String (Deprecated)</strong>: Provide the ID or selector of the element where the SDK should be mounted.<br/>\n- <strong>Object</strong>: Specify the elements for mounting the APM and action forms. You need to provide the element for the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>apmForm</code>, which is where the APM is displayed, and the element for the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>actionForm</code>, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.</td></tr></tbody></table></div></div>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  renderMode: {\n    /**\n     * Type can be one of `modal` or `element`\n     * By default the system uses &amp;#x27;modal&amp;#x27;\n     * It is optional\n     */\n    type: &amp;#x27;modal&amp;#x27;,\n    /**\n     * Element where the form will be rendered.\n     * It is optional\n     * Can be a string (deprecated) or an object with the following structure:\n     * {\n     *   apmForm: &amp;quot;#form-element&amp;quot;,\n     *   actionForm: &amp;quot;#action-form-element&amp;quot;\n     * }\n     */\n    elementSelector: {\n      apmForm: &amp;quot;#form-element&amp;quot;,\n      actionForm: &amp;quot;#action-form-element&amp;quot;\n    }\n  },\n})\n</code></pre></div></div>\n<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;card-form-configurations&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-card-form-configurations&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Card form configurations</div><a aria-label=&quot;Skip link to Card form configurations&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#card-form-configurations&quot;></a></h3>\n\n\n\n\n\n\n\n\n\n\n\n\n\n<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>card</code></td><td style=&quot;text-align:left&quot;>Define specific settings for the credit card form:<br/><br/>\n- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>type</code>: <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>step</code> or <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>extends</code><br/>\n- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>styles</code>: You can edit card form styles. Only you should write css, then it will be injected into the iframe.<br/>\n- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>cardSaveEnable</code>: Show checkbox for save/enroll card. The default value is false.<br/>\n- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>texts</code>: Custom texts in the Card forms buttons.</td></tr></tbody></table></div></div>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  card: {\n    type: &amp;quot;extends&amp;quot;,\n    styles: &amp;#x27;&amp;#x27;,\n    cardSaveEnable: false,\n    texts: {}\n  },\n})\n</code></pre></div></div>\n<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;save-card-for-future-payments&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-save-card-for-future-payments&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Save card for future payments</div><a aria-label=&quot;Skip link to Save card for future payments&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#save-card-for-future-payments&quot;></a></h4>\n<p>In addition, you can display a checkbox for saving or enrolling cards using the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>cardSaveEnable: true</code>. Below are examples of the checkbox for both card form renders.</p>\n<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/37b2e00b0c6a3d31bceb42b26b1b433c8d30e61d947a93298dd90c466bde004b-complementary-features.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>\n<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;rendering-modes&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-rendering-modes&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Rendering modes</div><a aria-label=&quot;Skip link to Rendering modes&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#rendering-modes&quot;></a></h4>\n<p>Below you find screenshots presenting the difference between the following:</p>\n<ul>\n<li>Render modes <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>modal</code> and <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>elements</code> for the payment method list</li>\n<li>Render modes <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>step</code> and <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>extends</code> for the credit card form</li>\n</ul>\n<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/b56fe6dfdebaee158495dea86d5269d865fae2dfcb81eb8b34879f9e5e737f0e-caracteristicas_Complemetarias_web_1.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>\n<p>You also can choose one of the render options for the card form, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>step</code> and <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>extends</code>:</p>\n<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/08654f8fa7b638641cb1b9f5b882a75537a9e449fff4960cf560c1ec5b3efb74-caracteristicas_Complemetarias_web_2.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>\n<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;text-payment-form-buttons&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-text-payment-form-buttons&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Text payment form buttons</div><a aria-label=&quot;Skip link to Text payment form buttons&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#text-payment-form-buttons&quot;></a></h4>\n\n\n\n\n\n\n\n\n\n\n\n\n\n<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>texts</code></td><td style=&quot;text-align:left&quot;>Provide custom text for payment form buttons to match your application&amp;#x27;s language or branding.</td></tr></tbody></table></div></div>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  texts: {\n    customerForm?: {\n      submitButton?: string;\n    }\n    paymentOtp?: {\n      sendOtpButton?: string;\n    }\n  }\n})\n</code></pre></div></div>\n<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;persist-credit-card-form-to-retry-payments&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-persist-credit-card-form-to-retry-payments&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Persist credit card form to retry payments</div><a aria-label=&quot;Skip link to Persist credit card form to retry payments&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#persist-credit-card-form-to-retry-payments&quot;></a></h4>\n<p>If a transaction is rejected, you can use the credit card form to retry a payment after the customer has entered the credit card details. To do that, you will need to:</p>\n<ol>\n<li>Add the following parameter while initializing the SDK to persist the credit card form after the one-time use token is created:\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  automaticallyUnmount: false,\n})\n</code></pre></div></div>\n</li>\n<li>In case the transaction is rejected, you will need to:\n<ol>\n<li>Execute the method <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.notifyError() </code>to delete the previously entered CVV for the first transaction</li>\n<li>Create a new checkout session and update the SDK with the new one by executing <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.updateCheckoutSession(checkoutsession)</code></li>\n</ol>\n</li>\n<li>Continue with the new checkout and one-time use token with the regular payment flow.</li>\n</ol>\n<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;hide-pay-button&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-hide-pay-button&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Hide Pay button</div><a aria-label=&quot;Skip link to Hide Pay button&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#hide-pay-button&quot;></a></h4>\n<p>You can hide the Pay button when presenting the card or customer data form. To control this feature, you&amp;#x27;ll set <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showPayButton</code> to <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>false</code> when starting the checkout with the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>startCheckout</code> function. The code block below presents an example of how to hide the payment button:</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  /**\n   * Hide (false) or show (true) the customer or card form pay button\n   * @default true\n   * @optional\n   */\n  showPayButton: false,\n})\n</code></pre></div></div>\n<p>The following images present examples of the Customer Data Form with and without the Pay button:</p>\n<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/873a709f1c3dce3c3dcc13dd4fd3cc9b5a8ecdf812c3b631f3cf8700177cc5cf-Card_boton.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>\n<p>The following images present examples of the Card Form with and without the Pay button:</p>\n<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/b8b5e51ab3f5907786b802cb782a71e043f4ec18475b6e5b6d4dd052c6dc4e37-Card_boton_1.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>\n<p>If you hide the Pay button, you will need to start the one-time token creation through your code. To create the one-time token and continue the payment in your backend, call the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>submitOneTimeTokenForm</code> function. The code block below presents how to use the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>submitOneTimeTokenForm</code> function.</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**\n * This function triggers the same functionality that is called when the customer clicks on the pay form button.  This doesn&amp;#x27;t work on the step Card form\n */\nyuno.submitOneTimeTokenForm()\n</code></pre></div></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;whats-next&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-whats-next&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>What&amp;#x27;s next?</div><a aria-label=&quot;Skip link to What&amp;#x27;s next?&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#whats-next&quot;></a></h2>\n<p>Learn about the additional configurations from the Full SDK accessing <a href=&quot;/docs/complementary-features-full-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk&quot;>Complementary Features</a>. You can also access other functions available on the Yuno Web SDK:</p>\n<ul>\n<li><a href=&quot;/docs/sdk-customizations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;sdk-customizations&quot;>SDK Customizations</a>: Change the SDK appearance to match your brand</li>\n<li><a href=&quot;/docs/payment-status&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;payment-status&quot;>Payment Status</a>: Update the user about the payment process</li>\n<li><a href=&quot;/docs/3ds-setup-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;3ds-setup-sdk&quot;>3DS Setup SDK</a>: Integrate 3DS into your payment flow</li>\n</ul>\" style=\"margin-left:31px\" class=\"rm-Markdown markdown-body rm-Markdown markdown-body ng-non-bindable\"\n      data-testid=\"RDMD\">\n      <p>Follow this step-by-step guide to implement and enable Yuno's Full Web SDK functionality in your application.\n      </p>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-1-include-the-library-in-your-project\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-1-include-the-library-in-your-project\" class=\"heading-anchor_backwardsCompatibility\">\n          </div>Step 1: Include the library in your project\n        </div><a aria-label=\"Skip link to Step 1: Include the library in your project\"\n          class=\"heading-anchor-icon fa fa-anchor\" href=\"#step-1-include-the-library-in-your-project\"></a>\n      </h2>\n      <p>Before proceeding with the Full SDK implementation, please refer to the <a target=\"_self\"\n          href=\"/docs/yuno-sdk-integration-guide\">Yuno SDK Integration Guide</a> for detailed instructions on how to\n        properly integrate the SDK into your project.</p>\n      <p>The integration guide provides three flexible methods:</p>\n      <ol>\n        <li>Direct HTML script inclusion</li>\n        <li>Dynamic JavaScript injection</li>\n        <li>NPM module installation</li>\n      </ol>\n      <p>Choose the integration method that best suits your development workflow and technical requirements. After\n        completing the SDK integration, you can proceed with the following steps to implement the full checkout\n        functionality.</p>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer \">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>TypeScript library</h3>\n            <div class=\"contentContainer\">\n              <p>\n                If you are using TypeScript, Yuno provides a <a\n                  href=\"https://www.npmjs.com/package/@yuno-payments/sdk-web-types\">library</a> that you can use to see\n                all available methods available in the Yuno Web SDK.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-2-initialize-sdk-with-the-public-key\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-2-initialize-sdk-with-the-public-key\" class=\"heading-anchor_backwardsCompatibility\">\n          </div>Step 2: Initialize SDK with the public key\n        </div><a aria-label=\"Skip link to Step 2: Initialize SDK with the public key\"\n          class=\"heading-anchor-icon fa fa-anchor\" href=\"#step-2-initialize-sdk-with-the-public-key\"></a>\n      </h2>\n      <p>In your JavaScript application, create an instance of the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">Yuno</span></code> class by providing a\n        valid <strong>PUBLIC_API_KEY</strong>. Check the <a target=\"_self\"\n          href=\"/reference/get-your-api-credentials\">Get your API credentials</a> guide.</p>\n      <p>Like the example below, use the initialized class that is attributed to the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno</span></code>constant.</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-keyword\">const</span> <span class=\"cm-def\">yuno</span> <span class=\"cm-operator\">=</span> <span class=\"cm-keyword\">await</span> <span class=\"cm-variable\">Yuno</span>.<span class=\"cm-property\">initialize</span>(<span class=\"cm-variable\">PUBLIC_API_KEY</span>)\n</div></code></pre>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-3-start-the-checkout-process\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-3-start-the-checkout-process\" class=\"heading-anchor_backwardsCompatibility\"></div>Step\n          3: Start the checkout process\n        </div><a aria-label=\"Skip link to Step 3: Start the checkout process\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-3-start-the-checkout-process\"></a>\n      </h2>\n      <p>To start the checkout, you'll use the function <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.startCheckout</span></code>,\n        providing the necessary parameters.</p>\n      <p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a\n          target=\"_self\" href=\"/docs/full-checkout-sdk#complementary-features\">Complementary Features</a>.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n      <div class=\"rdmd-table\">\n        <div class=\"rdmd-table-inner\">\n          <table>\n            <thead>\n              <tr>\n                <th style=\"text-align:left\">Parameter</th>\n                <th style=\"text-align:left\">Description</th>\n              </tr>\n            </thead>\n            <tbody>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">checkoutSession</span></code>\n                </td>\n                <td style=\"text-align:left\">Refers to the current payment's <a target=\"_self\"\n                    href=\"/reference/create-checkout-session\">checkout session</a>.<br><button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">Example: '438413b7-4921-41e4-b8f3-28a5a0141638'</span></code>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">countryCode</span></code></td>\n                <td style=\"text-align:left\">This parameter specifies the country for which the payment process is being\n                  set up.<br>\n                  Use an <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">ENUM</span></code> value\n                  representing the desired country code. You can find the full list of supported countries and their\n                  corresponding codes on the <a target=\"_self\" href=\"/docs/country-coverage-yuno-sdk\">Country\n                    Coverage</a> page.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">language</span></code></td>\n                <td style=\"text-align:left\">Defines the language to be used in the payment forms. You can set it to one\n                  of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id\n                  (Indonesian), ms (Malay), or th (Thai).</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">onLoading</span></code></td>\n                <td style=\"text-align:left\">Required to receive notifications about server calls or loading events\n                  during the payment process. </td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">showLoading</span></code></td>\n                <td style=\"text-align:left\">Control the visibility of the Yuno loading/spinner page during the payment\n                  process. By default, it's <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code>.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">issuersFormEnable</span></code>\n                </td>\n                <td style=\"text-align:left\">Enables the issuer's form. By default, it's <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code>.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">showPaymentStatus</span></code>\n                </td>\n                <td style=\"text-align:left\">Shows the Yuno Payment Status page. You can use this option when continuing\n                  a payment as well. By default, it's <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code>.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">card.isCreditCardProcessingOnly</span></code>\n                </td>\n                <td style=\"text-align:left\">Enables you to ensure that all card transactions are processed as credit\n                  only. This option is helpful in markets where cards can act as both credit and debit.<br>\n                  To enable, set the <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">isCreditCardProcessingOnly</span></code>\n                  to <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code> to ensure\n                  that all card transactions are processed as credit.<br>\n                  This parameter is not required.</td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      </div>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">checkoutSession</span>: <span class=\"cm-string\">'438413b7-4921-41e4-b8f3-28a5a0141638'</span>,\n  <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk</span>\n<span class=\"cm-comment\">  */</span>\n  <span class=\"cm-property\">country_code</span>: <span class=\"cm-string\">\"FR\"</span>,\n  <span class=\"cm-property\">language</span>: <span class=\"cm-string\">'fr'</span>,\n  <span class=\"cm-property\">showLoading</span>: <span class=\"cm-atom\">true</span>,\n  <span class=\"cm-property\">issuersFormEnable</span>: <span class=\"cm-atom\">true</span>,\n  <span class=\"cm-property\">showPaymentStatus</span>: <span class=\"cm-atom\">true</span>,\n\t<span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * Set isCreditCardProcessingOnly as true to process all card transactions are credit</span>\n<span class=\"cm-comment\">   * isCreditCardProcessingOnly: true | false | undefined</span>\n<span class=\"cm-comment\">  */</span>\n  <span class=\"cm-property\">card</span>: {\n    <span class=\"cm-property\">isCreditCardProcessingOnly</span>: <span class=\"cm-atom\">true</span>,\n  }\n  <span class=\"cm-variable\">onLoading</span>: (<span class=\"cm-variable\">args</span>) <span class=\"cm-operator\">=&gt;</span> {\n    <span class=\"cm-variable\">console</span>.<span class=\"cm-property\">log</span>(<span class=\"cm-variable\">args</span>);\n  }\n  <span class=\"cm-keyword\">async</span> <span class=\"cm-variable\">yunoCreatePayment</span>(<span class=\"cm-variable\">oneTimeToken</span>) {\n  \t<span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">    * The createPayment function calls the backend to create a payment in Yuno.</span>\n<span class=\"cm-comment\">    * It uses the following endpoint https://docs.y.uno/reference/create-payment</span>\n<span class=\"cm-comment\">  \t*/</span>\n    <span class=\"cm-keyword\">await</span> <span class=\"cm-variable\">createPayment</span>({ <span class=\"cm-property\">oneTimeToken</span>, <span class=\"cm-property\">checkoutSession</span> })\n    <span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">continuePayment</span>({ <span class=\"cm-property\">showPaymentStatus</span>: <span class=\"cm-atom\">true</span> })\n  },\n})\n</div></code></pre>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer \">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Rendering mode</h3>\n            <div class=\"contentContainer\">\n              <p>\n                By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render.\n                For additional information, access the <a\n                  href=\"/docs/complementary-features-full-sdk#mode-of-form-rendering\">Render mode</a> under the\n                complementary complementary features page.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-4-mount-the-sdk\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-4-mount-the-sdk\" class=\"heading-anchor_backwardsCompatibility\"></div>Step 4: Mount the\n          SDK\n        </div><a aria-label=\"Skip link to Step 4: Mount the SDK\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-4-mount-the-sdk\"></a>\n      </h2>\n      <p>Display the payment methods by using the function <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.mountCheckout()</span></code> by\n        selecting an HTML element and using a valid CSS selector (<button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">#</span></code>, <button\n          aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n          data-lang=\"\" name=\"\" tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">.</span></code>,\n        <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n          data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">[data-*]</span></code>)\n      </p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\"> * Mount checkout in browser DOM</span>\n<span class=\"cm-comment\"> */</span>\n<span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">mountCheckout</span>()\n</div></code></pre>\n        </div>\n      </div>\n      <p>If you want to set a default payment method, use the following code to mount it:</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\"> * Mount checkout in browser DOM with a payment method selected by default</span>\n<span class=\"cm-comment\"> * @optional</span>\n<span class=\"cm-comment\"> */</span>\n<span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">mountCheckout</span>({\n  <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * Optional, only needed if you would like this method type selected by default</span>\n<span class=\"cm-comment\">   * Can be one of 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | CARD</span>\n<span class=\"cm-comment\">   */</span>\n  <span class=\"cm-property\">paymentMethodType</span>: <span class=\"cm-variable\">PAYMENT_METHOD_TYPE</span>,\n  <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * Optional</span>\n<span class=\"cm-comment\">   * Vaulted token related to payment method type</span>\n<span class=\"cm-comment\">   */</span>\n  <span class=\"cm-property\">vaultedToken</span>: <span class=\"cm-variable\">VAULTED_TOKEN</span>,\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-5-initiate-the-payment-process\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-5-initiate-the-payment-process\" class=\"heading-anchor_backwardsCompatibility\"></div>Step\n          5: Initiate the payment process\n        </div><a aria-label=\"Skip link to Step 5: Initiate the payment process\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-5-initiate-the-payment-process\"></a>\n      </h2>\n      <p>After the user has selected a payment method remember to call <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.startPayment()</span></code> to\n        initiate the payment flow. Below you will find an example where <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.startPayment()</span></code> is\n        called when the user clicks on <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n          class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">button-pay</span></code>:</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-keyword\">const</span> <span class=\"cm-def\">PayButton</span> <span class=\"cm-operator\">=</span> <span class=\"cm-variable\">document</span>.<span class=\"cm-property\">querySelector</span>(<span class=\"cm-string\">'#button-pay'</span>)\n\n<span class=\"cm-variable\">PayButton</span>.<span class=\"cm-property\">addEventListener</span>(<span class=\"cm-string\">'click'</span>, () <span class=\"cm-operator\">=&gt;</span> {\n  <span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startPayment</span>()\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-6-get-the-ott-one-time-token\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-6-get-the-ott-one-time-token\" class=\"heading-anchor_backwardsCompatibility\"></div>Step\n          6: Get the OTT (one-time token)\n        </div><a aria-label=\"Skip link to Step 6: Get the OTT (one-time token)\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-6-get-the-ott-one-time-token\"></a>\n      </h2>\n      <p>Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the one-time token.\n        The configuration function <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n          class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.CreatePayment(oneTimeToken)</span></code>\n        is then triggered with the one-time token.</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"> <span class=\"cm-variable\">yunoCreatePayment</span>(<span class=\"cm-variable\">oneTimeToken</span>)\n</div></code></pre>\n        </div>\n      </div>\n      <p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such\n        as installments or document type/number.</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yunoCreatePayment</span>(<span class=\"cm-variable\">oneTimeToken</span>, <span class=\"cm-variable\">tokenWithInformation</span>)\n</div></code></pre>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer alert\">\n          <div class=\"verticalLineAlert\"></div>\n          <div>\n            <h3>Important</h3>\n            <div class=\"contentContainer\">\n              <p>\n                The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however,\n                the merchant can use their own loader and must make the corresponding configurations.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-7-create-the-payment\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-7-create-the-payment\" class=\"heading-anchor_backwardsCompatibility\"></div>Step 7: Create\n          the Payment\n        </div><a aria-label=\"Skip link to Step 7: Create the Payment\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-7-create-the-payment\"></a>\n      </h2>\n      <p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation\n        must be carried out using the <a target=\"_self\" href=\"/reference/create-payment\">Create Payment endpoint</a>.\n        The merchant should call their backend to create the payment within Yuno, using the one-time token and the\n        checkout session.</p>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer\">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Complete the integration</h3>\n            <div class=\"contentContainer\">\n              <p>\n                After Step 7, you can complete the end-to-end integration by accessing <a\n                  href=\"https://docs.y.uno/docs/full-sdk-workflow\">Step by Step integration of the Full SDK</a>.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer\">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Continue method</h3>\n            <div class=\"contentContainer\">\n              <p>\n                Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment\n                is created because certain asynchronous payment methods require additional action from the customer to\n                complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of\n                the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will\n                display the additional screens to the customers, where they can carry out the necessary actions to\n                complete the payment without needing you to handle every scenario\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"continuepayment-return-value-or-null\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-continue-payment-return-value-or-null\" class=\"heading-anchor_backwardsCompatibility\"></div>\n          <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n            data-lang=\"\" name=\"\"\n            tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">continuePayment</span></code> return\n          value or null\n        </div><a aria-label=\"Skip link to [object Object]\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#continuepayment-return-value-or-null\"></a>\n      </h2>\n      <p>For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL\n        in a webview), the <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n          class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">await yuno.continuePayment()</span></code>\n        method will return either an object with the following structure or null:</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">TypeScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-typescript theme-light\" data-lang=\"typescript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">{\n  <span class=\"cm-variable\">action</span>: <span class=\"cm-string\">'REDIRECT_URL'</span>\n  <span class=\"cm-variable\">type</span>: <span class=\"cm-variable\">string</span>\n  <span class=\"cm-variable\">redirect</span>: {\n    <span class=\"cm-variable\">init_url</span>: <span class=\"cm-variable\">string</span>\n    <span class=\"cm-variable\">success_url</span>: <span class=\"cm-variable\">string</span>\n    <span class=\"cm-variable\">error_url</span>: <span class=\"cm-variable\">string</span>\n  }\n} <span class=\"cm-operator\">|</span> <span class=\"cm-atom\">null</span>\n</div></code></pre>\n        </div>\n      </div>\n      <p>When the method returns an object, it allows you to handle your application's payment flows that require custom\n        redirect handling. When it returns null, no additional merchant-side action is needed.</p>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer\">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Demo App</h3>\n            <div class=\"contentContainer\">\n              <p>\n                In addition to the code examples provided, you can access the <a href\"=\"\" docs=\"\" demo-app\"=\"\">Demo\n                  App</a> for a complete implementation of Yuno SDKs or go directly to the <a\n                  href=\"https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html\">HTML</a><a> and </a><a\n                  href=\"https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js\">JavaScript</a>\n                checkout demos available on GitHub.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"complementary-features\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-complementary-features\" class=\"heading-anchor_backwardsCompatibility\"></div>Complementary\n          features\n        </div><a aria-label=\"Skip link to Complementary features\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#complementary-features\"></a>\n      </h2>\n      <p>Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:</p>\n      <ul>\n        <li><a target=\"_self\" href=\"/docs/complementary-features-full-sdk#loader-control-the-use-of-the-loader\">Form\n            loader</a></li>\n        <li><a target=\"_self\" href=\"/docs/complementary-features-full-sdk#mode-of-form-rendering\">Render mode </a></li>\n        <li><a target=\"_self\" href=\"/docs/complementary-features-full-sdk#card-form-configurations\">Card form\n            configurations </a>\n          <ul>\n            <li><a target=\"_self\" href=\"/docs/complementary-features-full-sdk#save-card-for-future-payments\">Save Card\n                for future payments</a></li>\n            <li><a target=\"_self\" href=\"/docs/complementary-features-full-sdk#rendering-modes\">Render mode</a></li>\n            <li><a target=\"_self\" href=\"/docs/complementary-features-full-sdk#text-payment-form-buttons\">Text payment\n                form buttons</a></li>\n            <li><a target=\"_self\"\n                href=\"/docs/complementary-features-full-sdk#persist-credit-card-form-to-retry-payments\">Persist credit\n                card form to retry payments</a></li>\n            <li><a target=\"_self\" href=\"/docs/complementary-features-full-sdk#hide-pay-button\">Hide Pay button</a></li>\n          </ul>\n        </li>\n      </ul>\n      <h3 class=\"heading heading-3 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"form-loader\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-form-loader\" class=\"heading-anchor_backwardsCompatibility\"></div><a target=\"_self\"\n            href=\"/docs/loader\">Form loader</a>\n        </div><a aria-label=\"Skip link to [object Object]\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#form-loader\"></a>\n      </h3>\n      <p>Control the use of the <a target=\"_self\" href=\"/docs/loader\">loader</a>.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n      <div class=\"rdmd-table\">\n        <div class=\"rdmd-table-inner\">\n          <table>\n            <thead>\n              <tr>\n                <th style=\"text-align:left\">Parameter</th>\n                <th style=\"text-align:left\">Description</th>\n              </tr>\n            </thead>\n            <tbody>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">showLoading</span></code></td>\n                <td style=\"text-align:left\">You can hide or show the Yuno loading/spinner page. Enabling this option\n                  ensures that the loading component remains displayed until either the <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">hideLoader()</span></code> or\n                  <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">continuePayment()</span></code>\n                  function is called.<br>\n                  The default value is true.\n                </td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      </div>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">showLoading</span>: <span class=\"cm-atom\">true</span>,\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h3 class=\"heading heading-3 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"form-of-the-issuer\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-form-of-the-issuer\" class=\"heading-anchor_backwardsCompatibility\"></div>Form of the issuer\n        </div><a aria-label=\"Skip link to Form of the issuer\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#form-of-the-issuer\"></a>\n      </h3>\n\n\n\n\n\n\n\n\n\n\n\n\n\n      <div class=\"rdmd-table\">\n        <div class=\"rdmd-table-inner\">\n          <table>\n            <thead>\n              <tr>\n                <th style=\"text-align:left\">Parameter</th>\n                <th style=\"text-align:left\">Description</th>\n              </tr>\n            </thead>\n            <tbody>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">issuersFormEnable</span></code>\n                </td>\n                <td style=\"text-align:left\">Through this parameter, you can configure the SDK to enable the issuer's\n                  form (bank list).</td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      </div>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">issuersFormEnable</span>: <span class=\"cm-atom\">true</span>,\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h3 class=\"heading heading-3 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"mode-of-form-rendering\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-mode-of-form-rendering\" class=\"heading-anchor_backwardsCompatibility\"></div>Mode of form\n          rendering\n        </div><a aria-label=\"Skip link to Mode of form rendering\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#mode-of-form-rendering\"></a>\n      </h3>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n      <div class=\"rdmd-table\">\n        <div class=\"rdmd-table-inner\">\n          <table>\n            <thead>\n              <tr>\n                <th style=\"text-align:left\">Parameter</th>\n                <th style=\"text-align:left\">Description</th>\n              </tr>\n            </thead>\n            <tbody>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">renderMode</span></code></td>\n                <td style=\"text-align:left\">This parameter is optional. It determines the mode in which the payment\n                  forms will be displayed.<br><br>\n                  - <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">type</span></code>: can be one\n                  of <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">modal</span></code> or <button\n                    aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n                    data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">element</span></code>.<br>\n                  - <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">elementSelector</span></code>:\n                  Element where the form will be rendered. Only required if <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">type </span></code>is <button\n                    aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n                    data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">element</span></code>.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">elementSelector</span></code>\n                </td>\n                <td style=\"text-align:left\">Required only if the type is <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">element</span></code>. Specifies\n                  the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the\n                  following options:<br><br>\n                  - <strong>String (Deprecated)</strong>: Provide the ID or selector of the element where the SDK should\n                  be mounted.<br>\n                  - <strong>Object</strong>: Specify the elements for mounting the APM and action forms. You need to\n                  provide the element for the <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">apmForm</span></code>, which is\n                  where the APM is displayed, and the element for the <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">actionForm</span></code>, where\n                  the Continue Payment button appears. This button triggers a modal that shows the steps to complete a\n                  payment with a provider. For example, with PIX, it displays a QR code.</td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      </div>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">renderMode</span>: {\n    <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">     * Type can be one of `modal` or `element`</span>\n<span class=\"cm-comment\">     * By default the system uses 'modal'</span>\n<span class=\"cm-comment\">     * It is optional</span>\n<span class=\"cm-comment\">     */</span>\n    <span class=\"cm-property\">type</span>: <span class=\"cm-string\">'modal'</span>,\n    <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">     * Element where the form will be rendered.</span>\n<span class=\"cm-comment\">     * It is optional</span>\n<span class=\"cm-comment\">     * Can be a string (deprecated) or an object with the following structure:</span>\n<span class=\"cm-comment\">     * {</span>\n<span class=\"cm-comment\">     *   apmForm: \"#form-element\",</span>\n<span class=\"cm-comment\">     *   actionForm: \"#action-form-element\"</span>\n<span class=\"cm-comment\">     * }</span>\n<span class=\"cm-comment\">     */</span>\n    <span class=\"cm-property\">elementSelector</span>: {\n      <span class=\"cm-property\">apmForm</span>: <span class=\"cm-string\">\"#form-element\"</span>,\n      <span class=\"cm-property\">actionForm</span>: <span class=\"cm-string\">\"#action-form-element\"</span>\n    }\n  },\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h3 class=\"heading heading-3 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"card-form-configurations\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-card-form-configurations\" class=\"heading-anchor_backwardsCompatibility\"></div>Card form\n          configurations\n        </div><a aria-label=\"Skip link to Card form configurations\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#card-form-configurations\"></a>\n      </h3>\n\n\n\n\n\n\n\n\n\n\n\n\n\n      <div class=\"rdmd-table\">\n        <div class=\"rdmd-table-inner\">\n          <table>\n            <thead>\n              <tr>\n                <th style=\"text-align:left\">Parameter</th>\n                <th style=\"text-align:left\">Description</th>\n              </tr>\n            </thead>\n            <tbody>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">card</span></code></td>\n                <td style=\"text-align:left\">Define specific settings for the credit card form:<br><br>\n                  - <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">type</span></code>: <button\n                    aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n                    data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">step</span></code> or <button\n                    aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n                    data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">extends</span></code><br>\n                  - <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">styles</span></code>: You can\n                  edit card form styles. Only you should write css, then it will be injected into the iframe.<br>\n                  - <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">cardSaveEnable</span></code>:\n                  Show checkbox for save/enroll card. The default value is false.<br>\n                  - <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">texts</span></code>: Custom\n                  texts in the Card forms buttons.</td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      </div>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">card</span>: {\n    <span class=\"cm-property\">type</span>: <span class=\"cm-string\">\"extends\"</span>,\n    <span class=\"cm-property\">styles</span>: <span class=\"cm-string\">''</span>,\n    <span class=\"cm-property\">cardSaveEnable</span>: <span class=\"cm-atom\">false</span>,\n    <span class=\"cm-property\">texts</span>: {}\n  },\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h4 class=\"heading heading-4 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"save-card-for-future-payments\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-save-card-for-future-payments\" class=\"heading-anchor_backwardsCompatibility\"></div>Save card\n          for future payments\n        </div><a aria-label=\"Skip link to Save card for future payments\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#save-card-for-future-payments\"></a>\n      </h4>\n      <p>In addition, you can display a checkbox for saving or enrolling cards using the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">cardSaveEnable: true</span></code>. Below\n        are examples of the checkbox for both card form renders.</p>\n      <span aria-label=\"\" class=\"img lightbox closed\" role=\"button\" tabindex=\"0\"><span class=\"lightbox-inner\"><img\n            alt=\"\" loading=\"lazy\"\n            src=\"https://files.readme.io/37b2e00b0c6a3d31bceb42b26b1b433c8d30e61d947a93298dd90c466bde004b-complementary-features.png\"\n            title=\"\" align=\"center\" class=\"\" caption=\"\" height=\"auto\" width=\"auto\"></span></span>\n      <h4 class=\"heading heading-4 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"rendering-modes\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-rendering-modes\" class=\"heading-anchor_backwardsCompatibility\"></div>Rendering modes\n        </div><a aria-label=\"Skip link to Rendering modes\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#rendering-modes\"></a>\n      </h4>\n      <p>Below you find screenshots presenting the difference between the following:</p>\n      <ul>\n        <li>Render modes <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n            class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n            tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">modal</span></code> and <button\n            aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n            data-lang=\"\" name=\"\"\n            tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">elements</span></code> for the payment\n          method list</li>\n        <li>Render modes <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n            class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n            tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">step</span></code> and <button\n            aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n            data-lang=\"\" name=\"\"\n            tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">extends</span></code> for the credit\n          card form</li>\n      </ul>\n      <span aria-label=\"\" class=\"img lightbox closed\" role=\"button\" tabindex=\"0\"><span class=\"lightbox-inner\"><img\n            alt=\"\" loading=\"lazy\"\n            src=\"https://files.readme.io/b56fe6dfdebaee158495dea86d5269d865fae2dfcb81eb8b34879f9e5e737f0e-caracteristicas_Complemetarias_web_1.png\"\n            title=\"\" align=\"center\" class=\"\" caption=\"\" height=\"auto\" width=\"auto\"></span></span>\n      <p>You also can choose one of the render options for the card form, <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">step</span></code> and <button\n          aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n          data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">extends</span></code>:</p>\n      <span aria-label=\"\" class=\"img lightbox closed\" role=\"button\" tabindex=\"0\"><span class=\"lightbox-inner\"><img\n            alt=\"\" loading=\"lazy\"\n            src=\"https://files.readme.io/08654f8fa7b638641cb1b9f5b882a75537a9e449fff4960cf560c1ec5b3efb74-caracteristicas_Complemetarias_web_2.png\"\n            title=\"\" align=\"center\" class=\"\" caption=\"\" height=\"auto\" width=\"auto\"></span></span>\n      <h4 class=\"heading heading-4 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"text-payment-form-buttons\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-text-payment-form-buttons\" class=\"heading-anchor_backwardsCompatibility\"></div>Text payment\n          form buttons\n        </div><a aria-label=\"Skip link to Text payment form buttons\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#text-payment-form-buttons\"></a>\n      </h4>\n\n\n\n\n\n\n\n\n\n\n\n\n\n      <div class=\"rdmd-table\">\n        <div class=\"rdmd-table-inner\">\n          <table>\n            <thead>\n              <tr>\n                <th style=\"text-align:left\">Parameter</th>\n                <th style=\"text-align:left\">Description</th>\n              </tr>\n            </thead>\n            <tbody>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">texts</span></code></td>\n                <td style=\"text-align:left\">Provide custom text for payment form buttons to match your application's\n                  language or branding.</td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      </div>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">texts</span>: {\n    <span class=\"cm-property\">customerForm</span><span class=\"cm-operator\">?</span>: {\n      <span class=\"cm-variable\">submitButton</span><span class=\"cm-operator\">?</span>: <span class=\"cm-variable\">string</span>;\n    }\n    <span class=\"cm-variable\">paymentOtp</span><span class=\"cm-operator\">?</span>: {\n      <span class=\"cm-variable\">sendOtpButton</span><span class=\"cm-operator\">?</span>: <span class=\"cm-variable\">string</span>;\n    }\n  }\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h4 class=\"heading heading-4 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"persist-credit-card-form-to-retry-payments\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-persist-credit-card-form-to-retry-payments\" class=\"heading-anchor_backwardsCompatibility\">\n          </div>Persist credit card form to retry payments\n        </div><a aria-label=\"Skip link to Persist credit card form to retry payments\"\n          class=\"heading-anchor-icon fa fa-anchor\" href=\"#persist-credit-card-form-to-retry-payments\"></a>\n      </h4>\n      <p>If a transaction is rejected, you can use the credit card form to retry a payment after the customer has\n        entered the credit card details. To do that, you will need to:</p>\n      <ol>\n        <li>Add the following parameter while initializing the SDK to persist the credit card form after the one-time\n          use token is created:\n          <div class=\"CodeTabs CodeTabs_initial theme-light\">\n            <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n                type=\"button\">JavaScript</button></div>\n            <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n              <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">automaticallyUnmount</span>: <span class=\"cm-atom\">false</span>,\n})\n</div></code></pre>\n            </div>\n          </div>\n        </li>\n        <li>In case the transaction is rejected, you will need to:\n          <ol>\n            <li>Execute the method <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.notifyError() </span></code>to\n              delete the previously entered CVV for the first transaction</li>\n            <li>Create a new checkout session and update the SDK with the new one by executing <button\n                aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n                data-lang=\"\" name=\"\"\n                tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.updateCheckoutSession(checkoutsession)</span></code>\n            </li>\n          </ol>\n        </li>\n        <li>Continue with the new checkout and one-time use token with the regular payment flow.</li>\n      </ol>\n      <h4 class=\"heading heading-4 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"hide-pay-button\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-hide-pay-button\" class=\"heading-anchor_backwardsCompatibility\"></div>Hide Pay button\n        </div><a aria-label=\"Skip link to Hide Pay button\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#hide-pay-button\"></a>\n      </h4>\n      <p>You can hide the Pay button when presenting the card or customer data form. To control this feature, you'll set\n        <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n          data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">showPayButton</span></code> to <button\n          aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n          data-lang=\"\" name=\"\" tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">false</span></code>\n        when starting the checkout with the <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n          class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">startCheckout</span></code> function. The\n        code block below presents an example of how to hide the payment button:\n      </p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * Hide (false) or show (true) the customer or card form pay button</span>\n<span class=\"cm-comment\">   * @default true</span>\n<span class=\"cm-comment\">   * @optional</span>\n<span class=\"cm-comment\">   */</span>\n  <span class=\"cm-property\">showPayButton</span>: <span class=\"cm-atom\">false</span>,\n})\n</div></code></pre>\n        </div>\n      </div>\n      <p>The following images present examples of the Customer Data Form with and without the Pay button:</p>\n      <span aria-label=\"\" class=\"img lightbox closed\" role=\"button\" tabindex=\"0\"><span class=\"lightbox-inner\"><img\n            alt=\"\" loading=\"lazy\"\n            src=\"https://files.readme.io/873a709f1c3dce3c3dcc13dd4fd3cc9b5a8ecdf812c3b631f3cf8700177cc5cf-Card_boton.png\"\n            title=\"\" align=\"center\" class=\"\" caption=\"\" height=\"auto\" width=\"auto\"></span></span>\n      <p>The following images present examples of the Card Form with and without the Pay button:</p>\n      <span aria-label=\"\" class=\"img lightbox closed\" role=\"button\" tabindex=\"0\"><span class=\"lightbox-inner\"><img\n            alt=\"\" loading=\"lazy\"\n            src=\"https://files.readme.io/b8b5e51ab3f5907786b802cb782a71e043f4ec18475b6e5b6d4dd052c6dc4e37-Card_boton_1.png\"\n            title=\"\" align=\"center\" class=\"\" caption=\"\" height=\"auto\" width=\"auto\"></span></span>\n      <p>If you hide the Pay button, you will need to start the one-time token creation through your code. To create the\n        one-time token and continue the payment in your backend, call the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">submitOneTimeTokenForm</span></code>\n        function. The code block below presents how to use the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">submitOneTimeTokenForm</span></code>\n        function.</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\"> * This function triggers the same functionality that is called when the customer clicks on the pay form button.  This doesn't work on the step Card form</span>\n<span class=\"cm-comment\"> */</span>\n<span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">submitOneTimeTokenForm</span>()\n</div></code></pre>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"whats-next\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-whats-next\" class=\"heading-anchor_backwardsCompatibility\"></div>What's next?\n        </div><a aria-label=\"Skip link to What's next?\" class=\"heading-anchor-icon fa fa-anchor\" href=\"#whats-next\"></a>\n      </h2>\n      <p>Learn about the additional configurations from the Full SDK accessing <a target=\"_self\"\n          href=\"/docs/complementary-features-full-sdk\">Complementary Features</a>. You can also access other functions\n        available on the Yuno Web SDK:</p>\n      <ul>\n        <li><a target=\"_self\" href=\"/docs/sdk-customizations\">SDK Customizations</a>: Change the SDK appearance to match\n          your brand</li>\n        <li><a target=\"_self\" href=\"/docs/payment-status\">Payment Status</a>: Update the user about the payment process\n        </li>\n        <li><a target=\"_self\" href=\"/docs/3ds-setup-sdk\">3DS Setup SDK</a>: Integrate 3DS into your payment flow</li>\n      </ul>\n    </div>\n\n  </div>\n\n  <div class=\"tab-content\" id=\"webSDKv10\">\n    <div dehydrated=\"<p>Below, we outline the step-by-step process to enable the full Web SDK  functionalities in your system:</p>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-1-include-the-library-in-your-project&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-1-include-the-library-in-your-project&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 1: Include the library in your project</div><a aria-label=&quot;Skip link to Step 1: Include the library in your project&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-1-include-the-library-in-your-project&quot;></a></h2>\n<p>Ensure the Yuno SDK file is included in your webpage before closing the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>&amp;lt;body&amp;gt;</code> tag. Refer to the example below:</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>HTML</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-html theme-light&quot; data-lang=&quot;html&quot; name=&quot;&quot; tabindex=&quot;0&quot;>&amp;lt;script src=&amp;quot;https://sdk-web.y.uno/v1/static/js/main.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;\n</code></pre></div></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer &quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Typescript library</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          If you are using Typescript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> that you can use to see all available methods available in the Yuno Web SDK.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-2-initialize-sdk-with-the-public-key&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-2-initialize-sdk-with-the-public-key&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 2: Initialize SDK with the public key</div><a aria-label=&quot;Skip link to Step 2: Initialize SDK with the public key&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-2-initialize-sdk-with-the-public-key&quot;></a></h2>\n<p>In your JavaScript application, create an instance of the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Yuno</code> class by providing a valid <strong>PUBLIC_API_KEY</strong>. Check the <a href=&quot;/reference/get-your-api-credentials&quot; target=&quot;&quot; title=&quot;&quot;>Get your API credentials</a> guide.</p>\n<p>Like the example below, use the initialized class that is attributed to the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno</code>constant.</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const yuno = Yuno.initialize(PUBLIC_API_KEY)\n</code></pre></div></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-3-start-the-checkout-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-3-start-the-checkout-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 3: Start the checkout process</div><a aria-label=&quot;Skip link to Step 3: Start the checkout process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-3-start-the-checkout-process&quot;></a></h2>\n<p>To start the checkout, you&amp;#x27;ll use the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout</code>, providing the necessary parameters.</p>\n<p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a href=&quot;https://docs.y.uno/docs/full-checkout-sdk#complementary-features&quot; target=&quot;&quot; title=&quot;&quot;>Complementary Features</a>.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>checkoutSession</code></td><td style=&quot;text-align:left&quot;>Refers to the current payment&amp;#x27;s <a href=&quot;/reference/create-checkout-session&quot; target=&quot;&quot; title=&quot;&quot;>checkout session</a>.<br/><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Example: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;</code></td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>countryCode</code></td><td style=&quot;text-align:left&quot;>This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the <a href=&quot;/docs/country-coverage-yuno-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;country-coverage-yuno-sdk&quot;>Country coverage</a>  page.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>language</code></td><td style=&quot;text-align:left&quot;>Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), or th (Thai).</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>onLoading</code></td><td style=&quot;text-align:left&quot;>Required to receive notifications about server calls or loading events during the payment process. </td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showLoading</code></td><td style=&quot;text-align:left&quot;>Control the visibility of the Yuno loading/spinner page during the payment process. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>issuersFormEnable</code></td><td style=&quot;text-align:left&quot;>Enables the issuer&amp;#x27;s form. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showPaymentStatus</code></td><td style=&quot;text-align:left&quot;>Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>card.isCreditCardProcessingOnly</code></td><td style=&quot;text-align:left&quot;>Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.<br/>\nTo enable, set the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>isCreditCardProcessingOnly</code> to <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code> to ensure that all card transactions are processed as credit.<br/>\nThis parameter is not required.</td></tr></tbody></table></div></div>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({\n  checkoutSession: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;,\n  /**\n   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk\n  */\n  country_code: &amp;quot;FR&amp;quot;,\n  language: &amp;#x27;fr&amp;#x27;,\n  showLoading: true,\n  issuersFormEnable: true,\n  showPaymentStatus: true,\n\t/**\n   * Set isCreditCardProcessingOnly as true to process all card transactions are credit\n   * isCreditCardProcessingOnly: true | false | undefined\n  */\n  card: {\n    isCreditCardProcessingOnly: true,\n  }\n  onLoading: (args) =&amp;gt; {\n    console.log(args);\n  }\n  async yunoCreatePayment(oneTimeToken) {\n  \t/**\n    * The createPayment function calls the backend to create a payment in Yuno.\n    * It uses the following endpoint https://docs.y.uno/reference/create-payment\n  \t*/\n    await createPayment({ oneTimeToken, checkoutSession })\n    yuno.continuePayment({ showPaymentStatus: true })\n  },\n})\n</code></pre></div></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer &quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Rendering mode</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-4-mount-the-sdk&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-4-mount-the-sdk&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 4: Mount the SDK</div><a aria-label=&quot;Skip link to Step 4: Mount the SDK&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-4-mount-the-sdk&quot;></a></h2>\n<p>Display the payment methods by using the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.mountCheckout()</code> by selecting an HTML element and using a valid CSS selector (<button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>#</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>.</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>[data-*]</code>)</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**\n * Mount checkout in browser DOM\n */\nyuno.mountCheckout()\n</code></pre></div></div>\n<p>If you want to set a default payment method, use the following code to mount it:</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**\n * Mount checkout in browser DOM with a payment method selected by default\n * @optional\n */\nyuno.mountCheckout({\n  /**\n   * Optional, only needed if you would like this method type selected by default\n   * Can be one of &amp;#x27;PAYPAL&amp;#x27; | &amp;#x27;PIX&amp;#x27; | &amp;#x27;APPLE_PAY&amp;#x27; | &amp;#x27;GOOGLE_PAY&amp;#x27; | CARD\n   */\n  paymentMethodType: PAYMENT_METHOD_TYPE,\n  /**\n   * Optional\n   * Vaulted token related to payment method type\n   */\n  vaultedToken: VAULTED_TOKEN,\n})\n</code></pre></div></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-5-initiate-the-payment-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-5-initiate-the-payment-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 5: Initiate the payment process</div><a aria-label=&quot;Skip link to Step 5: Initiate the payment process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-5-initiate-the-payment-process&quot;></a></h2>\n<p>After the user has selected a payment method remember to call <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> to initiate the payment flow. Below you will find an example where <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> is called when the user clicks on <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>button-pay</code>:</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const PayButton = document.querySelector(&amp;#x27;#button-pay&amp;#x27;)\n\nPayButton.addEventListener(&amp;#x27;click&amp;#x27;, () =&amp;gt; {\n  yuno.startPayment()\n})\n</code></pre></div></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-6-get-the-ott-one-time-token&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-6-get-the-ott-one-time-token&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 6: Get the OTT (One Time Token)</div><a aria-label=&quot;Skip link to Step 6: Get the OTT (One Time Token)&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-6-get-the-ott-one-time-token&quot;></a></h2>\n<p>Once the customer fills out the requested data in Yuno&amp;#x27;s payment forms, the SDK provides the OTT. The configuration function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.CreatePayment(oneTimeToken)</code> is then triggered with the OTT (One Time Token).</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;> yunoCreatePayment(oneTimeToken)\n</code></pre></div></div>\n<p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such as installments or document type/number.</p>\n<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yunoCreatePayment(oneTimeToken, tokenWithInformation)\n</code></pre></div></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer alert&quot;>\n    <div class=&quot;verticalLineAlert&quot;></div>\n    <div>\n      <h3>Important</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n\t\t\t\t\tThe merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-7-create-the-payment&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-7-create-the-payment&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 7: Create the Payment</div><a aria-label=&quot;Skip link to Step 7: Create the Payment&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-7-create-the-payment&quot;></a></h2>\n<p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the <a href=&quot;https://docs.y.uno/reference/create-payment&quot; target=&quot;&quot; title=&quot;&quot;>Create Payment endpoint</a>. The merchant should call their backend to create the payment within Yuno, using the OTT (One Time Token) and the checkout session.</p>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer&quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Complete the integration</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          After Step 7, you can complete the end-to-end integration by accessing <a href=&quot;https://docs.y.uno/docs/full-sdk-workflow&quot;>Step by Step integration of the Full SDK</a>.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer&quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Continue method</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          Yuno recommends you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment. Otherwise, this step is not necessary.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<div class=&quot;rdmd-html&quot;><body>\n  <div class=&quot;infoBlockContainer&quot;>\n    <div class=&quot;verticalLine&quot;></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=&quot;contentContainer&quot;>\n        <p>\n          In addition to the code examples provided, you can access the <a href&quot;/docs/demo-app&quot;>Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html&quot;>HTML<a/> and <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js&quot;>JavaScript</a> checkout demos available on GitHub.\n        </p>\n      </div>\n    </div>\n  </div>\n</body></div>\n<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;whats-next&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-whats-next&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>What&amp;#x27;s next?</div><a aria-label=&quot;Skip link to What&amp;#x27;s next?&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#whats-next&quot;></a></h2>\n<p>Learn about the additional configurations from the Full SDK accessing <a href=&quot;/docs/complementary-features-full-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk&quot;>Complementary Features</a>. You can also access other functions available on the Yuno Web SDK:</p>\n<ul>\n<li><a href=&quot;/docs/sdk-customizations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;sdk-customizations&quot;>SDK Customizations</a>: Change the SDK appearance to match your brand.</li>\n<li><a href=&quot;/docs/payment-status&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;payment-status&quot;>Payment Status</a>: Update the user about the payment process.</li>\n<li><a href=&quot;/docs/3ds-setup-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;3ds-setup-sdk&quot;>3DS Setup SDK</a>: Integrate 3DS into your payment flow.</li>\n</ul>\" style=\"margin-left:31px\" class=\"rm-Markdown markdown-body rm-Markdown markdown-body ng-non-bindable\"\n      data-testid=\"RDMD\">\n      <p>Below, we outline the step-by-step process to enable the full Web SDK functionalities in your system:</p>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-1-include-the-library-in-your-project\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-1-include-the-library-in-your-project\" class=\"heading-anchor_backwardsCompatibility\">\n          </div>Step 1: Include the library in your project\n        </div><a aria-label=\"Skip link to Step 1: Include the library in your project\"\n          class=\"heading-anchor-icon fa fa-anchor\" href=\"#step-1-include-the-library-in-your-project\"></a>\n      </h2>\n      <p>Ensure the Yuno SDK file is included in your webpage before closing the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">&lt;body&gt;</span></code> tag. Refer to\n        the example below:</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">HTML</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-html theme-light\" data-lang=\"html\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-tag cm-bracket\">&lt;</span><span class=\"cm-tag\">script</span> <span class=\"cm-attribute\">src</span>=<span class=\"cm-string\">\"https://sdk-web.y.uno/v1/static/js/main.min.js\"</span><span class=\"cm-tag cm-bracket\">&gt;</span><span class=\"cm-tag cm-bracket\">&lt;/</span><span class=\"cm-tag\">script</span><span class=\"cm-tag cm-bracket\">&gt;</span>\n</div></code></pre>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer \">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Typescript library</h3>\n            <div class=\"contentContainer\">\n              <p>\n                If you are using Typescript, Yuno provides a <a\n                  href=\"https://www.npmjs.com/package/@yuno-payments/sdk-web-types\">library</a> that you can use to see\n                all available methods available in the Yuno Web SDK.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-2-initialize-sdk-with-the-public-key\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-2-initialize-sdk-with-the-public-key\" class=\"heading-anchor_backwardsCompatibility\">\n          </div>Step 2: Initialize SDK with the public key\n        </div><a aria-label=\"Skip link to Step 2: Initialize SDK with the public key\"\n          class=\"heading-anchor-icon fa fa-anchor\" href=\"#step-2-initialize-sdk-with-the-public-key\"></a>\n      </h2>\n      <p>In your JavaScript application, create an instance of the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">Yuno</span></code> class by providing a\n        valid <strong>PUBLIC_API_KEY</strong>. Check the <a target=\"_self\"\n          href=\"/reference/get-your-api-credentials\">Get your API credentials</a> guide.</p>\n      <p>Like the example below, use the initialized class that is attributed to the <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno</span></code>constant.</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-keyword\">const</span> <span class=\"cm-def\">yuno</span> <span class=\"cm-operator\">=</span> <span class=\"cm-variable\">Yuno</span>.<span class=\"cm-property\">initialize</span>(<span class=\"cm-variable\">PUBLIC_API_KEY</span>)\n</div></code></pre>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-3-start-the-checkout-process\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-3-start-the-checkout-process\" class=\"heading-anchor_backwardsCompatibility\"></div>Step\n          3: Start the checkout process\n        </div><a aria-label=\"Skip link to Step 3: Start the checkout process\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-3-start-the-checkout-process\"></a>\n      </h2>\n      <p>To start the checkout, you'll use the function <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.startCheckout</span></code>,\n        providing the necessary parameters.</p>\n      <p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a\n          target=\"_self\" href=\"/docs/full-checkout-sdk#complementary-features\">Complementary Features</a>.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n      <div class=\"rdmd-table\">\n        <div class=\"rdmd-table-inner\">\n          <table>\n            <thead>\n              <tr>\n                <th style=\"text-align:left\">Parameter</th>\n                <th style=\"text-align:left\">Description</th>\n              </tr>\n            </thead>\n            <tbody>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">checkoutSession</span></code>\n                </td>\n                <td style=\"text-align:left\">Refers to the current payment's <a target=\"_self\"\n                    href=\"/reference/create-checkout-session\">checkout session</a>.<br><button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">Example: '438413b7-4921-41e4-b8f3-28a5a0141638'</span></code>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">countryCode</span></code></td>\n                <td style=\"text-align:left\">This parameter determines the country for which the payment process is being\n                  configured. The complete list of supported countries and their country code is available on the <a\n                    target=\"_self\" href=\"/docs/country-coverage-yuno-sdk\">Country coverage</a> page.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">language</span></code></td>\n                <td style=\"text-align:left\">Defines the language to be used in the payment forms. You can set it to one\n                  of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id\n                  (Indonesian), ms (Malay), or th (Thai).</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">onLoading</span></code></td>\n                <td style=\"text-align:left\">Required to receive notifications about server calls or loading events\n                  during the payment process. </td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">showLoading</span></code></td>\n                <td style=\"text-align:left\">Control the visibility of the Yuno loading/spinner page during the payment\n                  process. By default, it's <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code>.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">issuersFormEnable</span></code>\n                </td>\n                <td style=\"text-align:left\">Enables the issuer's form. By default, it's <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code>.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">showPaymentStatus</span></code>\n                </td>\n                <td style=\"text-align:left\">Shows the Yuno Payment Status page. You can use this option when continuing\n                  a payment as well. By default, it's <button aria-label=\"Copy Code\"\n                    class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code>.</td>\n              </tr>\n              <tr>\n                <td style=\"text-align:left\"><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">card.isCreditCardProcessingOnly</span></code>\n                </td>\n                <td style=\"text-align:left\">Enables you to ensure that all card transactions are processed as credit\n                  only. This option is helpful in markets where cards can act as both credit and debit.<br>\n                  To enable, set the <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">isCreditCardProcessingOnly</span></code>\n                  to <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n                    class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n                    tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">true</span></code> to ensure\n                  that all card transactions are processed as credit.<br>\n                  This parameter is not required.</td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      </div>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startCheckout</span>({\n  <span class=\"cm-property\">checkoutSession</span>: <span class=\"cm-string\">'438413b7-4921-41e4-b8f3-28a5a0141638'</span>,\n  <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk</span>\n<span class=\"cm-comment\">  */</span>\n  <span class=\"cm-property\">country_code</span>: <span class=\"cm-string\">\"FR\"</span>,\n  <span class=\"cm-property\">language</span>: <span class=\"cm-string\">'fr'</span>,\n  <span class=\"cm-property\">showLoading</span>: <span class=\"cm-atom\">true</span>,\n  <span class=\"cm-property\">issuersFormEnable</span>: <span class=\"cm-atom\">true</span>,\n  <span class=\"cm-property\">showPaymentStatus</span>: <span class=\"cm-atom\">true</span>,\n\t<span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * Set isCreditCardProcessingOnly as true to process all card transactions are credit</span>\n<span class=\"cm-comment\">   * isCreditCardProcessingOnly: true | false | undefined</span>\n<span class=\"cm-comment\">  */</span>\n  <span class=\"cm-property\">card</span>: {\n    <span class=\"cm-property\">isCreditCardProcessingOnly</span>: <span class=\"cm-atom\">true</span>,\n  }\n  <span class=\"cm-variable\">onLoading</span>: (<span class=\"cm-variable\">args</span>) <span class=\"cm-operator\">=&gt;</span> {\n    <span class=\"cm-variable\">console</span>.<span class=\"cm-property\">log</span>(<span class=\"cm-variable\">args</span>);\n  }\n  <span class=\"cm-keyword\">async</span> <span class=\"cm-variable\">yunoCreatePayment</span>(<span class=\"cm-variable\">oneTimeToken</span>) {\n  \t<span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">    * The createPayment function calls the backend to create a payment in Yuno.</span>\n<span class=\"cm-comment\">    * It uses the following endpoint https://docs.y.uno/reference/create-payment</span>\n<span class=\"cm-comment\">  \t*/</span>\n    <span class=\"cm-keyword\">await</span> <span class=\"cm-variable\">createPayment</span>({ <span class=\"cm-property\">oneTimeToken</span>, <span class=\"cm-property\">checkoutSession</span> })\n    <span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">continuePayment</span>({ <span class=\"cm-property\">showPaymentStatus</span>: <span class=\"cm-atom\">true</span> })\n  },\n})\n</div></code></pre>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer \">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Rendering mode</h3>\n            <div class=\"contentContainer\">\n              <p>\n                By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render.\n                For additional information, access the <a\n                  href=\"/docs/complementary-features-full-sdk#mode-of-form-rendering\">Render mode</a> under the\n                complementary complementary features page.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-4-mount-the-sdk\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-4-mount-the-sdk\" class=\"heading-anchor_backwardsCompatibility\"></div>Step 4: Mount the\n          SDK\n        </div><a aria-label=\"Skip link to Step 4: Mount the SDK\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-4-mount-the-sdk\"></a>\n      </h2>\n      <p>Display the payment methods by using the function <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.mountCheckout()</span></code> by\n        selecting an HTML element and using a valid CSS selector (<button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">#</span></code>, <button\n          aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n          data-lang=\"\" name=\"\" tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">.</span></code>,\n        <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\"\n          data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">[data-*]</span></code>)</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\"> * Mount checkout in browser DOM</span>\n<span class=\"cm-comment\"> */</span>\n<span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">mountCheckout</span>()\n</div></code></pre>\n        </div>\n      </div>\n      <p>If you want to set a default payment method, use the following code to mount it:</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\"> * Mount checkout in browser DOM with a payment method selected by default</span>\n<span class=\"cm-comment\"> * @optional</span>\n<span class=\"cm-comment\"> */</span>\n<span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">mountCheckout</span>({\n  <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * Optional, only needed if you would like this method type selected by default</span>\n<span class=\"cm-comment\">   * Can be one of 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | CARD</span>\n<span class=\"cm-comment\">   */</span>\n  <span class=\"cm-property\">paymentMethodType</span>: <span class=\"cm-variable\">PAYMENT_METHOD_TYPE</span>,\n  <span class=\"cm-comment\">/**</span>\n<span class=\"cm-comment\">   * Optional</span>\n<span class=\"cm-comment\">   * Vaulted token related to payment method type</span>\n<span class=\"cm-comment\">   */</span>\n  <span class=\"cm-property\">vaultedToken</span>: <span class=\"cm-variable\">VAULTED_TOKEN</span>,\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-5-initiate-the-payment-process\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-5-initiate-the-payment-process\" class=\"heading-anchor_backwardsCompatibility\"></div>Step\n          5: Initiate the payment process\n        </div><a aria-label=\"Skip link to Step 5: Initiate the payment process\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-5-initiate-the-payment-process\"></a>\n      </h2>\n      <p>After the user has selected a payment method remember to call <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.startPayment()</span></code> to\n        initiate the payment flow. Below you will find an example where <button aria-label=\"Copy Code\"\n          class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.startPayment()</span></code> is\n        called when the user clicks on <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n          class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">button-pay</span></code>:</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-keyword\">const</span> <span class=\"cm-def\">PayButton</span> <span class=\"cm-operator\">=</span> <span class=\"cm-variable\">document</span>.<span class=\"cm-property\">querySelector</span>(<span class=\"cm-string\">'#button-pay'</span>)\n\n<span class=\"cm-variable\">PayButton</span>.<span class=\"cm-property\">addEventListener</span>(<span class=\"cm-string\">'click'</span>, () <span class=\"cm-operator\">=&gt;</span> {\n  <span class=\"cm-variable\">yuno</span>.<span class=\"cm-property\">startPayment</span>()\n})\n</div></code></pre>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-6-get-the-ott-one-time-token\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-6-get-the-ott-one-time-token\" class=\"heading-anchor_backwardsCompatibility\"></div>Step\n          6: Get the OTT (One Time Token)\n        </div><a aria-label=\"Skip link to Step 6: Get the OTT (One Time Token)\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-6-get-the-ott-one-time-token\"></a>\n      </h2>\n      <p>Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the OTT. The\n        configuration function <button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code\n          class=\"rdmd-code lang- theme-light\" data-lang=\"\" name=\"\"\n          tabindex=\"0\"><span class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\">yuno.CreatePayment(oneTimeToken)</span></code>\n        is then triggered with the OTT (One Time Token).</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"> <span class=\"cm-variable\">yunoCreatePayment</span>(<span class=\"cm-variable\">oneTimeToken</span>)\n</div></code></pre>\n        </div>\n      </div>\n      <p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such\n        as installments or document type/number.</p>\n      <div class=\"CodeTabs CodeTabs_initial theme-light\">\n        <div class=\"CodeTabs-toolbar\" role=\"tablist\"><button aria-selected=\"true\" class=\"CodeTabs_active\" role=\"tab\"\n            type=\"button\">JavaScript</button></div>\n        <div class=\"CodeTabs-inner\" role=\"tabpanel\">\n          <pre><button aria-label=\"Copy Code\" class=\"rdmd-code-copy fa\"></button><code class=\"rdmd-code lang-javascript theme-light\" data-lang=\"javascript\" name=\"\" tabindex=\"0\"><div class=\"cm-s-neo\" data-testid=\"SyntaxHighlighter\"><span class=\"cm-variable\">yunoCreatePayment</span>(<span class=\"cm-variable\">oneTimeToken</span>, <span class=\"cm-variable\">tokenWithInformation</span>)\n</div></code></pre>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer alert\">\n          <div class=\"verticalLineAlert\"></div>\n          <div>\n            <h3>Important</h3>\n            <div class=\"contentContainer\">\n              <p>\n                The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however,\n                the merchant can use their own loader and must make the corresponding configurations.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"step-7-create-the-payment\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-step-7-create-the-payment\" class=\"heading-anchor_backwardsCompatibility\"></div>Step 7: Create\n          the Payment\n        </div><a aria-label=\"Skip link to Step 7: Create the Payment\" class=\"heading-anchor-icon fa fa-anchor\"\n          href=\"#step-7-create-the-payment\"></a>\n      </h2>\n      <p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation\n        must be carried out using the <a target=\"_self\" href=\"/reference/create-payment\">Create Payment endpoint</a>.\n        The merchant should call their backend to create the payment within Yuno, using the OTT (One Time Token) and the\n        checkout session.</p>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer\">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Complete the integration</h3>\n            <div class=\"contentContainer\">\n              <p>\n                After Step 7, you can complete the end-to-end integration by accessing <a\n                  href=\"https://docs.y.uno/docs/full-sdk-workflow\">Step by Step integration of the Full SDK</a>.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer\">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Continue method</h3>\n            <div class=\"contentContainer\">\n              <p>\n                Yuno recommends you integrate the <code>continuePayment</code> method of the SDK after the payment is\n                created because certain asynchronous payment methods require additional action from the customer to\n                complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of\n                the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will\n                display the additional screens to the customers, where they can carry out the necessary actions to\n                complete the payment. Otherwise, this step is not necessary.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div class=\"rdmd-html\">\n        <div class=\"infoBlockContainer\">\n          <div class=\"verticalLine\"></div>\n          <div>\n            <h3>Demo App</h3>\n            <div class=\"contentContainer\">\n              <p>\n                In addition to the code examples provided, you can access the <a href\"=\"\" docs=\"\" demo-app\"=\"\">Demo\n                  App</a> for a complete implementation of Yuno SDKs or go directly to the <a\n                  href=\"https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html\">HTML</a><a> and </a><a\n                  href=\"https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js\">JavaScript</a>\n                checkout demos available on GitHub.\n              </p>\n            </div>\n          </div>\n        </div>\n      </div>\n      <h2 class=\"heading heading-2 header-scroll\" align=\"\">\n        <div class=\"heading-anchor anchor waypoint\" id=\"whats-next\"></div>\n        <div class=\"heading-text\">\n          <div id=\"section-whats-next\" class=\"heading-anchor_backwardsCompatibility\"></div>What's next?\n        </div><a aria-label=\"Skip link to What's next?\" class=\"heading-anchor-icon fa fa-anchor\" href=\"#whats-next\"></a>\n      </h2>\n      <p>Learn about the additional configurations from the Full SDK accessing <a target=\"_self\"\n          href=\"/docs/complementary-features-full-sdk\">Complementary Features</a>. You can also access other functions\n        available on the Yuno Web SDK:</p>\n      <ul>\n        <li><a target=\"_self\" href=\"/docs/sdk-customizations\">SDK Customizations</a>: Change the SDK appearance to match\n          your brand.</li>\n        <li><a target=\"_self\" href=\"/docs/payment-status\">Payment Status</a>: Update the user about the payment process.\n        </li>\n        <li><a target=\"_self\" href=\"/docs/3ds-setup-sdk\">3DS Setup SDK</a>: Integrate 3DS into your payment flow.</li>\n      </ul>\n    </div>\n  </div>\n\n\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+  }
+
+  input[type="radio"] {
+    display: none;
+  }
+
+  label {
+    text-decoration: none;
+    color: #333;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    margin-right: 10px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  label:hover,
+  label:focus {
+    color: #000;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  /* Show content when corresponding radio button is checked */
+  #webSDKv10:checked~.tab-content#webSDKv10,
+  #webSDKv11:checked~.tab-content#webSDKv11 {
+    display: block;
+  }
+
+  /* Style active tab */
+  #webSDKv10:checked~.tabs label[for="webSDKv10"],
+  #webSDKv11:checked~.tabs label[for="webSDKv11"] {
+    color: #000;
+    border-bottom: 2px solid #513CE1;
+  }
+</style>
+
+<body>
+  <input type="radio" id="webSDKv11" name="tabs" checked>
+  <input type="radio" id="webSDKv10" name="tabs">
+
+  <div class="tabs">
+    <label for="webSDKv11">Yuno Web SDK v1.1</label>
+    <label for="webSDKv10">Yuno Web SDK v1.0</label>
+  </div>
+
+  <div class="tab-content" id="webSDKv11">
+    <div dehydrated="<p>Follow this step-by-step guide to implement and enable Yuno&amp;#x27;s Full Web SDK functionality in your application.</p>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-1-include-the-library-in-your-project&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-1-include-the-library-in-your-project&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 1: Include the library in your project</div><a aria-label=&quot;Skip link to Step 1: Include the library in your project&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-1-include-the-library-in-your-project&quot;></a></h2>
+<p>Before proceeding with the Full SDK implementation, please refer to the <a href=&quot;/docs/yuno-sdk-integration-guide&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;yuno-sdk-integration-guide&quot;>Yuno SDK Integration Guide</a> for detailed instructions on how to properly integrate the SDK into your project.</p>
+<p>The integration guide provides three flexible methods:</p>
+<ol>
+<li>Direct HTML script inclusion</li>
+<li>Dynamic JavaScript injection</li>
+<li>NPM module installation</li>
+</ol>
+<p>Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the full checkout functionality.</p>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer &quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>TypeScript library</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          If you are using TypeScript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> that you can use to see all available methods available in the Yuno Web SDK.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-2-initialize-sdk-with-the-public-key&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-2-initialize-sdk-with-the-public-key&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 2: Initialize SDK with the public key</div><a aria-label=&quot;Skip link to Step 2: Initialize SDK with the public key&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-2-initialize-sdk-with-the-public-key&quot;></a></h2>
+<p>In your JavaScript application, create an instance of the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Yuno</code> class by providing a valid <strong>PUBLIC_API_KEY</strong>. Check the <a href=&quot;/reference/get-your-api-credentials&quot; target=&quot;&quot; title=&quot;&quot;>Get your API credentials</a> guide.</p>
+<p>Like the example below, use the initialized class that is attributed to the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno</code>constant.</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+</code></pre></div></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-3-start-the-checkout-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-3-start-the-checkout-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 3: Start the checkout process</div><a aria-label=&quot;Skip link to Step 3: Start the checkout process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-3-start-the-checkout-process&quot;></a></h2>
+<p>To start the checkout, you&amp;#x27;ll use the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout</code>, providing the necessary parameters.</p>
+<p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a href=&quot;https://docs.y.uno/docs/full-checkout-sdk#complementary-features&quot; target=&quot;&quot; title=&quot;&quot;>Complementary Features</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>checkoutSession</code></td><td style=&quot;text-align:left&quot;>Refers to the current payment&amp;#x27;s <a href=&quot;/reference/create-checkout-session&quot; target=&quot;&quot; title=&quot;&quot;>checkout session</a>.<br/><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Example: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;</code></td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>countryCode</code></td><td style=&quot;text-align:left&quot;>This parameter specifies the country for which the payment process is being set up.<br/>
+Use an <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>ENUM</code> value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the <a href=&quot;/docs/country-coverage-yuno-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;country-coverage-yuno-sdk&quot;>Country Coverage</a>  page.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>language</code></td><td style=&quot;text-align:left&quot;>Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), or th (Thai).</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>onLoading</code></td><td style=&quot;text-align:left&quot;>Required to receive notifications about server calls or loading events during the payment process. </td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showLoading</code></td><td style=&quot;text-align:left&quot;>Control the visibility of the Yuno loading/spinner page during the payment process. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>issuersFormEnable</code></td><td style=&quot;text-align:left&quot;>Enables the issuer&amp;#x27;s form. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showPaymentStatus</code></td><td style=&quot;text-align:left&quot;>Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>card.isCreditCardProcessingOnly</code></td><td style=&quot;text-align:left&quot;>Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.<br/>
+To enable, set the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>isCreditCardProcessingOnly</code> to <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code> to ensure that all card transactions are processed as credit.<br/>
+This parameter is not required.</td></tr></tbody></table></div></div>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  checkoutSession: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;,
+  /**
+   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
+  */
+  country_code: &amp;quot;FR&amp;quot;,
+  language: &amp;#x27;fr&amp;#x27;,
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+	/**
+   * Set isCreditCardProcessingOnly as true to process all card transactions are credit
+   * isCreditCardProcessingOnly: true | false | undefined
+  */
+  card: {
+    isCreditCardProcessingOnly: true,
+  }
+  onLoading: (args) =&amp;gt; {
+    console.log(args);
+  }
+  async yunoCreatePayment(oneTimeToken) {
+  	/**
+    * The createPayment function calls the backend to create a payment in Yuno.
+    * It uses the following endpoint https://docs.y.uno/reference/create-payment
+  	*/
+    await createPayment({ oneTimeToken, checkoutSession })
+    yuno.continuePayment({ showPaymentStatus: true })
+  },
+})
+</code></pre></div></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer &quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Rendering mode</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-4-mount-the-sdk&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-4-mount-the-sdk&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 4: Mount the SDK</div><a aria-label=&quot;Skip link to Step 4: Mount the SDK&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-4-mount-the-sdk&quot;></a></h2>
+<p>Display the payment methods by using the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.mountCheckout()</code> by selecting an HTML element and using a valid CSS selector (<button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>#</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>.</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>[data-*]</code>)</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**
+ * Mount checkout in browser DOM
+ */
+yuno.mountCheckout()
+</code></pre></div></div>
+<p>If you want to set a default payment method, use the following code to mount it:</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**
+ * Mount checkout in browser DOM with a payment method selected by default
+ * @optional
+ */
+yuno.mountCheckout({
+  /**
+   * Optional, only needed if you would like this method type selected by default
+   * Can be one of &amp;#x27;PAYPAL&amp;#x27; | &amp;#x27;PIX&amp;#x27; | &amp;#x27;APPLE_PAY&amp;#x27; | &amp;#x27;GOOGLE_PAY&amp;#x27; | CARD
+   */
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  /**
+   * Optional
+   * Vaulted token related to payment method type
+   */
+  vaultedToken: VAULTED_TOKEN,
+})
+</code></pre></div></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-5-initiate-the-payment-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-5-initiate-the-payment-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 5: Initiate the payment process</div><a aria-label=&quot;Skip link to Step 5: Initiate the payment process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-5-initiate-the-payment-process&quot;></a></h2>
+<p>After the user has selected a payment method remember to call <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> to initiate the payment flow. Below you will find an example where <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> is called when the user clicks on <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>button-pay</code>:</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const PayButton = document.querySelector(&amp;#x27;#button-pay&amp;#x27;)
+
+PayButton.addEventListener(&amp;#x27;click&amp;#x27;, () =&amp;gt; {
+  yuno.startPayment()
+})
+</code></pre></div></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-6-get-the-ott-one-time-token&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-6-get-the-ott-one-time-token&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 6: Get the OTT (one-time token)</div><a aria-label=&quot;Skip link to Step 6: Get the OTT (one-time token)&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-6-get-the-ott-one-time-token&quot;></a></h2>
+<p>Once the customer fills out the requested data in Yuno&amp;#x27;s payment forms, the SDK provides the one-time token. The configuration function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.CreatePayment(oneTimeToken)</code> is then triggered with the one-time token.</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;> yunoCreatePayment(oneTimeToken)
+</code></pre></div></div>
+<p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such as installments or document type/number.</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yunoCreatePayment(oneTimeToken, tokenWithInformation)
+</code></pre></div></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer alert&quot;>
+    <div class=&quot;verticalLineAlert&quot;></div>
+    <div>
+      <h3>Important</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+					The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-7-create-the-payment&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-7-create-the-payment&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 7: Create the Payment</div><a aria-label=&quot;Skip link to Step 7: Create the Payment&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-7-create-the-payment&quot;></a></h2>
+<p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the <a href=&quot;https://docs.y.uno/reference/create-payment&quot; target=&quot;&quot; title=&quot;&quot;>Create Payment endpoint</a>. The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.</p>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer&quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Complete the integration</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          After Step 7, you can complete the end-to-end integration by accessing <a href=&quot;https://docs.y.uno/docs/full-sdk-workflow&quot;>Step by Step integration of the Full SDK</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer&quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Continue method</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario 
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;continuepayment-return-value-or-null&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-continue-payment-return-value-or-null&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>continuePayment</code> return value or null</div><a aria-label=&quot;Skip link to [object Object]&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#continuepayment-return-value-or-null&quot;></a></h2>
+<p>For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>await yuno.continuePayment()</code> method will return either an object with the following structure or null:</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>TypeScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-typescript theme-light&quot; data-lang=&quot;typescript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>{
+  action: &amp;#x27;REDIRECT_URL&amp;#x27;
+  type: string
+  redirect: {
+    init_url: string
+    success_url: string
+    error_url: string
+  }
+} | null
+</code></pre></div></div>
+<p>When the method returns an object, it allows you to handle your application&amp;#x27;s payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.</p>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer&quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          In addition to the code examples provided, you can access the <a href&quot;/docs/demo-app&quot;>Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html&quot;>HTML<a/> and <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js&quot;>JavaScript</a> checkout demos available on GitHub.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;complementary-features&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-complementary-features&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Complementary features</div><a aria-label=&quot;Skip link to Complementary features&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#complementary-features&quot;></a></h2>
+<p>Yuno Web SDK provides additional services and configurations you can use to improve customers&amp;#x27; experience:</p>
+<ul>
+<li><a href=&quot;/docs/complementary-features-full-sdk#loader-control-the-use-of-the-loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#loader-control-the-use-of-the-loader&quot;>Form loader</a></li>
+<li><a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode </a></li>
+<li><a href=&quot;/docs/complementary-features-full-sdk#card-form-configurations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#card-form-configurations&quot;>Card form configurations </a>
+<ul>
+<li><a href=&quot;/docs/complementary-features-full-sdk#save-card-for-future-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#save-card-for-future-payments&quot;>Save Card for future payments</a></li>
+<li><a href=&quot;/docs/complementary-features-full-sdk#rendering-modes&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#rendering-modes&quot;>Render mode</a></li>
+<li><a href=&quot;/docs/complementary-features-full-sdk#text-payment-form-buttons&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#text-payment-form-buttons&quot;>Text payment form buttons</a></li>
+<li><a href=&quot;/docs/complementary-features-full-sdk#persist-credit-card-form-to-retry-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#persist-credit-card-form-to-retry-payments&quot;>Persist credit card form to retry payments</a></li>
+<li><a href=&quot;/docs/complementary-features-full-sdk#hide-pay-button&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk#hide-pay-button&quot;>Hide Pay button</a></li>
+</ul>
+</li>
+</ul>
+<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;form-loader&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-form-loader&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div><a href=&quot;/docs/loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;loader&quot;>Form loader</a></div><a aria-label=&quot;Skip link to [object Object]&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#form-loader&quot;></a></h3>
+<p>Control the use of the <a href=&quot;/docs/loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;loader&quot;>loader</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showLoading</code></td><td style=&quot;text-align:left&quot;>You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>hideLoader()</code> or <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>continuePayment()</code> function is called.<br/>
+The default value is true.</td></tr></tbody></table></div></div>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  showLoading: true,
+})
+</code></pre></div></div>
+<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;form-of-the-issuer&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-form-of-the-issuer&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Form of the issuer</div><a aria-label=&quot;Skip link to Form of the issuer&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#form-of-the-issuer&quot;></a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>issuersFormEnable</code></td><td style=&quot;text-align:left&quot;>Through this parameter, you can configure the SDK to enable the issuer&amp;#x27;s form (bank list).</td></tr></tbody></table></div></div>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  issuersFormEnable: true,
+})
+</code></pre></div></div>
+<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;mode-of-form-rendering&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-mode-of-form-rendering&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Mode of form rendering</div><a aria-label=&quot;Skip link to Mode of form rendering&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#mode-of-form-rendering&quot;></a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>renderMode</code></td><td style=&quot;text-align:left&quot;>This parameter is optional. It determines the mode in which the payment forms will be displayed.<br/><br/>
+- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>type</code>: can be one of <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>modal</code> or <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>element</code>.<br/>
+- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>elementSelector</code>: Element where the form will be rendered. Only required if <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>type </code>is <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>element</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>elementSelector</code></td><td style=&quot;text-align:left&quot;>Required only if the type is <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>element</code>. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:<br/><br/>
+- <strong>String (Deprecated)</strong>: Provide the ID or selector of the element where the SDK should be mounted.<br/>
+- <strong>Object</strong>: Specify the elements for mounting the APM and action forms. You need to provide the element for the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>apmForm</code>, which is where the APM is displayed, and the element for the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>actionForm</code>, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.</td></tr></tbody></table></div></div>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  renderMode: {
+    /**
+     * Type can be one of \`modal\` or \`element\`
+     * By default the system uses &amp;#x27;modal&amp;#x27;
+     * It is optional
+     */
+    type: &amp;#x27;modal&amp;#x27;,
+    /**
+     * Element where the form will be rendered.
+     * It is optional
+     * Can be a string (deprecated) or an object with the following structure:
+     * {
+     *   apmForm: &amp;quot;#form-element&amp;quot;,
+     *   actionForm: &amp;quot;#action-form-element&amp;quot;
+     * }
+     */
+    elementSelector: {
+      apmForm: &amp;quot;#form-element&amp;quot;,
+      actionForm: &amp;quot;#action-form-element&amp;quot;
+    }
+  },
+})
+</code></pre></div></div>
+<h3 class=&quot;heading heading-3 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;card-form-configurations&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-card-form-configurations&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Card form configurations</div><a aria-label=&quot;Skip link to Card form configurations&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#card-form-configurations&quot;></a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>card</code></td><td style=&quot;text-align:left&quot;>Define specific settings for the credit card form:<br/><br/>
+- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>type</code>: <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>step</code> or <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>extends</code><br/>
+- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>styles</code>: You can edit card form styles. Only you should write css, then it will be injected into the iframe.<br/>
+- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>cardSaveEnable</code>: Show checkbox for save/enroll card. The default value is false.<br/>
+- <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>texts</code>: Custom texts in the Card forms buttons.</td></tr></tbody></table></div></div>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  card: {
+    type: &amp;quot;extends&amp;quot;,
+    styles: &amp;#x27;&amp;#x27;,
+    cardSaveEnable: false,
+    texts: {}
+  },
+})
+</code></pre></div></div>
+<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;save-card-for-future-payments&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-save-card-for-future-payments&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Save card for future payments</div><a aria-label=&quot;Skip link to Save card for future payments&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#save-card-for-future-payments&quot;></a></h4>
+<p>In addition, you can display a checkbox for saving or enrolling cards using the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>cardSaveEnable: true</code>. Below are examples of the checkbox for both card form renders.</p>
+<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/37b2e00b0c6a3d31bceb42b26b1b433c8d30e61d947a93298dd90c466bde004b-complementary-features.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>
+<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;rendering-modes&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-rendering-modes&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Rendering modes</div><a aria-label=&quot;Skip link to Rendering modes&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#rendering-modes&quot;></a></h4>
+<p>Below you find screenshots presenting the difference between the following:</p>
+<ul>
+<li>Render modes <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>modal</code> and <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>elements</code> for the payment method list</li>
+<li>Render modes <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>step</code> and <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>extends</code> for the credit card form</li>
+</ul>
+<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/b56fe6dfdebaee158495dea86d5269d865fae2dfcb81eb8b34879f9e5e737f0e-caracteristicas_Complemetarias_web_1.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>
+<p>You also can choose one of the render options for the card form, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>step</code> and <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>extends</code>:</p>
+<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/08654f8fa7b638641cb1b9f5b882a75537a9e449fff4960cf560c1ec5b3efb74-caracteristicas_Complemetarias_web_2.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>
+<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;text-payment-form-buttons&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-text-payment-form-buttons&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Text payment form buttons</div><a aria-label=&quot;Skip link to Text payment form buttons&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#text-payment-form-buttons&quot;></a></h4>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>texts</code></td><td style=&quot;text-align:left&quot;>Provide custom text for payment form buttons to match your application&amp;#x27;s language or branding.</td></tr></tbody></table></div></div>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  texts: {
+    customerForm?: {
+      submitButton?: string;
+    }
+    paymentOtp?: {
+      sendOtpButton?: string;
+    }
+  }
+})
+</code></pre></div></div>
+<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;persist-credit-card-form-to-retry-payments&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-persist-credit-card-form-to-retry-payments&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Persist credit card form to retry payments</div><a aria-label=&quot;Skip link to Persist credit card form to retry payments&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#persist-credit-card-form-to-retry-payments&quot;></a></h4>
+<p>If a transaction is rejected, you can use the credit card form to retry a payment after the customer has entered the credit card details. To do that, you will need to:</p>
+<ol>
+<li>Add the following parameter while initializing the SDK to persist the credit card form after the one-time use token is created:
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  automaticallyUnmount: false,
+})
+</code></pre></div></div>
+</li>
+<li>In case the transaction is rejected, you will need to:
+<ol>
+<li>Execute the method <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.notifyError() </code>to delete the previously entered CVV for the first transaction</li>
+<li>Create a new checkout session and update the SDK with the new one by executing <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.updateCheckoutSession(checkoutsession)</code></li>
+</ol>
+</li>
+<li>Continue with the new checkout and one-time use token with the regular payment flow.</li>
+</ol>
+<h4 class=&quot;heading heading-4 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;hide-pay-button&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-hide-pay-button&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Hide Pay button</div><a aria-label=&quot;Skip link to Hide Pay button&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#hide-pay-button&quot;></a></h4>
+<p>You can hide the Pay button when presenting the card or customer data form. To control this feature, you&amp;#x27;ll set <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showPayButton</code> to <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>false</code> when starting the checkout with the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>startCheckout</code> function. The code block below presents an example of how to hide the payment button:</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  /**
+   * Hide (false) or show (true) the customer or card form pay button
+   * @default true
+   * @optional
+   */
+  showPayButton: false,
+})
+</code></pre></div></div>
+<p>The following images present examples of the Customer Data Form with and without the Pay button:</p>
+<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/873a709f1c3dce3c3dcc13dd4fd3cc9b5a8ecdf812c3b631f3cf8700177cc5cf-Card_boton.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>
+<p>The following images present examples of the Card Form with and without the Pay button:</p>
+<span aria-label=&quot;&quot; class=&quot;img lightbox closed&quot; role=&quot;button&quot; tabindex=&quot;0&quot;><span class=&quot;lightbox-inner&quot;><img alt=&quot;&quot; loading=&quot;lazy&quot; src=&quot;https://files.readme.io/b8b5e51ab3f5907786b802cb782a71e043f4ec18475b6e5b6d4dd052c6dc4e37-Card_boton_1.png&quot; title=&quot;&quot; align=&quot;center&quot; class=&quot;&quot; caption=&quot;&quot; height=&quot;auto&quot; width=&quot;auto&quot;/></span></span>
+<p>If you hide the Pay button, you will need to start the one-time token creation through your code. To create the one-time token and continue the payment in your backend, call the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>submitOneTimeTokenForm</code> function. The code block below presents how to use the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>submitOneTimeTokenForm</code> function.</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**
+ * This function triggers the same functionality that is called when the customer clicks on the pay form button.  This doesn&amp;#x27;t work on the step Card form
+ */
+yuno.submitOneTimeTokenForm()
+</code></pre></div></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;whats-next&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-whats-next&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>What&amp;#x27;s next?</div><a aria-label=&quot;Skip link to What&amp;#x27;s next?&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#whats-next&quot;></a></h2>
+<p>Learn about the additional configurations from the Full SDK accessing <a href=&quot;/docs/complementary-features-full-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk&quot;>Complementary Features</a>. You can also access other functions available on the Yuno Web SDK:</p>
+<ul>
+<li><a href=&quot;/docs/sdk-customizations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;sdk-customizations&quot;>SDK Customizations</a>: Change the SDK appearance to match your brand</li>
+<li><a href=&quot;/docs/payment-status&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;payment-status&quot;>Payment Status</a>: Update the user about the payment process</li>
+<li><a href=&quot;/docs/3ds-setup-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;3ds-setup-sdk&quot;>3DS Setup SDK</a>: Integrate 3DS into your payment flow</li>
+</ul>" style="margin-left:31px" class="rm-Markdown markdown-body rm-Markdown markdown-body ng-non-bindable"
+      data-testid="RDMD">
+      <p>Follow this step-by-step guide to implement and enable Yuno's Full Web SDK functionality in your application.
+      </p>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-1-include-the-library-in-your-project"></div>
+        <div class="heading-text">
+          <div id="section-step-1-include-the-library-in-your-project" class="heading-anchor_backwardsCompatibility">
+          </div>Step 1: Include the library in your project
+        </div><a aria-label="Skip link to Step 1: Include the library in your project"
+          class="heading-anchor-icon fa fa-anchor" href="#step-1-include-the-library-in-your-project"></a>
+      </h2>
+      <p>Before proceeding with the Full SDK implementation, please refer to the <a target="_self"
+          href="/docs/yuno-sdk-integration-guide">Yuno SDK Integration Guide</a> for detailed instructions on how to
+        properly integrate the SDK into your project.</p>
+      <p>The integration guide provides three flexible methods:</p>
+      <ol>
+        <li>Direct HTML script inclusion</li>
+        <li>Dynamic JavaScript injection</li>
+        <li>NPM module installation</li>
+      </ol>
+      <p>Choose the integration method that best suits your development workflow and technical requirements. After
+        completing the SDK integration, you can proceed with the following steps to implement the full checkout
+        functionality.</p>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer ">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>TypeScript library</h3>
+            <div class="contentContainer">
+              <p>
+                If you are using TypeScript, Yuno provides a <a
+                  href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see
+                all available methods available in the Yuno Web SDK.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-2-initialize-sdk-with-the-public-key"></div>
+        <div class="heading-text">
+          <div id="section-step-2-initialize-sdk-with-the-public-key" class="heading-anchor_backwardsCompatibility">
+          </div>Step 2: Initialize SDK with the public key
+        </div><a aria-label="Skip link to Step 2: Initialize SDK with the public key"
+          class="heading-anchor-icon fa fa-anchor" href="#step-2-initialize-sdk-with-the-public-key"></a>
+      </h2>
+      <p>In your JavaScript application, create an instance of the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">Yuno</span></code> class by providing a
+        valid <strong>PUBLIC_API_KEY</strong>. Check the <a target="_self"
+          href="/reference/get-your-api-credentials">Get your API credentials</a> guide.</p>
+      <p>Like the example below, use the initialized class that is attributed to the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno</span></code>constant.</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-keyword">const</span> <span class="cm-def">yuno</span> <span class="cm-operator">=</span> <span class="cm-keyword">await</span> <span class="cm-variable">Yuno</span>.<span class="cm-property">initialize</span>(<span class="cm-variable">PUBLIC_API_KEY</span>)
+</div></code></pre>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-3-start-the-checkout-process"></div>
+        <div class="heading-text">
+          <div id="section-step-3-start-the-checkout-process" class="heading-anchor_backwardsCompatibility"></div>Step
+          3: Start the checkout process
+        </div><a aria-label="Skip link to Step 3: Start the checkout process" class="heading-anchor-icon fa fa-anchor"
+          href="#step-3-start-the-checkout-process"></a>
+      </h2>
+      <p>To start the checkout, you'll use the function <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.startCheckout</span></code>,
+        providing the necessary parameters.</p>
+      <p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a
+          target="_self" href="/docs/full-checkout-sdk#complementary-features">Complementary Features</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <div class="rdmd-table">
+        <div class="rdmd-table-inner">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align:left">Parameter</th>
+                <th style="text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">checkoutSession</span></code>
+                </td>
+                <td style="text-align:left">Refers to the current payment's <a target="_self"
+                    href="/reference/create-checkout-session">checkout session</a>.<br><button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">Example: '438413b7-4921-41e4-b8f3-28a5a0141638'</span></code>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">countryCode</span></code></td>
+                <td style="text-align:left">This parameter specifies the country for which the payment process is being
+                  set up.<br>
+                  Use an <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">ENUM</span></code> value
+                  representing the desired country code. You can find the full list of supported countries and their
+                  corresponding codes on the <a target="_self" href="/docs/country-coverage-yuno-sdk">Country
+                    Coverage</a> page.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">language</span></code></td>
+                <td style="text-align:left">Defines the language to be used in the payment forms. You can set it to one
+                  of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id
+                  (Indonesian), ms (Malay), or th (Thai).</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">onLoading</span></code></td>
+                <td style="text-align:left">Required to receive notifications about server calls or loading events
+                  during the payment process. </td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">showLoading</span></code></td>
+                <td style="text-align:left">Control the visibility of the Yuno loading/spinner page during the payment
+                  process. By default, it's <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code>.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">issuersFormEnable</span></code>
+                </td>
+                <td style="text-align:left">Enables the issuer's form. By default, it's <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code>.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">showPaymentStatus</span></code>
+                </td>
+                <td style="text-align:left">Shows the Yuno Payment Status page. You can use this option when continuing
+                  a payment as well. By default, it's <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code>.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">card.isCreditCardProcessingOnly</span></code>
+                </td>
+                <td style="text-align:left">Enables you to ensure that all card transactions are processed as credit
+                  only. This option is helpful in markets where cards can act as both credit and debit.<br>
+                  To enable, set the <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">isCreditCardProcessingOnly</span></code>
+                  to <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code> to ensure
+                  that all card transactions are processed as credit.<br>
+                  This parameter is not required.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">checkoutSession</span>: <span class="cm-string">'438413b7-4921-41e4-b8f3-28a5a0141638'</span>,
+  <span class="cm-comment">/**</span>
+<span class="cm-comment">   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk</span>
+<span class="cm-comment">  */</span>
+  <span class="cm-property">country_code</span>: <span class="cm-string">"FR"</span>,
+  <span class="cm-property">language</span>: <span class="cm-string">'fr'</span>,
+  <span class="cm-property">showLoading</span>: <span class="cm-atom">true</span>,
+  <span class="cm-property">issuersFormEnable</span>: <span class="cm-atom">true</span>,
+  <span class="cm-property">showPaymentStatus</span>: <span class="cm-atom">true</span>,
+	<span class="cm-comment">/**</span>
+<span class="cm-comment">   * Set isCreditCardProcessingOnly as true to process all card transactions are credit</span>
+<span class="cm-comment">   * isCreditCardProcessingOnly: true | false | undefined</span>
+<span class="cm-comment">  */</span>
+  <span class="cm-property">card</span>: {
+    <span class="cm-property">isCreditCardProcessingOnly</span>: <span class="cm-atom">true</span>,
+  }
+  <span class="cm-variable">onLoading</span>: (<span class="cm-variable">args</span>) <span class="cm-operator">=&gt;</span> {
+    <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-variable">args</span>);
+  }
+  <span class="cm-keyword">async</span> <span class="cm-variable">yunoCreatePayment</span>(<span class="cm-variable">oneTimeToken</span>) {
+  	<span class="cm-comment">/**</span>
+<span class="cm-comment">    * The createPayment function calls the backend to create a payment in Yuno.</span>
+<span class="cm-comment">    * It uses the following endpoint https://docs.y.uno/reference/create-payment</span>
+<span class="cm-comment">  	*/</span>
+    <span class="cm-keyword">await</span> <span class="cm-variable">createPayment</span>({ <span class="cm-property">oneTimeToken</span>, <span class="cm-property">checkoutSession</span> })
+    <span class="cm-variable">yuno</span>.<span class="cm-property">continuePayment</span>({ <span class="cm-property">showPaymentStatus</span>: <span class="cm-atom">true</span> })
+  },
+})
+</div></code></pre>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer ">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Rendering mode</h3>
+            <div class="contentContainer">
+              <p>
+                By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render.
+                For additional information, access the <a
+                  href="/docs/complementary-features-full-sdk#mode-of-form-rendering">Render mode</a> under the
+                complementary complementary features page.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-4-mount-the-sdk"></div>
+        <div class="heading-text">
+          <div id="section-step-4-mount-the-sdk" class="heading-anchor_backwardsCompatibility"></div>Step 4: Mount the
+          SDK
+        </div><a aria-label="Skip link to Step 4: Mount the SDK" class="heading-anchor-icon fa fa-anchor"
+          href="#step-4-mount-the-sdk"></a>
+      </h2>
+      <p>Display the payment methods by using the function <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.mountCheckout()</span></code> by
+        selecting an HTML element and using a valid CSS selector (<button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">#</span></code>, <button
+          aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+          data-lang="" name="" tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">.</span></code>,
+        <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+          data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">[data-*]</span></code>)
+      </p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-comment">/**</span>
+<span class="cm-comment"> * Mount checkout in browser DOM</span>
+<span class="cm-comment"> */</span>
+<span class="cm-variable">yuno</span>.<span class="cm-property">mountCheckout</span>()
+</div></code></pre>
+        </div>
+      </div>
+      <p>If you want to set a default payment method, use the following code to mount it:</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-comment">/**</span>
+<span class="cm-comment"> * Mount checkout in browser DOM with a payment method selected by default</span>
+<span class="cm-comment"> * @optional</span>
+<span class="cm-comment"> */</span>
+<span class="cm-variable">yuno</span>.<span class="cm-property">mountCheckout</span>({
+  <span class="cm-comment">/**</span>
+<span class="cm-comment">   * Optional, only needed if you would like this method type selected by default</span>
+<span class="cm-comment">   * Can be one of 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | CARD</span>
+<span class="cm-comment">   */</span>
+  <span class="cm-property">paymentMethodType</span>: <span class="cm-variable">PAYMENT_METHOD_TYPE</span>,
+  <span class="cm-comment">/**</span>
+<span class="cm-comment">   * Optional</span>
+<span class="cm-comment">   * Vaulted token related to payment method type</span>
+<span class="cm-comment">   */</span>
+  <span class="cm-property">vaultedToken</span>: <span class="cm-variable">VAULTED_TOKEN</span>,
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-5-initiate-the-payment-process"></div>
+        <div class="heading-text">
+          <div id="section-step-5-initiate-the-payment-process" class="heading-anchor_backwardsCompatibility"></div>Step
+          5: Initiate the payment process
+        </div><a aria-label="Skip link to Step 5: Initiate the payment process" class="heading-anchor-icon fa fa-anchor"
+          href="#step-5-initiate-the-payment-process"></a>
+      </h2>
+      <p>After the user has selected a payment method remember to call <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.startPayment()</span></code> to
+        initiate the payment flow. Below you will find an example where <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.startPayment()</span></code> is
+        called when the user clicks on <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+          class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">button-pay</span></code>:</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-keyword">const</span> <span class="cm-def">PayButton</span> <span class="cm-operator">=</span> <span class="cm-variable">document</span>.<span class="cm-property">querySelector</span>(<span class="cm-string">'#button-pay'</span>)
+
+<span class="cm-variable">PayButton</span>.<span class="cm-property">addEventListener</span>(<span class="cm-string">'click'</span>, () <span class="cm-operator">=&gt;</span> {
+  <span class="cm-variable">yuno</span>.<span class="cm-property">startPayment</span>()
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-6-get-the-ott-one-time-token"></div>
+        <div class="heading-text">
+          <div id="section-step-6-get-the-ott-one-time-token" class="heading-anchor_backwardsCompatibility"></div>Step
+          6: Get the OTT (one-time token)
+        </div><a aria-label="Skip link to Step 6: Get the OTT (one-time token)" class="heading-anchor-icon fa fa-anchor"
+          href="#step-6-get-the-ott-one-time-token"></a>
+      </h2>
+      <p>Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the one-time token.
+        The configuration function <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+          class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.CreatePayment(oneTimeToken)</span></code>
+        is then triggered with the one-time token.</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"> <span class="cm-variable">yunoCreatePayment</span>(<span class="cm-variable">oneTimeToken</span>)
+</div></code></pre>
+        </div>
+      </div>
+      <p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such
+        as installments or document type/number.</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yunoCreatePayment</span>(<span class="cm-variable">oneTimeToken</span>, <span class="cm-variable">tokenWithInformation</span>)
+</div></code></pre>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer alert">
+          <div class="verticalLineAlert"></div>
+          <div>
+            <h3>Important</h3>
+            <div class="contentContainer">
+              <p>
+                The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however,
+                the merchant can use their own loader and must make the corresponding configurations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-7-create-the-payment"></div>
+        <div class="heading-text">
+          <div id="section-step-7-create-the-payment" class="heading-anchor_backwardsCompatibility"></div>Step 7: Create
+          the Payment
+        </div><a aria-label="Skip link to Step 7: Create the Payment" class="heading-anchor-icon fa fa-anchor"
+          href="#step-7-create-the-payment"></a>
+      </h2>
+      <p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation
+        must be carried out using the <a target="_self" href="/reference/create-payment">Create Payment endpoint</a>.
+        The merchant should call their backend to create the payment within Yuno, using the one-time token and the
+        checkout session.</p>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Complete the integration</h3>
+            <div class="contentContainer">
+              <p>
+                After Step 7, you can complete the end-to-end integration by accessing <a
+                  href="https://docs.y.uno/docs/full-sdk-workflow">Step by Step integration of the Full SDK</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Continue method</h3>
+            <div class="contentContainer">
+              <p>
+                Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment
+                is created because certain asynchronous payment methods require additional action from the customer to
+                complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of
+                the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will
+                display the additional screens to the customers, where they can carry out the necessary actions to
+                complete the payment without needing you to handle every scenario
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="continuepayment-return-value-or-null"></div>
+        <div class="heading-text">
+          <div id="section-continue-payment-return-value-or-null" class="heading-anchor_backwardsCompatibility"></div>
+          <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+            data-lang="" name=""
+            tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">continuePayment</span></code> return
+          value or null
+        </div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-anchor"
+          href="#continuepayment-return-value-or-null"></a>
+      </h2>
+      <p>For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL
+        in a webview), the <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+          class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">await yuno.continuePayment()</span></code>
+        method will return either an object with the following structure or null:</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">TypeScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-typescript theme-light" data-lang="typescript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter">{
+  <span class="cm-variable">action</span>: <span class="cm-string">'REDIRECT_URL'</span>
+  <span class="cm-variable">type</span>: <span class="cm-variable">string</span>
+  <span class="cm-variable">redirect</span>: {
+    <span class="cm-variable">init_url</span>: <span class="cm-variable">string</span>
+    <span class="cm-variable">success_url</span>: <span class="cm-variable">string</span>
+    <span class="cm-variable">error_url</span>: <span class="cm-variable">string</span>
+  }
+} <span class="cm-operator">|</span> <span class="cm-atom">null</span>
+</div></code></pre>
+        </div>
+      </div>
+      <p>When the method returns an object, it allows you to handle your application's payment flows that require custom
+        redirect handling. When it returns null, no additional merchant-side action is needed.</p>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Demo App</h3>
+            <div class="contentContainer">
+              <p>
+                In addition to the code examples provided, you can access the <a href"="" docs="" demo-app"="">Demo
+                  App</a> for a complete implementation of Yuno SDKs or go directly to the <a
+                  href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html">HTML</a><a> and </a><a
+                  href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js">JavaScript</a>
+                checkout demos available on GitHub.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="complementary-features"></div>
+        <div class="heading-text">
+          <div id="section-complementary-features" class="heading-anchor_backwardsCompatibility"></div>Complementary
+          features
+        </div><a aria-label="Skip link to Complementary features" class="heading-anchor-icon fa fa-anchor"
+          href="#complementary-features"></a>
+      </h2>
+      <p>Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:</p>
+      <ul>
+        <li><a target="_self" href="/docs/complementary-features-full-sdk#loader-control-the-use-of-the-loader">Form
+            loader</a></li>
+        <li><a target="_self" href="/docs/complementary-features-full-sdk#mode-of-form-rendering">Render mode </a></li>
+        <li><a target="_self" href="/docs/complementary-features-full-sdk#card-form-configurations">Card form
+            configurations </a>
+          <ul>
+            <li><a target="_self" href="/docs/complementary-features-full-sdk#save-card-for-future-payments">Save Card
+                for future payments</a></li>
+            <li><a target="_self" href="/docs/complementary-features-full-sdk#rendering-modes">Render mode</a></li>
+            <li><a target="_self" href="/docs/complementary-features-full-sdk#text-payment-form-buttons">Text payment
+                form buttons</a></li>
+            <li><a target="_self"
+                href="/docs/complementary-features-full-sdk#persist-credit-card-form-to-retry-payments">Persist credit
+                card form to retry payments</a></li>
+            <li><a target="_self" href="/docs/complementary-features-full-sdk#hide-pay-button">Hide Pay button</a></li>
+          </ul>
+        </li>
+      </ul>
+      <h3 class="heading heading-3 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="form-loader"></div>
+        <div class="heading-text">
+          <div id="section-form-loader" class="heading-anchor_backwardsCompatibility"></div><a target="_self"
+            href="/docs/loader">Form loader</a>
+        </div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-anchor"
+          href="#form-loader"></a>
+      </h3>
+      <p>Control the use of the <a target="_self" href="/docs/loader">loader</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <div class="rdmd-table">
+        <div class="rdmd-table-inner">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align:left">Parameter</th>
+                <th style="text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">showLoading</span></code></td>
+                <td style="text-align:left">You can hide or show the Yuno loading/spinner page. Enabling this option
+                  ensures that the loading component remains displayed until either the <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">hideLoader()</span></code> or
+                  <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">continuePayment()</span></code>
+                  function is called.<br>
+                  The default value is true.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">showLoading</span>: <span class="cm-atom">true</span>,
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h3 class="heading heading-3 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="form-of-the-issuer"></div>
+        <div class="heading-text">
+          <div id="section-form-of-the-issuer" class="heading-anchor_backwardsCompatibility"></div>Form of the issuer
+        </div><a aria-label="Skip link to Form of the issuer" class="heading-anchor-icon fa fa-anchor"
+          href="#form-of-the-issuer"></a>
+      </h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <div class="rdmd-table">
+        <div class="rdmd-table-inner">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align:left">Parameter</th>
+                <th style="text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">issuersFormEnable</span></code>
+                </td>
+                <td style="text-align:left">Through this parameter, you can configure the SDK to enable the issuer's
+                  form (bank list).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">issuersFormEnable</span>: <span class="cm-atom">true</span>,
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h3 class="heading heading-3 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="mode-of-form-rendering"></div>
+        <div class="heading-text">
+          <div id="section-mode-of-form-rendering" class="heading-anchor_backwardsCompatibility"></div>Mode of form
+          rendering
+        </div><a aria-label="Skip link to Mode of form rendering" class="heading-anchor-icon fa fa-anchor"
+          href="#mode-of-form-rendering"></a>
+      </h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <div class="rdmd-table">
+        <div class="rdmd-table-inner">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align:left">Parameter</th>
+                <th style="text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">renderMode</span></code></td>
+                <td style="text-align:left">This parameter is optional. It determines the mode in which the payment
+                  forms will be displayed.<br><br>
+                  - <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">type</span></code>: can be one
+                  of <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">modal</span></code> or <button
+                    aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+                    data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">element</span></code>.<br>
+                  - <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">elementSelector</span></code>:
+                  Element where the form will be rendered. Only required if <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">type </span></code>is <button
+                    aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+                    data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">element</span></code>.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">elementSelector</span></code>
+                </td>
+                <td style="text-align:left">Required only if the type is <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">element</span></code>. Specifies
+                  the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the
+                  following options:<br><br>
+                  - <strong>String (Deprecated)</strong>: Provide the ID or selector of the element where the SDK should
+                  be mounted.<br>
+                  - <strong>Object</strong>: Specify the elements for mounting the APM and action forms. You need to
+                  provide the element for the <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">apmForm</span></code>, which is
+                  where the APM is displayed, and the element for the <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">actionForm</span></code>, where
+                  the Continue Payment button appears. This button triggers a modal that shows the steps to complete a
+                  payment with a provider. For example, with PIX, it displays a QR code.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">renderMode</span>: {
+    <span class="cm-comment">/**</span>
+<span class="cm-comment">     * Type can be one of \`modal\` or \`element\`</span>
+<span class="cm-comment">     * By default the system uses 'modal'</span>
+<span class="cm-comment">     * It is optional</span>
+<span class="cm-comment">     */</span>
+    <span class="cm-property">type</span>: <span class="cm-string">'modal'</span>,
+    <span class="cm-comment">/**</span>
+<span class="cm-comment">     * Element where the form will be rendered.</span>
+<span class="cm-comment">     * It is optional</span>
+<span class="cm-comment">     * Can be a string (deprecated) or an object with the following structure:</span>
+<span class="cm-comment">     * {</span>
+<span class="cm-comment">     *   apmForm: "#form-element",</span>
+<span class="cm-comment">     *   actionForm: "#action-form-element"</span>
+<span class="cm-comment">     * }</span>
+<span class="cm-comment">     */</span>
+    <span class="cm-property">elementSelector</span>: {
+      <span class="cm-property">apmForm</span>: <span class="cm-string">"#form-element"</span>,
+      <span class="cm-property">actionForm</span>: <span class="cm-string">"#action-form-element"</span>
+    }
+  },
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h3 class="heading heading-3 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="card-form-configurations"></div>
+        <div class="heading-text">
+          <div id="section-card-form-configurations" class="heading-anchor_backwardsCompatibility"></div>Card form
+          configurations
+        </div><a aria-label="Skip link to Card form configurations" class="heading-anchor-icon fa fa-anchor"
+          href="#card-form-configurations"></a>
+      </h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <div class="rdmd-table">
+        <div class="rdmd-table-inner">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align:left">Parameter</th>
+                <th style="text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">card</span></code></td>
+                <td style="text-align:left">Define specific settings for the credit card form:<br><br>
+                  - <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">type</span></code>: <button
+                    aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+                    data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">step</span></code> or <button
+                    aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+                    data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">extends</span></code><br>
+                  - <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">styles</span></code>: You can
+                  edit card form styles. Only you should write css, then it will be injected into the iframe.<br>
+                  - <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">cardSaveEnable</span></code>:
+                  Show checkbox for save/enroll card. The default value is false.<br>
+                  - <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">texts</span></code>: Custom
+                  texts in the Card forms buttons.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">card</span>: {
+    <span class="cm-property">type</span>: <span class="cm-string">"extends"</span>,
+    <span class="cm-property">styles</span>: <span class="cm-string">''</span>,
+    <span class="cm-property">cardSaveEnable</span>: <span class="cm-atom">false</span>,
+    <span class="cm-property">texts</span>: {}
+  },
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h4 class="heading heading-4 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="save-card-for-future-payments"></div>
+        <div class="heading-text">
+          <div id="section-save-card-for-future-payments" class="heading-anchor_backwardsCompatibility"></div>Save card
+          for future payments
+        </div><a aria-label="Skip link to Save card for future payments" class="heading-anchor-icon fa fa-anchor"
+          href="#save-card-for-future-payments"></a>
+      </h4>
+      <p>In addition, you can display a checkbox for saving or enrolling cards using the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">cardSaveEnable: true</span></code>. Below
+        are examples of the checkbox for both card form renders.</p>
+      <span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img
+            alt="" loading="lazy"
+            src="https://files.readme.io/37b2e00b0c6a3d31bceb42b26b1b433c8d30e61d947a93298dd90c466bde004b-complementary-features.png"
+            title="" align="center" class="" caption="" height="auto" width="auto"></span></span>
+      <h4 class="heading heading-4 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="rendering-modes"></div>
+        <div class="heading-text">
+          <div id="section-rendering-modes" class="heading-anchor_backwardsCompatibility"></div>Rendering modes
+        </div><a aria-label="Skip link to Rendering modes" class="heading-anchor-icon fa fa-anchor"
+          href="#rendering-modes"></a>
+      </h4>
+      <p>Below you find screenshots presenting the difference between the following:</p>
+      <ul>
+        <li>Render modes <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+            class="rdmd-code lang- theme-light" data-lang="" name=""
+            tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">modal</span></code> and <button
+            aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+            data-lang="" name=""
+            tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">elements</span></code> for the payment
+          method list</li>
+        <li>Render modes <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+            class="rdmd-code lang- theme-light" data-lang="" name=""
+            tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">step</span></code> and <button
+            aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+            data-lang="" name=""
+            tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">extends</span></code> for the credit
+          card form</li>
+      </ul>
+      <span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img
+            alt="" loading="lazy"
+            src="https://files.readme.io/b56fe6dfdebaee158495dea86d5269d865fae2dfcb81eb8b34879f9e5e737f0e-caracteristicas_Complemetarias_web_1.png"
+            title="" align="center" class="" caption="" height="auto" width="auto"></span></span>
+      <p>You also can choose one of the render options for the card form, <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">step</span></code> and <button
+          aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+          data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">extends</span></code>:</p>
+      <span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img
+            alt="" loading="lazy"
+            src="https://files.readme.io/08654f8fa7b638641cb1b9f5b882a75537a9e449fff4960cf560c1ec5b3efb74-caracteristicas_Complemetarias_web_2.png"
+            title="" align="center" class="" caption="" height="auto" width="auto"></span></span>
+      <h4 class="heading heading-4 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="text-payment-form-buttons"></div>
+        <div class="heading-text">
+          <div id="section-text-payment-form-buttons" class="heading-anchor_backwardsCompatibility"></div>Text payment
+          form buttons
+        </div><a aria-label="Skip link to Text payment form buttons" class="heading-anchor-icon fa fa-anchor"
+          href="#text-payment-form-buttons"></a>
+      </h4>
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <div class="rdmd-table">
+        <div class="rdmd-table-inner">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align:left">Parameter</th>
+                <th style="text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">texts</span></code></td>
+                <td style="text-align:left">Provide custom text for payment form buttons to match your application's
+                  language or branding.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">texts</span>: {
+    <span class="cm-property">customerForm</span><span class="cm-operator">?</span>: {
+      <span class="cm-variable">submitButton</span><span class="cm-operator">?</span>: <span class="cm-variable">string</span>;
+    }
+    <span class="cm-variable">paymentOtp</span><span class="cm-operator">?</span>: {
+      <span class="cm-variable">sendOtpButton</span><span class="cm-operator">?</span>: <span class="cm-variable">string</span>;
+    }
+  }
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h4 class="heading heading-4 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="persist-credit-card-form-to-retry-payments"></div>
+        <div class="heading-text">
+          <div id="section-persist-credit-card-form-to-retry-payments" class="heading-anchor_backwardsCompatibility">
+          </div>Persist credit card form to retry payments
+        </div><a aria-label="Skip link to Persist credit card form to retry payments"
+          class="heading-anchor-icon fa fa-anchor" href="#persist-credit-card-form-to-retry-payments"></a>
+      </h4>
+      <p>If a transaction is rejected, you can use the credit card form to retry a payment after the customer has
+        entered the credit card details. To do that, you will need to:</p>
+      <ol>
+        <li>Add the following parameter while initializing the SDK to persist the credit card form after the one-time
+          use token is created:
+          <div class="CodeTabs CodeTabs_initial theme-light">
+            <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+                type="button">JavaScript</button></div>
+            <div class="CodeTabs-inner" role="tabpanel">
+              <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">automaticallyUnmount</span>: <span class="cm-atom">false</span>,
+})
+</div></code></pre>
+            </div>
+          </div>
+        </li>
+        <li>In case the transaction is rejected, you will need to:
+          <ol>
+            <li>Execute the method <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                class="rdmd-code lang- theme-light" data-lang="" name=""
+                tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.notifyError() </span></code>to
+              delete the previously entered CVV for the first transaction</li>
+            <li>Create a new checkout session and update the SDK with the new one by executing <button
+                aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+                data-lang="" name=""
+                tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.updateCheckoutSession(checkoutsession)</span></code>
+            </li>
+          </ol>
+        </li>
+        <li>Continue with the new checkout and one-time use token with the regular payment flow.</li>
+      </ol>
+      <h4 class="heading heading-4 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="hide-pay-button"></div>
+        <div class="heading-text">
+          <div id="section-hide-pay-button" class="heading-anchor_backwardsCompatibility"></div>Hide Pay button
+        </div><a aria-label="Skip link to Hide Pay button" class="heading-anchor-icon fa fa-anchor"
+          href="#hide-pay-button"></a>
+      </h4>
+      <p>You can hide the Pay button when presenting the card or customer data form. To control this feature, you'll set
+        <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+          data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">showPayButton</span></code> to <button
+          aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+          data-lang="" name="" tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">false</span></code>
+        when starting the checkout with the <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+          class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">startCheckout</span></code> function. The
+        code block below presents an example of how to hide the payment button:
+      </p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-comment">/**</span>
+<span class="cm-comment">   * Hide (false) or show (true) the customer or card form pay button</span>
+<span class="cm-comment">   * @default true</span>
+<span class="cm-comment">   * @optional</span>
+<span class="cm-comment">   */</span>
+  <span class="cm-property">showPayButton</span>: <span class="cm-atom">false</span>,
+})
+</div></code></pre>
+        </div>
+      </div>
+      <p>The following images present examples of the Customer Data Form with and without the Pay button:</p>
+      <span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img
+            alt="" loading="lazy"
+            src="https://files.readme.io/873a709f1c3dce3c3dcc13dd4fd3cc9b5a8ecdf812c3b631f3cf8700177cc5cf-Card_boton.png"
+            title="" align="center" class="" caption="" height="auto" width="auto"></span></span>
+      <p>The following images present examples of the Card Form with and without the Pay button:</p>
+      <span aria-label="" class="img lightbox closed" role="button" tabindex="0"><span class="lightbox-inner"><img
+            alt="" loading="lazy"
+            src="https://files.readme.io/b8b5e51ab3f5907786b802cb782a71e043f4ec18475b6e5b6d4dd052c6dc4e37-Card_boton_1.png"
+            title="" align="center" class="" caption="" height="auto" width="auto"></span></span>
+      <p>If you hide the Pay button, you will need to start the one-time token creation through your code. To create the
+        one-time token and continue the payment in your backend, call the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">submitOneTimeTokenForm</span></code>
+        function. The code block below presents how to use the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">submitOneTimeTokenForm</span></code>
+        function.</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-comment">/**</span>
+<span class="cm-comment"> * This function triggers the same functionality that is called when the customer clicks on the pay form button.  This doesn't work on the step Card form</span>
+<span class="cm-comment"> */</span>
+<span class="cm-variable">yuno</span>.<span class="cm-property">submitOneTimeTokenForm</span>()
+</div></code></pre>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="whats-next"></div>
+        <div class="heading-text">
+          <div id="section-whats-next" class="heading-anchor_backwardsCompatibility"></div>What's next?
+        </div><a aria-label="Skip link to What's next?" class="heading-anchor-icon fa fa-anchor" href="#whats-next"></a>
+      </h2>
+      <p>Learn about the additional configurations from the Full SDK accessing <a target="_self"
+          href="/docs/complementary-features-full-sdk">Complementary Features</a>. You can also access other functions
+        available on the Yuno Web SDK:</p>
+      <ul>
+        <li><a target="_self" href="/docs/sdk-customizations">SDK Customizations</a>: Change the SDK appearance to match
+          your brand</li>
+        <li><a target="_self" href="/docs/payment-status">Payment Status</a>: Update the user about the payment process
+        </li>
+        <li><a target="_self" href="/docs/3ds-setup-sdk">3DS Setup SDK</a>: Integrate 3DS into your payment flow</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="tab-content" id="webSDKv10">
+    <div dehydrated="<p>Below, we outline the step-by-step process to enable the full Web SDK  functionalities in your system:</p>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-1-include-the-library-in-your-project&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-1-include-the-library-in-your-project&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 1: Include the library in your project</div><a aria-label=&quot;Skip link to Step 1: Include the library in your project&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-1-include-the-library-in-your-project&quot;></a></h2>
+<p>Ensure the Yuno SDK file is included in your webpage before closing the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>&amp;lt;body&amp;gt;</code> tag. Refer to the example below:</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>HTML</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-html theme-light&quot; data-lang=&quot;html&quot; name=&quot;&quot; tabindex=&quot;0&quot;>&amp;lt;script src=&amp;quot;https://sdk-web.y.uno/v1/static/js/main.min.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;
+</code></pre></div></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer &quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Typescript library</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          If you are using Typescript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> that you can use to see all available methods available in the Yuno Web SDK.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-2-initialize-sdk-with-the-public-key&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-2-initialize-sdk-with-the-public-key&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 2: Initialize SDK with the public key</div><a aria-label=&quot;Skip link to Step 2: Initialize SDK with the public key&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-2-initialize-sdk-with-the-public-key&quot;></a></h2>
+<p>In your JavaScript application, create an instance of the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Yuno</code> class by providing a valid <strong>PUBLIC_API_KEY</strong>. Check the <a href=&quot;/reference/get-your-api-credentials&quot; target=&quot;&quot; title=&quot;&quot;>Get your API credentials</a> guide.</p>
+<p>Like the example below, use the initialized class that is attributed to the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno</code>constant.</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const yuno = Yuno.initialize(PUBLIC_API_KEY)
+</code></pre></div></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-3-start-the-checkout-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-3-start-the-checkout-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 3: Start the checkout process</div><a aria-label=&quot;Skip link to Step 3: Start the checkout process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-3-start-the-checkout-process&quot;></a></h2>
+<p>To start the checkout, you&amp;#x27;ll use the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout</code>, providing the necessary parameters.</p>
+<p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a href=&quot;https://docs.y.uno/docs/full-checkout-sdk#complementary-features&quot; target=&quot;&quot; title=&quot;&quot;>Complementary Features</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class=&quot;rdmd-table&quot;><div class=&quot;rdmd-table-inner&quot;><table><thead><tr><th style=&quot;text-align:left&quot;>Parameter</th><th style=&quot;text-align:left&quot;>Description</th></tr></thead><tbody><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>checkoutSession</code></td><td style=&quot;text-align:left&quot;>Refers to the current payment&amp;#x27;s <a href=&quot;/reference/create-checkout-session&quot; target=&quot;&quot; title=&quot;&quot;>checkout session</a>.<br/><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>Example: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;</code></td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>countryCode</code></td><td style=&quot;text-align:left&quot;>This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the <a href=&quot;/docs/country-coverage-yuno-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;country-coverage-yuno-sdk&quot;>Country coverage</a>  page.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>language</code></td><td style=&quot;text-align:left&quot;>Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), or th (Thai).</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>onLoading</code></td><td style=&quot;text-align:left&quot;>Required to receive notifications about server calls or loading events during the payment process. </td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showLoading</code></td><td style=&quot;text-align:left&quot;>Control the visibility of the Yuno loading/spinner page during the payment process. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>issuersFormEnable</code></td><td style=&quot;text-align:left&quot;>Enables the issuer&amp;#x27;s form. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>showPaymentStatus</code></td><td style=&quot;text-align:left&quot;>Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it&amp;#x27;s <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code>.</td></tr><tr><td style=&quot;text-align:left&quot;><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>card.isCreditCardProcessingOnly</code></td><td style=&quot;text-align:left&quot;>Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.<br/>
+To enable, set the <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>isCreditCardProcessingOnly</code> to <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>true</code> to ensure that all card transactions are processed as credit.<br/>
+This parameter is not required.</td></tr></tbody></table></div></div>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startCheckout({
+  checkoutSession: &amp;#x27;438413b7-4921-41e4-b8f3-28a5a0141638&amp;#x27;,
+  /**
+   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
+  */
+  country_code: &amp;quot;FR&amp;quot;,
+  language: &amp;#x27;fr&amp;#x27;,
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+	/**
+   * Set isCreditCardProcessingOnly as true to process all card transactions are credit
+   * isCreditCardProcessingOnly: true | false | undefined
+  */
+  card: {
+    isCreditCardProcessingOnly: true,
+  }
+  onLoading: (args) =&amp;gt; {
+    console.log(args);
+  }
+  async yunoCreatePayment(oneTimeToken) {
+  	/**
+    * The createPayment function calls the backend to create a payment in Yuno.
+    * It uses the following endpoint https://docs.y.uno/reference/create-payment
+  	*/
+    await createPayment({ oneTimeToken, checkoutSession })
+    yuno.continuePayment({ showPaymentStatus: true })
+  },
+})
+</code></pre></div></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer &quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Rendering mode</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-4-mount-the-sdk&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-4-mount-the-sdk&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 4: Mount the SDK</div><a aria-label=&quot;Skip link to Step 4: Mount the SDK&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-4-mount-the-sdk&quot;></a></h2>
+<p>Display the payment methods by using the function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.mountCheckout()</code> by selecting an HTML element and using a valid CSS selector (<button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>#</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>.</code>, <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>[data-*]</code>)</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**
+ * Mount checkout in browser DOM
+ */
+yuno.mountCheckout()
+</code></pre></div></div>
+<p>If you want to set a default payment method, use the following code to mount it:</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>/**
+ * Mount checkout in browser DOM with a payment method selected by default
+ * @optional
+ */
+yuno.mountCheckout({
+  /**
+   * Optional, only needed if you would like this method type selected by default
+   * Can be one of &amp;#x27;PAYPAL&amp;#x27; | &amp;#x27;PIX&amp;#x27; | &amp;#x27;APPLE_PAY&amp;#x27; | &amp;#x27;GOOGLE_PAY&amp;#x27; | CARD
+   */
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  /**
+   * Optional
+   * Vaulted token related to payment method type
+   */
+  vaultedToken: VAULTED_TOKEN,
+})
+</code></pre></div></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-5-initiate-the-payment-process&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-5-initiate-the-payment-process&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 5: Initiate the payment process</div><a aria-label=&quot;Skip link to Step 5: Initiate the payment process&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-5-initiate-the-payment-process&quot;></a></h2>
+<p>After the user has selected a payment method remember to call <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> to initiate the payment flow. Below you will find an example where <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.startPayment()</code> is called when the user clicks on <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>button-pay</code>:</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>const PayButton = document.querySelector(&amp;#x27;#button-pay&amp;#x27;)
+
+PayButton.addEventListener(&amp;#x27;click&amp;#x27;, () =&amp;gt; {
+  yuno.startPayment()
+})
+</code></pre></div></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-6-get-the-ott-one-time-token&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-6-get-the-ott-one-time-token&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 6: Get the OTT (One Time Token)</div><a aria-label=&quot;Skip link to Step 6: Get the OTT (One Time Token)&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-6-get-the-ott-one-time-token&quot;></a></h2>
+<p>Once the customer fills out the requested data in Yuno&amp;#x27;s payment forms, the SDK provides the OTT. The configuration function <button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang- theme-light&quot; data-lang=&quot;&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yuno.CreatePayment(oneTimeToken)</code> is then triggered with the OTT (One Time Token).</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;> yunoCreatePayment(oneTimeToken)
+</code></pre></div></div>
+<p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such as installments or document type/number.</p>
+<div class=&quot;CodeTabs CodeTabs_initial theme-light&quot;><div class=&quot;CodeTabs-toolbar&quot; role=&quot;tablist&quot;><button aria-selected=&quot;true&quot; class=&quot;CodeTabs_active&quot; role=&quot;tab&quot; type=&quot;button&quot;>JavaScript</button></div><div class=&quot;CodeTabs-inner&quot; role=&quot;tabpanel&quot;><pre><button aria-label=&quot;Copy Code&quot; class=&quot;rdmd-code-copy fa&quot;></button><code class=&quot;rdmd-code lang-javascript theme-light&quot; data-lang=&quot;javascript&quot; name=&quot;&quot; tabindex=&quot;0&quot;>yunoCreatePayment(oneTimeToken, tokenWithInformation)
+</code></pre></div></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer alert&quot;>
+    <div class=&quot;verticalLineAlert&quot;></div>
+    <div>
+      <h3>Important</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+					The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;step-7-create-the-payment&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-step-7-create-the-payment&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Step 7: Create the Payment</div><a aria-label=&quot;Skip link to Step 7: Create the Payment&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#step-7-create-the-payment&quot;></a></h2>
+<p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the <a href=&quot;https://docs.y.uno/reference/create-payment&quot; target=&quot;&quot; title=&quot;&quot;>Create Payment endpoint</a>. The merchant should call their backend to create the payment within Yuno, using the OTT (One Time Token) and the checkout session.</p>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer&quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Complete the integration</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          After Step 7, you can complete the end-to-end integration by accessing <a href=&quot;https://docs.y.uno/docs/full-sdk-workflow&quot;>Step by Step integration of the Full SDK</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer&quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Continue method</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          Yuno recommends you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment. Otherwise, this step is not necessary.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<div class=&quot;rdmd-html&quot;><body>
+  <div class=&quot;infoBlockContainer&quot;>
+    <div class=&quot;verticalLine&quot;></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class=&quot;contentContainer&quot;>
+        <p>
+          In addition to the code examples provided, you can access the <a href&quot;/docs/demo-app&quot;>Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html&quot;>HTML<a/> and <a href=&quot;https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js&quot;>JavaScript</a> checkout demos available on GitHub.
+        </p>
+      </div>
+    </div>
+  </div>
+</body></div>
+<h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;whats-next&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-whats-next&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>What&amp;#x27;s next?</div><a aria-label=&quot;Skip link to What&amp;#x27;s next?&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#whats-next&quot;></a></h2>
+<p>Learn about the additional configurations from the Full SDK accessing <a href=&quot;/docs/complementary-features-full-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;complementary-features-full-sdk&quot;>Complementary Features</a>. You can also access other functions available on the Yuno Web SDK:</p>
+<ul>
+<li><a href=&quot;/docs/sdk-customizations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;sdk-customizations&quot;>SDK Customizations</a>: Change the SDK appearance to match your brand.</li>
+<li><a href=&quot;/docs/payment-status&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;payment-status&quot;>Payment Status</a>: Update the user about the payment process.</li>
+<li><a href=&quot;/docs/3ds-setup-sdk&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;3ds-setup-sdk&quot;>3DS Setup SDK</a>: Integrate 3DS into your payment flow.</li>
+</ul>" style="margin-left:31px" class="rm-Markdown markdown-body rm-Markdown markdown-body ng-non-bindable"
+      data-testid="RDMD">
+      <p>Below, we outline the step-by-step process to enable the full Web SDK functionalities in your system:</p>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-1-include-the-library-in-your-project"></div>
+        <div class="heading-text">
+          <div id="section-step-1-include-the-library-in-your-project" class="heading-anchor_backwardsCompatibility">
+          </div>Step 1: Include the library in your project
+        </div><a aria-label="Skip link to Step 1: Include the library in your project"
+          class="heading-anchor-icon fa fa-anchor" href="#step-1-include-the-library-in-your-project"></a>
+      </h2>
+      <p>Ensure the Yuno SDK file is included in your webpage before closing the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">&lt;body&gt;</span></code> tag. Refer to
+        the example below:</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">HTML</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-html theme-light" data-lang="html" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-tag cm-bracket">&lt;</span><span class="cm-tag">script</span> <span class="cm-attribute">src</span>=<span class="cm-string">"https://sdk-web.y.uno/v1/static/js/main.min.js"</span><span class="cm-tag cm-bracket">&gt;</span><span class="cm-tag cm-bracket">&lt;/</span><span class="cm-tag">script</span><span class="cm-tag cm-bracket">&gt;</span>
+</div></code></pre>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer ">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Typescript library</h3>
+            <div class="contentContainer">
+              <p>
+                If you are using Typescript, Yuno provides a <a
+                  href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see
+                all available methods available in the Yuno Web SDK.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-2-initialize-sdk-with-the-public-key"></div>
+        <div class="heading-text">
+          <div id="section-step-2-initialize-sdk-with-the-public-key" class="heading-anchor_backwardsCompatibility">
+          </div>Step 2: Initialize SDK with the public key
+        </div><a aria-label="Skip link to Step 2: Initialize SDK with the public key"
+          class="heading-anchor-icon fa fa-anchor" href="#step-2-initialize-sdk-with-the-public-key"></a>
+      </h2>
+      <p>In your JavaScript application, create an instance of the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">Yuno</span></code> class by providing a
+        valid <strong>PUBLIC_API_KEY</strong>. Check the <a target="_self"
+          href="/reference/get-your-api-credentials">Get your API credentials</a> guide.</p>
+      <p>Like the example below, use the initialized class that is attributed to the <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno</span></code>constant.</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-keyword">const</span> <span class="cm-def">yuno</span> <span class="cm-operator">=</span> <span class="cm-variable">Yuno</span>.<span class="cm-property">initialize</span>(<span class="cm-variable">PUBLIC_API_KEY</span>)
+</div></code></pre>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-3-start-the-checkout-process"></div>
+        <div class="heading-text">
+          <div id="section-step-3-start-the-checkout-process" class="heading-anchor_backwardsCompatibility"></div>Step
+          3: Start the checkout process
+        </div><a aria-label="Skip link to Step 3: Start the checkout process" class="heading-anchor-icon fa fa-anchor"
+          href="#step-3-start-the-checkout-process"></a>
+      </h2>
+      <p>To start the checkout, you'll use the function <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.startCheckout</span></code>,
+        providing the necessary parameters.</p>
+      <p>The following table lists all required parameters and their descriptions. For optional parameters, go to <a
+          target="_self" href="/docs/full-checkout-sdk#complementary-features">Complementary Features</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      <div class="rdmd-table">
+        <div class="rdmd-table-inner">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align:left">Parameter</th>
+                <th style="text-align:left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">checkoutSession</span></code>
+                </td>
+                <td style="text-align:left">Refers to the current payment's <a target="_self"
+                    href="/reference/create-checkout-session">checkout session</a>.<br><button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">Example: '438413b7-4921-41e4-b8f3-28a5a0141638'</span></code>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">countryCode</span></code></td>
+                <td style="text-align:left">This parameter determines the country for which the payment process is being
+                  configured. The complete list of supported countries and their country code is available on the <a
+                    target="_self" href="/docs/country-coverage-yuno-sdk">Country coverage</a> page.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">language</span></code></td>
+                <td style="text-align:left">Defines the language to be used in the payment forms. You can set it to one
+                  of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id
+                  (Indonesian), ms (Malay), or th (Thai).</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">onLoading</span></code></td>
+                <td style="text-align:left">Required to receive notifications about server calls or loading events
+                  during the payment process. </td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">showLoading</span></code></td>
+                <td style="text-align:left">Control the visibility of the Yuno loading/spinner page during the payment
+                  process. By default, it's <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code>.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">issuersFormEnable</span></code>
+                </td>
+                <td style="text-align:left">Enables the issuer's form. By default, it's <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code>.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">showPaymentStatus</span></code>
+                </td>
+                <td style="text-align:left">Shows the Yuno Payment Status page. You can use this option when continuing
+                  a payment as well. By default, it's <button aria-label="Copy Code"
+                    class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code>.</td>
+              </tr>
+              <tr>
+                <td style="text-align:left"><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">card.isCreditCardProcessingOnly</span></code>
+                </td>
+                <td style="text-align:left">Enables you to ensure that all card transactions are processed as credit
+                  only. This option is helpful in markets where cards can act as both credit and debit.<br>
+                  To enable, set the <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">isCreditCardProcessingOnly</span></code>
+                  to <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+                    class="rdmd-code lang- theme-light" data-lang="" name=""
+                    tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">true</span></code> to ensure
+                  that all card transactions are processed as credit.<br>
+                  This parameter is not required.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yuno</span>.<span class="cm-property">startCheckout</span>({
+  <span class="cm-property">checkoutSession</span>: <span class="cm-string">'438413b7-4921-41e4-b8f3-28a5a0141638'</span>,
+  <span class="cm-comment">/**</span>
+<span class="cm-comment">   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk</span>
+<span class="cm-comment">  */</span>
+  <span class="cm-property">country_code</span>: <span class="cm-string">"FR"</span>,
+  <span class="cm-property">language</span>: <span class="cm-string">'fr'</span>,
+  <span class="cm-property">showLoading</span>: <span class="cm-atom">true</span>,
+  <span class="cm-property">issuersFormEnable</span>: <span class="cm-atom">true</span>,
+  <span class="cm-property">showPaymentStatus</span>: <span class="cm-atom">true</span>,
+	<span class="cm-comment">/**</span>
+<span class="cm-comment">   * Set isCreditCardProcessingOnly as true to process all card transactions are credit</span>
+<span class="cm-comment">   * isCreditCardProcessingOnly: true | false | undefined</span>
+<span class="cm-comment">  */</span>
+  <span class="cm-property">card</span>: {
+    <span class="cm-property">isCreditCardProcessingOnly</span>: <span class="cm-atom">true</span>,
+  }
+  <span class="cm-variable">onLoading</span>: (<span class="cm-variable">args</span>) <span class="cm-operator">=&gt;</span> {
+    <span class="cm-variable">console</span>.<span class="cm-property">log</span>(<span class="cm-variable">args</span>);
+  }
+  <span class="cm-keyword">async</span> <span class="cm-variable">yunoCreatePayment</span>(<span class="cm-variable">oneTimeToken</span>) {
+  	<span class="cm-comment">/**</span>
+<span class="cm-comment">    * The createPayment function calls the backend to create a payment in Yuno.</span>
+<span class="cm-comment">    * It uses the following endpoint https://docs.y.uno/reference/create-payment</span>
+<span class="cm-comment">  	*/</span>
+    <span class="cm-keyword">await</span> <span class="cm-variable">createPayment</span>({ <span class="cm-property">oneTimeToken</span>, <span class="cm-property">checkoutSession</span> })
+    <span class="cm-variable">yuno</span>.<span class="cm-property">continuePayment</span>({ <span class="cm-property">showPaymentStatus</span>: <span class="cm-atom">true</span> })
+  },
+})
+</div></code></pre>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer ">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Rendering mode</h3>
+            <div class="contentContainer">
+              <p>
+                By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render.
+                For additional information, access the <a
+                  href="/docs/complementary-features-full-sdk#mode-of-form-rendering">Render mode</a> under the
+                complementary complementary features page.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-4-mount-the-sdk"></div>
+        <div class="heading-text">
+          <div id="section-step-4-mount-the-sdk" class="heading-anchor_backwardsCompatibility"></div>Step 4: Mount the
+          SDK
+        </div><a aria-label="Skip link to Step 4: Mount the SDK" class="heading-anchor-icon fa fa-anchor"
+          href="#step-4-mount-the-sdk"></a>
+      </h2>
+      <p>Display the payment methods by using the function <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.mountCheckout()</span></code> by
+        selecting an HTML element and using a valid CSS selector (<button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">#</span></code>, <button
+          aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+          data-lang="" name="" tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">.</span></code>,
+        <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light"
+          data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">[data-*]</span></code>)</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-comment">/**</span>
+<span class="cm-comment"> * Mount checkout in browser DOM</span>
+<span class="cm-comment"> */</span>
+<span class="cm-variable">yuno</span>.<span class="cm-property">mountCheckout</span>()
+</div></code></pre>
+        </div>
+      </div>
+      <p>If you want to set a default payment method, use the following code to mount it:</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-comment">/**</span>
+<span class="cm-comment"> * Mount checkout in browser DOM with a payment method selected by default</span>
+<span class="cm-comment"> * @optional</span>
+<span class="cm-comment"> */</span>
+<span class="cm-variable">yuno</span>.<span class="cm-property">mountCheckout</span>({
+  <span class="cm-comment">/**</span>
+<span class="cm-comment">   * Optional, only needed if you would like this method type selected by default</span>
+<span class="cm-comment">   * Can be one of 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | CARD</span>
+<span class="cm-comment">   */</span>
+  <span class="cm-property">paymentMethodType</span>: <span class="cm-variable">PAYMENT_METHOD_TYPE</span>,
+  <span class="cm-comment">/**</span>
+<span class="cm-comment">   * Optional</span>
+<span class="cm-comment">   * Vaulted token related to payment method type</span>
+<span class="cm-comment">   */</span>
+  <span class="cm-property">vaultedToken</span>: <span class="cm-variable">VAULTED_TOKEN</span>,
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-5-initiate-the-payment-process"></div>
+        <div class="heading-text">
+          <div id="section-step-5-initiate-the-payment-process" class="heading-anchor_backwardsCompatibility"></div>Step
+          5: Initiate the payment process
+        </div><a aria-label="Skip link to Step 5: Initiate the payment process" class="heading-anchor-icon fa fa-anchor"
+          href="#step-5-initiate-the-payment-process"></a>
+      </h2>
+      <p>After the user has selected a payment method remember to call <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.startPayment()</span></code> to
+        initiate the payment flow. Below you will find an example where <button aria-label="Copy Code"
+          class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.startPayment()</span></code> is
+        called when the user clicks on <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+          class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">button-pay</span></code>:</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-keyword">const</span> <span class="cm-def">PayButton</span> <span class="cm-operator">=</span> <span class="cm-variable">document</span>.<span class="cm-property">querySelector</span>(<span class="cm-string">'#button-pay'</span>)
+
+<span class="cm-variable">PayButton</span>.<span class="cm-property">addEventListener</span>(<span class="cm-string">'click'</span>, () <span class="cm-operator">=&gt;</span> {
+  <span class="cm-variable">yuno</span>.<span class="cm-property">startPayment</span>()
+})
+</div></code></pre>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-6-get-the-ott-one-time-token"></div>
+        <div class="heading-text">
+          <div id="section-step-6-get-the-ott-one-time-token" class="heading-anchor_backwardsCompatibility"></div>Step
+          6: Get the OTT (One Time Token)
+        </div><a aria-label="Skip link to Step 6: Get the OTT (One Time Token)" class="heading-anchor-icon fa fa-anchor"
+          href="#step-6-get-the-ott-one-time-token"></a>
+      </h2>
+      <p>Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the OTT. The
+        configuration function <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code
+          class="rdmd-code lang- theme-light" data-lang="" name=""
+          tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">yuno.CreatePayment(oneTimeToken)</span></code>
+        is then triggered with the OTT (One Time Token).</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"> <span class="cm-variable">yunoCreatePayment</span>(<span class="cm-variable">oneTimeToken</span>)
+</div></code></pre>
+        </div>
+      </div>
+      <p>You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such
+        as installments or document type/number.</p>
+      <div class="CodeTabs CodeTabs_initial theme-light">
+        <div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab"
+            type="button">JavaScript</button></div>
+        <div class="CodeTabs-inner" role="tabpanel">
+          <pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-javascript theme-light" data-lang="javascript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter"><span class="cm-variable">yunoCreatePayment</span>(<span class="cm-variable">oneTimeToken</span>, <span class="cm-variable">tokenWithInformation</span>)
+</div></code></pre>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer alert">
+          <div class="verticalLineAlert"></div>
+          <div>
+            <h3>Important</h3>
+            <div class="contentContainer">
+              <p>
+                The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however,
+                the merchant can use their own loader and must make the corresponding configurations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="step-7-create-the-payment"></div>
+        <div class="heading-text">
+          <div id="section-step-7-create-the-payment" class="heading-anchor_backwardsCompatibility"></div>Step 7: Create
+          the Payment
+        </div><a aria-label="Skip link to Step 7: Create the Payment" class="heading-anchor-icon fa fa-anchor"
+          href="#step-7-create-the-payment"></a>
+      </h2>
+      <p>Once you have completed the steps described before, you can create a payment. The back-to-back payment creation
+        must be carried out using the <a target="_self" href="/reference/create-payment">Create Payment endpoint</a>.
+        The merchant should call their backend to create the payment within Yuno, using the OTT (One Time Token) and the
+        checkout session.</p>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Complete the integration</h3>
+            <div class="contentContainer">
+              <p>
+                After Step 7, you can complete the end-to-end integration by accessing <a
+                  href="https://docs.y.uno/docs/full-sdk-workflow">Step by Step integration of the Full SDK</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Continue method</h3>
+            <div class="contentContainer">
+              <p>
+                Yuno recommends you integrate the <code>continuePayment</code> method of the SDK after the payment is
+                created because certain asynchronous payment methods require additional action from the customer to
+                complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of
+                the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will
+                display the additional screens to the customers, where they can carry out the necessary actions to
+                complete the payment. Otherwise, this step is not necessary.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rdmd-html">
+        <div class="infoBlockContainer">
+          <div class="verticalLine"></div>
+          <div>
+            <h3>Demo App</h3>
+            <div class="contentContainer">
+              <p>
+                In addition to the code examples provided, you can access the <a href"="" docs="" demo-app"="">Demo
+                  App</a> for a complete implementation of Yuno SDKs or go directly to the <a
+                  href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html">HTML</a><a> and </a><a
+                  href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js">JavaScript</a>
+                checkout demos available on GitHub.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <h2 class="heading heading-2 header-scroll" align="">
+        <div class="heading-anchor anchor waypoint" id="whats-next"></div>
+        <div class="heading-text">
+          <div id="section-whats-next" class="heading-anchor_backwardsCompatibility"></div>What's next?
+        </div><a aria-label="Skip link to What's next?" class="heading-anchor-icon fa fa-anchor" href="#whats-next"></a>
+      </h2>
+      <p>Learn about the additional configurations from the Full SDK accessing <a target="_self"
+          href="/docs/complementary-features-full-sdk">Complementary Features</a>. You can also access other functions
+        available on the Yuno Web SDK:</p>
+      <ul>
+        <li><a target="_self" href="/docs/sdk-customizations">SDK Customizations</a>: Change the SDK appearance to match
+          your brand.</li>
+        <li><a target="_self" href="/docs/payment-status">Payment Status</a>: Update the user about the payment process.
+        </li>
+        <li><a target="_self" href="/docs/3ds-setup-sdk">3DS Setup SDK</a>: Integrate 3DS into your payment flow.</li>
+      </ul>
+    </div>
+  </div>
+
+
+  </div>
+</body>
+`}</HTMLBlock>
