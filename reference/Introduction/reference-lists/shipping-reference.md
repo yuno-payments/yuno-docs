@@ -14,33 +14,33 @@ On this page, you will find shipping information you may need when using Yuno AP
 
 ## Type
 
-| Type           |
-| :------------- |
-| CUSTOM         |
-| MILITARY       |
-| ELECTRONIC     |
-| EXPRESS        |
-| STANDARD       |
-| SCHEDULED      |
-| ECONOMY        |
-| PRIORITY       |
-| SAME_DAY       |
-| NEXT_DAY       |
-| THIRD_DAY      |
-| STORE_PICK_UP  |
-| LOCKER_PICK_UP |
-| OTHER          |
+| Type             |
+| :--------------- |
+| CUSTOM           |
+| MILITARY         |
+| ELECTRONIC       |
+| EXPRESS          |
+| STANDARD         |
+| SCHEDULED        |
+| ECONOMY          |
+| PRIORITY         |
+| SAME\_DAY        |
+| NEXT\_DAY        |
+| THIRD\_DAY       |
+| STORE\_PICK\_UP  |
+| LOCKER\_PICK\_UP |
+| OTHER            |
 
 ## Carrier list
 
-| Carrier             |
-| :------------------ |
-| UPS                 |
-| USPS                |
-| FEDEX               |
-| DHL                 |
-| PUROLATOR           |
-| GREYHOUND           |
-| AR_CORREO_ARGENTINO |
-| AR_OCA              |
-| OTHER               |
+| Carrier               |
+| :-------------------- |
+| UPS                   |
+| USPS                  |
+| FEDEX                 |
+| DHL                   |
+| PUROLATOR             |
+| GREYHOUND             |
+| AR\_CORREO\_ARGENTINO |
+| AR\_OCA               |
+| OTHER                 |
