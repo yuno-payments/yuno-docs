@@ -18,33 +18,19 @@ Yuno gives customers the possibility to enroll a payment method to use it for fu
 
 ## Workflow
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/bd36fb7-enroll_workflow1.png",
-        null,
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/bd36fb7-enroll_workflow1.png" />
 
 ## Payment method status
 
-| Status              | Transaction Type | Description                                             |
-| :------------------ | :--------------- | :------------------------------------------------------ |
-| CREATED             | Enrollment       | Initial state at the time of creating a payment method. |
-| EXPIRED             | Enrollment       | The payment method has been expired.                    |
-| REJECTED            | Enrollment       | Yuno has rejected the payment method enrollment.        |
-| READY_TO_ENROLL     | Enrollment       | The payment method is available for enrollment.         |
-| DECLINED            | Enrollment       | The payment method has been declined.                   |
-| CANCELED            | Enrollment       | The payment method has been canceled.                   |
-| ENROLL_IN_PROCESS   | Enrollment       | The payment method enrollment is being processed.       |
-| ENROLLED            | Enrollment       | The payment method enrollment has been successful.      |
-| UNENROLL_IN_PROCESS | Enrollment       | The payment method unenrollment is being processed.     |
-| UNENROLLED          | Enrollment       | The payment method has been unenrolled.                 |
+| Status                | Transaction Type | Description                                             |
+| :-------------------- | :--------------- | :------------------------------------------------------ |
+| CREATED               | Enrollment       | Initial state at the time of creating a payment method. |
+| EXPIRED               | Enrollment       | The payment method has been expired.                    |
+| REJECTED              | Enrollment       | Yuno has rejected the payment method enrollment.        |
+| READY\_TO\_ENROLL     | Enrollment       | The payment method is available for enrollment.         |
+| DECLINED              | Enrollment       | The payment method has been declined.                   |
+| CANCELED              | Enrollment       | The payment method has been canceled.                   |
+| ENROLL\_IN\_PROCESS   | Enrollment       | The payment method enrollment is being processed.       |
+| ENROLLED              | Enrollment       | The payment method enrollment has been successful.      |
+| UNENROLL\_IN\_PROCESS | Enrollment       | The payment method unenrollment is being processed.     |
+| UNENROLLED            | Enrollment       | The payment method has been unenrolled.                 |
