@@ -15,19 +15,37 @@ next:
 ---
 This request creates a payment after you created a checkout session.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <h3>Important</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tThere are certain objects that are not mandatory when creating a \"Payment\". However, if you provide this information, the user’s payment experience will be enhanced. Be aware of the mandatory fields if you wish to provide this information.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <h3>Important</h3>
+      <div class="contentContainer">
+        <p>
+				There are certain objects that are not mandatory when creating a "Payment". However, if you provide this information, the user’s payment experience will be enhanced. Be aware of the mandatory fields if you wish to provide this information.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>3DS Payments</h3>\n      <div class=\"contentContainer\">\n        <p>\n          To understand how 3D Secure payments work, check the <a onclick=\"window.location='3d-secure'\">3D Secure</a> page or the <a onclick=\"window.location='direct-workflow'\">Direct Workflow</a> guide to learn how to create payments using 3DS on Yuno.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>3DS Payments</h3>
+      <div class="contentContainer">
+        <p>
+          To understand how 3D Secure payments work, check the <a onclick="window.location='3d-secure'">3D Secure</a> page or the <a onclick="window.location='direct-workflow'">Direct Workflow</a> guide to learn how to create payments using 3DS on Yuno.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 If you want to process payments in a Single Step (Authorization and Capture simultaneously), you need to send the `payment_method.detail.card.capture` attribute as `true`, so the payment is captured automatically.
 
@@ -40,8 +58,19 @@ On the other hand, if you wish to process the payment in Two Steps (First Author
 
 Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](ref:authentication#idempotency) page for more information.
 
-[block:html]
-{
-  "html": "<style>\n  .rm-Playground { \n    padding-bottom: 20px; \n    overflow: scroll; \n  }\n\n  .hub-footer { \n    position: static; \n  }\n\n  .link_stored_credential {\n    color: rgb(81, 60, 225) !important;\n  }\n</style>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .rm-Playground { 
+    padding-bottom: 20px; 
+    overflow: scroll; 
+  }
+
+  .hub-footer { 
+    position: static; 
+  }
+
+  .link_stored_credential {
+    color: rgb(81, 60, 225) !important;
+  }
+</style>
+`}</HTMLBlock>
