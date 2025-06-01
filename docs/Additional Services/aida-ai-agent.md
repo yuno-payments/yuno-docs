@@ -18,9 +18,9 @@ To use **Aida**, simply include “Aida” in your first message and follow up w
 
 Aida is available across multiple channels:
 
-- Slack  
-- Email  
-- Yuno dashboard
+* Slack  
+* Email  
+* Yuno dashboard
 
 ***
 
@@ -32,16 +32,16 @@ Use Aida to look up and retrieve complete payment details. This tool is especial
 
 You can search by any of these IDs:
 
-- `payment_code`  
-- `transaction_code`  
-- `order_id`  
-- `trace_id`  
+* `payment_code`  
+* `transaction_code`  
+* `order_id`  
+* `trace_id`  
 
 ### How to search
 
 To search, send an ID and mention "Aida".
 
-> “Aida, give the information for transaction_code: 12345”
+> “Aida, give the information for transaction\_code: 12345”
 
 ### Response
 
@@ -187,11 +187,11 @@ Aida makes it easy to monitor and validate webhook activity by showing whether w
 
 Choose the appropriate search criteria for your query. The options include:
 
-- `tx_code`  
-- `payment_code`  
-- `order_id`  
-- `trace_id`  
-- `unknown`  
+* `tx_code`  
+* `payment_code`  
+* `order_id`  
+* `trace_id`  
+* `unknown`  
 
 ### 2. Provide the search value
 
@@ -203,9 +203,9 @@ Decide whether to perform your query in the **Sandbox** (testing) or **PROD** (l
 
 **Example Message:**
 
-> “Hi Aida, I need to verify webhook information.  
-> **Search criteria:** tx_code  
-> **Search value:** 123456789  
+> “Hi Aida, I need to verify webhook information.\
+> **Search criteria:** tx\_code\
+> **Search value:** 123456789\
 > **Environment:** PROD”
 
 If the information is incomplete, Aida will ask follow-up questions, to be able to assist the user.
