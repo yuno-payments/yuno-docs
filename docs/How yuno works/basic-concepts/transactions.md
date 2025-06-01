@@ -26,20 +26,20 @@ On Yuno, transactions are divided into **primary** and **secondary** transaction
 
 Primary transactions are related to an initiating transaction and can be one of three types:
 
-- **Purchase**: A standard sale transaction.
-- **Authorize**: A transaction used to authorize a payment amount to be captured at a later time.
-- **Verify**: A transaction to verify if the customer is using a valid payment method.
+* **Purchase**: A standard sale transaction.
+* **Authorize**: A transaction used to authorize a payment amount to be captured at a later time.
+* **Verify**: A transaction to verify if the customer is using a valid payment method.
 
 ### Secondary transactions
 
 Secondary transactions refer to additional transactions that affect the final outcome of the payment and primary transaction. The secondary transactions can be:
 
-- **Refund**: A refund made to the initial transaction, which can be full or partial.
-- **Cancel**: A cancellation of an initial authorization.
-- **Capture**: A capture of funds from an initial authorization transaction, which can be full or partial.
-- **Chargeback**: A dispute initiated by the customer regarding the initial transaction.
-- **3DS**: A 3D Secure (3DS) verification of an initial transaction.
-- **Fraud screening**: A fraud screening verification of an initial transaction. These are represented as `FRAUD_SCREENING` in your payments response.
+* **Refund**: A refund made to the initial transaction, which can be full or partial.
+* **Cancel**: A cancellation of an initial authorization.
+* **Capture**: A capture of funds from an initial authorization transaction, which can be full or partial.
+* **Chargeback**: A dispute initiated by the customer regarding the initial transaction.
+* **3DS**: A 3D Secure (3DS) verification of an initial transaction.
+* **Fraud screening**: A fraud screening verification of an initial transaction. These are represented as `FRAUD_SCREENING` in your payments response.
 
 All possible statuses for each transaction type are presented below.
 
