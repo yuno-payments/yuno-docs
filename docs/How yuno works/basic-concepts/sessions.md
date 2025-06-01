@@ -20,12 +20,20 @@ With Yuno, you can create sessions to initiate payments or register payment meth
 
 Use customer sessions to enroll and store a customer's payment methods. Create a new customer session each time you register a payment method for a specific customer. You'll need the `customer_id` (a unique customer identifier) generated when creating the customer in Yuno. A customer session provides access to all available payment methods for enrollment, which you can offer to customers.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Available payment methods</h3>\n      <div class=\"contentContainer\">\n        <p>When creating both sessions, customer and checkout, the Yuno system will provide you with a list of all enable the payment methods in your Yuno dashboard within the Connections and Checkout builder section.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Available payment methods</h3>
+      <div class="contentContainer">
+        <p>When creating both sessions, customer and checkout, the Yuno system will provide you with a list of all enable the payment methods in your Yuno dashboard within the Connections and Checkout builder section.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 For more detailed information on how to use the Create customer session endpoint, see [API reference](ref:the-customer-session-object).
 
@@ -33,11 +41,19 @@ For more detailed information on how to use the Create customer session endpoint
 
 Use checkout sessions to create payments or initiate the payment flow. Each time a customer makes a payment, you must create a new session. You'll need the `customer_id` (a unique customer identifier) generated when creating the customer in Yuno. A checkout session provides access to all available payment methods for that customer, whether previously enrolled or not.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Create a payment without a checkout session</h3>\n      <div class=\"contentContainer\">\n        <p>By utilizing Direct integration, which doesn't require Yuno's SDK, you can create a payment without the need for a checkout session.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Create a payment without a checkout session</h3>
+      <div class="contentContainer">
+        <p>By utilizing Direct integration, which doesn't require Yuno's SDK, you can create a payment without the need for a checkout session.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 For more detailed information on how to use the **Create checkout session** endpoint, refer to the [API reference](ref:the-checkout-session-object).
