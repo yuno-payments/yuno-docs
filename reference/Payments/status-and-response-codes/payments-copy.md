@@ -18,29 +18,304 @@ Payments have all the essential information about the order, including customer 
 
 In the following workflow, you can find the different payment statuses and how they can be updated. 
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/b806c08-payments1.png",
-        null,
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
+<Image align="center" src="https://files.readme.io/b806c08-payments1.png" />
 
-For every implementation, we recommend taking the payment <code>status</code> and <code>sub_status</code> as the main reference for the payment's state. A payment could have different [transactions](https://docs.y.uno/v2.0/reference/transaction) associated to it, so by focusing on the payment status/sub_status, you can have the latest state regardless of how many transactions were made, giving you a clear input for decision making.
+For every implementation, we recommend taking the payment <code>status</code> and <code>sub\_status</code> as the main reference for the payment's state. A payment could have different [transactions](https://docs.y.uno/v2.0/reference/transaction) associated to it, so by focusing on the payment status/sub\_status, you can have the latest state regardless of how many transactions were made, giving you a clear input for decision making.
 
 ### Payments status
 
 The payments can have the following status and sub status.
 
-[block:html]
-{
-  "html": "<style>\n  .table-div {\n    overflow-x: scroll;\n  }\n \n</style>\n<body>\n  <div class=\"table-div\">\n\n    <table>\n      <thead>\n        <tr>\n          <th>Status</th>\n          <th>Substatus</th>\n          <th>Transaction type</th>\n          <th>Transaction status</th>\n          <th>Description</th>\n        </tr>\n      </thead>\n      <tbody>\n        <!-- <tr> -->\n        <tr>\n          <td class=\"status\" rowspan=\"2\">CREATED</td>\n          <td class=\"substatus\" rowspan=\"2\">CREATED</td>\n          <td></td>\n          <td></td>\n          <td>Initial state at the time of creating a payment.</td>\n        </tr>\n        <tr>\n          <td>Verify</td>\n          <td>Created</td>\n          <td>Initial state at the time of creating a payment.</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td class=\"status\">READY_TO_PAY</td>\n          <td class=\"substatus\">READY_TO_PAY</td>\n          <td></td>\n          <td></td>\n          <td>Initial state at the time of creating a payment.Waiting for customer action</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td class=\"status\" rowspan=\"6\">PENDING</td>\n          <td class=\"substatus\">AUTHORIZED</td>\n          <td>Authorize</td>\n          <td>Succeeded</td>\n          <td>Card authorizations</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\" rowspan=\"2\">IN_PROCESS</td>\n          <td>Purchase</td>\n          <td>Created</td>\n          <td>The client has been redirected to the provider and we are waiting for the completion of the payment.</td>\n        </tr>\n        <tr>\n          <td>Verify</td>\n          <td>Pending</td>\n          <td>Transaction is being verified by </td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">WAITING_ADDITIONAL_STEP</td>\n          <td>Purchase</td>\n          <td>Pending</td>\n          <td>3DS/Second factor</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">PENDING_PROVIDER_CONFIRMATION</td>\n          <td>Purchase</td>\n          <td>Pending</td>\n          <td>Wating for providers payment confirmation.</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">PENDING_FRAUD_REVIEW</td>\n          <td>Fraud</td>\n          <td>Pending</td>\n          <td>Transaction is being analyzed by fraud provider</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td class=\"status\">VERIFIED</td>\n          <td class=\"substatus\">VERIFIED</td>\n          <td>Verify</td>\n          <td>Succeeded</td>\n          <td>Zero amount card authorizations</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td rowspan=\"2\" class=\"status\">EXPIRED</td>\n          <td class=\"substatus\">EXPIRED</td>\n          <td>Purchase</td>\n          <td>Expired</td>\n          <td>The offline payment method reaches its expiration date.</td>\n        </tr>\n        <tr>\n          <td></td>\n          <td>Authorize</td>\n          <td>Expired</td>\n          <td><br>Authorization expires</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td rowspan=\"3\" class=\"status\">REJECTED</td>\n          <td class=\"substatus\" rowspan=\"2\">REJECTED</td>\n          <td>Purchase</td>\n          <td>Rejected</td>\n          <td>Rejected by Yuno</td>\n        </tr>\n        <tr>\n          <td>Verify</td>\n          <td>Rejected</td>\n          <td>Payment verification rejected by Yuno.</td>\n        </tr>\n        <tr>\n          <td></td>\n          <td>Capture</td>\n          <td>Error</td>\n          <td>Capture rejection by Yuno.</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td rowspan=\"4\" class=\"status\">DECLINED</td>\n          <td class=\"substatus\" rowspan=\"2\">DECLINED</td>\n          <td>Purchase</td>\n          <td>Declined</td>\n          <td>Providers rejection</td>\n        </tr>\n        <tr>\n          <td>Verify</td>\n          <td>Declined</td>\n          <td>Verification of provider rejected.</td>\n        </tr>\n        <tr>\n          <td></td>\n          <td>Capture</td>\n          <td>Declined</td>\n          <td>Providers capture rejection</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">FRAUD_DECLINED</td>\n          <td>Fraud screening</td>\n          <td>Declined</td>\n          <td>Declined fraud screening</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td rowspan=\"9\" class=\"status\">SUCCEEDED</td>\n          <td class=\"substatus\">PARTIALLY_APPROVED</td>\n          <td>Purchase</td>\n          <td>Succeeded</td>\n          <td>Partial payment (for split)</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">APPROVED</td>\n          <td>Purchase</td>\n          <td>Succeeded</td>\n          <td>Successful payment</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">CAPTURED</td>\n          <td>Capture</td>\n          <td>Succeeded</td>\n          <td>Successful capture</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">PARTIALLY_CAPTURED</td>\n          <td>Capture</td>\n          <td>Succeeded</td>\n          <td>Successful partial capture</td>\n        </tr>\n        <tr>\n          <td></td>\n          <td>Refund</td>\n          <td>Error/Declined</td>\n          <td>Remains approved due to error in refund / cancellation</td>\n        </tr>\n        <tr>\n          <td></td>\n          <td>Chargeback</td>\n          <td>Error/Declined</td>\n          <td>Remains approved due to rejection in chargeback</td>\n        </tr>\n        <tr>\n          <td></td>\n          <td>Chargeback</td>\n          <td>Won</td>\n          <td>Review Won</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">PARTIALLY_REFUNDED</td>\n          <td>Refund</td>\n          <td>Succeeded</td>\n          <td>Successful partial refund</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">PARTIALLY_CHARGEBACKED</td>\n          <td>Chargeback</td>\n          <td>Succeeded</td>\n          <td>Successful partial chargeback</td>\n        </tr>\n        <tr>\n          <td rowspan=\"2\" class=\"status\">REFUNDED</td>\n          <td class=\"substatus\">PENDING_PROVIDER_CONFIRMATION</td>\n          <td>Refund</td>\n          <td>Pending</td>\n          <td>Refund Pending</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">REFUNDED</td>\n          <td>Refund</td>\n          <td>Succeeded</td>\n          <td>Successful refund</td>\n        </tr>\n        <tr>\n          <td rowspan=\"2\" class=\"status\">CANCELED</td>\n          <td class=\"substatus\">PENDING_PROVIDER_CONFIRMATION</td>\n          <td>Cancel</td>\n          <td>Pending</td>\n          <td>Cancel Pending</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\" class=\"status\">CANCELED</td>\n          <td>Cancel</td>\n          <td>Succeeded</td>\n          <td>Successful cancelation</td>\n        </tr>\n        <tr>\n          <td rowspan=\"2\" class=\"status\">IN_DISPUTE</td>\n          <td class=\"substatus\">RECEIVED</td>\n          <td>Chargeback</td>\n          <td>Created</td>\n          <td>Chargeback or Inquiry received. Decision or documentation must be provided</td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">PENDING_REVIEW</td>\n          <td>Chargeback</td>\n          <td>Pending</td>\n          <td>In_review</td>\n        </tr>\n        <tr>\n          <td rowspan=\"1\" class=\"status\">CHARGEBACK</td>\n          <td class=\"substatus\">LOST</td>\n          <td>Chargeback</td>\n          <td>Lost</td>\n          <td>Expired/Closed/Review_lost</td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td rowspan=\"5\" class=\"status\">ERROR</td>\n          <td class=\"substatus\" rowspan=\"2\">ERROR</td>\n          <td></td>\n          <td>Example: timeout.</td>\n          <td></td>\n        </tr>\n        <tr>\n          <td>Verify</td>\n          <td>Error</td>\n          <td></td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">TIMEOUT</td>\n          <td></td>\n          <td></td>\n          <td></td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">PENDING_REVERSE</td>\n          <td></td>\n          <td></td>\n          <td></td>\n        </tr>\n        <tr>\n          <td class=\"substatus\">REVERSED_BY_TIMEOUT</td>\n          <td></td>\n          <td></td>\n          <td></td>\n        </tr>\n        <!-- <tr> -->\n        <tr>\n          <td rowspan=\"1\" class=\"status\">FRAUD</td>\n          <td class=\"substatus\">FRAUD_VERIFIED</td>\n          <td>Fraud</td>\n          <td>Succeeded</td>\n          <td>Transaction verified by fraud provider during stand alone fraud verification</td>\n        </tr>\n      </tbody>\n    </table>\n\n  </div>\n\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .table-div {
+    overflow-x: scroll;
+  }
+ 
+</style>
+<body>
+  <div class="table-div">
+
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Substatus</th>
+          <th>Transaction type</th>
+          <th>Transaction status</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- <tr> -->
+        <tr>
+          <td class="status" rowspan="2">CREATED</td>
+          <td class="substatus" rowspan="2">CREATED</td>
+          <td></td>
+          <td></td>
+          <td>Initial state at the time of creating a payment.</td>
+        </tr>
+        <tr>
+          <td>Verify</td>
+          <td>Created</td>
+          <td>Initial state at the time of creating a payment.</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td class="status">READY_TO_PAY</td>
+          <td class="substatus">READY_TO_PAY</td>
+          <td></td>
+          <td></td>
+          <td>Initial state at the time of creating a payment.Waiting for customer action</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td class="status" rowspan="6">PENDING</td>
+          <td class="substatus">AUTHORIZED</td>
+          <td>Authorize</td>
+          <td>Succeeded</td>
+          <td>Card authorizations</td>
+        </tr>
+        <tr>
+          <td class="substatus" rowspan="2">IN_PROCESS</td>
+          <td>Purchase</td>
+          <td>Created</td>
+          <td>The client has been redirected to the provider and we are waiting for the completion of the payment.</td>
+        </tr>
+        <tr>
+          <td>Verify</td>
+          <td>Pending</td>
+          <td>Transaction is being verified by </td>
+        </tr>
+        <tr>
+          <td class="substatus">WAITING_ADDITIONAL_STEP</td>
+          <td>Purchase</td>
+          <td>Pending</td>
+          <td>3DS/Second factor</td>
+        </tr>
+        <tr>
+          <td class="substatus">PENDING_PROVIDER_CONFIRMATION</td>
+          <td>Purchase</td>
+          <td>Pending</td>
+          <td>Wating for providers payment confirmation.</td>
+        </tr>
+        <tr>
+          <td class="substatus">PENDING_FRAUD_REVIEW</td>
+          <td>Fraud</td>
+          <td>Pending</td>
+          <td>Transaction is being analyzed by fraud provider</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td class="status">VERIFIED</td>
+          <td class="substatus">VERIFIED</td>
+          <td>Verify</td>
+          <td>Succeeded</td>
+          <td>Zero amount card authorizations</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td rowspan="2" class="status">EXPIRED</td>
+          <td class="substatus">EXPIRED</td>
+          <td>Purchase</td>
+          <td>Expired</td>
+          <td>The offline payment method reaches its expiration date.</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Authorize</td>
+          <td>Expired</td>
+          <td><br>Authorization expires</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td rowspan="3" class="status">REJECTED</td>
+          <td class="substatus" rowspan="2">REJECTED</td>
+          <td>Purchase</td>
+          <td>Rejected</td>
+          <td>Rejected by Yuno</td>
+        </tr>
+        <tr>
+          <td>Verify</td>
+          <td>Rejected</td>
+          <td>Payment verification rejected by Yuno.</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Capture</td>
+          <td>Error</td>
+          <td>Capture rejection by Yuno.</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td rowspan="4" class="status">DECLINED</td>
+          <td class="substatus" rowspan="2">DECLINED</td>
+          <td>Purchase</td>
+          <td>Declined</td>
+          <td>Providers rejection</td>
+        </tr>
+        <tr>
+          <td>Verify</td>
+          <td>Declined</td>
+          <td>Verification of provider rejected.</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Capture</td>
+          <td>Declined</td>
+          <td>Providers capture rejection</td>
+        </tr>
+        <tr>
+          <td class="substatus">FRAUD_DECLINED</td>
+          <td>Fraud screening</td>
+          <td>Declined</td>
+          <td>Declined fraud screening</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td rowspan="9" class="status">SUCCEEDED</td>
+          <td class="substatus">PARTIALLY_APPROVED</td>
+          <td>Purchase</td>
+          <td>Succeeded</td>
+          <td>Partial payment (for split)</td>
+        </tr>
+        <tr>
+          <td class="substatus">APPROVED</td>
+          <td>Purchase</td>
+          <td>Succeeded</td>
+          <td>Successful payment</td>
+        </tr>
+        <tr>
+          <td class="substatus">CAPTURED</td>
+          <td>Capture</td>
+          <td>Succeeded</td>
+          <td>Successful capture</td>
+        </tr>
+        <tr>
+          <td class="substatus">PARTIALLY_CAPTURED</td>
+          <td>Capture</td>
+          <td>Succeeded</td>
+          <td>Successful partial capture</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Refund</td>
+          <td>Error/Declined</td>
+          <td>Remains approved due to error in refund / cancellation</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Chargeback</td>
+          <td>Error/Declined</td>
+          <td>Remains approved due to rejection in chargeback</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>Chargeback</td>
+          <td>Won</td>
+          <td>Review Won</td>
+        </tr>
+        <tr>
+          <td class="substatus">PARTIALLY_REFUNDED</td>
+          <td>Refund</td>
+          <td>Succeeded</td>
+          <td>Successful partial refund</td>
+        </tr>
+        <tr>
+          <td class="substatus">PARTIALLY_CHARGEBACKED</td>
+          <td>Chargeback</td>
+          <td>Succeeded</td>
+          <td>Successful partial chargeback</td>
+        </tr>
+        <tr>
+          <td rowspan="2" class="status">REFUNDED</td>
+          <td class="substatus">PENDING_PROVIDER_CONFIRMATION</td>
+          <td>Refund</td>
+          <td>Pending</td>
+          <td>Refund Pending</td>
+        </tr>
+        <tr>
+          <td class="substatus">REFUNDED</td>
+          <td>Refund</td>
+          <td>Succeeded</td>
+          <td>Successful refund</td>
+        </tr>
+        <tr>
+          <td rowspan="2" class="status">CANCELED</td>
+          <td class="substatus">PENDING_PROVIDER_CONFIRMATION</td>
+          <td>Cancel</td>
+          <td>Pending</td>
+          <td>Cancel Pending</td>
+        </tr>
+        <tr>
+          <td class="substatus" class="status">CANCELED</td>
+          <td>Cancel</td>
+          <td>Succeeded</td>
+          <td>Successful cancelation</td>
+        </tr>
+        <tr>
+          <td rowspan="2" class="status">IN_DISPUTE</td>
+          <td class="substatus">RECEIVED</td>
+          <td>Chargeback</td>
+          <td>Created</td>
+          <td>Chargeback or Inquiry received. Decision or documentation must be provided</td>
+        </tr>
+        <tr>
+          <td class="substatus">PENDING_REVIEW</td>
+          <td>Chargeback</td>
+          <td>Pending</td>
+          <td>In_review</td>
+        </tr>
+        <tr>
+          <td rowspan="1" class="status">CHARGEBACK</td>
+          <td class="substatus">LOST</td>
+          <td>Chargeback</td>
+          <td>Lost</td>
+          <td>Expired/Closed/Review_lost</td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td rowspan="5" class="status">ERROR</td>
+          <td class="substatus" rowspan="2">ERROR</td>
+          <td></td>
+          <td>Example: timeout.</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Verify</td>
+          <td>Error</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="substatus">TIMEOUT</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="substatus">PENDING_REVERSE</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="substatus">REVERSED_BY_TIMEOUT</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <!-- <tr> -->
+        <tr>
+          <td rowspan="1" class="status">FRAUD</td>
+          <td class="substatus">FRAUD_VERIFIED</td>
+          <td>Fraud</td>
+          <td>Succeeded</td>
+          <td>Transaction verified by fraud provider during stand alone fraud verification</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+</body>
+`}</HTMLBlock>
