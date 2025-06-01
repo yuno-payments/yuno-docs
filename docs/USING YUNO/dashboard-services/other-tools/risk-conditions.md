@@ -12,9 +12,19 @@ next:
 ---
 Yuno's **Risk conditions** empower merchants with advanced fraud prevention tools. This feature allows you to create and manage user lists and custom rules tailored to your business model, offering the flexibility to adapt protection strategies to your specific needs. Using the Risk conditions section reduces unnecessary requests to fraud prevention providers, optimizing resources and enhancing operational efficiency.
 
-<InfoBlock title="Go to the routing section to include your lists and rules in your routes" type="info">
-  Activate the Risk Conditions provider in the Connections section. Once the connection is established, add it to your routes, where you can then select the specific list(s) and/or rule(s) you want to use for each condition set.
-</InfoBlock>
+&#x20; \<div class="infoBlockContainer">
+&#x20;   \<div class="verticalLine">\</div>
+&#x20;   \<div>
+&#x20;     \<h3>\</h3>
+&#x20;     \<div class="contentContainer">
+&#x20;       \<p>
+&#x20;         Activate the Risk Conditions provider in the Connections section. Once the connection is established, add it
+&#x20;         to your routes, where you can then select the specific list(s) and/or rule(s) you want to use for each
+&#x20;         condition set.\</a>.
+&#x20;       \</p>
+&#x20;     \</div>
+&#x20;   \</div>
+&#x20; \</div>
 
 Currently, the Risk conditions section provides three main tabs:
 
