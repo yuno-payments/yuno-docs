@@ -16,11 +16,11 @@ Yuno's Smart Retries employ advanced machine learning techniques to identify the
 
 ### Key advantages
 
-- _Data-driven decision-making_: Utilizes machine learning to establish the most effective retry schedule.
-- _Enhanced revenue retrieval_: Boosts the likelihood of successfully collecting payments.
-- _Decreased subscriber turnover_: Reduces disruptions and involuntary subscriber departures.
-- _Flexible logic_: Customizes retry schedules to maximize success opportunities.
-- _Comprehensive approach_: Complements other revenue recovery strategies.
+* *Data-driven decision-making*: Utilizes machine learning to establish the most effective retry schedule.
+* *Enhanced revenue retrieval*: Boosts the likelihood of successfully collecting payments.
+* *Decreased subscriber turnover*: Reduces disruptions and involuntary subscriber departures.
+* *Flexible logic*: Customizes retry schedules to maximize success opportunities.
+* *Comprehensive approach*: Complements other revenue recovery strategies.
 
 ### Retry schedule
 
@@ -40,7 +40,7 @@ Yuno implements a personalized approach for each unsuccessful payment, informed 
 
 Since every business model varies, we enable merchants to define specific rules to enhance the flexibility of our retry schedule. While you create the subscription object you can use the `retries` structure to make adjustments: 
 
-| Parameter        | Type   | Description                                                                                                                                  | Example |
-| :--------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------- | :------ |
-| retry_on_decline | bool   | If we should retry a payment or not after a first decline. False by default.                                                                 | TRUE    |
-| amount           | number | The number of retries that the subscription plan will have to completion. If not set, or higher than 7, 7 will be defined as default. Max: 7 | 4       |
+| Parameter          | Type   | Description                                                                                                                                  | Example |
+| :----------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------- | :------ |
+| retry\_on\_decline | bool   | If we should retry a payment or not after a first decline. False by default.                                                                 | TRUE    |
+| amount             | number | The number of retries that the subscription plan will have to completion. If not set, or higher than 7, 7 will be defined as default. Max: 7 | 4       |
