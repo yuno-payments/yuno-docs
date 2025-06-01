@@ -22,10 +22,10 @@ Discrepancies are not unusual and many are harmless, but payment time, deposits 
 
 The main goals of reconciliation are:
 
-- Ensure that the merchant will receive all the payments coming from successful transactions processed by Yuno;
-- Compliance with the payment term agreed between the merchants and the acquirers;
-- Control of acquisition processing costs and effective processors vs. agreed between the merchant and the previous intervening actors;
-- Control of transactional integrity and states in the Yuno dashboard; 
+* Ensure that the merchant will receive all the payments coming from successful transactions processed by Yuno;
+* Compliance with the payment term agreed between the merchants and the acquirers;
+* Control of acquisition processing costs and effective processors vs. agreed between the merchant and the previous intervening actors;
+* Control of transactional integrity and states in the Yuno dashboard; 
 
 It's ideal to do it as often as you can (daily), but if that's not possible, you should try to do it weekly or monthly at the very least.
 
@@ -45,24 +45,11 @@ A transaction can be classified according to the reconciliation process as RECON
 
 ### State machine
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/d2ca5f4-report_reconciliation1.png",
-        null,
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
+<Image align="center" src="https://files.readme.io/d2ca5f4-report_reconciliation1.png" />
 
 ### Deliveries
 
 Yuno provides two types of reports related to reconciliation:
 
-- [**Transaction Report**](https://docs.y.uno/reference/reports-fields#transaction-report): Provides reconciliation status and sub-status columns and reconciliation ID for each transaction processed by Yuno;
-- [**Settlement Report**](https://docs.y.uno/reference/reports-fields#settlement-report):  The settlement report contains all the transactions included in each bank transfer executed to the merchant’s account by the acquirer, adding reconciliation information.
+* [**Transaction Report**](https://docs.y.uno/reference/reports-fields#transaction-report): Provides reconciliation status and sub-status columns and reconciliation ID for each transaction processed by Yuno;
+* [**Settlement Report**](https://docs.y.uno/reference/reports-fields#settlement-report):  The settlement report contains all the transactions included in each bank transfer executed to the merchant’s account by the acquirer, adding reconciliation information.
