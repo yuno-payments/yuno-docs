@@ -35,27 +35,13 @@ In the [Yuno Merchant Dashboard](https://dashboard.y.uno/) Developers tab, you c
 
 In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wiki/OAuth) for your webhook reception, Yuno also offers the possibility to define the required parameters in the same dashboard section. You will need to configure the following fields so we can obtain the authorization token that will be sent in the headers of the webhooks. 
 
-- `Authentication_url`: url to use for authentication
-- `Credentials`: Necessary credentials to communicate with the authentication_url.
-  - Client Secret_key
-  - Cliente Client_ID
-- `Grant type`: Type of grant for the authentication. 
+* `Authentication_url`: url to use for authentication
+* `Credentials`: Necessary credentials to communicate with the authentication\_url.
+  * Client Secret\_key
+  * Cliente Client\_ID
+* `Grant type`: Type of grant for the authentication. 
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/3075c93d6bfd9bc1a786206a165768229231928441c12c919717ab38d89df995-Screenshot_2025-02-07_at_10.49.53_AM.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/3075c93d6bfd9bc1a786206a165768229231928441c12c919717ab38d89df995-Screenshot_2025-02-07_at_10.49.53_AM.png" />
 
 ## Receipt confirmation process
 
@@ -75,21 +61,21 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
 
 Depending on the type of event, you will receive a different type of webhook and event. The next table presents the possible event types for enrollments and payments currently available.
 
-| type         | type_event |
-| :----------- | :--------- |
-| enrollment   | enroll     |
-| enrollment   | unenroll   |
-| enrollment   | expiration |
-| payment      | purchase   |
-| payment      | authorize  |
-| payment      | capture    |
-| payment      | refund     |
-| payment      | cancel     |
-| payment      | verify     |
-| payment      | chargeback |
-| payout       | payout     |
-| subscription | create     |
-| subscription | pause      |
-| subscription | resume     |
-| subscription | cancel     |
-| subscription | complete   |
+| type         | type\_event |
+| :----------- | :---------- |
+| enrollment   | enroll      |
+| enrollment   | unenroll    |
+| enrollment   | expiration  |
+| payment      | purchase    |
+| payment      | authorize   |
+| payment      | capture     |
+| payment      | refund      |
+| payment      | cancel      |
+| payment      | verify      |
+| payment      | chargeback  |
+| payout       | payout      |
+| subscription | create      |
+| subscription | pause       |
+| subscription | resume      |
+| subscription | cancel      |
+| subscription | complete    |
