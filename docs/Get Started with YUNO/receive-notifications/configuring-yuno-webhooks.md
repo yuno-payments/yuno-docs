@@ -34,20 +34,7 @@ Once configured, you'll need to define which events you want to list for the ena
 
 You can configure different webhooks using the [Yuno Merchant Dashboard](https://dashboard.y.uno/). At the **Developers** tab, you can choose **Webhooks**. To create a new webhook, you need to name it, define the endpoint and select the trigger event. The image below shows the side panel to add a webhook.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/webhooks/webhooks_configure1.png",
-        null,
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
+<Image align="center" src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/webhooks/webhooks_configure1.png" />
 
 In the [Yuno Merchant Dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button. 
 
