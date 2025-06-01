@@ -31,12 +31,21 @@ With the `three_d_secure_setup_id` in hand, you need to include the Yuno SDK fil
 
 Before starting the payment flow,  you have to request a setup Id (`three_d_secure_setup_id`). For each payment, you need to generate a new `three_d_secure_setup_id`. Use the [3DS Setup](ref:3ds-setup) endpoint to get the `three_d_secure_setup_id`. You need to inform your Yuno `account_id` and the card information used in the payment.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <h3>Availability</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tThis operation is only available for PCI compliance merchants, as you would be handling customers' card data.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <h3>Availability</h3>
+      <div class="contentContainer">
+        <p>
+					This operation is only available for PCI compliance merchants, as you would be handling customers' card data.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 3: Start the data collection
 
@@ -48,12 +57,21 @@ To initiate the data collection necessary for the 3DS payment flow, you will use
 | `publicApiKey`     | Refers to your Yuno's `public-api-key`, available on the [Yuno's Dashboard](https://dashboard.y.uno/). |
 | `accountId`        | Refers to your Yuno's `account-id`, available on the [Yuno's Dashboard](https://dashboard.y.uno/).     |
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <h3>Misconfiguration Risk</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tImproper configuration of the <code>acquirerBin</code>, <code>acquireCountryCode</code>, <code>merchantID</code>, and <code>mcc</code> parameters can lead to issues in the transaction liability shift.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <h3>Misconfiguration Risk</h3>
+      <div class="contentContainer">
+        <p>
+					Improper configuration of the <code>acquirerBin</code>, <code>acquireCountryCode</code>, <code>merchantID</code>, and <code>mcc</code> parameters can lead to issues in the transaction liability shift.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 The next code block presents an example of initialization.
 
