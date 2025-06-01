@@ -12,25 +12,15 @@ next:
 ---
 Yuno's **Risk conditions** empower merchants with advanced fraud prevention tools. This feature allows you to create and manage user lists and custom rules tailored to your business model, offering the flexibility to adapt protection strategies to your specific needs. Using the Risk conditions section reduces unnecessary requests to fraud prevention providers, optimizing resources and enhancing operational efficiency.
 
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Go to the routing section to include your lists and rules in your routes</h3>
-      <div class="contentContainer">
-        <p>
-          Activate the Risk Conditions provider in the Connections section. Once the connection is established, add it to your routes, where you can then select the specific list(s) and/or rule(s) you want to use for each condition set.
-				</p>
-      </div>
-    </div>
-  </div>
-</body>
+<InfoBlock title="Go to the routing section to include your lists and rules in your routes" type="info">
+  Activate the Risk Conditions provider in the Connections section. Once the connection is established, add it to your routes, where you can then select the specific list(s) and/or rule(s) you want to use for each condition set.
+</InfoBlock>
 
 Currently, the Risk conditions section provides three main tabs:
 
 * [Rules](#rules)
-* [Blocklists](#blocklists) 
-* [Allowlists](#allowlists) 
+* [Blocklists](#blocklists)
+* [Allowlists](#allowlists)
 
 ## Rules
 
@@ -155,7 +145,7 @@ From the **Allowlists** tab, click **Create allowlist** to configure these param
 You must configure the **Risk conditions** connection to enable rules and lists. Follow these steps to set it up once you have created your rules and lists:
 
 1. Navigate to **Connections** in the dashboard, search for **Risk conditions**, and click **Connect**.
-2. Follow the simple on-screen instructions to add the Risk condition connection. 
+2. Follow the simple on-screen instructions to add the Risk condition connection.
 3. Access **Routing** in the dashboard, select a route and add **Risk conditions** to it. From here, you can select which rules and lists to use for that payment method.
 4. Publish your route to activate the changes.
 
