@@ -19,8 +19,8 @@ The term **customer** refers to an individual who is part of a merchant's paymen
 
 ## Customer functionalities
 
-- **Registration and management of payment methods**: Customers can register and manage various payment methods, such as credit cards, debit cards, or other alternative methods, enabling a flexible and convenient payment experience.
-- **Payment processing**: Customers can securely and efficiently make payments using the payment methods registered in their account.
-- **Personal information storage**: Yuno allows customers to securely store their personal information associated with payment methods and other payment preferences, facilitating future transactions.
+* **Registration and management of payment methods**: Customers can register and manage various payment methods, such as credit cards, debit cards, or other alternative methods, enabling a flexible and convenient payment experience.
+* **Payment processing**: Customers can securely and efficiently make payments using the payment methods registered in their account.
+* **Personal information storage**: Yuno allows customers to securely store their personal information associated with payment methods and other payment preferences, facilitating future transactions.
 
 For more detailed information on how to use the customer object, refer to the [API reference](ref:the-customer-object).
