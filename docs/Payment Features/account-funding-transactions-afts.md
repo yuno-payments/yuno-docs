@@ -22,21 +22,21 @@ AFTs are a core component of payment orchestration systems, enabling efficient a
 
 An **AFT (Account Funding Transaction)** is a type of transaction designed for:
 
-- **Loading funds** into user accounts or digital wallets.
-- **Transferring funds** between accounts within the same platform. 
-- **Depositing money** into commercial or personal accounts. Remittances included.
+* **Loading funds** into user accounts or digital wallets.
+* **Transferring funds** between accounts within the same platform. 
+* **Depositing money** into commercial or personal accounts. Remittances included.
 
 AFTs leverage traditional payment networks (e.g., Visa, Mastercard, ACH) to process transactions quickly and securely while optimizing costs.
 
 ### Types of AFT Transactions
 
 1. **Funding transactions**:
-   - Transfer funds into an account from a debit/credit card or bank account.
-   - Example: A user loads their digital wallet using their debit card.
+   * Transfer funds into an account from a debit/credit card or bank account.
+   * Example: A user loads their digital wallet using their debit card.
 
 2. **Withdrawal transactions**:
-   - Move funds from a user account back to their bank account or card.
-   - Example: A user transfers money from their digital wallet to their bank account.
+   * Move funds from a user account back to their bank account or card.
+   * Example: A user transfers money from their digital wallet to their bank account.
 
 ***
 
@@ -73,5 +73,5 @@ Each credit card scheme might require different information about the recipient 
 For more details, refer to the create [payments API](ref:create-payment) section.
 
 > 📘 Additional Data
-> 
-> In case you need to define additional information about the seller, such as `merchant_category_code`for example, you can find extra fields in the seller_details inside the [additional_data struct](ref:the-payment-object) in the payment.
+>
+> In case you need to define additional information about the seller, such as `merchant_category_code`for example, you can find extra fields in the seller\_details inside the [additional\_data struct](ref:the-payment-object) in the payment.
