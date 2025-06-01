@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-Add payments services and APIs with clicks, not code.  
+Add payments services and APIs with clicks, not code.\
 Any third-party integration can be a connection — from processors and payment methods to fraud prevention.
 
 Connections are not limited to the types specified here. We're adding new ones all the time based on market requirements and merchant feedback.
