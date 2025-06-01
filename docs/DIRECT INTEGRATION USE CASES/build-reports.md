@@ -15,10 +15,10 @@ next:
 ---
 Yuno reports provides a practical way to acquire information regarding different stages of payments. You can effortlessly request and download various reports associated with your Yuno operations. Yuno provides four types of reports:
 
-- Payment
-- Transaction
-- Transaction Reconciliation
-- Settlement
+* Payment
+* Transaction
+* Transaction Reconciliation
+* Settlement
 
 You can check the detailed description for each one by accessing the [Reports page](ref:introduction-reports). The Transaction Reconciliation and Settlement reports provide information related to reconciliation. To examine all fields available on each report and their description, access the [Reports Fields page](ref:reports-fields).
 
@@ -26,16 +26,25 @@ You can check the detailed description for each one by accessing the [Reports pa
 
 To request a report, you will need to:
 
-- Access your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which consist of:
-  - `public-api-key`
-  - `private-secrete-key`
+* Access your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which consist of:
+  * `public-api-key`
+  * `private-secrete-key`
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Explore Yuno Postman Collections</h3>\n      <div class=\"contentContainer\">\n        <p>\n          Yuno provides <a href='/reference/postman-collections'>Postman Collections</a> that you can use to replicate the use cases locally.        \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Explore Yuno Postman Collections</h3>
+      <div class="contentContainer">
+        <p>
+          Yuno provides <a href='/reference/postman-collections'>Postman Collections</a> that you can use to replicate the use cases locally.        
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Steps summary
 
@@ -56,22 +65,33 @@ When creating the report, you can filter the added data by specifying the values
 
 You have the option to filter the following fields when creating the report:
 
-- `payment_status`
-- `payment_sub_status`
-- `payment_method`
-- `currency`
-- `country`
-- `transaction_type`
-- `transaction_status`
-- `updated_at_start`
-- `updated_at_end`
+* `payment_status`
+* `payment_sub_status`
+* `payment_method`
+* `currency`
+* `country`
+* `transaction_type`
+* `transaction_status`
+* `updated_at_start`
+* `updated_at_end`
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Filter values format</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tWhen defining the filter values, provide them in a string value list, such as in the example below:\n          <br>\n          <code>\"payment_status\": \"CREATED,READY_TO_PAY,DECLINED\"</code>\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Filter values format</h3>
+      <div class="contentContainer">
+        <p>
+					When defining the filter values, provide them in a string value list, such as in the example below:
+          <br>
+          <code>"payment_status": "CREATED,READY_TO_PAY,DECLINED"</code>
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 For Payment or Transaction reports, you also have the option to select the fields included in the final report using the parameter `columns`.
 
