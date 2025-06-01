@@ -19,7 +19,7 @@ Yuno's **Risk conditions** empower merchants with advanced fraud prevention tool
       <h3>Go to the routing section to include your lists and rules in your routes</h3>
       <div class="contentContainer">
         <p>
-          Activate the Risk Conditions provider in the Connections section. Once the connection is established, add it to your routes, where you can then select the specific list(s) and/or rule(s) you want to use for each condition set.</a>.
+          Activate the Risk Conditions provider in the Connections section. Once the connection is established, add it to your routes, where you can then select the specific list(s) and/or rule(s) you want to use for each condition set.
 				</p>
       </div>
     </div>
