@@ -12,17 +12,26 @@ next:
 ---
 You can interact with the Yuno API using two environments: 
 
-- Sandbox
-- Production
+* Sandbox
+* Production
 
 These environments are also available on the Dashboard, enabling you to connect and test different connections without requiring you to add the real account data. 
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLine verticalLineAlert\"></div>\n    <div>\n      <h3>Credentials</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tThe credentials to use Yuno API in Sandbox are different from the Production credentials. Depending on the environment you select when accessing the Dashboard, you find diferent API keys and Account information.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLine verticalLineAlert"></div>
+    <div>
+      <h3>Credentials</h3>
+      <div class="contentContainer">
+        <p>
+					The credentials to use Yuno API in Sandbox are different from the Production credentials. Depending on the environment you select when accessing the Dashboard, you find diferent API keys and Account information.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Sandbox
 
@@ -42,15 +51,43 @@ This is the environment where real events occur, affecting accounting and metric
 https://api.y.uno
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Processing time</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tThe processing time for each request varies depending on the processor/acquirer executing the transaction.\n\t\t\t\t</p>\n        <p>\n          The total processing time is the sum of Yuno's and the processor/acquirer's processing time.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Processing time</h3>
+      <div class="contentContainer">
+        <p>
+					The processing time for each request varies depending on the processor/acquirer executing the transaction.
+				</p>
+        <p>
+          The total processing time is the sum of Yuno's and the processor/acquirer's processing time.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Timeout</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tYuno uses a timeout value of 60 seconds for all endpoints. Therefore, the total time available for a request to be processed and answered by our APIs is 60 seconds.\n        </p>\n        <p>\n\t\t\t\t\tThe timeout value of 60 seconds is used to cover all cases from the processor/acquirer since their response time varies.\n        </p>\n        <p>\n          <b>Important</b>: The response time will usually be a fraction of the timeout.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Timeout</h3>
+      <div class="contentContainer">
+        <p>
+					Yuno uses a timeout value of 60 seconds for all endpoints. Therefore, the total time available for a request to be processed and answered by our APIs is 60 seconds.
+        </p>
+        <p>
+					The timeout value of 60 seconds is used to cover all cases from the processor/acquirer since their response time varies.
+        </p>
+        <p>
+          <b>Important</b>: The response time will usually be a fraction of the timeout.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
