@@ -15,17 +15,17 @@ next:
 ---
 On this page, you will find the industry category information you need when using Yuno API endpoints. The table below provides codes for each industry category available on the Yuno API and their descriptions. Use this page to understand better when to use each category.
 
-| industry_category         | Description                                                                                                                                                                 |
+| industry\_category        | Description                                                                                                                                                                 |
 | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ADVERTISING               | Advertising company and services.                                                                                                                                           |
 | ART                       | Collectibles & Art.                                                                                                                                                         |
 | AUTOMOTIVE                | Parts & Accessories.                                                                                                                                                        |
 | ANTIVIRUS                 | Antivirus security services.                                                                                                                                                |
 | BABY                      | Toys for Baby, Stroller, Stroller Accessories, Car Safety Seats.                                                                                                            |
-| BEAUTY\_&\_PERSONAL_CARE  | Makeup, Skin Care Products, Hair Care Products, Perfumes & Fragrances.                                                                                                      |
+| BEAUTY\_&\_PERSONAL\_CARE | Makeup, Skin Care Products, Hair Care Products, Perfumes & Fragrances.                                                                                                      |
 | BOOKS                     | Books.                                                                                                                                                                      |
 | CAMERAS                   | Cameras & Photography.                                                                                                                                                      |
-| CAR_ELECTRONICS           | Car Audio, Car Alarm Systems & Security, Car DVRs, Car Video Players, Car PC.                                                                                               |
+| CAR\_ELECTRONICS          | Car Audio, Car Alarm Systems & Security, Car DVRs, Car Video Players, Car PC.                                                                                               |
 | COMPUTING                 | Computers & Tablets.                                                                                                                                                        |
 | COUPONS                   | Coupons.                                                                                                                                                                    |
 | DONATIONS                 | Donations.                                                                                                                                                                  |
@@ -36,15 +36,15 @@ On this page, you will find the industry category information you need when usin
 | FASHION                   | Men’s, Women’s, Kids & baby, Handbags & Accessories, Health & Beauty, Shoes, Jewelry & Watches.                                                                             |
 | GAMES                     | Online Games & Credits.                                                                                                                                                     |
 | GARDEN\_&\_OUTDOOR        | Outdoor Décor, Patio Furniture & Accessories, Outdoor Lighting Products, Pest Control Products.                                                                             |
-| GROCERY\_&\_GOURMET_FOOD  | Alcoholic Beverages, Baby Foods, Frozen Foods, Fresh Produce.                                                                                                               |
+| GROCERY\_&\_GOURMET\_FOOD | Alcoholic Beverages, Baby Foods, Frozen Foods, Fresh Produce.                                                                                                               |
 | HANDMADE                  | Accessories, jewelry, decorations.                                                                                                                                          |
 | HOME                      | Home appliances. Home & Garden.                                                                                                                                             |
 | INDUSTRIAL\_&\_SCIENTIFIC | Scales & Balances, Industrial Magnets.                                                                                                                                      |
-| INVESTING_AND_FINANCIAL   | Investing and financial services.                                                                                                                                           |
+| INVESTING\_AND\_FINANCIAL | Investing and financial services.                                                                                                                                           |
 | LEARNINGS                 | Trainings, Conferences, Workshops.                                                                                                                                          |
 | MUSICAL                   | Instruments & Gear.                                                                                                                                                         |
 | OTHERS                    | Other categories.                                                                                                                                                           |
-| PET_SUPPLIES              | Dogs and cats food, toys, furniture.                                                                                                                                        |
+| PET\_SUPPLIES             | Dogs and cats food, toys, furniture.                                                                                                                                        |
 | PHONES                    | Cell Phones & Accessories.                                                                                                                                                  |
 | PAYROLL                   | Payroll services.                                                                                                                                                           |
 | SERVICES                  | General services.                                                                                                                                                           |
@@ -54,13 +54,12 @@ On this page, you will find the industry category information you need when usin
 | TICKETS                   | Tickets for Concerts, Sports, Arts, Theater, Family, Excursions tickets, Events & more.                                                                                     |
 | TOYS\_&\_GAMES            | Board Games & Toys.                                                                                                                                                         |
 | TRAVELS                   | Plane tickets, Hotel vouchers, Travel vouchers.                                                                                                                             |
-| VIDEO_GAMES               | Video Games & Consoles.                                                                                                                                                     |
-| VIRTUAL_GOODS             | E-books, Music Files, Software, Digital Images, PDF Files and any item which can be electronically stored in a file, Mobile Recharge, DTH Recharge and any Online Recharge. |
+| VIDEO\_GAMES              | Video Games & Consoles.                                                                                                                                                     |
+| VIRTUAL\_GOODS            | E-books, Music Files, Software, Digital Images, PDF Files and any item which can be electronically stored in a file, Mobile Recharge, DTH Recharge and any Online Recharge. |
 
-
-
-[block:html]
-{
-  "html": "<style>\n  table thead th {\n    text-align: left;\n</style>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  table thead th {
+    text-align: left;
+</style>
+`}</HTMLBlock>
