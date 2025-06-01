@@ -105,7 +105,7 @@ Below is a table describing the parameters required for initializing the Yuno SD
       </td>
 
       <td>
-        The language for SDK content. Supported options include: <br> `en` - English <br> `es` - Spanish <br> `pt` - Portuguese <br> `ms` - Malay <br> `id` - Indonesian <br> `th` - Thai
+        The language for SDK content. Supported options include: <br/> `en` - English <br/> `es` - Spanish <br/> `pt` - Portuguese <br/> `ms` - Malay <br/> `id` - Indonesian <br/> `th` - Thai
       </td>
     </tr>
 
@@ -194,7 +194,7 @@ The functions used in `YunoPaymentMethods` are described in the table below.
       </td>
 
       <td>
-        An instance of `PaymentMethodConf` that configures the payment method list based on session and locale. Key properties include:  <br>- `checkoutSession`: Unique identifier for the current checkout session.<br>- `country_code`: User’s country code for displaying relevant payment methods.
+        An instance of `PaymentMethodConf` that configures the payment method list based on session and locale. Key properties include:  <br/>- `checkoutSession`: Unique identifier for the current checkout session.<br/>- `country_code`: User’s country code for displaying relevant payment methods.
       </td>
     </tr>
 
@@ -204,7 +204,7 @@ The functions used in `YunoPaymentMethods` are described in the table below.
       </td>
 
       <td>
-        Triggered when the payment method selection state changes. Parameters:<br>- `context`: Allows interactions with other UI elements or navigation.<br>- `isSelected`: Boolean indicating whether a payment method is selected (`true`) or not (`false`).
+        Triggered when the payment method selection state changes. Parameters:<br/>- `context`: Allows interactions with other UI elements or navigation.<br/>- `isSelected`: Boolean indicating whether a payment method is selected (`true`) or not (`false`).
       </td>
     </tr>
   </tbody>
