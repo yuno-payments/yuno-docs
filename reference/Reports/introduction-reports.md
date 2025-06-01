@@ -32,7 +32,7 @@ See the fields available for this report in the [Report Fields](ref:reports-fiel
 
 ## Settlement report
 
-The settlement report will allow you to know the transactional composition and the fees incurred by each acquirer's payout in your bank accounts.  
+The settlement report will allow you to know the transactional composition and the fees incurred by each acquirer's payout in your bank accounts.\
 Your financial team can use this report to recognize the composition of each settlement(gross amount, fees and net amount), but also to perform reconciliation on a transaction level.
 
 See the fields available for this report in the [Reports Fields](ref:reports-fields#settlement-report) section.
