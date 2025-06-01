@@ -20,7 +20,7 @@ With Yuno's SDK, you can securely capture payment method data on your site or ap
 
 Yuno uses two different types of tokens to process payments, depending on the integration.
 
-- **One-time use token**: When using Yuno's SDK, we gather all the necessary information to process the payment and store it in a one-time use token, regardless of the customer's chosen payment method. This token is used when creating the payment. Note that this token only works once. You will need to generate a new one-time token for each checkout session created.
-- **Vaulted token**: A vaulted token is created once a payment method is enrolled and stored with the customer's information. You can use the created vaulted token to identify the payment method for future payments.
+* **One-time use token**: When using Yuno's SDK, we gather all the necessary information to process the payment and store it in a one-time use token, regardless of the customer's chosen payment method. This token is used when creating the payment. Note that this token only works once. You will need to generate a new one-time token for each checkout session created.
+* **Vaulted token**: A vaulted token is created once a payment method is enrolled and stored with the customer's information. You can use the created vaulted token to identify the payment method for future payments.
 
 Yuno's tokenization service and centralized vault enable you to handle recurring payments, fallbacks, and retries across processors without compromising user experience.
