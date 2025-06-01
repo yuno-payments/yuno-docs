@@ -12,27 +12,13 @@ next:
 ---
 Network tokens represent a pivotal advancement in the of payment processing industry, acting as digital surrogates for sensitive payment card details, including credit card numbers. Issued by payment networks such as Visa, Mastercard and American Express, these tokens are at the forefront of enhancing transaction security within our evolving digital landscape.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/12b72d4-desktop_Network_token_2.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/12b72d4-desktop_Network_token_2.png" />
 
 ### Benefits of Network Tokens:
 
-- _Enhanced Security_: By replacing actual card data during transactions, network tokens play a pivotal role in fortifying security measures, significantly reducing the risk of exposure to potential fraud.
-- _Seamless Integration_: With minimal integration efforts adhering to EMVCo's network token standards, our solution ensures a seamless and efficient implementation process, allowing for quick adaptation within various payment scenarios.
-- _Automatic Updates_: Network tokens, managed and updated automatically by card networks, contribute to a reduction in shopper friction and declined payments. This inherent adaptability ensures a higher authorization rate in comparison to transactions without network tokens.
+* *Enhanced Security*: By replacing actual card data during transactions, network tokens play a pivotal role in fortifying security measures, significantly reducing the risk of exposure to potential fraud.
+* *Seamless Integration*: With minimal integration efforts adhering to EMVCo's network token standards, our solution ensures a seamless and efficient implementation process, allowing for quick adaptation within various payment scenarios.
+* *Automatic Updates*: Network tokens, managed and updated automatically by card networks, contribute to a reduction in shopper friction and declined payments. This inherent adaptability ensures a higher authorization rate in comparison to transactions without network tokens.
 
 ## On-time use token vs Vaulted token vs Network Token
 
@@ -46,47 +32,66 @@ When the network tokens feature is enabled, Yuno generates network tokens for al
 
 Network tokens can have the statuses described in the section below.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/654f542-Image_-_nico2.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/654f542-Image_-_nico2.png" />
 
 <br />
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "STATUS",
-    "h-1": "Description",
-    "0-0": "CREATED",
-    "0-1": "The initial status of a network token that has been created",
-    "1-0": "ACTIVE",
-    "1-1": "The network token is active and can be used to make a payment.",
-    "2-0": "SUSPENDED",
-    "2-1": "Tokens may be suspended if the cardholder calls the issuer and requests that  payments from a particular merchant be blocked",
-    "3-0": "CANCELED",
-    "3-1": "Tokens may be cancelled for various reasons, such as the cardholder account associated with the token  \nhas been closed."
-  },
-  "cols": 2,
-  "rows": 4,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        STATUS
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        CREATED
+      </td>
+
+      <td>
+        The initial status of a network token that has been created
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        ACTIVE
+      </td>
+
+      <td>
+        The network token is active and can be used to make a payment.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        SUSPENDED
+      </td>
+
+      <td>
+        Tokens may be suspended if the cardholder calls the issuer and requests that  payments from a particular merchant be blocked
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        CANCELED
+      </td>
+
+      <td>
+        Tokens may be cancelled for various reasons, such as the cardholder account associated with the token\
+        has been closed.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ## Types of integration
 
@@ -153,54 +158,134 @@ Either during the enrollment or payment creation, you will receive the basic inf
 
 After establishing the corresponding credentials in your Yuno account and contacting our Support team, you'll be prepared to execute tokenized transactions seamlessly.
 
-> ❗️ 
-> 
+> ❗️
+>
 > With this option, Yuno operates only as a passthrough for the network token information. The merchant will need to send the necessary information about the network tokens so Yuno can share them with upstream payment partners.
 
-Network token transactions make use of existing payment transaction API requests. Similarly to the process of creating a payment with credit card details, when a merchant employs the Yuno API to finalize a payment they can opt to include the "network_token" object to endeavor the utilization of a network token for the transaction.
+Network token transactions make use of existing payment transaction API requests. Similarly to the process of creating a payment with credit card details, when a merchant employs the Yuno API to finalize a payment they can opt to include the "network\_token" object to endeavor the utilization of a network token for the transaction.
 
 #### Payment Request Fields
 
 Together with the `card_data` object, these fields should be added to the `payment_method.detail.card.network_token.token_data` object for sending payments using Yuno's API. 
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Field",
-    "h-1": "Type",
-    "h-2": "Description",
-    "0-0": "number",
-    "0-1": "number",
-    "0-2": "[Mandatory] - Token’s number without any separators.  \n(MAX 19; MIN 8) - only available for PCI certified merchants",
-    "1-0": "holder_name",
-    "1-1": "string",
-    "1-2": "Cardholder’s full name as it appears on the Token (MAX 26; MIN 3) - only available for PCI certified merchants",
-    "2-0": "expiration_month",
-    "2-1": "number",
-    "2-2": "[Mandatory] - Token’s  expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants",
-    "3-0": "expiration_year",
-    "3-1": "number",
-    "3-2": "[Mandatory] - Token’s  expiration year - YYYY  (MAX 4; MIN 4) - only available for PCI certified merchants",
-    "4-0": "cryptogram",
-    "4-1": "string",
-    "4-2": "[Mandatory] - The unique cryptogram generated by the issuer for the network token in use in the transaction. Optional for recurring transactions",
-    "5-0": "electronic_commerce_indicator",
-    "5-1": "string",
-    "5-2": "[Only required for certain providers] - In case the token has been authenticated by Mastercard the field should be set to 02. For Visa or not authenticated tokens, is not necessary to send the field.  ",
-    "6-0": "token_requestor_id",
-    "6-1": "string",
-    "6-2": "[Only required for certain providers] - Token requestor ID of the merchant"
-  },
-  "cols": 3,
-  "rows": 7,
-  "align": [
-    "left",
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Field
+      </th>
 
+      <th>
+        Type
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        number
+      </td>
+
+      <td>
+        number
+      </td>
+
+      <td>
+        [Mandatory] - Token’s number without any separators.\
+        (MAX 19; MIN 8) - only available for PCI certified merchants
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        holder\_name
+      </td>
+
+      <td>
+        string
+      </td>
+
+      <td>
+        Cardholder’s full name as it appears on the Token (MAX 26; MIN 3) - only available for PCI certified merchants
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        expiration\_month
+      </td>
+
+      <td>
+        number
+      </td>
+
+      <td>
+        [Mandatory] - Token’s  expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        expiration\_year
+      </td>
+
+      <td>
+        number
+      </td>
+
+      <td>
+        [Mandatory] - Token’s  expiration year - YYYY  (MAX 4; MIN 4) - only available for PCI certified merchants
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        cryptogram
+      </td>
+
+      <td>
+        string
+      </td>
+
+      <td>
+        [Mandatory] - The unique cryptogram generated by the issuer for the network token in use in the transaction. Optional for recurring transactions
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        electronic\_commerce\_indicator
+      </td>
+
+      <td>
+        string
+      </td>
+
+      <td>
+        [Only required for certain providers] - In case the token has been authenticated by Mastercard the field should be set to 02. For Visa or not authenticated tokens, is not necessary to send the field.  
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        token\_requestor\_id
+      </td>
+
+      <td>
+        string
+      </td>
+
+      <td>
+        [Only required for certain providers] - Token requestor ID of the merchant
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 #### Request example
 
