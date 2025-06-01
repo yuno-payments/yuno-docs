@@ -16,13 +16,13 @@ Card Account Updater (CAU) is a feature available at Yuno to maintain the integr
 
 ## Benefits of Card Account Updater
 
-- **Improved Payment Success Rates:** Automatically updating card information reduces the likelihood of failed transactions due to expired or replaced cards, ensuring a higher success rate for recurring payments.
-- **Enhanced Customer Experience:** By ensuring seamless and uninterrupted service, customers do not need to manually update their card information, leading to a smoother and more positive experience.
-- **Reduced Operational Costs:** Automated updates decrease the need for manual interventions and customer service inquiries related to payment issues, saving time and resources.
-- **Increased Revenue:** Higher transaction approval rates translate to fewer missed payments and potentially increased revenue.
-- **Security and Compliance:** Centralizing card updates within the vault ensures that sensitive card information is handled securely and complies with relevant regulations and standards.
-- **Operational Efficiency:** Streamlining the process of updating card information helps maintain operational efficiency and consistency across payment systems.
-- **Customer Retention:** Minimizing disruptions in service due to payment failures can help maintain customer loyalty and retention.
+* **Improved Payment Success Rates:** Automatically updating card information reduces the likelihood of failed transactions due to expired or replaced cards, ensuring a higher success rate for recurring payments.
+* **Enhanced Customer Experience:** By ensuring seamless and uninterrupted service, customers do not need to manually update their card information, leading to a smoother and more positive experience.
+* **Reduced Operational Costs:** Automated updates decrease the need for manual interventions and customer service inquiries related to payment issues, saving time and resources.
+* **Increased Revenue:** Higher transaction approval rates translate to fewer missed payments and potentially increased revenue.
+* **Security and Compliance:** Centralizing card updates within the vault ensures that sensitive card information is handled securely and complies with relevant regulations and standards.
+* **Operational Efficiency:** Streamlining the process of updating card information helps maintain operational efficiency and consistency across payment systems.
+* **Customer Retention:** Minimizing disruptions in service due to payment failures can help maintain customer loyalty and retention.
 
 ## How does it work?
 
@@ -30,16 +30,16 @@ The Card Account Updater service operates asynchronously, working independently 
 
 Yuno updates card details in the following scenarios:
 
-- The card is past its expiration date.
-- The account associated with the card is in a closed, disabled, or flagged state.
+* The card is past its expiration date.
+* The account associated with the card is in a closed, disabled, or flagged state.
 
 When the card's expiration date has passed, Yuno can update all the card information or only the expiration date. The option used will depend on the card issuer's approach to card replacement.
 
-Once a card has been updated, Yuno will send a webhook to notify you of the change. **The `vaulted_token` and `fingerprint` for the enrolled card will remain the same, so you don't need to change anything in your integration**. This webhook will contain the following:
+Once a card has been updated, Yuno will send a webhook to notify you of the change. **The`vaulted_token` and `fingerprint` for the enrolled card will remain the same, so you don't need to change anything in your integration**. This webhook will contain the following:
 
-- The latest expiry date, last four digits, and Issuer Identification Number (IIN).
-- The reason for the update.
-- Details of the card being replaced.
+* The latest expiry date, last four digits, and Issuer Identification Number (IIN).
+* The reason for the update.
+* Details of the card being replaced.
 
 The following code block presents a notification example:
 
