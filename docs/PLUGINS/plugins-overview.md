@@ -26,15 +26,195 @@ In addition to improving the checkout experience, Yuno's plugin is PCI-compliant
 
 Yuno is consistently working on developing new integrations for various e-commerce platforms available in the market. We have a list of platforms compatible with Yuno's plugin, and you can easily access the integration guide for each platform by clicking on the respective button.
 
-[block:html]
-{
-  "html": "<style>\n  .content-body {\n    margin: 0 !important;\n  }\n\n  .content-toc {\n    display: none;\n  }\n\n  .shelf-country-connections {\n    margin: 0;\n  }\n\n  .country-connections-card {\n    border-radius: 10px;\n  }\n\n  .country-connections-card .country-connections-card-header {\n    display: flex;\n    align-items: center;\n  }\n\n  .country-connections-card .country-connections-card-header h2 {\n    margin: 30px 0 0 10px;\n  }\n\n  .country-connections-card .country-connections-card-logo {\n    max-width: 50px;\n    margin: 30px 0 0 30px;\n  }\n\n  .detail-country-connections-card-title .title {\n    margin: 2rem 0 1rem 0;\n    font-weight: 600;\n    font-size: 0.85rem;\n    border-bottom: 1px solid #BABABA;\n    padding-bottom: 4px !important;\n  }\n\n  .detail-country-connections-card-content {\n    display: grid;\n    grid-template-columns: repeat(4, 1fr);\n    grid-template-rows: 1fr;\n    column-gap: 10px;\n    row-gap: 10px;\n    align-items: center;\n    font-size: 0.85rem;\n  }\n\n  @media only screen and (max-width: 1100px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(5, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 950px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(4, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 750px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(3, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 650px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(2, 1fr);\n    }\n  }\n\n  @media only screen and (max-width: 400px) {\n    .detail-country-connections-card-content {\n      grid-template-columns: repeat(1, 1fr);\n    }\n  }\n\n  .details-card {\n    border: 1px solid var(--yuno-purple-50);\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    padding: 0.6rem;\n    border-radius: 7px;\n  }\n\n  .details-card-on-click-effects {\n    cursor: pointer;\n  }\n\n  .details-card-on-click-effects:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px var(--yuno-purple-10);\n  }\n\n  .details-card .card-logo div {\n    height: 23px;\n    width: 30px;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n\n  .details-card .card-name {\n    grid-area: name;\n    align-self: center;\n  }\n\n  .details-card img {\n    max-height: 23px;\n    max-width: 23px;\n  }\n\n  .details-card .card-title {\n    display: inline-block;\n    ;\n    padding: 0;\n    margin: 0;\n  }\n\n  /* ------------------------ define the configuration for DARK Mode ------------------------  */\n\n  @media (prefers-color-scheme: dark) {\n    .details-card-on-click-effects:hover {\n      box-shadow: none !important;\n    }\n  }\n\n  [data-color-mode=\"dark\"] .details-card-on-click-effects:hover {\n    box-shadow: none !important;\n  }\n</style>\n\n<body class=\"custom-page-country\">\n  <div class=\"shelf-country-connections\">\n    <div class=\"country-connections-card\">\n      <section class=\"detail-country-connections-card \">\n        <div class=\"detail-country-connections-card-content\">\n\n          <div class=\"details-card details-card-on-click-effects\" onclick=\"window.location='vtex';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/vtex_logosimbolo.png\" alt=\"Vtex logo\">\n              </div>\n            </div>\n            <span class='card-title'>Vtex</span>\n          </div>\n\n         <!-- <div class=\"details-card details-card-on-click-effects\" onclick=\"window.location='mercado-pago';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/mercadopago_logosimbolo.png\" alt=\"Mercado Pago logo\">\n              </div>\n            </div>\n            <span class='card-title'>Mercado Pago</span>\n          </div>\n\n          <div class=\"details-card details-card-on-click-effects\" onclick=\"window.location='pagseguro';\">\n            <div class=\"card-logo\">\n              <div>\n                <img src=\"https://icons.prod.y.uno/pagseguro_logosimbolo.png\" alt=\"PagBank logo\">\n              </div>\n            </div>\n            <span class='card-title'>PagBank</span>\n          </div>-->\n\n        </div>\n      </section>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .content-body {
+    margin: 0 !important;
+  }
 
+  .content-toc {
+    display: none;
+  }
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer success\">\n    <div class=\"verticalLineSuccess\"></div>\n    <div>\n      <h3>New plugins coming soon</h3>\n      <div class=\"contentContainer\">\n        <p>\n          We're always adding new plugins based on market demand and merchant input.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+  .shelf-country-connections {
+    margin: 0;
+  }
+
+  .country-connections-card {
+    border-radius: 10px;
+  }
+
+  .country-connections-card .country-connections-card-header {
+    display: flex;
+    align-items: center;
+  }
+
+  .country-connections-card .country-connections-card-header h2 {
+    margin: 30px 0 0 10px;
+  }
+
+  .country-connections-card .country-connections-card-logo {
+    max-width: 50px;
+    margin: 30px 0 0 30px;
+  }
+
+  .detail-country-connections-card-title .title {
+    margin: 2rem 0 1rem 0;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #BABABA;
+    padding-bottom: 4px !important;
+  }
+
+  .detail-country-connections-card-content {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+    column-gap: 10px;
+    row-gap: 10px;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+
+  @media only screen and (max-width: 1100px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 950px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 750px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 650px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media only screen and (max-width: 400px) {
+    .detail-country-connections-card-content {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+
+  .details-card {
+    border: 1px solid var(--yuno-purple-50);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem;
+    border-radius: 7px;
+  }
+
+  .details-card-on-click-effects {
+    cursor: pointer;
+  }
+
+  .details-card-on-click-effects:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px var(--yuno-purple-10);
+  }
+
+  .details-card .card-logo div {
+    height: 23px;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .details-card .card-name {
+    grid-area: name;
+    align-self: center;
+  }
+
+  .details-card img {
+    max-height: 23px;
+    max-width: 23px;
+  }
+
+  .details-card .card-title {
+    display: inline-block;
+    ;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* ------------------------ define the configuration for DARK Mode ------------------------  */
+
+  @media (prefers-color-scheme: dark) {
+    .details-card-on-click-effects:hover {
+      box-shadow: none !important;
+    }
+  }
+
+  [data-color-mode="dark"] .details-card-on-click-effects:hover {
+    box-shadow: none !important;
+  }
+</style>
+
+<body class="custom-page-country">
+  <div class="shelf-country-connections">
+    <div class="country-connections-card">
+      <section class="detail-country-connections-card ">
+        <div class="detail-country-connections-card-content">
+
+          <div class="details-card details-card-on-click-effects" onclick="window.location='vtex';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/vtex_logosimbolo.png" alt="Vtex logo">
+              </div>
+            </div>
+            <span class='card-title'>Vtex</span>
+          </div>
+
+         <!-- <div class="details-card details-card-on-click-effects" onclick="window.location='mercado-pago';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/mercadopago_logosimbolo.png" alt="Mercado Pago logo">
+              </div>
+            </div>
+            <span class='card-title'>Mercado Pago</span>
+          </div>
+
+          <div class="details-card details-card-on-click-effects" onclick="window.location='pagseguro';">
+            <div class="card-logo">
+              <div>
+                <img src="https://icons.prod.y.uno/pagseguro_logosimbolo.png" alt="PagBank logo">
+              </div>
+            </div>
+            <span class='card-title'>PagBank</span>
+          </div>-->
+
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer success">
+    <div class="verticalLineSuccess"></div>
+    <div>
+      <h3>New plugins coming soon</h3>
+      <div class="contentContainer">
+        <p>
+          We're always adding new plugins based on market demand and merchant input.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
