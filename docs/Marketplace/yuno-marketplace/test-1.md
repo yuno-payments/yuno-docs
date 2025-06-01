@@ -10,8 +10,174 @@ metadata:
 next:
   description: ''
 ---
-[block:html]
-{
-  "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Flujo de Preguntas</title>\n  <style>\n    body {\n      font-family: Arial, sans-serif;\n      background-color: #f7f8fa;\n    }\n\n    .container {\n      background-color: #fff;\n      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);\n      border-radius: 8px;\n      max-width: 500px;\n      width: 100%;\n      padding: 20px;\n      color: #313131; /* Texto en violeta */\n    }\n\n    .question {\n      opacity: 0;\n      transition: opacity 0.5s ease;\n    }\n\n    .question.active {\n      opacity: 1;\n    }\n\n    .question h2 {\n      margin: 0 0 20px;\n      font-size: 22px;\n      color: #313131; /* Título en violeta */\n    }\n\n    .options {\n      display: flex;\n      flex-direction: column;\n    }\n\n    .option {\n      margin-bottom: 10px;\n      padding: 12px 20px;\n      background-color: #f9f9f9;\n      border: 1px solid #ddd;\n      border-radius: 6px;\n      cursor: pointer;\n      font-size: 16px;\n      color: #555;\n      transition: background-color 0.2s ease;\n    }\n\n    .option:hover {\n      background-color: #f1f1f1;\n    }\n\n    .back-btn {\n      margin-top: 20px;\n      text-align: center;\n      cursor: pointer;\n      font-size: 14px;\n      color: #888;\n      transition: color 0.2s ease;\n    }\n\n    .back-btn:hover {\n      color: #555;\n    }\n\n    input[type=\"radio\"] {\n      display: none;\n    }\n\n    input[type=\"radio\"]:checked + label {\n      background-color: #313131; /* Fondo violeta para la opción seleccionada */\n      color: #fff; /* Texto en blanco para la opción seleccionada */\n      border: 1px solid #313131; /* Bordes en violeta para la opción seleccionada */\n    }\n\n    input[type=\"radio\"]:checked + label:hover {\n      background-color: #313131; /* Mantener el fondo violeta en el hover para la opción seleccionada */\n    }\n\n    #question1:checked ~ .question1,\n    #question2:checked ~ .question2,\n    #question3:checked ~ .question3,\n    #question4:checked ~ .question4,\n    #question5:checked ~ .question5 {\n      opacity: 1;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <input type=\"radio\" name=\"question\" id=\"question1\" checked>\n    <div class=\"question question1 active\">\n      <h2>Pregunta 1: ¿Cómo te sientes hoy?</h2>\n      <div class=\"options\">\n        <input type=\"radio\" name=\"q1\" id=\"q1a1\">\n        <label for=\"q1a1\" class=\"option\" onclick=\"location.href='#question2'\">Bien</label>\n        <input type=\"radio\" name=\"q1\" id=\"q1a2\">\n        <label for=\"q1a2\" class=\"option\" onclick=\"location.href='#question2'\">Regular</label>\n        <input type=\"radio\" name=\"q1\" id=\"q1a3\">\n        <label for=\"q1a3\" class=\"option\" onclick=\"location.href='#question2'\">Mal</label>\n      </div>\n    </div>\n\n    <input type=\"radio\" name=\"question\" id=\"question2\">\n    <div class=\"question question2\">\n      <h2>Pregunta 2: ¿Cuál es tu comida favorita?</h2>\n      <div class=\"options\">\n        <input type=\"radio\" name=\"q2\" id=\"q2a1\">\n        <label for=\"q2a1\" class=\"option\" onclick=\"location.href='#question3'\">Pizza</label>\n        <input type=\"radio\" name=\"q2\" id=\"q2a2\">\n        <label for=\"q2a2\" class=\"option\" onclick=\"location.href='#question3'\">Sushi</label>\n        <input type=\"radio\" name=\"q2\" id=\"q2a3\">\n        <label for=\"q2a3\" class=\"option\" onclick=\"location.href='#question3'\">Hamburguesa</label>\n      </div>\n      <a href=\"#question1\" class=\"back-btn\">Volver a la pregunta 1</a>\n    </div>\n\n    <input type=\"radio\" name=\"question\" id=\"question3\">\n    <div class=\"question question3\">\n      <h2>Pregunta 3: ¿Cuál es tu color favorito?</h2>\n      <div class=\"options\">\n        <input type=\"radio\" name=\"q3\" id=\"q3a1\">\n        <label for=\"q3a1\" class=\"option\" onclick=\"location.href='#question4'\">Azul</label>\n        <input type=\"radio\" name=\"q3\" id=\"q3a2\">\n        <label for=\"q3a2\" class=\"option\" onclick=\"location.href='#question4'\">Rojo</label>\n        <input type=\"radio\" name=\"q3\" id=\"q3a3\">\n        <label for=\"q3a3\" class=\"option\" onclick=\"location.href='#question4'\">Verde</label>\n      </div>\n      <a href=\"#question2\" class=\"back-btn\">Volver a la pregunta 2</a>\n    </div>\n\n    <input type=\"radio\" name=\"question\" id=\"question4\">\n    <div class=\"question question4\">\n      <h2>Pregunta 4: ¿Cuál es tu hobby favorito?</h2>\n      <div class=\"options\">\n        <input type=\"radio\" name=\"q4\" id=\"q4a1\">\n        <label for=\"q4a1\" class=\"option\" onclick=\"location.href='#question5'\">Leer</label>\n        <input type=\"radio\" name=\"q4\" id=\"q4a2\">\n        <label for=\"q4a2\" class=\"option\" onclick=\"location.href='#question5'\">Hacer deporte</label>\n        <input type=\"radio\" name=\"q4\" id=\"q4a3\">\n        <label for=\"q4a3\" class=\"option\" onclick=\"location.href='#question5'\">Ver películas</label>\n      </div>\n      <a href=\"#question3\" class=\"back-btn\">Volver a la pregunta 3</a>\n    </div>\n\n    <input type=\"radio\" name=\"question\" id=\"question5\">\n    <div class=\"question question5\">\n      <h2>Pregunta 5: ¿Cuál es tu estación del año favorita?</h2>\n      <div class=\"options\">\n        <input type=\"radio\" name=\"q5\" id=\"q5a1\">\n        <label for=\"q5a1\" class=\"option\">Primavera</label>\n        <input type=\"radio\" name=\"q5\" id=\"q5a2\">\n        <label for=\"q5a2\" class=\"option\">Verano</label>\n        <input type=\"radio\" name=\"q5\" id=\"q5a3\">\n        <label for=\"q5a3\" class=\"option\">Otoño</label>\n        <input type=\"radio\" name=\"q5\" id=\"q5a4\">\n        <label for=\"q5a4\" class=\"option\">Invierno</label>\n      </div>\n      <a href=\"#question4\" class=\"back-btn\">Volver a la pregunta 4</a>\n    </div>\n  </div>\n</body>\n</html>\n"
-}
-[/block]
+<HTMLBlock>{`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flujo de Preguntas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f8fa;
+    }
+
+    .container {
+      background-color: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      max-width: 500px;
+      width: 100%;
+      padding: 20px;
+      color: #313131; /* Texto en violeta */
+    }
+
+    .question {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .question.active {
+      opacity: 1;
+    }
+
+    .question h2 {
+      margin: 0 0 20px;
+      font-size: 22px;
+      color: #313131; /* Título en violeta */
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .option {
+      margin-bottom: 10px;
+      padding: 12px 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      color: #555;
+      transition: background-color 0.2s ease;
+    }
+
+    .option:hover {
+      background-color: #f1f1f1;
+    }
+
+    .back-btn {
+      margin-top: 20px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: #888;
+      transition: color 0.2s ease;
+    }
+
+    .back-btn:hover {
+      color: #555;
+    }
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    input[type="radio"]:checked + label {
+      background-color: #313131; /* Fondo violeta para la opción seleccionada */
+      color: #fff; /* Texto en blanco para la opción seleccionada */
+      border: 1px solid #313131; /* Bordes en violeta para la opción seleccionada */
+    }
+
+    input[type="radio"]:checked + label:hover {
+      background-color: #313131; /* Mantener el fondo violeta en el hover para la opción seleccionada */
+    }
+
+    #question1:checked ~ .question1,
+    #question2:checked ~ .question2,
+    #question3:checked ~ .question3,
+    #question4:checked ~ .question4,
+    #question5:checked ~ .question5 {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <input type="radio" name="question" id="question1" checked>
+    <div class="question question1 active">
+      <h2>Pregunta 1: ¿Cómo te sientes hoy?</h2>
+      <div class="options">
+        <input type="radio" name="q1" id="q1a1">
+        <label for="q1a1" class="option" onclick="location.href='#question2'">Bien</label>
+        <input type="radio" name="q1" id="q1a2">
+        <label for="q1a2" class="option" onclick="location.href='#question2'">Regular</label>
+        <input type="radio" name="q1" id="q1a3">
+        <label for="q1a3" class="option" onclick="location.href='#question2'">Mal</label>
+      </div>
+    </div>
+
+    <input type="radio" name="question" id="question2">
+    <div class="question question2">
+      <h2>Pregunta 2: ¿Cuál es tu comida favorita?</h2>
+      <div class="options">
+        <input type="radio" name="q2" id="q2a1">
+        <label for="q2a1" class="option" onclick="location.href='#question3'">Pizza</label>
+        <input type="radio" name="q2" id="q2a2">
+        <label for="q2a2" class="option" onclick="location.href='#question3'">Sushi</label>
+        <input type="radio" name="q2" id="q2a3">
+        <label for="q2a3" class="option" onclick="location.href='#question3'">Hamburguesa</label>
+      </div>
+      <a href="#question1" class="back-btn">Volver a la pregunta 1</a>
+    </div>
+
+    <input type="radio" name="question" id="question3">
+    <div class="question question3">
+      <h2>Pregunta 3: ¿Cuál es tu color favorito?</h2>
+      <div class="options">
+        <input type="radio" name="q3" id="q3a1">
+        <label for="q3a1" class="option" onclick="location.href='#question4'">Azul</label>
+        <input type="radio" name="q3" id="q3a2">
+        <label for="q3a2" class="option" onclick="location.href='#question4'">Rojo</label>
+        <input type="radio" name="q3" id="q3a3">
+        <label for="q3a3" class="option" onclick="location.href='#question4'">Verde</label>
+      </div>
+      <a href="#question2" class="back-btn">Volver a la pregunta 2</a>
+    </div>
+
+    <input type="radio" name="question" id="question4">
+    <div class="question question4">
+      <h2>Pregunta 4: ¿Cuál es tu hobby favorito?</h2>
+      <div class="options">
+        <input type="radio" name="q4" id="q4a1">
+        <label for="q4a1" class="option" onclick="location.href='#question5'">Leer</label>
+        <input type="radio" name="q4" id="q4a2">
+        <label for="q4a2" class="option" onclick="location.href='#question5'">Hacer deporte</label>
+        <input type="radio" name="q4" id="q4a3">
+        <label for="q4a3" class="option" onclick="location.href='#question5'">Ver películas</label>
+      </div>
+      <a href="#question3" class="back-btn">Volver a la pregunta 3</a>
+    </div>
+
+    <input type="radio" name="question" id="question5">
+    <div class="question question5">
+      <h2>Pregunta 5: ¿Cuál es tu estación del año favorita?</h2>
+      <div class="options">
+        <input type="radio" name="q5" id="q5a1">
+        <label for="q5a1" class="option">Primavera</label>
+        <input type="radio" name="q5" id="q5a2">
+        <label for="q5a2" class="option">Verano</label>
+        <input type="radio" name="q5" id="q5a3">
+        <label for="q5a3" class="option">Otoño</label>
+        <input type="radio" name="q5" id="q5a4">
+        <label for="q5a4" class="option">Invierno</label>
+      </div>
+      <a href="#question4" class="back-btn">Volver a la pregunta 4</a>
+    </div>
+  </div>
+</body>
+</html>
+`}</HTMLBlock>
