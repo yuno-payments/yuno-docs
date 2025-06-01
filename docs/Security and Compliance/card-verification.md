@@ -16,41 +16,36 @@ Yuno lets you verify if the customer's credit card is real and is working. Our C
 
 With the Yuno card verification service, you can protect your business in real time:
 
-- **Real-time Verification**: Instantly validate credit card details to ensure accuracy and authenticity.
-- **Fraud Prevention**: Mitigate the risk of fraudulent transactions by verifying the legitimacy of credit card information.
-- **Seamless Integration**: Easily integrate our API into your existing payment processing system, minimizing development time and effort.
+* **Real-time Verification**: Instantly validate credit card details to ensure accuracy and authenticity.
+* **Fraud Prevention**: Mitigate the risk of fraudulent transactions by verifying the legitimacy of credit card information.
+* **Seamless Integration**: Easily integrate our API into your existing payment processing system, minimizing development time and effort.
 
 ## Integration
 
 First, you need to define a route to use the card verification feature. When configuring the route, be sure to select:
 
-- **Card** as payment method. 
-- Define the **Transaction type** **Equal** to **VERIFY**.
+* **Card** as payment method. 
+* Define the **Transaction type** **Equal** to **VERIFY**.
 
 With the above configurations, all card verifications will be processed following the configuration of the created route.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/ace8dd6aa4d7fe71f02ae0600949b59d8d59bfb329d55e66134a858fc7ea4a33-Screenshot_2024-10-14_at_3.09.35_PM.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
+<Image align="center" src="https://files.readme.io/ace8dd6aa4d7fe71f02ae0600949b59d8d59bfb329d55e66134a858fc7ea4a33-Screenshot_2024-10-14_at_3.09.35_PM.png" />
 
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Select the correct provider</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tThe credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Select the correct provider</h3>
+      <div class="contentContainer">
+        <p>
+					The credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 In addition to creating the route, you need to choose when to use the validation. You can verify cards during the [enrollment process](https://docs.y.uno/reference/enroll-payment-method-checkout) or while making a credit [card payment](https://docs.y.uno/reference/create-payment). Depending on your chosen process, you should use different endpoints or SDK functions.
 
@@ -225,19 +220,27 @@ To verify the card at the enrollment with the Direct integration, you will use t
 }
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tThe verify feature at the enrollment is only available for PCI-compliant merchants when using the Direct integration. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <div class="contentContainer">
+        <p>
+					The verify feature at the enrollment is only available for PCI-compliant merchants when using the Direct integration. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ### Verify the card at the payment
 
 If you want to verify the card using a payment operation, you need to fulfill two requirements:
 
-- Inform `amount.value=0`.
-- Add `verify = true` inside of the `payment_method.detail.card.` object.
+* Inform `amount.value=0`.
+* Add `verify = true` inside of the `payment_method.detail.card.` object.
 
 Following the above instructions, the resulting operation won't result in any charges for your client.
 
@@ -668,8 +671,17 @@ The code block below presents an example of card verification using the payment 
 }
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tThe verify feature at the payment is only available for PCI-compliant merchants when using the Direct integration. \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <div class="contentContainer">
+        <p>
+					The verify feature at the payment is only available for PCI-compliant merchants when using the Direct integration. 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
