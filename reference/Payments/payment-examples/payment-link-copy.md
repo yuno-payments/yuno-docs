@@ -18,13 +18,136 @@ To test the creation of each payment, you can copy the content from the request 
 
 ## Payment Link available examples
 
-[block:html]
-{
-  "html": "<style>\n  \n\n  .table-of-contents-btn-shelf {\n    margin: 0 0 0 0;\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    grid-template-rows: 1fr;\n    gap: 10px;\n  }\n\n  @media only screen and (max-width: 800px) {\n    .table-of-contents-btn-shelf {\n      grid-template-columns: repeat(2, 1fr);\n    }\n  }\n\n\n  .table-of-contents-btn {\n    font-size: 0.85rem;\n    border: 1px solid var(--yuno-purple-50);\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    padding: 0.6rem;\n    border-radius: 7px;\n    font-size: 0.85rem;\n    color: var(--yuno-purple);\n    font-weight: 600;\n    transition: transform .1s;\n  }\n\n  .table-of-contents-btn-on-click-effects {\n    cursor: pointer;\n  }\n\n  .table-of-contents-btn-on-click-effects:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px var(--yuno-purple-10);\n  }\n\n  .table-of-contents-btn .card-logo div {\n    height: 23px;\n    width: 30px;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n\n  /* .table-of-contents-btn .card-name {\n    grid-area: name;\n    align-self: center;\n  } */\n\n  .table-of-contents-btn img {\n    max-height: 23px;\n    max-width: 23px;\n  }\n\n  .table-of-contents-btn .card-title {\n    display: inline-block;\n    ;\n    padding: 0;\n    margin: 0;\n  }\n\n  /* ------------------------ define the configuration for DARK Mode ------------------------  */\n\n  @media (prefers-color-scheme: dark) {\n    .table-of-contents-btn-on-click-effects:hover {\n      box-shadow: none !important;\n    }\n  }\n\n  [data-color-mode=\"dark\"] .table-of-contents-btn-on-click-effects:hover {\n    box-shadow: none !important;\n  }\n</style>\n\n<body>\n  <section class=\"table-of-contents-btn-shelf\">\n     <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/payment-link-copy#mercado-pago-checkout-pro';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/payvalida_logosimbolo.png\" alt=\"Payvalida logo\">\n          </div>\n        </div>\n        <span class='card-title'>Payvalida</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/payment-link-copy#tarjeta-clave';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/tarjetaclave_logosimbolo.png\" alt=\"Tarjeta clave logo\">\n          </div>\n        </div>\n        <span class='card-title'>Tarjeta Clave</span>\n      </div>\n    </div>\n   <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/payment-link-copy#webpay';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/webpay_logosimbolo.png\" alt=\"Webpay logo\">\n          </div>\n        </div>\n        <span class='card-title'>Webpay</span>\n      </div>\n    </div>\n    <div class=\"payment-card-button\">\n      <div class=\"table-of-contents-btn table-of-contents-btn-on-click-effects\"\n        onclick=\"window.location='/reference/payment-link-copy#pago-efectivo';\">\n        <div class=\"card-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/pagoefectivo_logosimbolo.png\" alt=\"Pago Efectivo logo\">\n          </div>\n        </div>\n        <span class='card-title'>Pago Efectivo</span>\n      </div>\n    </div>\n  </section>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  
+
+  .table-of-contents-btn-shelf {
+    margin: 0 0 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr;
+    gap: 10px;
+  }
+
+  @media only screen and (max-width: 800px) {
+    .table-of-contents-btn-shelf {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 
 
+  .table-of-contents-btn {
+    font-size: 0.85rem;
+    border: 1px solid var(--yuno-purple-50);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
+    color: var(--yuno-purple);
+    font-weight: 600;
+    transition: transform .1s;
+  }
+
+  .table-of-contents-btn-on-click-effects {
+    cursor: pointer;
+  }
+
+  .table-of-contents-btn-on-click-effects:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px var(--yuno-purple-10);
+  }
+
+  .table-of-contents-btn .card-logo div {
+    height: 23px;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* .table-of-contents-btn .card-name {
+    grid-area: name;
+    align-self: center;
+  } */
+
+  .table-of-contents-btn img {
+    max-height: 23px;
+    max-width: 23px;
+  }
+
+  .table-of-contents-btn .card-title {
+    display: inline-block;
+    ;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* ------------------------ define the configuration for DARK Mode ------------------------  */
+
+  @media (prefers-color-scheme: dark) {
+    .table-of-contents-btn-on-click-effects:hover {
+      box-shadow: none !important;
+    }
+  }
+
+  [data-color-mode="dark"] .table-of-contents-btn-on-click-effects:hover {
+    box-shadow: none !important;
+  }
+</style>
+
+<body>
+  <section class="table-of-contents-btn-shelf">
+     <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/payment-link-copy#mercado-pago-checkout-pro';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/payvalida_logosimbolo.png" alt="Payvalida logo">
+          </div>
+        </div>
+        <span class='card-title'>Payvalida</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/payment-link-copy#tarjeta-clave';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/tarjetaclave_logosimbolo.png" alt="Tarjeta clave logo">
+          </div>
+        </div>
+        <span class='card-title'>Tarjeta Clave</span>
+      </div>
+    </div>
+   <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/payment-link-copy#webpay';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/webpay_logosimbolo.png" alt="Webpay logo">
+          </div>
+        </div>
+        <span class='card-title'>Webpay</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/payment-link-copy#pago-efectivo';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/pagoefectivo_logosimbolo.png" alt="Pago Efectivo logo">
+          </div>
+        </div>
+        <span class='card-title'>Pago Efectivo</span>
+      </div>
+    </div>
+  </section>
+</body>
+`}</HTMLBlock>
 
 ### Payvalida
 
@@ -533,5 +656,4 @@ curl --request POST \
 '
 ```
 ```json Response (JSON)
-
 ```
