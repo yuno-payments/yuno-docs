@@ -12,52 +12,70 @@ next:
 ---
 The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards. 
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Recommended SDKs</h3>\n      <div class=\"contentContainer\">\n        <p>\n         We recommend using the <a href=\"full-checkout-android\">Android Full SDK</a> or the <a href=\"lite-checkout-android\">Android Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Recommended SDKs</h3>
+      <div class="contentContainer">
+        <p>
+         We recommend using the <a href="full-checkout-android">Android Full SDK</a> or the <a href="lite-checkout-android">Android Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 This SDK offers complete control over the payment method enrollment process, making it ideal for merchants who:
 
-- Need full control over the UI and user experience
-- Want to implement custom enrollment flows
-- Require advanced integration capabilities
+* Need full control over the UI and user experience
+* Want to implement custom enrollment flows
+* Require advanced integration capabilities
 
 The Headless SDK includes core features like:
 
-- Card tokenization
-- Secure payment method enrollment
-- Direct API access
-- Custom error handling
+* Card tokenization
+* Secure payment method enrollment
+* Direct API access
+* Custom error handling
 
 For merchants requiring a pre-built UI solution or simpler integration, consider using our other SDK implementations:
 
-- [Full SDK](doc:full-checkout-android)
-- [Lite SDK](doc:enrollment-android)
+* [Full SDK](doc:full-checkout-android)
+* [Lite SDK](doc:enrollment-android)
 
 ## Requirements
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-- You must have an active Yuno account
-- To perform the integration, you'll need your Yuno API credentials:
-  - `account_id`
-  - `public-api-key`
-  - `private-secret-key`
+* You must have an active Yuno account
+* To perform the integration, you'll need your Yuno API credentials:
+  * `account_id`
+  * `public-api-key`
+  * `private-secret-key`
 
 You can obtain these credentials from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). They are required to:
 
-- Create a `customer`, which is required before enrolling payment methods
-- Create a `customer_session`, which initializes the enrollment flow
+* Create a `customer`, which is required before enrolling payment methods
+* Create a `customer_session`, which initializes the enrollment flow
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>SDK version</h3>\n      <div class=\"contentContainer\">\n        <p>\n        Access the <a href=\"release-notes-android-sdk\">Release notes</a> or the <a href=\"https://github.com/yuno-payments/yuno-sdk-android\">Yuno Android SDK repository</a> to verify the last SDK version available.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>SDK version</h3>
+      <div class="contentContainer">
+        <p>
+        Access the <a href="release-notes-android-sdk">Release notes</a> or the <a href="https://github.com/yuno-payments/yuno-sdk-android">Yuno Android SDK repository</a> to verify the last SDK version available.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 1: Create a customer
 
@@ -65,15 +83,15 @@ Before enrolling payment methods, you need to create a customer using the [Creat
 
 **Prerequisites:**
 
-- Active Yuno account
-- API credentials
+* Active Yuno account
+* API credentials
 
 **Required for:**
 
-- Identifying the person enrolling the payment method
-- Enabling saved payment method functionality
-- Tracking enrollment history
-- Store the customer ID securely; you'll need it for the next step.
+* Identifying the person enrolling the payment method
+* Enabling saved payment method functionality
+* Tracking enrollment history
+* Store the customer ID securely; you'll need it for the next step.
 
 ## Step 2: Create a customer session
 
@@ -81,21 +99,21 @@ Create a new `customer_session` using the [Create Customer Session](ref:create-c
 
 **Prerequisites:**
 
-- Customer ID from Step 1
-- API credentials
+* Customer ID from Step 1
+* API credentials
 
 **Required actions:**
 
-- Include the customer ID in the request
-- Store the returned `customer_session` ID
-- Generate a new `customer_session`  for each payment method enrollment.
+* Include the customer ID in the request
+* Store the returned `customer_session` ID
+* Generate a new `customer_session`  for each payment method enrollment.
 
 ## Step 3: Add the SDK to your project
 
 **Prerequisites:**
 
-- Android project setup
-- Gradle configuration access
+* Android project setup
+* Gradle configuration access
 
 1. Add the repository source:
 
@@ -111,12 +129,22 @@ dependencies {
 }
 ```
 
-[block:html]
-{
-  "html": "<div class=\"infoBlockContainer\">\n  <div class=\"verticalLine\"></div>\n  <div>\n    <div class=\"contentContainer\">\n      <h3>Permissions</h3>\n      <p>\n        Yuno SDK includes, by default, the <code>INTERNET</code> permission, which is required to make network requests.\n      </p>\n      <p>\n        <code>&lt;uses-permission android:name=\"android.permission.INTERNET\" /&gt;</code>\n      </p>\n    </div>\n  </div>\n</div>"
-}
-[/block]
-
+<HTMLBlock>{`
+<div class="infoBlockContainer">
+  <div class="verticalLine"></div>
+  <div>
+    <div class="contentContainer">
+      <h3>Permissions</h3>
+      <p>
+        Yuno SDK includes, by default, the <code>INTERNET</code> permission, which is required to make network requests.
+      </p>
+      <p>
+        <code>&lt;uses-permission android:name="android.permission.INTERNET" /&gt;</code>
+      </p>
+    </div>
+  </div>
+</div>
+`}</HTMLBlock>
 
 ## Step 4: Initialize Headless SDK with the public key
 
@@ -144,52 +172,82 @@ To start the enrollment process, you need to:
 1. Create a customer using the [Create Customer](ref:create-customer) endpoint. The response will include the customer `id`.
 
 2. Create a customer session using:
-   - The customer `id` from step 1
-   - The [Create Customer Session](ref:create-customer-session) endpoint
+   * The customer `id` from step 1
+   * The [Create Customer Session](ref:create-customer-session) endpoint
 
 The endpoint response will provide the `customer_session` value required for enrollment.
 
-[block:html]
-{
-  "html": "<div class=\"infoBlockContainer\">\n  <div class=\"verticalLine\"></div>\n  <div>\n    <div class=\"contentContainer\">\n      <p>\n        You need to generate a new <code>customer_session</code> each time you enroll a payment method.\n      </p>\n    </div>\n  </div>\n</div>"
-}
-[/block]
-
+<HTMLBlock>{`
+<div class="infoBlockContainer">
+  <div class="verticalLine"></div>
+  <div>
+    <div class="contentContainer">
+      <p>
+        You need to generate a new <code>customer_session</code> each time you enroll a payment method.
+      </p>
+    </div>
+  </div>
+</div>
+`}</HTMLBlock>
 
 ## Step 6: Create an enrollment payment method object
 
 To set up the Headless SDK integration for enrollment, you need to create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. When creating this object, specify which payment method type your customer can enroll in. Currently, the Headless SDK only supports the CARD payment method type.
 
-[block:html]
-{
-  "html": "<div class=\"infoBlockContainer\">\n  <div class=\"verticalLine\"></div>\n  <div>\n    <div class=\"contentContainer\">\n      <h3>Verify card</h3>\n      <p>\n        If you want to verify cards (zero value authorization) before enrollment, you need to provide the <code>verify</code> object when creating the payment method object for the customer session.\n      </p>\n    </div>\n  </div>\n</div>"
-}
-[/block]
-
+<HTMLBlock>{`
+<div class="infoBlockContainer">
+  <div class="verticalLine"></div>
+  <div>
+    <div class="contentContainer">
+      <h3>Verify card</h3>
+      <p>
+        If you want to verify cards (zero value authorization) before enrollment, you need to provide the <code>verify</code> object when creating the payment method object for the customer session.
+      </p>
+    </div>
+  </div>
+</div>
+`}</HTMLBlock>
 
 ## Step 7: Start the enrollment process
 
 To start the enrollment process, use the `apiClientEnroll` function. This function requires configuration parameters that define how the enrollment will be processed. The following table describes the required parameters.
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`country_code`",
-    "0-1": "This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.",
-    "1-0": "`customer_session`",
-    "1-1": "Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session)    endpoint.  \n`Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`"
-  },
-  "cols": 2,
-  "rows": 2,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `customer_session`
+      </td>
+
+      <td>
+        Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session)    endpoint.\
+        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 The following code block presents an example of the parameter configuration.
 
@@ -259,12 +317,19 @@ apiClientEnroll.continueEnrollment(
 
 ```
 
-[block:html]
-{
-  "html": "<div class=\"infoBlockContainer\">\n  <div class=\"verticalLine\"></div>\n  <div>\n    <div class=\"contentContainer\">\n      <h3>PCI Compliance</h3>\n      <p>\n        Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.\n      </p>\n    </div>\n  </div>\n</div>"
-}
-[/block]
-
+<HTMLBlock>{`
+<div class="infoBlockContainer">
+  <div class="verticalLine"></div>
+  <div>
+    <div class="contentContainer">
+      <h3>PCI Compliance</h3>
+      <p>
+        Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
+      </p>
+    </div>
+  </div>
+</div>
+`}</HTMLBlock>
 
 The `apiClientEnroll.continueEnrollment` function returns an Observable type that extends `LiveData`. You can observe the response as a standard `LiveData` with type `SingleLiveEvent<Map<String, Any?>>`. This `LiveData` emits only once and returns a `Map` containing the complete response. Below is an example response from calling `apiClientEnroll.continueEnrollment`:
 
@@ -289,8 +354,16 @@ apiClientPayment.continueEnrollment(data, context).observe(context) { response -
 }
 ```
 
-[block:html]
-{
-  "html": "<div class=\"infoBlockContainer\">\n  <div class=\"verticalLine\"></div>\n  <div>\n    <div class=\"contentContainer\">\n      <h3>Use Webhooks</h3>\n      <p>\n        Consider using the enrollment status received via <a href=\"webhooks\">Webhooks</a>. Yuno recommends always using this status to base and make business decisions on your platform.\n      </p>\n    </div>\n  </div>\n</div>"
-}
-[/block]
+<HTMLBlock>{`
+<div class="infoBlockContainer">
+  <div class="verticalLine"></div>
+  <div>
+    <div class="contentContainer">
+      <h3>Use Webhooks</h3>
+      <p>
+        Consider using the enrollment status received via <a href="webhooks">Webhooks</a>. Yuno recommends always using this status to base and make business decisions on your platform.
+      </p>
+    </div>
+  </div>
+</div>
+`}</HTMLBlock>
