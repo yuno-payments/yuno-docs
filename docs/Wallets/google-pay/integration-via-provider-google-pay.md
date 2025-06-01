@@ -14,7 +14,7 @@ This page presents the procedures to connect and provide Google Pay as a payment
 
 ## Requirements
 
-Before starting the Google Pay integration process, you need to ensure it's in your country. Use the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en&visit_id=638246798082960127-380022514&rd=1#zippy=) to check if it supports the countries where you operate.
+Before starting the Google Pay integration process, you need to ensure it's in your country. Use the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en\&visit_id=638246798082960127-380022514\&rd=1#zippy=) to check if it supports the countries where you operate.
 
 Afterward, you must check the available processors using the [participating processors](https://developers.google.com/pay/api/) on Google's page.
 
@@ -37,31 +37,25 @@ You need to cover some steps to integrate Google Pay into your system using Yuno
    4. Finally, you will request your production access.
 2. Get the developer credentials from the provider you choose to start using with Yuno.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Adyen connection</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tFor Adyen, merchants need to create a <a onclick=\"window.location='https://www.adyen.com/signup'\">testing account</a> and get a <b>Merchant Account</b> and a <b>x-api-key</b>.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Adyen connection</h3>
+      <div class="contentContainer">
+        <p>
+				For Adyen, merchants need to create a <a onclick="window.location='https://www.adyen.com/signup'">testing account</a> and get a <b>Merchant Account</b> and a <b>x-api-key</b>.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 1. Within the [Yuno dashboard](https://dashboard.y.uno/), select the **Connections** tab. Find the provider you choose and click **Connect**. Fulfill the side panel fields with your credentials. Below, you will find examples of connecting panels for Adyen and Cielo.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/b3b39cd-Group_2.png",
-        null,
-        ""
-      ],
-      "align": "center",
-      "sizing": "700px"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" width="700px" src="https://files.readme.io/b3b39cd-Group_2.png" />
 
 4. Create a route in Yuno's dashboard using the gateway you have connected. Access the [Configure dynamic routing](ref:configure-dynamic-routing) guide page for further information on creating routes.
 
@@ -71,7 +65,7 @@ After performing the integration on Yuno, you can enable Google Pay with Yuno an
 
 1. First, integrate [Yuno's SDK](doc:android-sdk-integration) into your app to ensure a smooth connection between your application and Yuno's platform.
 2. Create a Google Wallet Test Account:
-   1. Visit the [Google Wallet Test Account Sign-In](https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F&followup=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F&osid=1&passive=1209600&ifkv=AeDOFXjl_LLJZyuykU06uleha4p7uSXJNnLCv_n2jshX6QVJYCy9AKq3K28mIfpgyfS2NDHfimnAFg&flowName=GlifWebSignIn&flowEntry=ServiceLogin) page.
+   1. Visit the [Google Wallet Test Account Sign-In](https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&followup=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&osid=1\&passive=1209600\&ifkv=AeDOFXjl_LLJZyuykU06uleha4p7uSXJNnLCv_n2jshX6QVJYCy9AKq3K28mIfpgyfS2NDHfimnAFg\&flowName=GlifWebSignIn\&flowEntry=ServiceLogin) page.
    2. If you don't have a Google account, you'll need to create one to proceed.
    3. Once signed in, you'll be redirected to the Google Wallet business console.
 3. Access the Google Wallet API Section:
@@ -80,22 +74,7 @@ After performing the integration on Yuno, you can enable Google Pay with Yuno an
    1. Within the Google Wallet API section, locate the option labeled  **Create a Pass**.
    2. Click on this option to enable **Demo mode**. This mode allows you to simulate and test pass creation and interactions without making real transactions.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/fbc51b7-6847ef9-demo_mode.png",
-        null,
-        ""
-      ],
-      "align": "center",
-      "sizing": "600px"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" width="600px" src="https://files.readme.io/fbc51b7-6847ef9-demo_mode.png" />
 
 5. Download the Google Wallet App from the Play Store.
 6. Navigate through the payment flow to test the integration.
