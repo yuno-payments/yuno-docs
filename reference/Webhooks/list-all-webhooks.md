@@ -13,4 +13,4 @@ metadata:
 next:
   description: ''
 ---
-With this request, you can retrieve all webhooks already registered in your account_id. You can filter the response by setting up the `page_size` and `page_number`.
+With this request, you can retrieve all webhooks already registered in your account\_id. You can filter the response by setting up the `page_size` and `page_number`.
