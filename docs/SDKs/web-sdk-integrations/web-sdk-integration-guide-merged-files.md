@@ -18,44 +18,44 @@ Starting April 2025, Yuno is launching version 1.1.0 of its Web SDK with signifi
 
 ### Performance and security enhancements
 
-- **3DS flow optimization**: The SDK now triggers the `collect` step only when 3DS is required, reducing unnecessary calls. This change improves performance by eliminating redundant API calls while maintaining security.
-- **New security integrations**: Added support for additional security providers:
-  - Airwallex
-  - Forter (Web)
-  - Checkout 3DS
-  - Unlimit 3DS
-- **PayPal fallback**: SDK automatically uses fallback client ID from `paymentByCheckoutSession` when not provided in merchant configuration, improving reliability of PayPal integrations
+* **3DS flow optimization**: The SDK now triggers the `collect` step only when 3DS is required, reducing unnecessary calls. This change improves performance by eliminating redundant API calls while maintaining security.
+* **New security integrations**: Added support for additional security providers:
+  * Airwallex
+  * Forter (Web)
+  * Checkout 3DS
+  * Unlimit 3DS
+* **PayPal fallback**: SDK automatically uses fallback client ID from `paymentByCheckoutSession` when not provided in merchant configuration, improving reliability of PayPal integrations
 
 ### Improved user experience
 
-- **Click-to-pay (C2P)**: Enhanced dynamic behavior with:
-  - Automatic card-specific updates for Terms & Conditions and logos
-  - Phone number field for registration
-  - Automatic hiding of C2P options for unsupported cards
-  - New compliance settings for `privacy` and `tnc` (terms and conditions)
-- **Enrolled card visualization**: 
-  - Generic card visuals for Visa and Mastercard
-  - American Express displays CVV on the front
-  - Dynamic card flipping based on CVV field focus
-  - Dynamic titles that adapt to user input
-  - Redesigned installment selector for better mobile and desktop UX
-- **Inline card input**: 
-  - Direct card details entry beneath the Card option
-  - Fields persist when switching between payment methods
-  - Full integration with existing flows (installments, card selector)
-- **Preselected payment method**: Automatically selects last used payment method (or first configured one)
-- **Enrolled payment method deletion**: Users can remove saved payment methods directly in the SDK interface
+* **Click-to-pay (C2P)**: Enhanced dynamic behavior with:
+  * Automatic card-specific updates for Terms & Conditions and logos
+  * Phone number field for registration
+  * Automatic hiding of C2P options for unsupported cards
+  * New compliance settings for `privacy` and `tnc` (terms and conditions)
+* **Enrolled card visualization**: 
+  * Generic card visuals for Visa and Mastercard
+  * American Express displays CVV on the front
+  * Dynamic card flipping based on CVV field focus
+  * Dynamic titles that adapt to user input
+  * Redesigned installment selector for better mobile and desktop UX
+* **Inline card input**: 
+  * Direct card details entry beneath the Card option
+  * Fields persist when switching between payment methods
+  * Full integration with existing flows (installments, card selector)
+* **Preselected payment method**: Automatically selects last used payment method (or first configured one)
+* **Enrolled payment method deletion**: Users can remove saved payment methods directly in the SDK interface
 
 ### Layout and styling
 
-- **Flexible checkout styling**: Support for custom styling through the `UI` object in `getPaymentByCheckout` response
-- **Layout improvements**: Fixed overlapping issues between document type and installment fields
-- **Status screen updates**: Enhanced visual design for all status screens
+* **Flexible checkout styling**: Support for custom styling through the `UI` object in `getPaymentByCheckout` response
+* **Layout improvements**: Fixed overlapping issues between document type and installment fields
+* **Status screen updates**: Enhanced visual design for all status screens
 
 ### New features
 
-- **Boleto (Brazil)**: New payment method available for Brazilian merchants
-- **Brazilian hybrid cards**: Improved processing as credit by default for better conversion
+* **Boleto (Brazil)**: New payment method available for Brazilian merchants
+* **Brazilian hybrid cards**: Improved processing as credit by default for better conversion
 
 ### Integration impact
 
@@ -72,20 +72,29 @@ For more detailed information about these updates, visit the [Web SDK GitHub rep
 
 Let's help you choose the integration method that best fits your needs. Each approach has specific advantages, and selecting the right one depends on your development environment, technical requirements, and preferences.
 
-- **[Method 1 (HTML)](#1-add-the-sdk-script-directly-in-html)**: Add a single script tag to your HTML file. This is the simplest method, ideal for basic implementations and quick prototypes.
-- **[Method 2 (Dynamic JavaScript)](#2-inject-the-sdk-dynamically-using-javascript)**: Load the SDK programmatically with custom error handling and loading states. Best for applications needing more control over the integration.
-- **[Method 3 (NPM)](#3-use-the-npm-module)**: Use our NPM package in modern JavaScript applications. This is our recommended approach, with dependency management, tree-shaking, and TypeScript support.
+* **[Method 1 (HTML)](#1-add-the-sdk-script-directly-in-html)**: Add a single script tag to your HTML file. This is the simplest method, ideal for basic implementations and quick prototypes.
+* **[Method 2 (Dynamic JavaScript)](#2-inject-the-sdk-dynamically-using-javascript)**: Load the SDK programmatically with custom error handling and loading states. Best for applications needing more control over the integration.
+* **[Method 3 (NPM)](#3-use-the-npm-module)**: Use our NPM package in modern JavaScript applications. This is our recommended approach, with dependency management, tree-shaking, and TypeScript support.
 
 ### 1. Add the SDK script directly in HTML
 
 The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your HTML file. This method provides a quick implementation while maintaining proper asynchronous loading. The SDK exposes an event that notifies when it's fully loaded, ensuring you can safely initialize and use its features at the right time.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer \">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Important</h3>\n      <div class=\"contentContainer\">\n        <p>\n          While the <code>defer</code> attribute ensures the script is executed after the HTML is parsed, it doesn't guarantee that the SDK script will always load last. In some cases, if the SDK loads faster than expected and the event listener is declared afterward, the <code>yuno-sdk-ready</code> event may have already fired — and your listener won't catch it. To prevent this, always define the listener before loading the SDK script.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Important</h3>
+      <div class="contentContainer">
+        <p>
+          While the <code>defer</code> attribute ensures the script is executed after the HTML is parsed, it doesn't guarantee that the SDK script will always load last. In some cases, if the SDK loads faster than expected and the event listener is declared afterward, the <code>yuno-sdk-ready</code> event may have already fired — and your listener won't catch it. To prevent this, always define the listener before loading the SDK script.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ```html
 <!-- First, set up the event listener -->
@@ -104,11 +113,11 @@ The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your
 
 The dynamic JavaScript injection method gives you more control over how the SDK loads and initializes. This approach lets you:
 
-- Load the SDK programmatically when your application needs it
-- Handle loading states and errors in a way that fits your application
-- Control the exact timing of when the SDK becomes available 
-- Coordinate the SDK initialization with your application's logic
-- Implement error handling that matches your application's needs
+* Load the SDK programmatically when your application needs it
+* Handle loading states and errors in a way that fits your application
+* Control the exact timing of when the SDK becomes available 
+* Coordinate the SDK initialization with your application's logic
+* Implement error handling that matches your application's needs
 
 Choose this method when you want full control over the SDK's loading process and need to handle different scenarios gracefully.
 
@@ -251,21 +260,21 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation)
 
 ### Important notes
 
-- The merchant is responsible for handling the loader, although Yuno provides a built-in option.
-- After creating the payment, you must integrate the `continuePayment` method, as certain payment methods require additional customer actions.
-- The `continuePayment` method may return an object with redirect URLs that need to be handled by your application.
+* The merchant is responsible for handling the loader, although Yuno provides a built-in option.
+* After creating the payment, you must integrate the `continuePayment` method, as certain payment methods require additional customer actions.
+* The `continuePayment` method may return an object with redirect URLs that need to be handled by your application.
 
 ### Additional features
 
 The Full SDK offers several customization options:
 
-- **Form loader**: Control the visibility of loading states.
-- **Render mode**: Choose between modal or element-based rendering.
-- **Card form configurations**:
-  - Save cards for future payments
-  - Custom button text
-  - Form persistence for retry payments
-  - Hide or show pay button
-- **Styling**: Customize the appearance to match your brand
+* **Form loader**: Control the visibility of loading states.
+* **Render mode**: Choose between modal or element-based rendering.
+* **Card form configurations**:
+  * Save cards for future payments
+  * Custom button text
+  * Form persistence for retry payments
+  * Hide or show pay button
+* **Styling**: Customize the appearance to match your brand
 
 For complete implementation details and examples, visit the [Demo App](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html) or refer to the [Full SDK documentation](https://docs.y.uno/docs/full-sdk-workflow).
