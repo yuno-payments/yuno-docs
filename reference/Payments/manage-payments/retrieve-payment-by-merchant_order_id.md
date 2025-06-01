@@ -17,8 +17,15 @@ next:
 ---
 This request enables you to retrieve details of payments based on their `merchant_order_id`, which needs to be provided in the request path.
 
-[block:html]
-{
-  "html": " <style>\n.rm-Playground { \n  padding-bottom: 20px; \n  overflow: scroll; \n}\n\n.hub-footer { \n\tposition: static; \n}\n</style>"
+<HTMLBlock>{`
+ <style>
+.rm-Playground { 
+  padding-bottom: 20px; 
+  overflow: scroll; 
 }
-[/block]
+
+.hub-footer { 
+	position: static; 
+}
+</style>
+`}</HTMLBlock>
