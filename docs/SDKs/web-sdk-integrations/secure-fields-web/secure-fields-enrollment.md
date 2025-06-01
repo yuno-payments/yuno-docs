@@ -24,16 +24,25 @@ The integration guide provides three flexible methods:
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the secure fields functionality.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer \">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>TypeScript library</h3>\n      <div class=\"contentContainer\">\n        <p>\n          If you are using TypeScript, Yuno provides a <a href=\"https://www.npmjs.com/package/@yuno-payments/sdk-web-types\">library</a> that you can use to see all available methods available in the Yuno Web SDK. Access the <a href=\"/docs/secure-fields-complementary-features#configure-and-use-typescript\">Complementary Features</a> page to learn how to use it in your project.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>TypeScript library</h3>
+      <div class="contentContainer">
+        <p>
+          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK. Access the <a href="/docs/secure-fields-complementary-features#configure-and-use-typescript">Complementary Features</a> page to learn how to use it in your project.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ### Step 2: Initialize secure fields with the public key
 
-Get a `Yuno` instance class in your `JS` app with a valid **PUBLIC_API_KEY**
+Get a `Yuno` instance class in your `JS` app with a valid **PUBLIC\_API\_KEY**
 
 ```javascript
 const yuno = await Yuno.initialize(PUBLIC_API_KEY)
@@ -43,12 +52,21 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your secure fields integration for enrollment. While creating the payment method object, you will need to define which one will be available for your customer to enroll (in the case of secure fields, only CARD is available). 
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer \">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Verify</h3>\n      <div class=\"contentContainer\">\n        <p>\n          If you need to verify cards through a zero-value authorization before enrolling a customer, you can include the <code>verify</code> structure when defining the payment method object for the customer session.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Verify</h3>
+      <div class="contentContainer">
+        <p>
+          If you need to verify cards through a zero-value authorization before enrolling a customer, you can include the <code>verify</code> structure when defining the payment method object for the customer session.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ### Step 4: Start the enrollment process
 
@@ -56,25 +74,43 @@ Next, you have to create a configuration object. The essential parameters are th
 
 The following table lists all required parameters and their descriptions. 
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`country_code`",
-    "0-1": "This parameter specifies the country for which the payment process is being set up.  \nUse an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk)   page.",
-    "1-0": "`customerSession`",
-    "1-1": "Refers to the current enrollment's customer session.  \n`Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`"
-  },
-  "cols": 2,
-  "rows": 2,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        This parameter specifies the country for which the payment process is being set up.\
+        Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk)   page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `customerSession`
+      </td>
+
+      <td>
+        Refers to the current enrollment's customer session.\
+        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ```javascript
 const secureFields = yuno.secureFields({
@@ -293,12 +329,21 @@ secureCvv.render('#cvv')
 
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer \">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Enrollment for Payouts</h3>\n      <div class=\"contentContainer\">\n        <p>\n          If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the <code>secureNumber</code> object before creating the vaulted_token and ignore the <code>secureExpiration</code> and <code>secureCvv</code> objects.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Enrollment for Payouts</h3>
+      <div class="contentContainer">
+        <p>
+          If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the <code>secureNumber</code> object before creating the vaulted_token and ignore the <code>secureExpiration</code> and <code>secureCvv</code> objects.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 After they are mounted, the three secure fields will be shown
 
