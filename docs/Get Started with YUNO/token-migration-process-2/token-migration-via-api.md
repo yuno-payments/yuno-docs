@@ -12,13 +12,85 @@ next:
 ---
 To migrate tokens to Yuno using the API, the merchant should follow the steps below:
 
-[block:html]
-{
-  "html": "<style>\n  .lista {\n    display: flex;\n    flex-direction: column;\n    gap: 1rem;\n  }\n\n  .lista .item-lista {\n    display: flex;\n  }\n\n  .lista .item-lista .numero div {\n    margin: 0 7px 0 0;\n    min-width: 20px;\n    text-align: center;\n    padding: 1px;\n    font-size: 0.8rem;\n    background-color: #614ad6;\n    border-radius: 100%;\n    color: #fff;\n  }\n\n  .lista .item-lista .texto p {\n    margin: 0;\n  }\n</style>\n\n<section>\n  <div class=\"lista\">\n    <!--<div class=\"item-lista\">\n      <div class=\"numero\">\n        <div>1</div>\n      </div>\n      <div class=\"texto\">\n        <p> The payment provider defines the format and mechanism by which the information will be shared with Yuno.</p>\n      </div>\n    </div>\n    <div class=\"item-lista\">\n      <div class=\"numero\">\n        <div>2</div>\n      </div>\n      <div class=\"texto\">\n        <p>Yuno extracts the information from the selected transfer mechanism, and makes the information available.</p>\n      </div>\n    </div>-->\n    <div class=\"item-lista\">\n      <div class=\"numero\">\n        <div>1</div>\n      </div>\n      <div class=\"texto\">\n        <p>The merchant must create a customer using the <a\n            href=\"https://docs.y.uno/reference/create-customer\">Create Customer</a> endpoint.</p>\n        <p><strong>Note:</strong> If the client already exists in Yuno, you can skip this step.</p>\n      </div>\n    </div>\n    <div class=\"item-lista\">\n      <div class=\"numero\">\n        <div>2</div>\n      </div>\n      <div class=\"texto\">\n        <p><b>Optional</b>: The merchant can use the <a\n            href=\"https://docs.y.uno/reference/create-customer\">Retrieve Customer</a> endpoint to confirm each customer information.</p>\n      </div>\n    </div>\n    \n    <div class=\"item-lista\">\n      <div class=\"numero\">\n        <div>3</div>\n      </div>\n      <div class=\"texto\">\n        <p>Once Yuno confirms receipt of the information by the payment provider and it is available, the merchant must\n          consume the <a href=\"https://docs.y.uno/reference/enroll-payment-method-api\">Enroll Payment Method</a>\n          endpoint and include the <code>provider_data</code> object with the external provider's token:</p>\n\n      </div>\n    </div>\n</section>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .lista {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
 
+  .lista .item-lista {
+    display: flex;
+  }
 
+  .lista .item-lista .numero div {
+    margin: 0 7px 0 0;
+    min-width: 20px;
+    text-align: center;
+    padding: 1px;
+    font-size: 0.8rem;
+    background-color: #614ad6;
+    border-radius: 100%;
+    color: #fff;
+  }
+
+  .lista .item-lista .texto p {
+    margin: 0;
+  }
+</style>
+
+<section>
+  <div class="lista">
+    <!--<div class="item-lista">
+      <div class="numero">
+        <div>1</div>
+      </div>
+      <div class="texto">
+        <p> The payment provider defines the format and mechanism by which the information will be shared with Yuno.</p>
+      </div>
+    </div>
+    <div class="item-lista">
+      <div class="numero">
+        <div>2</div>
+      </div>
+      <div class="texto">
+        <p>Yuno extracts the information from the selected transfer mechanism, and makes the information available.</p>
+      </div>
+    </div>-->
+    <div class="item-lista">
+      <div class="numero">
+        <div>1</div>
+      </div>
+      <div class="texto">
+        <p>The merchant must create a customer using the <a
+            href="https://docs.y.uno/reference/create-customer">Create Customer</a> endpoint.</p>
+        <p><strong>Note:</strong> If the client already exists in Yuno, you can skip this step.</p>
+      </div>
+    </div>
+    <div class="item-lista">
+      <div class="numero">
+        <div>2</div>
+      </div>
+      <div class="texto">
+        <p><b>Optional</b>: The merchant can use the <a
+            href="https://docs.y.uno/reference/create-customer">Retrieve Customer</a> endpoint to confirm each customer information.</p>
+      </div>
+    </div>
+    
+    <div class="item-lista">
+      <div class="numero">
+        <div>3</div>
+      </div>
+      <div class="texto">
+        <p>Once Yuno confirms receipt of the information by the payment provider and it is available, the merchant must
+          consume the <a href="https://docs.y.uno/reference/enroll-payment-method-api">Enroll Payment Method</a>
+          endpoint and include the <code>provider_data</code> object with the external provider's token:</p>
+
+      </div>
+    </div>
+</section>
+`}</HTMLBlock>
 
 ```json
 "provider_data": {
@@ -27,8 +99,6 @@ To migrate tokens to Yuno using the API, the merchant should follow the steps be
 }
 
 ```
-
-
 
 **Request**
 
@@ -46,15 +116,21 @@ To migrate tokens to Yuno using the API, the merchant should follow the steps be
 
 ```
 
-
-
-[block:html]
-{
-  "html": "<section>\n  <div class=\"lista\">\n    <div class=\"item-lista\">\n      <div class=\"numero\">\n        <div>4</div>\n      </div>\n      <div class=\"texto\">\n\t\t\t <p>Once the merchant consumes the <a\n            href=\"https://docs.y.uno/reference/enroll-payment-method-api\">Enroll Payment Method</a> endpoint the response is an enrolled payment method:</p>\n      </div>\n    </div>\n    </div>\n   </section>"
-}
-[/block]
-
-
+<HTMLBlock>{`
+<section>
+  <div class="lista">
+    <div class="item-lista">
+      <div class="numero">
+        <div>4</div>
+      </div>
+      <div class="texto">
+			 <p>Once the merchant consumes the <a
+            href="https://docs.y.uno/reference/enroll-payment-method-api">Enroll Payment Method</a> endpoint the response is an enrolled payment method:</p>
+      </div>
+    </div>
+    </div>
+   </section>
+`}</HTMLBlock>
 
 **Response**
 
@@ -87,10 +163,18 @@ To migrate tokens to Yuno using the API, the merchant should follow the steps be
 
 ```
 
-
-
-[block:html]
-{
-  "html": "<section>\n  <div class=\"lista\">\n    <div class=\"item-lista\">\n      <div class=\"numero\">\n        <div>5</div>\n      </div>\n      <div class=\"texto\">\n        <p><b>Optional</b>: The merchant can confirm the enrolled payment methods for each customer using the <a\n            href=\"https://docs.y.uno/reference/retrieve-enrolled-payment-methods-api\">Retrieve Enrolled Payment Methods</a> endpoint.</p>\n      </div>\n    </div>\n    </div>\n   </section>"
-}
-[/block]
+<HTMLBlock>{`
+<section>
+  <div class="lista">
+    <div class="item-lista">
+      <div class="numero">
+        <div>5</div>
+      </div>
+      <div class="texto">
+        <p><b>Optional</b>: The merchant can confirm the enrolled payment methods for each customer using the <a
+            href="https://docs.y.uno/reference/retrieve-enrolled-payment-methods-api">Retrieve Enrolled Payment Methods</a> endpoint.</p>
+      </div>
+    </div>
+    </div>
+   </section>
+`}</HTMLBlock>
