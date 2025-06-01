@@ -24,21 +24,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a3264",
-  "link": "https://docs.y.uno/v1.0/recipes/create-customer-response",
-  "slug": "create-customer-response",
-  "title": "Create Customer Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a3264" link="https://docs.y.uno/v1.0/recipes/create-customer-response" slug="create-customer-response" title="Create Customer Response" />
 
-
-</div>  
-</div>  
-</div>  
+</div>
+</div>
+</div>
 </body>
 
 <br />
@@ -55,21 +45,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a3265",
-  "link": "https://docs.y.uno/v1.0/recipes/create-customer-session-response",
-  "slug": "create-customer-session-response",
-  "title": "Create Customer Session Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a3265" link="https://docs.y.uno/v1.0/recipes/create-customer-session-response" slug="create-customer-session-response" title="Create Customer Session Response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -86,21 +66,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a3263",
-  "link": "https://docs.y.uno/v1.0/recipes/enroll-payment-method-response-checkout-1",
-  "slug": "enroll-payment-method-response-checkout-1",
-  "title": "Enroll Payment Method Response (Checkout)"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a3263" link="https://docs.y.uno/v1.0/recipes/enroll-payment-method-response-checkout-1" slug="enroll-payment-method-response-checkout-1" title="Enroll Payment Method Response (Checkout)" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -117,21 +87,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a3267",
-  "link": "https://docs.y.uno/v1.0/recipes/enroll-payment-method-direct-with-verify-response",
-  "slug": "enroll-payment-method-direct-with-verify-response",
-  "title": "Enroll Payment Method (Direct with verify) Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a3267" link="https://docs.y.uno/v1.0/recipes/enroll-payment-method-direct-with-verify-response" slug="enroll-payment-method-direct-with-verify-response" title="Enroll Payment Method (Direct with verify) Response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -148,21 +108,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a3268",
-  "link": "https://docs.y.uno/v1.0/recipes/create-checkout-session-response",
-  "slug": "create-checkout-session-response",
-  "title": "Create Checkout Session Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a3268" link="https://docs.y.uno/v1.0/recipes/create-checkout-session-response" slug="create-checkout-session-response" title="Create Checkout Session Response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -179,21 +129,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a3269",
-  "link": "https://docs.y.uno/v1.0/recipes/create-payment-response",
-  "slug": "create-payment-response",
-  "title": "Create Payment Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a3269" link="https://docs.y.uno/v1.0/recipes/create-payment-response" slug="create-payment-response" title="Create Payment Response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -210,21 +150,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a326a",
-  "link": "https://docs.y.uno/v1.0/recipes/create-payment-link-response",
-  "slug": "create-payment-link-response",
-  "title": "Create Payment Link Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a326a" link="https://docs.y.uno/v1.0/recipes/create-payment-link-response" slug="create-payment-link-response" title="Create Payment Link Response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -241,21 +171,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a326b",
-  "link": "https://docs.y.uno/v1.0/recipes/create-subscription-response",
-  "slug": "create-subscription-response",
-  "title": "Create Subscription Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a326b" link="https://docs.y.uno/v1.0/recipes/create-subscription-response" slug="create-subscription-response" title="Create Subscription Response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -272,21 +192,11 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description. The response is equal to the one received when creating the subscription.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a326b",
-  "link": "https://docs.y.uno/v1.0/recipes/create-subscription-response",
-  "slug": "create-subscription-response",
-  "title": "Create Subscription Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a326b" link="https://docs.y.uno/v1.0/recipes/create-subscription-response" slug="create-subscription-response" title="Create Subscription Response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
 
 <br />
@@ -303,22 +213,12 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a326d",
-  "link": "https://docs.y.uno/v1.0/recipes/create-a-report-response",
-  "slug": "create-a-report-response",
-  "title": "Create a Report Response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a326d" link="https://docs.y.uno/v1.0/recipes/create-a-report-response" slug="create-a-report-response" title="Create a Report Response" />
 
-
-  </div>  
-</div>  
-</div>  
-</body
+  </div>
+</div>
+</div>
+</body>
 
 <br />
 
@@ -334,19 +234,9 @@ Explore Yuno's **Recipes** to simplify and streamline your payment operations. T
 	Access the recipe to get the response description.
         </p>
 
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a326e",
-  "link": "https://docs.y.uno/v1.0/recipes/create-installments-plan-response",
-  "slug": "create-installments-plan-response",
-  "title": "Create Installments Plan response"
-}
-[/block]
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a326e" link="https://docs.y.uno/v1.0/recipes/create-installments-plan-response" slug="create-installments-plan-response" title="Create Installments Plan response" />
 
-
-  </div>  
-</div>  
-</div>  
+  </div>
+</div>
+</div>
 </body>
