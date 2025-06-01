@@ -14,7 +14,7 @@ next:
 ---
 In order to implement the Yuno iOS SDK, first, you need to address the following requirements:
 
-- Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
-- Use iOS version 14.0 or above.
+* Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
+* Use iOS version 14.0 or above.
 
 <br />
