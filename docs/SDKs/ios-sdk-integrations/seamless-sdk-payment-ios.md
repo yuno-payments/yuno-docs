@@ -12,12 +12,21 @@ next:
 ---
 On this page, you will find all the steps to add, configure, and use the Seamless iOS SDK to make payments in your iOS project.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Recommended SDKs</h3>\n      <div class=\"contentContainer\">\n        <p>\n         We recommend using the <a href=\"full-checkout-ios\">iOS Full SDK</a> or the <a href=\"enrollment-ios\">iOS Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Recommended SDKs</h3>
+      <div class="contentContainer">
+        <p>
+         We recommend using the <a href="full-checkout-ios">iOS Full SDK</a> or the <a href="enrollment-ios">iOS Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 1: Include the library in your project
 
@@ -61,12 +70,21 @@ Yuno.initialize(
 )
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>UISceneDelegate</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tIf your app uses a <code>UISceneDelegate</code>, you must put your Yuno initialization code into your <code>SceneDelegate</code>.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>UISceneDelegate</h3>
+      <div class="contentContainer">
+        <p>
+				If your app uses a <code>UISceneDelegate</code>, you must put your Yuno initialization code into your <code>SceneDelegate</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 The Seamless checkout enables you to configure the appearance of the SDK. It is an optional step that you configure through the class `YunoConfig`. To set up configurations, use the following code block to configure the available elements:
 
@@ -88,12 +106,21 @@ Below, you find a description of each configuration variable available.
 | `saveCardEnabled` | This optional field lets you choose whether the **Save Card** checkbox is shown on card flows. It is false by default.                                                              |
 | `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to false. |
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Accessing Your API Key</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tYou can retrieve your API Key from the <a href=\"https://docs.y.uno/docs/developers-credentials\">Developers section</a> in the Yuno Dashboard.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Accessing Your API Key</h3>
+      <div class="contentContainer">
+        <p>
+				You can retrieve your API Key from the <a href="https://docs.y.uno/docs/developers-credentials">Developers section</a> in the Yuno Dashboard.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 3: Start the checkout and Payment process
 
@@ -117,7 +144,7 @@ func startPaymentSeamlessLite(
 
 Additional parameters are required for the seamless version. These include:
 
-- `PaymentMethodSelected`: The vaulted token and/or the payment method the customer will use to make the payment.
+* `PaymentMethodSelected`: The vaulted token and/or the payment method the customer will use to make the payment.
 
 ```swift
 protocol PaymentMethodSelected {
@@ -126,7 +153,7 @@ protocol PaymentMethodSelected {
 }
 ```
 
-- `SeamlessParams`
+* `SeamlessParams`
 
 ```swift
 class SeamlessParams {
@@ -148,12 +175,24 @@ Below, you will find a description of each parameter from `SeamlessParams`:
 
 ## Step 4: Handle Payment Status (Optional)
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Deep Links and Mercado Pago Checkout Pro</h3>\n      <div class=\"contentContainer\">\n        <p>\n          This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro.\n        </p>\n        <p>\n          If your payment methods don’t use deep links, you can skip this step.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Deep Links and Mercado Pago Checkout Pro</h3>
+      <div class="contentContainer">
+        <p>
+          This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro.
+        </p>
+        <p>
+          If your payment methods don’t use deep links, you can skip this step.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back to your app using a deep link. The SDK uses this deep link to check what happened, checking if the payment was successful, failed, or canceled, and can show a status screen to the user.
 
@@ -191,8 +230,8 @@ After the payment is completed, the SDK can return different transaction states.
 
 The transaction state can be handled in two ways when using the `startPaymentSeamlessLite` method:
 
-- **Async/Await**: Use the async/await approach for a more streamlined flow. This method returns a Result asynchronously, making the code easier to read and manage.
-- **Callback**: You can handle the transaction state via a callback function, allowing immediate execution once the result is available.  
+* **Async/Await**: Use the async/await approach for a more streamlined flow. This method returns a Result asynchronously, making the code easier to read and manage.
+* **Callback**: You can handle the transaction state via a callback function, allowing immediate execution once the result is available.  
 
 Both options provide flexibility depending on your preferred approach to asynchronous code.
 
@@ -206,13 +245,13 @@ enum Result {
 
 Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand or to configure the loader.
 
-- [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
-- Save card for future payments: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders.
+* [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
+* Save card for future payments: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders.
 
 ![Example Checkbox](https://lh7-rt.googleusercontent.com/docsz/AD_4nXe9dPjXE9Y8Uq3EKpmzUrsBpXHCHtspu98NLo41GsszFV1lCCGNsiXvB-9dmQRtPTExcDWQ7S-Qqoq0iFXaeogBZPpONcLy8Ep55cqog0KHHasbstgeCgSTR00BiFmIbcWd4NwHkO7LrLUOsQXnFV1_gT45?key=-31QL7MEbUE8QLWSURQp1jZt)
 
-- You also can choose one of the render options for the card form. Below, you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
+* You also can choose one of the render options for the card form. Below, you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
 
 ![Render Options](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcf2gb-FB3sHbyzXYhwBcio9JJ7i0Vh-WBwHQC1dLul3k5XKGExvmYCApNNdx7DfwZcNgK-ARnQgncc3lE-3ln0chmnKstQL7NBKXXjgM8OHk4JpAeCneddETCFUAIF6xpCGMSDrrsBy7N4lHPcgYncIu7J?key=-31QL7MEbUE8QLWSURQp1jZt)
 
-- [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
+* [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
