@@ -17,5 +17,5 @@ Use this endpoint to verify if the customer's credit card is real and is working
 
 To use this endpoint, you need to:
 
-- Define a route for the 'Card' payment method in Yuno for VERIFY transactions. 
-- Inform `amount=0` and `verify=true`  inside the `payment_method.detail.card` object to verify the card without authorizing a real amount.
+* Define a route for the 'Card' payment method in Yuno for VERIFY transactions. 
+* Inform `amount=0` and `verify=true`  inside the `payment_method.detail.card` object to verify the card without authorizing a real amount.
