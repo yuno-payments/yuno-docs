@@ -22,22 +22,7 @@ To add the Apple Pay connection to the Yuno dashboard, follow these steps:
 4. Provide a **Name** for the connection, select **Apple Pay** as **Payment method**, and provide the information you acquired when following the [Prerequisites](doc:prerequisites-apple-pay)  process.
 5. Click **Add**. Apple Pay will be added to your connections.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/6d674dd-Screenshot_2024-07-02_at_2.27.47_PM.png",
-        "",
-        ""
-      ],
-      "align": "center",
-      "sizing": "700px"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" width="700px" src="https://files.readme.io/6d674dd-Screenshot_2024-07-02_at_2.27.47_PM.png" />
 
 ## Step 2: Add a Route for Apple Pay
 
@@ -52,22 +37,7 @@ Set up a new route to control how payments are processed through Apple Pay. Foll
 
 The following image displays a simple route through which **Apple Pay** processes all payments.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/d5b9a8c-Screenshot_2024-07-02_at_2.30.09_PM.png",
-        "",
-        ""
-      ],
-      "align": "center",
-      "sizing": "600px"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" width="600px" src="https://files.readme.io/d5b9a8c-Screenshot_2024-07-02_at_2.30.09_PM.png" />
 
 7. Once that is done, you will need to **set the route for the Card payment method** indicating with which provider you want to process payments with.
 
@@ -79,42 +49,13 @@ To make Apple Pay available to your end users, follow these steps:
 2. Locate the available **Payment methods** and enable **Apple Pay**.
 3. Press **Publish** to make **Apple Pay** available as a payment option for all transactions that meet the defined routing criteria.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png" />
 
 ## Step 4: Start Using Your Yuno Integration
 
 With your Yuno integration set up, you're ready to start processing payments. Using our standard [Full](doc:full-sdk-workflow) or [Lite SDK](doc:the-ultimate-checkout-lite) integration, you can seamlessly offer payments through Apple Pay Wallet, providing your users with a smooth and secure payment experience.
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/4617077-Screenshot_2024-08-07_at_5.03.42_PM.png",
-        "",
-        ""
-      ],
-      "align": "center",
-      "sizing": "350px"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" width="350px" src="https://files.readme.io/4617077-Screenshot_2024-08-07_at_5.03.42_PM.png" />
 
 ### Using Yuno's SDK
 
