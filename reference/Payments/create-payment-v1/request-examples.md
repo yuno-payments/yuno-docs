@@ -14,32 +14,77 @@ This page presents examples of requests and responses for creating payments usin
 
 ## Credit Card Payment
 
-[block:html]
-{
-  "html": "<style>\n  .table-of-contents-btn-shelf {\n    margin: 0 0 0 0;\n    display: flex;\n    justify-items:space-evenly;\n    gap: 20px;\n  }\n\n  .table-of-contents-btn {\n    display: flex;\n    padding: 0.5rem 0.3rem;\n    background: rgba(255, 255, 255, 0.23);\n    border-radius: 7px;\n    border: 1px solid #614ad67a;\n    transition: transform .2s;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n\n  }\n\n  .table-of-contents-btn:hover {\n    transform: scale(1.02);\n    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);\n    cursor: pointer;\n\n  }\n\n  .table-of-contents-btn p {\n    font-size: 0.85rem;\n    color: #614ad6;\n    font-weight: 600;\n    margin: 0 !important;\n\n  }\n\n  @media only screen and (max-width: 800px) {\n    .table-of-contents-btn-shelf {\n      grid-template-columns: repeat(2, 1fr);\n    }\n  }\n</style>\n\n<body>\n  <section class=\"table-of-contents-btn-shelf\">\n    <div class=\"table-of-contents-btn\"\n      onclick=\"window.location='https://docs.y.uno/reference/request-examples#payment-without-token-and-installments';\">\n      <p>\n        Payment without token and installments\n      </p>\n    </div>\n    <div class=\"table-of-contents-btn\" onclick=\"window.location='https://docs.y.uno/reference/request-examples#payment-with-installments-and-without-token';\">\n      <p>\n        Payment with installments and without token\n      </p>\n    </div>\n    <div class=\"table-of-contents-btn\" onclick=\"window.location='https://docs.y.uno/reference/request-examples#authorization-without-token-and-installments';\">\n      <p>\n        Authorization without token and installments\n      </p>\n    </div>\n  </section>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  .table-of-contents-btn-shelf {
+    margin: 0 0 0 0;
+    display: flex;
+    justify-items:space-evenly;
+    gap: 20px;
+  }
 
+  .table-of-contents-btn {
+    display: flex;
+    padding: 0.5rem 0.3rem;
+    background: rgba(255, 255, 255, 0.23);
+    border-radius: 7px;
+    border: 1px solid #614ad67a;
+    transition: transform .2s;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 
+  }
+
+  .table-of-contents-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+
+  }
+
+  .table-of-contents-btn p {
+    font-size: 0.85rem;
+    color: #614ad6;
+    font-weight: 600;
+    margin: 0 !important;
+
+  }
+
+  @media only screen and (max-width: 800px) {
+    .table-of-contents-btn-shelf {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+<body>
+  <section class="table-of-contents-btn-shelf">
+    <div class="table-of-contents-btn"
+      onclick="window.location='https://docs.y.uno/reference/request-examples#payment-without-token-and-installments';">
+      <p>
+        Payment without token and installments
+      </p>
+    </div>
+    <div class="table-of-contents-btn" onclick="window.location='https://docs.y.uno/reference/request-examples#payment-with-installments-and-without-token';">
+      <p>
+        Payment with installments and without token
+      </p>
+    </div>
+    <div class="table-of-contents-btn" onclick="window.location='https://docs.y.uno/reference/request-examples#authorization-without-token-and-installments';">
+      <p>
+        Authorization without token and installments
+      </p>
+    </div>
+  </section>
+</body>
+`}</HTMLBlock>
 
 ### Payment without token and installments
 
 This example presents a request for the [Create Payment](https://docs.y.uno/reference/create-payment) endpoint for payment using a credit card with the DIRECT method and minimum fields without a token and installments.  Check the recipe below for details and explanations for each portion of the request code.
 
-
-[block:tutorial-tile]
-{
-  "backgroundColor": "#018FF4",
-  "emoji": "🦉",
-  "id": "67e6db21199a3100370a325f",
-  "link": "https://docs.y.uno/v1.0/recipes/credit-card-payment",
-  "slug": "credit-card-payment",
-  "title": "Credit Card Payment"
-}
-[/block]
-
-
-
+<TutorialTile backgroundColor="#018FF4" emoji="🦉" id="67e6db21199a3100370a325f" link="https://docs.y.uno/v1.0/recipes/credit-card-payment" slug="credit-card-payment" title="Credit Card Payment" />
 
 The request body JSON is presented next.
 
@@ -75,8 +120,6 @@ The request body JSON is presented next.
     }
 }
 ```
-
-
 
 The received response JSON for a **SUCCESSFUL** request is presented next. For payments, the  `transactions.type` value will be PURCHASE.
 
@@ -230,8 +273,6 @@ The received response JSON for a **SUCCESSFUL** request is presented next. For p
 }
 ```
 
-
-
 The received response JSON for a **DECLINED** request is presented next.
 
 ```json
@@ -384,28 +425,13 @@ The received response JSON for a **DECLINED** request is presented next.
 }
 ```
 
-
-
 Check the transaction  `status` and `substatus` received from the response to verify if it was approved or declined.  In addition, to acquire more information regarding the process, you can check the `transactions.response_code` and the `transactions.response_message`.  In the first response example,  `transactions.response_message` indicates that the transaction was successful. On the other hand, in the second example, `transactions.response_message` indicates that the bank rejected the transaction.
 
 ### Payment with installments and without token
 
 This example presents a request for the [Create Payment](https://docs.y.uno/reference/create-payment) endpoint for payment with installments using a credit card with the DIRECT method and minimum fields without a token. Check the recipe below for details and explanations for each portion of the request code. 
 
-
-[block:tutorial-tile]
-{
-  "backgroundColor": "#614ad6",
-  "emoji": "💰",
-  "id": "67e6db21199a3100370a3261",
-  "link": "https://docs.y.uno/v1.0/recipes/credit-card-payment-with-installments-and-without-a-token",
-  "slug": "credit-card-payment-with-installments-and-without-a-token",
-  "title": "Credit Card Payment With Installments and Without a Token"
-}
-[/block]
-
-
-
+<TutorialTile backgroundColor="#614ad6" emoji="💰" id="67e6db21199a3100370a3261" link="https://docs.y.uno/v1.0/recipes/credit-card-payment-with-installments-and-without-a-token" slug="credit-card-payment-with-installments-and-without-a-token" title="Credit Card Payment With Installments and Without a Token" />
 
 The request body JSON is presented next.
 
@@ -442,8 +468,6 @@ The request body JSON is presented next.
     }
 }
 ```
-
-
 
 The received response JSON for a **SUCCESSFUL** request is presented next. You can check the number of installments by checking `payment_method.payment_method_detail.installments`.
 
@@ -597,8 +621,6 @@ The received response JSON for a **SUCCESSFUL** request is presented next. You c
 }
 ```
 
-
-
 The received response JSON for a **DECLINED** request is presented next.
 
 ```json
@@ -751,26 +773,11 @@ The received response JSON for a **DECLINED** request is presented next.
 }
 ```
 
-
-
 ### Authorization without token and installments
 
 This example presents a request for the [Create Payment](https://docs.y.uno/reference/create-payment) endpoint for an authorization process using a credit card with the DIRECT method and minimum fields without a token and installments. Check the recipe below for details and explanations for each portion of the request code.
 
-
-[block:tutorial-tile]
-{
-  "backgroundColor": "#614ad6",
-  "emoji": "✅",
-  "id": "67e6db21199a3100370a3262",
-  "link": "https://docs.y.uno/v1.0/recipes/authorization-without-a-token-and-installments",
-  "slug": "authorization-without-a-token-and-installments",
-  "title": "Authorization Without a Token and Installments"
-}
-[/block]
-
-
-
+<TutorialTile backgroundColor="#614ad6" emoji="✅" id="67e6db21199a3100370a3262" link="https://docs.y.uno/v1.0/recipes/authorization-without-a-token-and-installments" slug="authorization-without-a-token-and-installments" title="Authorization Without a Token and Installments" />
 
 The request body JSON is presented next.
 
@@ -807,8 +814,6 @@ The request body JSON is presented next.
     }
 }
 ```
-
-
 
 The received response JSON for a **AUTHORIZED** request is presented next. For authorization requests, the  `status` will have the PENDING value, while the `sub_status` will define if the authorization was successful. The `transaction.type` will also change to AUTHORIZE, for authorization requests.
 
