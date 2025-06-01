@@ -15,16 +15,16 @@ next:
 ---
 The Yuno Lite SDK for Android provides a pre-built UI solution focused on card payment processing. This SDK offers a streamlined integration process with essential payment functionality, making it ideal for merchants who:
 
-- Need a quick implementation with minimal customization requirements
-- Want to focus primarily on card payment processing
-- Prefer a ready-to-use UI that handles the payment flow
+* Need a quick implementation with minimal customization requirements
+* Want to focus primarily on card payment processing
+* Prefer a ready-to-use UI that handles the payment flow
 
 The Lite SDK includes core features like:
 
-- Pre-built payment UI components
-- Card payment processing
-- Basic payment status handling
-- Essential error management
+* Pre-built payment UI components
+* Card payment processing
+* Basic payment status handling
+* Essential error management
 
 For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-sdk-android) instead.
 
@@ -32,26 +32,35 @@ For merchants requiring more advanced features like multiple payment methods, cu
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-- You must have an active Yuno account.
-- To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers credentials section](https://docs.y.uno/docs/developers-credentials) of the Yuno dashboard. These credentials are required to authenticate requests to the Yuno API. The API is used to:
-  - Create a `customer`, which is required before initiating payments
-  - Create a `checkout_session`, which initializes the payment flow
-  - Create the payment associated with the session
+* You must have an active Yuno account.
+* To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers credentials section](https://docs.y.uno/docs/developers-credentials) of the Yuno dashboard. These credentials are required to authenticate requests to the Yuno API. The API is used to:
+  * Create a `customer`, which is required before initiating payments
+  * Create a `checkout_session`, which initializes the payment flow
+  * Create the payment associated with the session
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>SDK Version</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tAccess the <a href=\"release-notes-android-sdk\">Release notes</a> or the <a href=\"https://github.com/yuno-payments/yuno-sdk-android\">Yuno Android SDK repository</a> to verify the last SDK version available.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>SDK Version</h3>
+      <div class="contentContainer">
+        <p>
+				Access the <a href="release-notes-android-sdk">Release notes</a> or the <a href="https://github.com/yuno-payments/yuno-sdk-android">Yuno Android SDK repository</a> to verify the last SDK version available.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 1: Create a customer
 
 Before initiating payments, you need to create a customer using the [Create customer endpoint](ref:create-customer). This step is required to:
 
-- Identify the person making the payment
-- Enable saved card functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved card functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -59,9 +68,9 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in Step 5 of the integration
-- The `checkout_session` is unique for each payment attempt and cannot be reused
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in Step 5 of the integration
+* The `checkout_session` is unique for each payment attempt and cannot be reused
 
 ## Step 3: Include the library in your project
 
@@ -123,38 +132,91 @@ data class YunoConfig(
 
 The following table includes descriptions for each customization available.
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Customization option",
-    "h-1": "Description",
-    "0-0": "**cardFlow**",
-    "0-1": "It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options)  for more information.",
-    "1-0": "**saveCardEnabled**",
-    "1-1": "Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments)   section for more information.",
-    "2-0": "**keepLoader**",
-    "2-1": "Keep Yuno's loading screen until you create and continue with payment. To use this feature you need to use the function `startCompletePaymentFlow()`, described in the next sections.  Check the [Loader](#loader)  for additional information.",
-    "3-0": "**language**",
-    "3-1": "Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:  \n  \n- `es` (Spanish)\n- `en` (English)\n- `pt` (Portuguese)",
-    "4-0": "**styles**",
-    "4-1": "Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)  section."
-  },
-  "cols": 2,
-  "rows": 5,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Customization option
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Loading Screen Persistence</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tTo ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the <code>startCompletePaymentFlow()</code> (loader-android) function.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+  <tbody>
+    <tr>
+      <td>
+        **cardFlow**
+      </td>
 
+      <td>
+        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options)  for more information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **saveCardEnabled**
+      </td>
+
+      <td>
+        Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments)   section for more information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **keepLoader**
+      </td>
+
+      <td>
+        Keep Yuno's loading screen until you create and continue with payment. To use this feature you need to use the function `startCompletePaymentFlow()`, described in the next sections.  Check the [Loader](#loader)  for additional information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **language**
+      </td>
+
+      <td>
+        Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:  
+
+        * `es` (Spanish)
+        * `en` (English)
+        * `pt` (Portuguese)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **styles**
+      </td>
+
+      <td>
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)  section.
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Loading Screen Persistence</h3>
+      <div class="contentContainer">
+        <p>
+				To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the <code>startCompletePaymentFlow()</code> (loader-android) function.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 You also need to update your manifest to use your application:
 
@@ -252,31 +314,49 @@ The one-time token callback returns the following parameters:
 | ------------ | ------ | ------------------------------------------------ |
 | oneTimeToken | String | one-time token generated for the payment session |
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Loader handling</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tThe merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Loader handling</h3>
+      <div class="contentContainer">
+        <p>
+				The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 ## Step 8: Create the payment
 
 After completing the previous steps, create a payment by calling the [Create Payment endpoint](https://docs.y.uno/reference/create-payment) from your backend. This endpoint requires:
 
-- The one-time token obtained in Step 7
-- The `checkout_session` obtained in Step 2
+* The one-time token obtained in Step 7
+* The `checkout_session` obtained in Step 2
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Continue method</h3>\n      <div class=\"contentContainer\">\n        <p>\n          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario \n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Continue method</h3>
+      <div class="contentContainer">
+        <p>
+          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario 
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 For payment methods that require additional customer actions (such as 3DS authentication challenges) or asynchronous processing (like bank transfers), you'll need to integrate the SDK's `continuePayment` method after creating the payment. The Create Payment API response includes a `sdk_action_required` field that indicates whether this step is needed:
 
-- If `TRUE`: Call `yuno.continuePayment()` to display additional screens for customer actions (e.g., 3DS authentication, bank redirect pages)
-- If `FALSE`: Skip this step as no additional customer interaction is required
+* If `TRUE`: Call `yuno.continuePayment()` to display additional screens for customer actions (e.g., 3DS authentication, bank redirect pages)
+* If `FALSE`: Skip this step as no additional customer interaction is required
 
 Here's how to implement the payment continuation flow:
 
@@ -336,48 +416,30 @@ The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the 
 
 In addition, you can display a checkbox to save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders:
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/1c3d62f0307923298b22f18a1e58f86f8b6068a582315a0991ff8d802c475dbc-Card___save_for_future_payments.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/1c3d62f0307923298b22f18a1e58f86f8b6068a582315a0991ff8d802c475dbc-Card___save_for_future_payments.png" />
 
 ### Render options
 
 You can choose between two card form render options. The following screenshots demonstrate the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png" />
 
 ### SDK customization
 
 You can change the SDK appearance to match your brand. For more information, access the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tIn addition to the code examples provided, you can access the <a href=\"https://github.com/yuno-payments/yuno-sdk-android/tree/master\">Yuno repository</a> to complete Yuno Android SDKs implementation.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+				In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-android/tree/master">Yuno repository</a> to complete Yuno Android SDKs implementation.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
