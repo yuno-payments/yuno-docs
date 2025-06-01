@@ -19,11 +19,11 @@ On this page, you will find a walk-through guide on migrating tokens using the Y
 
 Before starting following the steps described in this guide, you need to:
 
-- Have concluded the three steps related to the [importing cards from a gateway account](docs:token-migration-process-copy#importing-cards-from-a-gateway-account) process.
-- Access your [API credentials](doc:get-your-api-credentials) on the Yuno Dashboard, which are composed by:
-  - `public-api-key`
-  - `private-secrete-key`
-  - `account_id`
+* Have concluded the three steps related to the [importing cards from a gateway account](docs:token-migration-process-copy#importing-cards-from-a-gateway-account) process.
+* Access your [API credentials](doc:get-your-api-credentials) on the Yuno Dashboard, which are composed by:
+  * `public-api-key`
+  * `private-secrete-key`
+  * `account_id`
 
 Ensure to have concluded the steps and have the above data before following the guide.
 
@@ -35,12 +35,24 @@ Use the [Create Customer](ref:create-customer) endpoint to create customers on t
 
 To register new customers, You will need to provide their personal information. In addition, you also need to supply the `merchant_customer_id`, a unique identifier for the customer used on your system.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Customer complementary information</h3>\n      <div class=\"contentContainer\">\n        <p>\n          When creating a <b>Customer</b>, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of not mandatory data you can provide. \n        </p>\n        <p>\n           If you add optional information, be aware of the required mandatory fields. \n          </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Customer complementary information</h3>
+      <div class="contentContainer">
+        <p>
+          When creating a <b>Customer</b>, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of not mandatory data you can provide. 
+        </p>
+        <p>
+           If you add optional information, be aware of the required mandatory fields. 
+          </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 At the end of the create a customer process, you will receive an `id`, which identifies the user within the Yuno system. Use the `id` to enroll the existing payment methods.
 
