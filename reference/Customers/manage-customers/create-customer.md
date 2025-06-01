@@ -21,8 +21,18 @@ This request creates a customer resource. You need to provide several parameters
 
 Creating a customer generates a customer `id` that can be used to initialize the checkout.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer alert\">\n    <div class=\"verticalLineAlert\"></div>\n    <div>\n      <h3>Important</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\t\tThere are certain objects that are not mandatory when creating a \"Customer\". However the more information you provide, the approval, conversion and fraud prevention rates will be positively impacted.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer alert">
+    <div class="verticalLineAlert"></div>
+    <div>
+      <h3>Important</h3>
+      <div class="contentContainer">
+        <p>
+					There are certain objects that are not mandatory when creating a "Customer". However the more information you provide, the approval, conversion and fraud prevention rates will be positively impacted.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
