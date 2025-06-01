@@ -24,8 +24,8 @@ This guide will walk you through the transition from Test Mode to Live Mode, ens
 
 Yuno has two distinct environments, each serving a specific purpose:
 
-- **Test Mode (Sandbox):** Upon registration, your organization is assigned an "Inactive" status. This status provides access exclusively to Test Mode. It allows you to explore the dashboard's features, learn about its functionalities, and experiment without affecting your live operations. Test Mode is an invaluable tool to try out new configurations and features without worrying about the outcome.
-- **Live Mode (Production environment):** To access Live Mode, where real customer interactions occur, you need to initiate an activation request. Once the account is active, the production environment enables real-world operations while ensuring the utmost security and performance. This is where the lessons learned using the Sandbox environment are applied to provide a world-class experience to your customers.
+* **Test Mode (Sandbox):** Upon registration, your organization is assigned an "Inactive" status. This status provides access exclusively to Test Mode. It allows you to explore the dashboard's features, learn about its functionalities, and experiment without affecting your live operations. Test Mode is an invaluable tool to try out new configurations and features without worrying about the outcome.
+* **Live Mode (Production environment):** To access Live Mode, where real customer interactions occur, you need to initiate an activation request. Once the account is active, the production environment enables real-world operations while ensuring the utmost security and performance. This is where the lessons learned using the Sandbox environment are applied to provide a world-class experience to your customers.
 
 ## Transitioning to Live Mode
 
@@ -37,5 +37,5 @@ Yuno has two distinct environments, each serving a specific purpose:
 
 Switching between Sandbox and Production environments is remarkably simple:
 
-- **One-click switching:** The dashboard's **Test mode** toogle lets you switch environments in an instant, ensuring smooth navigation and ease of access.
-- **Single username and password:** One set of credential will allow you to use both environments without dealing with multiple passwords or a segmented experience.
+* **One-click switching:** The dashboard's **Test mode** toogle lets you switch environments in an instant, ensuring smooth navigation and ease of access.
+* **Single username and password:** One set of credential will allow you to use both environments without dealing with multiple passwords or a segmented experience.
