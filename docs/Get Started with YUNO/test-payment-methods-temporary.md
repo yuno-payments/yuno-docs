@@ -12,13 +12,595 @@ next:
 ---
 Yuno´s integration allows you to connect to dozens of payment methods and processors within a single integration. Some of them need certain information required by the payment providers to use their sandbox environment. In this section, you will find the following information for each payment method and processor available in Yuno:
 
-- Descriptions regarding services, compatibility, currency acceptance, countries accepted, authentication, and security.
-- Guidelines for you to test each connection during your integration.
+* Descriptions regarding services, compatibility, currency acceptance, countries accepted, authentication, and security.
+* Guidelines for you to test each connection during your integration.
 
 You can use the list below find e select the desired payment method or processor to get more information and test guidelines about its connection with Yuno.
 
-[block:html]
-{
-  "html": "<style>\n  * {\n    box-sizing: border-box;\n    margin: 0;\n    padding: 0;\n  }\n\n  .shelf {\n    display: flex;\n    flex-direction: column;\n    gap: 1rem;\n  }\n\n  .connection-shelf {\n    background-color: #F6F7FB;\n    /* background-color: #89898b; */\n    border-radius: 10px;\n    border: 1px solid #614ad67a;\n    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.05);\n    max-width: 800px;\n    padding: 0 0 1rem 0;\n  }\n\n  .connection-shelf .conection-list {\n    display: grid;\n    grid-template-columns: 27% 27% 27%;\n    justify-content: space-between;\n    margin: 0 3rem;\n\n  }\n\n  .connection-shelf .title-container {\n    margin: 2rem 3rem 0.6rem 3rem;\n    font-weight: 500;\n    font-size: 1rem;\n    border-bottom: 1px solid #BABABA;\n    padding-bottom: 4px !important;\n  }\n\n  .connection-shelf .title-container p {\n    margin: 0 !important;\n  }\n\n  .connection-badge {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    padding: 0.6rem 0;\n    border-radius: 7px;\n\n  }\n\n  .connection-badge .connection-logo div {\n    height: 23px;\n    width: 30px;\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-items: center;\n  }\n\n  .connection-badge .connection-name {\n    font-size: 1rem;\n    text-decoration: none;\n    color: black;\n    padding-top: 3px;\n  }\n\n  .connection-badge .connection-name a {\n    text-decoration: none;\n    color: black;\n\n  }\n\n  .connection-badge .connection-name a:hover {\n    color: #614ad6;\n  }\n\n  .connection-badge img {\n    max-height: 25px;\n    max-width: 25px;\n  }\n</style>\n\n<body>\n  <section class=\"connection-shelf\">\n    <div class=\"title-container\">\n      <p>Processors</p>\n    </div>\n    <div class=\"conection-list Payment-Processor\">\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/adyen_logosimbolo.png\" alt=\"adyen logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/adyen\">\n            Adyen\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/arcus_logosimbolo.png\" alt=\"arcus logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Arcus\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/bac_logosimbolo.png\" alt=\"bac logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            BAC Credomatic\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/bancolombia_logosimbolo.png\" alt=\"Bancolombia logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/bancolombia\">\n            Bancolombia\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/cielo_logosimbolo.png\" \" alt=\" cielo-logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Cielo\n          </a>\n        </div>\n      </div>\n\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/credibanco_logosimbolo.png\" alt=\"credibanco logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            CredibanCo\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/datafast_logosimbolo.png\" alt=\"datafast logo\">\n          </div>\n        </div>\n\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Datafast\n          </a>\n        </div>\n      </div>\n\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/dlocal_logosimbolo.png\" alt=\"dlocal logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <div class=\"connection-name\">\n            <a href=\"\">\n              Dlocal\n            </a>\n          </div>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/izipay_logosimbolo.png\" alt=\"izipay logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Izipay\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/fiserv_logosimbolo.png\" alt=\"fiserv logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Fiserv\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/getnet_logosimbolo.png\" alt=\"Getnet logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Getnet\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/klap_logosimbolo.png\" alt=\"klap logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <div class=\"connection-name\">\n            <a href=\"\">\n              Klap\n            </a>\n          </div>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/kushki_logosimbolo.png\" alt=\"Kushki logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Kushki\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/medianet_logosimbolo.png\" alt=\"medianet logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Medianet\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/mercadopago_logosimbolo.png\" alt=\"mercado pago logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/mercado-pago\">\n            Mercado Pago\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/nequi_logosimbolo.png\" alt=\"nequi logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Nequi\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/niubiz_logosimbolo.png\" alt=\"niubiz-logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Niubiz\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/nubank_logosimbolo.png\" alt=\"nupay logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            NuPay\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/pagseguro_logosimbolo.png\" alt=\"pagseguro logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            PagSeguro\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/paymentez_logosimbolo.png\" alt=\"paymentez logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Paymentez\n          </a>\n        </div>\n      </div>\n\t\t\t<div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/paypal_logosimbolo.png\" alt=\"paypal logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/paypal\">\n            PayPal\n          </a>\n        </div>\n      </div>                    \n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/payu_logosimbolo.png\" alt=\"payu logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/payu\">\n            PayU\n          </a>\n        </div>\n      </div>\n\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/payvalida_logosimbolo.png\" alt=\"payvalida logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Payválida\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/pix_logosimbolo.png\" alt=\"pix logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Pix\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/placetopay_logosimbolo.png\" alt=\"placetopay logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Placetopay\n          </a>\n        </div>\n      </div>\n\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/prosa_logosimbolo.png\" alt=\"prosa logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Prosa\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/pse_logosimbolo.png\" alt=\"pse logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            PSE\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/rede_logosimbolo.png\" alt=\"rede-logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Rede\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/redeban_logosimbolo.png\" alt=\"redeban logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Redeban\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/safetypay_logosimbolo.png\" alt=\"safetypay logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Safetypay\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/stp_logosimbolo.png\" alt=\"stp logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            STP\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/transbank_logosimbolo.png\" alt=\"transbak logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Transbank\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://github.com/cassianomoraes/yuno_card_images/blob/main/acquirers-logos-svg-png-standardized/tuya-logo.png?raw=true  \n                \" alt=\"tuya-logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Tuya\n          </a>\n        </div>\n      </div>\n\n\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/wompi_logosimbolo.png\" alt=\"wompi logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            Wompi\n          </a>\n        </div>\n      </div>\n    </div>\n    <div class=\"title-container\">\n      <p>Payment Methods</p>\n    </div>\n    <div class=\"conection-list Payment-Method\">\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/acuotaz_logosimbolo.png\" alt=\"acuotaz logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/acuotaz\">\n            Acuotaz\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/addi_logosimbolo.png\" alt=\"Addi logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/addi\">\n            Addi\n          </a>\n        </div>\n      </div>\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/daviplata_logosimbolo.png\" alt=\"daviplata logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/daviplata\">\n            DaviPlata\n          </a>\n        </div>\n      </div>\n      \n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/wibond_logosimbolo.png\" alt=\"wibond logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"https://docs.y.uno/docs/wibond\">\n            Wibond\n          </a>\n        </div>\n      </div>\n    </div>\n    <div class=\"title-container\">\n      <p>Fraud Solutions</p>\n    </div>\n    <div class=\"conection-list Fraud-Solution\">\n      <div class=\"connection-badge\">\n        <div class=\"connection-logo\">\n          <div>\n            <img src=\"https://icons.prod.y.uno/clearsale_logosimbolo.png\" \" alt=\" clearsale logo\">\n          </div>\n        </div>\n        <div class=\"connection-name\">\n          <a href=\"\">\n            ClearSale\n          </a>\n        </div>\n      </div>\n    </div>\n\n  </section>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  .shelf {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .connection-shelf {
+    background-color: #F6F7FB;
+    /* background-color: #89898b; */
+    border-radius: 10px;
+    border: 1px solid #614ad67a;
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.05);
+    max-width: 800px;
+    padding: 0 0 1rem 0;
+  }
+
+  .connection-shelf .conection-list {
+    display: grid;
+    grid-template-columns: 27% 27% 27%;
+    justify-content: space-between;
+    margin: 0 3rem;
+
+  }
+
+  .connection-shelf .title-container {
+    margin: 2rem 3rem 0.6rem 3rem;
+    font-weight: 500;
+    font-size: 1rem;
+    border-bottom: 1px solid #BABABA;
+    padding-bottom: 4px !important;
+  }
+
+  .connection-shelf .title-container p {
+    margin: 0 !important;
+  }
+
+  .connection-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.6rem 0;
+    border-radius: 7px;
+
+  }
+
+  .connection-badge .connection-logo div {
+    height: 23px;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .connection-badge .connection-name {
+    font-size: 1rem;
+    text-decoration: none;
+    color: black;
+    padding-top: 3px;
+  }
+
+  .connection-badge .connection-name a {
+    text-decoration: none;
+    color: black;
+
+  }
+
+  .connection-badge .connection-name a:hover {
+    color: #614ad6;
+  }
+
+  .connection-badge img {
+    max-height: 25px;
+    max-width: 25px;
+  }
+</style>
+
+<body>
+  <section class="connection-shelf">
+    <div class="title-container">
+      <p>Processors</p>
+    </div>
+    <div class="conection-list Payment-Processor">
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/adyen_logosimbolo.png" alt="adyen logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/adyen">
+            Adyen
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/arcus_logosimbolo.png" alt="arcus logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Arcus
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/bac_logosimbolo.png" alt="bac logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            BAC Credomatic
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/bancolombia_logosimbolo.png" alt="Bancolombia logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/bancolombia">
+            Bancolombia
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/cielo_logosimbolo.png" " alt=" cielo-logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Cielo
+          </a>
+        </div>
+      </div>
+
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/credibanco_logosimbolo.png" alt="credibanco logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            CredibanCo
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/datafast_logosimbolo.png" alt="datafast logo">
+          </div>
+        </div>
+
+        <div class="connection-name">
+          <a href="">
+            Datafast
+          </a>
+        </div>
+      </div>
+
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/dlocal_logosimbolo.png" alt="dlocal logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <div class="connection-name">
+            <a href="">
+              Dlocal
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/izipay_logosimbolo.png" alt="izipay logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Izipay
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/fiserv_logosimbolo.png" alt="fiserv logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Fiserv
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/getnet_logosimbolo.png" alt="Getnet logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Getnet
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/klap_logosimbolo.png" alt="klap logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <div class="connection-name">
+            <a href="">
+              Klap
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/kushki_logosimbolo.png" alt="Kushki logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Kushki
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/medianet_logosimbolo.png" alt="medianet logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Medianet
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/mercadopago_logosimbolo.png" alt="mercado pago logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/mercado-pago">
+            Mercado Pago
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/nequi_logosimbolo.png" alt="nequi logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Nequi
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/niubiz_logosimbolo.png" alt="niubiz-logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Niubiz
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/nubank_logosimbolo.png" alt="nupay logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            NuPay
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/pagseguro_logosimbolo.png" alt="pagseguro logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            PagSeguro
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/paymentez_logosimbolo.png" alt="paymentez logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Paymentez
+          </a>
+        </div>
+      </div>
+			<div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/paypal_logosimbolo.png" alt="paypal logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/paypal">
+            PayPal
+          </a>
+        </div>
+      </div>                    
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/payu_logosimbolo.png" alt="payu logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/payu">
+            PayU
+          </a>
+        </div>
+      </div>
+
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/payvalida_logosimbolo.png" alt="payvalida logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Payválida
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/pix_logosimbolo.png" alt="pix logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Pix
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/placetopay_logosimbolo.png" alt="placetopay logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Placetopay
+          </a>
+        </div>
+      </div>
+
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/prosa_logosimbolo.png" alt="prosa logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Prosa
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/pse_logosimbolo.png" alt="pse logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            PSE
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/rede_logosimbolo.png" alt="rede-logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Rede
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/redeban_logosimbolo.png" alt="redeban logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Redeban
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/safetypay_logosimbolo.png" alt="safetypay logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Safetypay
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/stp_logosimbolo.png" alt="stp logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            STP
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/transbank_logosimbolo.png" alt="transbak logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Transbank
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://github.com/cassianomoraes/yuno_card_images/blob/main/acquirers-logos-svg-png-standardized/tuya-logo.png?raw=true  
+                " alt="tuya-logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Tuya
+          </a>
+        </div>
+      </div>
+
+
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/wompi_logosimbolo.png" alt="wompi logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            Wompi
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="title-container">
+      <p>Payment Methods</p>
+    </div>
+    <div class="conection-list Payment-Method">
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/acuotaz_logosimbolo.png" alt="acuotaz logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/acuotaz">
+            Acuotaz
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/addi_logosimbolo.png" alt="Addi logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/addi">
+            Addi
+          </a>
+        </div>
+      </div>
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/daviplata_logosimbolo.png" alt="daviplata logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/daviplata">
+            DaviPlata
+          </a>
+        </div>
+      </div>
+      
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/wibond_logosimbolo.png" alt="wibond logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="https://docs.y.uno/docs/wibond">
+            Wibond
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="title-container">
+      <p>Fraud Solutions</p>
+    </div>
+    <div class="conection-list Fraud-Solution">
+      <div class="connection-badge">
+        <div class="connection-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/clearsale_logosimbolo.png" " alt=" clearsale logo">
+          </div>
+        </div>
+        <div class="connection-name">
+          <a href="">
+            ClearSale
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</body>
+`}</HTMLBlock>
