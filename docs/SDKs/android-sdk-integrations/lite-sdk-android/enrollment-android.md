@@ -15,16 +15,16 @@ next:
 ---
 The Yuno Lite SDK for Android provides a pre-built UI solution focused on payment method enrollment. This SDK offers a streamlined integration process with essential enrollment functionality, making it ideal for merchants who:
 
-- Need a quick implementation with minimal customization requirements
-- Want to focus primarily on payment method enrollment
-- Prefer a ready-to-use UI that handles the enrollment flow
+* Need a quick implementation with minimal customization requirements
+* Want to focus primarily on payment method enrollment
+* Prefer a ready-to-use UI that handles the enrollment flow
 
 The Lite SDK includes core features like:
 
-- Pre-built enrollment UI components
-- Card enrollment processing
-- Basic enrollment status handling
-- Essential error management
+* Pre-built enrollment UI components
+* Card enrollment processing
+* Basic enrollment status handling
+* Essential error management
 
 For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-sdk-android) instead.
 
@@ -32,9 +32,9 @@ For merchants requiring more advanced features like multiple payment methods, cu
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-- You must have an active Yuno account
-- To perform the integration, you'll need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
-- Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
+* You must have an active Yuno account
+* To perform the integration, you'll need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
+* Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
 
 ## Step 1: Create a customer
 
@@ -106,38 +106,91 @@ data class YunoConfig(
 
 The following table includes descriptions for each customization available.
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Customization option",
-    "h-1": "Description",
-    "0-0": "**cardFlow**",
-    "0-1": "It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options)   for more information",
-    "1-0": "**saveCardEnabled**",
-    "1-1": "Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments)    section for more information.",
-    "2-0": "**keepLoader**",
-    "2-1": "Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader)   for additional information.",
-    "3-0": "**language**",
-    "3-1": "Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:  \n  \n- `es` (Spanish)\n- `en` (English)\n- `pt` (Portuguese)",
-    "4-0": "**styles**",
-    "4-1": "Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)  section."
-  },
-  "cols": 2,
-  "rows": 5,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Customization option
+      </th>
 
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Loading Screen Persistence</h3>\n      <div class=\"contentContainer\">\n        <p>\n         To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the <code>startCompletePaymentFlow()</code>(loader-android) function.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+  <tbody>
+    <tr>
+      <td>
+        **cardFlow**
+      </td>
 
+      <td>
+        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options)   for more information
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **saveCardEnabled**
+      </td>
+
+      <td>
+        Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments)    section for more information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **keepLoader**
+      </td>
+
+      <td>
+        Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader)   for additional information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **language**
+      </td>
+
+      <td>
+        Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:  
+
+        * `es` (Spanish)
+        * `en` (English)
+        * `pt` (Portuguese)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **styles**
+      </td>
+
+      <td>
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)  section.
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Loading Screen Persistence</h3>
+      <div class="contentContainer">
+        <p>
+         To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the <code>startCompletePaymentFlow()</code>(loader-android) function.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 You also need to update your manifest to use your application:
 
@@ -193,19 +246,37 @@ fun AppCompatActivity.enrollmentStatus(
 )
 ```
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Optional Function</h3>\n      <div class=\"contentContainer\">\n        <p>\n         Using the function <code>enrollmentStatus</code> is optional. It isn't a requirement to complete the enrollment process.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Optional Function</h3>
+      <div class="contentContainer">
+        <p>
+         Using the function <code>enrollmentStatus</code> is optional. It isn't a requirement to complete the enrollment process.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Note</h3>\n      <div class=\"contentContainer\">\n        <p>\n         If you provide a new callback when calling the function <code>enrollmentStatus</code>, it will override the callback you set when calling the function <code>initEnrollment</code>.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Note</h3>
+      <div class="contentContainer">
+        <p>
+         If you provide a new callback when calling the function <code>enrollmentStatus</code>, it will override the callback you set when calling the function <code>initEnrollment</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 The possible states are presented in the following code block:
 
@@ -231,21 +302,39 @@ The following table provide additional information about the possible states:
 
 ### Using the `OnActivityResult` method
 
-The **onActivityResult **method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes.  To process the enrollment result, follow these steps:
+The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes.  To process the enrollment result, follow these steps:
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Deprecated</h3>\n      <div class=\"contentContainer\">\n        <p>\n         The <code>onActivityResult</code> method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using <code>initEnrollment()</code> contract, which follows Google's best practices.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Deprecated</h3>
+      <div class="contentContainer">
+        <p>
+         The <code>onActivityResult</code> method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using <code>initEnrollment()</code> contract, which follows Google's best practices.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
-
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Request Code</h3>\n      <div class=\"contentContainer\">\n        <p>\n         If you are using the <code>onActivityResult</code> method but did not inform a <code>requestCode</code> when calling the <code>startEnrollment</code> in <a href=\"#step-3-enroll-a-new-payment-method\">Step 3</a>, you must use the <code>YUNO_ENROLLMENT_REQUEST_CODE</code> provided by Yuno.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
-
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Request Code</h3>
+      <div class="contentContainer">
+        <p>
+         If you are using the <code>onActivityResult</code> method but did not inform a <code>requestCode</code> when calling the <code>startEnrollment</code> in <a href="#step-3-enroll-a-new-payment-method">Step 3</a>, you must use the <code>YUNO_ENROLLMENT_REQUEST_CODE</code> provided by Yuno.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 1. First, override the `onActivityResult` method. It ensures that the hierarchy calls are respected.
 
@@ -345,48 +434,30 @@ The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the 
 
 In addition, you can display a checkbox to save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders:
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/1c3d62f0307923298b22f18a1e58f86f8b6068a582315a0991ff8d802c475dbc-Card___save_for_future_payments.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/1c3d62f0307923298b22f18a1e58f86f8b6068a582315a0991ff8d802c475dbc-Card___save_for_future_payments.png" />
 
 ### Render options
 
 You can choose between two card form render options. The following screenshots demonstrate the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
 
-[block:image]
-{
-  "images": [
-    {
-      "image": [
-        "https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png",
-        "",
-        ""
-      ],
-      "align": "center"
-    }
-  ]
-}
-[/block]
-
+<Image align="center" src="https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png" />
 
 ### SDK customization
 
 You can change the SDK appearance to match your brand. For more information, access the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
 
-[block:html]
-{
-  "html": "<body>\n  <div class=\"infoBlockContainer\">\n    <div class=\"verticalLine\"></div>\n    <div>\n      <h3>Demo App</h3>\n      <div class=\"contentContainer\">\n        <p>\n\t\t\t\tIn addition to the code examples provided, you can access the <a href=\"https://github.com/yuno-payments/yuno-sdk-android/tree/master\">Yuno repository</a> to complete Yuno Android SDKs implementation.\n        </p>\n      </div>\n    </div>\n  </div>\n</body>"
-}
-[/block]
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+				In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-android/tree/master">Yuno repository</a> to complete Yuno Android SDKs implementation.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
