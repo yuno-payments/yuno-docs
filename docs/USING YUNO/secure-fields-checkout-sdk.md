@@ -24,7 +24,7 @@ The first step is to make sure to include the Yuno SDK file in your webpage befo
 
 ### Step 2: Initialize secure fields with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide. 
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide. 
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -40,24 +40,42 @@ The essential parameters are the `countryCode`, which determines the country for
 
 The following table lists all required parameters and their descriptions. 
 
-[block:parameters]
-{
-  "data": {
-    "h-0": "Parameter",
-    "h-1": "Description",
-    "0-0": "`countryCode`",
-    "0-1": "This parameter determines the country for which the payment process is being configured. It should be set to one of the following country codes: CO, BR, CL, PE, EC, UR, or MX.",
-    "1-0": "`checkoutSession`",
-    "1-1": "Refers to the current payment's checkout session.  \n`Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`"
-  },
-  "cols": 2,
-  "rows": 2,
-  "align": [
-    "left",
-    "left"
-  ]
-}
-[/block]
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `countryCode`
+      </td>
+
+      <td>
+        This parameter determines the country for which the payment process is being configured. It should be set to one of the following country codes: CO, BR, CL, PE, EC, UR, or MX.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `checkoutSession`
+      </td>
+
+      <td>
+        Refers to the current payment's checkout session.\
+        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ```javascript
   const secureFields = yuno.secureFields({
@@ -205,13 +223,13 @@ The next code block presents an example of the parameter configuration for three
   secureCvv.render('#cvv')
 ```
 
-- Below you find a GIF showing how you can configure the Secure Fields:
+* Below you find a GIF showing how you can configure the Secure Fields:
 
-[block:html]
-{
-  "html": "<div style=\"background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px; max-width:500px; margin:auto\">\n        <image src=\"https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/secure-fields-checkout-sdk-1.gif?raw=true\" style=\"width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);\"></image>\n      </div>"
-}
-[/block]
+<HTMLBlock>{`
+<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px; max-width:500px; margin:auto">
+        <image src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/secure-fields-checkout-sdk-1.gif?raw=true" style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></image>
+      </div>
+`}</HTMLBlock>
 
 ### Step 5: Generate an OTT (one-time token)
 
@@ -265,7 +283,7 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 
 After receiving the One Time Token, you can create the payment using the `createPayment` function, providing the `oneTimeToken` and the `checkoutSession`. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).  
 
-- **Status Payment**: As the process may raise errors, we recommend using a try/catch function here. Then, you can check the payment status with the `yuno.mountStatusPayment`function, as shown in the next code example:
+* **Status Payment**: As the process may raise errors, we recommend using a try/catch function here. Then, you can check the payment status with the `yuno.mountStatusPayment`function, as shown in the next code example:
 
 ```javascript
 // Create your payment, you should implement this function
