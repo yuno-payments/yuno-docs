@@ -22,7 +22,7 @@ After creating `screen_payment_card_form.xml`, you can use your own design while
 
 #### The following are the components you should use:
 
-- CardNumberEditText:  
+* CardNumberEditText:\
   This is where the user can enter the credit card number. You must use it with its defined android id:
 
 ```XML
@@ -30,7 +30,7 @@ After creating `screen_payment_card_form.xml`, you can use your own design while
     android:id="@+id/textField_number" />
 ```
 
-- CardExpiryDateEditText:  
+* CardExpiryDateEditText:\
   This is where the user can enter the credit card's expiration date. You must use it with its defined android id:
 
 ```XML
@@ -38,7 +38,7 @@ After creating `screen_payment_card_form.xml`, you can use your own design while
     android:id="@+id/textField_expiration_date" />
 ```
 
-- TextFieldItemView for CVV code:  
+* TextFieldItemView for CVV code:\
   This is where the user can enter the credit card's verification code (CVV). You must use it with its defined android id:
 
 ```XML
@@ -46,7 +46,7 @@ After creating `screen_payment_card_form.xml`, you can use your own design while
 android:id="@+id/textField_verification_code" />
 ```
 
-- TextFieldItemView for card holder's name:  
+* TextFieldItemView for card holder's name:\
   This is where the user can enter the credit card holder's name. You must use it with its defined android id:
 
 ```XML
@@ -54,7 +54,7 @@ android:id="@+id/textField_verification_code" />
     android:id="@+id/textField_name" />
 ```
 
-- SpinnerFieldItemView for identification document type:  
+* SpinnerFieldItemView for identification document type:\
   This is where the user can choose the type of identification document the credit card holder holds. You must use it with its defined android id:
 
 ```XML
@@ -62,7 +62,7 @@ android:id="@+id/textField_verification_code" />
     android:id="@+id/spinner_document_type" />
 ```
 
-- TextFieldItemView for identification document number:  
+* TextFieldItemView for identification document number:\
   This is where the user can enter the credit card holder's identification document number. You must use it with its defined android id:
 
 ```XML
@@ -70,7 +70,7 @@ android:id="@+id/textField_verification_code" />
     android:id="@+id/textField_user_document" />
 ```
 
-- AppCompatCheckBox for save card:  
+* AppCompatCheckBox for save card:\
   This is where the user can choose whether to save the credit card for future purchases. You must use it with its defined android id:
 
 ```XML
@@ -78,7 +78,7 @@ android:id="@+id/textField_verification_code" />
 android:id="@+id/checkBox_save_card" />
 ```
 
-- Button for validate card form and continue with the payment process:  
+* Button for validate card form and continue with the payment process:\
   This is the component used to submit the form and send the credit card information to Yuno. You must use it with its defined android id:
 
 ```XML
