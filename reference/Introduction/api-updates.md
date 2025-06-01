@@ -18,9 +18,9 @@ When a disruptive modification is implemented to the Yuno API, a new version is 
 
 We consider the following modifications to maintain backward compatibility:
 
-- Add new resources to the API.
-- Add new optional request parameters to existing API methods.
-- Add new properties to existing API responses.
-- Modify the order of properties in existing API responses.
-- Alter the length or format of opaque strings, such as object identifiers, error messages, and other human-readable strings. This includes adding or removing prefixes.
-- Introduce new types of events. Make sure your webhook receiving service supports unknown event types.
+* Add new resources to the API.
+* Add new optional request parameters to existing API methods.
+* Add new properties to existing API responses.
+* Modify the order of properties in existing API responses.
+* Alter the length or format of opaque strings, such as object identifiers, error messages, and other human-readable strings. This includes adding or removing prefixes.
+* Introduce new types of events. Make sure your webhook receiving service supports unknown event types.
