@@ -158,13 +158,9 @@ Either during the enrollment or payment creation, you will receive the basic inf
 
 After establishing the corresponding credentials in your Yuno account and contacting our Support team, you'll be prepared to execute tokenized transactions seamlessly.
 
-<InfoBlock title="Test" type="danger">
+<InfoBlock type="danger">
   With this option, Yuno operates only as a passthrough for the network token information. The merchant will need to send the necessary information about the network tokens so Yuno can share them with upstream payment partners.
 </InfoBlock>
-
-> ❗️
->
-> With this option, Yuno operates only as a passthrough for the network token information. The merchant will need to send the necessary information about the network tokens so Yuno can share them with upstream payment partners.
 
 Network token transactions make use of existing payment transaction API requests. Similarly to the process of creating a payment with credit card details, when a merchant employs the Yuno API to finalize a payment they can opt to include the "network\_token" object to endeavor the utilization of a network token for the transaction.
 
