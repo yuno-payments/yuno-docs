@@ -14,7 +14,11 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields chec
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project. 
+<InfoBlock title="Test" type="info">
+  Add content here.
+</InfoBlock>
+
+Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -25,7 +29,6 @@ The integration guide provides three flexible methods:
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the secure fields functionality.
 
 <HTMLBlock>{`
-
   <div class="infoBlockContainer ">
     <div class="verticalLine"></div>
     <div>
@@ -37,12 +40,11 @@ Choose the integration method that best suits your development workflow and tech
       </div>
     </div>
   </div>
-
 `}</HTMLBlock>
 
 ## Step 2: Initialize secure fields with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide. 
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -52,11 +54,11 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 ## Step 3: Start the checkout process
 
-You will start the checkout process. To do it, use the `secureFields` function and provide the necessary configuration parameters. 
+You will start the checkout process. To do it, use the `secureFields` function and provide the necessary configuration parameters.
 
 The essential parameters are the `country_code`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.  The next code block presents an example of the parameter configuration.
 
-The following table lists all required parameters and their descriptions. 
+The following table lists all required parameters and their descriptions.
 
 <Table align={["left","left"]}>
   <thead>
@@ -78,7 +80,7 @@ The following table lists all required parameters and their descriptions.
       </td>
 
       <td>
-        This parameter specifies the country for which the payment process is being set up.\
+        This parameter specifies the country for which the payment process is being set up.
         Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
       </td>
     </tr>
@@ -89,7 +91,7 @@ The following table lists all required parameters and their descriptions.
       </td>
 
       <td>
-        Refers to the current payment's [checkout session](ref:create-checkout-session).\
+        Refers to the current payment's [checkout session](ref:create-checkout-session).
         `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
       </td>
     </tr>
@@ -122,7 +124,6 @@ The following table lists all required parameters and their descriptions.
 ```
 
 <HTMLBlock>{`
-
   <div class="infoBlockContainer">
     <div class="verticalLine"></div>
     <div>
@@ -140,12 +141,11 @@ The following table lists all required parameters and their descriptions.
       </div>
     </div>
   </div>
-
 `}</HTMLBlock>
 
 ## Step 4: Mount the Secure Fields
 
-After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function. 
+After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
 
 The table below presents all configurations available:
 
@@ -163,7 +163,7 @@ The table below presents all configurations available:
 | `options.onRenderedSecureField` | An auxiliary function that can be configured and will run when the element finishes rendering.                                                                                      |
 | `options.errorMessage`          | This allows for the definition of the field's error message.                                                                                                                        |
 
-Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`). 
+Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
 The following code block presents an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user.
 
@@ -376,7 +376,8 @@ const secureNumber = secureFields.create({
 
 Below, you find a GIF showing how you can configure the Secure Fields.
 
-<div style={{
+<div
+  style={{
   backgroundColor: "#FFFFFF",
   padding: "16px",
   display: "flex",
@@ -384,8 +385,9 @@ Below, you find a GIF showing how you can configure the Secure Fields.
   borderRadius: "14px",
   maxWidth: "500px",
   margin: "auto"
-}}>
-  <Image align="center" width="500px" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" />
+}}
+>
+  <Image align="center" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" width="500px" />
 </div>
 
 ## Step 5: Generate an OTT (one-time token)
@@ -411,7 +413,6 @@ With all user information in hand, you can start the payment. First, you need to
       </div>
     </div>
   </div>
-
 `}</HTMLBlock>
 
 ```javascript
@@ -504,12 +505,12 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 
 ## Step 6: Create the Payment
 
-After receiving the one-time token, you can create the payment using one of the two following options: 
+After receiving the one-time token, you can create the payment using one of the two following options:
 
 * Create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
 * Use the `createPayment` function.
 
-Both options require you to provide the `oneTimeToken` and the `checkoutSession`. As creating the payment may raise errors, Yuno recommends you use a try/catch function here. 
+Both options require you to provide the `oneTimeToken` and the `checkoutSession`. As creating the payment may raise errors, Yuno recommends you use a try/catch function here.
 
 After, you can check the payment status using the `yuno.mountStatusPayment`function. The following example uses the `createPayment` function to create the payment and the `mountStatusPayment` to display the payment status:
 
@@ -559,7 +560,6 @@ if (payment.checkout.sdk_action_required) {
 ```
 
 <HTMLBlock>{`
-
   <div class="infoBlockContainer">
     <div class="verticalLine"></div>
     <div>
@@ -571,14 +571,13 @@ if (payment.checkout.sdk_action_required) {
       </div>
     </div>
   </div>
-
 `}</HTMLBlock>
 
 ## Complementary features
 
 Yuno Secure Fields provides additional services and configurations you can use to improve customers' experience:
 
-* [Configure and use TypeScript](#configure-and-use-typescript) 
+* [Configure and use TypeScript](#configure-and-use-typescript)
 * [Persist credit card information to retry payments](doc:secure-fields-complementary-features#persist-credit-card-information-to-retry-payments)
 * [Clear the values entered in the card fields](doc:secure-fields-complementary-features#clear-the-values-entered-in-the-card-fields)
 * [Input focus](doc:secure-fields-complementary-features#input-focus)
@@ -605,7 +604,7 @@ After finishing the installation, include the type definitions in your TypeScrip
 }
 ```
 
-With the type definitions installed and configured, you can now use them in your code. The following code block presents an example of how to initialize Yuno and create an instance. 
+With the type definitions installed and configured, you can now use them in your code. The following code block presents an example of how to initialize Yuno and create an instance.
 
 ```typescript
 import { YunoInstance } from '@yuno-payments/sdk-web-types/dist/types';
@@ -629,7 +628,7 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 ```
 
 2. In case the transaction is rejected, you will need to:\
-   i. Create a new checkout session.\
+   i. Create a new checkout session.
    ii. Generate a new one-time token. In the one-time token generation, send the new checkout session in the `checkoutSession` parameter.
 3. Continue with the new checkout and One Time Token with the regular payment flow.
 
