@@ -20,7 +20,7 @@ On this page, you will find a walk-through guide on enrolling a payment method i
   <div class="infoBlockContainer">
     <div class="verticalLine"></div>
     <div>
-      <h3>>Vaulted token</h3>
+      <h3>Vaulted token</h3>
       <div class="contentContainer">
         <p>
          A Vaulted Token is created once a payment method is enrolled and stored with the customer information. You can use the created Vaulted Token to identify the payment method in future payments.</p>
