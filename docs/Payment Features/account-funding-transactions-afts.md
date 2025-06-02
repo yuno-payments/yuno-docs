@@ -16,14 +16,12 @@ next:
 
 AFTs are a core component of payment orchestration systems, enabling efficient and secure movement of money across accounts.
 
-***
-
 ## What is an AFT?
 
 An **AFT (Account Funding Transaction)** is a type of transaction designed for:
 
 * **Loading funds** into user accounts or digital wallets.
-* **Transferring funds** between accounts within the same platform. 
+* **Transferring funds** between accounts within the same platform.
 * **Depositing money** into commercial or personal accounts. Remittances included.
 
 AFTs leverage traditional payment networks (e.g., Visa, Mastercard, ACH) to process transactions quickly and securely while optimizing costs.
@@ -37,8 +35,6 @@ AFTs leverage traditional payment networks (e.g., Visa, Mastercard, ACH) to proc
 2. **Withdrawal transactions**:
    * Move funds from a user account back to their bank account or card.
    * Example: A user transfers money from their digital wallet to their bank account.
-
-***
 
 ## Integration
 
