@@ -32,41 +32,7 @@ Codes in the 2xx range usually indicate success. Codes in the 4xx range indicate
 
 ## Response attributes for errors
 
-<div>
-  <div class="yuno">
-    <p><code>code</code> <small>string</small>
-      <br/>Attribute for error code state.
-    </p>  
-  </div>
-  
-  <div class="yuno">
-    <p><code>message</code> <small>array of strings</small>
-      <br/>Error message that is returned.
-    </p>  
-  </div>
-</div>
 
-<style>
-  :root {
-    --yuno-main-color: #614AD6;
-    --yellow: #CEE65A;
-  }
-  details {
-    display: flex;
-    overflow: hidden;
-  }
-   .yuno  p {
-      margin-left: 20px;
-    }
-    .yuno {
-      --highlight: var(--eee) ;
-      background: #eee;
-      margin: 1.5em;
-      border-radius: 5px;
-      border-left: 15px solid var(--yuno-main-color);
-      padding: 0.25em; 
-    }
-</style>
 
 See what codes are returned by Yuno's Rest API.
 
