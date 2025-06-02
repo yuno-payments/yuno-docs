@@ -453,6 +453,6 @@ The authentication request encountered obstacles that prevented its completion f
 
 ***
 
-<small>eftpos: Although cobranded, transactions made through eftpos will receive ECI codes of 05/06/07, indicating the possible outcomes of authentication attempts.
+Although cobranded, transactions made through eftpos will receive ECI codes of 05/06/07, indicating the possible outcomes of authentication attempts.
 
 UnionPay International: Transactions falling within the BIN ranges overlapping with UnionPay International will receive both ECI values - 05/06/07 and 02/01/00. These values signify different authentication results.
