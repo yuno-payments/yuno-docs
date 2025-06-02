@@ -14,10 +14,6 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields chec
 
 ## Step 1: Include the library in your project
 
-<InfoBlock title="Test" type="info">
-  Add content here.
-</InfoBlock>
-
 Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
