@@ -34,9 +34,21 @@ A payment with a **PENDING** status due to an **AUTHORIZE** transaction status (
 </body>
 `}</HTMLBlock>
 
-> 📘 APMs
->
-> Certain alternative payment methods providers also support payment cancelation with a PENDING status.  Please feel free to reach out to your technical account manager for more information in case you need to use it.
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>APMs</h3>
+      <div class="contentContainer">
+        <p>
+          Certain alternative payment methods providers also support payment cancelation with a PENDING status.  Please feel free to reach out to your technical account manager for more information in case you need to use it
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 If you need a receipt for the canceled transaction, you can retrieve it after it has been created. To do this, use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint and check the `receipt_url` field in the `payment.transaction` object.
 
