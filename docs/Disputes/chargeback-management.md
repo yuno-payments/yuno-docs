@@ -19,34 +19,30 @@ A chargeback is a claim initiated by a customer through their issuing bank due t
 In Yuno, a **chargeback** and a **dispute** are technically the same—they both represent a contested transaction.\
 The conceptual difference lies in the merchant's response: when a merchant provides documentation to contest the chargeback, it becomes an **active dispute**. However, the transaction remains the same, and only its state evolves based on the actions taken.
 
-***
-
 ## Chargeback Workflow
 
 <Image align="center" src="https://files.readme.io/e0034ded51f79400bd4698b840ec6c77237938e13ea3db078ae959c94d05f375-Chargebacks_disputes.png" />
 
-1. **Chargeback creation**  
+1. **Chargeback creation**
    * The customer raises a claim with their issuing bank
    * The bank notifies the payment provider
    * The provider informs Yuno about the claim
    * Yuno logs the chargeback, and its initial transaction state is `CREATED`
 
-2. **Merchant notification**  
+2. **Merchant notification**
    * Yuno notifies the merchant about the chargeback and updates the payment's status
 
-3. **Merchant actions**  
+3. **Merchant actions**
    * The merchant can:
      * **Submit evidence**: Provide documentation supporting the validity of the transaction, turning the chargeback into an active dispute
      * **Accept the chargeback**: Acknowledge the claim without disputing it and lose the funds (`LOST`)
 
-4. **Evidence review**  
+4. **Evidence review**
    * If evidence is submitted, the issuing bank reviews the documentation and issues a final decision (`PENDING_REVIEW`)
 
-5. **Chargeback/dispute resolution**  
+5. **Chargeback/dispute resolution**
    * **Dispute Won** (`WON`): The customer's claim is rejected, and the transaction remains valid
    * **Dispute Lost** (`LOST`): The customer's claim is accepted, resulting in a refund to the customer
-
-***
 
 ## Chargeback States
 
@@ -60,8 +56,6 @@ The states of chargebacks in Yuno represent the various stages of the process:
 | `PENDING_REVIEW` | Evidence has been submitted and is under review by the issuing bank.                                         |
 | `WON`            | The dispute was resolved in favor of the merchant.                                                           |
 | `LOST`           | The claim was accepted, resulting in a refund to the customer.                                               |
-
-***
 
 <HTMLBlock>{`
 <style>
@@ -142,7 +136,7 @@ Every chargeback, every response, every update—logged and accessible. With bui
 
 ## Understand the reason code
 
-Understanding the reason code behind each chargeback is crucial, as it explains why the customer initiated the dispute. Familiarity with these codes allows you to tailor your response more effectively and gather the necessary information for each case. In the [Chargeback Reason Codes section](doc:reason-codes), you can find a comprehensive list of all possible codes provided by acquirers. In each chargeback transaction you'll be able to find the reason code in the `response_code` field. 
+Understanding the reason code behind each chargeback is crucial, as it explains why the customer initiated the dispute. Familiarity with these codes allows you to tailor your response more effectively and gather the necessary information for each case. In the [Chargeback Reason Codes section](doc:reason-codes), you can find a comprehensive list of all possible codes provided by acquirers. In each chargeback transaction you'll be able to find the reason code in the `response_code` field.
 
 ## Evidence Management
 
