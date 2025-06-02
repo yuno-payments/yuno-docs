@@ -13,11 +13,22 @@ metadata:
 next:
   description: ''
 ---
-On this page, you will find a walk-through guide on enrolling a payment method into a customer account and get a `vauletd_token` for future purchases. 
+On this page, you will find a walk-through guide on enrolling a payment method into a customer account and get a `vauletd_token` for future purchases.
 
-> 📘 Vaulted token
->
-> A Vaulted Token is created once a payment method is enrolled and stored with the customer information. You can use the created Vaulted Token to identify the payment method in future payments.
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>>Vaulted token</h3>
+      <div class="contentContainer">
+        <p>
+         A Vaulted Token is created once a payment method is enrolled and stored with the customer information. You can use the created Vaulted Token to identify the payment method in future payments.</p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
 
 Yuno tokenization service and centralized vault enable you to handle recurring payments, fallbacks, and retries across processors without compromising UX. Today, the following payment methods are available for enrollment in Yuno:
 
@@ -35,7 +46,7 @@ Before starting the enrollment process, you need to:
   * `public-api-key`
   * `private-secrete-key`
   * `account_id`
-* [Set up your connections](doc:set-up-initial-connections) on your Yuno Dashboard account. Add a payment method that requires enrollment. 
+* [Set up your connections](doc:set-up-initial-connections) on your Yuno Dashboard account. Add a payment method that requires enrollment.
 * [Build a route](doc:configure-dynamic-routing) for the payment method to define how it will be processed.
 * [Configure the checkout builder](ref:manage-your-checkout) to make your connected payments available.
 
@@ -45,7 +56,7 @@ To enroll a payment method into a customer account, you will follow the steps li
 
 1. [Create a customer](ref:create-customer)
 2. [Create Customer Session](ref:create-customer-session) (Exclusive for Checkout workflow)
-3. (Optional) Retrieve Payment Methods Available to Enroll - [Checkout workflow](ref:retrieve-payment-methods-to-enroll-checkout)/[Direct workflow](ref:retrieve-payment-methods-available-api) 
+3. (Optional) Retrieve Payment Methods Available to Enroll - [Checkout workflow](ref:retrieve-payment-methods-to-enroll-checkout)/[Direct workflow](ref:retrieve-payment-methods-available-api)
 4. Enroll Payment Method [Checkout workflow](ref:enroll-payment-method-checkout)/[Direct workflow](ref:enroll-payment-method-api)
 5. Retrieve Payment Methods [Checkout workflow](ref:retrieve-payment-method-by-customer-session-checkout)/[Direct workflow](ref:retrieve-enrolled-payment-methods-api)
 
@@ -98,7 +109,7 @@ From the response of the endpoint [Create Customer Session](ref:create-customer-
 
 ### Step 3: Retrieve payment methods to enroll
 
-This is an **optional step** where you can list all available payment methods the customer can enroll in. If you know which payment method the user will enroll in, you can proceed to [Step 4](doc:enroll-payment-methods#step-4-enroll-a-payment-method). 
+This is an **optional step** where you can list all available payment methods the customer can enroll in. If you know which payment method the user will enroll in, you can proceed to [Step 4](doc:enroll-payment-methods#step-4-enroll-a-payment-method).
 
 To list the available payment methods, you can use one of the available Retrieve Payment Methods To Enroll endpoints. If you are using the [Checkout workflow](ref:retrieve-payment-methods-to-enroll-checkout), you will inform the `customer_session` on the request. While if you are using the [Direct workflow](ref:retrieve-payment-methods-available-api), you will provide the `customer_id`, which refers to the `id` created in Step 1.
 
@@ -124,17 +135,17 @@ The response to the endpoint **Retrieve Payment Methods To Enroll** will contain
 
 After defining the payment method, you can perform the enrollment using one of the Enroll Payment Method endpoints:
 
-* [Checkout workflow](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`. 
+* [Checkout workflow](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`.
 * [Direct workflow](ref:enroll-payment-method-api): Provide the `type` related to the chosen payment method to the parameter `type`. (Only available for Card payment methods for PCI compliant merchants)
 
 The user must be redirected to the payment provider page to complete the enrollment process. You will receive this URL in Step 5.
 
 ### Step 5: Retrieve payment methods
 
-To successfully enroll in the payment method, the customer must provide authorization on the payment provider page. To receive the URL, use one of the following endpoints depending on the workflow you are using: 
+To successfully enroll in the payment method, the customer must provide authorization on the payment provider page. To receive the URL, use one of the following endpoints depending on the workflow you are using:
 
 * Checkout workflow: Use the endpoint [Retrieve Payment Method by Customer Session](ref:retrieve-payment-method-by-customer-session-checkout) providing the `customer_session` generated in Step 2. The URL to redirect the user will be available in the parameter `provider.redirect.init_url`.
-* Direct workflow: For the Direct workflow, as it is only available for card enrollments, you will receive the final status in the previous step. 
+* Direct workflow: For the Direct workflow, as it is only available for card enrollments, you will receive the final status in the previous step.
 
 Redirect the user so they provide the required authorization. After the enrollment, you can proceed to the checkout session creation on the next step.
 
