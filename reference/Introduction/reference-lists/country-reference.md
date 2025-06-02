@@ -74,36 +74,34 @@ On this page, you will find the country's information you need when using Yuno A
 
 ## Americas
 
-<Table>
+<Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
-      <th>
+      <th style={{ textAlign: "left" }}>
         Name
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Country code (ISO 3166-1 Alpha 2)
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Currency code (ISO 4217 Alpha 3)
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Currency decimal digits
 
         <sup>
-
-        (1)
-
+          (1)
         </sup>
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Document type
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
@@ -111,1424 +109,1420 @@ On this page, you will find the country's information you need when using Yuno A
 
   <tbody>
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Anguilla
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         AI
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Antigua And Barbuda
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         AG
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Argentina
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         AR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         ARS
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*DNI\*\* (National Identity Document)  
-        * \*CI\*\* (Identity Card)  
-        * \*LC\*\* (Civic Notebook)  
-        * \*LE\*\* (Book Enlistment)  
-        * \*CUIT\*\* (Single Tax Identification)  
-        * \*CUIL\*\* (Unique Labor Identification Code)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **DNI** (National Identity Document)
+        * **CI** (Identity Card)
+        * **LC** (Civic Notebook)
+        * **LE** (Book Enlistment)
+        * **CUIT** (Single Tax Identification)
+        * **CUIL** (Unique Labor Identification Code)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         54
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Aruba
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         AW
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         AWG
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)  
-        * \*PIN\*\* (individual Identity number)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+        * **PIN** (individual Identity number)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         297
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Bahamas
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BS
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BSD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Barbados
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BB
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BBD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Belize
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BZ
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BZD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
-          Social Security Card\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
+          Social Security Card
           Driver's license
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         501
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Bermuda
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BM
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BMD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Bolivia
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BO
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BOB\
         BOV
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2\
         2
       </td>
 
-      <td>
-        * \*CI\*\* (Identity Card)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CI** (Identity Card)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         591
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Brazil
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         BRL
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*RG\*\* (Identity Card)  
-        * \*CPF\*\* (Natural Persons Register)  
-        * \*CNH\*\* (Driver License)  
-        * \*CNPJ\*\* (National Registry of Legal Entities)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **RG** (Identity Card)
+        * **CPF** (Natural Persons Register)
+        * **CNH** (Driver License)
+        * **CNPJ** (National Registry of Legal Entities)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         55
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Canada
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CA
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CAD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
-          Driver's license\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
+          Driver's license
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Cayman Islands
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         KY
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         KYD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        Voter ID Card\
-        Driver's License  
-
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * Voter ID Card\
+          Driver's License
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Chile
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CL
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CLP\
         CLF
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         0\
         0
       </td>
 
-      <td>
-        * \*CI\*\* (Identity Card)  
-        * \*RUT\*\* (Unique Tax Role)  
-        * \*RUN\*\* (Unique National Role)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CI** (Identity Card)
+        * **RUT** (Unique Tax Role)
+        * **RUN** (Unique National Role)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         56
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Colombia
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CO
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         COP\
         COU
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2\
         2
       </td>
 
-      <td>
-        * \*CC\*\* (Citizenship Card)  
-        * \*CE\*\* (Foreign Certificate)  
-        * \*NIT\*\* (Tax Identification Number)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CC** (Citizenship Card)
+        * **CE** (Foreign Certificate)
+        * **NIT** (Tax Identification Number)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         57
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Costa Rica
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CRC
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*CI\*\* (Identity Card)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CI** (Identity Card)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         506
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Cuba
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CU
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CUP\
         CUC
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2\
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         53
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Curacao
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         CW
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         ANG
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
-          Identity Card\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
+          Identity Card
           Driver's license
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         599
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Dominica
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         DM
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Dominican Republic
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         DO
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         DOP
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*CI\*\* (Identity Card)\
+      <td style={{ textAlign: "left" }}>
+        * **CI** (Identity Card)\
           Cédula de menor
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Ecuador
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         EC
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*CI\*\* (Identity Card)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CI** (Identity Card)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         593
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         El Salvador
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         SV
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*DU&#x49;**(Unique Identity Document)\&#xA;**&#x50;IC\*\*  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **DUI**(Unique Identity Document)
+          **PIC**
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         503
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Falkland Islands
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         FK
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         FKP
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         500
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         French Guiana
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         GF
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         EUR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         594
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Grenada
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         GD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         473
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Guadeloupe
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         GP
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         EUR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         590
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Guatemala
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         GT
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         GTQ
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*DPI\*\* (Personal Identification Document)  
-        * \*CUI\*\* (Unique Identification Code)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **DPI** (Personal Identification Document)
+        * *CUI*\* (Unique Identification Code)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         502
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Guyana
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         GY
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         GYD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         592
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Haiti
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         HT
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         HTG\
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2\
         2
       </td>
 
-      <td>
-        * \*CIN\*\*(Carte d'Identification Nationale)
+      <td style={{ textAlign: "left" }}>
+        * **CIN**(Carte d'Identification Nationale)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         509
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Honduras
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         HN
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         HNL
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)  
-        * \*DNI\*\* (National Identification Document)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+        * **DNI** (National Identification Document)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         504
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Jamaica
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         JM
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         JMD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        National ID Card
+      <td style={{ textAlign: "left" }}>
+        * National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Martinique
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         MQ
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         EUR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         596
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Mexico
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         MX
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         MXN\
         MXV
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2\
         2
       </td>
 
-      <td>
-        * \*IFE\*\* (Federal Electoral Institute)  
-        * \*INE\*\* (National Electoral Institute)  
-        * \*CP\*\* (Professional ID)  
-        * \*PAS\*\* (Passport)  
-        * \*RFC\*\* (Federal Taxpayer Registry)  
-        * \*CURP\*\* (Unique Population Registry Code)
+      <td style={{ textAlign: "left" }}>
+        * **IFE** (Federal Electoral Institute)
+        * **INE** (National Electoral Institute)
+        * **CP** (Professional ID)
+        * **PAS** (Passport)
+        * **RFC** (Federal Taxpayer Registry)
+        * **CURP** (Unique Population Registry Code)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         52
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Montserrat
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         MS
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Nicaragua
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         NI
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         NIO
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*CI\*\* (Identity Card)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CI** (Identity Card)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         505
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Panama
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PA
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PAB\
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2\
         2
       </td>
 
-      <td>
-        * \*CIP\*\* (Identity Card)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CIP** (Identity Card)
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         507
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Paraguay
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PY
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PYG
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         0
       </td>
 
-      <td>
-        **CIC**  
-
-        * \*CI\*\* (Identity Card)  
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **CIC**
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         595
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Peru
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PE
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PEN
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*DNI\*\* (National Identification Document)  
-        * \*CE\*\* (Immigration Card)  
-        * \*RUC\*\* (Single Registry of Taxpayers)
+      <td style={{ textAlign: "left" }}>
+        * **DNI** (National Identification Document)
+        * **CE** (Immigration Card)
+        * **RUC** (Single Registry of Taxpayers)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         51
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Puerto Rico
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*NIS\*\* (Numero de identificacion social)  
-        * \*LC\*\* (Licencia de conducir)
+      <td style={{ textAlign: "left" }}>
+        * **NIS** (Numero de identificacion social)
+        * **LC** (Licencia de conducir)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Saint Kitts And Nevis
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         KN
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        National ID Card
+      <td style={{ textAlign: "left" }}>
+        * National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Saint Lucia
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         LC
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        National ID Card
+      <td style={{ textAlign: "left" }}>
+        * National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Saint Martin
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         MF
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         EUR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)\
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         590
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Saint Pierre And Miquelon
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         PM
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         EUR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         508
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Saint Vincent And The Grenadines
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         VC
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         XCD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Suriname
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         SR
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         SRD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         597
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Trinidad And Tobago
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         TT
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         TTD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Turks And Caicos Islands
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         TC
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         United States
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         US
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         United States Minor Outlying Islands
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         UM
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Uruguay
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         UY
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         UYU\
         UYI
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2\
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)  
-        * \*CI\*\* (Identity Card)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+        * **CI** (Identity Card)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         598
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Venezuela
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         VE
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         VEF
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         58
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Virgin Islands (British)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         VG
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
 
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Virgin Islands (US)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         VI
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         USD
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * \*PAS\*\* (Passport)
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
@@ -1539,7 +1533,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 ## Africa
 
-<Table>
+<Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th>
@@ -1558,9 +1552,7 @@ On this page, you will find the country's information you need when using Yuno A
         Currency decimal digits
 
         <sup>
-
-        (1)
-
+          (1)
         </sup>
       </th>
 
@@ -1593,7 +1585,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -1619,7 +1611,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National Identity Card
+        * National Identity Card
       </td>
 
       <td>
@@ -1645,7 +1637,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*CNIP\*\* (Carte Nationale d'Identité Personnelle)
+        * **CNIP** (Carte Nationale d'Identité Personnelle)
       </td>
 
       <td>
@@ -1671,7 +1663,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*ID\*\* (National Identity Card)
+        * **ID** (National Identity Card)
       </td>
 
       <td>
@@ -1697,7 +1689,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*CNI\*\* (Carte Nationale d'Identité)
+        * **CNI** (Carte Nationale d'Identité)
       </td>
 
       <td>
@@ -1723,7 +1715,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*CNI\*\* (Carte Nationale d'Identité)
+        * **CNI** (Carte Nationale d'Identité)
       </td>
 
       <td>
@@ -1749,7 +1741,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*CNI\*\* (Carte Nationale d'Identité)
+        * **CNI** (Carte Nationale d'Identité)
       </td>
 
       <td>
@@ -1775,7 +1767,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*BI\*\* (Bilhete de Identidade)
+        * **BI** (Bilhete de Identidade)
       </td>
 
       <td>
@@ -1801,7 +1793,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -1827,7 +1819,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -1853,7 +1845,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Carte d'Identité Nationale
+        * Carte d'Identité Nationale
       </td>
 
       <td>
@@ -1879,7 +1871,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\*(Passport)\
+        * **PAS**(Passport)\
           National ID Card
       </td>
 
@@ -1906,7 +1898,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -1932,7 +1924,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card\
+        * **PAS** (Passport)  National ID Card\
           Driver's license
       </td>
 
@@ -1959,7 +1951,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -1985,7 +1977,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -2011,7 +2003,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card\
+        * **PAS** (Passport)  National ID Card\
           Driver's license
       </td>
 
@@ -2038,7 +2030,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2064,7 +2056,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -2090,7 +2082,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -2116,7 +2108,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card\
+        * **PAS** (Passport)  National ID Card\
           Voter ID Card
       </td>
 
@@ -2143,7 +2135,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2169,7 +2161,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -2195,7 +2187,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -2223,7 +2215,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -2249,7 +2241,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National Identification Registry Card
+        * National Identification Registry Card
       </td>
 
       <td>
@@ -2275,7 +2267,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -2297,11 +2289,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        0.7[8]
+        0.7\[8]
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -2327,7 +2319,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2353,7 +2345,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2375,11 +2367,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        0.7[8]
+        0.7\[8]
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2405,7 +2397,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2431,7 +2423,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2457,7 +2449,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -2483,7 +2475,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2511,7 +2503,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2537,7 +2529,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2563,7 +2555,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * *PAS*\* (Passport)
       </td>
 
       <td>
@@ -2589,7 +2581,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
@@ -2616,7 +2608,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2642,7 +2634,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2668,7 +2660,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2694,7 +2686,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2720,7 +2712,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2746,7 +2738,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2772,7 +2764,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2798,7 +2790,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2824,7 +2816,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2850,7 +2842,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2876,7 +2868,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2902,7 +2894,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2928,7 +2920,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2954,7 +2946,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -2980,7 +2972,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3006,7 +2998,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3032,7 +3024,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        No se emiten documentos de identidad reconocidos
+        * No se emiten documentos de identidad reconocidos
       </td>
 
       <td>
@@ -3058,7 +3050,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3072,7 +3064,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 ## Asia Pacific
 
-<Table>
+<Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th>
@@ -3091,9 +3083,7 @@ On this page, you will find the country's information you need when using Yuno A
         Currency decimal digits
 
         <sup>
-
-        (1)
-
+          (1)
         </sup>
       </th>
 
@@ -3126,7 +3116,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Tazkira
+        * Tazkira
       </td>
 
       <td>
@@ -3152,7 +3142,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Tarjeta de Identidad
+        * Tarjeta de Identidad
       </td>
 
       <td>
@@ -3178,7 +3168,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)\
           ID Card
       </td>
 
@@ -3205,7 +3195,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -3231,7 +3221,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)  National ID Card
+        * **PAS** (Passport)  National ID Card
       </td>
 
       <td>
@@ -3259,7 +3249,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3285,7 +3275,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3311,7 +3301,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -3337,7 +3327,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3363,7 +3353,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)\
           Australian driver's license
       </td>
 
@@ -3390,7 +3380,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)\
           Australian driver's licenses
       </td>
 
@@ -3417,9 +3407,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          Driver's license\
-          National ID Card\
+        * **PAS** (Passport)\
+          Driver's license
+          National ID Card
           Birth certificate
       </td>
 
@@ -3446,7 +3436,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3472,7 +3462,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3498,7 +3488,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3524,7 +3514,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3550,7 +3540,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Aadhaar Card
+        * Aadhaar Card
       </td>
 
       <td>
@@ -3576,7 +3566,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*KTP\*\* (Kartu Tanda Penduduk)
+        * **KTP** (Kartu Tanda Penduduk)
       </td>
 
       <td>
@@ -3602,7 +3592,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        My Number Card
+        * My Number Card
       </td>
 
       <td>
@@ -3628,7 +3618,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -3654,7 +3644,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3680,7 +3670,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -3706,7 +3696,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3732,7 +3722,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3758,7 +3748,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3784,7 +3774,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3810,7 +3800,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
@@ -3837,7 +3827,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3863,7 +3853,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3889,7 +3879,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3915,7 +3905,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -3941,7 +3931,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Carte d'identité de Nouvelle-Calédonie
+        * Carte d'identité de Nouvelle-Calédonie
       </td>
 
       <td>
@@ -3967,7 +3957,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)\
           Tarjeta de Identificación
       </td>
 
@@ -3994,7 +3984,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4020,7 +4010,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4046,7 +4036,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4072,7 +4062,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4098,7 +4088,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4124,7 +4114,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4150,7 +4140,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4176,7 +4166,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4202,7 +4192,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4228,7 +4218,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4254,7 +4244,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4280,7 +4270,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*RRN\*\*(Resident Registration Number)
+        * **RRN**(Resident Registration Number)
       </td>
 
       <td>
@@ -4306,7 +4296,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)
+
           National ID Card
       </td>
 
@@ -4333,7 +4324,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4359,7 +4350,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4385,7 +4376,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4411,7 +4402,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4437,7 +4428,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4463,7 +4454,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4489,7 +4480,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4515,7 +4506,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4541,7 +4532,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4567,7 +4558,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4593,7 +4584,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Carte d'identité territoriale de Wallis-et-Futuna
+        * Carte d'identité territoriale de Wallis-et-Futuna
       </td>
 
       <td>
@@ -4607,7 +4598,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 ## Europe
 
-<Table>
+<Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th>
@@ -4626,9 +4617,7 @@ On this page, you will find the country's information you need when using Yuno A
         CCurrency decimal digits
 
         <sup>
-
-        (1)
-
+          (1)
         </sup>
       </th>
 
@@ -4661,8 +4650,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID card
+        * **PAS** (Passport)
+        * National ID card
       </td>
 
       <td>
@@ -4688,7 +4677,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Tarjeta de Identidad Electrónica
+        * Tarjeta de Identidad Electrónica
       </td>
 
       <td>
@@ -4714,7 +4703,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Targeta de Resident
+        * Targeta de Resident
       </td>
 
       <td>
@@ -4740,7 +4729,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4766,8 +4755,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -4793,8 +4782,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -4820,8 +4809,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -4847,7 +4836,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -4873,7 +4862,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*OI\*\* (Osobna iskaznica)
+        * **OI** (Osobna iskaznica)
       </td>
 
       <td>
@@ -4899,7 +4888,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
+        * **PAS** (Passport)\
           National ID Card
       </td>
 
@@ -4926,9 +4915,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
-          Driver's license
+        * **PAS** (Passport)
+        * National ID Card
+        * Driver's license
       </td>
 
       <td>
@@ -4954,9 +4943,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
-          Driver's license
+        * **PAS** (Passport)
+        * National ID Card
+        * Driver's license
       </td>
 
       <td>
@@ -4982,8 +4971,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5009,9 +4998,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          Driver's licenses\
-          National ID Card
+        * *PAS*\* (Passport)
+        * Driver's licenses
+        * National ID Card
       </td>
 
       <td>
@@ -5037,9 +5026,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
-          Driver's license
+        * **PAS** (Passport)
+        * National ID Card
+        * Driver's license
       </td>
 
       <td>
@@ -5065,9 +5054,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
-          Driver's license
+        * **PAS** (Passport)
+        * National ID Card
+        * Driver's license
       </td>
 
       <td>
@@ -5093,8 +5082,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5120,9 +5109,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
-          Driver's license
+        * **PAS** (Passport)
+        * National ID Card
+        * Driver's license
       </td>
 
       <td>
@@ -5148,8 +5137,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5175,8 +5164,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5202,8 +5191,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5229,8 +5218,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5256,7 +5245,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*SZIG\*\* (Személyazonosító igazolvány)
+        * **SZIG** (Személyazonosító igazolvány)
       </td>
 
       <td>
@@ -5282,7 +5271,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Kennitala
+        * Kennitala
       </td>
 
       <td>
@@ -5308,7 +5297,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5334,8 +5323,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          Driving License
+        * **PAS** (Passport)
+        * Driving License
       </td>
 
       <td>
@@ -5361,7 +5350,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Carta d'Identità
+        * Carta d'Identità
       </td>
 
       <td>
@@ -5387,8 +5376,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          Driving License
+        * **PAS** (Passport)
+        * Driving License
       </td>
 
       <td>
@@ -5414,8 +5403,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          Personal ID Card
+        * **PAS** (Passport)
+        * Personal ID Card
       </td>
 
       <td>
@@ -5441,9 +5430,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          ID Card\
-          Resident Permit
+        * **PAS** (Passport)
+        * ID Card
+        * Resident Permit
       </td>
 
       <td>
@@ -5469,8 +5458,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          Personal ID Card
+        * **PAS** (Passport)
+        * Personal ID Card
       </td>
 
       <td>
@@ -5496,8 +5485,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5523,7 +5512,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5549,8 +5538,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5576,8 +5565,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card
+        * **PAS** (Passport)
+        * National ID Card
       </td>
 
       <td>
@@ -5603,8 +5592,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          ID Card
+        * **PAS** (Passport)
+        * ID Card
       </td>
 
       <td>
@@ -5630,7 +5619,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5656,7 +5645,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5682,7 +5671,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5708,7 +5697,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5734,7 +5723,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5760,7 +5749,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5786,7 +5775,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5812,7 +5801,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5838,7 +5827,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5864,7 +5853,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5890,7 +5879,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5916,9 +5905,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
-          Driver's license
+        * **PAS** (Passport)
+        * National ID Card
+        * Driver's license
       </td>
 
       <td>
@@ -5944,7 +5933,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5970,7 +5959,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -5989,20 +5978,20 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td>
         CHF\
-        CHE\
+        CHE
         CHW
       </td>
 
       <td>
         2\
-        2\
+        2
         2
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
-          Driver's license
+        * **PAS** (Passport)
+        * National ID Card
+        * Driver's license
       </td>
 
       <td>
@@ -6028,7 +6017,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -6054,7 +6043,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -6080,8 +6069,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)\
-          National ID Card\
+        * **PAS** (Passport)\
+          National ID Card
           Driver's licenses
       </td>
 
@@ -6122,7 +6111,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 ## Middle East
 
-<Table>
+<Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th>
@@ -6141,9 +6130,7 @@ On this page, you will find the country's information you need when using Yuno A
         Currency decimal digits
 
         <sup>
-
-        (1)
-
+          (1)
         </sup>
       </th>
 
@@ -6176,7 +6163,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -6202,7 +6189,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National Card
+        * National Card
       </td>
 
       <td>
@@ -6228,7 +6215,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National Card
+        * National Card
       </td>
 
       <td>
@@ -6254,7 +6241,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Teudat Zehut
+        * Teudat Zehut
       </td>
 
       <td>
@@ -6280,7 +6267,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -6306,7 +6293,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Civil ID Card
+        * Civil ID Card
       </td>
 
       <td>
@@ -6332,7 +6319,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        National ID Card
+        * National ID Card
       </td>
 
       <td>
@@ -6358,7 +6345,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -6384,7 +6371,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -6410,7 +6397,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -6436,7 +6423,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
@@ -6462,7 +6449,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        Emirates ID
+        * Emirates ID
       </td>
 
       <td>
@@ -6488,7 +6475,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * \*PAS\*\* (Passport)
+        * **PAS** (Passport)
       </td>
 
       <td>
