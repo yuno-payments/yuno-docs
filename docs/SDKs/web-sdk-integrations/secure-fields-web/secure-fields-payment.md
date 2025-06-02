@@ -25,7 +25,7 @@ The integration guide provides three flexible methods:
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the secure fields functionality.
 
 <HTMLBlock>{`
-<body>
+
   <div class="infoBlockContainer ">
     <div class="verticalLine"></div>
     <div>
@@ -37,7 +37,7 @@ Choose the integration method that best suits your development workflow and tech
       </div>
     </div>
   </div>
-</body>
+
 `}</HTMLBlock>
 
 ## Step 2: Initialize secure fields with the public key
@@ -117,12 +117,12 @@ The following table lists all required parameters and their descriptions.
      * @optional
      */
     checkoutSession,
-    installmentEnable: false,
+    installmentsEnable: false,
   })
 ```
 
 <HTMLBlock>{`
-<body>
+
   <div class="infoBlockContainer">
     <div class="verticalLine"></div>
     <div>
@@ -140,7 +140,7 @@ The following table lists all required parameters and their descriptions.
       </div>
     </div>
   </div>
-</body>
+
 `}</HTMLBlock>
 
 ## Step 4: Mount the Secure Fields
@@ -376,10 +376,16 @@ const secureNumber = secureFields.create({
 
 Below, you find a GIF showing how you can configure the Secure Fields.
 
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px; max-width:500px; margin:auto">
-
-<Image align="center" width="500px" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" />
-
+<div style={{
+  backgroundColor: "#FFFFFF",
+  padding: "16px",
+  display: "flex",
+  justifyContent: "center",
+  borderRadius: "14px",
+  maxWidth: "500px",
+  margin: "auto"
+}}>
+  <Image align="center" width="500px" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" />
 </div>
 
 ## Step 5: Generate an OTT (one-time token)
@@ -393,7 +399,7 @@ With all user information in hand, you can start the payment. First, you need to
   }
 </style>
 
-<body>
+
   <div class="infoBlockContainer">
     <div class="verticalLine"></div>
     <div>
@@ -405,7 +411,7 @@ With all user information in hand, you can start the payment. First, you need to
       </div>
     </div>
   </div>
-</body>
+
 `}</HTMLBlock>
 
 ```javascript
@@ -553,19 +559,19 @@ if (payment.checkout.sdk_action_required) {
 ```
 
 <HTMLBlock>{`
-<body>
+
   <div class="infoBlockContainer">
     <div class="verticalLine"></div>
     <div>
       <h3>Demo App</h3>
       <div class="contentContainer">
         <p>
-          In addition to the code examples provided, you can access the <a href"/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js">JavaScript</a> checkout demos available on GitHub.
+          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js">JavaScript</a> checkout demos available on GitHub.
         </p>
       </div>
     </div>
   </div>
-</body>
+
 `}</HTMLBlock>
 
 ## Complementary features
