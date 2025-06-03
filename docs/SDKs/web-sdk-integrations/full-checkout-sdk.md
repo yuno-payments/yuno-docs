@@ -1121,7 +1121,7 @@ The default value is true.</td></tr></tbody></table></div></div>
 <span class="cm-variable">yuno</span>.<span class="cm-property">submitOneTimeTokenForm</span>()
 </div></code></pre></div></div>
 <h2 class="heading heading-2 header-scroll" align=""><div class="heading-anchor anchor waypoint" id="whats-next"></div><div class="heading-text"><div id="section-whats-next" class="heading-anchor_backwardsCompatibility"></div>What's next?</div><a aria-label="Skip link to What's next?" class="heading-anchor-icon fa fa-anchor" href="#whats-next"></a></h2>
-<p>Learn about the additional configurations from the Full SDK accessing <a target="_self" href="/docs/complementary-features-full-sdk">Complementary Features</a>. You can also access other functions available on the Yuno Web SDK:</p>
+<p>Learn about the additional configurations from the Full SDK accessing <a target="_self" href="/docs/full-checkout-sdk#complementary-features">Complementary Features</a>. You can also access other functions available on the Yuno Web SDK:</p>
 <ul>
 <li><a target="_self" href="/docs/sdk-customizations">SDK Customizations</a>: Change the SDK appearance to match your brand</li>
 <li><a target="_self" href="/docs/payment-status">Payment Status</a>: Update the user about the payment process</li>
