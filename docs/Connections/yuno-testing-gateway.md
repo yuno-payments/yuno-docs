@@ -429,7 +429,7 @@ You can use the payment description or specific card data to get the desired res
 
 ##### 4.4.1 - Payment Description
 
-To get the desired payment result using the payment description, you need to define the expected result as the description of the payment you create. For example, if you are testing a payment and expect a successful result, the payment description should be "SUCCEEDED". You find all available options in the [Transaction Codes](https://docs.y.uno/reference/transaction#/transaction-codes) section.
+To get the desired payment result using the payment description, you need to define the expected result as the description of the payment you create. For example, if you are testing a payment and expect a successful result, the payment description should be "SUCCEEDED". You find all available options in the [Transaction Codes](https://docs.y.uno/reference/transaction#transaction-codes) section.
 
 ##### 4.4.2 - Card detail
 
