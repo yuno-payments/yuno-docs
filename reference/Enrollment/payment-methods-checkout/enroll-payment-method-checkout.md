@@ -30,7 +30,7 @@ Note that this request requires an `X-Idempotency-Key`. Check the [Authenticatio
       <div class="contentContainer">
         <p>
 					 We recommend listening to 
-          <a href="configure-webhooks">Webhooks</a>
+          <a href="https://docs.y.uno/docs/configure-webhooks">Webhooks</a>
           to stay up to date to the state of the enrolled payment methods of your customers.
         </p>
   </div>  
