@@ -222,7 +222,7 @@ After integrating the SDK using one of the methods described above, follow these
       <h3>TypeScript library</h3>
       <div class=&quot;contentContainer&quot;>
         <p>
-          If you are using TypeScript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> to see all methods available in the Yuno Web SDK.          
+          If you are using TypeScript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> to see all methods available in the Yuno Web SDK.
         </p>
       </div>
     </div>
@@ -339,7 +339,7 @@ This parameter is not required.</td></tr></tbody></table></div></div>
       <h3>Rendering mode</h3>
       <div class=&quot;contentContainer&quot;>
         <p>
-          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.
+          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/full-checkout-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.
         </p>
       </div>
     </div>
@@ -420,7 +420,7 @@ PayButton.addEventListener(&amp;#x27;click&amp;#x27;, () =&amp;gt; {
       <h3>Continue method</h3>
       <div class=&quot;contentContainer&quot;>
         <p>
-          After creating a payment, Yuno <b>requires</b> you to integrate the <code>continuePayment</code> method from the SDK. This is necessary because some asynchronous payment methods require additional customer actions to complete the process. The API response will indicate this scenario by setting the <code>sdk_action_required</code> field to true. When this occurs, you must call <code>yuno.continuePayment()</code>, which will automatically present the necessary screens to the customer, allowing them to complete the payment flow without requiring you to handle each case manually.         
+          After creating a payment, Yuno <b>requires</b> you to integrate the <code>continuePayment</code> method from the SDK. This is necessary because some asynchronous payment methods require additional customer actions to complete the process. The API response will indicate this scenario by setting the <code>sdk_action_required</code> field to true. When this occurs, you must call <code>yuno.continuePayment()</code>, which will automatically present the necessary screens to the customer, allowing them to complete the payment flow without requiring you to handle each case manually.
         </p>
       </div>
     </div>
@@ -675,7 +675,7 @@ yuno.submitOneTimeTokenForm()
       <h3>TypeScript library</h3>
       <div class="contentContainer">
         <p>
-          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> to see all methods available in the Yuno Web SDK.          
+          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> to see all methods available in the Yuno Web SDK.
         </p>
       </div>
     </div>
@@ -792,7 +792,7 @@ This parameter is not required.</td></tr></tbody></table></div></div>
       <h3>Rendering mode</h3>
       <div class="contentContainer">
         <p>
-          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href="/docs/complementary-features-full-sdk#mode-of-form-rendering">Render mode</a> under the complementary complementary features page.
+          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href="/docs/full-checkout-sdk#mode-of-form-rendering">Render mode</a> under the complementary complementary features page.
         </p>
       </div>
     </div>
@@ -873,7 +873,7 @@ This parameter is not required.</td></tr></tbody></table></div></div>
       <h3>Continue method</h3>
       <div class="contentContainer">
         <p>
-          After creating a payment, Yuno <b>requires</b> you to integrate the <code>continuePayment</code> method from the SDK. This is necessary because some asynchronous payment methods require additional customer actions to complete the process. The API response will indicate this scenario by setting the <code>sdk_action_required</code> field to true. When this occurs, you must call <code>yuno.continuePayment()</code>, which will automatically present the necessary screens to the customer, allowing them to complete the payment flow without requiring you to handle each case manually.         
+          After creating a payment, Yuno <b>requires</b> you to integrate the <code>continuePayment</code> method from the SDK. This is necessary because some asynchronous payment methods require additional customer actions to complete the process. The API response will indicate this scenario by setting the <code>sdk_action_required</code> field to true. When this occurs, you must call <code>yuno.continuePayment()</code>, which will automatically present the necessary screens to the customer, allowing them to complete the payment flow without requiring you to handle each case manually.
         </p>
       </div>
     </div>
@@ -1127,9 +1127,9 @@ The default value is true.</td></tr></tbody></table></div></div>
 <li><a target="_self" href="/docs/payment-status">Payment Status</a>: Update the user about the payment process</li>
 <li><a target="_self" href="/docs/3ds-setup-sdk">3DS Setup SDK</a>: Integrate 3DS into your payment flow</li>
 </ul></div>
- 
+
   </div>
-  
+
   <div class="tab-content" id="webSDKv10">
 
 <div dehydrated="<p>Below, we outline the step-by-step process to enable the full Web SDK  functionalities in your system:</p>
@@ -1144,7 +1144,7 @@ The default value is true.</td></tr></tbody></table></div></div>
       <h3>TypeScript library</h3>
       <div class=&quot;contentContainer&quot;>
         <p>
-          If you are using TypeScript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> to see all methods available in the Yuno Web SDK.          
+          If you are using TypeScript, Yuno provides a <a href=&quot;https://www.npmjs.com/package/@yuno-payments/sdk-web-types&quot;>library</a> to see all methods available in the Yuno Web SDK.
         </p>
       </div>
     </div>
@@ -1260,7 +1260,7 @@ This parameter is not required.</td></tr></tbody></table></div></div>
       <h3>Rendering mode</h3>
       <div class=&quot;contentContainer&quot;>
         <p>
-          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/complementary-features-full-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.
+          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href=&quot;/docs/full-checkout-sdk#mode-of-form-rendering&quot;>Render mode</a> under the complementary complementary features page.
         </p>
       </div>
     </div>
@@ -1378,7 +1378,7 @@ PayButton.addEventListener(&amp;#x27;click&amp;#x27;, () =&amp;gt; {
       <h3>TypeScript library</h3>
       <div class="contentContainer">
         <p>
-          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> to see all methods available in the Yuno Web SDK.          
+          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> to see all methods available in the Yuno Web SDK.
         </p>
       </div>
     </div>
@@ -1494,7 +1494,7 @@ This parameter is not required.</td></tr></tbody></table></div></div>
       <h3>Rendering mode</h3>
       <div class="contentContainer">
         <p>
-          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href="/docs/complementary-features-full-sdk#mode-of-form-rendering">Render mode</a> under the complementary complementary features page.
+          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href="/docs/full-checkout-sdk#mode-of-form-rendering">Render mode</a> under the complementary complementary features page.
         </p>
       </div>
     </div>
