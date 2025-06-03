@@ -130,10 +130,7 @@ The following table lists all required parameters and their descriptions.
         </p>
         <p>
 					The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
-        </p>
-        <p>
-					To learn how to use the Secure Fields to perform MIT operations, access the <a href="/docs/secure-fields-merchant-initiated-transactions">Merchant-initiated transactions</a> page. 
-        </p>
+        </p>       
       </div>
     </div>
   </div>
