@@ -16,7 +16,7 @@ Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK funct
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Lite SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project. 
+Before proceeding with the Lite SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -44,7 +44,7 @@ Choose the integration method that best suits your development workflow and tech
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide. 
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:developers-credentials)developers-credentials guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -54,7 +54,7 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 ## Step 3: Start the checkout process
 
-You will start the checkout process. To do it, use the `yuno.startCheckout` function and provide the necessary parameters. 
+You will start the checkout process. To do it, use the `yuno.startCheckout` function and provide the necessary parameters.
 
 The following table lists all required parameters and their descriptions. For optional parameters, go to [Complementary Features](doc:lite-sdk-complementary-features).
 
@@ -78,7 +78,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Refers to the current payment's [checkout session](ref:create-checkout-session).\
+        Refers to the current payment's [checkout session](ref:create-checkout-session).
         `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
       </td>
     </tr>
@@ -89,7 +89,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        This parameter specifies the country for which the payment process is being set up.\
+        This parameter specifies the country for which the payment process is being set up.
         Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
       </td>
     </tr>
@@ -110,7 +110,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Required to receive notifications about server calls or loading events during the payment process. 
+        Required to receive notifications about server calls or loading events during the payment process.
       </td>
     </tr>
 
@@ -150,8 +150,8 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.\
-        To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit.\
+        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.
+        To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit.
         This parameter is not required.
       </td>
     </tr>
@@ -348,7 +348,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
   * [Render mode](doc:lite-sdk-complementary-features#rendering-modes)
   * [Text payment form buttons](doc:lite-sdk-complementary-features#text-payment-form-buttons)
   * [Persist credit card form to retry payments](doc:lite-sdk-complementary-features#persist-credit-card-form-to-retry-payments)
-  * [Hide Pay button](doc:lite-sdk-complementary-features#hide-pay-button) 
+  * [Hide Pay button](doc:lite-sdk-complementary-features#hide-pay-button)
 
 ### Loader
 
@@ -374,7 +374,7 @@ Control the use of the [loader](doc:loader).
       </td>
 
       <td>
-        You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.\
+        You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.
         The default value is true.
       </td>
     </tr>
@@ -421,7 +421,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        This parameter is optional. It determines the mode in which the payment forms will be displayed.  
+        This parameter is optional. It determines the mode in which the payment forms will be displayed.
 
         * `type`: can be one of `modal` or `element`.
         * `elementSelector`: Element where the form will be rendered. Only required if `type `is `element`.
@@ -434,7 +434,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:  
+        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:
 
         * **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted.
         * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
@@ -491,7 +491,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        Define specific settings for the credit card form:  
+        Define specific settings for the credit card form:
 
         * `type`: `step` o `extends`
         * `styles`: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
@@ -521,7 +521,7 @@ In addition, you can display a checkbox for saving or enrolling cards using the 
 
 #### Rendering modes
 
-Below you find screenshots presenting the difference between the following: 
+Below you find screenshots presenting the difference between the following:
 
 * Render modes `modal` and `elements` for the payment method list
 * Render modes `step` and `extends` for the credit card form
@@ -553,16 +553,16 @@ yuno.startCheckout({
 
 #### Persist credit card form to retry payments
 
-If a transaction is rejected, you can use the credit card form to retry a payment after the customer has entered the credit card details. To do that, you will need to: 
+If a transaction is rejected, you can use the credit card form to retry a payment after the customer has entered the credit card details. To do that, you will need to:
 
-1. Add the following parameter while initializing the SDK to persist the credit card form after the one-time use token is created: 
+1. Add the following parameter while initializing the SDK to persist the credit card form after the one-time use token is created:
    ```javascript
    yuno.startCheckout({
      automaticallyUnmount: false,
    })
    ```
-2. In case the transaction is rejected, you will need to: 
-   1. Execute the method `yuno.notifyError() `to delete the previously entered CVV for the first transaction. 
+2. In case the transaction is rejected, you will need to:
+   1. Execute the method `yuno.notifyError() `to delete the previously entered CVV for the first transaction.
    2. Create a new checkout session and update the SDK with the new one by executing `yuno.updateCheckoutSession(checkoutsession)`
 3. Continue with the new checkout and one-time use token with the regular payment flow.
 
