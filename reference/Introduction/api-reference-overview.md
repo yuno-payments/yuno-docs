@@ -20,7 +20,7 @@ The Yuno API has been implemented around RESTful. Our API uses standard HTTP pro
       <h3>Choose your integration</h3>
       <div class="contentContainer">
         <p>
-          Before you start the integration, <a href='choose-the-right-integration-for-you'>choose the type of integration</a> you want to use.
+          Before you start the integration, <a docs='choose-the-right-integration-for-you'>choose the type of integration</a> you want to use.
         </p>
       </div>
     </div>
@@ -30,7 +30,7 @@ The Yuno API has been implemented around RESTful. Our API uses standard HTTP pro
 
 ## Setup and integration
 
-The options below highlight essential information you will need to consider when building your integration with Yuno. 
+The options below highlight essential information you will need to consider when building your integration with Yuno.
 
 <HTMLBlock>{`
 <body>
@@ -138,7 +138,7 @@ The options below highlight essential information you will need to consider when
 
 ## API services
 
-Yuno provides a wide range of functionalities you can use through its API. Below are links to every API service available in the documentation. 
+Yuno provides a wide range of functionalities you can use through its API. Below are links to every API service available in the documentation.
 
 <HTMLBlock>{`
 <body>
