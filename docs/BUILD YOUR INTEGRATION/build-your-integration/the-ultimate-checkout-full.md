@@ -18,17 +18,17 @@ Using our Full SDK, you can integrate Yuno, minimizing integration, maintenance,
 
 With the Full SDK, Yuno handles the user experience and allows you to customize the checkout and payment methods you are showing to your users from our dashboard. This gives you a lot of flexibility and reduces the need to write more code in the future when you add new payment methods and features to your payment stack.
 
-One of the main advantages of the full SDK integration is that we take care of every scenario for your customer regardless of the payment method chosen. You can handle all of them with a single integration. 
+One of the main advantages of the full SDK integration is that we take care of every scenario for your customer regardless of the payment method chosen. You can handle all of them with a single integration.
 
 ## Payment Workflow
 
-Render all the available payment methods with a single integration 
+Render all the available payment methods with a single integration
 
 ![](https://files.readme.io/f80dc2a-image.png)
 
 ### Step 1: Create a customer
 
-The first step of the payment flow is to create a customer. A customer will have payment methods associated, this is why it is important. You can create a customer using the [Create Customer Endpoint](https://docs.y.uno/reference/create-customer). As a result, you will receive the id of the customer that was created in the Yuno DB. 
+The first step of the payment flow is to create a customer. A customer will have payment methods associated, this is why it is important. You can create a customer using the [Create Customer Endpoint](https://docs.y.uno/reference/create-customer). As a result, you will receive the id of the customer that was created in the Yuno DB.
 
 If you have created a customer that is going to pay previously you can skip this step.
 
@@ -36,9 +36,9 @@ If you have created a customer that is going to pay previously you can skip this
 
 You use checkout sessions to create payments. You will create a new checkout session every time you make a payment. With a checkout session, you will have access to all payment methods available for that customer (both previously enrolled or not) to make a purchase, which you can then offer to your customers.
 
-You can create it using [Checkout Session Endpoint](https://docs.y.uno/reference/create-checkout-session). To create a new checkout session, you will need the customer id, generated when you created the customer on the Yuno system. This endpoint will provide the checkout session id that you can use for your payment. 
+You can create it using [Checkout Session Endpoint](https://docs.y.uno/reference/create-checkout-session). To create a new checkout session, you will need the customer id, generated when you created the customer on the Yuno system. This endpoint will provide the checkout session id that you can use for your payment.
 
-Once you have performed the first two steps, you will need to implement one of our  SDKs to continue the payment flow. 
+Once you have performed the first two steps, you will need to implement one of our  SDKs to continue the payment flow.
 
 ### Step 3: Implement the SDK and obtain the One Time Token
 
@@ -52,11 +52,11 @@ In this step, you will have to initialize Yuno's SDK with your API credentials a
 2. Initialize SDK with the public key.
 3. Start the checkout process. Configure SDK by calling the function `yuno.startCheckout()` with the desired configuration.
 4. Mount the SDK in Web or add the view in Mobile to display the checkout to your user. Once your user selects a payment method, proceed with step 5.
-5. You must create a payment button on your front end. When the user clicks the payment button, begin the payment process by calling the function `yuno.startPayment()`. 
+5. You must create a payment button on your front end. When the user clicks the payment button, begin the payment process by calling the function `yuno.startPayment()`.
 
 * If needed the SDK will collect the additional payment information. This can include, card information or the customer payer information, required by the provider. (email, phone number, document, etc).
 
-6. Once this process is completed, the SDK will provide a One-Time Token in the callback function `yunoCreatePayment()`. This function must be defined when you configure the SDK in the function `yuno.startCheckout()`. 
+6. Once this process is completed, the SDK will provide a One-Time Token in the callback function `yunoCreatePayment()`. This function must be defined when you configure the SDK in the function `yuno.startCheckout()`.
 
 For more detailed information on how to initiate Yuno's SDK please refer to one of the following sections according to the corresponding platform:
 
@@ -105,7 +105,7 @@ Once you have completed the first three steps, you can create a payment. A payme
 
 **Note:**
 
- The response of the payment endpoint will provide an important parameter called `sdk_action_required`. 
+The response of the payment endpoint will provide an important parameter called `sdk_action_required`.
 
 * When the selected payment method is synchronous, the API response will provide the final payment status. In this scenario, the field `sdk_action_required` in the API response will be `false`. The payment process concludes at this step.
 
@@ -123,7 +123,7 @@ We recommend incorporating the method `continuePayment` from the SDK after creat
 
 ### Step 6: Get Payment Status
 
-Call the `yunoPaymentResult()` function to obtain the payment status. Once you have this status you can use it to show your user the corresponding screen depending on the final result of the payment. 
+Call the `yunoPaymentResult()` function to obtain the payment status. Once you have this status you can use it to show your user the corresponding screen depending on the final result of the payment.
 
 ### Step 7: Receive the payment result through a webhook
 
@@ -133,15 +133,15 @@ We also recommend configuring [Webhooks](doc:webhooks) in your Yuno dashboard. W
 
 ## Enroll a credit card with a payment
 
-Yuno enables you to save a credit/debit card for future purchases with the same payment request without having to integrate the [enrollment](doc:enrollment-lite) integration. There are several ways to obtain a [vaulted token](https://docs.y.uno/docs/tokens):  
+Yuno enables you to save a credit/debit card for future purchases with the same payment request without having to integrate the [enrollment](doc:enrollment-lite) integration. There are several ways to obtain a [vaulted token](https://docs.y.uno/docs/tokens):
 
 * Set the parameter `vault_on_sucess = true` in the Create Payment Endpoint. In the response of the payment, you will receive the `vaulted_token` that corresponds to the card used by the customer payer.
 * You can also set the function `cardSaveEnable = true` in the SDK to display a checkbox for the user to select if he wants to save the card for future purchases. If the user checks the box in the response of the payment you will receive the `vaulted_token` that corresponds to the card used by the customer payer.
 
-After the payment is made, the user will have the credit card available for future purchases and you can see the detailed information by using one of the following services: 
+After the payment is made, the user will have the credit card available for future purchases and you can see the detailed information by using one of the following services:
 
-* [Get payment methods by checkout session](doc:retrieve-payment-methods-for-checkout)
-* [Get payment methods by customer](retrieve-enrolled-payment-methods-api)
+* [Get payment methods by checkout session](https://docs.y.uno/reference/retrieve-payment-methods-for-checkout)
+* [Get payment methods by customer](https://docs.y.uno/reference/retrieve-enrolled-payment-methods-api)
 
 > 📘 Using a vaulted token
 >
