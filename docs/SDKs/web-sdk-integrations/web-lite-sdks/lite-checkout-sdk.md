@@ -337,8 +337,8 @@ When the method returns an object, it allows you to handle your application's pa
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Form loader](doc:lite-sdk-complementary-features#loader)
-* [Bank Issuer List](doc:lite-sdk-complementary-features#form-of-the-issuer)
+* [Form loader](doc:lite-checkout-sdk#loader)
+* [Bank Issuer List](doc:lite-checkout-sdk#form-of-the-issuer)
 * [Render mode ](doc:lite-sdk-complementary-features#mode-of-form-rendering)
 * [Card form configurations ](doc:lite-sdk-complementary-features#card-form-configurations)
   * [Save Card for future payments](doc:lite-sdk-complementary-features#save-card-for-future-payments)
