@@ -48,7 +48,7 @@ Yuno allows you to create installment plans to offer to your customers. These pl
       <div class="contentContainer">
         <p>
 					This endpoint is only required for
-          <a href="installments">Merchant installments integration</a>
+          <a docs="installments">Merchant installments integration</a>
           For Provider defined installments, we use the installment plan define by your payment provider.
         </p>
   </div>  
