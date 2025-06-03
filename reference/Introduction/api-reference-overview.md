@@ -20,7 +20,7 @@ The Yuno API has been implemented around RESTful. Our API uses standard HTTP pro
       <h3>Choose your integration</h3>
       <div class="contentContainer">
         <p>
-          Before you start the integration, <a docs='choose-the-right-integration-for-you'>choose the type of integration</a> you want to use.
+          Before you start the integration, <a refs='choose-the-right-integration-for-you'>choose the type of integration</a> you want to use.
         </p>
       </div>
     </div>
