@@ -12,14 +12,13 @@ metadata:
     solution into your platform.
   robots: index
 next:
-  description: ''
   pages:
-    - type: basic
-      slug: step-1-set-up-your-account
+    - slug: step-1-set-up-your-account
       title: Set Up Your Account
-    - type: basic
-      slug: what-is-yuno-1
-      title: What is Yuno?
+      type: basic
+    - slug: how-yuno-payment-flow-works
+      title: How the Yuno Payment Process Works
+      type: basic
 ---
 Welcome to the Yuno getting started guide. This section is designed to provide developers and businesses with a step-by-step guide to creating their first payment and performing the basic setup required to integrate Yuno services into their platform.
 
