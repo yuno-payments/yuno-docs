@@ -46,8 +46,8 @@ The attributes of the JSON for the Yuno webhooks are listed below:
   <div class="yuno">
     <p><strong>data</strong> <small>string </small>
       <p>Specifies the <a
-          href="the-payment-object">payment</a> (for payment type) or <a
-          href="the-payment-method-object-checkout">payment method object</a> (for enrollment and other objects).</p>
+          href="https://docs.y.uno/reference/the-payment-object">payment</a> (for payment type) or <a
+          href="https://docs.y.uno/reference/the-payment-method-object-api">payment method object</a> (for enrollment and other objects).</p>
     </p>
   </div>
 </body>
