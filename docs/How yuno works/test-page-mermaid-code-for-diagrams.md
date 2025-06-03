@@ -66,7 +66,7 @@ This diagram illustrates the direct payment process, outlining the interactions 
 
 ### Step 1: Create a customer
 
-**[Optional]**: The first step of the payment flow is to create a customer. A customer will have payment methods associated. You can create a customer using the following [endpoint](ref:create-customer). As a result, you will receive the customer's ID that was created in the Yuno DB.
+**\[Optional]**: The first step of the payment flow is to create a customer. A customer will have payment methods associated. You can create a customer using the following [endpoint](ref:create-customer). As a result, you will receive the customer's ID that was created in the Yuno DB.
 
 You can skip this step if you have previously created the customer.
 
