@@ -899,7 +899,7 @@ This parameter is not required.</td></tr></tbody></table></div></div>
 
 <h2>Step 9: Receive payment result through webhook</h2>
 
-<p>Yuno also recommends configuring <a href="doc:webhooks">Webhooks</a> in your <a href="https://auth.y.uno/u/login?">dashboard</a>. Webhooks are the best way to ensure your system is up-to-date with payment progress and status. Since the event notifications trigger automatically, your system won't need to perform recurrent requests to Yuno.</p>
+<p>Yuno also recommends configuring <a href="https://docs.y.uno/docs/webhooks-1">Webhooks</a> in your <a href="https://auth.y.uno/u/login?">dashboard</a>. Webhooks are the best way to ensure your system is up-to-date with payment progress and status. Since the event notifications trigger automatically, your system won't need to perform recurrent requests to Yuno.</p>
 
 <div class="rdmd-html">
   <div class="infoBlockContainer">
