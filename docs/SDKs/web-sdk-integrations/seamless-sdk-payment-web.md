@@ -30,7 +30,7 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Seamless Web SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project. 
+Before proceeding with the Seamless Web SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -113,7 +113,7 @@ yuno.startCheckout({
 
 ```
 
-Notice that when using the `startCheckout`you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions. 
+Notice that when using the `startCheckout`you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
 
 <Table align={["left","left"]}>
   <thead>
@@ -135,7 +135,7 @@ Notice that when using the `startCheckout`you already have to specify the callba
       </td>
 
       <td>
-        Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session).\
+        Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session).
         Example: `438413b7-4921-41e4-b8f3-28a5a0141638`.
       </td>
     </tr>
@@ -146,7 +146,7 @@ Notice that when using the `startCheckout`you already have to specify the callba
       </td>
 
       <td>
-        The HTML element where the checkout will be rendered. 
+        The HTML element where the checkout will be rendered.
       </td>
     </tr>
 
@@ -156,7 +156,7 @@ Notice that when using the `startCheckout`you already have to specify the callba
       </td>
 
       <td>
-        This parameter specifies the country for which the payment process is being set up.\
+        This parameter specifies the country for which the payment process is being set up.
         Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
       </td>
     </tr>
@@ -167,7 +167,7 @@ Notice that when using the `startCheckout`you already have to specify the callba
       </td>
 
       <td>
-        Defines the language to be used in the payment forms. Supported options include:  
+        Defines the language to be used in the payment forms. Supported options include:
 
         * `es` (Spanish)
         * `en` (English)
@@ -235,10 +235,10 @@ Notice that when using the `startCheckout`you already have to specify the callba
       </td>
 
       <td>
-        Specify how and where the forms will be rendered. The options available are:  
+        Specify how and where the forms will be rendered. The options available are:
 
         * `type: modal'` (default)\
-          -`type: element`. If you select `element`you must inform the `elementSelector`, to specify where the form should be rendered. 
+          -`type: element`. If you select `element`you must inform the `elementSelector`, to specify where the form should be rendered.
       </td>
     </tr>
 
@@ -254,7 +254,7 @@ Notice that when using the `startCheckout`you already have to specify the callba
 
     <tr>
       <td>
-         `texts`
+        `texts`
       </td>
 
       <td>
@@ -316,10 +316,7 @@ Notice that when using the `startCheckout`you already have to specify the callba
         </p>
         <p>
 					The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
-        </p>
-        <p>
-					To learn how to use the Lite SDK to perform MIT operations, access the <a href="/docs/lite-sdk-merchant-initiated-transactions">Merchant-initiated transactions</a> page. 
-        </p>
+        </p>     
       </div>
     </div>
   </div>
