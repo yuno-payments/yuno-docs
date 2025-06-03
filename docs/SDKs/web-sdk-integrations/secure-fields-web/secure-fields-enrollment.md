@@ -14,7 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields Enro
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project. 
+Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -32,7 +32,7 @@ Choose the integration method that best suits your development workflow and tech
       <h3>TypeScript library</h3>
       <div class="contentContainer">
         <p>
-          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK. Access the <a href="/docs/secure-fields-complementary-features#configure-and-use-typescript">Complementary Features</a> page to learn how to use it in your project.
+          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK.
         </p>
       </div>
     </div>
@@ -50,7 +50,7 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 ### Step 3: Create a customer session and an enrollment payment method object
 
-Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your secure fields integration for enrollment. While creating the payment method object, you will need to define which one will be available for your customer to enroll (in the case of secure fields, only CARD is available). 
+Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your secure fields integration for enrollment. While creating the payment method object, you will need to define which one will be available for your customer to enroll (in the case of secure fields, only CARD is available).
 
 <HTMLBlock>{`
 <body>
@@ -72,7 +72,7 @@ Before continuing with the process, you will need to create a [customer session]
 
 Next, you have to create a configuration object. The essential parameters are the `country_code`, which determines the country for which the enrollment process is configured, and `customerSession`, which refers to the current enrollment's customer session.  The next code block presents an example of the parameter configuration.
 
-The following table lists all required parameters and their descriptions. 
+The following table lists all required parameters and their descriptions.
 
 <Table align={["left","left"]}>
   <thead>
@@ -94,7 +94,7 @@ The following table lists all required parameters and their descriptions.
       </td>
 
       <td>
-        This parameter specifies the country for which the payment process is being set up.\
+        This parameter specifies the country for which the payment process is being set up.
         Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk)   page.
       </td>
     </tr>
@@ -105,7 +105,7 @@ The following table lists all required parameters and their descriptions.
       </td>
 
       <td>
-        Refers to the current enrollment's customer session.\
+        Refers to the current enrollment's customer session.
         `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
       </td>
     </tr>
@@ -127,7 +127,7 @@ const secureFields = yuno.secureFields({
 
 ### Step 5: Mount the Secure Fields
 
-After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function. 
+After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
 
 The table below presents all configurations available:
 
@@ -145,7 +145,7 @@ The table below presents all configurations available:
 | `options.onRenderedSecureField` | An auxiliary function that can be configured and will run when the element finishes rendering                                                                                       |
 | `options.errorMessage`          | This allows for the definition of the field's error message.                                                                                                                        |
 
-Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`). 
+Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
 The next code block presents an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user.
 
