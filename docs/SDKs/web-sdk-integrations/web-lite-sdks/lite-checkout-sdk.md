@@ -206,7 +206,7 @@ yuno.startCheckout({
       <h3>Rendering mode</h3>
       <div class="contentContainer">
         <p>
-          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the <a href="/docs/lite-sdk-complementary-features#mode-of-form-rendering">Render mode</a> under the complementary complementary features page.
+          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render.
         </p>
       </div>
     </div>
