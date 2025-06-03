@@ -22,7 +22,7 @@ In this guide, you will find step-by-step instructions on canceling a previously
       <h3>Which payments can you cancel?</h3>
       <div class="contentContainer">
         <p>
-          Only payments with <b>PENDING</b> status can be canceled. Check the <a onclick="window.location='payment#payments-status'">Payment status</a> page for further details regarding the possible payment status.
+          Only payments with <b>PENDING</b> status can be canceled. Check the <a href="https://docs.y.uno/docs/payment-status">Payment status</a> page for further details regarding the possible payment status.
         </p>
       </div>
     </div>
@@ -59,7 +59,7 @@ To cancel a payment, you need to:
 
 ## Cancel a Payment
 
-You can cancel a payment only if it has the PENDING status. Use the [Cancel Payment endpoint](ref:cancel-payment) to cancel the payment. To identify the payment to be canceled, you need to provide its `id` and the `transaction_id`. 
+You can cancel a payment only if it has the PENDING status. Use the [Cancel Payment endpoint](ref:cancel-payment) to cancel the payment. To identify the payment to be canceled, you need to provide its `id` and the `transaction_id`.
 
 To confirm you have successfully canceled the payment, check if the parameters from the [Cancel Payment endpoint](ref:cancel-payment) response contain the following values:
 
@@ -74,5 +74,5 @@ If the response contains the above values, the cancellation was successful.
 
 If, for some reason, you need to confirm the payment cancelation:
 
-* Use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant_order_id) to get detailed information about the payment. 
+* Use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant_order_id) to get detailed information about the payment.
 * Alternatively, set up webhooks to receive notifications for each event. Refer to the [Webhooks](doc:configuring-yuno-webhooks) guide to learn how to configure webhooks in Yuno.
