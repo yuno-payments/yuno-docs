@@ -872,7 +872,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ### Chargebacks specific response\_codes
 
-For more details, please refer to the [reason codes page](https://docs.y.uno/docs/reason-codes-copy) in the [Chargeback guides](https://docs.y.uno/docs/chargeback-management) section. 
+For more details, please refer to the [reason codes page](https://docs.y.uno/docs/reason-codes) in the [Chargeback guides](https://docs.y.uno/docs/chargeback-management) section.
 
 <HTMLBlock>{`
 <body>
