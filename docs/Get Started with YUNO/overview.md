@@ -16,8 +16,8 @@ next:
     - slug: step-1-set-up-your-account
       title: Set Up Your Account
       type: basic
-    - slug: how-yuno-payment-flow-works
-      title: How the Yuno Payment Process Works
+    - slug: step-2-your-first-payment
+      title: Create Your First Payment With SDK
       type: basic
 ---
 Welcome to the Yuno getting started guide. This section is designed to provide developers and businesses with a step-by-step guide to creating their first payment and performing the basic setup required to integrate Yuno services into their platform.
