@@ -22,7 +22,7 @@ In this guide, you will find step-by-step instructions on capturing a previously
       <h3>Which payments can you capture?</h3>
       <div class="contentContainer">
         <p>
-          Only payments with <b>PENDING</b> status can be captured. Check the <a onclick="window.location='payment#payments-status'">Payment status</a> page for further details regarding the possible payment status.
+          Only payments with <b>PENDING</b> status can be captured. Check the <a href="https://docs.y.uno/docs/payment-status">Payment status</a> page for further details regarding the possible payment status.
         </p>
       </div>
     </div>
@@ -77,5 +77,5 @@ If the response contains the above values, the capture was successful.
 
 If, for some reason, you need to confirm the payment cancelation:
 
-* Use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant_order_id) to get detailed information about the payment. 
+* Use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant_order_id) to get detailed information about the payment.
 * Alternatively, set up webhooks to receive notifications for each event. Refer to the [Webhooks](doc:configuring-yuno-webhooks) guide to learn how to configure webhooks in Yuno.
