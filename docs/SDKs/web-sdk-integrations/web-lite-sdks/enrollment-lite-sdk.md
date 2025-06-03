@@ -44,7 +44,7 @@ Choose the integration method that best suits your development workflow and tech
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide if you do not have your credentials. In the example below, the initialized class is attributed to the `yuno`constant.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide if you do not have your credentials. In the example below, the initialized class is attributed to the `yuno`constant.
 
 ```javascript
 const yuno = await Yuno.initialize(PUBLIC_API_KEY)
