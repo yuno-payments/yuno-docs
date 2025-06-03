@@ -34,7 +34,7 @@ After completing the SDK integration, you can proceed with the following steps t
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -68,7 +68,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Refers to the current payment's [checkout session](ref:create-checkout-session).\
+        Refers to the current payment's [checkout session](ref:create-checkout-session).
         `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
       </td>
     </tr>
@@ -79,7 +79,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        This parameter specifies the country for which the payment process is being set up.\
+        This parameter specifies the country for which the payment process is being set up.
         Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk)  page.
       </td>
     </tr>
@@ -100,7 +100,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Required to receive notifications about server calls or loading events during the payment process. 
+        Required to receive notifications about server calls or loading events during the payment process.
       </td>
     </tr>
 
@@ -140,8 +140,8 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.\
-        To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit.\
+        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.
+        To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit.
         This parameter is not required.
       </td>
     </tr>
@@ -398,7 +398,7 @@ Control the use of the [loader](doc:loader).
       </td>
 
       <td>
-        You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.\
+        You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.
         The default value is true.
       </td>
     </tr>
@@ -445,7 +445,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        This parameter is optional. It determines the mode in which the payment forms will be displayed.  
+        This parameter is optional. It determines the mode in which the payment forms will be displayed.
 
         * `type`: can be one of `modal` or `element`.
         * `elementSelector`: Element where the form will be rendered. Only required if `type `is `element`.
@@ -458,7 +458,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:  
+        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:
 
         * **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted.
         * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
@@ -515,7 +515,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        Define specific settings for the credit card form:  
+        Define specific settings for the credit card form:
 
         * `type`: `step` or `extends`
         * `styles`: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
