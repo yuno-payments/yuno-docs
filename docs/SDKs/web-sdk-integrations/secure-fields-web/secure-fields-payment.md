@@ -672,7 +672,7 @@ secureFieldInstance.setCardType('CREDIT')
 
 ## What's next?
 
-Learn how to execute [MIT using the Secure Fields](doc:secure-fields-merchant-initiated-transactions), or for additional configurations from the Secure Fields SDK, access [complementary features](doc:secure-fields-complementary-features). You can also access other functions available on the Yuno Web SDK:
+You can access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand.
 * [Payment Status](doc:payment-status): Update the user about the payment process.
