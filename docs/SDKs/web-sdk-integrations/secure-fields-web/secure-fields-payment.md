@@ -571,12 +571,12 @@ if (payment.checkout.sdk_action_required) {
 Yuno Secure Fields provides additional services and configurations you can use to improve customers' experience:
 
 * [Configure and use TypeScript](#configure-and-use-typescript)
-* [Persist credit card information to retry payments](doc:secure-fields-complementary-features#persist-credit-card-information-to-retry-payments)
-* [Clear the values entered in the card fields](doc:secure-fields-complementary-features#clear-the-values-entered-in-the-card-fields)
-* [Input focus](doc:secure-fields-complementary-features#input-focus)
-* [Force validation](doc:secure-fields-complementary-features#force-validation)
-* [Set custom error message](doc:secure-fields-complementary-features#set-custom-error-message)
-* [Set card type](doc:secure-fields-complementary-features#set-card-type)
+* [Persist credit card information to retry payments](#persist-credit-card-information-to-retry-payments)
+* [Clear the values entered in the card fields](#clear-the-values-entered-in-the-card-fields)
+* [Input focus](#input-focus)
+* [Force validation](#force-validation)
+* [Set custom error message](#set-custom-error-message)
+* [Set card type](#set-card-type)
 
 ### Configure and use TypeScript
 
