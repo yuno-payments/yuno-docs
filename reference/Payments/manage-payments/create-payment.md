@@ -39,7 +39,7 @@ This request creates a payment after you created a checkout session.
       <h3>3DS Payments</h3>
       <div class="contentContainer">
         <p>
-          To understand how 3D Secure payments work, check the <a onclick="window.location='3d-secure'">3D Secure</a> page or the <a onclick="window.location='direct-workflow'">Direct Workflow</a> guide to learn how to create payments using 3DS on Yuno.
+          To understand how 3D Secure payments work, check the <a href="https://docs.y.uno/docs/3d-secure">3D Secure</a> page to learn how to create payments using 3DS on Yuno.
         </p>
       </div>
     </div>
