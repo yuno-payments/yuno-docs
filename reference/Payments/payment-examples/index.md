@@ -10,10 +10,10 @@ metadata:
 next:
   description: ''
 ---
-When using [Yuno's SDK](https://docs.y.uno/docs/web-sdk-integration), we take care of every particular scenario any payment method could have. Once the customer selects the payment method and chooses to pay, if there is any extra information needed to process the payment (besides the one that you shared with us in the integration), we will display a form asking the customer for that particular information needed. A few examples of these scenarios could be: 
+When using [Yuno's SDK](https://docs.y.uno/docs/web-sdk-integrations), we take care of every particular scenario any payment method could have. Once the customer selects the payment method and chooses to pay, if there is any extra information needed to process the payment (besides the one that you shared with us in the integration), we will display a form asking the customer for that particular information needed. A few examples of these scenarios could be:
 
-* **Document/phone**: Some alternative payment methods require either the customers document or phone number, so in case you don't have that information in your integration, we'll ask for them in the form mentioned before so you don't have to. 
-* **PSE**: This payment method requires the customer to select the bank they will use to make the payment, so we offer them a list of banks to choose from. 
+* **Document/phone**: Some alternative payment methods require either the customers document or phone number, so in case you don't have that information in your integration, we'll ask for them in the form mentioned before so you don't have to.
+* **PSE**: This payment method requires the customer to select the bank they will use to make the payment, so we offer them a list of banks to choose from.
 
 <HTMLBlock>{`
 <body>
@@ -37,7 +37,7 @@ When using [Yuno's SDK](https://docs.y.uno/docs/web-sdk-integration), we take ca
 </body>
 `}</HTMLBlock>
 
-For the SDK\_CHECKOUT workflow, all the information is going to be stored in the [`One Time Token`](https://docs.y.uno/docs/the-ultimate-checkout-full) returned by Yuno's SDK, so you don't have to change your integration depending on the payment method. The basic structure of the payment will be the same for every payment method, as in the example below. 
+For the SDK\_CHECKOUT workflow, all the information is going to be stored in the [`One Time Token`](https://docs.y.uno/docs/the-ultimate-checkout-full) returned by Yuno's SDK, so you don't have to change your integration depending on the payment method. The basic structure of the payment will be the same for every payment method, as in the example below.
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
