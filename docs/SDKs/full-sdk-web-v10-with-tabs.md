@@ -38,7 +38,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `<body>`
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -72,7 +72,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Refers to the current payment's [checkout session](ref:create-checkout-session).\
+        Refers to the current payment's [checkout session](ref:create-checkout-session).
         `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
       </td>
     </tr>
@@ -103,7 +103,7 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Required to receive notifications about server calls or loading events during the payment process. 
+        Required to receive notifications about server calls or loading events during the payment process.
       </td>
     </tr>
 
@@ -143,8 +143,8 @@ The following table lists all required parameters and their descriptions. For op
       </td>
 
       <td>
-        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.\
-        To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit.\
+        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit.
+        To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit.
         This parameter is not required.
       </td>
     </tr>
