@@ -31,7 +31,7 @@ Choose the integration method that best suits your development workflow and tech
       <h3>TypeScript library</h3>
       <div class="contentContainer">
         <p>
-          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK. Access the <a href="/docs/secure-fields-complementary-features#configure-and-use-typescript">Complementary Features</a> page to learn how to use it in your project.
+          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK.
         </p>
       </div>
     </div>
