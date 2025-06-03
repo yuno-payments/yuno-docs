@@ -56,7 +56,7 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 You will start the checkout process. To do it, use the `yuno.startCheckout` function and provide the necessary parameters.
 
-The following table lists all required parameters and their descriptions. For optional parameters, go to [Complementary Features](doc:lite-checkout-sdk#/complementary-features).
+The following table lists all required parameters and their descriptions. For optional parameters, go to [Complementary Features](doc:lite-checkout-sdk#complementary-features).
 
 <Table align={["left","left"]}>
   <thead>
