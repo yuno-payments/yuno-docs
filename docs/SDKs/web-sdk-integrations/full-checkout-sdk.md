@@ -456,15 +456,15 @@ PayButton.addEventListener(&amp;#x27;click&amp;#x27;, () =&amp;gt; {
 <h2 class=&quot;heading heading-2 header-scroll&quot; align=&quot;&quot;><div class=&quot;heading-anchor anchor waypoint&quot; id=&quot;complementary-features&quot;></div><div class=&quot;heading-text&quot;><div id=&quot;section-complementary-features&quot; class=&quot;heading-anchor_backwardsCompatibility&quot;></div>Complementary features</div><a aria-label=&quot;Skip link to Complementary features&quot; class=&quot;heading-anchor-icon fa fa-anchor&quot; href=&quot;#complementary-features&quot;></a></h2>
 <p>Yuno Web SDK provides additional services and configurations you can use to improve customers&amp;#x27; experience:</p>
 <ul>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#form-loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#form-loader&quot;>Form loader</a></li>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#mode-of-form-rendering&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#mode-of-form-rendering&quot;>Render mode </a></li>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#card-form-configurations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#card-form-configurations&quot;>Card form configurations </a>
+<li><a href=&quot;/docs/full-checkout-sdk#form-loader&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#form-loader&quot;>Form loader</a></li>
+<li><a href=&quot;/docs/full-checkout-sdk#mode-of-form-rendering&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#mode-of-form-rendering&quot;>Render mode </a></li>
+<li><a href=&quot;/docs/full-checkout-sdk#card-form-configurations&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#card-form-configurations&quot;>Card form configurations </a>
 <ul>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#save-card-for-future-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#save-card-for-future-payments&quot;>Save Card for future payments</a></li>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#rendering-modes&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#rendering-modes&quot;>Rendering modes</a></li>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#text-payment-form-buttons&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#text-payment-form-buttons&quot;>Text payment form buttons</a></li>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#persist-credit-card-form-to-retry-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#persist-credit-card-form-to-retry-payments&quot;>Persist credit card form to retry payments</a></li>
-<li><a href=&quot;/docs/web-sdk-integration-guide-v11#hide-pay-button&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;web-sdk-integration-guide-v11#hide-pay-button&quot;>Hide Pay button</a></li>
+<li><a href=&quot;/docs/full-checkout-sdk#save-card-for-future-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#save-card-for-future-payments&quot;>Save Card for future payments</a></li>
+<li><a href=&quot;/docs/full-checkout-sdk#rendering-modes&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#rendering-modes&quot;>Rendering modes</a></li>
+<li><a href=&quot;/docs/full-checkout-sdk#text-payment-form-buttons&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#text-payment-form-buttons&quot;>Text payment form buttons</a></li>
+<li><a href=&quot;/docs/full-checkout-sdk#persist-credit-card-form-to-retry-payments&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#persist-credit-card-form-to-retry-payments&quot;>Persist credit card form to retry payments</a></li>
+<li><a href=&quot;/docs/full-checkout-sdk#hide-pay-button&quot; target=&quot;&quot; title=&quot;&quot; class=&quot;doc-link&quot; data-sidebar=&quot;full-checkout-sdk#hide-pay-button&quot;>Hide Pay button</a></li>
 </ul>
 </li>
 </ul>
@@ -917,15 +917,15 @@ This parameter is not required.</td></tr></tbody></table></div></div>
 <h2 class="heading heading-2 header-scroll" align=""><div class="heading-anchor anchor waypoint" id="complementary-features"></div><div class="heading-text"><div id="section-complementary-features" class="heading-anchor_backwardsCompatibility"></div>Complementary features</div><a aria-label="Skip link to Complementary features" class="heading-anchor-icon fa fa-anchor" href="#complementary-features"></a></h2>
 <p>Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:</p>
 <ul>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#form-loader">Form loader</a></li>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#mode-of-form-rendering">Render mode </a></li>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#card-form-configurations">Card form configurations </a>
+<li><a target="_self" href="/docs/full-checkout-sdk#form-loader">Form loader</a></li>
+<li><a target="_self" href="/docs/full-checkout-sdk#mode-of-form-rendering">Render mode </a></li>
+<li><a target="_self" href="/docs/full-checkout-sdk#card-form-configurations">Card form configurations </a>
 <ul>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#save-card-for-future-payments">Save Card for future payments</a></li>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#rendering-modes">Rendering modes</a></li>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#text-payment-form-buttons">Text payment form buttons</a></li>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#persist-credit-card-form-to-retry-payments">Persist credit card form to retry payments</a></li>
-<li><a target="_self" href="/docs/web-sdk-integration-guide-v11#hide-pay-button">Hide Pay button</a></li>
+<li><a target="_self" href="/docs/full-checkout-sdk#save-card-for-future-payments">Save Card for future payments</a></li>
+<li><a target="_self" href="/docs/full-checkout-sdk#rendering-modes">Rendering modes</a></li>
+<li><a target="_self" href="/docs/full-checkout-sdk#text-payment-form-buttons">Text payment form buttons</a></li>
+<li><a target="_self" href="/docs/full-checkout-sdk#persist-credit-card-form-to-retry-payments">Persist credit card form to retry payments</a></li>
+<li><a target="_self" href="/docs/full-checkout-sdk#hide-pay-button">Hide Pay button</a></li>
 </ul>
 </li>
 </ul>
