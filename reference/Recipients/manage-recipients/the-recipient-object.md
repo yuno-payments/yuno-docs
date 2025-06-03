@@ -90,8 +90,8 @@ This object represents a recipient who will receive part of a [split payment](do
   
     <div class="yuno">
     <p><strong><code>country</code></strong> <small>enum</small>
-      <br/>The recipient's country (MAX 2; MIN 2; <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">ISO 3166-1</a>).
-      <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">Country Code List</a>.  </small>
+      <br/>The recipient's country (MAX 2; MIN 2; <a href="https://docs.y.uno/reference/the-customer-object">ISO 3166-1</a>).
+      <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/country-reference">Country Code List</a>.  </small>
       </p>	
   </div>
   
@@ -145,8 +145,8 @@ This object represents a recipient who will receive part of a [split payment](do
         <br/><small> Example: Bogotá.  </small>  
       </p>
       <p><strong><code>country</code></strong> <small>enum</small>
-        <br/>The country considered for the billing address (MAX 2; MIN 2; <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">ISO 3166-1</a>).
-        <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1">Country Code List</a>.</small>
+        <br/>The country considered for the billing address (MAX 2; MIN 2; <a href="https://docs.y.uno/reference/the-customer-object">ISO 3166-1</a>).
+        <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/country-reference">Country Code List</a>.</small>
       </p>
       <p><strong><code>state</code></strong> <small>string</small>
         <br/>The state considered for the billing address (MAX 255; MIN 3).
