@@ -24,19 +24,3 @@ Creating a customer generates a customer `id` that can be used to initialize the
 > 🚧 Important
 >
 > There are certain objects that are not mandatory when creating a "Customer". However the more information you provide, the approval, conversion and fraud prevention rates will be positively impacted.
-
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <h3>Important</h3>
-      <div class="contentContainer">
-        <p>
-
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
