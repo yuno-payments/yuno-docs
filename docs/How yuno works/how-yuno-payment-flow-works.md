@@ -45,22 +45,6 @@ When you create a checkout session, Yuno loads all available [payment methods](d
 >
 > If your customer wishes to enroll a payment method to their profile, you'll create a [customer session](doc:sessions#customer-session) instead of a checkout session. When your customers enroll in a payment method, they provide important information such as card number and CVV only once. Yuno receives and stores payment information from your customers and their preferences for future use.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Enroll a payment method</h3>
-      <div class="contentContainer">
-        <p>
-					If your customer wishes to enroll a payment method to their profile, you'll create a <a href="https://docs.y.uno/docs/sessions#customer-session">customer session</a> instead of a checkout session. When your customers enroll in a payment method, they provide important information such as card number and CVV only once. Yuno receives and stores payment information from your customers and their preferences for future use.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
 ### Step 3: Create a one-time token
 
 A [one-time token](doc:tokens) (OTT) enhances payment security by protecting sensitive customer information. This temporary code ensures privacy during transactions.
