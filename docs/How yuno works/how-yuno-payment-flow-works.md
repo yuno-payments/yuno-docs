@@ -72,20 +72,8 @@ To process a payment, use the data collected in the previous steps. The transact
 
 The payment entity organizes transaction details, ensuring a clear and structured payment flow. This setup simplifies tracking and reconciliation.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Enhance the customer's experience</h3>
-      <div class="contentContainer">
-        <p>
-          When creating a payment, certain fields are optional but can enhance user experience if completed. Make sure to consider mandatory fields if you decide to include this information.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Enhance the customer's experience
+>
+> When creating a payment, certain fields are optional but can enhance user experience if completed. Make sure to consider mandatory fields if you decide to include this information.
 
 After creating the payment, Yuno will keep you informed about updates through [webhooks](doc:webhooks-1). Additionally, Yuno offers [fraud prevention](doc:fraud) solutions that you can integrate into the payment process.
