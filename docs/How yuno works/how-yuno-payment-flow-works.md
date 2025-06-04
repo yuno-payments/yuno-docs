@@ -31,6 +31,10 @@ Every payment in Yuno links to a [customer](doc:customers). The system stores cu
 
 When you create a customer, Yuno generates a unique identifier for use in later steps. Although some details are optional, adding a phone number, billing address, and shipping address can improve the user's payment experience.
 
+> 📘 Note
+>
+> You will need the customer's identification information for each subsequent step.
+
 <HTMLBlock>{`
 <body>
   <div class="infoBlockContainer">
