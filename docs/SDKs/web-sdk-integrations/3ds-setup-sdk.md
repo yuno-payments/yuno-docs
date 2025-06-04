@@ -2,7 +2,7 @@
 title: 3DS Setup SDK
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: 3DS Setup SDK
   description: >-
