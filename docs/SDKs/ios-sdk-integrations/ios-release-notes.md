@@ -380,13 +380,13 @@ metadata:
     <tr\>
       <td\>1.23.2</td\>
       <td\>
-        <b>NEW</b>: Implemented notification for \`cancelByUser\` when the user closes enrollment forms.
+        <b>NEW</b>: Implemented notification for <code>cancelByUser</code> when the user closes enrollment forms.
       </td\>
     </tr\>
     <tr\>
       <td\>1.23.1</td\>
       <td\>
-        <b>NEW</b>: Implemented notification for \`cancelByUser\` when the user closes the Apple Pay modal.
+        <b>NEW</b>: Implemented notification for <code>cancelByUser</code> when the user closes the Apple Pay modal.
       </td\>
     </tr\>
     <tr\>
@@ -398,7 +398,7 @@ metadata:
     <tr\>
       <td\>1.22.1</td\>
       <td\>
-        <b>IMPROVE</b>: Ensured \`anyPublisher\` is returned directly for embedded web views (redirects) instead of a protocol.
+        <b>IMPROVE</b>: Ensured <code>anyPublisher</code> is returned directly for embedded web views (redirects) instead of a protocol.
       </td\>
     </tr\>
     <tr\>
@@ -406,10 +406,10 @@ metadata:
       <td\>
         <b>FIX</b>: Corrected error feedback for selected document types.<br/\>
         <b>REMOVE</b>: Removed nationality from required fields.<br/\>
-        <b>FIX</b>: Resolved a memory leak issue in \`dynamicViewController\`.<br/\>
+        <b>FIX</b>: Resolved a memory leak issue in <code>dynamicViewController</code>.<br/\>
         <b>FIX</b>: Corrected an issue where the installments dropdown did not show the selected installment.<br/\>
         <b>NEW</b>: Created an OTP view within flexible actions.<br/\>
-        <b>NEW</b>: Added \`x-sdk-type\` to all request headers.<br/\>
+        <b>NEW</b>: Added <code>x-sdk-type</code> to all request headers.<br/\>
         <b>NEW</b>: Implemented enrolled card support for the dynamic SDK.<br/\>
         <b>NEW</b>: Added notification for authorized substatus.<br/\>
         <b>FIX</b>: Corrected an issue where the installments dropdown did not show with cards having an installment plan.<br/\>
@@ -418,7 +418,7 @@ metadata:
         <b>FIX</b>: Fixed safe area background in dynamic SDK.<br/\>
         <b>NEW</b>: Added accessibility identifiers to image actions in dynamic actions.<br/\>
         <b>IMPROVE</b>: Updated animations to align with Figma designs.<br/\>
-        <b>NEW</b>: Added tests for \`AnalyticsReporter\`, \`BPXLUUIDHandler\`, \`CardViewmodel+Validation\`, \`YunoPyamentDelegate\`, and \`EnrollmentActionFactory\`.<br/\>
+        <b>NEW</b>: Added tests for <code>AnalyticsReporter</code>, <code>BPXLUUIDHandler</code>, <code>CardViewmodel+Validation</code>, <code>YunoPyamentDelegate</code>, and <code>EnrollmentActionFactory</code>.<br/\>
         <b>IMPROVE</b>: Allowed empty regex validation in dynamic SDK.<br/\>
         <b>NEW</b>: Enabled image views inside dropdown views if they exist.<br/\>
         <b>REMOVE</b>: Removed the background image of waves from the status screen.<br/\>
@@ -429,7 +429,7 @@ metadata:
     <tr\>
       <td\>1.21.2</td\>
       <td\>
-        <b>NEW</b>: Added \`anyCancellables\` to \`YunoEnrollmentHeadlessImpl\`.
+        <b>NEW</b>: Added <code>anyCancellables</code> to <code>YunoEnrollmentHeadlessImpl</code>.
       </td\>
     </tr\>
     <tr\>
@@ -517,11 +517,11 @@ metadata:
       <td\>
         <b>FIX</b>: Resolved crash in WebView.<br/\>
         <b>FIX</b>: Corrected Fintoc redirect.<br/\>
-        <b>REMOVE</b>: Removed \`OptionalStateValue\` from dynamic SDK.<br/\>
-        <b>NEW</b>: Added tests for \`CardFormViewModel\`.<br/\>
+        <b>REMOVE</b>: Removed <code>OptionalStateValue</code> from dynamic SDK.<br/\>
+        <b>NEW</b>: Added tests for <code>CardFormViewModel</code>.<br/\>
         <b>NEW</b>: Added utility tests.<br/\>
         <b>NEW</b>: Implemented RUT and masks.<br/\>
-        <b>REMOVE</b>: Removed \`YunoDynamicConnection\` class.<br/\>
+        <b>REMOVE</b>: Removed <code>YunoDynamicConnection</code> class.<br/\>
         <b>FEATURE</b>: Added SDK seamless integration.
       </td\>
     </tr\>
@@ -545,7 +545,7 @@ metadata:
       <td\>1.16.0</td\>
       <td\>
         <b>NEW</b>: Added FAC 3DS action.<br/\>
-        <b>NEW</b>: Added default type in \`codeViewController\`.<br/\>
+        <b>NEW</b>: Added default type in <code>codeViewController</code>.<br/\>
         <b>NEW</b>: Added benefit type and accepted any views in buttons.<br/\>
         <b>NEW</b>: Implemented enrolled card form in dynamic SDK.<br/\>
         <b>NEW</b>: Implemented step-by-step card form in dynamic SDK.<br/\>
@@ -561,7 +561,7 @@ metadata:
         <b>NEW</b>: Added tests.<br/\>
         <b>NEW</b>: Implemented step-by-step functionality in dynamic SDK.<br/\>
         <b>NEW</b>: Added RUT validation.<br/\>
-        <b>NEW</b>: Added \`termClicked\` event and \`onLoaded\`/\`onClosed\` lifecycle view events.<br/\>
+        <b>NEW</b>: Added <code>termClicked</code> event and <code>onLoaded</code>/<code>onClosed</code> lifecycle view events.<br/\>
         <b>NEW</b>: Added all accessibility identifiers to the sample App for automation.<br/\>
         <b>NEW</b>: Added analytics for dynamic SDK.<br/\>
         <b>NEW</b>: Implemented required fields for the enrolled card form.<br/\>
