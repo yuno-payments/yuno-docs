@@ -512,13 +512,13 @@ metadata:
         <tr\>
             <td\>1.19.0</td\>
             <td\>
-                <b>FIX</b>: Corrected QRIS socket confirmation.<br /\>
-                <b>FIX</b>: Applied fix for Inswitch.<br /\>
-                <b>NEW</b>: Added a tag to branches where QA versions are generated.<br /\>
-                <b>NEW</b>: Integrated Inswitch - cash payment method.<br /\>
-                <b>NEW</b>: Integrated Inswitch - bank transfer payment method.<br /\>
-                <b>NEW</b>: Added Lane to upload IPA to Lambdatest.<br /\>
-                <b>NEW</b>: Integrated Xendit QRIS.
+            <b>FIX</b>: Corrected QRIS socket confirmation.<br /\>
+            <b>FIX</b>: Applied fix for Inswitch.<br /\>
+            <b>NEW</b>: Added a tag to branches where QA versions are generated.<br /\>
+            <b>NEW</b>: Integrated Inswitch - cash payment method.<br /\>
+            <b>NEW</b>: Integrated Inswitch - bank transfer payment method.<br /\>
+            <b>NEW</b>: Added Lane to upload IPA to Lambdatest.<br /\>
+            <b>NEW</b>: Integrated Xendit QRIS.
               </td\>
           </tr\>
         <tr\>
