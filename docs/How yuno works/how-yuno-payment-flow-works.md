@@ -55,21 +55,9 @@ To generate an one-time token, provide:
 * The associated checkout session
 * The selected [payment method](doc:payment-methods)
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Info</h3>
-      <div class="contentContainer">
-        <p>
-					A one-time token (OTT) is a temporary, single-use code that prevents unauthorized reuse. It enhances security by ensuring each transaction is unique, blocking fraud and unauthorized access.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Info
+>
+> A one-time token (OTT) is a temporary, single-use code that prevents unauthorized reuse. It enhances security by ensuring each transaction is unique, blocking fraud and unauthorized access.
 
 Yuno securely generates the one-time token, preventing sensitive details from being stored on your servers. This method adds a layer of security and simplifies recurring payments by keeping payment information safe for future use.
 
