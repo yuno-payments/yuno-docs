@@ -12,7 +12,7 @@ metadata:
 next:
   description: ''
 ---
-This object represents a customer who will make payments using your service. 
+This object represents a customer who will make payments using your service.
 
 ## Attributes
 
@@ -76,14 +76,14 @@ This object represents a customer who will make payments using your service.
 
   <div class="yuno">
     <p><strong><code>nationality</code></strong> <small>enum</small>
-      <br />The customer's nationality (MAX 2; MIN 2; <a href="country-reference">ISO 3166-1</a>).
+      <br />The customer's nationality (MAX 2; MIN 2; <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
       <br /><small> Possible enum values: Check the <a href="country-reference">Country reference</a>. </small>
     </p>
   </div>
 
   <div class="yuno">
     <p><strong><code>country</code></strong> <small>enum</small>
-      <br />The customer's country (MAX 2; MIN 2; <a href="country-reference">ISO 3166-1</a>).
+      <br />The customer's country (MAX 2; MIN 2; <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
       <br /><small> Possible enum values: Check the <a href="country-reference">Country reference</a>. </small>
     </p>
   </div>
