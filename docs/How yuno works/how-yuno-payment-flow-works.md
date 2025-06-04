@@ -41,6 +41,10 @@ To process a payment, create a [checkout session](doc:sessions#checkout-session)
 
 When you create a checkout session, Yuno loads all available [payment methods](doc:payment-methods) linked to your account. You can present these options to your customer at checkout. After they select a payment method, proceed to the next step.
 
+> 📘 Enroll a payment method
+>
+> If your customer wishes to enroll a payment method to their profile, you'll create a [customer session](doc:sessions#customer-session) instead of a checkout session. When your customers enroll in a payment method, they provide important information such as card number and CVV only once. Yuno receives and stores payment information from your customers and their preferences for future use.
+
 <HTMLBlock>{`
 <body>
   <div class="infoBlockContainer">
