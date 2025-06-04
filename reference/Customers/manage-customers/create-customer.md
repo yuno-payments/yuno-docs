@@ -21,6 +21,6 @@ This request creates a customer resource. You need to provide several parameters
 
 Creating a customer generates a customer `id` that can be used to initialize the checkout.
 
-> 📘 Important
+> 🚧 Important
 >
 > There are certain objects that are not mandatory when creating a "Customer". However the more information you provide, the approval, conversion and fraud prevention rates will be positively impacted.
