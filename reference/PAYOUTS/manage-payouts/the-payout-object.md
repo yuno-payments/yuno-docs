@@ -80,7 +80,7 @@ This object represents the payout created after generating a transaction to tran
 
   <div class="yuno">
     <p><strong><code>country</code></strong> <small>enum</small>
-      <br />Country where the transaction must be processed (MAX 2; MIN 2; <a href='country-reference'>ISO 3166-1</a>).
+      <br />Country where the transaction must be processed (MAX 2; MIN 2; <a href='https://en.wikipedia.org/wiki/ISO_3166-1'>ISO 3166-1</a>).
       <br /><small>Possible enum values: Check the <a href='country-reference'>Country reference</a>. </small>
     </p>
   </div>
@@ -101,7 +101,7 @@ This object represents the payout created after generating a transaction to tran
 
       <div class="yuno">
         <p><strong><code>currency</code></strong> <small>enum</small>
-          <br />The currency used to make the payout (MAX 3; MIN 3; <a href='country-reference'>ISO 4217</a>).
+          <br />The currency used to make the payout (MAX 3; MIN 3; <a href='https://en.wikipedia.org/wiki/ISO_4217'>ISO 4217</a>).
           <br /><small>Possible enum values: Check the <a href='country-reference'>Country reference</a>.</small>
         </p>
       </div>
@@ -161,7 +161,7 @@ This object represents the payout created after generating a transaction to tran
 
       <div class="yuno">
         <p><strong><code>country</code></strong> <small>enum</small>
-          <br />The beneficiary's country (MAX 2; MIN 2; <a href='country-reference'>ISO 3166-1</a>).
+          <br />The beneficiary's country (MAX 2; MIN 2; <a href='https://en.wikipedia.org/wiki/ISO_3166-1'>ISO 3166-1</a>).
           <br /><small>Possible enum values: Check the <a href='country-reference'>Country reference</a>. </small>
         </p>
       </div>
@@ -253,7 +253,7 @@ This object represents the payout created after generating a transaction to tran
 
           <div class="yuno">
             <p><strong><code>country</code></strong> <small>enum</small>
-              <br />The country of the beneficiary address (MAX 2; MIN 2; <a href='country-reference'>ISO 3166-1</a>).
+              <br />The country of the beneficiary address (MAX 2; MIN 2; <a href='https://en.wikipedia.org/wiki/ISO_3166-1'>ISO 3166-1</a>).
               <br /><small>Possible enum values: Check the <a href='country-reference'>Country reference</a>. </small>
             </p>
           </div>
@@ -419,7 +419,7 @@ This object represents the payout created after generating a transaction to tran
 
                                 <div class="yuno">
                                   <p><strong><code>country</code></strong> <small>enum</small>
-                                    <br />The country of the beneficiary address (MAX 2; MIN 2; <a href='country-reference'>ISO 3166-1</a>).
+                                    <br />The country of the beneficiary address (MAX 2; MIN 2; <a href='https://en.wikipedia.org/wiki/ISO_3166-1'>ISO 3166-1</a>).
                                     <br /><small>Possible enum values: Check the <a href='country-reference'>Country reference</a>. </small>
                                   </p>
                                 </div>
@@ -466,7 +466,7 @@ This object represents the payout created after generating a transaction to tran
 
                          <div class="yuno">
                           <p><strong><code>country</code></strong> <small>enum</small>
-                            <br />The beneficiary's wallet country (MAX 2; MIN 2; <a href='country-reference'>ISO 3166-1</a>).
+                            <br />The beneficiary's wallet country (MAX 2; MIN 2; <a href='https://en.wikipedia.org/wiki/ISO_3166-1'>ISO 3166-1</a>).
                             <br /><small>Possible enum values: Check the <a href='country-reference'>Country reference</a>. </small>
                           </p>
                         </div>
@@ -590,7 +590,7 @@ This object represents the payout created after generating a transaction to tran
 
           <div class="yuno">
             <p><strong><code>currency</code></strong> <small>enum</small>
-              <br />The currency used to make the payout (MAX 3; MIN 3; <a href='country-reference'>ISO 4217</a>).
+              <br />The currency used to make the payout (MAX 3; MIN 3; <a href='https://en.wikipedia.org/wiki/ISO_4217'>ISO 4217</a>).
               <br /><small>Possible enum values: Check the <a href='country-reference'>Country reference</a>.</small>
             </p>
           </div>
