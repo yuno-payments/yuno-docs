@@ -11,9 +11,9 @@ next:
   description: ''
 ---
 
-> 🚧 Warning
+> 📘 Enhance the customer's experience
 >
-> This is a warning test message!
+> When creating a payment, certain fields are optional but can enhance user experience if completed. Make sure to consider mandatory fields if you decide to include this information.
 
 In this section, you will create a Yuno account and make all the necessary configurations to process a payment. We will guide you on your account creation, configuring your first connection, setting the routing, enabling the payment method in the checkout builder, and getting the API credentials.
 
