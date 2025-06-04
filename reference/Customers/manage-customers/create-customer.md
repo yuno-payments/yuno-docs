@@ -17,9 +17,13 @@ metadata:
 next:
   description: ''
 ---
-This request creates a customer resource. You need to provide several parameters of the customer in the request body, including the unique identifier of the customer in the external merchant, personal information, as well as billing and shipping addresses. 
+This request creates a customer resource. You need to provide several parameters of the customer in the request body, including the unique identifier of the customer in the external merchant, personal information, as well as billing and shipping addresses.
 
 Creating a customer generates a customer `id` that can be used to initialize the checkout.
+
+> 🚧 Important
+>
+> There are certain objects that are not mandatory when creating a "Customer". However the more information you provide, the approval, conversion and fraud prevention rates will be positively impacted.
 
 <HTMLBlock>{`
 <body>
@@ -29,7 +33,7 @@ Creating a customer generates a customer `id` that can be used to initialize the
       <h3>Important</h3>
       <div class="contentContainer">
         <p>
-					There are certain objects that are not mandatory when creating a "Customer". However the more information you provide, the approval, conversion and fraud prevention rates will be positively impacted.
+
         </p>
       </div>
     </div>
