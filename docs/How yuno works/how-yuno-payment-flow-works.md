@@ -35,22 +35,6 @@ When you create a customer, Yuno generates a unique identifier for use in later 
 >
 > You will need the customer's identification information for each subsequent step.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Note</h3>
-      <div class="contentContainer">
-        <p>
-        You will need the customer's identification information for each subsequent step.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
 ### Step 2: Create a checkout session
 
 To process a payment, create a [checkout session](doc:sessions#checkout-session). This session connects the customer to the payment and stores key transaction details.
