@@ -12,7 +12,7 @@ metadata:
 next:
   description: ''
 ---
-This object represents a customer who will make payments using your service. 
+This object represents a customer who will make payments using your service.
 
 ## Attributes
 
@@ -34,7 +34,7 @@ This object represents a customer who will make payments using your service.
 
   <div class="yuno">
     <p><strong><code>merchant_customer_created_at</code></strong> <small>timestamp</small>
-      <br />Customer´s registration date on the merchants platform (MAX 27; MIN 27 <a href="country-reference">ISO 3166-1</a>).
+      <br />Customer´s registration date on the merchants platform (MAX 27; MIN 27 <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
       <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
     </p>
   </div>
@@ -76,14 +76,14 @@ This object represents a customer who will make payments using your service.
 
   <div class="yuno">
     <p><strong><code>nationality</code></strong> <small>enum</small>
-      <br />The customer's nationality (MAX 2; MIN 2; <a href="country-reference">ISO 3166-1</a>).
+      <br />The customer's nationality (MAX 2; MIN 2; <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
       <br /><small> Possible enum values: Check the <a href="country-reference">Country reference</a>. </small>
     </p>
   </div>
 
   <div class="yuno">
     <p><strong><code>country</code></strong> <small>enum</small>
-      <br />The customer's country (MAX 2; MIN 2; <a href="country-reference">ISO 3166-1</a>).
+      <br />The customer's country (MAX 2; MIN 2; <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
       <br /><small> Possible enum values: Check the <a href="country-reference">Country reference</a>. </small>
     </p>
   </div>
@@ -142,7 +142,7 @@ This object represents a customer who will make payments using your service.
         <br /><small> Example: Bogotá </small>
       </p>
       <p><strong><code>country</code></strong> <small>enum</small>
-        <br />The country considered for the billing address (MAX 2; MIN 2; <a href="country-reference">ISO 3166-1</a>).
+        <br />The country considered for the billing address (MAX 2; MIN 2; <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
         <br /><small> Possible enum values: Check the <a href="country-reference">Country reference</a>.</small>
       </p>
       <p><strong><code>state</code></strong> <small>string</small>
@@ -179,7 +179,7 @@ This object represents a customer who will make payments using your service.
         <br /><small> Example: Bogotá </small>
       </p>
       <p><strong><code>country</code></strong> <small>enum</small>
-        <br />The country considered for the shipping address (MAX 2; MIN 2; <a href="country-reference">ISO 3166-1</a>).
+        <br />The country considered for the shipping address (MAX 2; MIN 2; <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
         <br /><small> Possible enum values: Check the <a href="country-reference">Country reference</a>.</small>
       </p>
       <p><strong><code>state</code></strong> <small>string</small>

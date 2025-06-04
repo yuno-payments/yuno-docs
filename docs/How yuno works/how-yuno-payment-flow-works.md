@@ -31,21 +31,9 @@ Every payment in Yuno links to a [customer](doc:customers). The system stores cu
 
 When you create a customer, Yuno generates a unique identifier for use in later steps. Although some details are optional, adding a phone number, billing address, and shipping address can improve the user's payment experience.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Note</h3>
-      <div class="contentContainer">
-        <p>
-        You will need the customer's identification information for each subsequent step.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Note
+>
+> You will need the customer's identification information for each subsequent step.
 
 ### Step 2: Create a checkout session
 
@@ -53,21 +41,9 @@ To process a payment, create a [checkout session](doc:sessions#checkout-session)
 
 When you create a checkout session, Yuno loads all available [payment methods](doc:payment-methods) linked to your account. You can present these options to your customer at checkout. After they select a payment method, proceed to the next step.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Enroll a payment method</h3>
-      <div class="contentContainer">
-        <p>
-					If your customer wishes to enroll a payment method to their profile, you'll create a <a href="https://docs.y.uno/docs/sessions#customer-session">customer session</a> instead of a checkout session. When your customers enroll in a payment method, they provide important information such as card number and CVV only once. Yuno receives and stores payment information from your customers and their preferences for future use.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Enroll a payment method
+>
+> If your customer wishes to enroll a payment method to their profile, you'll create a [customer session](doc:sessions#customer-session) instead of a checkout session. When your customers enroll in a payment method, they provide important information such as card number and CVV only once. Yuno receives and stores payment information from your customers and their preferences for future use.
 
 ### Step 3: Create a one-time token
 
@@ -79,21 +55,9 @@ To generate an one-time token, provide:
 * The associated checkout session
 * The selected [payment method](doc:payment-methods)
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Info</h3>
-      <div class="contentContainer">
-        <p>
-					A one-time token (OTT) is a temporary, single-use code that prevents unauthorized reuse. It enhances security by ensuring each transaction is unique, blocking fraud and unauthorized access.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Info
+>
+> A one-time token (OTT) is a temporary, single-use code that prevents unauthorized reuse. It enhances security by ensuring each transaction is unique, blocking fraud and unauthorized access.
 
 Yuno securely generates the one-time token, preventing sensitive details from being stored on your servers. This method adds a layer of security and simplifies recurring payments by keeping payment information safe for future use.
 
@@ -108,20 +72,8 @@ To process a payment, use the data collected in the previous steps. The transact
 
 The payment entity organizes transaction details, ensuring a clear and structured payment flow. This setup simplifies tracking and reconciliation.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Enhance the customer's experience</h3>
-      <div class="contentContainer">
-        <p>
-          When creating a payment, certain fields are optional but can enhance user experience if completed. Make sure to consider mandatory fields if you decide to include this information.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Enhance the customer's experience
+>
+> When creating a payment, certain fields are optional but can enhance user experience if completed. Make sure to consider mandatory fields if you decide to include this information.
 
 After creating the payment, Yuno will keep you informed about updates through [webhooks](doc:webhooks-1). Additionally, Yuno offers [fraud prevention](doc:fraud) solutions that you can integrate into the payment process.
