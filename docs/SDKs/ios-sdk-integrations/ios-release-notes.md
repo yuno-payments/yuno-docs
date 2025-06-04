@@ -1,5 +1,5 @@
 ---
-title: iOS SDK Release notes
+title: iOS SDK release notes
 deprecated: false
 hidden: false
 metadata:
