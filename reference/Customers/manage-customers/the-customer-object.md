@@ -34,7 +34,7 @@ This object represents a customer who will make payments using your service.
 
   <div class="yuno">
     <p><strong><code>merchant_customer_created_at</code></strong> <small>timestamp</small>
-      <br />Customer´s registration date on the merchants platform (MAX 27; MIN 27 <a href="country-reference">ISO 3166-1</a>).
+      <br />Customer´s registration date on the merchants platform (MAX 27; MIN 27 <a href="https://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>).
       <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
     </p>
   </div>
