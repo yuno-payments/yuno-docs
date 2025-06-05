@@ -31,7 +31,7 @@ To integrate **Yuno with VTEX**, you need to install two applications:
 * `yunopartnerbr.yuno`: VTEX PPF connector for backend communication.  
 * `yunopartnerbr.yuno-app`: Frontend payment application required for card-based payments.
 
-> 📘 Admin Permissions Required
+> 🚧 Admin Permissions Required
 >
 > To install both applications, you need Admin permissions in VTEX.
 

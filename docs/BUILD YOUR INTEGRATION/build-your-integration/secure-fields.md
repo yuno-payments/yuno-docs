@@ -100,7 +100,7 @@ Query the available payment methods using the [Retrieve Payment Methods](ref:ret
 > Secure Fields only accepts card payments. Therefore, if your customer chooses a payment method other than a card, you need to use another Yuno integration.
 
 
-> 📘 Display Payment Methods
+> ❗️ Display Payment Methods
 >
 > You're responsible for displaying the payment methods and capturing the customer's selection when using the Secure Fields SDK.
 

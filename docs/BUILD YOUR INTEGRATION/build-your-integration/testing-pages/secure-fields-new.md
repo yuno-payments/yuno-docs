@@ -75,7 +75,7 @@ Secure Fields SDK enhances your checkout experience by simplifying payment colle
 
 The following steps describe the integration process of Secure Fields SDK to perform payments.
 
-> 📘 Card Payments Only
+> 🚧 Card Payments Only
 >
 > The Secure Fields SDK is designed to acept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose use another Yuno integration:
 >
@@ -100,12 +100,12 @@ Use the [Create Checkout Session](ref:create-checkout-session) endpoint and prov
 
 Query the available payment methods using the [Retrieve Payment Methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
-> 📘 Card Payments Only
+> 🚧 Card Payments Only
 >
 > Secure Fields only accepts card payments. Therefore, if your customer chooses a payment method other than a card, you need to use another Yuno integration.
 
 
-> 📘 Display Payment Methods
+> ❗️ Display Payment Methods
 >
 > You're responsible for displaying the payment methods and capturing the customer's selection when using the Secure Fields SDK.
 

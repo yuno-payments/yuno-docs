@@ -106,7 +106,7 @@ Query the available payment methods using the [Retrieve Payment Methods](ref:ret
 > If the customer has previously enrolled payment methods, you'll receive them as well. Use the `vaulted_token` for these methods to create the One-Time Token and process the payment.
 
 
-> 📘 Display Payment Methods
+> ❗️ Display Payment Methods
 >
 > You're responsible for displaying the payment methods and capturing the customer's selection when using Headless SDK.
 

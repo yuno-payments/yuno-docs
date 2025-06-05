@@ -161,7 +161,7 @@ Use the [Create checkout session](ref:create-checkout-session) endpoint and prov
 
 Query the available payment methods using the [Retrieve payment methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
-> 📘 Display Payment Methods
+> ❗️ Display Payment Methods
 > 
 > You're responsible for displaying the payment methods and capturing the customer's selection when using the Lite SDK.
 

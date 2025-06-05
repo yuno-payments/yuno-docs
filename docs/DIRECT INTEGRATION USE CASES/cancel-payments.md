@@ -14,7 +14,7 @@ next:
 ---
 In this guide, you will find step-by-step instructions on canceling a previously created payment on Yuno.
 
-> 📘 Cancellable Payments
+> 🚧 Cancellable Payments
 > 
 > Only payments with **PENDING** status can be canceled. Check the [Payment status](https://docs.y.uno/docs/payment-status) page for further details regarding the possible payment status.
 
