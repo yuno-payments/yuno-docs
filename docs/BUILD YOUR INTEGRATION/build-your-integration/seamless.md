@@ -34,16 +34,10 @@ Use the [Create Checkout Session](ref:create-checkout-session) endpoint and prov
 
 Query the available payment methods using the [Retrieve Payment Methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You're responsible for displaying the payment methods and capturing the customer's selection when using the Lite SDK.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Display Payment Methods
+>
+> You're responsible for displaying the payment methods and capturing the customer's selection when using the Lite SDK.
+
 
 ### Step 4: Implement the SDK
 
@@ -131,18 +125,10 @@ The response from [Create Payment](ref:create-payment) will include the `sdk_act
 * **Synchronous Payment**: If `sdk_action_required` is `false`, the payment is complete.
 * **Asynchronous Payment**: If `sdk_action_required` is `true`, additional actions are required to complete the payment. Use the `continuePayment` function to complete the payment. See the instructions in [Step 6](#step-5-continue-payment-if-needed).
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Status</h3>
-    <div class="contentContainer">
-      <p>During integration, use the payment <code>status</code> and <code>sub_status</code> as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment <code>status</code>/<code>sub_status</code> ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Status
+>
+> During integration, use the payment `status` and `sub_status` as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment `status`/`sub_status` ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
+
 
 ### Step 6: Continue payment (if needed)
 
