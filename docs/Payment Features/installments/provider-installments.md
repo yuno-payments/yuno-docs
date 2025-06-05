@@ -30,17 +30,6 @@ This option is not enabled for all providers, only the ones that have Installmen
 
 <Image align="center" src="https://files.readme.io/04626a1-provider.png" />
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer danger">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Routing</h3>
-      <div class="contentContainer">
-        <p>While setting your <a href="routing">route</a> for the Card payment method, remember that having a fallback for a provider that has "Provider installments" is not supported, as different providers handle different types of installment plans. It can cause a processing error in the fallback.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Routing Configuration Warning
+> 
+> While setting your [route](routing) for the Card payment method, remember that having a fallback for a provider that has "Provider installments" is not supported, as different providers handle different types of installment plans. It can cause a processing error in the fallback.
