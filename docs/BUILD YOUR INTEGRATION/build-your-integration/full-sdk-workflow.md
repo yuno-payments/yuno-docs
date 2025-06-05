@@ -149,19 +149,11 @@ If your system does not already have a `customer_id`, you must create one to ass
 
 **Note**: Skipping the customer session simplifies integration but removes features that enhance conversion rates by reducing checkout friction.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Omit customer session step</h3>
-    <div class="contentContainer">
-      <p>When you choose to not use a <code>customer_session</code>, the payment will be created without a customer <code>id</code>, leaving it empty when creating the payment. As a result, the process will not use any stored customer date, such as pre-filled form fields or saved payment details.</p>
- 
-			<p>While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Omit customer session step
+>
+> When you choose to not use a `customer_session`, the payment will be created without a customer `id`, leaving it empty when creating the payment. As a result, the process will not use any stored customer date, such as pre-filled form fields or saved payment details.
+>
+> While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.
 
 ### Step 2: Create a checkout session
 
