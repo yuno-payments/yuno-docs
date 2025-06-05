@@ -34,27 +34,15 @@ Use the [Create Customer Session](ref:create-customer-session) endpoint with the
 
 Query the available payment methods using the [Retrieve Payment Methods To Enroll](ref:retrieve-payment-methods-to-enroll-checkout)  endpoint using the `customer_session`. Next, display these methods to the customer so they can select the one they want to enroll. 
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You can enable or disable payment methods using the <a href="/docs/checkout-builder">Checkout Builder</a> in the <a href="https://auth.y.uno/u/login?">Yuno dashboard</a>.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Enable or disable payment methods
+> 
+> You can enable or disable payment methods using the [Checkout Builder](/docs/checkout-builder) in the [Yuno dashboard](https://auth.y.uno/u/login?).
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You are responsible for displaying the available payment methods and collecting the necessary payment details from your when using the Headless SDK.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+
+> 📘 Payment Method Display Responsibility
+>
+> You are responsible for displaying the available payment methods and collecting the necessary payment details from your when using the Headless SDK.
+
 
 ### Step 4: Enroll the payment method
 
@@ -67,20 +55,10 @@ The [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint respons
 
 ## Step 5: Finish the enrollment using the Headless SDK
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          This step is only necessary if you have received <code>enrollment.sdk_required_action = true</code> in <a href="#step-4-enroll-the-payment-method">Step 4</a>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 SDK Required Action
+>
+> This step is only necessary if you have received `enrollment.sdk_required_action = true` in [Step 4](#step-4-enroll-the-payment-method).
+
 
 Follow these steps to complete enrollment using the Headless SDK to capture and share the details of the payment method with Yuno:
 
@@ -96,20 +74,10 @@ Follow these steps to complete enrollment using the Headless SDK to capture and 
   }
 </style>
 
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3 class="localH3">PCI Compliance</h3>
-        <p>
-					Please bear in mind that you are capturing sensitive card data. When handling sensitive card data, follow good data management practices. If you are not PCI-certified, do not store card data other than the token provided by the SDK.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 PCI Compliance
+>
+> Please bear in mind that you are capturing sensitive card data. When handling sensitive card data, follow good data management practices. If you are not PCI-certified, do not store card data other than the token provided by the SDK.
+
 
 For more information on how to initiate Yuno's SDK, refer to one of the following pages according to the corresponding platform:
 
@@ -166,18 +134,6 @@ The enrollment process is asynchronous. You should use [Webhooks](doc:webhooks)t
 
 At the end of the process, you will receive the enrollment status, enrollment information, and the `vaulted_token`, equal to the `id` received when in [Step 4](doc:headless-sdk-enrollment-steps#step-4-enroll-the-payment-method). 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3 class="localH3">Save the token for future payments</h3>
-        <p>
-					Save the <code>vaulted_token</code> if the final status is <code>ENROLLED</code>. Use the token for future payments.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Save the token for future payments
+>
+> Save the `vaulted_token` if the final status is `ENROLLED`. Use the token for future payments.
