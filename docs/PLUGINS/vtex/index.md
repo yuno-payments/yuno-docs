@@ -20,21 +20,10 @@ Yuno and VTEX have joined forces to simplify payment processes for merchants wor
 
 By integrating Yuno's payment orchestration platform with VTEX's e-commerce solution, merchants can easily manage payments and offer diverse payment options. Yuno ensures customers can choose their preferred payment method from local cards to digital wallets. Yuno's plugin allows your store to accept payments seamlessly without redirecting customers to external pages, enhancing the shopping experience and increasing the conversion rate.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineDanger"></div>
-    <div>
-      <h3>Payments with two cards</h3>
-      <div class="contentContainer">
-        <p>
-					To enable your customers to pay using two cards in VTEX, you must contact the Yuno supporting team in advance.       
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Payments with two cards
+>
+> To enable your customers to pay using two cards in VTEX, you must contact the Yuno supporting team in advance.
+
 
 Yuno's plugin for VTEX is PCI compliant, ensuring that Yuno meets rigorous security standards when handling card data. Merchants can have peace of mind knowing that their customers' payment information is handled with utmost security and privacy.
 
