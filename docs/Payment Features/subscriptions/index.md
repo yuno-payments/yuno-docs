@@ -77,7 +77,7 @@ To use the subscription solution, normally, you will follow the steps described 
 > Currently, only Cards can be used as payment methods for subscriptions.
 
 
-> 📘 Declined Payments
+> ❗️ Declined Payments
 > 
 > If a payment from a subscription is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription. If you want to cancel a subscription, feel free to use the [cancel subscription endpoint](https://docs.y.uno/reference/cancel-subscription).
 

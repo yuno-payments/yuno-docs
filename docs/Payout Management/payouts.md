@@ -62,7 +62,7 @@ The Yuno Payouts feature is available through Yuno API. You can use the API to c
    * The [Retrieve Payout by ID](ref:retrieve-payout-by-id) endpoint, informing the `id` received after creating the payout.
    * The [Retrieve Payout by Merchant Reference](ref:retrieve-payout-by-merchant-reference) endpoint, informing the `merchant_reference` provided when creating the payout.
 
-> 📘 Yuno Payouts availability
+> 🚧 Yuno Payouts availability
 >
 > Yuno Payouts requires a security and risk analysis. To learn more about the Yuno Payouts, check the provider's support or request the activation, contact [Yuno's support team](mailto:support@y.uno).
 
