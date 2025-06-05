@@ -94,19 +94,9 @@ You can skip this step if you have previously created the customer.
 
 ### Step 2: Enroll a payment method
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          This feature is only available for enrolling Cards for PCI compliant merchants
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Direct Flow Integration
+>
+> This feature is only available for enrolling Cards for PCI compliant merchants.
+
 
 Once you have your customer, you can enroll the payment method using the [Enroll Payment Method endpoint ](ref:enroll-payment-method-api). With the information provided by Yuno after the customer selects the payment method to enroll, you will be able to save that information for future purchases using the `vaulted_token` that represents the payment method object created.
