@@ -125,18 +125,6 @@ The enrollment process is asynchronous. You should use [webhooks](doc:webhooks) 
 
 At the end of the process, you will receive the enrollment status, enrollment information, and the `vaulted_token`, equal to the `id` received when in [Step 4](doc:headless-sdk-enrollment-steps#step-4-enroll-the-payment-method). 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3 class="localH3">Save the token for future payments</h3>
-        <p>
-					Save the <code>vaulted_token</code> if the final status is <code>ENROLLED</code>. Use the token for future payments.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Save the token for future payments
+>
+> Save the `vaulted_token` if the final status is `ENROLLED`. Use the token for future payments.
