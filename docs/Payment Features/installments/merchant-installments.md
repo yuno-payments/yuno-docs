@@ -46,17 +46,6 @@ For merchant-created installments, you also have the possibility of specifying t
 * the `plan_id` while [creating the session](ref:create-checkout-session).
 * a `plan structure` while [creating the checkout session](ref:create-checkout-session).
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer danger">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Routing</h3>
-      <div class="contentContainer">
-        <p>When setting up your <a href="routing">route</a> for the Card payment method, it's important to remember that if you have a fallback provider while using installments, we will try to make a fallback payment if the first transaction is rejected. Therefore, it's crucial to ensure that both providers support the amount of installments set for your account. If they do not, you can set up different routes for each scenario to avoid issues.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Routing with Fallback Providers
+> 
+> When setting up your [route](routing) for the Card payment method, it's important to remember that if you have a fallback provider while using installments, we will try to make a fallback payment if the first transaction is rejected. Therefore, it's crucial to ensure that both providers support the amount of installments set for your account. If they do not, you can set up different routes for each scenario to avoid issues.
