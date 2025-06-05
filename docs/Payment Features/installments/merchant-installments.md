@@ -36,20 +36,10 @@ When you use Yuno's SDK, Yuno is responsible for presenting to the customer the 
 
 2. After enabling the installments, you need to create an installment plan using the  [Create Installments Plan](ref:create-installments-plan) endpoint. When creating a plan, you will specify the accepted currency, amounts, card brands, dates, etc. After that, we will take care of the rest.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Secure Fields SDK</h3>
-      <div class="contentContainer">
-        <p>When using Secure Fields SDK integration, you will need to <a href="secure-fields-payment#step-3-start-the-checkout-process">enable the installments option</a> while starting the checkout process.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Secure Fields SDK Integration
+> 
+> When using Secure Fields SDK integration, you will need to [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) while starting the checkout process.
+
 
 For merchant-created installments, you also have the possibility of specifying the plan for every session by either using:  
 
