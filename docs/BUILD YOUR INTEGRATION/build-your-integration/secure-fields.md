@@ -59,23 +59,14 @@ The following steps describe the integration process for the Secure Fields SDK t
 </body>
 `}</HTMLBlock>
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Secure Fields only accepts card payments</h3>
-    <div class="contentContainer">
-      <p>The Secure Fields SDK is designed to acept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose use another Yuno integration:
-      </p>
-      <ul>
-        <li><a href="/docs/secure-fields-payment">Full SDK</a></li>
-        <li><a href="/docs/secure-fields-payment">Lite SDK</a></li>
-        <li><a href="/docs/secure-fields-payment">Direct Flow</a></li>
-        </ul>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Choose your integration
+>
+> The Secure Fields SDK is designed to accept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose another Yuno integration:
+>
+> - [Full SDK](/docs/secure-fields-payment)
+> - [Lite SDK](/docs/secure-fields-payment) 
+> - [Direct Flow](/docs/secure-fields-payment)
+
 
 ### Step 1: Create a customer (Optional)
 
@@ -87,19 +78,12 @@ The `customer_session` parameter is optional.
 
 You can skip this step if you already have a customer `id` and plan to provide it directly when creating the payment. Alternatively, you may choose to omit this step entirely.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Omit customer session step</h3>
-    <div class="contentContainer">
-      <p>When you choose to not use a <code>customer_session</code>, the payment will be created without a customer <code>id</code>, leaving it empty when creating the payment. As a result, the process will not use any stored customer date, such as pre-filled form fields or saved payment details.</p>
- 
-			<p>While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Customer Session
+>
+> When you choose to not use a `customer_session`, the payment will be created without a customer `id`, leaving it empty when creating the payment. As a result, the process will not use any stored customer date, such as pre-filled form fields or saved payment details.
+>
+> While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.
+
 
 ### Step 2: Create a checkout session
 
@@ -111,26 +95,15 @@ Use the [Create Checkout Session](ref:create-checkout-session) endpoint and prov
 
 Query the available payment methods using the [Retrieve Payment Methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-      <p>Secure Fields only accepts card payments. Therefore, if your  customer chooses a payment method other than a card, you need to use another Yuno integration:</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Important: Payment Method Support
+>
+> Secure Fields only accepts card payments. Therefore, if your customer chooses a payment method other than a card, you need to use another Yuno integration.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You're responsible for displaying the payment methods and capturing the customer's selection when using the Secure Fields SDK.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+
+> 📘 Display Payment Methods
+>
+> You're responsible for displaying the payment methods and capturing the customer's selection when using the Secure Fields SDK.
+
 
 ### Step 4: Implement the SDK and get a one-time token
 
@@ -148,18 +121,12 @@ Follow these steps to initialize Yuno's Secure Fields SDK:
 
 With the one-time token, create the payment. This process gathers all order details, including customer specifics, total amount, currency, products, and shipping details. Use the [Create Payment](ref:create-payment) endpoint, providing the `one_time_token`.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Payment status</h3>
-    <div class="contentContainer">      
-      <p>Use the payment <code>status</code> and <code>sub_status</code> as your primary reference for the payment's state during integration. Since a payment might have multiple associated transactions, concentrating on the payment <code>status/sub_status</code> ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.</p>
-			<p>To display the current payment status for your clients, you can use the <a href="/docs/payment-status#step-3-use-status">mountStatusPayment</a> function.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Payment Status Best Practices
+>
+> Use the payment `status` and `sub_status` as your primary reference for the payment's state during integration. Since a payment might have multiple associated transactions, concentrating on the payment `status/sub_status` ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
+>
+> To display the current payment status for your clients, you can use the [mountStatusPayment](/docs/payment-status#step-3-use-status) function.
+
 
 ### Step 6: Receive payment result through webhook
 
@@ -172,17 +139,10 @@ With Secure Fields SDK, you can save credit/debit cards for future purchases wit
 * Set `vault_on_success = true` when using the [Create Payment](ref:create-payment) endpoint. You will receive the `vaulted_token` that corresponds to the card used by the customer in the response.
 * Set `saveCard = true` when creating the one-time token in [Step 4](#step-4-implement-the-sdk-and-get-a-one-time-token). The SDK will display a checkbox for users to select if they want to save the card for future purchases. If the user checks the box, you will receive the `vaulted_token`.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You should only use one option to enroll a card. </p>
-      <p>To enroll alternative payment methods, see the <a href="enrollment-lite">Lite SDK (Enrollment)</a> page. </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Card Enrollment Options
+>
+> You should only use one option to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](enrollment-lite) page.
+
 
 After enrolling a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
 
