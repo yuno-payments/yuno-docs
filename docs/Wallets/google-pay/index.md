@@ -1,5 +1,5 @@
 ---
-title: Google Pay
+title: Google Pay™
 excerpt: ''
 deprecated: false
 hidden: false
