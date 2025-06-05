@@ -40,21 +40,10 @@ Download the [example project](https://github.com/yuno-payments/yuno-sdk-web/arc
 > cd yuno-sdk-web
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>SDK Integration Example</h3>
-      <div class="contentContainer">
-        <p>
-					Yuno provides a ready-to-use application built with the Web SDK. Explore <a href='https://github.com/yuno-payments/yuno-sdk-web'>this project</a> to see how fast and easy it is to integrate with Yuno. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 SDK Integration Example
+>
+> Yuno provides a ready-to-use application built with the Web SDK. Explore [this project](https://github.com/yuno-payments/yuno-sdk-web) to see how fast and easy it is to integrate with Yuno.
+
 
 ### Step 3: Set up environment variables
 
