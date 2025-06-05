@@ -165,18 +165,10 @@ The response from [Create Payment](ref:create-payment) will include the `sdk_act
 * **Synchronous Payment**: If `sdk_action_required` is `false`, the payment is complete.
 * **Asynchronous Payment**: If `sdk_action_required` is `true`, additional actions are required to complete the payment. Use the `continuePayment` function to complete the payment. See the instructions in [Step 5](#step-5-continue-payment-if-needed).
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Status</h3>
-    <div class="contentContainer">
-      <p>During integration, use the payment <code>status</code> and <code>sub_status</code> as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment <code>status</code>/<code>sub_status</code> ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 👍 Payment Status Best Practices
+>
+> During integration, use the payment <code>status</code> and <code>sub_status</code> as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment <code>status</code>/<code>sub_status</code> ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
+
 
 ### Step 5: Continue payment (if needed)
 
@@ -218,36 +210,20 @@ With the Full SDK, you can save credit/debit cards for future purchases with the
 * Set `vault_on_sucess = true` when using the [Create Payment](ref:create-payment) endpoint. You will receive the `vaulted_token` that corresponds to the card used by the customer payer in the response.
 * Set `cardSaveEnable = true` in the SDK complementary features ([Web](doc:complementary-features-full-sdk), [iOS](doc:full-checkout-ios), and [Android](doc:full-checkout-android)). The SDK will display a checkbox for users to select if they want to save the card for future purchases. If the user checks the box, you will receive the `vaulted_token`.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You should only use one option to enroll a card. </p>
-      <p>To enroll alternative payment methods, you have to use the <a href="enrollment-lite">Lite SDK</a>. </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Card Enrollment Options
+>
+> You should only use one option to enroll a card. To enroll alternative payment methods, you have to use the [Lite SDK](enrollment-lite).
+
 
 After enrolling in a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
 
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
 * [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api).
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Using a vaulted token</h3>
-    <div class="contentContainer">
-      <p>Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:</p>
-      <ul>
-        <li><b>Support 3DS</b>: Enhanced security for online payments.</li>
-        <li><b>Fraud Screening</b>: Better protection against fraudulent transactions.</li>
-        <li><b>Collect Required Information</b>: Gather additional fields required by the provider if necessary.</li>
-      </ul>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Using a vaulted token
+>
+> Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
+>
+> - **Support 3DS**: Enhanced security for online payments.
+> - **Fraud Screening**: Better protection against fraudulent transactions.  
+> - **Collect Required Information**: Gather additional fields required by the provider if necessary.
