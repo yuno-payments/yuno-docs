@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-This page provides instructions for connecting and offering Google Pay as a payment option to your customers using the Direct integration.
+This page provides instructions for connecting and offering Google Pay™ as a payment option to your customers using the Direct integration.
 
 ## Requirements
 
@@ -20,15 +20,17 @@ Next, check which processors are available by reviewing the [participating proce
 
 All merchants must comply with the Google Pay APIs [Acceptable Use Policy](https://payments.developers.google.com/terms/aup), accept the [Google Pay API Terms of Service](https://payments.developers.google.com/terms/sellertos), and register with the [Google Pay Business Console](https://pay.google.com/business/console) to obtain a Google merchant ID. Complete the Google Pay and Wallet Console configuration by following these steps:
 
-1. Complete the "Business Profile".
-2. Review the information required in "Google Pay API" > "Integrate with your website":
-   1. Your website – This must exactly match the domain of your hosted checkout page (with or without "www").
-   2. Integration type – "GATEWAY".
-   3. Screenshots:
-      1. Payment method screen – Your hosted checkout page.
-      2. Google Pay API payment screen – The Google Pay payment sheet (shown after clicking the GPay button).
-      3. Post-purchase screen – Transaction confirmation page.
-   4. Submit the screenshots, indicate that you have submitted the request, and share the merchantId (BCR).\
+1. Complete the **Business Profile**
+
+2. Review the information required in ***Google Pay API** > **Integrate with your website**:
+   - Your website – This must exactly match the domain of your hosted checkout page (with or without "www")
+   - Integration type – **GATEWAY**
+
+3. Screenshots:
+      I. Payment method screen – Your hosted checkout page
+      II. Google Pay API payment screen – The Google Pay payment sheet (shown after clicking the GPay button)
+      III. Post-purchase screen – Transaction confirmation page
+      IV. Submit the screenshots, indicate that you have submitted the request, and share the merchantId (BCR).\
       Use the assigned Merchant ID to configure the Google Pay connection in the Yuno dashboard.
 
 ## Integration
@@ -46,7 +48,7 @@ To integrate Google Pay with Yuno, follow these steps:
 
 Once these integration steps are complete, Google Pay will be seamlessly offered to your customers via the Yuno checkout. Customers will be able to select Google Pay and authorize payments using their familiar Google Pay interface. Yuno then securely handles the payment token received from Google, processing the transaction through your configured payment processor. All Google Pay transactions will be visible and manageable within your Yuno dashboard alongside your other payment methods, providing a unified view of your operations.
 
-## Enable and Test Google Pay with Yuno
+## Enable and test Google Pay with Yuno
 
 After integrating, you can enable and test Google Pay with Yuno as follows:
 
@@ -67,21 +69,21 @@ After integrating, you can enable and test Google Pay with Yuno as follows:
 
 By following these steps, you can ensure Google Pay is integrated and working as expected before making it available to your customers.
 
-## Go Live
+## Go live
 
 After completing all integration steps in the testing environment, request [Google Production Access](https://developers.google.com/pay/api/web/guides/test-and-deploy/request-prod-access) and contact your Technical Account Manager. The Yuno team will help verify your configuration and confirm you are ready to go live.
 
-## Implementation Details
+## Implementation details
 
 Key details for your Google Pay integration with Yuno:
 
-* **3D Secure (3DS) for`PAN_ONLY` Credentials**: If Google Pay returns a `PAN_ONLY` credential (a card stored in the user's Google account), Yuno will automatically handle the 3D Secure authentication flow if 3DS is enabled for your account and the transaction. This is similar to 3DS for standard card payments.
-* **Gateway and GatewayMerchantID Configuration**: When registering with the [Google Pay Business Console](https://pay.google.com/business/console), ensure that under "Google Pay API" > "Integrate with your website", the "Integration type" is set to "GATEWAY". The `Merchant ID` from the Google Pay Business Console is used in the "Merchant ID" field when setting up the Google Pay connection in the Yuno dashboard.
+* **3D Secure (3DS) for`PAN_ONLY` credentials**: If Google Pay returns a `PAN_ONLY` credential (a card stored in the user's Google account), Yuno will automatically handle the 3D Secure authentication flow if 3DS is enabled. On the frontend, make sure your Google Pay API request includes `PAN_ONLY` in the `allowedAuthMethods` array.
+* **Gateway and GatewayMerchantID Configuration**: When registering with the [Google Pay Business Console](https://pay.google.com/business/console), ensure that under **Google Pay API** > **Integrate with your website**, the **Integration type** is set to **GATEWAY**. The `Merchant ID` from the Google Pay Business Console is used in the "Merchant ID" field when setting up the Google Pay connection in the Yuno dashboard. Set `gateway` to `yuno` and use your assigned Merchant ID as the `gatewayMerchantId` in your Google Pay API configuration.
 * **Authorization Methods**: Yuno supports standard authorization methods (purchase, authorization, capture). Availability depends on the payment processor and acquiring bank for each country and payment.
 * **Billing Address Requirements**: If your payment processing requires the customer's billing address (e.g., for AVS checks), configure this in your Google Pay API request. Google provides `BillingAddressParameters` to specify the required detail (e.g., MIN or FULL). See [Google's documentation](https://developers.google.com/pay/api/web/reference/request-objects#BillingAddressParameters). Only request billing address details if necessary, as this can increase checkout friction.
 * **Transaction Data and Payment Cryptography**: Merchants integrate Yuno's SDKs (Android, iOS, Web) into their applications. When a customer chooses Google Pay, Yuno's SDK interacts with the Google Pay API and securely receives the encrypted payment data (payment token) from Google. This token is passed from your app to your backend server, which then uses Yuno's server-side APIs to submit the token for payment processing. Yuno handles decryption and processing with the payment processor.
 
-## Additional Information
+## Additional information
 
 * For further questions about the integration process, contact Yuno support or consult:
   * [Web documentation](https://developers.google.com/pay/api/web/guides/setup) and [integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist)
