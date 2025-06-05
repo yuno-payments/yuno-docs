@@ -122,7 +122,7 @@ To initialize Yuno's Headless SDK, provide your API credentials and the `checkou
 3. Start the checkout process by calling `yuno.apiClientPayment()` with your configuration.
 4. Collect the user information and generate the one-time token using the `apiClientPayment.generateToken` function.
 
-> 📘 PCI Compliance
+> ❗️ PCI Compliance
 >
 > You don't need to be PCI compliant when using Headless SDK. However, you should not store card data, except for the token provided by the SDK, otherwise, you must comply with PCI standards.
 
@@ -167,7 +167,7 @@ After enrolling in a payment method, you can use the vaulted token to perform pa
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
 * [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api).
 
-> 📘 Using a vaulted token
+> 🚧 Using a vaulted token
 >
 > Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
 >

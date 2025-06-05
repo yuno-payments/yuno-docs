@@ -51,7 +51,7 @@ The following image describes the complete payment workflow. Below, each step is
 
 <Image align="center" src="https://files.readme.io/a17409c-Diagrama_-_SDK_Headless_pago.png" />
 
-> 📘 Headless SDK only accepts card payments
+> 🚧 Headless SDK only accepts card payments
 >
 > The Headless SDK is designed to acept payments using cards. If you need to perform a payment using another payment method, you need to choose use another Yuno integration:
 >
@@ -97,7 +97,7 @@ To initialize Yuno's Headless SDK, you have to provide your API credentials and 
 3. Start the checkout process by calling `yuno.apiClientPayment()` with your configuration. 
 4. Collect the user information and generate the One-Time Token using the `apiClientPayment.generateToken` function.
 
-> 📘 PCI compliance
+> ❗️ PCI compliance
 >
 > You don't need to be PCI compliant when using the Headless SDK. However, you should not store card data, except for the token provided by the SDK, otherwise, you must comply with PCI standards.
 
@@ -191,7 +191,7 @@ After enrolling in a payment method, you can use the vaulted token to perform pa
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
 * [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api).
 
-> 📘 Using a vaulted token
+> 🚧 Using a vaulted token
 >
 > Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
 >

@@ -143,7 +143,7 @@ After the payment is made, the user will have the credit card available for futu
 * [Get payment methods by checkout session](https://docs.y.uno/reference/retrieve-payment-methods-for-checkout)
 * [Get payment methods by customer](https://docs.y.uno/reference/retrieve-enrolled-payment-methods-api)
 
-> 📘 Using a vaulted token
+> 🚧 Using a vaulted token
 >
 > Even though the user selects an enrolled payment method to create the payment, we recommend using the SDK to tokenize the information and continue with the payment instead of just using the vaulted token directly to Yuno's API. This allows us to:
 >

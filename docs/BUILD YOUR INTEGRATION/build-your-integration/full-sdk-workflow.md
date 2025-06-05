@@ -240,7 +240,7 @@ After enrolling a payment method, you can use the vaulted token to perform payme
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
 * [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api).
 
-> 📘 Using a vaulted token
+> 🚧 Using a vaulted token
 >
 > Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
 >
@@ -249,7 +249,7 @@ After enrolling a payment method, you can use the vaulted token to perform payme
 > - **Collect Required Information**: Gather additional fields required by the provider if necessary.
 
 
-> 📘 Using a vaulted token
+> 🚧 Using a vaulted token
 >
 > Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
 >

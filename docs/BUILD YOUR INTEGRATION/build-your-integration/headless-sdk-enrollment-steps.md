@@ -109,12 +109,12 @@ Follow these steps to complete enrollment using the Headless SDK to capture and 
 3. Configure the SDK by calling `yuno.apiClientEnroll` with the desired configuration.
 4. Use the `apiClientEnroll.continueEnrollment` function to obtain the payment method information, including the `vaulted_token` and enrollment status.
 
-> 📘 SDK Required Action
+> 🚧 SDK Required Action
 >
 > This step is only necessary if you have received `enrollment.sdk_required_action = true` in [Step 4](#step-4-enroll-the-payment-method).
 
 
-> 📘 PCI Compliance
+> ❗️PCI Compliance
 >
 > Please bear in mind that you are capturing sensitive card data. When handling sensitive card data, follow good data management practices. If you are not PCI-certified, do not store card data other than the token provided by the SDK.
 
@@ -125,6 +125,6 @@ The enrollment process is asynchronous. You should use [webhooks](doc:webhooks) 
 
 At the end of the process, you will receive the enrollment status, enrollment information, and the `vaulted_token`, equal to the `id` received when in [Step 4](doc:headless-sdk-enrollment-steps#step-4-enroll-the-payment-method). 
 
-> 📘 Save the token for future payments
+> 🚧 Save the token for future payments
 >
 > Save the `vaulted_token` if the final status is `ENROLLED`. Use the token for future payments.
