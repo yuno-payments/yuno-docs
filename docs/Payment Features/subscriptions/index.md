@@ -72,37 +72,14 @@ To use the subscription solution, normally, you will follow the steps described 
    * The total number of billing cycles.
    * The subscription availability to define the start and ending date.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Available payment methods</h3>
-      <div class="contentContainer">
-        <p>Currently, only Cards can be used as payment methods for subscriptions.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Available Payment Methods
+> 
+> Currently, only Cards can be used as payment methods for subscriptions.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Declined payments</h3>
-      <div class="contentContainer">
-        <p>
-          If a payment from a subscription is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription.         
-        <p>        
-         If you want to cancel a subscription, feel free to use the <a href='https://docs.y.uno/reference/cancel-subscription'>cancel subscription endpoint</a>.       
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+
+> 📘 Declined Payments
+> 
+> If a payment from a subscription is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription. If you want to cancel a subscription, feel free to use the [cancel subscription endpoint](https://docs.y.uno/reference/cancel-subscription).
+
 
 In the response to the [Create Subscription](ref:create-subscription) endpoint, you receive an `id` which is used to identify the created endpoint. You will use the `id` if you decide to pause, resume, or cancel the subscription.
