@@ -34,7 +34,7 @@ api:
   file: ai-caller.json
   operationId: initiate-recovery-outreach-for-abandoned-user-flows
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
