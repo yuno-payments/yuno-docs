@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-This page presents the procedures to connect and provide Google Pay as a payment option for your customers using the integration via a provider. Yuno uses Google integration for each provider without accessing card data in this integration. Each integration can only be used with the selected provider with this option.
+This page presents the procedures to connect and provide Google Pay™ as a payment option for your customers using the integration via a provider. Yuno uses Google integration for each provider without accessing card data in this integration. Each integration can only be used with the selected provider with this option.
 
 ## Requirements
 
@@ -30,9 +30,9 @@ You must have credentials to connect to the selected provider using [Yuno dashbo
 
 You need to cover some steps to integrate Google Pay into your system using Yuno.
 
-1. First, you will review Google’s approval process for [Android devices](https://developers.google.com/pay/api/android/overview) or [Google Pay on the Web](https://developers.google.com/pay/api/web/overview). 
-   1. Start by checking the Terms of Service and Acceptable Use Policy. 
-   2. Complete the tutorials and integration checklist. 
+1. First, you will review Google’s approval process for [Android devices](https://developers.google.com/pay/api/android/overview) or [Google Pay on the Web](https://developers.google.com/pay/api/web/overview).
+   1. Start by checking the Terms of Service and Acceptable Use Policy.
+   2. Complete the tutorials and integration checklist.
    3. Complete the integration checklist for [Android](https://developers.google.com/pay/api/android/guides/test-and-deploy/integration-checklist) or [Web](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist) before requesting production credentials from Google.
    4. Finally, you will request your production access.
 2. Get the developer credentials from the provider you choose to start using with Yuno.
