@@ -81,27 +81,15 @@ Use the [Create Customer Session](ref:create-customer-session) endpoint with the
 
 Query the available payment methods using the [Retrieve Payment Methods To Enroll](ref:retrieve-payment-methods-to-enroll-checkout) endpoint using the `customer_session`. Next, display these methods to the customer so they can select the one they want to enroll.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You can enable or disable payment methods using the <a href="/docs/checkout-builder">Checkout Builder</a> in the <a href="https://auth.y.uno/u/login?">Yuno dashboard</a>.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Enable or disable payment methods
+>
+> You can enable or disable payment methods using the [Checkout Builder](/docs/checkout-builder) in the [Yuno dashboard](https://auth.y.uno/u/login?).
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You are responsible for displaying the available payment methods and collecting the necessary payment details from your when using the Headless SDK.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+
+> 📘 Displaying payment methods
+>
+> You are responsible for displaying the available payment methods and collecting the necessary payment details from your when using the Headless SDK.
+
 
 ### Step 4: Enroll the payment method
 
