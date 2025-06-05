@@ -14,13 +14,13 @@ metadata:
 next:
   description: ''
 ---
-Payments have all the essential information about the order, including customer information, amount, currency, items, shipping info, etc. You can always refer to the transaction details for more details about the order and the payment interactions. 
+Payments have all the essential information about the order, including customer information, amount, currency, items, shipping info, etc. You can always refer to the transaction details for more details about the order and the payment interactions.
 
 ## Workflow
 
-In the following workflow, you can find the different payment statuses and how they can be updated. 
+In the following workflow, you can find the different payment statuses and how they can be updated.
 
-<Image align="center" src="https://files.readme.io/67594c0b6b052ae9039fa91ea96b65b926eab739bb04dd2ccd51a64f1715eb73-payments1.png" />
+<Image align="center" src="https://files.readme.io/2ceb4ee07571acfa1befd8e280d7a74c1d25f7b46b9ad33da68d87e5e2ca24c7-payments_Asinc.png" />
 
 For every implementation, we recommend taking the payment <code>status</code> and <code>sub\_status</code> as the main reference for the payment's state. A payment could have different [transactions](https://docs.y.uno/reference/transaction) associated with it. By focusing on the payment <code>status</code> / <code>sub\_status</code>, you can have the latest state regardless of how many transactions were made, giving you clear inputs for decision-making.
 
