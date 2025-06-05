@@ -23,5 +23,7 @@ The submitted data enables Yuno to follow up with the user via call or WhatsApp 
 * **Authentication**: API access requires a valid API key provided in the request headers.
 * **Data Protection**: All data must be transmitted over HTTPS. Yuno adheres to relevant data protection regulations, including **GDPR** and **LGPD**.
 * **Data Usage**: Submitted data will be used solely for the purpose of customer engagement and will not be stored beyond the necessary duration.
-* ## Use Case Example
-  A user named Jane Doe adds a pair of wireless headphones to her cart on a merchant's website but abandons the checkout process. The merchant's system detects this and sends the relevant payload to Yuno’s Recovery Agent API. Yuno then initiates a WhatsApp message to Jane, reminding her of the items left in her cart and offering assistance to complete the purchase.
+
+## Use Case Example
+
+A user named Jane Doe adds a pair of wireless headphones to her cart on a merchant's website but abandons the checkout process. The merchant's system detects this and sends the relevant payload to Yuno’s Recovery Agent API. Yuno then initiates a WhatsApp message to Jane, reminding her of the items left in her cart and offering assistance to complete the purchase.
