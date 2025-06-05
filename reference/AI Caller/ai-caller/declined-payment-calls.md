@@ -8,7 +8,7 @@ api:
   file: ai-caller.json
   operationId: declined-payment-calls
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
