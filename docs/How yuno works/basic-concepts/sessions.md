@@ -20,20 +20,9 @@ With Yuno, you can create sessions to initiate payments or register payment meth
 
 Use customer sessions to enroll and store a customer's payment methods. Create a new customer session each time you register a payment method for a specific customer. You'll need the `customer_id` (a unique customer identifier) generated when creating the customer in Yuno. A customer session provides access to all available payment methods for enrollment, which you can offer to customers.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Available payment methods</h3>
-      <div class="contentContainer">
-        <p>When creating both sessions, customer and checkout, the Yuno system will provide you with a list of all enable the payment methods in your Yuno dashboard within the Connections and Checkout builder section.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Available payment methods
+>
+> When creating both sessions, customer and checkout, the Yuno system will provide you with a list of all enable the payment methods in your Yuno dashboard within the Connections and Checkout builder section.
 
 For more detailed information on how to use the Create customer session endpoint, see [API reference](ref:the-customer-session-object).
 
