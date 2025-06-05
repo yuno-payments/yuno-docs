@@ -26,11 +26,12 @@ All merchants must comply with the Google Pay APIs [Acceptable Use Policy](https
    * Your website – This must exactly match the domain of your hosted checkout page (with or without "www")
    * Integration type – **GATEWAY**
 
-3. Screenshots:\
-   I. Payment method screen – Your hosted checkout page
-   II. Google Pay API payment screen – The Google Pay payment sheet (shown after clicking the GPay button)
-   III. Post-purchase screen – Transaction confirmation page
-   IV. Submit the screenshots, indicate that you have submitted the request, and share the merchantId (BCR)
+3. Screenshots:
+
+* Payment method screen – Your hosted checkout page
+* Google Pay API payment screen – The Google Pay payment sheet (shown after clicking the GPay button)
+* Post-purchase screen – Transaction confirmation page
+* Submit the screenshots, indicate that you have submitted the request, and share the merchantId (BCR)
 
 Use the assigned Merchant ID to configure the Google Pay connection in the Yuno dashboard.
 
