@@ -36,21 +36,9 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 | **Public API Key**       | The Yuno `public-api-key`. You can find this information in the Yuno dashboard. For additional information, see [Developers (Credentials)](doc:developers-credentials).                                                      |
 | **Private Secret Key**   | The Yuno `private-secret-key`. You can find this information in the Yuno dashboard. For additional information, see [Developers (Credentials)](doc:developers-credentials).                                                  |
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3>Enable Test Mode</h3>
-        <p>
-          VTEX recommends you to not enable the test mode in production evironments, since the test payment options will be available to customers in your store.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Test Mode Warning
+>
+> VTEX recommends you to not enable the test mode in production environments, since the test payment options will be available to customers in your store.
 
 5. After filling in all fields, click **Save**.
 6. Navigate to **Store Settings** > **Settings** and click the **+** button (green button at the top right corner) to add a new payment option.
@@ -69,26 +57,10 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 ![](https://files.readme.io/cd7de3e-image.png)
 
-<HTMLBlock>{`
-<style>
- .contentContainer  {
-   gap: 0;
-  } 
-</style>
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3>Add several payment methods</h3>
-        <p>
-           If you want to add more than one payment method to offer to your clients, Visa and Mastercard for example, you need to repeat steps <b>7</b> and <b>8</b> two times, one for Visa and the other for Mastercard.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Adding Multiple Payment Methods
+>
+> If you want to add more than one payment method to offer to your clients, Visa and Mastercard for example, you need to repeat steps **7** and **8** two times, one for Visa and the other for Mastercard.
+
 
 9. As the last step, you have to configure the Webhook URL to receive the updates from the payments. 
    1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?) and select **Developers**. 

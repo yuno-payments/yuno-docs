@@ -75,23 +75,14 @@ Secure Fields SDK enhances your checkout experience by simplifying payment colle
 
 The following steps describe the integration process of Secure Fields SDK to perform payments.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Secure Fields only accepts card payments</h3>
-    <div class="contentContainer">
-      <p>The Secure Fields SDK is designed to acept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose use another Yuno integration:
-      </p>
-      <ul>
-        <li><a href="/docs/secure-fields-payment">Full SDK</a></li>
-        <li><a href="/docs/secure-fields-payment">Lite SDK</a></li>
-        <li><a href="/docs/secure-fields-payment">Direct Flow</a></li>
-        </ul>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 🚧 Card Payments Only
+>
+> The Secure Fields SDK is designed to acept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose use another Yuno integration:
+>
+> - [Full SDK](/docs/secure-fields-payment)
+> - [Lite SDK](/docs/secure-fields-payment)  
+> - [Direct Flow](/docs/secure-fields-payment)
+
 
 ### Step 1: Create a customer
 
@@ -109,26 +100,15 @@ Use the [Create Checkout Session](ref:create-checkout-session) endpoint and prov
 
 Query the available payment methods using the [Retrieve Payment Methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-      <p>Secure Fields only accepts card payments. Therefore, if your  customer chooses a payment method other than a card, you need to use another Yuno integration:</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 🚧 Card Payments Only
+>
+> Secure Fields only accepts card payments. Therefore, if your customer chooses a payment method other than a card, you need to use another Yuno integration.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You're responsible for displaying the payment methods and capturing the customer's selection when using the Secure Fields SDK.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+
+> ❗️ Display Payment Methods
+>
+> You're responsible for displaying the payment methods and capturing the customer's selection when using the Secure Fields SDK.
+
 
 ### Step 4: Implement the SDK and get a One-Time Token
 
@@ -168,18 +148,12 @@ For more information on how to initiate Yuno's SDK, refer to the corresponding p
 
 With the One-Time Token, create the payment. This process gathers all order details, including customer specifics, total amount, currency, products, and shipping details. Use the [Create Payment](ref:create-payment) endpoint, informing the `one_time_token`.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Payment status</h3>
-    <div class="contentContainer">      
-      <p>Use the payment <code>status</code> and <code>sub_status</code> as your primary reference for the payment's state during integration. Since a payment might have multiple associated transactions, concentrating on the payment <code>status/sub_status</code> ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.</p>
-			<p>To display the current payment status for your clients, you can use the <a href="/docs/payment-status#step-3-use-status">mountStatusPayment</a> function.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Payment status
+>
+> Use the payment `status` and `sub_status` as your primary reference for the payment's state during integration. Since a payment might have multiple associated transactions, concentrating on the payment `status/sub_status` ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
+>
+> To display the current payment status for your clients, you can use the [mountStatusPayment](docs/payment-status#step-3-use-status) function.
+
 
 ### Step 6: Receive payment result through webhook
 
@@ -192,17 +166,10 @@ With Secure Fields SDK, you can save credit/debit cards for future purchases wit
 * Set `vault_on_sucess = true` when using the [Create Payment](ref:create-payment) endpoint. You will receive the `vaulted_token` that corresponds to the card used by the customer payer in the response.
 * Set `saveCard = true` when creating the One-Time Token in [Step 4](#step-4-implement-the-sdk-and-get-a-one-time-token). The SDK will display a checkbox for users to select if they want to save the card for future purchases. If the user checks the box, you will receive the `vaulted_token`.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You should only use one option to enroll a card. </p>
-      <p>To enroll alternative payment methods, see the <a href="enrollment-lite">Lite SDK (Enrollment)</a> page. </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Card enrollment options
+>
+> You should only use one option to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](enrollment-lite) page.
+
 
 After enrolling in a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
 

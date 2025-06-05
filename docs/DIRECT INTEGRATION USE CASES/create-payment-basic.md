@@ -32,21 +32,10 @@ Before starting following the steps described in this guide, you need to:
 
 Make sure to complete these requirements before following the create payment guide.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Explore Yuno Postman Collections</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno provides <a href='/reference/postman-collections'>Postman Collections</a> that you can use to replicate the use cases locally.        
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Explore Yuno Postman Collections
+>
+> Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
+
 
 ## Steps summary
 
@@ -57,24 +46,10 @@ The create payment process normally requires finishing the four steps listed bel
 3. [Create a one-time token](#step-3-create-a-one-time-token-ott)
 4. [Create the payment](ref:create-payment)
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Additional steps</h3>
-      <div class="contentContainer">
-        <p>
-          Different payment methods, such as with specific wallets or BNPL, 
-          or functionalites, such as split payments, may require aditional 
-          steps before creating the payment. Yuno provides complementary guides for these situations. 
-          Check the <a onclick="window.location='create-payments'">Create payments</a> page to find them all.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Additional payment methods and functionalities
+>
+> Different payment methods, such as with specific wallets or BNPL, or functionalities, such as split payments, may require additional steps before creating the payment. Yuno provides complementary guides for these situations. Check the [Create payments](create-payments) page to find them all.
+
 
 ## Create a payment
 
@@ -82,24 +57,12 @@ The create payment process normally requires finishing the four steps listed bel
 
 Use the [Create Customer](ref:create-customer) to register the customer info. You will need to provide personal customer information. In addition, you also need to supply the `merchant_customer_id`, a unique identifier for the customer used on your system.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Customer complementary information</h3>
-      <div class="contentContainer">
-        <p>
-          When creating a <b>Customer</b>, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of not mandatory data you can provide.
-        </p>
-        <p>
-					If you add optional information, be aware of the required mandatory fields.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Customer complementary information
+>
+> When creating a **Customer**, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of not mandatory data you can provide.
+>
+> If you add optional information, be aware of the required mandatory fields.
+
 
 At the end of the create a customer process, you will receive an `id`, which identifies the user within the Yuno system. Use the `id` to initialize the checkout. 
 
@@ -125,21 +88,10 @@ You will always get the one-time token from the Yuno SDK on your application. By
 
 You can always use the list [Payment type](ref:payment-type-list) to check all available payment types. In the response of the SDK, you will receive the `one-time-token`, which you will use to create the payment. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Testing</h3>
-      <div class="contentContainer">
-        <p>
-          Remember that for testing Credit card payments you can set the "<a onclick="window.location='yuno-testing-gateway'">Yuno Test Payment Gateway</a>" as a provider in your Card route.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Testing credit card payments
+>
+> Remember that for testing credit card payments you can set the [Yuno Test Payment Gateway](doc:yuno-testing-gateway) as a provider in your Card route.
+
 
 ### Step 4: Create a payment
 
@@ -175,22 +127,6 @@ Both fields can be found in the payment\_method detail section of the payment.
 
 Depending on the processor and payment method, the status may take some time to update. Therefore, you may need to use endpoints to recover the payment status. To perform this task, you can use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant_order_id). Another option is to use webhooks to receive notifications after each event. Yuno recommends you use webhooks to monitor asynchronous payments better. Check the [Webhooks](doc:configuring-yuno-webhooks) guide to learn how to configure the webhooks solution provided by Yuno.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Test Card payments</h3>
-      <div class="contentContainer">
-        <p>
-					If you need to test Card payments in general, Yuno provides the Yuno Test Payment Gateway. It works as a connection, however, it is available only in the sandbox environment. 
-        </p>
-        <p>
-          Check the <a href="yuno-testing-gateway"> Yuno Test Payment Gateway page</a> to learn all functionalities, or go directly to the guide on <a href="yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway">how to test card payments</a>.
-        </p>
-        
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Test Card Payments
+>
+> If you need to test Card payments in general, Yuno provides the Yuno Test Payment Gateway. It works as a connection, however, it is available only in the sandbox environment. Check the [Yuno Test Payment Gateway page](yuno-testing-gateway) to learn all functionalities, or go directly to the guide on [how to test card payments](yuno-testing-gateway#test-card-payments-with-yuno-testing-gateway).

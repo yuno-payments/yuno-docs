@@ -31,20 +31,10 @@ To integrate **Yuno with VTEX**, you need to install two applications:
 * `yunopartnerbr.yuno`: VTEX PPF connector for backend communication.  
 * `yunopartnerbr.yuno-app`: Frontend payment application required for card-based payments.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					To install both applications, you need Admin permissions in VTEX. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Admin Permissions Required
+>
+> To install both applications, you need Admin permissions in VTEX.
+
 
 ### Install `yunopartnerbr.yuno`
 
@@ -210,25 +200,13 @@ npm install @yuno-payments/sdk-web-vtex
 
 When processing payments through **Yuno and VTEX**, the `yunopartnerbr.yuno` connector generates a structured payload containing all the necessary transaction details. Below, we provide example payloads for credit card payments and Pix payments (APMs).  
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <ul>
-          <li><b>Automated Generation</b>: Merchants do not need to modify or format the payload manually.  	</li>
-          <li><b>Dynamic Structure</b>: The payload format adapts based on the selected payment method (credit card, Pix, etc.).  </li>
-          <li><b>Seamless Integration</b>: The data is retrieved automatically from Yuno’s connector when processing transactions in VTEX.  </li>
-        </ul>
-        <p>
-          For more details, access the <a href="https://docs.y.uno/reference/create-payment">API reference</a>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Payload Generation and Structure
+>
+> - Automated Generation: Merchants do not need to modify or format the payload manually.
+> - Dynamic Structure: The payload format adapts based on the selected payment method (credit card, Pix, etc.).
+> - Seamless Integration: The data is retrieved automatically from Yuno's connector when processing transactions in VTEX.
+>
+> For more details, access the [API reference](https://docs.y.uno/reference/create-payment).
 
 ### Credit Card Payment Payload
 

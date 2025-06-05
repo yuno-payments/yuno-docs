@@ -14,21 +14,10 @@ next:
 ---
 In this guide, you will find step-by-step instructions on capturing a previously created payment on Yuno.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Which payments can you capture?</h3>
-      <div class="contentContainer">
-        <p>
-          Only payments with <b>PENDING</b> status can be captured. Check the <a href="https://docs.y.uno/docs/payment-status">Payment status</a> page for further details regarding the possible payment status.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Which payments can you capture
+> 
+> Only payments with **PENDING** status can be captured. Check the [Payment status](https://docs.y.uno/docs/payment-status) page for further details regarding the possible payment status.
+
 
 ## Requirements
 
@@ -41,21 +30,10 @@ To capture a payment, you need to:
   * `id`: The unique identifier of the payment, obtained from the parameter `id` after creating the payment.
   * `transaction_id`: The unique identifier of the transaction obtained from the parameter `transaction.id` after creating the payment.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Explore Yuno Postman Collections</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno provides <a href='/reference/postman-collections'>Postman Collections</a> that you can use to replicate the use cases locally.        
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Explore Yuno Postman Collections
+>
+> Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
+
 
 ## Capture a Payment
 

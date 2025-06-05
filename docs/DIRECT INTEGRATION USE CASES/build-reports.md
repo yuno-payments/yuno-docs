@@ -30,21 +30,10 @@ To request a report, you will need to:
   * `public-api-key`
   * `private-secrete-key`
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Explore Yuno Postman Collections</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno provides <a href='/reference/postman-collections'>Postman Collections</a> that you can use to replicate the use cases locally.        
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Explore Yuno Postman Collections
+> 
+> Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
+
 
 ## Steps summary
 
@@ -75,23 +64,10 @@ You have the option to filter the following fields when creating the report:
 * `updated_at_start`
 * `updated_at_end`
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Filter values format</h3>
-      <div class="contentContainer">
-        <p>
-					When defining the filter values, provide them in a string value list, such as in the example below:
-          <br>
-          <code>"payment_status": "CREATED,READY_TO_PAY,DECLINED"</code>
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Filter values format
+> 
+> When defining the filter values, provide them in a string value list, such as in the example below:
+> `"payment_status": "CREATED,READY_TO_PAY,DECLINED"`
 
 For Payment or Transaction reports, you also have the option to select the fields included in the final report using the parameter `columns`.
 

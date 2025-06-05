@@ -51,23 +51,14 @@ The following image describes the complete payment workflow. Below, each step is
 
 <Image align="center" src="https://files.readme.io/a17409c-Diagrama_-_SDK_Headless_pago.png" />
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Headless SDK only accepts card payments</h3>
-    <div class="contentContainer">
-      <p>The Headless SDK is designed to acept payments using cards. If you need to perform a payment using another payment method, you need to choose use another Yuno integration:
-      </p>
-      <ul>
-        <li><a href="/docs/secure-fields-payment">Full SDK</a></li>
-        <li><a href="/docs/secure-fields-payment">Lite SDK</a></li>
-        <li><a href="/docs/secure-fields-payment">Direct Flow</a></li>
-        </ul>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 🚧 Headless SDK only accepts card payments
+>
+> The Headless SDK is designed to acept payments using cards. If you need to perform a payment using another payment method, you need to choose use another Yuno integration:
+>
+> [Full SDK](/docs/secure-fields-payment)
+> [Lite SDK](/docs/secure-fields-payment)
+> [Direct Flow](/docs/secure-fields-payment)
+
 
 ### Step 1: Create a customer
 
@@ -85,27 +76,15 @@ Use the [Create Checkout Session](ref:create-checkout-session) endpoint and prov
 
 Query the available payment methods using the [Retrieve Payment Methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>If the customer has previously enrolled payment methods, you'll receive them as well. Use the <code>vaulted_token</code> for these methods to create the One-Time Token and process the payment.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Previously enrolled payment methods
+>
+> If the customer has previously enrolled payment methods, you'll receive them as well. Use the `vaulted_token` for these methods to create the One-Time Token and process the payment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You're responsible for displaying the payment methods and capturing the customer's selection when using the Headless SDK.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+
+> ❗️ Display payment methods
+>
+> You're responsible for displaying the payment methods and capturing the customer's selection when using the Headless SDK.
+
 
 ### Step 4: Implement the SDK and get a One-Time Token
 
@@ -118,17 +97,10 @@ To initialize Yuno's Headless SDK, you have to provide your API credentials and 
 3. Start the checkout process by calling `yuno.apiClientPayment()` with your configuration. 
 4. Collect the user information and generate the One-Time Token using the `apiClientPayment.generateToken` function.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>PCI compliance</h3>
-    <div class="contentContainer">
-      <p>You don't need to be PCI compliant when using the Headless SDK. However, you should not store card data, except for the token provided by the SDK, otherwise, you must comply with PCI standards.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> ❗️ PCI compliance
+>
+> You don't need to be PCI compliant when using the Headless SDK. However, you should not store card data, except for the token provided by the SDK, otherwise, you must comply with PCI standards.
+
 
 For more information on how to initiate Yuno's SDK, refer to one of the following pages according to the corresponding platform:
 
@@ -188,18 +160,10 @@ The response from [Create Payment](ref:create-payment)will include the `sdk_acti
 * **Synchronous Payment**: If `sdk_action_required` is `false`, the payment is complete.
 * **Asynchronous Payment**: If `sdk_action_required` is `true`, additional actions are required to complete the payment. Use the `continuePayment` function to complete the payment. See the instructions in [Step 6](#step-5-continue-payment-if-needed).
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Status</h3>
-    <div class="contentContainer">
-      <p>During integration, use the payment <code>status</code> and <code>sub_status</code> as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment <code>status</code>/<code>sub_status</code> ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Payment Status Reference
+> 
+> During integration, use the payment `status` and `sub_status` as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment `status`/`sub_status` ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
+
 
 ### Step 6: Continue payment (if needed)
 
@@ -217,36 +181,22 @@ With the Headless SDK, you can save credit/debit cards for future purchases with
 
 Provide a checkbox on your checkout for users to choose if they want to save their card for future use. If the user selects this option, set `payment_method.card.save = true` when calling the `apiClientPayment.generateToken` function. You'll receive the `vaulted_token` in the function response.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>To enroll alternative payment methods, see the <a href="enrollment-lite">Lite SDK (Enrollment)</a> page. </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Alternative Payment Methods Enrollment
+>
+> To enroll alternative payment methods, see the [Lite SDK (Enrollment)](enrollment-lite) page.
+
 
 After enrolling in a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
 
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
 * [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api).
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Using a vaulted token</h3>
-    <div class="contentContainer">
-      <p>Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:</p>
-      <ul>
-        <li><b>Support 3DS</b>: Enhanced security for online payments.</li>
-        <li><b>Fraud Screening</b>: Better protection against fraudulent transactions.</li>
-        <li><b>Collect Required Information</b>: Gather additional fields required by the provider if necessary.</li>
-      </ul>
-      <p>To implement this, send the <code>vaultedToken</code> when mounting the SDK. The SDK will handle the rest. If the payment method requires an extra step (such as a 3DS challenge), use the <code>yuno.continuePayment()</code> method. This method handles any required redirections and works for both enrolled and regular payment methods that need additional customer actions. </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 🚧 Using a vaulted token
+>
+> Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
+>
+> - **Support 3DS**: Enhanced security for online payments.
+> - **Fraud Screening**: Better protection against fraudulent transactions.
+> - **Collect Required Information**: Gather additional fields required by the provider if necessary.
+>
+> To implement this, send the `vaultedToken` when mounting the SDK. The SDK will handle the rest. If the payment method requires an extra step (such as a 3DS challenge), use the `yuno.continuePayment()` method. This method handles any required redirections and works for both enrolled and regular payment methods that need additional customer actions.

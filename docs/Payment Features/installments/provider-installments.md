@@ -22,36 +22,14 @@ next:
 
 While configuring your provider [Connection](doc:connections) in Yuno Dashboard, you can enable the installments available for the provider so we can use them in the Credit card form of the SDK for the customer to select from. For this scenario, there is no need to create a plan, as Yuno will use the plan defined by your payment processor.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Secure Fields SDK</h3>
-      <div class="contentContainer">
-        <p>When using Secure Fields SDK integration, you will need to <a href="secure-fields-payment#step-3-start-the-checkout-process">enable the installments option</a> while starting the checkout process.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Secure Fields SDK
+> 
+> When using Secure Fields SDK integration, you will need to [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) while starting the checkout process.
 
 This option is not enabled for all providers, only the ones that have Installment services that Yuno can access to get the information from. If you consider that a provider should have this feature enabled, please reach out to your account manager. 
 
 <Image align="center" src="https://files.readme.io/04626a1-provider.png" />
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer danger">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Routing</h3>
-      <div class="contentContainer">
-        <p>While setting your <a href="routing">route</a> for the Card payment method, remember that having a fallback for a provider that has "Provider installments" is not supported, as different providers handle different types of installment plans. It can cause a processing error in the fallback.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Routing Configuration Warning
+> 
+> While setting your [route](routing) for the Card payment method, remember that having a fallback for a provider that has "Provider installments" is not supported, as different providers handle different types of installment plans. It can cause a processing error in the fallback.

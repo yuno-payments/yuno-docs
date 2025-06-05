@@ -28,21 +28,10 @@ To refund a payment, you need to:
     * If you created and captured the payment using only one operation, you obtain the `transaction_id` from the  parameter `transaction.id` after creating the payment with the [Create Payment](ref:create-payment) endpoint.
     * If you performed the authorization and then the payment capture, you will use the `transaction_id` from the  parameter `id` received after capturing the payment using the [Capture Payment](ref:capture-authorization) endpoint. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Explore Yuno Postman Collections</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno provides <a href='/reference/postman-collections'>Postman Collections</a> that you can use to replicate the use cases locally.        
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Explore Yuno Postman Collections
+>
+> Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
+
 
 ## Refund a Payment
 
@@ -62,21 +51,10 @@ To confirm you have successfully refunded the payment, check if the parameters f
 
 If the response contains the above values, the refund was successful.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>How long it takes to process the refund?</h3>
-      <div class="contentContainer">
-        <p>
-	Refunds processing time varies depending on the payment type. While in test mode, refunds are processed instantly in the Sandbox environment.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Refund Processing Time
+>
+> Refunds processing time varies depending on the payment type. While in test mode, refunds are processed instantly in the Sandbox environment.
+
 
 ### Check the payment status
 
