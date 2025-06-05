@@ -85,19 +85,12 @@ If you want to associate a customer with stored payment methods, start by creati
 
 You can skip this step if you already have a customer `id` or prefer to omit it entirely.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <h3>Omit customer session step</h3>
-    <div class="contentContainer">
-      <p>When you choose to not use a <code>customer_session</code>, the payment will be created without a customer <code>id</code>, leaving it empty when creating the payment. As a result, the process will not use any stored customer date, such as pre-filled form fields or saved payment details.</p>
- 
-			<p>While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Omit customer session step
+>
+> When you choose to not use a `customer_session`, the payment will be created without a customer `id`, leaving it empty when creating the payment. As a result, the process will not use any stored customer date, such as pre-filled form fields or saved payment details.
+>
+> While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.
+
 
 ### Step 2: Create a checkout session
 
@@ -109,27 +102,15 @@ Use the [Create checkout session](ref:create-checkout-session) endpoint, providi
 
 Query the available payment methods using the [Retrieve payment methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>If the customer has previously enrolled payment methods, you'll receive them as well. Use the <code>vaulted_token</code> for these methods to create the One-Time Token and process the payment.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Previously enrolled payment methods
+>
+> If the customer has previously enrolled payment methods, you'll receive them as well. Use the `vaulted_token` for these methods to create the One-Time Token and process the payment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>You are responsible for displaying the payment methods and capturing the customer's selection when using the Seamless SDK.</p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+
+> 📘 Display Payment Methods
+>
+> You are responsible for displaying the payment methods and capturing the customer's selection when using the Seamless SDK.
+
 
 ### Step 4: Implement the SDK
 
