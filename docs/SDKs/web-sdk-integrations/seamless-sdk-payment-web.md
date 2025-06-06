@@ -22,6 +22,10 @@ The new Seamless Full SDK flow works just like Seamless Lite, but with two key d
 * If you want Yuno to handle the payment method listing and separation of payment buttons, use the new Seamless Full flow.
 * If you want more control over the payment method display, continue using the Seamless Lite flow.
 
+See the Seamless Full SDK v1.2 in action:
+
+<Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+
 Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK payment functionality in your application.
 
 <HTMLBlock>{`
