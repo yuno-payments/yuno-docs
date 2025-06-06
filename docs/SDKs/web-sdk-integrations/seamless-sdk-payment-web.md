@@ -90,7 +90,7 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 ## Step 3: Start the checkout process
 
 ```javascript
-yuno.startCheckout({
+yuno.startSeamlessCheckout({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638', // Current payment session
   elementSelector: '#root', // HTML element for rendering
   country_code: 'US', // Country code for the payment process
