@@ -12,20 +12,9 @@ next:
 ---
 This page provides a step-by-step guide to integrating the Lite Flutter SDK for enrollment functionalities into your application.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					Ensure all required Flutter SDK dependencies are included in your project before proceeding with the setup. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Prerequisites
+> 
+> Ensure all required Flutter SDK dependencies are included in your project before proceeding with the setup.
 
 ## Step 1: Add the SDK Dependency
 
