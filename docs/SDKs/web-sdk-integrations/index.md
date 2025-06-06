@@ -137,11 +137,11 @@ Select one of the user-friendly Web integration options available and kickstart 
 </body>
 `}</HTMLBlock>
 
-> 📘 Browser Support
+> ❗️ Browser Support
 > 
 > Yuno Web SDK does not support the IE browser.
 
-> 📘 TypeScript Support
+> 🚧 TypeScript Support
 >
 > If you are using TypeScript, access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-web/blob/main/typescript/types.ts) to use all interfaces and types available for the Web SDK.
 
@@ -149,7 +149,7 @@ Select one of the user-friendly Web integration options available and kickstart 
 >
 > Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
 
-> 📘 Android WebView Configuration
+> 🚧 Android WebView Configuration
 >
 > If you are using the Web SDK inside a WebView on Android, you must enable JavaScript code execution and multi-window support. Some payment methods, such as Google Pay, require this configuration for proper operation.
 >
