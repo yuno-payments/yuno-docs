@@ -33,20 +33,9 @@ The following table presents all available fields you can use to customize the i
 | `disableButtonBackgroundColor`   | Sets the background color for the disabled-buttons.                                                                                    |
 | `disableButtonTitleColor`        | Determines the text color for the disabled-buttons.                                                                                    |
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Color configuration</h3>
-      <div class="contentContainer">
-        <p>Ensure all colors are specified as UIColor to maintain compatibility.</p>
-				<p> Colors can be sourced from Xcode's predefined palette or the merchant's assets, but they must always be of type UIColor.</p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Color Configuration
+> 
+> Ensure all colors are specified as UIColor to maintain compatibility. Colors can be sourced from Xcode's predefined palette or the merchant's assets, but they must always be of type UIColor.
 
 To control the appearance, you must use the `Yuno.Appearance()` function to define a variable with all your customizations. Then you have to inform it when initializing the SDK, as exemplified in the following code block:
 
