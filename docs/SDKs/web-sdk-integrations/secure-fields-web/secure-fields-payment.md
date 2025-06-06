@@ -155,6 +155,7 @@ The table below presents all configurations available:
 | `options.onFocus`               | An auxiliary function that can be configured and will run when focussing on the input.                                                                                              |
 | `options.onRenderedSecureField` | An auxiliary function that can be configured and will run when the element finishes rendering.                                                                                      |
 | `options.errorMessage`          | This allows for the definition of the field's error message.                                                                                                                        |
+| `options.inputMode`             | *(v1.2+ only)* Defines the type of keyboard to display on mobile devices. Possible values: `'numeric'` (default) or `'text'`.                                                      |
 
 Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
