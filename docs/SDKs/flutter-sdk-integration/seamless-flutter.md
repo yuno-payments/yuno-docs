@@ -12,20 +12,9 @@ next:
 ---
 This page provides step-by-step instructions for integrating the Seamless Flutter SDK payment functionalities into your application.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          Ensure all <a href="/docs/requirements">required Flutter SDK dependencies</a> are included in your project before following the setup example. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Prerequisites
+> 
+> Ensure all [required Flutter SDK dependencies](/docs/requirements) are included in your project before following the setup example.
 
 ## Step 1: Add the SDK Dependency
 

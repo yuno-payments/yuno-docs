@@ -12,37 +12,15 @@ next:
 ---
 Yuno's Headless iOS SDK lets you enroll in payment methods and tokenize cards, saving them for future use. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Recommended SDKs</h3>
-      <div class="contentContainer">
-        <p>
-         We recommend using the <a href="full-checkout-ios">iOS Full SDK</a> or the <a href="enrollment-ios">iOS Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Recommended SDKs
+> 
+> We recommend using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
 
 The following steps describe enrolling a payment method using Yuno's Headless SDK.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <h3>Complete enrollment guide</h3>
-      <p>
-        On this page, you will find all the steps related to using the Headless SDK to enrol in a payment method. For a complete guide, including the customer creation, access <a href="headless-sdk-enrollment-steps">Headless SDK (Enrollment)</a>.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Complete enrollment guide
+> 
+> On this page, you will find all the steps related to using the Headless SDK to enrol in a payment method. For a complete guide, including the customer creation, access [Headless SDK (Enrollment)](headless-sdk-enrollment-steps).
 
 ## Requirements
 
@@ -57,21 +35,9 @@ A complete enrollment process description is covered in [Headless SDK (Enrollmen
 
 The first step is to install Yuno SDK to your iOS project. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3>iOS SDK Versions</h3>
-        <p>
-          To check all versions available, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-ios/releases">release page</a> from the Yuno iOS SDK repository.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 iOS SDK Versions
+> 
+> To check all versions available, you can access the [release page](https://github.com/yuno-payments/yuno-sdk-ios/releases) from the Yuno iOS SDK repository.
 
 You can install Yuno SDK in two ways:
 
@@ -90,20 +56,9 @@ You can install Yuno SDK in two ways:
 
 To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          If your app is using a <code>UISceneDelegate</code>, you will need to put your Yuno initialization code into your <code>SceneDelegate</code>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 UISceneDelegate initialization
+> 
+> If your app is using a `UISceneDelegate`, you will need to put your Yuno initialization code into your `SceneDelegate`.
 
 The code block below presents an example of importing and initializing the `Yuno`.
 
@@ -126,21 +81,9 @@ After creating the customer, you can create the customer session. Use the  custo
 
 You need an enrollment payment method object to set Headless SDK integration for enrollment. You can create one using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. While creating the payment method object, you need to define which payment method your customer can enroll in. Currently, only CARD is available for Headless SDK.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3>Verify card</h3>
-        <p>
-          If you want to verify cards (zero value authorization) before enrollment, you need to provide the <code>verify</code> object when creating the payment method object for the customer session. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Verify card
+> 
+> If you want to verify cards (zero value authorization) before enrollment, you need to provide the `verify` object when creating the payment method object for the customer session.
 
 ## Step 5: Start the enrollment process
 
@@ -248,20 +191,9 @@ let result = try await apiClientEnroll.continueEnrollment(data: enrollmentCollec
 </style>
 
 
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3 class="localH3">PCI Compliance</h3>
-        <p>
-					Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 PCI Compliance
+> 
+> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
 
 After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function. The response is a dictionary of type `[String: Any]`.
 
@@ -289,32 +221,10 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
 ]
 ```
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <h3>Use Webhooks</h3>
-      <p>
-        Consider using the enrollment status received via <a href="webhooks">Webhooks</a>. Yuno recommends always using this status to base and make business decisions on your platform.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Enrollment Status via Webhooks
+> 
+> Consider using the enrollment status received via [Webhooks](webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-ios">Yuno repository</a> for a complete implementation of Yuno iOS SDKs.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo Application
+> 
+> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.

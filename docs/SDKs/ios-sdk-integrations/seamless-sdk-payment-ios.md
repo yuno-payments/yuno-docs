@@ -12,21 +12,9 @@ next:
 ---
 On this page, you will find all the steps to add, configure, and use the Seamless iOS SDK to make payments in your iOS project.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Recommended SDKs</h3>
-      <div class="contentContainer">
-        <p>
-         We recommend using the <a href="full-checkout-ios">iOS Full SDK</a> or the <a href="enrollment-ios">iOS Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Recommended SDKs
+> 
+> We recommend using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
 
 ## Step 1: Include the library in your project
 
@@ -70,21 +58,9 @@ Yuno.initialize(
 )
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>UISceneDelegate</h3>
-      <div class="contentContainer">
-        <p>
-				If your app uses a <code>UISceneDelegate</code>, you must put your Yuno initialization code into your <code>SceneDelegate</code>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 UISceneDelegate
+> 
+> If your app uses a `UISceneDelegate`, you must put your Yuno initialization code into your `SceneDelegate`.
 
 The Seamless checkout enables you to configure the appearance of the SDK. It is an optional step that you configure through the class `YunoConfig`. To set up configurations, use the following code block to configure the available elements:
 
@@ -106,21 +82,9 @@ Below, you find a description of each configuration variable available.
 | `saveCardEnabled` | This optional field lets you choose whether the **Save Card** checkbox is shown on card flows. It is false by default.                                                              |
 | `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to false. |
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Accessing Your API Key</h3>
-      <div class="contentContainer">
-        <p>
-				You can retrieve your API Key from the <a href="https://docs.y.uno/docs/developers-credentials">Developers section</a> in the Yuno Dashboard.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Accessing Your API Key
+> 
+> You can retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
 
 ## Step 3: Start the checkout and Payment process
 
@@ -175,24 +139,9 @@ Below, you will find a description of each parameter from `SeamlessParams`:
 
 ## Step 4: Handle Payment Status (Optional)
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Deep Links and Mercado Pago Checkout Pro</h3>
-      <div class="contentContainer">
-        <p>
-          This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro.
-        </p>
-        <p>
-          If your payment methods don’t use deep links, you can skip this step.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Deep Links and Mercado Pago Checkout Pro
+>
+> This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don't use deep links, you can skip this step.
 
 Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back to your app using a deep link. The SDK uses this deep link to check what happened, checking if the payment was successful, failed, or canceled, and can show a status screen to the user.
 

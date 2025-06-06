@@ -176,21 +176,9 @@ The following table includes descriptions for each customization available.
   </tbody>
 </Table>
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Loading Screen Persistence</h3>
-      <div class="contentContainer">
-        <p>
-         To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the <code>startCompletePaymentFlow()</code>(loader-android) function.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Loading Screen Persistence
+> 
+> To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the `startCompletePaymentFlow()` [function](loader-android).
 
 You also need to update your manifest to use your application:
 
@@ -246,37 +234,13 @@ fun AppCompatActivity.enrollmentStatus(
 )
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Optional Function</h3>
-      <div class="contentContainer">
-        <p>
-         Using the function <code>enrollmentStatus</code> is optional. It isn't a requirement to complete the enrollment process.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Optional Function
+> 
+> Using the function `enrollmentStatus` is optional. It isn't a requirement to complete the enrollment process.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Note</h3>
-      <div class="contentContainer">
-        <p>
-         If you provide a new callback when calling the function <code>enrollmentStatus</code>, it will override the callback you set when calling the function <code>initEnrollment</code>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Callback Override
+> 
+> If you provide a new callback when calling the function `enrollmentStatus`, it will override the callback you set when calling the function `initEnrollment`.
 
 The possible states are presented in the following code block:
 
@@ -304,37 +268,13 @@ The following table provide additional information about the possible states:
 
 The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes.  To process the enrollment result, follow these steps:
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Deprecated</h3>
-      <div class="contentContainer">
-        <p>
-         The <code>onActivityResult</code> method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using <code>initEnrollment()</code> contract, which follows Google's best practices.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Deprecated Method
+> 
+> The `onActivityResult` method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using `initEnrollment()` contract, which follows Google's best practices.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Request Code</h3>
-      <div class="contentContainer">
-        <p>
-         If you are using the <code>onActivityResult</code> method but did not inform a <code>requestCode</code> when calling the <code>startEnrollment</code> in <a href="#step-3-enroll-a-new-payment-method">Step 3</a>, you must use the <code>YUNO_ENROLLMENT_REQUEST_CODE</code> provided by Yuno.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Request Code
+> 
+> If you are using the `onActivityResult` method but did not inform a `requestCode` when calling the `startEnrollment` in [Step 3](#step-3-enroll-a-new-payment-method), you must use the `YUNO_ENROLLMENT_REQUEST_CODE` provided by Yuno.
 
 1. First, override the `onActivityResult` method. It ensures that the hierarchy calls are respected.
 
@@ -446,18 +386,6 @@ You can choose between two card form render options. The following screenshots d
 
 You can change the SDK appearance to match your brand. For more information, access the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-				In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-android/tree/master">Yuno repository</a> to complete Yuno Android SDKs implementation.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo App
+> 
+> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.

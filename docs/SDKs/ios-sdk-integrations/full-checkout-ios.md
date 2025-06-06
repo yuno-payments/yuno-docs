@@ -57,21 +57,9 @@ Yuno.initialize(
 
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>UISceneDelegate</h3>
-      <div class="contentContainer">
-        <p>
-				If your app is using a UISceneDelegate you will need to put your Yuno initialization code into your SceneDelegate.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 UISceneDelegate
+>
+> If your app is using a UISceneDelegate you will need to put your Yuno initialization code into your SceneDelegate.
 
 The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
 
@@ -93,21 +81,9 @@ Below, you find a description of each configuration variable available.
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
 | `keepLoadere`     | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Accessing Your API Key</h3>
-      <div class="contentContainer">
-        <p>
-				You can retrieve your API Key from the <a href="https://docs.y.uno/docs/developers-credentials">Developers section</a> in the Yuno Dashboard.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Accessing Your API Key
+>
+> You can retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
 
 ## Step 3: Start the checkout process
 
@@ -229,20 +205,9 @@ The following table presents all the protocol requirements you have to provide a
   </tbody>
 </Table>
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					You can call <code>yunoCreatePayment</code> with or without the <code>information</code> parameter based on your needs. However, use only one version in your code, as calling both is not required and may cause issues.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Using yunoCreatePayment
+>
+> You can call `yunoCreatePayment` with or without the `information` parameter based on your needs. However, use only one version in your code, as calling both is not required and may cause issues.
 
 ## Step 4: Add the SDK view to the checkout
 
@@ -299,21 +264,9 @@ func yunoCreatePayment(with token: String) { ... }
 
 Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Continue method</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Continue Payment Method
+>
+> Yuno **requires** you integrate the `continuePayment` method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario. [test](#test)
 
 ```swift
 Yuno.continuePayment(showPaymentStatus: Bool)
@@ -321,42 +274,15 @@ Yuno.continuePayment(showPaymentStatus: Bool)
 
 The `showPaymentStatus` parameter is used to determine whether the payment status should be displayed or not. By passing `true` as an argument, the payment status might be shown, while passing `false` could indicate that the payment status should not be displayed.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Note</h3>
-      <div class="contentContainer">
-        <p>
-					In Yuno's iOS Full SDK, the default value for <code>showPaymentStatus</code> is <code>true</code>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Default Payment Status Display
+>
+> In Yuno's iOS Full SDK, the default value for `showPaymentStatus` is `true`.
 
 ## Step 8: Handle Payment Status (Optional)
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Deep Links and Mercado Pago Checkout Pro</h3>
-      <div class="contentContainer">
-        <p>
-          This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro.
-        </p>
-        <p>
-          If your payment methods don’t use deep links, you can skip this step.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Deep Links and Mercado Pago Checkout Pro
+>
+> This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don't use deep links, you can skip this step.
 
 Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back to your app using a deep link. The SDK uses this deep link to check what happened, checking if the payment was successful, failed, or canceled, and can show a status screen to the user.
 
@@ -418,18 +344,6 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 
 * [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-ios">Yuno repository</a> for a complete implementation of Yuno iOS SDKs.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo App
+>
+> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.

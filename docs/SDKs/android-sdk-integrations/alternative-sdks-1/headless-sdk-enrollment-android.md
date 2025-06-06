@@ -10,23 +10,12 @@ metadata:
 next:
   description: ''
 ---
-The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards. 
+The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Recommended SDKs</h3>
-      <div class="contentContainer">
-        <p>
-         We recommend using the <a href="full-checkout-android">Android Full SDK</a> or the <a href="lite-checkout-android">Android Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Recommended SDKs
+> 
+> We recommend using the [Android Full SDK](full-checkout-android) or the [Android Lite SDK](lite-checkout-android) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
+
 
 This SDK offers complete control over the payment method enrollment process, making it ideal for merchants who:
 
@@ -61,21 +50,10 @@ You can obtain these credentials from the [Developers section of the Yuno dashbo
 * Create a `customer`, which is required before enrolling payment methods
 * Create a `customer_session`, which initializes the enrollment flow
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>SDK version</h3>
-      <div class="contentContainer">
-        <p>
-        Access the <a href="release-notes-android-sdk">Release notes</a> or the <a href="https://github.com/yuno-payments/yuno-sdk-android">Yuno Android SDK repository</a> to verify the last SDK version available.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 SDK Version Information
+> 
+> Access the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
+
 
 ## Step 1: Create a customer
 
@@ -129,22 +107,11 @@ dependencies {
 }
 ```
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <h3>Permissions</h3>
-      <p>
-        Yuno SDK includes, by default, the <code>INTERNET</code> permission, which is required to make network requests.
-      </p>
-      <p>
-        <code>&lt;uses-permission android:name="android.permission.INTERNET" /&gt;</code>
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Required Permissions
+> 
+> Yuno SDK includes, by default, the `INTERNET` permission, which is required to make network requests.
+>
+> `<uses-permission android:name="android.permission.INTERNET" />`
 
 ## Step 4: Initialize Headless SDK with the public key
 
@@ -177,36 +144,18 @@ To start the enrollment process, you need to:
 
 The endpoint response will provide the `customer_session` value required for enrollment.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <p>
-        You need to generate a new <code>customer_session</code> each time you enroll a payment method.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Customer Session Generation
+> 
+> You need to generate a new `customer_session` each time you enroll a payment method.
+
 
 ## Step 6: Create an enrollment payment method object
 
 To set up the Headless SDK integration for enrollment, you need to create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. When creating this object, specify which payment method type your customer can enroll in. Currently, the Headless SDK only supports the CARD payment method type.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <h3>Verify card</h3>
-      <p>
-        If you want to verify cards (zero value authorization) before enrollment, you need to provide the <code>verify</code> object when creating the payment method object for the customer session.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Card Verification
+> 
+> If you want to verify cards (zero value authorization) before enrollment, you need to provide the `verify` object when creating the payment method object for the customer session.
 
 ## Step 7: Start the enrollment process
 
@@ -317,19 +266,10 @@ apiClientEnroll.continueEnrollment(
 
 ```
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <h3>PCI Compliance</h3>
-      <p>
-        Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 PCI Compliance
+>
+> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
+
 
 The `apiClientEnroll.continueEnrollment` function returns an Observable type that extends `LiveData`. You can observe the response as a standard `LiveData` with type `SingleLiveEvent<Map<String, Any?>>`. This `LiveData` emits only once and returns a `Map` containing the complete response. Below is an example response from calling `apiClientEnroll.continueEnrollment`:
 
@@ -354,16 +294,6 @@ apiClientPayment.continueEnrollment(data, context).observe(context) { response -
 }
 ```
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>
-    <div class="contentContainer">
-      <h3>Use Webhooks</h3>
-      <p>
-        Consider using the enrollment status received via <a href="webhooks">Webhooks</a>. Yuno recommends always using this status to base and make business decisions on your platform.
-      </p>
-    </div>
-  </div>
-</div>
-`}</HTMLBlock>
+> 📘 Webhook Status Tracking
+>
+> Consider using the enrollment status received via [Webhooks](webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
