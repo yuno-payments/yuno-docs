@@ -196,8 +196,6 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
 ```
 
-\[Rest of v1.1 implementation steps from original file, with v1.1-specific updates...]
-
 <HTMLBlock>{`
   </div>
 
