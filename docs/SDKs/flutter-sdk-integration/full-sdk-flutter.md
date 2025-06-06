@@ -12,20 +12,9 @@ next:
 ---
 This page provides a step-by-step guide to integrating the Full Flutter SDK functionalities into your application.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					Ensure all required Flutter SDK dependencies are included in your project before following the setup example. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Dependencies
+>
+> Ensure all required Flutter SDK dependencies are included in your project before following the setup example.
 
 ## Step 1: Add the SDK Dependency
 
@@ -241,20 +230,9 @@ YunoPaymentListener(
 
 Once you have the one-time token, the next step is to create the payment. This process must be handled on the backend by calling Yuno's [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to initiate the payment within Yuno, passing both the one-time token and the checkout session to complete the payment process. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					Ensure that your backend is set up to handle this call to Yuno’s Create Payment endpoint for successful payment processing. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Backend Setup
+> 
+> Ensure that your backend is set up to handle this call to Yuno's Create Payment endpoint for successful payment processing.
 
 ## Step 6: Create the Payment
 
@@ -262,21 +240,9 @@ Once you have the one-time token, initiate the payment within Yuno by using the 
 
 After the payment is created, some asynchronous payment methods may require additional customer action. In such cases, the  Create Payment endpoint will indicate this requirement through the `sdk_action_required` field in the response, which will be set to `true`. When this occurs, you should call the `Yuno.continuePayment()` function in your mobile app to display the necessary screens for the customer, where they can complete the required steps for the payment.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Continue method</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno <b>requires</b> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Continue Payment Method Integration
+>
+> Yuno **requires** you integrate the `continuePayment` method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario.
 
 If `sdk_action_required` is `false`, there is no need to call `continuePayment`, and you can proceed without it. 
 
