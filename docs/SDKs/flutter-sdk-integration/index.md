@@ -61,18 +61,6 @@ Choose from the available Flutter SDK integration options to start processing pa
 </body>
 `}</HTMLBlock>
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Explore the SDK Project Example</h3>
-      <div class="contentContainer">
-        <p>
-					Yuno provides an example project of a running application using an SDK. You can access the <a href="https://github.com/yuno-payments/yuno-sdk-web">project repository</a> or <a href="https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip">download the project</a>. In addition, you can access the <a href="/docs/step-2-your-first-payment">Create Your First Payment With SDK</a> guide available in the documentation.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Explore the SDK Project Example
+> 
+> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
