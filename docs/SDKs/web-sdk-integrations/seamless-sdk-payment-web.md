@@ -33,7 +33,7 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
   <div class="infoBlockContainer">
     <div class="verticalLine"></div>
     <div>
-      <h3>Which version should I use?</h3>
+      <h3>Should I use Lite or Full Seamless SDK?</h3>
       <div class="contentContainer">
         <p>
           Use the Full version for automatic payment method listing and separate display of payment buttons (like PayPal).
