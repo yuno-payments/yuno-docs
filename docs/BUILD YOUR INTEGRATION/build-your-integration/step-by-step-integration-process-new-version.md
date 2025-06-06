@@ -16,43 +16,26 @@ To start, integrate the core payment workflow that enables you to create payment
 1. Create a customer.
 2. Create a checkout session.
 3. Show the payment methods available for the customer to choose from.
-4. Ask for the required information depending on the payment method.
+4. Request the necessary information based on the selected payment method.
 5. Create the payment.
 
-<HTMLBlock>{`
-<Shelf classname="cards_container">
-  <div class="first_row">
-    <YunoCard type="sdk-integrations" title="Full SDK" href="/docs/full-checkout-sdk">
-      Render the payment methods your company has available in the checkout and for user enrollment.
-    </YunoCard>
+<Cards columns={4}>
+  <Card title="First Card" href="https://readme.com" icon="fa-home" target="_blank">
+    Neque porro quisquam est qui dolorem ipsum quia
+  </Card>
 
-    <YunoCard type="sdk-integrations" title="Lite SDK (Payment)" href="/docs/lite-checkout-sdk">
-      With this option, you control which payment methods will be shown to the user during checkout and
-      enrollment.
-    </YunoCard>
-  </div>
+  <Card title="Second Card" icon="fa-user">
+    *Lorem ipsum dolor sit amet, consectetur adipiscing elit*
+  </Card>
 
-  <div class="second_row">
-    <YunoCard type="sdk-integrations" title="Secure Fields (Payment - Enrollment)" href="/docs/secure-fields-checkout-sdk">
-      Create and customize your own checkout with prebuilt UI components.
-    </YunoCard>
+  <Card title="Third Card" icon="fa-star">
+    > Ut enim ad minim veniam, quis nostrud ullamco
+  </Card>
 
-    <YunoCard type="sdk-integrations" title="Lite SDK (Enrollment)" href="/docs/lite-checkout-sdk">
-      Simplify the user enrollment of payment methods.
-    </YunoCard>
-  </div>
-
-  <div class="third_row">
-    <YunoCard type="sdk-integrations" title="Headless SDK (Payment)" href="/docs/headless-sdk-payment">
-      Customize the checkout without having to be PCI compliant.
-    </YunoCard>
-
-    <YunoCard type="sdk-integrations" title="Headless SDK (Enrollment)" href="/docs/headless-sdk-enrollment">
-      Customize the enrollment of new payment methods.
-    </YunoCard>
-  </div>
-</Shelf>
-`}</HTMLBlock>
+  <Card title="Fourth Card" icon="fa-question">
+    **Excepteur sint occaecat cupidatat non proident**
+  </Card>
+</Cards>
 
 <br />
 
