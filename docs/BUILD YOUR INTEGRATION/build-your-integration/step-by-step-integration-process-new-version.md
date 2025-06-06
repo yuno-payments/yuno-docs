@@ -20,36 +20,20 @@ To start, integrate the core payment workflow that enables you to create payment
 5. Create the payment.
 
 <Cards columns={4}>
-  <Card title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank">
-    Neque porro quisquam est qui dolorem ipsum quia
-  </Card>
+  <Card title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 
-  <Card title="Lite SDK (Payment)" icon="fa-user">
-    *Lorem ipsum dolor sit amet, consectetur adipiscing elit*
-  </Card>
+  <Card title="Lite SDK (Payment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 
-  <Card title="Lite SDK (Enrollment)" icon="fa-star">
-    > Ut enim ad minim veniam, quis nostrud ullamco
-  </Card>
+  <Card title="Lite SDK (Enrollment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 
-  <Card title="Secure Fields" icon="fa-question">
-    **Excepteur sint occaecat cupidatat non proident**
-  </Card>
+  <Card title="Secure Fields" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 
-  <Card title="Headless SDK (Payment)" icon="fa-question">
-    **Excepteur sint occaecat cupidatat non proident**
-  </Card>
+  <Card title="Headless SDK (Payment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 
-  <Card title="Headless SDK (Enrollment)" icon="fa-question">
-    **Excepteur sint occaecat cupidatat non proident**
-  </Card>
+  <Card title="Headless SDK (Enrollment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 
-  <Card title="Direct Workflow" icon="fa-question">
-    **Excepteur sint occaecat cupidatat non proident**
-  </Card>
+  <Card title="Direct Workflow" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 </Cards>
-
-> <br />
 
 <br />
 
