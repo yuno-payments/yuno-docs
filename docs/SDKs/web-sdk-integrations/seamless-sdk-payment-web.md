@@ -30,25 +30,6 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
 
 <Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Which version should I use?</h3>
-      <div class="contentContainer">
-        <p>
-          - Use the Full version for automatic payment method listing and separate display of payment buttons (like PayPal)
-        </p>
-        <p>
-          - Use the Lite version for more control over how payment methods are displayed and organized
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
 ## Step 1: Include the library in your project
 
 The integration guide provides [three flexible methods](https://docs.y.uno/docs/full-checkout-sdk#/choose-your-integration-method):
@@ -68,6 +49,27 @@ Choose the integration method that best suits your development workflow and tech
       <div class="contentContainer">
         <p>
 					If you're using TypeScript, Yuno offers a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that provides access to all available methods in the Yuno Web SDK.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
+
+<br />
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Which version should I use?</h3>
+      <div class="contentContainer">
+        <p>
+          Use the Full version for automatic payment method listing and separate display of payment buttons (like PayPal).
+        </p>
+        <p>
+          Use the Lite version for more control over how payment methods are displayed and organized.
         </p>
       </div>
     </div>
