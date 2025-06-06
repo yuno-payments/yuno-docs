@@ -23,6 +23,59 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
 </body>
 `}</HTMLBlock>
 
+## Seamless Full SDK updates (v1.2)
+
+The new Seamless Full SDK flow is similar to Seamless Lite, but with the following differences:
+
+* The Full version is responsible for listing all available payment methods.
+* Payment buttons (such as PayPal) are displayed in a separate list from other payment methods.
+
+### Example integration
+
+```javascript
+await yuno.startSeamlessCheckout({
+  checkoutSession,
+  // element where the SDK will be mounted
+  elementSelector: '#root',
+  /**
+    * country can be one of CO, BR, CL, PE, EC, UR, MX
+    */
+  countryCode,
+  /**
+    * language can be one of es, en, pt
+    */
+  language: initialSetup.language,
+  /**
+    * 
+    * @param {'READY_TO_PAY' | 'CREATED' | 'PAYED' | 'REJECTED' | 'CANCELLED' | 'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'} data
+    */
+  yunoPaymentResult(data) {
+    console.log('yunoPaymentResult', data)
+  },
+  /**
+    * @param { error: 'CANCELED_BY_USER' | any }
+    */
+  yunoError: (error) => {
+    console.log('There was an error', error)
+  },
+  onLoading: (data) => {
+    console.log('onLoading', data)
+  }
+})
+
+await yuno.mountSeamlessCheckout()
+```
+
+**Parameters:**
+
+* `checkoutSession`: The current payment session.
+* `elementSelector`: The HTML element where the SDK will be mounted.
+* `countryCode`: Country code (CO, BR, CL, PE, EC, UR, MX).
+* `language`: Language for the payment forms (`es`, `en`, `pt`).
+* `yunoPaymentResult`: Callback for payment status updates.
+* `yunoError`: Callback for error handling.
+* `onLoading`: Callback for loading events.
+
 ## Step 1: Include the library in your project
 
 Before proceeding with the Seamless Web SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
@@ -63,9 +116,45 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 
 ## Step 3: Start the checkout process
 
-Use the `yuno.startCheckout()` method to configure and begin the checkout process. The following example demonstrates how to set up a configuration object and start the checkout process:
+To start the checkout, use the appropriate function for your integration:
 
-```javascript javascript
+<HTMLBlock>{`
+<style>
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+  }
+  input[type="radio"] { display: none; }
+  label {
+    text-decoration: none;
+    color: #333;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    margin-right: 10px;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+  }
+  label:hover, label:focus { color: #000; }
+  .tab-content { display: none; }
+  #lite:checked~.tab-content#lite,
+  #full:checked~.tab-content#full { display: block; }
+  #lite:checked~.tabs label[for="lite"],
+  #full:checked~.tabs label[for="full"] {
+    color: #000;
+    border-bottom: 2px solid #513CE1;
+  }
+</style>
+<body>
+  <input type="radio" id="lite" name="tabs" checked>
+  <input type="radio" id="full" name="tabs">
+  <div class="tabs">
+    <label for="lite">Seamless Lite</label>
+    <label for="full">Seamless Full</label>
+  </div>
+  <div class="tab-content" id="lite">
+    <pre><code class="language-javascript">// Seamless Lite example
 yuno.startCheckout({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638', // Current payment session
   elementSelector: '#root', // HTML element for rendering
@@ -105,199 +194,77 @@ yuno.startCheckout({
     yuno.hideLoader();
   },
 });
+</code></pre>
+  </div>
+  <div class="tab-content" id="full">
+    <pre><code class="language-javascript">// Seamless Full example
+await yuno.startSeamlessCheckout({
+  checkoutSession,
+  // element where the SDK will be mounted
+  elementSelector: '#root',
+  /**
+    * country can be one of CO, BR, CL, PE, EC, UR, MX
+    */
+  countryCode,
+  /**
+    * language can be one of es, en, pt
+    */
+  language: initialSetup.language,
+  /**
+    * 
+    * @param {'READY_TO_PAY' | 'CREATED' | 'PAYED' | 'REJECTED' | 'CANCELLED' | 'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'} data
+    */
+  yunoPaymentResult(data) {
+    console.log('yunoPaymentResult', data)
+  },
+  /**
+    * @param { error: 'CANCELED_BY_USER' | any }
+    */
+  yunoError: (error) => {
+    console.log('There was an error', error)
+  },
+  onLoading: (data) => {
+    console.log('onLoading', data)
+  }
+})
+
+await yuno.mountSeamlessCheckout();
+</code></pre>
+  </div>
+</body>
+`}</HTMLBlock>
+
+**Parameters:**
+
+* `checkoutSession`: The current payment session.
+* `elementSelector`: The HTML element where the SDK will be mounted.
+* `countryCode`: Country code (CO, BR, CL, PE, EC, UR, MX).
+* `language`: Language for the payment forms (`es`, `en`, `pt`).
+* `yunoPaymentResult`: Callback for payment status updates.
+* `yunoError`: Callback for error handling.
+* `onLoading`: Callback for loading events.
+
+## Step 4: Mount the SDK
+
+To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckoutLite()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
+
+```javascript
+yuno.mountSeamlessCheckoutLite({
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  /**
+   * Vaulted token related to payment method type.
+   * @optional 
+   */
+  vaultedToken: VAULTED_TOKEN,
+})
 
 ```
 
-Notice that when using the `startCheckout`you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
+Access the [Payment type](ref:payment-type-list) page to see the complete list of payment method types you can use when mounting the SDK.
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
+The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
 
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `checkoutSession`
-      </td>
-
-      <td>
-        Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session).
-        Example: `438413b7-4921-41e4-b8f3-28a5a0141638`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `elementSelector`
-      </td>
-
-      <td>
-        The HTML element where the checkout will be rendered.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `country_code`
-      </td>
-
-      <td>
-        This parameter specifies the country for which the payment process is being set up.
-        Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `language`
-      </td>
-
-      <td>
-        Defines the language to be used in the payment forms. Supported options include:
-
-        * `es` (Spanish)
-        * `en` (English)
-        * `pt` (Portuguese)
-        * `fil` (Filipino)
-        * `id` (Indonesian)
-        * `ms` (Malay)
-        * `th` (Thai). By default, the SDK will use the browser language.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `showLoading`
-      </td>
-
-      <td>
-        Controls the visibility of the Yuno loading/spinner page during the payment process. Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `onLoading`
-      </td>
-
-      <td>
-        Required to receive notifications about server calls or loading events during the payment process.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `issuersFormEnable`
-      </td>
-
-      <td>
-        Enables the issuer's form (e.g., a list of banks). Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `showPaymentStatus`
-      </td>
-
-      <td>
-        It shows the Yuno Payment Status page, which is useful when continuing a payment. Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `showPayButton`
-      </td>
-
-      <td>
-        Controls the visibility of the pay button in the customer or card form. Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `renderMode`
-      </td>
-
-      <td>
-        Specify how and where the forms will be rendered. The options available are:
-
-        * `type: modal'` (default)\
-          -`type: element`. If you select `element`you must inform the `elementSelector`, to specify where the form should be rendered.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Defines the configuration for the card form. It contains settings like render mode, custom styles, and save card option.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `texts`
-      </td>
-
-      <td>
-        Allows you to set custom button texts for card and non-card payment forms.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoCreatePayment`
-      </td>
-
-      <td>
-        Placeholder function for creating a payment. This function will not be called but should be implemented.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoPaymentMethodSelected`
-      </td>
-
-      <td>
-        Callback invoked when a payment method is selected, along with the method's type and name.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoPaymentResult`
-      </td>
-
-      <td>
-        Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`).
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoError`
-      </td>
-
-      <td>
-        Callback invoked when there is an error in the payment process. Receives error type and optional additional data.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+After mounting, the checkout flow for the selected payment method will automatically begin.
 
 <HTMLBlock>{`
 <body>
@@ -355,6 +322,24 @@ Access the [Payment type](ref:payment-type-list) page to see the complete list o
 The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
 
 After mounting, the checkout flow for the selected payment method will automatically begin.
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js">JavaScript</a> checkout demos available on GitHub.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
+
+<br />
 
 <HTMLBlock>{`
 <body>
