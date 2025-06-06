@@ -47,6 +47,10 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
 </body>
 `}</HTMLBlock>
 
+<Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+
+<br />
+
 ## Step 1: Include the library in your project
 
 The integration guide provides [three flexible methods](https://docs.y.uno/docs/full-checkout-sdk#/choose-your-integration-method):
