@@ -10,15 +10,14 @@ metadata:
 next:
   description: ''
 ---
-🚀 **New in Seamless SDK v1.2+: Seamless Full Flow**
+## Seamless SDK v1.2 updates
 
-> **What's new?**\
-> The new Seamless Full SDK flow works just like Seamless Lite, but with two key differences:
->
-> * The Full version automatically lists all available payment methods for you.
-> * Payment buttons (such as PayPal) are displayed in a separate list from other payment methods.
+The new Seamless Full SDK flow works just like Seamless Lite, but with two key differences:
 
-**When should I use this?**
+* The Full version automatically lists all available payment methods for you.
+* Payment buttons (such as PayPal) are displayed in a separate list from other payment methods.
+
+### When should I use this?
 
 * If you want Yuno to handle the payment method listing and separation of payment buttons, use the new Seamless Full flow.
 * If you want more control over the payment method display, continue using the Seamless Lite flow.
@@ -113,7 +112,7 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
   <input type="radio" id="v12" name="tabs" checked>
   <input type="radio" id="legacy" name="tabs">
   <div class="tabs">
-    <label for="v12">v1.2+ (Seamless Full)</label>
+    <label for="v12">v1.2 (Seamless Full)</label>
     <label for="legacy">Seamless Lite/Legacy</label>
   </div>
   <div class="tab-content" id="v12">
@@ -428,24 +427,6 @@ Access the [Payment type](ref:payment-type-list) page to see the complete list o
 The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
 
 After mounting, the checkout flow for the selected payment method will automatically begin.
-
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js">JavaScript</a> checkout demos available on GitHub.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
-<br />
 
 <HTMLBlock>{`
 <body>
