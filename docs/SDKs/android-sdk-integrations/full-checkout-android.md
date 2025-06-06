@@ -318,7 +318,7 @@ The response from the Create payment endpoint will include the parameter `sdk_ac
       <h3>Continue Payment Method Integration</h3>
       <div class="contentContainer">
         <p>
-          Yuno <strong>requires</strong> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional customer action to complete. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display additional screens to customers, where they can carry out the necessary actions to complete the payment without you needing to handle every scenario. <a href="#step-9-continue-payment">Learn more about continue payment</a>
+          Yuno <strong>requires</strong> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional customer action to complete. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display additional screens to customers, where they can carry out the necessary actions to complete the payment without you needing to handle every scenario.
         </p>
       </div>
     </div>
@@ -345,7 +345,7 @@ To show your payment status screens, you should send `FALSE` in the `showPayment
 
 The Yuno SDK render mode provides advanced UI flexibility, allowing developers to integrate payment flows with complete control over the user interface while maintaining full SDK functionality. This mode returns fragments that can be used with both Jetpack Compose and traditional XML views.
 
-### Main Function: `startPaymentRender`
+### Main function: `startPaymentRender`
 
 The `startPaymentRender` function initializes the payment flow in render mode, giving you granular control over UI presentation.
 
@@ -369,7 +369,7 @@ fun Activity.startPaymentRender(
 | `paymentSelected` | `PaymentSelected`           | Yes      | Selected payment method                       |
 | `listener`        | `YunoPaymentRenderListener` | Yes      | Listener implementation to receive events     |
 
-### Implementation Example
+### Implementation example
 
 ```kotlin
 class PaymentActivity : Activity() {
@@ -388,7 +388,7 @@ class PaymentActivity : Activity() {
 }
 ```
 
-### YunoPaymentRenderListener Interface
+### `YunoPaymentRenderListener` interface
 
 Implement this interface to receive all events and views from the SDK during the payment flow.
 
@@ -428,7 +428,7 @@ class PaymentRenderListener : YunoPaymentRenderListener {
 }
 ```
 
-### YunoPaymentFragmentController Interface
+### `YunoPaymentFragmentController` interface
 
 Control the payment flow using the returned controller instance.
 
@@ -445,20 +445,20 @@ fragmentController.submitForm()
 fragmentController.continuePayment()
 ```
 
-### Integration Benefits
+### Integration benefits
 
-#### UI Flexibility
+#### UI flexibility
 
-* **Compose and XML Compatible**: Works with both Jetpack Compose and traditional XML views
-* **Complete Control**: You decide where and how to display each view
-* **Custom Integration**: Easy integration with existing app design
+* **Compose and XML compatible**: Works with both Jetpack Compose and traditional XML views
+* **Complete control**: You decide where and how to display each view
+* **Custom integration**: Easy integration with existing app design
 
-#### Flow Control
+#### Flow control
 
-* **Custom Submit Logic**: Control when to submit forms
-* **Backend Integration**: Process OTT on your backend before continuing
+* **Custom submit logic**: Control when to submit forms
+* **Backend integration**: Process OTT on your backend before continuing
 
-### Complete Integration Example
+### Complete integration example
 
 ```kotlin
 class PaymentActivity : ComponentActivity() {
