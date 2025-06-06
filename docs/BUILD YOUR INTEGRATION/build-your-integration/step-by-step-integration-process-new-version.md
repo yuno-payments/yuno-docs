@@ -24,18 +24,32 @@ To start, integrate the core payment workflow that enables you to create payment
     Neque porro quisquam est qui dolorem ipsum quia
   </Card>
 
-  <Card title="Second Card" icon="fa-user">
+  <Card title="Lite SDK (Payment)" icon="fa-user">
     *Lorem ipsum dolor sit amet, consectetur adipiscing elit*
   </Card>
 
-  <Card title="Third Card" icon="fa-star">
+  <Card title="Lite SDK (Enrollment)" icon="fa-star">
     > Ut enim ad minim veniam, quis nostrud ullamco
   </Card>
 
-  <Card title="Fourth Card" icon="fa-question">
+  <Card title="Secure Fields" icon="fa-question">
+    **Excepteur sint occaecat cupidatat non proident**
+  </Card>
+
+  <Card title="Headless SDK (Payment)" icon="fa-question">
+    **Excepteur sint occaecat cupidatat non proident**
+  </Card>
+
+  <Card title="Headless SDK (Enrollment)" icon="fa-question">
+    **Excepteur sint occaecat cupidatat non proident**
+  </Card>
+
+  <Card title="Direct Workflow" icon="fa-question">
     **Excepteur sint occaecat cupidatat non proident**
   </Card>
 </Cards>
+
+> <br />
 
 <br />
 
