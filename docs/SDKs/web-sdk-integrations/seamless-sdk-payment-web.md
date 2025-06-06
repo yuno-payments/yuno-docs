@@ -36,10 +36,10 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
       <h3>Should I use Lite or Full Seamless SDK?</h3>
       <div class="contentContainer">
         <p>
-          Use the Full version for automatic payment method listing and separate display of payment buttons (like PayPal).
+          Use the Full Seamless SDK for automatic payment method listing and separate display of payment buttons (like PayPal).
         </p>
         <p>
-          Use the Lite version for more control over how payment methods are displayed and organized.
+          The Lite Seamless SDK gives you more control over how payment methods are displayed and organized.
         </p>
       </div>
     </div>
