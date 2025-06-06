@@ -1,7 +1,7 @@
 ---
 title: Seamless SDK (Payment Web) (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
