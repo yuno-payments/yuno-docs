@@ -20,7 +20,7 @@ To start, integrate the core payment workflow that enables you to create payment
 5. Create the payment.
 
 <Cards columns={4}>
-  <Card title="First Card" href="https://readme.com" icon="fa-home" target="_blank">
+  <Card title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank">
     Neque porro quisquam est qui dolorem ipsum quia
   </Card>
 
