@@ -20,24 +20,24 @@ To start, integrate the core payment workflow that enables you to create payment
 5. Create the payment.
 
 <Cards columns={4}>
-  <Card title="Full SDK" icon="fa-home">
+  <Card title="Full SDK">
     * [Web](https://docs.y.uno/docs/full-checkout-sdk)
     * [Android](https://docs.y.uno/docs/full-checkout-android)
     * [iOS](https://docs.y.uno/docs/full-checkout-ios)
     * [Flutter](https://docs.y.uno/docs/full-sdk-flutter)
   </Card>
 
-  <Card title="Lite SDK (Payment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
+  <Card title="Lite SDK (Payment)" href="https://docs.y.uno/docs/full-checkout-sdk" />
 
-  <Card title="Lite SDK (Enrollment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
+  <Card title="Lite SDK (Enrollment)" href="https://docs.y.uno/docs/full-checkout-sdk" />
 
-  <Card title="Secure Fields" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
+  <Card title="Secure Fields" href="https://docs.y.uno/docs/full-checkout-sdk" />
 
-  <Card title="Headless SDK (Payment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
+  <Card title="Headless SDK (Payment)" href="https://docs.y.uno/docs/full-checkout-sdk" />
 
-  <Card title="Headless SDK (Enrollment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
+  <Card title="Headless SDK (Enrollment)" href="https://docs.y.uno/docs/full-checkout-sdk" />
 
-  <Card title="Direct Workflow" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
+  <Card title="Direct Workflow" href="https://docs.y.uno/docs/full-checkout-sdk" />
 </Cards>
 
 ## Step 2: Implement refunds (optional)
