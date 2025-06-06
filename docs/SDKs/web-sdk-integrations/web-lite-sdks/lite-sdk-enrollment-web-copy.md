@@ -1,7 +1,7 @@
 ---
 title: Lite SDK (Enrollment Web) (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Lite SDK (Enrollment)
   description: >-
