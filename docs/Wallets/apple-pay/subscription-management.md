@@ -1,7 +1,7 @@
 ---
 title: Subscription management
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
