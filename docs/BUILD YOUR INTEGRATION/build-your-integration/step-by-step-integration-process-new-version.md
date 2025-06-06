@@ -20,7 +20,12 @@ To start, integrate the core payment workflow that enables you to create payment
 5. Create the payment.
 
 <Cards columns={4}>
-  <Card title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
+  <Card title="Full SDK" icon="fa-home">
+    <a href="https://docs.y.uno/docs/full-checkout-sdk" target="_blank">Web</a>
+    <a href="https://docs.y.uno/docs/full-checkout-android" target="_blank">Android</a>
+    <a href="https://docs.y.uno/docs/full-checkout-ios" target="_blank">iOS</a>
+    <a href="https://docs.y.uno/docs/full-sdk-flutter" target="_blank">Flutter</a>
+  </Card>
 
   <Card title="Lite SDK (Payment)" href="https://docs.y.uno/docs/full-checkout-sdk" icon="fa-home" target="_blank" />
 
