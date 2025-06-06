@@ -116,7 +116,12 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 
 ## Step 3: Start the checkout process
 
-To start the checkout, use the appropriate function for your integration:
+Choose the integration method based on your SDK version:
+
+* **v1.2 (Seamless Full):**\
+  Use this if you are integrating with SDK v1.2 or later. This version introduces the new `startSeamlessCheckout` flow, which automatically lists all payment methods and separates payment buttons (like PayPal) from other methods.
+* **Before v1.2 (Seamless Lite/Legacy):**\
+  Use this if you are on an earlier version of the SDK. The `startCheckout` method is used, and you have more control over which payment methods are displayed and how they are presented.
 
 <HTMLBlock>{`
 <style>
@@ -138,97 +143,81 @@ To start the checkout, use the appropriate function for your integration:
   }
   label:hover, label:focus { color: #000; }
   .tab-content { display: none; }
-  #lite:checked~.tab-content#lite,
-  #full:checked~.tab-content#full { display: block; }
-  #lite:checked~.tabs label[for="lite"],
-  #full:checked~.tabs label[for="full"] {
+  #v12:checked~.tab-content#v12,
+  #legacy:checked~.tab-content#legacy { display: block; }
+  #v12:checked~.tabs label[for="v12"],
+  #legacy:checked~.tabs label[for="legacy"] {
     color: #000;
     border-bottom: 2px solid #513CE1;
   }
 </style>
 <body>
-  <input type="radio" id="lite" name="tabs" checked>
-  <input type="radio" id="full" name="tabs">
+  <input type="radio" id="v12" name="tabs" checked>
+  <input type="radio" id="legacy" name="tabs">
   <div class="tabs">
-    <label for="lite">Seamless Lite</label>
-    <label for="full">Seamless Full</label>
+    <label for="v12">v1.2 (Seamless Full)</label>
+    <label for="legacy">Before v1.2 (Seamless Lite/Legacy)</label>
   </div>
-  <div class="tab-content" id="lite">
-    <pre><code class="language-javascript">// Seamless Lite example
-yuno.startCheckout({
-  checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638', // Current payment session
-  elementSelector: '#root', // HTML element for rendering
-  country_code: 'US', // Country code for the payment process
-  language: 'en', // Language for the payment forms
-  showLoading: true, // Show loading spinner
-  issuersFormEnable: true, // Enable issuer's form
-  showPaymentStatus: true, // Show payment status page
-  onLoading: (args) => console.log(args), // Callback for loading events
+  <div class="tab-content" id="v12">
+    <pre><code class="language-javascript">await yuno.startSeamlessCheckout({
+  checkoutSession,
+  elementSelector: "#root",
+  countryCode,
+  language: initialSetup.language,
+  yunoPaymentResult(data) {
+    console.log("yunoPaymentResult", data);
+  },
+  yunoError: (error) => {
+    console.log("There was an error", error);
+  },
+  onLoading: (data) => {
+    console.log("onLoading", data);
+  }
+});
+
+await yuno.mountSeamlessCheckout();
+</code></pre>
+  </div>
+  <div class="tab-content" id="legacy">
+    <pre><code class="language-javascript">yuno.startCheckout({
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  country_code: "US",
+  language: "en",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  onLoading: (args) => console.log(args),
   renderMode: {
-    type: 'modal', // Render as a modal
+    type: "modal",
     elementSelector: {
-      apmForm: '#form-element',
-      actionForm: '#action-form-element',
-    },
+      apmForm: "#form-element",
+      actionForm: "#action-form-element"
+    }
   },
   card: {
-    type: 'extends', // Card render mode
-    styles: '', // Custom card styles
-    cardSaveEnable: false, // Enable save card checkbox
-    texts: {}, // Custom texts for card forms
+    type: "extends",
+    styles: "",
+    cardSaveEnable: false,
+    texts: {}
   },
-  texts: {}, // Custom texts for payment forms
+  texts: {},
   async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
     await createPayment({ oneTimeToken, checkoutSession });
     yuno.continuePayment({ showPaymentStatus: true });
   },
   yunoPaymentMethodSelected(data) {
-    console.log('Payment method selected:', data);
+    console.log("Payment method selected:", data);
   },
   yunoPaymentResult(data) {
-    console.log('Payment result:', data);
+    console.log("Payment result:", data);
     yuno.hideLoader();
   },
   yunoError(error, data) {
-    console.error('An error occurred:', error);
+    console.error("An error occurred:", error);
     yuno.hideLoader();
-  },
-});
-</code></pre>
-  </div>
-  <div class="tab-content" id="full">
-    <pre><code class="language-javascript">// Seamless Full example
-await yuno.startSeamlessCheckout({
-  checkoutSession,
-  // element where the SDK will be mounted
-  elementSelector: '#root',
-  /**
-    * country can be one of CO, BR, CL, PE, EC, UR, MX
-    */
-  countryCode,
-  /**
-    * language can be one of es, en, pt
-    */
-  language: initialSetup.language,
-  /**
-    * 
-    * @param {'READY_TO_PAY' | 'CREATED' | 'PAYED' | 'REJECTED' | 'CANCELLED' | 'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'} data
-    */
-  yunoPaymentResult(data) {
-    console.log('yunoPaymentResult', data)
-  },
-  /**
-    * @param { error: 'CANCELED_BY_USER' | any }
-    */
-  yunoError: (error) => {
-    console.log('There was an error', error)
-  },
-  onLoading: (data) => {
-    console.log('onLoading', data)
   }
-})
-
-await yuno.mountSeamlessCheckout();
+});
 </code></pre>
   </div>
 </body>
@@ -240,106 +229,7 @@ await yuno.mountSeamlessCheckout();
 * `elementSelector`: The HTML element where the SDK will be mounted.
 * `countryCode`: Country code (CO, BR, CL, PE, EC, UR, MX).
 * `language`: Language for the payment forms (`es`, `en`, `pt`).
-* `yunoPaymentResult`: Callback for payment status updates.
-* `yunoError`: Callback for error handling.
-* `onLoading`: Callback for loading events.
-
-## Step 4: Mount the SDK
-
-To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckoutLite()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
-
-```javascript
-yuno.mountSeamlessCheckoutLite({
-  paymentMethodType: PAYMENT_METHOD_TYPE,
-  /**
-   * Vaulted token related to payment method type.
-   * @optional 
-   */
-  vaultedToken: VAULTED_TOKEN,
-})
-
-```
-
-Access the [Payment type](ref:payment-type-list) page to see the complete list of payment method types you can use when mounting the SDK.
-
-The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
-
-After mounting, the checkout flow for the selected payment method will automatically begin.
-
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Customer and merchant-initiated transactions</h3>
-      <div class="contentContainer">
-        <p>
-					Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in <a href="/docs/stored-credentials">Stored credentials</a>. 
-        </p>
-        <p>
-					The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
-        </p>     
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Rendering mode</h3>
-      <div class="contentContainer">
-        <p>
-          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
-## Step 4: Mount the SDK
-
-To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckoutLite()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
-
-```javascript
-yuno.mountSeamlessCheckoutLite({
-  paymentMethodType: PAYMENT_METHOD_TYPE,
-  /**
-   * Vaulted token related to payment method type.
-   * @optional 
-   */
-  vaultedToken: VAULTED_TOKEN,
-})
-
-```
-
-Access the [Payment type](ref:payment-type-list) page to see the complete list of payment method types you can use when mounting the SDK.
-
-The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
-
-After mounting, the checkout flow for the selected payment method will automatically begin.
-
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js">JavaScript</a> checkout demos available on GitHub.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
-<br />
+* \`
 
 <HTMLBlock>{`
 <body>
