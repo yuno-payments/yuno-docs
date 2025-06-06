@@ -68,52 +68,82 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 
 ## Step 3: Start the checkout process
 
-Use the `yuno.startCheckout()` method to configure and begin the checkout process. The following example demonstrates how to set up a configuration object and start the checkout process:
+Choose the integration method based on your SDK version:
 
-```javascript javascript
-yuno.startCheckout({
-  checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638', // Current payment session
-  elementSelector: '#root', // HTML element for rendering
-  country_code: 'US', // Country code for the payment process
-  language: 'en', // Language for the payment forms
-  showLoading: true, // Show loading spinner
-  issuersFormEnable: true, // Enable issuer's form
-  showPaymentStatus: true, // Show payment status page
-  onLoading: (args) => console.log(args), // Callback for loading events
-  renderMode: {
-    type: 'modal', // Render as a modal
-    elementSelector: {
-      apmForm: '#form-element',
-      actionForm: '#action-form-element',
-    },
-  },
-  card: {
-    type: 'extends', // Card render mode
-    styles: '', // Custom card styles
-    cardSaveEnable: false, // Enable save card checkbox
-    texts: {}, // Custom texts for card forms
-  },
-  texts: {}, // Custom texts for payment forms
-  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
-    await createPayment({ oneTimeToken, checkoutSession });
-    yuno.continuePayment({ showPaymentStatus: true });
-  },
-  yunoPaymentMethodSelected(data) {
-    console.log('Payment method selected:', data);
-  },
-  yunoPaymentResult(data) {
-    console.log('Payment result:', data);
-    yuno.hideLoader();
-  },
-  yunoError(error, data) {
-    console.error('An error occurred:', error);
-    yuno.hideLoader();
-  },
-});
+* **v1.2 (Seamless Full):**\
+  Use this if you are integrating with SDK v1.2 or later. This version introduces the new `startSeamlessCheckout` flow, which automatically lists all payment methods and separates payment buttons (like PayPal) from other methods.
+* **Before v1.2 (Seamless Lite/Legacy):**\
+  Use this if you are on an earlier version of the SDK. The `startCheckout` method is used, and you have more control over which payment methods are displayed and how they are presented.
 
-```
+<Tabs>
+  <Tab label="v1.2 (Seamless Full)">
+    ```javascript
+    await yuno.startSeamlessCheckout({
+      checkoutSession,
+      elementSelector: "#root",
+      countryCode,
+      language: initialSetup.language,
+      yunoPaymentResult(data) {
+        console.log("yunoPaymentResult", data);
+      },
+      yunoError: (error) => {
+        console.log("There was an error", error);
+      },
+      onLoading: (data) => {
+        console.log("onLoading", data);
+      }
+    });
 
-Notice that when using the `startCheckout`you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
+    await yuno.mountSeamlessCheckout();
+    ```
+  </Tab>
+
+  <Tab label="Before v1.2 (Seamless Lite/Legacy)">
+    ```javascript
+    yuno.startCheckout({
+      checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+      elementSelector: "#root",
+      country_code: "US",
+      language: "en",
+      showLoading: true,
+      issuersFormEnable: true,
+      showPaymentStatus: true,
+      onLoading: (args) => console.log(args),
+      renderMode: {
+        type: "modal",
+        elementSelector: {
+          apmForm: "#form-element",
+          actionForm: "#action-form-element"
+        }
+      },
+      card: {
+        type: "extends",
+        styles: "",
+        cardSaveEnable: false,
+        texts: {}
+      },
+      texts: {},
+      async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+        await createPayment({ oneTimeToken, checkoutSession });
+        yuno.continuePayment({ showPaymentStatus: true });
+      },
+      yunoPaymentMethodSelected(data) {
+        console.log("Payment method selected:", data);
+      },
+      yunoPaymentResult(data) {
+        console.log("Payment result:", data);
+        yuno.hideLoader();
+      },
+      yunoError(error, data) {
+        console.error("An error occurred:", error);
+        yuno.hideLoader();
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+Notice that when using the `startCheckout` you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
 
 <Table align={["left","left"]}>
   <thead>
@@ -360,6 +390,24 @@ Access the [Payment type](ref:payment-type-list) page to see the complete list o
 The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
 
 After mounting, the checkout flow for the selected payment method will automatically begin.
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Demo App</h3>
+      <div class="contentContainer">
+        <p>
+          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js">JavaScript</a> checkout demos available on GitHub.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
+
+<br />
 
 <HTMLBlock>{`
 <body>
