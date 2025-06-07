@@ -1,1 +1,1065 @@
-{"openapi":"3.0.0","info":{"title":"AI Caller","description":"API for initiating large-scale processing of calls and WhatsApp messages related to declined payments and abandoned user flows.","version":"1.0.0"},"servers":[{"url":"https://prod.y.uno/ai-caller-ms","description":"Production server"}],"security":[{"public_api_key":[],"private_secret_key":[]}],"tags":[{"name":"AI Caller","description":"Operations related to user accounts"}],"paths":{"/declined-payments/external":{"post":{"summary":"Declined Payment Calls","tags":["AI Caller"],"description":"This endpoint allows you to initiate large-scale processing of calls and WhatsApp messages related to declined payments. To use the endpoint, you have to provide an array with information about the rejected payments.\n","operationId":"declined-payment-calls","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/DeclinedPaymentRequest"},"examples":{"paymentCallsExample":{"summary":"Declined Payment Calls","value":{"settings":{"contact_details":{"channel":"WHATSAPP_MESSAGE","welcome_message":"Good afternoon","payment_methods":{"available":["CREDIT_CARD"]}},"seller_details":{"name":"My Store","fallback_instructions":"For assistance, please call our US support at 1-800-555-1234 or visit our help center at help.mystore.com."}},"payments":[{"account_id":"2404911d-5df9-429e-8488-ad41abea1a4b","id":"9104911d-5df9-429e-8488-ad41abea1a4b","merchant_order_id":"ORDER-12345","country":"US","description":"Marketplace payment","created_at":"2024-03-15T14:30:00Z","declined_reason":"Insufficient funds","declined_details":{"bank_reject_code":"51","risk_score":0.2},"payment_method":{"type":"CREDIT","details":{"Card":{"expiration_year":2028,"expiration_month":12,"iin":"450799","lfd":"1234","issuer":"SCOTIABANK","type":"CREDIT"}}},"customer_payer":{"first_name":"John","last_name":"Doe"},"phone":{"country_code":"1","number":"3105550123"}}]}}}}}},"responses":{"200":{"description":"Successfully initiated processing of declined payments."},"400":{"description":"Invalid request payload."},"500":{"description":"Internal server error."}}}},"/recovery-payment/external":{"post":{"summary":"Initiate Recovery Outreach for Abandoned User Flows","operationId":"initiate-recovery-outreach-for-abandoned-user-flows","description":"This endpint allows merchants to notify Yuno's Recovery Agent when a user abandons their purchase flow, such as during product selection or after initiating checkout, before completing a payment. The submitted data enables Yuno to follow up with the user via call or WhatsApp to encourage completion of the transaction.\n\n## Security and compliance\n\n- **Authentication**: API access requires a valid API key provided in the request headers.\n\n- **Data Protection**: All data must be transmitted over HTTPS. Yuno adheres to relevant data protection regulations, including **GDPR** and **LGPD**.\n\n- **Data Usage**: Submitted data will be used solely for the purpose of customer engagement and will not be stored beyond the necessary duration.\n\n> ## 📘 Use Case Example\n> A user named Jane Doe adds a pair of wireless headphones to her cart on a merchant's website but abandons the checkout process. The merchant's system detects this and sends the relevant payload to Yuno’s Recovery Agent API. Yuno then initiates a WhatsApp message to Jane, reminding her of the items left in her cart and offering assistance to complete the purchase.\n","tags":["AI Caller"],"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RecoveryOutreachRequest"},"examples":{"recoveryOutreachExample":{"summary":"Example Recovery Outreach Request (USA)","value":{"customer":{"full_name":"Robert Johnson","phone_number":"+12125550102","email":"robert.johnson@example.com","country_code":"US","language":"en"},"session":{"abandonment_timestamp":"2025-05-13T22:45:00Z","flow_stage":"cart_review","platform":"ios","session_id":"sess_def456uvw"},"cart":{"total_value":29.99,"currency":"USD","items":[{"name":"Bluetooth Speaker","sku":"BSPEAKER-PRO","quantity":1,"price":29.99}]},"engagement":{"preferred_channel":"whatsapp","reason":"user_abandoned_cart","metadata":{"utm_campaign":"summer_promo","last_clicked_button":"Continue Shopping"}}}}}}}},"responses":{"200":{"description":"Successfully initiated recovery outreach."},"400":{"description":"Invalid request payload or validation error."},"401":{"description":"Unauthorized - missing or invalid API key."},"500":{"description":"Internal server error."}}}}},"components":{"securitySchemes":{"public_api_key":{"type":"apiKey","in":"header","name":"public-api-key","description":"Example: `<Your public-api-key>`\n"},"private_secret_key":{"type":"apiKey","in":"header","name":"private-secret-key","description":"Example: `<Your private-secret-key>`      \n"}},"schemas":{"DeclinedPaymentRequest":{"type":"object","required":["settings","payments"],"properties":{"settings":{"$ref":"#/components/schemas/SettingsObject"},"payments":{"type":"array","description":"List of individual declined-payment records to process.","items":{"$ref":"#/components/schemas/PaymentsObject"}}}},"PaymentsObject":{"type":"object","required":["account_id","id","merchant_order_id","country","description","created_at","declined_reason"],"properties":{"account_id":{"type":"string","format":"uuid","description":"The unique identifier of the account (UUID, MAX 64; MIN 36).","example":"2404911d-5df9-429e-8488-ad41abea1a4b"},"id":{"type":"string","format":"uuid","description":"The unique identifier of the payment (UUID, MAX 64 ; MIN 3).","example":"9104911d-5df9-429e-8488-ad41abea1a4b"},"merchant_order_id":{"type":"string","minLength":3,"maxLength":255,"description":"Identification of the Order (MAX 255; MIN 3)."},"country":{"type":"string","pattern":"^[A-Z]{2}$","description":"Code of the country where the payment was processed ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes)).","example":"US"},"description":{"type":"string","minLength":3,"maxLength":1000,"description":"The description of product or service the user tried to purchase (MAX 1000; MIN 3).","example":"Marketplace payment"},"created_at":{"type":"string","format":"date-time","description":"Date and time of the payment record creation in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (MAX 27; MIN 27).","example":"2024-03-15T14:30:00Z"},"declined_reason":{"type":"string","description":"The declined reason for the payment provided by the payment provider.","example":"Insufficient funds."},"declined_details":{"type":"object","description":"Additional relevant information about the declined payment.","additionalProperties":true},"payment_method":{"description":"Object with the payment method details.","type":"object","required":["type"],"properties":{"type":{"type":"string","description":"The type of payment method selected by the customer (MAX 255; MIN 3). Possible values: Credit Card, Debit Card, or Prepaid Card.","example":"Debit Card"},"details":{"type":"object","description":"Received in the payment response","properties":{"Card":{"type":"object","properties":{"expiration_year":{"type":"integer","description":"Year of card expiration - YYYY (MAX 4; MIN 4). It is only available for PCI certified merchants.","example":2030},"expiration_month":{"type":"integer","description":"Month of card expiration - MM (MAX 2; MIN 2). It is only available for PCI certified merchants.","example":12},"iin":{"type":"string","description":"The Institution identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution (MAX 8; MIN 6).","example":"45079900"},"lfd":{"type":"string","description":"Last four digits of the card (MAX 4; MIN 4).","example":"2671"},"issuer":{"type":"string","description":"Name of the card issuer (MAX 255; MIN 3).","example":"SCOTIABANK"},"type":{"type":"string","description":"Card's issuer type. (MAX 255; MIN 3).","enum":["CREDIT","DEBIT","PREPAID"],"example":"CREDIT"}}}}},"amount":{"type":"object","required":["value","currency"],"properties":{"value":{"type":"number","format":"float","description":"The amount of the payment that was declined.","example":121},"currency":{"type":"string","description":"The currency of the payment that was declined ([ISO 4217](https://docs.y.uno/reference/country-reference), MAX 3; MIN 3).","example":"USA"}}},"customer_payer":{"type":"object","required":["first_name"],"properties":{"first_name":{"type":"string","description":"The customer's first name (MAX 255; MIN 3).","example":"John"},"last_name":{"type":"string","description":"The customer's last name (MAX 255; MIN 3).","example":"Doe"}}},"phone":{"type":"object","required":["country_code","number"],"properties":{"country_code":{"type":"string","description":"Customer Payer cell phone area code (MAX 3; MIN 2).","example":"57"},"number":{"type":"string","description":"Customer payer cell phone number (MAX 32; MIN 1).","example":"3132450765"}}}}}}},"SettingsObject":{"type":"object","properties":{"contact_details":{"$ref":"#/components/schemas/ContactDetailsObject"},"seller_details":{"$ref":"#/components/schemas/SellerDetailsObject"}}},"SellerDetailsObject":{"description":"Object containing the merchant’s contact information to be used if the agent is unable to answer the inquiry.","type":"object","required":["name","fallback_instructions"],"properties":{"name":{"type":"string","description":"The merchant's name, used by the AI to introduce itself (MAX 255, MIN 1).","example":"My Store"},"fallback_instructions":{"type":"string","description":"Instruction to be provided to the user on how to contact customer support in case the AI can not solve the issue.","example":"For assitance, please call our US support at 1-800-555-1234, or visit our help center at help.mystore.com."},"redirection_url":{"type":"string","description":"The URL sent to the user to complete the payment in the merchant's website or application.","example":"https://www.mystore.com"}}},"ContactDetailsObject":{"description":"Object with the contact details.","type":"object","required":["channel"],"properties":{"channel":{"type":"string","description":"The list of possible contact channels: `PHONE_CALL`, `WHATSAPP_MESSAGE`.","enum":["PHONE_CALL","WHATSAPP_MESSAGE"],"example":"WHATSAPP_MESSAGE"},"welcome_message":{"type":"string","description":"How to greet the customer. Helps define how to greet the user. EX: Good morning or Good afternoon or Good evening.","example":"Good morning"},"payment_methods":{"description":"Object with the available payment methods to offer the customer.","type":"object","required":["available"],"properties":{"available":{"type":"array","description":"The list of available payment methods to be offered to the user as alternatives to complete the payment.","minItems":1,"items":{"type":"string"}}}}}},"ExternalDataObject":{"type":"object","required":["payment","transactions","customer_payer","custom_agent_config"],"properties":{"payment":{"$ref":"#/components/schemas/Payment"},"transactions":{"type":"array","description":"An array of objects representing the transactions associated with the declined payment.","items":{"$ref":"#/components/schemas/Transaction"}},"customer_payer":{"$ref":"#/components/schemas/CustomerPayer"},"custom_agent_config":{"type":"object","properties":{"channel":{"type":"string","description":"The list of possible contact channels. PHONE_CALL, WHATSAPP_MESSAGE.","enum":["PHONE_CALL","WHATSAPP_MESSAGE"],"example":"WHATSAPP_MESSAGE"},"welcome_setting":{"type":"string","description":"How to greet the customer. Helps define how to greet the user. EX: Good morning or Good afternoon or Good evening.","example":"Good morning"},"available_payment_methods":{"type":"array","items":{"type":"string"},"description":"The list of available payment methods to be offered to the user as alternatives to complete the payment.","example":["CREDIT_CARD","PAYPAL"]},"merchant_name":{"type":"string","description":"The merchant's name, used by the AI to introduce itself (MAX 255, MIN 3).","example":"My Store"},"seller_contact_info":{"type":"object","properties":{"website":{"type":"string","description":"The seller's website URL (MAX 255; MIN 3).","example":"https://www.mystore.com"},"fallback_instructions":{"type":"string","description":"Instruction to be provided to the user on how to contact customer support in case the AI can not solve the issue.","example":"For assitance, please call our US support at 1-800-555-1234, or visit our help center at help.mystore.com."},"phone":{"type":"object","properties":{"country_code":{"type":"string","description":"Customer service of the merchant, country code. It can be offered to the user to solve non payment inquiries. (MAX 3; MIN 2).","example":"1"},"number":{"type":"string","description":"Customer service of the merchant, country code. It can be offered to the user to solve non payment inquiries. (MAX 32; MIN 1).","example":"8005551234"}}}},"required":["fallback_instructions"]}},"required":["channel","available_payment_methods","merchant_name"]}}},"Payment":{"type":"object","required":["organization_code","id","order_id","country","status","description","amount_value","currency_code","reject_reason","account_id"],"properties":{"organization_code":{"type":"string","description":"Unique code that identifies the organization (duplicated from the root object for consistency).","example":"d5e9c1f0-a2b8-4c3d-9e7f-1a2b3c4d5e6f"},"id":{"type":"string","description":"Unique identifier of the declined payment.","example":"5104911d-5df9-229e-8468-bd41abea1a4s"},"code":{"type":"string","description":"Internal code or reference of the payment.","example":"f1fbad16-93c1-4335-b735-2b01ec94ea9e"},"order_id":{"type":"string","description":"Identifier of the order associated with the payment.","example":"432245"},"account_id":{"type":"string","description":"The unique identifier of the account (MAX 64; MIN 36).","example":"2404911d-5df9-429e-8488-ad41abea1a4b"},"country":{"type":"string","description":"Code of the country where the payment was made (ISO 3166-1 alpha-2).","example":"US"},"status":{"type":"string","description":"Current status of the payment.","example":"DECLINED"},"sub_status":{"type":"string","description":"Sub-status of the payment, provides more detailed information.","example":"CARD_DECLINED"},"description":{"type":"string","description":"Description of the payment.","example":"Monthly Subscription - Premium Plan"},"amount_value":{"type":"number","format":"float","description":"Amount value of the payment.","example":49.99},"currency_code":{"type":"string","description":"Currency code of the payment (ISO 4217).","example":"USD"},"reject_reason":{"type":"string","description":"Main reason why the payment was rejected.","example":"Insufficient funds"},"additional_data":{"type":"object","description":"JSON object for additional data related to the payment.","example":{"fraud_score":0.85,"ip_address":"192.168.1.1"}},"created_at":{"type":"string","format":"date-time","description":"Date and time of the transaction record creation in YYYY-MM-DD HH:MM:SS format.","example":"2024-03-15T14:30:00Z"}}},"Transaction":{"type":"object","required":["id","amount","status","payment_method_type","description"],"properties":{"id":{"type":"string","description":"Unique identifier of the transaction.","example":"9104911d-5df9-429e-8488-ad41abea1a4b"},"code":{"type":"string","description":"Internal code or reference of the transaction.","example":"2e9083ec-6f1d-43d1-8677-abc36b2063a6"},"type":{"type":"string","description":"Type of transaction (e.g., \"PURCHASE\", \"AUTHORIZATION\").","example":"PURCHASE"},"amount":{"type":"number","format":"float","description":"Transaction amount.","example":49.99},"status":{"type":"string","description":"Transaction status.","example":"DECLINED"},"provider":{"type":"string","description":"Transaction provider (e.g., \"STRIPE\", \"ADYEN\").","example":"Stripe"},"category":{"type":"string","description":"Transaction category (e.g., \"CARD\", \"PSE\").","example":"CARD"},"payment_method_type":{"type":"string","description":"Type of payment method used (e.g., \"CARD\", \"BANK_TRANSFER\").","example":"CARD"},"description":{"type":"string","description":"Transaction description.","example":"Premium Plan"},"reject_reason":{"type":"string","description":"Reason why the transaction was rejected.","example":"invalid cvv"},"additional_data":{"type":"object","description":"JSON object for additional data related to the transaction.","example":{"acquirer_reference":"123456","eci":"05"}},"created_at":{"type":"string","format":"date-time","description":"Date and time of the transaction record creation in YYYY-MM-DD HH:MM:SS format.","example":"2024-03-15T14:29:55Z"},"payment_method":{"description":"Object with the payment method details.","type":"object","properties":{"type":{"type":"string","description":"The type of payment method selected by the customer (MAX 255; MIN 3). Possible values: CREDIT, DEBIT or PREPAID.","example":"Credit Card"},"card_iin":{"type":"string","description":"The institution identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution (MAX 8; MIN 6).","example":"411111"},"card_lfd":{"type":"string","description":"Last four digits of the card (MAX 4; MIN 4).","example":"1111"},"card_type":{"type":"string","description":"Card's issuer type (MAX 255; MIN 3). Possible values: CREDIT, DEBIT or PREPAID.","example":"CREDIT"},"issuer_name":{"type":"string","description":"Name of the card issuer (MAX 255; MIN 3).","example":"JP Morgan Chase"},"card_expiration_year":{"type":"integer","description":"Card's expiration year - YYYY (MAX 4, MIN 4) - only available for PCI certified merchants.","example":2028},"card_expiration_month":{"type":"integer","description":"Card's expiration month - MM (MAX 2, MIN 1) - only available for PCI certified merchants.","example":12}},"required":["type"]}}},"Card":{"type":"object","properties":{"id":{"type":"integer","description":"Unique identifier of the card.","example":458342406},"card_iin":{"type":"string","description":"Issuer Identification Number of the card (first digits).","example":"63631818"},"card_lfd":{"type":"string","description":"Last digits of the card.","example":"2671"},"card_type":{"type":"string","description":"Type of card (e.g., \"CREDIT\", \"DEBIT\").","example":"CREDIT"},"issuer_name":{"type":"string","description":"Name of the card issuer.","example":"SCOTIABANK"},"transaction_id":{"type":"integer","description":"Identifier of the transaction associated with the card.","example":603948738},"card_expiration_year":{"type":"integer","description":"Year of card expiration.","example":2030},"card_expiration_month":{"type":"integer","description":"Month of card expiration.","example":12}}},"CustomerPayer":{"type":"object","required":["first_name","last_name","phone"],"properties":{"first_name":{"type":"string","description":"The customer's first name (MAX 255; MIN 3).","example":"Emily"},"last_name":{"type":"string","description":"The customer's last name (MAX 255; MIN 3).","example":"Jones"},"phone":{"type":"object","required":["country_code","number"],"properties":{"country_code":{"type":"string","description":"Customer Payer cell phone area code. (MAX 3; MIN 2).","example":"1"},"number":{"type":"string","description":"Customer Payer cell phone number. (MAX 32; MIN 1).","example":"3105550123"}}},"additional_data":{"type":"object","description":"JSON object for additional data related to the customer.","example":{"email":"lucy.robles@example.com","customer_id":"cust_123"}}}},"RecoveryOutreachRequest":{"type":"object","required":["customer","session"],"properties":{"customer":{"$ref":"#/components/schemas/Customer"},"session":{"$ref":"#/components/schemas/Session"},"cart":{"$ref":"#/components/schemas/Cart"},"engagement":{"$ref":"#/components/schemas/Engagement"}}},"Customer":{"type":"object","required":["full_name","phone_number","country_code"],"properties":{"full_name":{"type":"string","description":"Customer's full name.","example":"Jane Doe"},"phone_number":{"type":"string","description":"Customer's phone number in E.164 format.","example":"+573001234567"},"email":{"type":"string","format":"email","description":"Customer's email address.","example":"jane.doe@example.com"},"country_code":{"type":"string","description":"ISO 3166-1 alpha-2 country code (e.g., \"CO\").","example":"CO"},"language":{"type":"string","description":"Preferred language for communication (e.g., \"es\", \"en\").","example":"es"}}},"Session":{"type":"object","required":["abandonment_timestamp","flow_stage","platform"],"properties":{"abandonment_timestamp":{"type":"string","format":"date-time","description":"Timestamp when the user abandoned the flow.","example":"2025-05-13T22:45:00Z"},"flow_stage":{"type":"string","description":"Stage where the user dropped off.","enum":["product_selection","cart_review","checkout","payment"],"example":"checkout"},"platform":{"type":"string","description":"User's platform.","enum":["web","ios","android"],"example":"web"},"session_id":{"type":"string","description":"Unique identifier for the user's session.","example":"sess_abc123xyz"}}},"Cart":{"type":"object","properties":{"total_value":{"type":"number","format":"float","description":"Total value of the cart.","example":149.99},"currency":{"type":"string","description":"Currency code (e.g., \"COP\").","example":"COP"},"items":{"type":"array","description":"List of items in the cart.","items":{"$ref":"#/components/schemas/CartItem"}}}},"CartItem":{"type":"object","properties":{"name":{"type":"string","description":"Item name.","example":"Wireless Headphones"},"sku":{"type":"string","description":"Stock Keeping Unit identifier.","example":"WH-1000XM5"},"quantity":{"type":"integer","description":"Number of units.","example":1},"price":{"type":"number","format":"float","description":"Price per unit.","example":149.99}}},"Engagement":{"type":"object","properties":{"preferred_channel":{"type":"string","description":"Preferred communication channel.","enum":["call","whatsapp","auto"],"default":"auto","example":"auto"},"reason":{"type":"string","description":"Reason for abandonment, if known.","example":"user_abandoned_checkout"},"metadata":{"type":"object","description":"Additional contextual information (e.g., UTM parameters, last user actions).","example":{"utm_campaign":"spring_sale","last_clicked_button":"Proceed to Payment"}}}}}},"x-readme":{"explorer-enabled":true,"proxy-enabled":true}}
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AI Caller",
+    "description": "API for initiating large-scale processing of calls and WhatsApp messages related to declined payments and abandoned user flows.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://prod.y.uno/ai-caller-ms",
+      "description": "Production server"
+    }
+  ],
+  "security": [
+    {
+      "public_api_key": [],
+      "private_secret_key": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "AI Caller",
+      "description": "Operations related to user accounts"
+    }
+  ],
+  "paths": {
+    "/declined-payments/external": {
+      "post": {
+        "summary": "Declined Payment Calls",
+        "tags": [
+          "AI Caller"
+        ],
+        "description": "This endpoint allows you to initiate large-scale processing of calls and WhatsApp messages related to declined payments. To use the endpoint, you have to provide an array with information about the rejected payments.\n",
+        "operationId": "declined-payment-calls",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclinedPaymentRequest"
+              },
+              "examples": {
+                "paymentCallsExample": {
+                  "summary": "Declined Payment Calls",
+                  "value": {
+                    "settings": {
+                      "contact_details": {
+                        "channel": "WHATSAPP_MESSAGE",
+                        "welcome_message": "Good afternoon",
+                        "payment_methods": {
+                          "available": [
+                            "CREDIT_CARD"
+                          ]
+                        }
+                      },
+                      "seller_details": {
+                        "name": "My Store",
+                        "fallback_instructions": "For assistance, please call our US support at 1-800-555-1234 or visit our help center at help.mystore.com."
+                      }
+                    },
+                    "payments": [
+                      {
+                        "account_id": "2404911d-5df9-429e-8488-ad41abea1a4b",
+                        "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                        "merchant_order_id": "ORDER-12345",
+                        "country": "US",
+                        "description": "Marketplace payment",
+                        "created_at": "2024-03-15T14:30:00Z",
+                        "declined_reason": "Insufficient funds",
+                        "declined_details": {
+                          "bank_reject_code": "51",
+                          "risk_score": 0.2
+                        },
+                        "payment_method": {
+                          "type": "CREDIT",
+                          "details": {
+                            "Card": {
+                              "expiration_year": 2028,
+                              "expiration_month": 12,
+                              "iin": "450799",
+                              "lfd": "1234",
+                              "issuer": "SCOTIABANK",
+                              "type": "CREDIT"
+                            }
+                          }
+                        },
+                        "customer_payer": {
+                          "first_name": "John",
+                          "last_name": "Doe"
+                        },
+                        "phone": {
+                          "country_code": "1",
+                          "number": "3105550123"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully initiated processing of declined payments."
+          },
+          "400": {
+            "description": "Invalid request payload."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/recovery-payment/external": {
+      "post": {
+        "summary": "Initiate Recovery Outreach for Abandoned User Flows",
+        "operationId": "initiate-recovery-outreach-for-abandoned-user-flows",
+        "description": "This endpint allows merchants to notify Yuno's Recovery Agent when a user abandons their purchase flow, such as during product selection or after initiating checkout, before completing a payment. The submitted data enables Yuno to follow up with the user via call or WhatsApp to encourage completion of the transaction.\n\n## Security and compliance\n\n- **Authentication**: API access requires a valid API key provided in the request headers.\n\n- **Data Protection**: All data must be transmitted over HTTPS. Yuno adheres to relevant data protection regulations, including **GDPR** and **LGPD**.\n\n- **Data Usage**: Submitted data will be used solely for the purpose of customer engagement and will not be stored beyond the necessary duration.\n\n> ## 📘 Use Case Example\n> A user named Jane Doe adds a pair of wireless headphones to her cart on a merchant's website but abandons the checkout process. The merchant's system detects this and sends the relevant payload to Yuno’s Recovery Agent API. Yuno then initiates a WhatsApp message to Jane, reminding her of the items left in her cart and offering assistance to complete the purchase.\n",
+        "tags": [
+          "AI Caller"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryOutreachRequest"
+              },
+              "examples": {
+                "recoveryOutreachExample": {
+                  "summary": "Example Recovery Outreach Request (USA)",
+                  "value": {
+                    "customer": {
+                      "full_name": "Robert Johnson",
+                      "phone_number": "+12125550102",
+                      "email": "robert.johnson@example.com",
+                      "country_code": "US",
+                      "language": "en"
+                    },
+                    "session": {
+                      "abandonment_timestamp": "2025-05-13T22:45:00Z",
+                      "flow_stage": "cart_review",
+                      "platform": "ios",
+                      "session_id": "sess_def456uvw"
+                    },
+                    "cart": {
+                      "total_value": 29.99,
+                      "currency": "USD",
+                      "items": [
+                        {
+                          "name": "Bluetooth Speaker",
+                          "sku": "BSPEAKER-PRO",
+                          "quantity": 1,
+                          "price": 29.99
+                        }
+                      ]
+                    },
+                    "engagement": {
+                      "preferred_channel": "whatsapp",
+                      "reason": "user_abandoned_cart",
+                      "metadata": {
+                        "utm_campaign": "summer_promo",
+                        "last_clicked_button": "Continue Shopping"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully initiated recovery outreach."
+          },
+          "400": {
+            "description": "Invalid request payload or validation error."
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid API key."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "public_api_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "description": "Example: `<Your public-api-key>`\n"
+      },
+      "private_secret_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "description": "Example: `<Your private-secret-key>`      \n"
+      }
+    },
+    "schemas": {
+      "DeclinedPaymentRequest": {
+        "type": "object",
+        "required": [
+          "settings",
+          "payments"
+        ],
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/SettingsObject"
+          },
+          "payments": {
+            "type": "array",
+            "description": "List of individual declined-payment records to process.",
+            "items": {
+              "$ref": "#/components/schemas/PaymentsObject"
+            }
+          }
+        }
+      },
+      "PaymentsObject": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "id",
+          "merchant_order_id",
+          "country",
+          "description",
+          "created_at",
+          "declined_reason"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the account (UUID, MAX 64; MIN 36).",
+            "example": "2404911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the payment (UUID, MAX 64 ; MIN 3).",
+            "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          "merchant_order_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255,
+            "description": "Identification of the Order (MAX 255; MIN 3)."
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "Code of the country where the payment was processed ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes)).",
+            "example": "US"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000,
+            "description": "The description of product or service the user tried to purchase (MAX 1000; MIN 3).",
+            "example": "Marketplace payment"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time of the payment record creation in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format (MAX 27; MIN 27).",
+            "example": "2024-03-15T14:30:00Z"
+          },
+          "declined_reason": {
+            "type": "string",
+            "description": "The declined reason for the payment provided by the payment provider.",
+            "example": "Insufficient funds."
+          },
+          "declined_details": {
+            "type": "object",
+            "description": "Additional relevant information about the declined payment.",
+            "additionalProperties": true
+          },
+          "payment_method": {
+            "description": "Object with the payment method details.",
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "The type of payment method selected by the customer (MAX 255; MIN 3). Possible values: Credit Card, Debit Card, or Prepaid Card.",
+                "example": "Debit Card"
+              },
+              "details": {
+                "type": "object",
+                "description": "Received in the payment response",
+                "properties": {
+                  "Card": {
+                    "type": "object",
+                    "properties": {
+                      "expiration_year": {
+                        "type": "integer",
+                        "description": "Year of card expiration - YYYY (MAX 4; MIN 4). It is only available for PCI certified merchants.",
+                        "example": 2030
+                      },
+                      "expiration_month": {
+                        "type": "integer",
+                        "description": "Month of card expiration - MM (MAX 2; MIN 2). It is only available for PCI certified merchants.",
+                        "example": 12
+                      },
+                      "iin": {
+                        "type": "string",
+                        "description": "The Institution identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution (MAX 8; MIN 6).",
+                        "example": "45079900"
+                      },
+                      "lfd": {
+                        "type": "string",
+                        "description": "Last four digits of the card (MAX 4; MIN 4).",
+                        "example": "2671"
+                      },
+                      "issuer": {
+                        "type": "string",
+                        "description": "Name of the card issuer (MAX 255; MIN 3).",
+                        "example": "SCOTIABANK"
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Card's issuer type. (MAX 255; MIN 3).",
+                        "enum": [
+                          "CREDIT",
+                          "DEBIT",
+                          "PREPAID"
+                        ],
+                        "example": "CREDIT"
+                      }
+                    }
+                  }
+                }
+              },
+              "amount": {
+                "type": "object",
+                "required": [
+                  "value",
+                  "currency"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "The amount of the payment that was declined.",
+                    "example": 121
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "The currency of the payment that was declined ([ISO 4217](https://docs.y.uno/reference/country-reference), MAX 3; MIN 3).",
+                    "example": "USA"
+                  }
+                }
+              },
+              "customer_payer": {
+                "type": "object",
+                "required": [
+                  "first_name"
+                ],
+                "properties": {
+                  "first_name": {
+                    "type": "string",
+                    "description": "The customer's first name (MAX 255; MIN 3).",
+                    "example": "John"
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "description": "The customer's last name (MAX 255; MIN 3).",
+                    "example": "Doe"
+                  }
+                }
+              },
+              "phone": {
+                "type": "object",
+                "required": [
+                  "country_code",
+                  "number"
+                ],
+                "properties": {
+                  "country_code": {
+                    "type": "string",
+                    "description": "Customer Payer cell phone area code (MAX 3; MIN 2).",
+                    "example": "57"
+                  },
+                  "number": {
+                    "type": "string",
+                    "description": "Customer payer cell phone number (MAX 32; MIN 1).",
+                    "example": "3132450765"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SettingsObject": {
+        "type": "object",
+        "properties": {
+          "contact_details": {
+            "$ref": "#/components/schemas/ContactDetailsObject"
+          },
+          "seller_details": {
+            "$ref": "#/components/schemas/SellerDetailsObject"
+          }
+        }
+      },
+      "SellerDetailsObject": {
+        "description": "Object containing the merchant’s contact information to be used if the agent is unable to answer the inquiry.",
+        "type": "object",
+        "required": [
+          "name",
+          "fallback_instructions"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The merchant's name, used by the AI to introduce itself (MAX 255, MIN 1).",
+            "example": "My Store"
+          },
+          "fallback_instructions": {
+            "type": "string",
+            "description": "Instruction to be provided to the user on how to contact customer support in case the AI can not solve the issue.",
+            "example": "For assitance, please call our US support at 1-800-555-1234, or visit our help center at help.mystore.com."
+          },
+          "redirection_url": {
+            "type": "string",
+            "description": "The URL sent to the user to complete the payment in the merchant's website or application.",
+            "example": "https://www.mystore.com"
+          }
+        }
+      },
+      "ContactDetailsObject": {
+        "description": "Object with the contact details.",
+        "type": "object",
+        "required": [
+          "channel"
+        ],
+        "properties": {
+          "channel": {
+            "type": "string",
+            "description": "The list of possible contact channels: `PHONE_CALL`, `WHATSAPP_MESSAGE`.",
+            "enum": [
+              "PHONE_CALL",
+              "WHATSAPP_MESSAGE"
+            ],
+            "example": "WHATSAPP_MESSAGE"
+          },
+          "welcome_message": {
+            "type": "string",
+            "description": "How to greet the customer. Helps define how to greet the user. EX: Good morning or Good afternoon or Good evening.",
+            "example": "Good morning"
+          },
+          "payment_methods": {
+            "description": "Object with the available payment methods to offer the customer.",
+            "type": "object",
+            "required": [
+              "available"
+            ],
+            "properties": {
+              "available": {
+                "type": "array",
+                "description": "The list of available payment methods to be offered to the user as alternatives to complete the payment.",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ExternalDataObject": {
+        "type": "object",
+        "required": [
+          "payment",
+          "transactions",
+          "customer_payer",
+          "custom_agent_config"
+        ],
+        "properties": {
+          "payment": {
+            "$ref": "#/components/schemas/Payment"
+          },
+          "transactions": {
+            "type": "array",
+            "description": "An array of objects representing the transactions associated with the declined payment.",
+            "items": {
+              "$ref": "#/components/schemas/Transaction"
+            }
+          },
+          "customer_payer": {
+            "$ref": "#/components/schemas/CustomerPayer"
+          },
+          "custom_agent_config": {
+            "type": "object",
+            "properties": {
+              "channel": {
+                "type": "string",
+                "description": "The list of possible contact channels. PHONE_CALL, WHATSAPP_MESSAGE.",
+                "enum": [
+                  "PHONE_CALL",
+                  "WHATSAPP_MESSAGE"
+                ],
+                "example": "WHATSAPP_MESSAGE"
+              },
+              "welcome_setting": {
+                "type": "string",
+                "description": "How to greet the customer. Helps define how to greet the user. EX: Good morning or Good afternoon or Good evening.",
+                "example": "Good morning"
+              },
+              "available_payment_methods": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "The list of available payment methods to be offered to the user as alternatives to complete the payment.",
+                "example": [
+                  "CREDIT_CARD",
+                  "PAYPAL"
+                ]
+              },
+              "merchant_name": {
+                "type": "string",
+                "description": "The merchant's name, used by the AI to introduce itself (MAX 255, MIN 3).",
+                "example": "My Store"
+              },
+              "seller_contact_info": {
+                "type": "object",
+                "properties": {
+                  "website": {
+                    "type": "string",
+                    "description": "The seller's website URL (MAX 255; MIN 3).",
+                    "example": "https://www.mystore.com"
+                  },
+                  "fallback_instructions": {
+                    "type": "string",
+                    "description": "Instruction to be provided to the user on how to contact customer support in case the AI can not solve the issue.",
+                    "example": "For assitance, please call our US support at 1-800-555-1234, or visit our help center at help.mystore.com."
+                  },
+                  "phone": {
+                    "type": "object",
+                    "properties": {
+                      "country_code": {
+                        "type": "string",
+                        "description": "Customer service of the merchant, country code. It can be offered to the user to solve non payment inquiries. (MAX 3; MIN 2).",
+                        "example": "1"
+                      },
+                      "number": {
+                        "type": "string",
+                        "description": "Customer service of the merchant, country code. It can be offered to the user to solve non payment inquiries. (MAX 32; MIN 1).",
+                        "example": "8005551234"
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "fallback_instructions"
+                ]
+              }
+            },
+            "required": [
+              "channel",
+              "available_payment_methods",
+              "merchant_name"
+            ]
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "required": [
+          "organization_code",
+          "id",
+          "order_id",
+          "country",
+          "status",
+          "description",
+          "amount_value",
+          "currency_code",
+          "reject_reason",
+          "account_id"
+        ],
+        "properties": {
+          "organization_code": {
+            "type": "string",
+            "description": "Unique code that identifies the organization (duplicated from the root object for consistency).",
+            "example": "d5e9c1f0-a2b8-4c3d-9e7f-1a2b3c4d5e6f"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the declined payment.",
+            "example": "5104911d-5df9-229e-8468-bd41abea1a4s"
+          },
+          "code": {
+            "type": "string",
+            "description": "Internal code or reference of the payment.",
+            "example": "f1fbad16-93c1-4335-b735-2b01ec94ea9e"
+          },
+          "order_id": {
+            "type": "string",
+            "description": "Identifier of the order associated with the payment.",
+            "example": "432245"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "The unique identifier of the account (MAX 64; MIN 36).",
+            "example": "2404911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          "country": {
+            "type": "string",
+            "description": "Code of the country where the payment was made (ISO 3166-1 alpha-2).",
+            "example": "US"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the payment.",
+            "example": "DECLINED"
+          },
+          "sub_status": {
+            "type": "string",
+            "description": "Sub-status of the payment, provides more detailed information.",
+            "example": "CARD_DECLINED"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the payment.",
+            "example": "Monthly Subscription - Premium Plan"
+          },
+          "amount_value": {
+            "type": "number",
+            "format": "float",
+            "description": "Amount value of the payment.",
+            "example": 49.99
+          },
+          "currency_code": {
+            "type": "string",
+            "description": "Currency code of the payment (ISO 4217).",
+            "example": "USD"
+          },
+          "reject_reason": {
+            "type": "string",
+            "description": "Main reason why the payment was rejected.",
+            "example": "Insufficient funds"
+          },
+          "additional_data": {
+            "type": "object",
+            "description": "JSON object for additional data related to the payment.",
+            "example": {
+              "fraud_score": 0.85,
+              "ip_address": "192.168.1.1"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time of the transaction record creation in YYYY-MM-DD HH:MM:SS format.",
+            "example": "2024-03-15T14:30:00Z"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "required": [
+          "id",
+          "amount",
+          "status",
+          "payment_method_type",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the transaction.",
+            "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          "code": {
+            "type": "string",
+            "description": "Internal code or reference of the transaction.",
+            "example": "2e9083ec-6f1d-43d1-8677-abc36b2063a6"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of transaction (e.g., \"PURCHASE\", \"AUTHORIZATION\").",
+            "example": "PURCHASE"
+          },
+          "amount": {
+            "type": "number",
+            "format": "float",
+            "description": "Transaction amount.",
+            "example": 49.99
+          },
+          "status": {
+            "type": "string",
+            "description": "Transaction status.",
+            "example": "DECLINED"
+          },
+          "provider": {
+            "type": "string",
+            "description": "Transaction provider (e.g., \"STRIPE\", \"ADYEN\").",
+            "example": "Stripe"
+          },
+          "category": {
+            "type": "string",
+            "description": "Transaction category (e.g., \"CARD\", \"PSE\").",
+            "example": "CARD"
+          },
+          "payment_method_type": {
+            "type": "string",
+            "description": "Type of payment method used (e.g., \"CARD\", \"BANK_TRANSFER\").",
+            "example": "CARD"
+          },
+          "description": {
+            "type": "string",
+            "description": "Transaction description.",
+            "example": "Premium Plan"
+          },
+          "reject_reason": {
+            "type": "string",
+            "description": "Reason why the transaction was rejected.",
+            "example": "invalid cvv"
+          },
+          "additional_data": {
+            "type": "object",
+            "description": "JSON object for additional data related to the transaction.",
+            "example": {
+              "acquirer_reference": "123456",
+              "eci": "05"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time of the transaction record creation in YYYY-MM-DD HH:MM:SS format.",
+            "example": "2024-03-15T14:29:55Z"
+          },
+          "payment_method": {
+            "description": "Object with the payment method details.",
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "The type of payment method selected by the customer (MAX 255; MIN 3). Possible values: CREDIT, DEBIT or PREPAID.",
+                "example": "Credit Card"
+              },
+              "card_iin": {
+                "type": "string",
+                "description": "The institution identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution (MAX 8; MIN 6).",
+                "example": "411111"
+              },
+              "card_lfd": {
+                "type": "string",
+                "description": "Last four digits of the card (MAX 4; MIN 4).",
+                "example": "1111"
+              },
+              "card_type": {
+                "type": "string",
+                "description": "Card's issuer type (MAX 255; MIN 3). Possible values: CREDIT, DEBIT or PREPAID.",
+                "example": "CREDIT"
+              },
+              "issuer_name": {
+                "type": "string",
+                "description": "Name of the card issuer (MAX 255; MIN 3).",
+                "example": "JP Morgan Chase"
+              },
+              "card_expiration_year": {
+                "type": "integer",
+                "description": "Card's expiration year - YYYY (MAX 4, MIN 4) - only available for PCI certified merchants.",
+                "example": 2028
+              },
+              "card_expiration_month": {
+                "type": "integer",
+                "description": "Card's expiration month - MM (MAX 2, MIN 1) - only available for PCI certified merchants.",
+                "example": 12
+              }
+            },
+            "required": [
+              "type"
+            ]
+          }
+        }
+      },
+      "Card": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier of the card.",
+            "example": 458342406
+          },
+          "card_iin": {
+            "type": "string",
+            "description": "Issuer Identification Number of the card (first digits).",
+            "example": "63631818"
+          },
+          "card_lfd": {
+            "type": "string",
+            "description": "Last digits of the card.",
+            "example": "2671"
+          },
+          "card_type": {
+            "type": "string",
+            "description": "Type of card (e.g., \"CREDIT\", \"DEBIT\").",
+            "example": "CREDIT"
+          },
+          "issuer_name": {
+            "type": "string",
+            "description": "Name of the card issuer.",
+            "example": "SCOTIABANK"
+          },
+          "transaction_id": {
+            "type": "integer",
+            "description": "Identifier of the transaction associated with the card.",
+            "example": 603948738
+          },
+          "card_expiration_year": {
+            "type": "integer",
+            "description": "Year of card expiration.",
+            "example": 2030
+          },
+          "card_expiration_month": {
+            "type": "integer",
+            "description": "Month of card expiration.",
+            "example": 12
+          }
+        }
+      },
+      "CustomerPayer": {
+        "type": "object",
+        "required": [
+          "first_name",
+          "last_name",
+          "phone"
+        ],
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "description": "The customer's first name (MAX 255; MIN 3).",
+            "example": "Emily"
+          },
+          "last_name": {
+            "type": "string",
+            "description": "The customer's last name (MAX 255; MIN 3).",
+            "example": "Jones"
+          },
+          "phone": {
+            "type": "object",
+            "required": [
+              "country_code",
+              "number"
+            ],
+            "properties": {
+              "country_code": {
+                "type": "string",
+                "description": "Customer Payer cell phone area code. (MAX 3; MIN 2).",
+                "example": "1"
+              },
+              "number": {
+                "type": "string",
+                "description": "Customer Payer cell phone number. (MAX 32; MIN 1).",
+                "example": "3105550123"
+              }
+            }
+          },
+          "additional_data": {
+            "type": "object",
+            "description": "JSON object for additional data related to the customer.",
+            "example": {
+              "email": "lucy.robles@example.com",
+              "customer_id": "cust_123"
+            }
+          }
+        }
+      },
+      "RecoveryOutreachRequest": {
+        "type": "object",
+        "required": [
+          "customer",
+          "session"
+        ],
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "session": {
+            "$ref": "#/components/schemas/Session"
+          },
+          "cart": {
+            "$ref": "#/components/schemas/Cart"
+          },
+          "engagement": {
+            "$ref": "#/components/schemas/Engagement"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "required": [
+          "full_name",
+          "phone_number",
+          "country_code"
+        ],
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "description": "Customer's full name.",
+            "example": "Jane Doe"
+          },
+          "phone_number": {
+            "type": "string",
+            "description": "Customer's phone number in E.164 format.",
+            "example": "+573001234567"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Customer's email address.",
+            "example": "jane.doe@example.com"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code (e.g., \"CO\").",
+            "example": "CO"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred language for communication (e.g., \"es\", \"en\").",
+            "example": "es"
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "required": [
+          "abandonment_timestamp",
+          "flow_stage",
+          "platform"
+        ],
+        "properties": {
+          "abandonment_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the user abandoned the flow.",
+            "example": "2025-05-13T22:45:00Z"
+          },
+          "flow_stage": {
+            "type": "string",
+            "description": "Stage where the user dropped off.",
+            "enum": [
+              "product_selection",
+              "cart_review",
+              "checkout",
+              "payment"
+            ],
+            "example": "checkout"
+          },
+          "platform": {
+            "type": "string",
+            "description": "User's platform.",
+            "enum": [
+              "web",
+              "ios",
+              "android"
+            ],
+            "example": "web"
+          },
+          "session_id": {
+            "type": "string",
+            "description": "Unique identifier for the user's session.",
+            "example": "sess_abc123xyz"
+          }
+        }
+      },
+      "Cart": {
+        "type": "object",
+        "properties": {
+          "total_value": {
+            "type": "number",
+            "format": "float",
+            "description": "Total value of the cart.",
+            "example": 149.99
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (e.g., \"COP\").",
+            "example": "COP"
+          },
+          "items": {
+            "type": "array",
+            "description": "List of items in the cart.",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          }
+        }
+      },
+      "CartItem": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Item name.",
+            "example": "Wireless Headphones"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Stock Keeping Unit identifier.",
+            "example": "WH-1000XM5"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Number of units.",
+            "example": 1
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "description": "Price per unit.",
+            "example": 149.99
+          }
+        }
+      },
+      "Engagement": {
+        "type": "object",
+        "properties": {
+          "preferred_channel": {
+            "type": "string",
+            "description": "Preferred communication channel.",
+            "enum": [
+              "call",
+              "whatsapp",
+              "auto"
+            ],
+            "default": "auto",
+            "example": "auto"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Reason for abandonment, if known.",
+            "example": "user_abandoned_checkout"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional contextual information (e.g., UTM parameters, last user actions).",
+            "example": {
+              "utm_campaign": "spring_sale",
+              "last_clicked_button": "Proceed to Payment"
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-readme": {
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  }
+}
