@@ -19,7 +19,106 @@ metadata:
 
 This page provides an overview of the different integration methods available with Yuno. Each option offers unique capabilities and features to suit different business needs. Choose the integration method that best aligns with your requirements.
 
-## Available Integration Methods
+## Choosing Your Integration Method
+
+### Full SDK
+
+Best for businesses seeking a complete, ready-to-use payment solution with minimal development effort. The Full SDK provides:
+
+* Pre-built UI components for payment flows
+* Built-in error handling and validation
+* Automatic payment method detection
+* Seamless integration with minimal code
+
+### Lite SDK
+
+Ideal for businesses that want more control over their payment UI while maintaining Yuno's core functionality. Available in two variants:
+
+* **Payment**: For processing one-time payments
+* **Enrollment**: For saving payment methods for future use
+
+### Headless SDK
+
+Perfect for businesses requiring complete control over their payment UI and user experience. Offers:
+
+* Maximum UI customization
+* Full control over payment flow
+* Direct access to Yuno's core functionality
+* Support for both payment and enrollment flows
+
+### Secure Fields
+
+Recommended for businesses that want to maintain their existing checkout flow while leveraging Yuno's secure payment processing. Features:
+
+* PCI-compliant payment field integration
+* Minimal UI changes required
+* Direct integration with your existing checkout
+
+### Direct Flow
+
+Best for businesses with highly customized payment flows or specific technical requirements. Provides:
+
+* Direct API access
+* Complete control over the payment process
+* Custom implementation flexibility
+
+## Integration Features
+
+### Core Features
+
+* **Payment Processing**
+  * Support for multiple payment methods
+  * Real-time payment status updates
+  * Automatic payment method detection
+  * Currency conversion support
+
+* **Customer Management**
+  * Customer profile creation and management
+  * Payment method storage
+  * Transaction history
+  * Customer preferences
+
+* **Transaction Management**
+  * Payment status tracking
+  * Transaction history
+  * Detailed payment information
+  * Receipt generation
+
+### Optional Features
+
+* **Refunds**
+  * Full and partial refunds
+  * Refund status tracking
+  * Refund history
+  * Automatic reconciliation
+
+* **Captures and Cancellations**
+  * Pre-authorization support
+  * Transaction cancellation
+  * Capture scheduling
+  * Authorization management
+
+* **Webhook Notifications**
+  * Real-time payment updates
+  * Custom event notifications
+  * Secure webhook delivery
+  * Retry mechanisms
+
+* **Development Tools**
+  * Test mode for development
+  * Sandbox environment
+  * Debug logging
+  * Integration testing tools
+
+## Getting Started
+
+1. Review the available integration methods above
+2. Choose the method that best fits your needs
+3. Follow the corresponding integration guide
+4. Test your integration using our sandbox environment
+5. Go live with your production credentials
+
+For detailed information about implementing these features, please refer to the specific integration guides linked above.
 
 <HTMLBlock>{`
 <body>
@@ -104,23 +203,3 @@ This page provides an overview of the different integration methods available wi
   </section>
 </body>
 `}</HTMLBlock>
-
-## Integration Features
-
-Each integration method supports different features and capabilities. Here's a high-level overview of what you can implement with Yuno:
-
-### Core Features
-
-* Payment processing
-* Multiple payment methods
-* Customer management
-* Transaction management
-
-### Optional Features
-
-* Refunds
-* Captures and cancellations
-* Webhook notifications
-* Test mode for development
-
-For detailed information about implementing these features, please refer to the specific integration guides linked above.
