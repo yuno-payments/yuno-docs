@@ -44,11 +44,11 @@ The `strong_customer_authentication_exemptions` array accepts the following valu
 
 ## Implementation Example
 
-The Strong Customer Authentication exemptions come from:
+The Strong Customer Authentication exemptions come from either:
 
 * **\[Recommended]** - The previous analysis of a fraud provider in your payment route:
   * <Image align="center" src="https://files.readme.io/5e1b8247f3e9331bc2b87954083e493304b8dfcf2421666497dd28b8a7fe28b4-Screenshot_2025-06-09_at_9.35.29_AM.png" />
-* You can also define it when creating payment requests via API. Ensure that the selected value accurately reflects the nature of the transaction. For example:
+* Defining it when creating payment requests via API. Ensure that the selected value accurately reflects the nature of the transaction. For example:
 
 ```json
 {
