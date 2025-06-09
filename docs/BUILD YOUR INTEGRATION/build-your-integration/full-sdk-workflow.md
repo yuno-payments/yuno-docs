@@ -23,7 +23,7 @@ With Yuno Full SDK, you can seamlessly integrate Yuno into your system. This app
 
 ### What you can do with the full SDK
 
-1. Process payments seamlessly.  
+1. Process payments seamlessly.
 2. Enroll a credit card while processing a payment.
 3. Use a vaulted token from an enrolled payment method.
 
@@ -191,7 +191,6 @@ The response from [Create payment](ref:create-payment) will include the `sdk_act
 >
 > During integration, use the payment `status` and `sub_status` as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment `status`/`sub_status` ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
 
-
 ### Step 5: Continue payment
 
 If `sdk_action_required` is `true`, call `continuePayment()` to display additional screens or steps for the customer.
@@ -234,7 +233,6 @@ With the Full SDK, you can save credit/debit cards for future purchases with the
 >
 > You should only use one option to enroll a card. To enroll alternative payment methods, you have to use the [Lite SDK](enrollment-lite).
 
-
 After enrolling a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
 
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
@@ -244,15 +242,6 @@ After enrolling a payment method, you can use the vaulted token to perform payme
 >
 > Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
 >
-> - **Support 3DS**: Enhanced security for online payments.
-> - **Fraud Screening**: Better protection against fraudulent transactions.
-> - **Collect Required Information**: Gather additional fields required by the provider if necessary.
-
-
-> 🚧 Using a vaulted token
->
-> Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
->
-> - **Support 3DS**: Enhanced security for online payments.
-> - **Fraud Screening**: Better protection against fraudulent transactions.
-> - **Collect Required Information**: Gather additional fields required by the provider if necessary.
+> * **Support 3DS**: Enhanced security for online payments.
+> * **Fraud Screening**: Better protection against fraudulent transactions.
+> * **Collect Required Information**: Gather additional fields required by the provider if necessary.
