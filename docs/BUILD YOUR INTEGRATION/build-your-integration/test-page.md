@@ -5,19 +5,7 @@ hidden: true
 metadata:
   robots: index
 ---
-> 📘 Integration Guides
->
-> This page provides an overview of Yuno SDKs and integration types. For detailed, step-by-step integration instructions, please refer to our dedicated guides:
->
-> * [Full SDK Integration Guide](/docs/full-sdk-workflow)
-> * [Lite SDK (Payment) Guide](/docs/the-ultimate-checkout-lite)
-> * [Lite SDK (Enrollment) Guide](/docs/enrollment-lite)
-> * [Secure Fields Guide](/docs/secure-fields)
-> * [Headless SDK (Payment) Guide](/docs/headless-sdk-integration)
-> * [Headless SDK (Enrollment) Guide](/docs/headless-sdk-enrollment-steps)
-> * [Direct Flow Guide](/docs/direct-flow)
-
-This page provides an overview of the different integration methods available with Yuno. Each option offers unique capabilities and features to suit different business needs. Choose the integration method that best aligns with your requirements.
+This page provides an overview of the different integration methods available with Yuno. Each option offers unique capabilities and features to suit different business needs. Select the integration method that best suits your requirements.
 
 ## Choosing Your Integration Method
 
