@@ -79,3 +79,20 @@ Depending on the type of event, you will receive a different type of webhook and
 | subscription | resume      |
 | subscription | cancel      |
 | subscription | complete    |
+
+## PIX payment expiration handling
+
+For PIX payments, Yuno provides enhanced expiration management to prevent reconciliation issues with integrated platforms like VTEX.
+
+When a custom `expiration_date` is configured during PIX payment creation, Yuno:
+
+* **Internally tracks the expiration** without depending solely on the provider's webhook notifications
+* **Actively verifies payment status** by making requests to the provider before expiration
+* **Automatically marks expired payments** when QR codes remain unpaid past the expiration time
+* **Sends expiration webhooks** to notify integrated platforms (like VTEX) so orders can be cancelled automatically
+
+This proactive approach ensures payment statuses remain aligned between your platform, Yuno, and the payment provider, avoiding inconsistencies in pending or orphaned orders.
+
+> **VTEX Integration Benefit**
+> 
+> For VTEX merchants, this feature automatically notifies VTEX when PIX payments expire, allowing orders to be cancelled immediately and preventing inventory/reconciliation issues. This solves the common problem where VTEX continues retrying expired PIX payments, leading to status mismatches between systems.

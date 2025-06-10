@@ -72,7 +72,22 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
    4. For **Trigger on**, check all events that should notify you through the webhooks. Yuno recommends checking all options.
    5. Click **Add**.
 
-![](https://files.readme.io/ccc5357-image.png)After completing the steps above, your clients can access a new payment method at checkout. If you configure Visa, for example, when your customers arrive at the checkout phase and select credit card as the payment method, the Yuno checkout will gather all the information required for fraud screening and 3DS services in the background while using the VTEX credit card form.
+![](https://files.readme.io/ccc5357-image.png)
+
+### PIX Payment Expiration Management
+
+When configuring PIX payments with VTEX, Yuno provides automatic expiration handling to prevent order reconciliation issues:
+
+* **Custom expiration tracking**: Yuno internally monitors PIX payment expiration dates without relying solely on provider webhooks
+* **Proactive verification**: Before expiration, Yuno verifies with the provider if the payment was completed
+* **Automatic order cancellation**: When PIX payments expire unpaid, Yuno immediately notifies VTEX via webhook, allowing automatic order cancellation
+* **Reconciliation consistency**: This ensures payment statuses remain synchronized between VTEX, Yuno, and the payment provider
+
+This feature is particularly valuable for merchants who set custom expiration dates on PIX payments, as it prevents orphaned orders and inventory discrepancies. It specifically addresses the common issue where VTEX continues attempting to authorize expired PIX payments for extended periods (up to 24 retries), creating status mismatches across systems.
+
+> **Important**: This enhanced expiration handling only works when you configure a custom `expiration_date` during PIX payment creation, not for default provider expiration times.
+
+After completing the steps above, your clients can access a new payment method at checkout. If you configure Visa, for example, when your customers arrive at the checkout phase and select credit card as the payment method, the Yuno checkout will gather all the information required for fraud screening and 3DS services in the background while using the VTEX credit card form.
 
 <Image align="center" src="https://files.readme.io/a17a02d-vtex.png" />
 
