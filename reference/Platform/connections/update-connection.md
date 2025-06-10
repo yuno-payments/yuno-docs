@@ -2,7 +2,7 @@
 title: Update connection
 api:
   file: accounts.json
-  operationId: patch_{id}connections{connection_id}
+  operationId: update-connection
 deprecated: false
 hidden: false
 link:

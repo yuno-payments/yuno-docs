@@ -2,7 +2,7 @@
 title: Create connection
 api:
   file: accounts.json
-  operationId: post_{id}connections
+  operationId: create-connection
 deprecated: false
 hidden: false
 link:

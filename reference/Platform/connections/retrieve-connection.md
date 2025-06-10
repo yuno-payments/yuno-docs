@@ -2,7 +2,7 @@
 title: Retrieve connection
 api:
   file: accounts.json
-  operationId: get_{id}connections{connection_id}
+  operationId: get-connection-by-id
 deprecated: false
 hidden: false
 link:
