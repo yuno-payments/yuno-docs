@@ -74,7 +74,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 ![](https://files.readme.io/ccc5357-image.png)
 
-### PIX Payment Expiration Management
+### PIX payment expiration management
 
 When configuring PIX payments with VTEX, Yuno provides automatic expiration handling to prevent order reconciliation issues:
 
