@@ -14,7 +14,7 @@ metadata:
 next:
   description: ''
 ---
-Yuno's Web SDKs provide several features designed to enhance your payment processing capabilities and provide a seamless checkout experience for your customers. In addition, the Web SDKs enable you to customize the user interface. 
+Yuno's Web SDKs provide several features designed to enhance your payment processing capabilities and provide a seamless checkout experience for your customers. In addition, the Web SDKs enable you to customize the user interface.
 
 ## Integration options
 
@@ -138,7 +138,7 @@ Select one of the user-friendly Web integration options available and kickstart 
 `}</HTMLBlock>
 
 > ❗️ Browser Support
-> 
+>
 > Yuno Web SDK does not support the IE browser.
 
 > 🚧 TypeScript Support
@@ -157,5 +157,5 @@ Select one of the user-friendly Web integration options available and kickstart 
 > settings.javaScriptEnabled = true
 > settings.javaScriptCanOpenWindowsAutomatically = true
 > settings.setSupportMultipleWindows(true)
+> settings.domStorageEnabled = true
 > ```
-
