@@ -2,7 +2,7 @@
 title: Update account
 api:
   file: accounts.json
-  operationId: patch_{id}
+  operationId: update-account
 deprecated: false
 hidden: false
 link:

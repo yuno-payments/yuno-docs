@@ -2,7 +2,7 @@
 title: Retrieve account
 api:
   file: accounts.json
-  operationId: get_{id}
+  operationId: get-account-by-id
 deprecated: false
 hidden: false
 link:

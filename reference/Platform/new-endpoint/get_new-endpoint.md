@@ -2,6 +2,6 @@
 title: Create account
 api:
   file: accounts.json
-  operationId: get_new-endpoint
+  operationId: create-account
 hidden: false
 ---
