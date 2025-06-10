@@ -1,5 +1,5 @@
 ---
-title: Retrieve connections
+title: Retrieve connection parameters
 api:
   file: accounts.json
   operationId: get_{id}connections?
