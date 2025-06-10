@@ -482,6 +482,8 @@ Once you have completed the steps described before, you will be able to create a
       </div>
     </div>
   </div>
+</body>
+`}</HTMLBlock>
 
 ## `continuePayment` return value or null
 
@@ -500,8 +502,6 @@ For payment methods that require merchant-side action (e.g., when the payment pr
 ```
 
 When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.
-</body>
-`}</HTMLBlock>
 
 ## Complementary features
 
