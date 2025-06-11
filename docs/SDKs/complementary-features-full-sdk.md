@@ -19,7 +19,8 @@ Yuno Web SDK provides additional services and configurations you can use to impr
   * [Render mode](doc:complementary-features-full-sdk#rendering-modes)
   * [Text payment form buttons](doc:complementary-features-full-sdk#text-payment-form-buttons)
   * [Persist credit card form to retry payments](doc:complementary-features-full-sdk#persist-credit-card-form-to-retry-payments)
-  * [Hide Pay button](doc:complementary-features-full-sdk#hide-pay-button) 
+  * [Hide Pay button](doc:complementary-features-full-sdk#hide-pay-button)
+* [Mercado Pago Checkout Pro webview handling](doc:complementary-features-full-sdk#mercado-pago-checkout-pro-webview-handling)
 
 ## [Form loader](doc:loader)
 
@@ -268,3 +269,105 @@ If you hide the Pay button, you will need to start the OTT creation through your
  */
 yuno.submitOneTimeTokenForm()
 ```
+
+## Mercado Pago Checkout Pro webview handling
+
+For payment methods that require merchant-side action in webview environments, specifically **Mercado Pago Checkout Pro**, the `await yuno.continuePayment()` method will return either an object with redirect information or null.
+
+<HTMLBlock>{`
+<body>
+  <div class="infoBlockContainer">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>Special exception</h3>
+      <div class="contentContainer">
+        <p>
+          This redirect handling is currently only required for Mercado Pago Checkout Pro integration when used within webview environments. This is the only payment method that requires this type of custom redirect handling.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+`}</HTMLBlock>
+
+When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.
+
+```typescript
+{
+  action: 'REDIRECT_URL'
+  type: 'MERCADO_PAGO_CHECKOUT_PRO'
+  redirect: {
+    init_url: string
+    success_url: string
+    error_url: string
+  }
+} | null
+```
+
+### Properties
+
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Property
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `action`
+      </td>
+
+      <td>
+        Always set to `'REDIRECT_URL'` when redirect handling is required.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `type`
+      </td>
+
+      <td>
+        Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying the specific payment method requiring custom handling.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `init_url`
+      </td>
+
+      <td>
+        URL to be redirected to finish the payment.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `success_url`
+      </td>
+
+      <td>
+        URL to be redirected after the payment was successful.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `error_url`
+      </td>
+
+      <td>
+        URL to be redirected after the payment was not successful.
+      </td>
+    </tr>
+  </tbody>
+</Table>
