@@ -272,8 +272,6 @@ yuno.submitOneTimeTokenForm()
 
 ## Mercado Pago Checkout Pro webview handling
 
-For payment methods that require merchant-side action in webview environments, specifically **Mercado Pago Checkout Pro**, the `await yuno.continuePayment()` method will return either an object with redirect information or null.
-
 <HTMLBlock>{`
 <body>
   <div class="infoBlockContainer">
@@ -282,7 +280,7 @@ For payment methods that require merchant-side action in webview environments, s
       <h3>Special exception</h3>
       <div class="contentContainer">
         <p>
-          This redirect handling is currently only required for Mercado Pago Checkout Pro integration when used within webview environments. This is the only payment method that requires this type of custom redirect handling.
+          This section describes a special exception for handling Mercado Pago Checkout Pro integration in webview environments. This is the only payment method that requires custom redirect handling, and it is documented here to avoid overwhelming merchants with unnecessary implementation details for other payment methods.
         </p>
       </div>
     </div>
@@ -290,16 +288,16 @@ For payment methods that require merchant-side action in webview environments, s
 </body>
 `}</HTMLBlock>
 
-When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.
+For Mercado Pago Checkout Pro integration in webview environments, the `await yuno.continuePayment()` method will return either an object with redirect information or null. When the method returns an object, it allows you to handle the custom redirect flow required by Mercado Pago Checkout Pro. When it returns null, no additional merchant-side action is needed.
 
 ```typescript
 {
   action: 'REDIRECT_URL'
-  type: 'MERCADO_PAGO_CHECKOUT_PRO'
+  type: 'MERCADO_PAGO_CHECKOUT_PRO'  // Enum value identifying Mercado Pago Checkout Pro
   redirect: {
-    init_url: string
-    success_url: string
-    error_url: string
+    init_url: string    // URL to redirect to for completing the payment
+    success_url: string // URL to redirect to after successful payment
+    error_url: string   // URL to redirect to after failed payment
   }
 } | null
 ```
@@ -336,7 +334,7 @@ When the method returns an object, it allows you to handle your application's pa
       </td>
 
       <td>
-        Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying the specific payment method requiring custom handling.
+        Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying Mercado Pago Checkout Pro as the payment method requiring custom handling.
       </td>
     </tr>
 
@@ -346,7 +344,7 @@ When the method returns an object, it allows you to handle your application's pa
       </td>
 
       <td>
-        URL to be redirected to finish the payment.
+        URL to redirect the customer to for completing the payment with Mercado Pago Checkout Pro.
       </td>
     </tr>
 
@@ -356,7 +354,7 @@ When the method returns an object, it allows you to handle your application's pa
       </td>
 
       <td>
-        URL to be redirected after the payment was successful.
+        URL to redirect the customer to after a successful payment with Mercado Pago Checkout Pro.
       </td>
     </tr>
 
@@ -366,7 +364,7 @@ When the method returns an object, it allows you to handle your application's pa
       </td>
 
       <td>
-        URL to be redirected after the payment was not successful.
+        URL to redirect the customer to if the payment with Mercado Pago Checkout Pro fails.
       </td>
     </tr>
   </tbody>
