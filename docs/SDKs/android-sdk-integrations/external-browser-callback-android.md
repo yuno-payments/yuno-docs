@@ -1,8 +1,5 @@
 ---
 title: Handle external browser return (callback_url)
-excerpt: >-
-  How to configure and handle callback_url for external browser payment flows in
-  Android
 deprecated: false
 hidden: true
 metadata:
