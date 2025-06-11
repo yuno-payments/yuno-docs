@@ -25,33 +25,15 @@ Here are the primary integration methods available with Yuno, each designed to f
 <Shelf classname="link_cards_container">
   <YunoCard title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" titleSize="h4" />
 
-  <YunoCard title="Lite SDK - Payment" href="https://docs.y.uno/docs/lite-checkout-sdk" titleSize="h4" />
+  <YunoCard title="Lite SDK (Payment)" href="https://docs.y.uno/docs/lite-checkout-sdk" titleSize="h4" />
 
-  <YunoCard title="Lite SDK - Enrollment" href="https://docs.y.uno/docs/enrollment-lite-sdk" titleSize="h4" />
+  <YunoCard title="Lite SDK (Enrollment)" href="https://docs.y.uno/docs/enrollment-lite-sdk" titleSize="h4" />
 
   <YunoCard title="Secure Fields" href="https://docs.y.uno/docs/secure-fields-payment" titleSize="h4" />
 
-  <YunoCard title="Headless SDK - Payment" href="https://docs.y.uno/docs/headless-sdk-payment" titleSize="h4" />
+  <YunoCard title="Headless SDK (Payment)" href="https://docs.y.uno/docs/headless-sdk-payment" titleSize="h4" />
 
-  <YunoCard title="Headless SDK - Enrollment" href="https://docs.y.uno/docs/headless-sdk-enrollment" titleSize="h4" />
+  <YunoCard title="Headless SDK (Enrollment)" href="https://docs.y.uno/docs/headless-sdk-enrollment" titleSize="h4" />
 
   <YunoCard title="Direct Workflow" href="https://docs.y.uno/docs/direct-flow" titleSize="h4" />
-</Shelf>
-
-<br />
-
-<Shelf classname="link_cards_container">
-  <YunoCard title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" />
-
-  <YunoCard title="Lite SDK - Payment" href="https://docs.y.uno/docs/lite-checkout-sdk" />
-
-  <YunoCard title="Lite SDK - Enrollment" href="https://docs.y.uno/docs/enrollment-lite-sdk" />
-
-  <YunoCard title="Secure Fields" href="https://docs.y.uno/docs/secure-fields-payment" />
-
-  <YunoCard title="Headless SDK - Payment" href="https://docs.y.uno/docs/headless-sdk-payment" />
-
-  <YunoCard title="Headless SDK - Enrollment" href="https://docs.y.uno/docs/headless-sdk-enrollment" />
-
-  <YunoCard title="Direct Workflow" href="https://docs.y.uno/docs/direct-flow" />
 </Shelf>
