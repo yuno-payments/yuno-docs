@@ -2,7 +2,7 @@
 title: Lite SDK (Payment Web)
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: Lite SDK (Payment)
   description: >-
