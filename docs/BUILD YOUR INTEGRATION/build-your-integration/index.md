@@ -1,5 +1,5 @@
 ---
-title: Step by Step Integration Process
+title: SDK Integration Overview
 excerpt: ''
 deprecated: false
 hidden: false

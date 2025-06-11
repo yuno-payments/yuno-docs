@@ -16,11 +16,13 @@ Yuno's Headless iOS SDK lets you enroll in payment methods and tokenize cards, s
 > 
 > We recommend using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
 
+
 The following steps describe enrolling a payment method using Yuno's Headless SDK.
 
 > 📘 Complete enrollment guide
 > 
 > On this page, you will find all the steps related to using the Headless SDK to enrol in a payment method. For a complete guide, including the customer creation, access [Headless SDK (Enrollment)](headless-sdk-enrollment-steps).
+
 
 ## Requirements
 
@@ -38,6 +40,7 @@ The first step is to install Yuno SDK to your iOS project.
 > 📘 iOS SDK Versions
 > 
 > To check all versions available, you can access the [release page](https://github.com/yuno-payments/yuno-sdk-ios/releases) from the Yuno iOS SDK repository.
+
 
 You can install Yuno SDK in two ways:
 
@@ -59,6 +62,7 @@ To initialize the Headless SDK, you need to import Yuno and provide a valid **PU
 > 📘 UISceneDelegate initialization
 > 
 > If your app is using a `UISceneDelegate`, you will need to put your Yuno initialization code into your `SceneDelegate`.
+
 
 The code block below presents an example of importing and initializing the `Yuno`.
 
@@ -84,6 +88,7 @@ You need an enrollment payment method object to set Headless SDK integration for
 > 📘 Verify card
 > 
 > If you want to verify cards (zero value authorization) before enrollment, you need to provide the `verify` object when creating the payment method object for the customer session.
+
 
 ## Step 5: Start the enrollment process
 
@@ -155,6 +160,7 @@ let result = try await apiClientEnroll.continueEnrollment(data: enrollmentCollec
 > 
 > Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
 
+
 After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function. The response is a dictionary of type `[String: Any]`.
 
 ```swift
@@ -185,6 +191,8 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
 > 
 > Consider using the enrollment status received via [Webhooks](webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
 
+
 > 📘 Demo Application
 > 
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
+
