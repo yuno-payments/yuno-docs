@@ -112,18 +112,6 @@ The following steps outline the complete interaction flow between all components
 
 For platform-specific SDK setup, refer to:
 
-<Shelf classname="link_cards_container">
-  <YunoCard title="Web" href="/docs/full-checkout-sdk" titleSize="h4" />
-
-  <YunoCard title="iOS" href="/docs/full-checkout-ios" titleSize="h4" />
-
-  <YunoCard title="Android" href="/docs/full-checkout-android" titleSize="h4" />
-
-  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" titleSize="h4" />
-</Shelf>
-
-<br />
-
 <HTMLBlock>{`
 <body>
   <section class="platform_shelf">
