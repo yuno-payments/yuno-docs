@@ -207,16 +207,14 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
   </div>
 
   <div class="tab-content" id="webSDKv11">
-`}</HTMLBlock>
-
-Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK v1.0 functionality in your application.
+Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK v1.1 functionality in your application.
 
 ## Step 1: Include the library in your project
 
 Ensure the Yuno SDK file is included in your webpage before closing the `</body>` tag. Refer to the example below:
 
 ```html
-<script src="https://sdk-web.y.uno/v1/static/js/main.min.js"></script>
+<script src="https://sdk-web.y.uno/v1.1/static/js/main.min.js"></script>
 ```
 
 <HTMLBlock>{`
