@@ -75,23 +75,23 @@ The Full SDK provides a **unified payment experience**, allowing customers to co
 
 ![Full SDK Integration Flow](https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png)
 
-## Full SDK Integration Flow
+### Full SDK Integration Flow
 
 This diagram illustrates the comprehensive integration flow for the Full SDK, detailing the interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It covers the entire payment journey, from initiating a checkout to displaying the final payment result.
 
-### Merchant Client
+#### Merchant Client
 
 The Merchant Client represents your frontend application that interacts with both your backend server and the Yuno SDK. It handles the user-facing aspects of the payment flow, including:
 
 * Initiate Checkout
 * Initiate SDK with the checkout session
-* Receive One Time Token (single use)
+* Receive one-time token (single use)
 * Initiate payment
 * Initiate SDK to continue payment flow
 * Shows screen for the user to complete payment
 * Display payment result (optional)
 
-### Merchant Server
+#### Merchant Server
 
 The Merchant Server represents your backend application that handles server-side operations and communicates with Yuno's servers. Its key responsibilities include:
 
@@ -100,7 +100,7 @@ The Merchant Server represents your backend application that handles server-side
 * Create payment
 * Receive payment result via webhook
 
-### Yuno Server
+#### Yuno Server
 
 The Yuno Server handles all backend operations related to customer management, checkout sessions, and payment processing. Its main responsibilities include:
 
@@ -109,19 +109,19 @@ The Yuno Server handles all backend operations related to customer management, c
 * Creates payment in the payment provider
 * Receive payment results from payment provider
 
-### Yuno SDK
+#### Yuno SDK
 
 The Yuno SDK handles the user interface and payment flow on the client side, managing payment method selection, token generation, and payment completion. Its key responsibilities include:
 
 * Receive checkout session
 * List payment methods
 * User selects payment methods
-* Callback with the One Time Token
+* Callback with the one-time token
 * Continue with the payment flow
 * Show screen for the user to complete payment
 * Display payment result (optional)
 
-### Flow
+#### Flow
 
 The following steps outline the complete interaction flow between all components of the Full SDK integration, detailing how each request and response moves through the system:
 
@@ -132,9 +132,9 @@ The following steps outline the complete interaction flow between all components
 5. Merchant Client: Initiate SDK to continue payment flow --> Yuno SDK: Receive checkout session
 6. Yuno SDK: Receive checkout session --> List payment methods
 7. Yuno SDK: List payment methods --> User selects payment methods
-8. Yuno SDK: User selects payment methods --> Callback with the One Time Token
-9. Yuno SDK: Callback with the One Time Token --> Merchant Client: Receive One Time Token (single use)
-10. Merchant Client: Receive One Time Token (single use) --> Initiate payment
+8. Yuno SDK: User selects payment methods --> Callback with the one-time token
+9. Yuno SDK: Callback with the one-time token --> Merchant Client: Receive one-time token (single use)
+10. Merchant Client: Receive one-time token (single use) --> Initiate payment
 11. Merchant Client: Initiate payment --> Initiate SDK to continue payment flow
 12. Merchant Client: Initiate SDK to continue payment flow --> Yuno SDK: Continue with the payment flow
 13. Yuno SDK: Continue with the payment flow --> Show screen for the user to complete payment
@@ -211,11 +211,11 @@ If a customer has an enrolled payment method, they can use a **vaulted token** f
 
 ![](https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png)
 
-## Vaulted Token Full Diagram
+### Vaulted Token Full Diagram
 
 This diagram illustrates the process for handling vaulted tokens within the full payment flow, showing interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It focuses on the use of pre-stored payment credentials for streamlined transactions.
 
-### Merchant Client
+#### Merchant Client
 
 The Merchant Client represents the frontend application that interacts with customers. It handles the following key responsibilities:
 
@@ -224,7 +224,7 @@ The Merchant Client represents the frontend application that interacts with cust
 * Initiate payment
 * Show payment result
 
-### Merchant Server
+#### Merchant Server
 
 The Merchant Server handles the backend operations and communicates with both the client and Yuno's services. Its key responsibilities include:
 
@@ -232,7 +232,7 @@ The Merchant Server handles the backend operations and communicates with both th
 * Create payment
 * Receive payment result
 
-### Yuno Server
+#### Yuno Server
 
 The Yuno Server handles the core payment processing functionality and manages customer data. Its key responsibilities include:
 
@@ -240,16 +240,16 @@ The Yuno Server handles the core payment processing functionality and manages cu
 * Creates payment in the payment provider
 * Provides payment result
 
-### Yuno SDK
+#### Yuno SDK
 
 The Yuno SDK handles the user interface and payment method selection process. Its key responsibilities include:
 
 * Receive checkout session
 * List payment methods
 * User selects payment methods
-* Callback with the One Time Token
+* Callback with the one-time token
 
-### Flow:
+#### Flow:
 
 The following steps outline the detailed sequence of interactions between the different components in the vaulted token payment workflow:
 
@@ -258,8 +258,8 @@ The following steps outline the detailed sequence of interactions between the di
 3. Merchant Client: Initiate SDK with the checkout session --> Yuno SDK: Receive checkout session
 4. Yuno SDK: Receive checkout session --> List payment methods
 5. Yuno SDK: List payment methods --> User selects payment methods
-6. Yuno SDK: User selects payment method --> Callback with the One Time Token
-7. Yuno SDK: Callback with the One Time Token --> Merchant Client: Initiate payment
+6. Yuno SDK: User selects payment method --> Callback with the one-time token
+7. Yuno SDK: Callback with the one-time token --> Merchant Client: Initiate payment
 8. Merchant Client: Initiate payment --> Merchant Server: Create payment
 9. Merchant Server: Create payment --> Yuno Server: Creates payment in the payment provider
 10. Merchant Client: Show payment result --> Merchant Server: Receive payment result
