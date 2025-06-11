@@ -72,11 +72,11 @@ The Full SDK provides a **unified payment experience**, allowing customers to co
 
 ![Full SDK Integration Flow](https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png)
 
-## Full SDK Integration Flow
+### Full SDK Integration Flow
 
 This diagram illustrates the comprehensive integration flow for the Full SDK, detailing the interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It covers the entire payment journey, from initiating a checkout to displaying the final payment result.
 
-### Merchant Client
+#### Merchant Client
 
 The Merchant Client represents your frontend application that interacts with both your backend server and the Yuno SDK. It handles the user-facing aspects of the payment flow, including:
 
@@ -88,7 +88,7 @@ The Merchant Client represents your frontend application that interacts with bot
 * Shows screen for the user to complete payment
 * Display payment result (optional)
 
-### Merchant Server
+#### Merchant Server
 
 The Merchant Server represents your backend application that handles server-side operations and communicates with Yuno's servers. Its key responsibilities include:
 
@@ -97,7 +97,7 @@ The Merchant Server represents your backend application that handles server-side
 * Create payment
 * Receive payment result via webhook
 
-### Yuno Server
+#### Yuno Server
 
 The Yuno Server handles all backend operations related to customer management, checkout sessions, and payment processing. Its main responsibilities include:
 
@@ -106,7 +106,7 @@ The Yuno Server handles all backend operations related to customer management, c
 * Creates payment in the payment provider
 * Receive payment results from payment provider
 
-### Yuno SDK
+#### Yuno SDK
 
 The Yuno SDK handles the user interface and payment flow on the client side, managing payment method selection, token generation, and payment completion. Its key responsibilities include:
 
@@ -118,7 +118,7 @@ The Yuno SDK handles the user interface and payment flow on the client side, man
 * Show screen for the user to complete payment
 * Display payment result (optional)
 
-### Flow
+#### Flow
 
 The following steps outline the complete interaction flow between all components of the Full SDK integration, detailing how each request and response moves through the system:
 
@@ -214,7 +214,7 @@ If a customer has an enrolled payment method, they can use a **vaulted token** f
 
 This diagram illustrates the process for handling vaulted tokens within the full payment flow, showing interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It focuses on the use of pre-stored payment credentials for streamlined transactions.
 
-### Merchant Client
+#### Merchant Client
 
 The Merchant Client represents the frontend application that interacts with customers. It handles the following key responsibilities:
 
@@ -223,7 +223,7 @@ The Merchant Client represents the frontend application that interacts with cust
 * Initiate payment
 * Show payment result
 
-### Merchant Server
+#### Merchant Server
 
 The Merchant Server handles the backend operations and communicates with both the client and Yuno's services. Its key responsibilities include:
 
@@ -231,7 +231,7 @@ The Merchant Server handles the backend operations and communicates with both th
 * Create payment
 * Receive payment result
 
-### Yuno Server
+#### Yuno Server
 
 The Yuno Server handles the core payment processing functionality and manages customer data. Its key responsibilities include:
 
@@ -239,7 +239,7 @@ The Yuno Server handles the core payment processing functionality and manages cu
 * Creates payment in the payment provider
 * Provides payment result
 
-### Yuno SDK
+#### Yuno SDK
 
 The Yuno SDK handles the user interface and payment method selection process. Its key responsibilities include:
 
@@ -248,7 +248,7 @@ The Yuno SDK handles the user interface and payment method selection process. It
 * User selects payment methods
 * Callback with the One Time Token
 
-### Flow:
+#### Flow:
 
 The following steps outline the detailed sequence of interactions between the different components in the vaulted token payment workflow:
 
