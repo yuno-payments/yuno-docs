@@ -42,3 +42,40 @@ Here are the primary integration methods available with Yuno, each designed to f
     Understand the direct API integration workflow.
   </Card>
 </Cards>
+
+<br />
+
+<Cards columns={3}>
+  <Card title="Full SDK" href="/docs/full-sdk-workflow" icon="fa-code">
+    Explore integration guides for the Full SDK across various platforms:
+
+    * [Web](/docs/full-sdk-workflow)
+    * [Android](https://docs.y.uno/docs/full-checkout-android)
+    * [iOS](https://docs.y.uno/docs/full-checkout-ios)
+    * [Flutter](https://docs.y.uno/docs/full-sdk-flutter)
+  </Card>
+
+  <Card title="Lite SDK (Payment)" href="/docs/the-ultimate-checkout-lite" icon="fa-code">
+    Explore payment flows with Lite SDK.
+  </Card>
+
+  <Card title="Lite SDK (Enrollment)" href="/docs/enrollment-lite" icon="fa-code">
+    Understand payment method enrollment via Lite SDK.
+  </Card>
+
+  <Card title="Secure Fields" href="/docs/secure-fields" icon="fa-code">
+    Integrate secure payment fields.
+  </Card>
+
+  <Card title="Headless SDK (Payment)" href="/docs/headless-sdk-integration" icon="fa-code">
+    Implement headless payment processing.
+  </Card>
+
+  <Card title="Headless SDK (Enrollment)" href="/docs/headless-sdk-enrollment-steps" icon="fa-code">
+    Manage headless payment method enrollment.
+  </Card>
+
+  <Card title="Direct Workflow" href="/docs/direct-flow" icon="fa-code">
+    Understand the direct API integration workflow.
+  </Card>
+</Cards>
