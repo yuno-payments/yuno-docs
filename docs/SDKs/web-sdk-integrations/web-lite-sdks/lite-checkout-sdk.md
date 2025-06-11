@@ -20,7 +20,7 @@ next:
       <h3>Web SDK v1.1 release</h3>
       <div class="contentContainer">
         <p>
-          v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, <a href="https://docs.y.uno/docs/yuno-web-sdk-v11">visit the web SDK v1.1 page</a>.
+          v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, <a href="https://docs.y.uno/docs/yuno-web-sdk-v11">visit the Web SDK v1.1 page</a>.
         </p>
       </div>
     </div>
