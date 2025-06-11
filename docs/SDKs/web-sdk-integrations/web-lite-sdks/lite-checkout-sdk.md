@@ -464,7 +464,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation)
       <h3>Important</h3>
       <div class="contentContainer">
         <p>
-				The merchant is responsible for managing the loader. Yuno provides a default loader option, but merchants may implement their own loader if preferred. In that case, they are responsible for making the necessary configurations.
+          The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.
         </p>
       </div>
     </div>
