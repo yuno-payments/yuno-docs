@@ -1,7 +1,7 @@
 ---
 title: Full SDK (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Full SDK
   description: >-
