@@ -9,26 +9,3 @@ metadata:
     maintenance, and operational efforts without any need for compliance.
   robots: index
 ---
-This page guides you through the available integration methods with Yuno. After [setting up your Yuno account](doc:step-1-set-up-your-account), you can choose the right SDK and learn about referencing the correct endpoints and integrating additional services.
-
-Before proceeding, choose the integration method that best suits your needs. For an overview of available options and their capabilities, see [Choose the Right Integration for You](doc:choose-the-right-integration-for-you).
-
-## Available Integration Options
-
-Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
-
-<Shelf classname="link_cards_container">
-  <YunoCard title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" />
-
-  <YunoCard title="Lite SDK - Payment" href="https://docs.y.uno/docs/lite-checkout-sdk" />
-
-  <YunoCard title="Lite SDK - Enrollment" href="https://docs.y.uno/docs/enrollment-lite-sdk" />
-
-  <YunoCard title="Secure Fields" href="https://docs.y.uno/docs/secure-fields-payment" />
-
-  <YunoCard title="Headless SDK - Payment" href="https://docs.y.uno/docs/headless-sdk-payment" />
-
-  <YunoCard title="Headless SDK - Enrollment" href="https://docs.y.uno/docs/headless-sdk-enrollment" />
-
-  <YunoCard title="Direct Workflow" href="https://docs.y.uno/docs/direct-flow" />
-</Shelf>
