@@ -11,8 +11,6 @@ metadata:
 next:
   description: ''
 ---
-# Handle external browser return (callback\_url) — Android
-
 ## Overview
 
 When a payment flow requires the user to complete an action in an external browser (e.g., 3DS challenge, bank redirect), it is essential to use the `callback_url` parameter to ensure the user returns to your app seamlessly.
