@@ -18,11 +18,11 @@ Before proceeding, choose the integration method that best suits your needs. For
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 
 \<Shelf classname="link\_cards\_container">
-&#x20; \<YunoCard title="Full SDK" href="/docs/full-checkout-sdk" links=\{\[
-&#x20;   \{ href: "https\://docs.y.uno/docs/full-checkout-sdk", label: "Web" },
-&#x20;   \{ href: "https\://docs.y.uno/docs/full-checkout-android", label: "Android" },
-&#x20;   \{ href: "https\://docs.y.uno/docs/full-checkout-ios", label: "iOS" },
-&#x20;   \{ href: "https\://docs.y.uno/docs/full-sdk-flutter", label: "Flutter" }
+&#x20; \<YunoCard title="Full SDK">
+&#x20;  \- href: "https\://docs.y.uno/docs/full-checkout-sdk", label: "Web"
+&#x20;  \- href: "https\://docs.y.uno/docs/full-checkout-android", label: "Android"
+&#x20;  \- href: "https\://docs.y.uno/docs/full-checkout-ios", label: "iOS"
+&#x20;  \- href: "https\://docs.y.uno/docs/full-sdk-flutter", label: "Flutter"&#x20;
 
 &#x20; \<YunoCard title="Lite SDK (Payment)" href="/docs/lite-checkout-sdk" />
 
