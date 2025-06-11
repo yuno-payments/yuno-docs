@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-From a RESTful service perspective, idempotency is the ability to make multiple requests and always receive the same response. This functionality can be helpful when a request fails due to a communication fault and there isn’t a conclusive response. You can simply retry a request using the same idempotency key if there is a connection issue on a specific call. Our API ensures that the second call won't fail. 
+From a RESTful service perspective, idempotency is the ability to make multiple requests and always receive the same response. This functionality can be helpful when a request fails due to a communication fault and there isn’t a conclusive response. You can simply retry a request using the same idempotency key if there is a connection issue on a specific call. Our API ensures that the second call won't fail.
 
 It is essential for idempotency to pass a nonce to the required API request. Therefore, when making a request, the merchant must generate a unique identifier to be sent with the request as a header. This nonce can also be used to identify a specific transaction.
 
@@ -32,6 +32,9 @@ The `x-idempotency-key` of a transaction and the status returned for making that
 >
 > It is crucial to stress that the API will only generate one request even if two requests are sent with the same key in the header and different contents in the body.
 
-In some circumstances, it's possible that some requests are sent at the same time. As a result, it is possible that the application receives a second request before it responds to the first one. When this happens, the second request will be met with the 409 code - Conflict, indicating that there is an open call for the same `x-idempotency-key`.
+In some circumstances, it's possible that some requests are sent at the same time. As a result, it is possible that the application receives a second request before it responds to the first one. When this happens, the second request will be met with the:
+
+* 409 code - Conflict, indicating that there is an open call for the same `x-idempotency-key` for payments.
+* 400 bad request - Conflict, indicating that the idempotency is duplicated for secondary transactions (refund/cancel)
 
 The Yuno API behavior will not record the keys in cases of request fail for any reason, plus the API provides a type of error 400 informing there’s a problem with the request, allowing the merchant to fix the request and send it again. The same remains true for situations where any 500 error code is returned.
