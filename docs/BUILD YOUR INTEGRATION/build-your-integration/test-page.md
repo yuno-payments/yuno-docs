@@ -5,9 +5,9 @@ hidden: true
 metadata:
   robots: index
 ---
-## SDKs Overview
-
-> **Important:** This page provides a high-level overview of Yuno SDKs and integration types. For detailed, step-by-step implementation guides, please refer to our dedicated documentation for each SDK integration type.
+> ❗️ Important
+>
+> This page provides a high-level overview of Yuno SDKs and integration types. For detailed, step-by-step implementation guides, please refer to our dedicated documentation for each SDK integration type.
 
 This page guides you through the available integration methods with Yuno. After [setting up your Yuno account](doc:step-1-set-up-your-account), you can choose the right SDK and learn about referencing the correct endpoints and integrating additional services.
 
