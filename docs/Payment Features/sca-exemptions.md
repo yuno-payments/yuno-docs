@@ -25,7 +25,7 @@ The `strong_customer_authentication_exemptions` array accepts the following valu
 * **`LOW_VALUE`**: Indicates that the transaction amount is below the low-value threshold defined by PSD2 (typically under €30).\
   *Benefit*: Low-value transactions may be exempt from SCA, expediting the payment process for minor purchases.
 
-* \*\*`TRANSACTION_RISK_ANALYSIS`\*\*Signifies that a Transaction Risk Analysis (TRA) has been conducted, and the transaction is deemed low-risk.\
+* **`TRANSACTION_RISK_ANALYSIS`**: Signifies that a Transaction Risk Analysis (TRA) has been conducted, and the transaction is deemed low-risk.\
   *Benefit*: Allows low-risk transactions to bypass SCA, improving conversion rates.
 
 * **`STRONG_CUSTOMER_AUTHENTICATION`**: Signifies that the authentication responsibility has been delegated to a trusted third party who has already performed SCA.\
