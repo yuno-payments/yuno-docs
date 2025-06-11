@@ -72,6 +72,22 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 * Store the returned `checkout_session` ID for use in Step 5 of the integration
 * The `checkout_session` is unique for each payment attempt and cannot be reused
 
+<HTMLBlock>{`
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>External browser return handling</h3>
+      <div class="contentContainer">
+        <p>
+          If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the <code>callback_url</code> when creating your checkout session.<br>
+          For a step-by-step guide on handling the return to your app, see
+          <a href="/docs/external-browser-callback-android"><b>Handle external browser return (callback_url)</b></a>.
+        </p>
+      </div>
+    </div>
+  </div>
+`}</HTMLBlock>
+
 ## Step 3: Include the library in your project
 
 Ensure the Yuno SDK file is included in your project through Gradle. Then, add the repository source using the following code line:
