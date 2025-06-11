@@ -17,7 +17,7 @@ Before proceeding, choose the integration method that best suits your needs. For
 
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 
-<Cards columns={3}>
+<Cards columns={4}>
   <Card title="Full SDK" href="/docs/full-sdk-workflow" icon="fa-code">
     Learn more about integrating the Full SDK.
   </Card>
