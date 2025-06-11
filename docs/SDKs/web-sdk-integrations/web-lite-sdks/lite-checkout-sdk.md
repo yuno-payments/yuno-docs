@@ -196,12 +196,6 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
 ```
 
-<HTMLBlock>{`
-  </div>
-
-  <div class="tab-content" id="webSDKv10">
-`}</HTMLBlock>
-
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK v1.0 functionality in your application.
 
 ## Step 1: Include the library in your project
