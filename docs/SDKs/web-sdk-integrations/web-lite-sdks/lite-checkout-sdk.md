@@ -20,7 +20,7 @@ next:
       <h3>Web SDK v1.1 release</h3>
       <div class="contentContainer">
         <p>
-          v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, <a href="https://docs.y.uno/docs/yuno-web-sdk-v11">visit the Web SDK v1.1 page</a>.
+          v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, <a href="https://docs.y.uno/docs/yuno-web-sdk-v11">visit the web SDK v1.1 page</a>.
         </p>
       </div>
     </div>
@@ -199,7 +199,14 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 <HTMLBlock>{`
   </div>
 
-  <div class="tab-content" id="webSDKv10">
+  <input type="radio" id="webSDKv11" name="tabs" checked>
+  <input type="radio" id="webSDKv10" name="tabs">
+  <div class="tabs">
+    <label for="webSDKv11">Yuno Web SDK v1.1</label>
+    <label for="webSDKv10">Yuno Web SDK v1.0</label>
+  </div>
+
+  <div class="tab-content" id="webSDKv11">
 `}</HTMLBlock>
 
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK v1.0 functionality in your application.
