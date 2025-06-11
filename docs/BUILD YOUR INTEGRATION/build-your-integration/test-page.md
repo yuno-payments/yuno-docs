@@ -1,5 +1,5 @@
 ---
-title: Test page
+title: Step by Step Integration Process (Test page)
 deprecated: false
 hidden: true
 metadata:
