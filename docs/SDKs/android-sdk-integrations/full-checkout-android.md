@@ -205,6 +205,22 @@ You also need to update your manifest to use your application:
 
 Each payment requires a new `checkout_session`, which provides access to all available payment methods for a specific customer. To obtain a new `checkout_session`, use the [Create checkout session](ref:create-checkout-session) endpoint. This session is then used to initiate the payment.
 
+<HTMLBlock>{`
+  <div class="infoBlockContainer ">
+    <div class="verticalLine"></div>
+    <div>
+      <h3>External browser return handling</h3>
+      <div class="contentContainer">
+        <p>
+          If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the <code>callback_url</code> when creating your checkout session.<br>
+          For a step-by-step guide on handling the return to your app, see
+          <a href="/docs/external-browser-callback-android"><b>Handle external browser return (callback_url)</b></a>.
+        </p>
+      </div>
+    </div>
+  </div>
+`}</HTMLBlock>
+
 ## Step 4: Start the checkout process
 
 To start a new payment process with the Full SDK, call the `startCheckout` method inside the `onCreate()` function of the activity that initializes the SDK:
