@@ -30,16 +30,6 @@ With Yuno Full SDK, you can seamlessly integrate Yuno into your system. This app
 Follow the step-by-step guides below to integrate the full SDK:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Payment workflow" href="#payment-workflow" />
-
-  <YunoCard title="Payment workflow using a vaulted token" href="#payment-workflow-using-a-vaulted-token" />
-
-  <YunoCard title="Enroll a credit card while paying" href="#enroll-a-credit-card-while-paying" />
-</Shelf>
-
-<br />
-
-<Shelf classname="link_cards_container">
   <YunoCard title="Payment workflow" href="#payment-workflow" titleSize="h4" />
 
   <YunoCard title="Payment workflow using a vaulted token" href="#payment-workflow-using-a-vaulted-token" titleSize="h4" />
