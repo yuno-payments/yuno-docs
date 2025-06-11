@@ -251,3 +251,17 @@ Once you have completed the steps described before, you will be able to create a
 > Yuno recommends integrating the `continuePayment` method of the SDK after the payment is created. This is because certain asynchronous payment methods require additional action from the customer to complete the payment. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display additional screens to customers, where they can carry out the necessary actions to complete the payment. If `sdk_action_required` is false, this step is not necessary.
 
 ## Complementary features
+
+Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
+
+* [Form loader](doc:lite-checkout-sdk#loader)
+* [Bank Issuer List](doc:lite-checkout-sdk#form-of-the-issuer)
+* [Render mode ](doc:lite-checkout-sdk#mode-of-form-rendering)
+* [Card form configurations ](doc:lite-checkout-sdk#card-form-configurations)
+  * [Save Card for future payments](doc:lite-checkout-sdk#save-card-for-future-payments)
+  * [Render mode](doc:lite-checkout-sdk#rendering-modes)
+  * [Text payment form buttons](doc:lite-checkout-sdk#text-payment-form-buttons)
+  * [Persist credit card form to retry payments](doc:lite-checkout-sdk#persist-credit-card-form-to-retry-payments)
+  * [Hide Pay button](doc:lite-checkout-sdk#hide-pay-button)
+
+### Loader
