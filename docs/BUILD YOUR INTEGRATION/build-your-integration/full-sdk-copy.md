@@ -18,27 +18,15 @@ Before proceeding, choose the integration method that best suits your needs. For
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Full SDK" href="/docs/full-checkout-sdk">
-    Render the payment methods your company has available in the checkout and for user enrollment.
-  </YunoCard>
+  <YunoCard title="Full SDK" href="/docs/full-checkout-sdk" />
 
-  <YunoCard title="Lite SDK (Payment)" href="/docs/lite-checkout-sdk">
-    With this option, you control which payment methods will be shown to the user during checkout and enrollment.
-  </YunoCard>
+  <YunoCard title="Lite SDK (Payment)" href="/docs/lite-checkout-sdk" />
 
-  <YunoCard title="Secure Fields (Payment - Enrollment)" href="/docs/secure-fields-checkout-sdk">
-    Create and customize your own checkout with prebuilt UI components.
-  </YunoCard>
+  <YunoCard title="Secure Fields (Payment - Enrollment)" href="/docs/secure-fields-checkout-sdk" />
 
-  <YunoCard title="Lite SDK (Enrollment)" href="/docs/lite-checkout-sdk">
-    Simplify the user enrollment of payment methods.
-  </YunoCard>
+  <YunoCard title="Lite SDK (Enrollment)" href="/docs/lite-checkout-sdk" />
 
-  <YunoCard title="Headless SDK (Payment)" href="/docs/headless-sdk-payment">
-    Customize the checkout without having to be PCI compliant.
-  </YunoCard>
+  <YunoCard title="Headless SDK (Payment)" href="/docs/headless-sdk-payment" />
 
-  <YunoCard title="Headless SDK (Enrollment)" href="/docs/headless-sdk-enrollment">
-    Customize the enrollment of new payment methods.
-  </YunoCard>
+  <YunoCard title="Headless SDK (Enrollment)" href="/docs/headless-sdk-enrollment" />
 </Shelf>
