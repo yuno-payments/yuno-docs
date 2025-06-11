@@ -70,7 +70,64 @@ Follow the step-by-step guides below to integrate the full SDK:
 
 The Full SDK provides a **unified payment experience**, allowing customers to complete transactions using multiple payment methods within a single integration. The diagram below illustrates the complete process:
 
-![](https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png)
+![Full SDK Integration Flow](https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png)
+
+## Full SDK Integration Flow
+
+This diagram illustrates the comprehensive integration flow for the Full SDK, detailing the interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It covers the entire payment journey, from initiating a checkout to displaying the final payment result.
+
+### Merchant Client
+
+* Initiate Checkout
+* Initiate SDK with the checkout session
+* Receive One Time Token (single use)
+* Initiate payment
+* Initiate SDK to continue payment flow
+* Shows screen for the user to complete payment
+* Display payment result (optional)
+
+### Merchant Server
+
+* Create Customer
+* Create Checkout session
+* Create payment
+* Receive payment result via webhook
+
+### Yuno Server
+
+* Creates Customer
+* Creates Checkout session
+* Creates payment in the payment provider
+* Receive payment results from payment provider
+
+### Yuno SDK
+
+* Receive checkout session
+* List payment methods
+* User selects payment methods
+* Callback with the One Time Token
+* Continue with the payment flow
+* Show screen for the user to complete payment
+* Display payment result (optional)
+
+### Flow
+
+1. Merchant Server: Create Customer --> Yuno Server: Creates Customer
+2. Merchant Client: Initiate Checkout -->  Merchant Server: Create Checkout session
+3. Merchant Server: Create Checkout session --> Yuno Server: Creates Checkout session
+4. Merchant Client: Initiate Checkout --> Initiate SDK to continue payment flow
+5. Merchant Client: Initiate SDK to continue payment flow --> Yuno SDK: Receive checkout session
+6. Yuno SDK: Receive checkout session --> List payment methods
+7. Yuno SDK: List payment methods --> User selects payment methods
+8. Yuno SDK: User selects payment methods --> Callback with the One Time Token
+9. Yuno SDK: Callback with the One Time Token --> Merchant Client: Receive One Time Token (single use)
+10. Merchant Client: Receive One Time Token (single use) --> Initiate payment
+11. Merchant Client: Initiate payment --> Initiate SDK to continue payment flow
+12. Merchant Client: Initiate SDK to continue payment flow --> Yuno SDK: Continue with the payment flow
+13. Yuno SDK: Continue with the payment flow --> Show screen for the user to complete the payment
+14. Yuno SDK: Show screen for the user to complete payment --> Display payment result (optional)
+15. Merchant Client: Initiate payment --> Merchant Server: Create payment
+16. Merchant Server: Create payment --> Yuno Server: Creates payment in the payment provider
 
 For platform-specific SDK setup, refer to:
 
@@ -137,76 +194,55 @@ For platform-specific SDK setup, refer to:
 
 <br />
 
-### Step 1: Create a customer
-
-If your system does not already have a `customer_id`, you must create one to associate payment methods with the customer.
-
-* Use the [Create customer](ref:create-customer) endpoint to generate a new `customer_id`.
-* If no customer session is used, the payment process will proceed without stored user data (e.g., pre-filled fields or saved payment methods).
-
-**Note**: Skipping the customer session simplifies integration but removes features that enhance conversion rates by reducing checkout friction.
-
-> 📘 Omit customer session step
->
-> When you choose to not use a `customer_session`, the payment will be created without a customer `id`, leaving it empty when creating the payment. As a result, the process will not use any stored customer date, such as pre-filled form fields or saved payment details.
->
-> While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.
-
-### Step 2: Create a checkout session
-
-Each payment requires a new checkout session, which grants access to all available payment methods for a specific customer.
-
-* Use the [Create checkout session](ref:create-checkout-session) endpoint.
-* Provide the `customer_id` to retrieve a new `checkout_session`.
-
-### Step 3: Implement the SDK and retrieve a one-time token
-
-The Full SDK displays all available payment methods and collects additional customer details if required.
-
-**To initialize the SDK:**
-
-1. Include the SDK library in your project.
-2. Initialize it with your API credentials and `checkout_session`.
-3. Call `yuno.startCheckout()` to launch the checkout process.
-4. Display the checkout interface in a browser or mobile app.
-5. Add a **payment button** that calls `yuno.startPayment()` when clicked.
-
-During this process, the SDK may collect customer details such as card information, email, phone number, or document ID.
-
-After a successful initialization, the SDK returns a one-time token (OTT) via the `yunoCreatePayment()` callback function.
-
-### Step 4: Create a payment
-
-With the one-time token, create the payment. This process gathers all order details, including customer specifics, total amount, currency, products, and shipping details. Use the [Create payment](ref:create-payment) endpoint, informing the `one_time_token` in the `payment_method.token` attribute.
-
-The response from [Create payment](ref:create-payment) will include the `sdk_action_required`, which defines if additional actions are required based on the payment type:
-
-* **Synchronous payment**: If `sdk_action_required` is `false`, the payment is complete.
-* **Asynchronous payment**: If `sdk_action_required` is `true`, additional actions are required to complete the payment. Use the `continuePayment` function to complete the payment. See the instructions in [Step 5](#step-5-continue-payment-if-needed).
-
-> 📘 Payment Status Best Practices
->
-> During integration, use the payment `status` and `sub_status` as your primary reference for the payment's state. Since a payment might have multiple associated transactions, concentrating on the payment `status`/`sub_status` ensures you're informed of the most recent state. This provides a clear basis for decision-making regardless of the number of transactions involved.
-
-### Step 5: Continue payment
-
-If `sdk_action_required` is `true`, call `continuePayment()` to display additional screens or steps for the customer.
-
-Yuno recommends implementing `continuePayment()` since some asynchronous payment methods require customer actions to finalize the transaction.
-
-### Step 6: Get payment status
-
-Call the `yunoPaymentResult()` function to obtain the payment `status`. Based on the status, you can show your customer the corresponding screen depending on the final result of the payment.
-
-### Step 7: Receive payment result through webhook
-
-Yuno recommends configuring [webhooks](doc:webhooks) in your [dashboard](https://auth.y.uno/u/login?). Webhooks ensure your system remains updated with payment statuses in real-time, removing the need for manual status checks.
-
 ## Payment workflow using a vaulted token
 
 If a customer has an enrolled payment method, they can use a **vaulted token** from the enrollment process to complete transactions **without** entering payment details again.
 
 ![](https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png)
+
+### Vaulted Token Full Diagram
+
+This diagram illustrates the process for handling vaulted tokens within the full payment flow, showing interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It focuses on the use of pre-stored payment credentials for streamlined transactions.
+
+### Merchant Client
+
+* Initiate checkout
+* Initiate SDK with the checkout session
+* Initiate payment
+* Show payment result
+
+### Merchant Server
+
+* Create Customer
+* Create payment
+* Receive payment result
+
+### Yuno Server
+
+* Create Customer
+* Creates payment in the payment provider
+* Provides payment result
+
+### Yuno SDK
+
+* Receive checkout session
+* List payment methods
+* User selects payment methods
+* Callback with the One Time Token
+
+### Flow:
+
+1. Merchant Client: Initiate checkout --> Merchant Server: Create Customer
+2. Merchant Server: Create Customer --> Yuno Server: Create Customer
+3. Merchant Client: Initiate SDK with the checkout session --> Yuno SDK: Receive checkout session
+4. Yuno SDK: Receive checkout session --> List payment methods
+5. Yuno SDK: List payment methods --> User selects payment methods
+6. Yuno SDK: User selects payment method --> Callback with the One Time Token
+7. Yuno SDK: Callback with the One Time Token --> Merchant Client: Initiate payment
+8. Merchant Client: Initiate payment --> Merchant Server: Create payment
+9. Merchant Server: Create payment --> Yuno Server: Creates payment in the payment provider
+10. Merchant Client: Show payment result --> Merchant Server: Receive payment result
+11. Merchant Server: Receive payment result --> Yuno Server: Provides payment result
 
 This workflow follows the same steps as the **payment workflow**, but instead of collecting new payment details, the SDK retrieves the stored **vaulted token**:
 
