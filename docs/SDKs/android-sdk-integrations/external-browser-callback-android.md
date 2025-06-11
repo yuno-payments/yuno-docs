@@ -1,25 +1,28 @@
 ---
 title: Handle external browser return (callback_url)
-excerpt: How to configure and handle callback_url for external browser payment flows in Android
+excerpt: >-
+  How to configure and handle callback_url for external browser payment flows in
+  Android
 deprecated: false
 hidden: true
 metadata:
   title: Handle external browser return (callback_url)
-  description: Step-by-step guide for Android developers to ensure users return to the app after external payment flows using callback_url.
+  description: >-
+    Step-by-step guide for Android developers to ensure users return to the app
+    after external payment flows using callback_url.
   robots: index
 next:
   description: ''
 ---
-
-# Handle external browser return (callback_url) — Android
+# Handle external browser return (callback\_url) — Android
 
 ## Overview
 
 When a payment flow requires the user to complete an action in an external browser (e.g., 3DS challenge, bank redirect), it is essential to use the `callback_url` parameter to ensure the user returns to your app seamlessly.
 
----
+***
 
-## 1. Set the callback_url when creating the checkout session
+## 1. Set the callback\_url when creating the checkout session
 
 Send the `callback_url` parameter when creating the checkout session:
 
@@ -29,10 +32,7 @@ Send the `callback_url` parameter when creating the checkout session:
 }
 ```
 
-> **Important:**  
-> Without `callback_url`, the user may be left in the browser with no way to return to your app.
-
----
+> 📘 Without `callback_url`, the user may be left in the browser with no way to return to your app.
 
 ## 2. Configure your Android app to handle the deep link
 
@@ -50,9 +50,8 @@ Add an `intent-filter` to your main activity in `AndroidManifest.xml`:
     </intent-filter>
 </activity>
 ```
-- The scheme (`myapp`) and host (`return`) must match your `callback_url`.
 
----
+* The scheme (`myapp`) and host (`return`) must match your `callback_url`
 
 ## 3. Handle the intent in your activity
 
@@ -67,9 +66,8 @@ intent.data?.let { uri ->
     }
 }
 ```
-- Adapt this logic to your app's needs.
 
----
+* Adapt this logic to your app's needs
 
 ## 4. Full example: integrating with Yuno SDK
 
@@ -113,19 +111,15 @@ private fun extractCheckoutSessionFromIntent(intent: Intent?): String? {
 }
 ```
 
----
-
 ## Best practices
 
-- Always define and use `callback_url` in your payment flows.
-- Configure the `intent-filter` correctly in your manifest.
-- Handle the return intent to update the payment status or navigate the user.
-- Test the flow on multiple devices and browsers.
-
----
+* Always define and use `callback_url` in your payment flows
+* Configure the `intent-filter` correctly in your manifest
+* Handle the return intent to update the payment status or navigate the user
+* Test the flow on multiple devices and browsers
 
 ## Summary
 
-- Use `callback_url` to ensure users return to your app.
-- Configure deep link handling in Android.
-- Handle the intent to complete the payment flow. 
+* Use `callback_url` to ensure users return to your app
+* Configure deep link handling in Android
+* Handle the intent to complete the payment flow
