@@ -880,7 +880,8 @@ This parameter is not required.</td></tr></tbody></table></div></div>
   </div>
 </div>
 <h2 class="heading heading-2 header-scroll" align=""><div class="heading-anchor anchor waypoint" id="continuepayment-return-value-or-null"></div><div class="heading-text"><div id="section-continue-payment-return-value-or-null" class="heading-anchor_backwardsCompatibility"></div><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name="" tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">continuePayment</span></code> return value or null</div><a aria-label="Skip link to [object Object]" class="heading-anchor-icon fa fa-anchor" href="#continuepayment-return-value-or-null"></a></h2>
-<p>For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name="" tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">await yuno.continuePayment()</span></code> method will return either an object with the following structure or null:</p>
+<p>For payment methods that require merchant-side action, the <button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang- theme-light" data-lang="" name="" tabindex="0"><span class="cm-s-neo" data-testid="SyntaxHighlighter">await yuno.continuePayment()</span></code> method will return either an object with redirect information or null. When it returns null, no additional merchant-side action is needed.</p>
+
 <div class="CodeTabs CodeTabs_initial theme-light"><div class="CodeTabs-toolbar" role="tablist"><button aria-selected="true" class="CodeTabs_active" role="tab" type="button">TypeScript</button></div><div class="CodeTabs-inner" role="tabpanel"><pre><button aria-label="Copy Code" class="rdmd-code-copy fa"></button><code class="rdmd-code lang-typescript theme-light" data-lang="typescript" name="" tabindex="0"><div class="cm-s-neo" data-testid="SyntaxHighlighter">{
   <span class="cm-variable">action</span>: <span class="cm-string">'REDIRECT_URL'</span>
   <span class="cm-variable">type</span>: <span class="cm-variable">string</span>
@@ -891,7 +892,8 @@ This parameter is not required.</td></tr></tbody></table></div></div>
   }
 } <span class="cm-operator">|</span> <span class="cm-atom">null</span>
 </div></code></pre></div></div>
-<p>When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.</p>
+
+<p>When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling.</p>
 
 <h2>Step 8: Get payment status</h2>
 

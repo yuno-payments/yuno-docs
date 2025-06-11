@@ -307,7 +307,7 @@ Once you have completed the steps described before, you will be able to create a
 
 ## `continuePayment` return value or null
 
-For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the `await yuno.continuePayment()` method will return either an object with the following structure or null:
+For payment methods that require merchant-side action, the `await yuno.continuePayment()` method will return either an object with redirect information or null. When it returns null, no additional merchant-side action is needed.
 
 ```typescript
 {
@@ -321,7 +321,7 @@ For payment methods that require merchant-side action (e.g., when the payment pr
 } | null
 ```
 
-When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.
+When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling.
 
 <HTMLBlock>{`
 <body>
