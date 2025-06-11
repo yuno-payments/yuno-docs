@@ -24,7 +24,7 @@ Here are the primary integration methods available with Yuno, each designed to f
 
   <YunoCard title="Lite SDK (Enrollment)" href="https://docs.y.uno/docs/enrollment-lite-sdk" />
 
-  <YunoCard title="Secure Fields (Payment - Enrollment)" href="https://docs.y.uno/docs/secure-fields-payment" />
+  <YunoCard title="Secure Fields" href="https://docs.y.uno/docs/secure-fields-payment" />
 
   <YunoCard title="Headless SDK (Payment)" href="https://docs.y.uno/docs/headless-sdk-payment" />
 
