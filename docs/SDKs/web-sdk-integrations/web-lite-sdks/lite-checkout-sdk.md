@@ -772,10 +772,9 @@ yuno.submitOneTimeTokenForm()
 
 ## What's next?
 
-Learn about the additional configurations from the Lite SDK accessing [Complementary Features](doc:lite-checkout-sdk#complementary-features). You can also access other functions available on the Yuno Web SDK:
+Learn about the additional configurations from the Lite SDK accessing [Complementary Features](doc:complementary-features-full-sdk). You can also access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
-
 * [Payment Status](doc:payment-status): Update the user about the payment process
-
+* [Mercado Pago Checkout Pro webview handling](doc:complementary-features-full-sdk#mercado-pago-checkout-pro-webview-handling): Learn how to handle Mercado Pago Checkout Pro integration in webview environments
 * [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
