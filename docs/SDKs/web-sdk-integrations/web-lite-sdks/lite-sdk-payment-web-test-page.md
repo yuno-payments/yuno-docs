@@ -298,10 +298,10 @@ yuno.startCheckout({
 >
 > The enhanced Lite SDK v2.0 provides advanced render mode capabilities that embed Yuno's checkout forms directly within your interface. This gives you complete control over the checkout journey, including loading, status, and payment input screens, with full visual customization and seamless UX integration.
 
-| Parameter         | Description                                                                                                                                                                                                                                                                                                                                                                                             |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `renderMode`      | This optional parameter determines how payment forms are displayed:\<br>• \`type\`: Either 'modal' or 'element'\<br>• \`elementSelector\`: Required if \`type\` is 'element'. Specifies where to render the form.                                                                                                                                                                                       |
-| `elementSelector` | Required when \`type\` is 'element'. Specifies where to mount the Yuno SDK:\<br>• \*\*String\*\* (Deprecated): ID or selector for mounting the SDK\<br>• \*\*Object\*\*: Specify elements for APM and action forms:\<br>  - \`apmForm\`: Element to display the APM\<br>  - \`actionForm\`: Element for the Continue Payment button, which opens a modal for completing provider-specific payment steps |
+| Parameter         | Description                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `renderMode`      | This optional parameter determines how payment forms are displayed:\<br>• `type`: Either 'modal' or 'element'\<br>• `elementSelector`: Required if `type` is 'element'. Specifies where to render the form.                                                                                                                                                                               |
+| `elementSelector` | Required when `type` is 'element'. Specifies where to mount the Yuno SDK:\<br>• **String** (Deprecated): ID or selector for mounting the SDK\<br>• **Object**: Specify elements for APM and action forms:\<br>  - `apmForm`: Element to display the APM\<br>  - `actionForm`: Element for the Continue Payment button, which opens a modal for completing provider-specific payment steps |
 
 ```javascript
 yuno.startCheckout({
@@ -314,9 +314,9 @@ yuno.startCheckout({
 
 ### Card form configurations
 
-| Parameter | Description                                                                                                                                                                                                                                                                                                                                                             |
-| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `card`    | Define specific settings for the credit card form:\<br>\<br>• \`type\`: \`step\` o \`extends\`\<br>• \`styles\`: You can edit card form styles. Only you should write css, then it will be injected into the iframe.\<br>• \`cardSaveEnable\`: Show checkbox for save/enroll card. The default value is false.\<br>• \`texts\`: Custom texts in the Card forms buttons. |
+| Parameter | Description                                                                                                                                                                                                                                                                                                                                                 |
+| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `card`    | Define specific settings for the credit card form:\<br>\<br>• `type`: `step` o `extends`\<br>• `styles`: You can edit card form styles. Only you should write css, then it will be injected into the iframe.\<br>• `cardSaveEnable`: Show checkbox for save/enroll card. The default value is false.\<br>• `texts`: Custom texts in the Card forms buttons. |
 
 ```javascript
 yuno.startCheckout({
@@ -328,3 +328,98 @@ yuno.startCheckout({
   },
 })
 ```
+
+#### Save card for future payments
+
+In addition, you can display a checkbox for saving or enrolling cards using the `cardSaveEnable: true`. Below are examples of the checkbox for both card form renders.
+
+![](https://files.readme.io/bd62c09d3eaf421c95d0df7574f346d99b863383f86cdb3d570d344f7ecf2b3b-complementary-features.png)
+
+#### Rendering modes
+
+Below you find screenshots presenting the difference between the following:
+
+* Render modes `modal` and `elements` for the payment method list
+* Render modes `step` and `extends` for the credit card form
+
+![](https://files.readme.io/6af3c546704cb7a9474fecdf1dc9a139b611ae585ae72074faeb2a6ea3c620b0-caracteristicas_Complemetarias_web_1.png)
+
+You also can choose one of the render options for the card form, `step` and `extends`:
+
+![](https://files.readme.io/c9b56c608ae9542d7f78dd8b9406054eee82169a3b8f3c3b22c8338d9b797939-caracteristicas_Complemetarias_web_2.png)
+
+#### Text payment form buttons
+
+| Parameter | Description                                                                                    |
+| :-------- | :--------------------------------------------------------------------------------------------- |
+| `texts`   | Provide custom text for payment form buttons to match your application's language or branding. |
+
+```javascript
+yuno.startCheckout({
+  texts: {
+    customerForm?: {
+      submitButton?: string;
+    }
+    paymentOtp?: {
+      sendOtpButton?: string;
+    }
+  }
+})
+```
+
+#### Persist credit card form to retry payments
+
+If a transaction is rejected, you can use the credit card form to retry a payment after the customer has entered the credit card details. To do that, you will need to:
+
+1. Add the following parameter while initializing the SDK to persist the credit card form after the one-time use token is created:
+   ```javascript
+   yuno.startCheckout({
+     automaticallyUnmount: false,
+   })
+   ```
+2. In case the transaction is rejected, you will need to:
+   1. Execute the method `yuno.notifyError() `to delete the previously entered CVV for the first transaction.
+   2. Create a new checkout session and update the SDK with the new one by executing `yuno.updateCheckoutSession(checkoutsession)`
+3. Continue with the new checkout and one-time use token with the regular payment flow.
+
+#### Hide Pay button
+
+You can hide the Pay button when presenting the Card or Customer Data Forms. To control this feature, you'll set `showPayButton` to `false` when starting the checkout with the `startCheckout` function. The code block below presents an example of how to hide the payment button:
+
+```javascript
+yuno.startCheckout({
+  /**
+   * Hide (false) or show (true) the customer or card form pay button
+   * @default true
+   * @optional
+   */
+  showPayButton: false,
+})
+```
+
+The following images present examples of the Customer Data Form with and without the Pay button:
+
+![](https://files.readme.io/f2fd10924004e11c3776699fe301afd21259eba255f9329f83e3276c19010b64-Card_boton.png)
+
+The following images present examples of the Card Form with and without the Pay button:
+
+![](https://files.readme.io/87bfe55c56266fb1d8ffc7cd1f8648840b06353a960b7d2bb7d27cb174eaae53-Card_boton_1.png)
+
+If you hide the Pay button, you will need to start the one-time token creation through your code. To create the one-time token and continue the payment in your backend, call the `submitOneTimeTokenForm` function. The code block below presents how to use the `submitOneTimeTokenForm` function.
+
+```javascript
+/**
+ * This function triggers the same functionality that is called when the customer clicks on the pay form button. This approach does not work if you choosed step for rendering mode.
+ */
+yuno.submitOneTimeTokenForm()
+```
+
+## What's next?
+
+Learn about the additional configurations from the Lite SDK accessing [Complementary Features](doc:lite-checkout-sdk#complementary-features). You can also access other functions available on the Yuno Web SDK:
+
+* [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
+
+* [Payment Status](doc:payment-status): Update the user about the payment process
+
+* [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
