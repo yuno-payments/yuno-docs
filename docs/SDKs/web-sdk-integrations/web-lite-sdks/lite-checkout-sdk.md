@@ -196,6 +196,12 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
 ```
 
+<HTMLBlock>{`
+  </div>
+
+  <div class="tab-content" id="webSDKv10">
+`}</HTMLBlock>
+
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK v1.0 functionality in your application.
 
 ## Step 1: Include the library in your project
@@ -478,24 +484,6 @@ Once you have completed the steps described before, you will be able to create a
   </div>
 </body>
 `}</HTMLBlock>
-
-## `continuePayment` return value or null
-
-For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the `await yuno.continuePayment()` method will return either an object with the following structure or null:
-
-```typescript
-{
-  action: 'REDIRECT_URL'
-  type: string
-  redirect: {
-    init_url: string
-    success_url: string
-    error_url: string
-  }
-} | null
-```
-
-When the method returns an object, it allows you to handle your application's payment flows that require custom redirect handling. When it returns null, no additional merchant-side action is needed.
 
 ## Complementary features
 

@@ -308,9 +308,7 @@ Once the previous steps are complete, you can proceed to create a payment. Back-
 
 ## `continuePayment` return value or null
 
-For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the `await yuno.continuePayment()` method will return either an object with the following structure or null. 
-
-For detailed information about webview integration, including for Mercado Pago Checkout Pro, see the [Mercado Pago Checkout Pro webview integration](doc:complementary-features-full-sdk#mercado-pago-checkout-pro-webview-integration) section in the complementary features documentation.
+For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the `await yuno.continuePayment()` method will return either an object with the following structure or null:
 
 ```typescript
 {
