@@ -17,20 +17,6 @@ Before proceeding, choose the integration method that best suits your needs. For
 
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 
-* [Full SDK](/docs/full-sdk-workflow)
-
-* [Lite SDK (Payment)](/docs/the-ultimate-checkout-lite)
-
-* [Lite SDK (Enrollment)](/docs/enrollment-lite)
-
-* [Secure Fields](/docs/secure-fields)
-
-* [Headless SDK (Payment)](/docs/headless-sdk-integration)
-
-* [Headless SDK (Enrollment)](/docs/headless-sdk-enrollment-steps)
-
-* [Direct Workflow](/docs/direct-flow)
-
 <Cards columns={3}>
   <Card title="Full SDK" href="/docs/full-sdk-workflow" icon="fa-code">
     Learn more about integrating the Full SDK.
