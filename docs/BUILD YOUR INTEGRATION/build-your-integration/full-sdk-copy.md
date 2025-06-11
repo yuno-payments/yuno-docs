@@ -17,26 +17,6 @@ Before proceeding, choose the integration method that best suits your needs. For
 
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 
-<Cards columns={4}>
-  <Card title="First Card" href="https://readme.com" icon="fa-home" target="_blank">
-    Neque porro quisquam est qui dolorem ipsum quia
-  </Card>
-
-  <Card title="Second Card" icon="fa-user">
-    *Lorem ipsum dolor sit amet, consectetur adipiscing elit*
-  </Card>
-
-  <Card title="Third Card" icon="fa-star">
-    > Ut enim ad minim veniam, quis nostrud ullamco
-  </Card>
-
-  <Card title="Fourth Card" icon="fa-question">
-    **Excepteur sint occaecat cupidatat non proident**
-  </Card>
-</Cards>
-
-<br />
-
 <Shelf classname="cards_container" columns={4}>
   <div class="first_row">
     <YunoCard type="sdk-integrations" title="Full SDK" href="/docs/full-checkout-sdk">
