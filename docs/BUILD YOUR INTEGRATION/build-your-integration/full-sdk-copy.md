@@ -17,7 +17,7 @@ Before proceeding, choose the integration method that best suits your needs. For
 
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 
-<Shelf classname="cards_container" columns={4}>
+<Shelf classname="cards_container" columns={2}>
   <YunoCard type="sdk-integrations" title="Full SDK" href="/docs/full-checkout-sdk">
     Render the payment methods your company has available in the checkout and for user enrollment.
   </YunoCard>
