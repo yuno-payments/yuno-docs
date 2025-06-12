@@ -123,7 +123,7 @@ For platform-specific setup, refer to:
 
   <YunoCard title="Android" href="/docs/lite-checkout-android" />
 
-  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
+  <YunoCard title="Flutter" href="/docs/lite-sdk-payment-flutter" />
 </Shelf>
 
 ## Payment workflow using a vaulted token
