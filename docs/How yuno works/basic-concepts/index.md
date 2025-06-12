@@ -28,6 +28,28 @@ To understand how Yuno operates, you need to grasp some fundamental concepts abo
 
 For a deeper understanding of each concept related to Yuno's system, visit the respective pages:
 
+<Shelf classname="link_cards_container">
+  <YunoCard title="Customers" href="/reference/the-customer-object" />
+
+  <YunoCard title="Enrollment" href="/reference/enrollment-workflow" />
+
+  <YunoCard title="Checkout" href="/reference/the-checkout-session-object" />
+
+  <YunoCard title="Payments" href="/reference/status-and-response-codes" />
+
+  <YunoCard title="Payment Links" href="/reference/status-payment-links" />
+
+  <YunoCard title="Subscriptions" href="/reference/status-subscriptions" />
+
+  <YunoCard title="Payouts" href="/reference/payout-workflow" />
+
+  <YunoCard title="Reports" href="/reference/report-status" />
+
+  <YunoCard title="Installments" href="/reference/create-installments-plan" />
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="link_cards_container">
