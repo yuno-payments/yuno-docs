@@ -33,6 +33,14 @@ Let's walk through the process of adding, creating, and managing connections to 
 
 5. With your connections set, you can proceed to the [Routing](https://docs.y.uno/docs/routing) section to configure payment processing routes using the provider and payment methods you have available within Yuno.
 
+> 📘 Set up costs for new connections
+>
+> When you add a new connection, you can set up its costs. This optional step allows you to set different costs for successful and unsuccessful payments to help manage fees using the [Smart Routing feature](/docs/routing#smart-routing).
+>
+> You can set default costs for all payments and add specific conditions for different situations, like setting a unique cost when a customer uses Visa.
+>
+> Costs are applied in the order you create them, but you can rearrange them by dragging and dropping. This setup helps Yuno Payments automatically choose the most cost-effective route for each transaction when you activate the Smart Routing.
+
 <HTMLBlock>{`
 <body>
   <div class="infoBlockContainer">
