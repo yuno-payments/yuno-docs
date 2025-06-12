@@ -14,7 +14,7 @@ Yuno's **Headless SDK** gives you full control over the checkout UX and UI witho
 
 ## Payment workflow
 
-The following image describes the complete payment workflow. Below, each step is described in detail. However, if you need a more technical oriented instructions, refer to the corresponding platform guide:
+The diagram below illustrates the complete payment workflow. Each step is explained in detail in the following sections. For platform-specific implementation details, refer to the corresponding guide:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/headless-sdk-payment" />
