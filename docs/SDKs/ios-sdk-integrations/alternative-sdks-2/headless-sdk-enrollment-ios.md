@@ -52,8 +52,6 @@ You can install Yuno SDK in two ways:
   ]
   ```
 
-<br />
-
 ## Step 2: Initialize Headless SDK with the public key
 
 To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
