@@ -26,6 +26,16 @@ With the Lite SDK, you can:
 
 Use the following guides to implement each process:
 
+<Shelf classname="link_cards_container">
+  <YunoCard title="Payment workflow" href="#payment-workflow" titleSize="h4" />
+
+  <YunoCard title="Payment workflow using a vaulted token" href="#payment-workflow-using-a-vaulted-token" titleSize="h4" />
+
+  <YunoCard title="Enroll a credit card while paying" href="#enroll-a-credit-card-while-paying" titleSize="h4" />
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="link_cards_container">
@@ -162,9 +172,8 @@ Use the [Create checkout session](ref:create-checkout-session) endpoint and prov
 Query the available payment methods using the [Retrieve payment methods](ref:retrieve-payment-methods-for-checkout) endpoint using the `checkout_session`. Show these methods to the customer so they can select their preferred payment method to execute the payment.
 
 > ❗️ Display Payment Methods
-> 
+>
 > You're responsible for displaying the payment methods and capturing the customer's selection when using the Lite SDK.
-
 
 ### Step 4: Implement the SDK and retrieve a one-time token
 
@@ -251,9 +260,8 @@ You can retrieve a vaulted token in two ways:
 Use only one method to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](doc:enrollment-lite) page.
 
 > 📘 Card Enrollment Options
-> 
+>
 > You should only use one option to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](enrollment-lite) page.
-
 
 After enrolling in a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
 
@@ -264,8 +272,8 @@ After enrolling in a payment method, you can use the vaulted token to perform pa
 >
 > Even if the user selects an enrolled payment method, Yuno recommends using the SDK to tokenize the information instead of directly using the vaulted token with Yuno's API. This approach provides several benefits:
 >
-> - **Support 3DS**: Enhanced security for online payments.
-> - **Fraud Screening**: Better protection against fraudulent transactions.
-> - **Collect Required Information**: Gather additional fields required by the provider if necessary.
+> * **Support 3DS**: Enhanced security for online payments.
+> * **Fraud Screening**: Better protection against fraudulent transactions.
+> * **Collect Required Information**: Gather additional fields required by the provider if necessary.
 >
 > To implement this, send the `vaultedToken` when mounting the SDK. The SDK will handle the rest. If the payment method requires an extra step (such as a 3DS challenge), use the `yuno.continuePayment()` method. This method handles any required redirections and works for both enrolled and regular payment methods that need additional customer actions.
