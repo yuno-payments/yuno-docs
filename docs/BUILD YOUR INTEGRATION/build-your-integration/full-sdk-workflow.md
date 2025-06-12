@@ -182,17 +182,6 @@ The following steps outline the detailed sequence of interactions between the di
 10. Merchant Client: Show payment result --> Merchant Server: Receive payment result
 11. Merchant Server: Receive payment result --> Yuno Server: Provides payment result
 
-This workflow follows the same steps as the **payment workflow**, but instead of collecting new payment details, the SDK retrieves the stored **vaulted token**:
-
-1. [Create a checkout session](#step-2-create-a-checkout-session).
-2. [Implement the SDK and retrieve a one-time token](#step-3-implement-the-sdk-and-retrieve-a-one-time-token), using the **vaulted token**.
-3. [Create the payment](#step-4-create-a-payment).
-4. [Continue payment](#step-5-continue-payment).
-5. [Get payment status](#step-6-get-payment-status).
-6. [Receive payment result via webhook](#step-7-receive-payment-result-through-webhook).
-
-For these steps, follow the guidelines in the [payment workflow](#payment-workflow).
-
 ## Enroll a credit card while paying
 
 With the Full SDK, you can save credit/debit cards for future purchases with the same payment request without the enrollment [integration](enrollment-lite). You can obtain the [vaulted token](doc:tokens) in two ways:
