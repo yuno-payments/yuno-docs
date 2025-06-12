@@ -28,51 +28,17 @@ Yuno offers customizable velocity rules to help detect and respond to suspicious
 
 With Yuno, you can create protection rules tailored to your specific business needs. These rules monitor transaction frequency and volume per individual account, allowing you to detect unusual activity in real time. You can select from multiple rule types and combine them to target specific fraudulent behaviours with precision.
 
-<HTMLBlock>{`
-<style>
-.infoBlockContainer h3 {
-  margin: 0;
-  }
-</style>
+> 📘 Rule Example
+>
+> Block payments if the number of payments per user exceeds 5, with an amount greater than 50 USD per payment, within a 10-minute timeframe, at the account level in Colombia.
 
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <div class="contentContainer">
-        <h3>Rule example</h3>
-        <p>
-					Block payments if the number of payments per user exceeds 5, with an amount greater than 50 USD per payment, within a 10-minute timeframe, at the account level in Colombia. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/routing-v2.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/routing-v2.mp4" />
 
 In addition to blocking fraudulent payments, Yuno's rules also help identify secure transactions. You can automatically bypass Fraud Screening or 3DS for verified payments to streamline the user experience. However, it's important to configure these rules carefully, as incorrect settings may lead to security gaps or unintended transaction blocks.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Remove rules and lists (blocklists and allowlist)</h3>
-      <div class="contentContainer">
-        <p>
-          You can't delete allowlists, blocklists, or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or a list, you only need to remove it from your routes.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Remove Rules and Lists
+>
+> You can't delete allowlists, blocklists, or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or a list, you only need to remove it from your routes.
 
 Within the **Rules** tab, select **Create rule** to configure your own rules. Set the following parameters based on your needs:
 
@@ -149,24 +115,8 @@ You must configure the **Risk conditions** connection to enable rules and lists.
 3. Access **Routing** in the dashboard, select a route and add **Risk conditions** to it. From here, you can select which rules and lists to use for that payment method.
 4. Publish your route to activate the changes.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/risk_routing.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/risk_routing.mp4" />
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Remove rules and blocklists</h3>
-      <div class="contentContainer">
-        <p>
-          You can't delete blocklists or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or blocklist, you only need to remove it from your routes.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Remove Rules and Blocklists
+>
+> You can't delete blocklists or rules. Yuno uses this approach to ensure you'll have access to the history of affected payments. If you want to stop using a rule or blocklist, you only need to remove it from your routes.
