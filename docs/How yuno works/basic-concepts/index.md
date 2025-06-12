@@ -29,21 +29,21 @@ To understand how Yuno operates, you need to grasp some fundamental concepts abo
 For a deeper understanding of each concept related to Yuno's system, visit the respective pages:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Customers" href="/docs/customers" />
+  <YunoCard title="Customers" href="/docs/customers" titleSize="h4" />
 
-  <YunoCard title="Sessions" href="/docs/sessions" />
+  <YunoCard title="Sessions" href="/docs/sessions" titleSize="h4" />
 
-  <YunoCard title="Payments" href="/docs/payments-1" />
+  <YunoCard title="Payments" href="/docs/payments-1" titleSize="h4" />
 
-  <YunoCard title="Transactions" href="/docs/transactions" />
+  <YunoCard title="Transactions" href="/docs/transactions" titleSize="h4" />
 
-  <YunoCard title="Tokens" href="/docs/tokens" />
+  <YunoCard title="Tokens" href="/docs/tokens" titleSize="h4" />
 
-  <YunoCard title="Payment Methods" href="/docs/payment-methods" />
+  <YunoCard title="Payment Methods" href="/docs/payment-methods" titleSize="h4" />
 
-  <YunoCard title="Fraud Prevention" href="/docs/fraud" />
+  <YunoCard title="Fraud Prevention" href="/docs/fraud" titleSize="h4" />
 
-  <YunoCard title="3DS" href="/docs/3ds-1" />
+  <YunoCard title="3DS" href="/docs/3ds-1" titleSize="h4" />
 </Shelf>
 
 <br />
