@@ -47,7 +47,7 @@ Yuno provides customized SDKs for Web, Android,  IOs, and Flutter applications. 
 
   <YunoCard title="Android" href="/docs/full-checkout-android" />
 
-  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
+  <YunoCard title="Flutter" href="/docs/full-sdk-flutter" />
 </Shelf>
 
 > 📘 Explore the SDK Project Example
