@@ -14,7 +14,7 @@ Yuno's **Headless SDK** provides complete control over the checkout UX and UI, a
 
 ## Enrollment workflow
 
-The following image outlines the complete enrollment workflow. Each step is described in detail below. However, if you need more technical instructions, refer to the corresponding platform guide:
+The diagram below illustrates the complete enrollment workflow. Each step is explained in detail in the following sections. For platform-specific implementation details, refer to the corresponding guide:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/headless-sdk-enrollment" />
