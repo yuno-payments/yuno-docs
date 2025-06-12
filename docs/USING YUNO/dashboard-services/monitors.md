@@ -46,7 +46,7 @@ Provider interruptions:
 Traffic redirection sequence:
 
 1. When a provider drops below the approval threshold, traffic redirects to the fallback provider
-2. If the fallback provider also drops below threshold, traffic moves to the second fallback (if available) 
+2. If the fallback provider also drops below threshold, traffic moves to the second fallback (if available)
 3. If all providers are below threshold, traffic routes to whichever provider has the highest approval rate
 
 The diagram below illustrates these traffic redirection scenarios:
@@ -74,23 +74,8 @@ To configure a monitor for your payment routes:
 
 5. Save the monitor changes, or save it as a template for future usage.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/monitor_v2.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/monitor_v2.mp4" />
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					You can't create a monitor in published routes. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Monitor Limitation
+>
+> You can't create a monitor in published routes. [Learn more](#test)
