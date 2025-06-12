@@ -34,8 +34,6 @@ For platform-specific setup, refer to:
   <YunoCard title="iOS" href="/docs/seamless-sdk-payment-ios" />
 
   <YunoCard title="Android" href="/docs/seamless-sdk-payment-android" />
-
-  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
 </Shelf>
 
 <br />
