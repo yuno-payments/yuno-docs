@@ -87,7 +87,9 @@ The following steps outline the complete interaction flow between all components
 11. Merchant Server: Receive enrollment result via webhook --> Yuno Server: Receive enrollment results from payment provider
 12. Yuno Server: Receive enrollment results from payment provider --> Yuno SDK: Display enrollment result (optional)
 
-For platform-specific instructions on initializing Yuno's SDK, refer to the following:
+## Platform-specific SDK setup
+
+To implement the Full SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/enrollment-lite-sdk" />
