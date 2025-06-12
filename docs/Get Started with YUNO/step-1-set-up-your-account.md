@@ -21,7 +21,7 @@ next:
 This guide walks you through creating and configuring your Yuno account to process payments. You'll learn how to:
 
 * Set up your Yuno account
-* Configure your first payment connection 
+* Configure your first payment connection
 * Set up payment routing
 * Enable payment methods
 * Obtain API credentials
@@ -32,7 +32,7 @@ To create your Yuno account:
 
 1. Contact [sales@y.uno](mailto:sales@y.uno) to request a new account
 2. Look for a verification email from the Yuno team and follow the instructions to verify your identity
-3. Once verified, you'll receive your Yuno account credentials 
+3. Once verified, you'll receive your Yuno account credentials
 4. Log into the [Yuno dashboard](https://dashboard.y.uno/) using your credentials
 
 ![Account creation process](https://files.readme.io/4e69b61-register_yuno_V2.png)
@@ -50,6 +50,8 @@ To set up your first payment connection:
 5. Click **Save**
 
 The dashboard will display a confirmation message when your connection is successfully added.
+
+[![Connection Setup Video](https://files.readme.io/4e69b61-register_yuno_V2.png)](https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4)
 
 <HTMLBlock>{`
 <div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
