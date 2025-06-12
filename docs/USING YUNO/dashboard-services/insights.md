@@ -15,11 +15,7 @@ next:
 ---
 The **Insights** section provides a unified view of your payment performance metrics and analytics, directly within the dashboard. This powerful tool transforms raw data into actionable intelligence, empowering you to make informed decisions and optimize your payment strategies. Its user-friendly interface can be easily customized to meet your unique business needs.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/insights_V3.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/insights_V3.mp4" />
 
 ## Understand your payment landscape
 
