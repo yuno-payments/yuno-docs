@@ -92,7 +92,7 @@ Next, you will start the checkout process using the `apiClientEnroll` function, 
 | Parameter          | Description                                                                                                                                                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk)  page. |
-| `customer_session` | Refers to the current enrollment's \[customer session]\(doc:sessions)  received as a response to the \[Create Customer Session]\(ref:create-customer-session)  endpoint.\<br>Example: '438413b7-4921-41e4-b8f3-28a5a0141638'            |
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions)   received as a response to the [Create Customer Session](ref:create-customer-session)   endpoint.\<br>Example: '438413b7-4921-41e4-b8f3-28a5a0141638'              |
 
 The next code block presents an example of the parameter configuration.
 
