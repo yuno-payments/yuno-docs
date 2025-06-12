@@ -110,7 +110,9 @@ The following steps outline the complete interaction flow between all components
 15. Merchant Client: Initiate payment --> Merchant Server: Create payment
 16. Merchant Server: Create payment --> Yuno Server: Creates payment in the payment provider
 
-For platform-specific SDK setup, refer to:
+## Platform-specific SDK setup
+
+To implement the Full SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/full-checkout-sdk" />
