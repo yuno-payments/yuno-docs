@@ -53,14 +53,6 @@ The dashboard will display a confirmation message when your connection is succes
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4" />
 
-<br />
-
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
-
 ### Step 3: Set up routing for your new connection
 
 After adding a connection, you need to assign it to a route. Routes determine which provider processes payments. While you can configure multiple routes and processors for each payment method, this guide covers a basic setup where all payments are processed through the Yuno Test Payment Gateway connection.
