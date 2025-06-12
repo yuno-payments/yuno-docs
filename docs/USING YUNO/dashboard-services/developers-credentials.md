@@ -58,18 +58,6 @@ Protecting your authentication credentials is paramount for maintaining secure o
 * Never share credentials with unauthorized parties
 * Monitor credential usage
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <h3>Security Alert</h3>
-      <div class="contentContainer">
-        <p>
-          If you suspect credential exposure or unauthorized access, contact our support team immediately. Prompt action helps maintain the security of your operations.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Security Alert
+>
+> If you suspect credential exposure or unauthorized access, contact our support team immediately. Prompt action helps maintain the security of your operations.
