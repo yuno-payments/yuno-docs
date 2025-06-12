@@ -20,6 +20,26 @@ Yuno's Web SDKs provide several features designed to enhance your payment proces
 
 Select one of the user-friendly Web integration options available and kickstart your journey toward efficient payment processing:
 
+<Shelf classname="link_cards_container">
+  <YunoCard title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" titleSize="h4" description="Render the payment methods your company has available in the checkout and for user enrollment." />
+
+  <YunoCard title="Lite SDK (Payment)" href="https://docs.y.uno/docs/lite-checkout-sdk" titleSize="h4" description="With this option, you control which payment methods will be shown to the user during checkout and enrollment." />
+
+  <YunoCard title="Lite SDK (Enrollment)" href="https://docs.y.uno/docs/enrollment-lite-sdk" titleSize="h4" description="Simplify the user enrollment of payment methods." />
+
+  <YunoCard title="Secure Fields" href="https://docs.y.uno/docs/secure-fields-payment" titleSize="h4" description="Create and customize your own checkout with prebuilt UI components." />
+
+  <YunoCard title="Headless SDK (Payment)" href="https://docs.y.uno/docs/headless-sdk-payment" titleSize="h4" description="Customize the checkout without having to be PCI compliant." />
+
+  <YunoCard title="Headless SDK (Enrollment)" href="https://docs.y.uno/docs/headless-sdk-enrollment" titleSize="h4" description="Customize the enrollment of new payment methods." />
+
+  <YunoCard title="Direct Workflow" href="https://docs.y.uno/docs/direct-flow" titleSize="h4" />
+</Shelf>
+
+<br />
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="cards_container">
