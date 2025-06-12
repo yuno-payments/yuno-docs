@@ -71,7 +71,9 @@ The following steps outline the complete interaction flow between all components
 2. Merchant Client: Initiate SDK with checkout session and `payment_method` --> Yuno SDK: Initiate SDK with `checkout_session` and `payment_method`
 3. Yuno Server: Create payment --> Yuno SDK: Generate OTT
 
-For detailed instructions on integrating Yuno SDKs for each platform, please refer to:
+## Platform-specific SDK setup
+
+To implement the Full SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/seamless-sdk-payment-web" />
