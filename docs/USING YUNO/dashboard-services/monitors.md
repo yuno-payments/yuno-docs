@@ -78,4 +78,4 @@ To configure a monitor for your payment routes:
 
 > 📘 Monitor Restriction
 >
-> Monitors cannot be created for routes that are already published. [Find out more](#test)
+> Monitors cannot be created for routes that are already published.
