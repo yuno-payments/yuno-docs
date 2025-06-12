@@ -30,6 +30,18 @@ The following diagram describes the complete enrollment workflow. Each step is e
 
 For platform-specific instructions on initializing Yuno's SDK, refer to the following:
 
+<Shelf classname="platform_shelf">
+  <YunoCard title="Web" href="/docs/enrollment-lite-sdk" />
+
+  <YunoCard title="iOS" href="/docs/enrollment-ios" />
+
+  <YunoCard title="Android" href="/docs/enrollment-android" />
+
+  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="platform_shelf">
@@ -95,8 +107,7 @@ Query the available payment methods using the [Retrieve Payment Methods To Enrol
 
 > 📘 Configure Available Payment Methods
 >
-> You can enable or disable payment methods using the [Checkout Builder](/docs/checkout-builder) in the [Yuno dashboard](https://auth.y.uno/u/login?). 
-
+> You can enable or disable payment methods using the [Checkout Builder](/docs/checkout-builder) in the [Yuno dashboard](https://auth.y.uno/u/login?).
 
 Use the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint to enroll the selected payment method to the customer account. You need to inform the `customer_session` and the payment method.
 
