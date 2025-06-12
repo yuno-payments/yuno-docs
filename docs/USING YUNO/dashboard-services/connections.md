@@ -41,28 +41,6 @@ Let's walk through the process of adding, creating, and managing connections to 
 >
 > Costs are applied in the order you create them, but you can rearrange them by dragging and dropping. This setup helps Yuno Payments automatically choose the most cost-effective route for each transaction when you activate the Smart Routing.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Set up costs for new connections</h3>
-      <div class="contentContainer">
-        <p>
-          When you add a new connection, you can set up its costs. This optional step allows you to set different costs for successful and unsuccessful payments to help manage fees using the <a href="/docs/routing#smart-routing">Smart Routing feature</a>.
-				</p>
-        <p>
-					You can set default costs for all payments and add specific conditions for different situations, like setting a unique cost when a customer uses Visa.
-				</p>
-        <p>
-					Costs are applied in the order you create them, but you can rearrange them by dragging and dropping. This setup helps Yuno Payments automatically choose the most cost-effective route for each transaction when you activate the Smart Routing.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
 ## Managing connections
 
 The **Your connections** tab within Connections allows you to manage existing connections to suit your evolving business needs. Available actions include:
