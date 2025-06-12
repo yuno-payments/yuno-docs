@@ -51,7 +51,9 @@ To set up your first payment connection:
 
 The dashboard will display a confirmation message when your connection is successfully added.
 
-[![Connection Setup Video](https://files.readme.io/4e69b61-register_yuno_V2.png)](https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4)
+[![Watch the video](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4)
+
+<br />
 
 <HTMLBlock>{`
 <div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
