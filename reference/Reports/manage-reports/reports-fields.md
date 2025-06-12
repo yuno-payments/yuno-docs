@@ -15,12 +15,13 @@ next:
 ---
 In this section, you can find all report types and related fields available when generating your reports. Take into account the description of the fields, where you can find the origin of the data and its availability.
 
-Yuno provides four report types: 
+Yuno provides several report types: 
 
 * [Payment](ref:reports-fields#payment-report)
 * [Transaction ](ref:reports-fields#transaction-report)
 * [Transaction reconciliation](ref:reports-fields#transaction-reconciliation-report)
-* [Settlement](ref:reports-fields#settlement-report) 
+* [Settlement](ref:reports-fields#settlement-report)
+* [Communications](ref:reports-fields#communications-report)
 
 Below, you will find details of each report type. 
 
@@ -2434,3 +2435,102 @@ The settlement report has two types of reports:
 `}</HTMLBlock>
 
 <b>(A)</b> The availability of this data field depends on whether the processor or acquirer provides the information. If Yuno can identify the transaction, it will display the data; otherwise, the field may be empty.
+
+## Communications report
+
+The communications report provides detailed information about all communications (calls, messages) between customers and the merchant through Yuno's communication channels. This report includes data about call durations, message content, communication status, and other relevant metrics.
+
+<HTMLBlock>{`
+<div class="table-div">
+  <table>
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>communication_id</code></td>
+        <td>string</td>
+        <td>Unique identifier for the communication.</td>
+        <td>64143128-dd12-11ec-9d64-0242ac120002</td>
+      </tr>
+      <tr>
+        <td><code>order_id</code></td>
+        <td>string</td>
+        <td>Identifier of the order associated with the communication.</td>
+        <td>64143128-dd12-11ec-9d64-0242ac120003</td>
+      </tr>
+      <tr>
+        <td><code>payment_id</code></td>
+        <td>string</td>
+        <td>Identifier of the payment associated with the communication.</td>
+        <td>64143128-dd12-11ec-9d64-0242ac120004</td>
+      </tr>
+      <tr>
+        <td><code>communication_status</code></td>
+        <td>enum</td>
+        <td>Current status of the communication.</td>
+        <td>COMPLETED</td>
+      </tr>
+      <tr>
+        <td><code>destination_phone</code></td>
+        <td>string</td>
+        <td>Phone number where the communication was sent.</td>
+        <td>+1234567890</td>
+      </tr>
+      <tr>
+        <td><code>created_at</code></td>
+        <td>datetime</td>
+        <td>Date and time when the communication was initiated.</td>
+        <td>2024-03-15 14:30:00</td>
+      </tr>
+      <tr>
+        <td><code>country</code></td>
+        <td>string</td>
+        <td>Country code where the communication was sent (ISO 3166-1 alpha-2).</td>
+        <td>US</td>
+      </tr>
+      <tr>
+        <td><code>transcription</code></td>
+        <td>string</td>
+        <td>Text transcription of the communication content.</td>
+        <td>Customer confirmed payment details...</td>
+      </tr>
+      <tr>
+        <td><code>call_duration</code></td>
+        <td>number</td>
+        <td>Duration of the call in seconds.</td>
+        <td>180</td>
+      </tr>
+      <tr>
+        <td><code>messages</code></td>
+        <td>array</td>
+        <td>Array of messages exchanged during the communication.</td>
+        <td>[{"content": "Hello", "timestamp": "2024-03-15 14:30:00"}]</td>
+      </tr>
+      <tr>
+        <td><code>summary</code></td>
+        <td>string</td>
+        <td>Summary of the communication content.</td>
+        <td>Payment verification call completed successfully</td>
+      </tr>
+      <tr>
+        <td><code>channel</code></td>
+        <td>enum</td>
+        <td>Communication channel used (e.g., VOICE, SMS, WHATSAPP).</td>
+        <td>VOICE</td>
+      </tr>
+      <tr>
+        <td><code>focus</code></td>
+        <td>string</td>
+        <td>Main topic or focus of the communication.</td>
+        <td>Payment Verification</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+`}</HTMLBlock>
