@@ -16,11 +16,7 @@ next:
 ---
 The Payments dashboard section shows all payments, transactions, fraud screening, and payout data. In addition, you can use filters to refine your searches and enjoy extensive configuration of exports and reports.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/payments-v2.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/payments-v2.mp4" />
 
 ## Payments section breakdown
 
@@ -41,7 +37,7 @@ The Payments section is a powerful tool to simplify payment-related tasks and he
 
 The batch refund feature allows you to process refunds for several transactions simultaneously, saving time and effort. You can refund up to 1000 payments at once.
 
- To execute batch refunds, access the **All payments** tab and select **Batch refunds → Upload**. From here, upload a CSV file with your refunds. You can download a sample file to help with the formatting. For each payment to refund, you should inform:
+To execute batch refunds, access the **All payments** tab and select **Batch refunds → Upload**. From here, upload a CSV file with your refunds. You can download a sample file to help with the formatting. For each payment to refund, you should inform:
 
 * Payment ID
 * Transaction ID
@@ -59,5 +55,5 @@ After uploading the file, you can track the refund status of each payment by acc
 Click the **Export** button to see three tabs, each giving you specialized control over your data exports:
 
 **Quick export**: Select a specific date range and customize the columns visible in the export.\
-**Scheduled reports**: Configure a report to send periodically to your email address. You may also set the columns to export.\
+**Scheduled reports**: Configure a report to send periodically to your email address. You may also set the columns to export.
 **Downloads**: Previous reports are saved in this tab for easy download.
