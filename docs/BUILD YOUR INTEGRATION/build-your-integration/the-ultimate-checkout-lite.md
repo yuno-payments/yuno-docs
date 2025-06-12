@@ -42,6 +42,18 @@ The diagram below illustrates the complete payment workflow:
 
 For platform-specific setup, refer to:
 
+<Shelf classname="platform_shelf">
+  <YunoCard title="Web" href="/docs/lite-checkout-sdk" />
+
+  <YunoCard title="iOS" href="/docs/lite-checkout-ios" />
+
+  <YunoCard title="Android" href="/docs/lite-checkout-android" />
+
+  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="platform_shelf">
