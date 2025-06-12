@@ -89,9 +89,28 @@ You need an enrollment payment method object to set Headless SDK integration for
 
 Next, you will start the checkout process using the `apiClientEnroll` function, providing the necessary configuration parameters. The following table lists all required parameters and their descriptions.
 
-| Parameter      | Description                                                                                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `country_code` | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the |
+| Parameter          | Description                                                                                                                                                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk)  page. |
+| `customer_session` | Refers to the current enrollment's \[customer session]\(doc:sessions)  received as a response to the \[Create Customer Session]\(ref:create-customer-session)  endpoint.\<br>Example: '438413b7-4921-41e4-b8f3-28a5a0141638'            |
+
+The next code block presents an example of the parameter configuration.
+
+```swift
+var apiClientEnroll: YunoEnrollHeadless?
+
+apiClientEnroll = Yuno.apiClientEnroll(
+
+  /**
+     * country can be one of the following: https://docs.y.uno/docs/country-coverage-yuno-sdk
+     */
+    country_code: "CO",
+     /**
+     * The customer_session created in https://docs.y.uno/reference/create-customer-session
+     */
+    customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+  )
+```
 
 ## Step 6: Generate a vaulted token
 
