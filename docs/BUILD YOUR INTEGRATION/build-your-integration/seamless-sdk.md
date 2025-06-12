@@ -28,18 +28,14 @@ The diagram below illustrates the complete payment workflow:
 
 For platform-specific setup, refer to:
 
-<Shelf classname="cards_container second_cards_container">
-  <YunoCard title="Web" href="/docs/seamless-sdk-payment-web">
-    Explore a web implementation of Yuno SDK.
-  </YunoCard>
+<Shelf classname="platform_shelf">
+  <YunoCard title="Web" href="/docs/seamless-sdk-payment-web" />
 
-  <YunoCard title="iOS" href="/docs/seamless-sdk-payment-ios">
-    Explore an iOS implementation of Yuno SDK.
-  </YunoCard>
+  <YunoCard title="iOS" href="/docs/seamless-sdk-payment-ios" />
 
-  <YunoCard title="Android" href="/docs/seamless-sdk-payment-android">
-    Explore an Android implementation of Yuno SDK.
-  </YunoCard>
+  <YunoCard title="Android" href="/docs/seamless-sdk-payment-android" />
+
+  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
 </Shelf>
 
 <br />
