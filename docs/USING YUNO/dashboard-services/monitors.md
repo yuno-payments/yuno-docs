@@ -76,6 +76,6 @@ To configure a monitor for your payment routes:
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/monitor_v2.mp4" />
 
-> 📘 Monitor Limitation
+> 📘 Monitor Restriction
 >
-> You can't create a monitor in published routes. [Learn more](#test)
+> Monitors cannot be created for routes that are already published. [Find out more](#test)
