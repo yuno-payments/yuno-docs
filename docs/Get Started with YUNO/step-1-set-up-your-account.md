@@ -51,9 +51,7 @@ To set up your first payment connection:
 
 The dashboard will display a confirmation message when your connection is successfully added.
 
-[![Watch the video](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4)
-
-<br />
+[Watch the video walkthrough](https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4)
 
 <HTMLBlock>{`
 <div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
