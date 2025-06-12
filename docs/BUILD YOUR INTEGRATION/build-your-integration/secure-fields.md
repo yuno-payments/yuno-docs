@@ -35,9 +35,9 @@ The Secure Fields SDK enhances your checkout experience by simplifying payment c
 * **Tokenization**: Payment details are tokenized, ensuring sensitive data never touches your server.
 * **Data protection**: Secure payment information prevents data breaches and ensures customer security.
 
-## Payment workflow
+## Platform-specific SDK setup
 
-The following steps describe the integration process for the Secure Fields SDK to perform payments. However, if you need a more technical oriented instructions, refer to the corresponding platform guide:
+To implement the Secure Fields SDK integration, follow the platform-specific guide below:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/secure-fields-payment" />
