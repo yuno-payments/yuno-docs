@@ -74,14 +74,6 @@ Once published, you'll find your new route in the Published tab. This means the 
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_V2.mp4" />
 
-<br />
-
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_V2.mp4"  loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
-
 ### Step 4: Enable the payment method in the checkout builder
 
 After configuring your connection and routing, enable the Card payment method to make it available in your checkout:
@@ -93,14 +85,6 @@ After configuring your connection and routing, enable the Card payment method to
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/checkoutbuilder.mp4" />
 
-<br />
-
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/checkoutbuilder.mp4"  loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
-
 ### Step 5: Get your API credentials
 
 To complete the setup, you'll need to obtain your API credentials from the Yuno dashboard. These credentials are required for integrating Yuno into your application and are specific to the Sandbox environment.
@@ -111,13 +95,5 @@ To complete the setup, you'll need to obtain your API credentials from the Yuno 
    * Secret API Key - Used for server-side API calls
 
 <Video src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/set_up_you_account/developer_V2.mp4" />
-
-<br />
-
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/set_up_you_account/developer_V2.mp4" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
 
 Now that you've completed the dashboard setup and obtained your API credentials, proceed to [Create your first payment](doc:step-2-your-first-payment) to continue with the integration guide.
