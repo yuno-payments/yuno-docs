@@ -1069,6 +1069,10 @@ This object represents the payment created after generating the checkout session
             <br />The accept content value of the customer's browser
             <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
           </p>
+          <p><strong><code>platform</code></strong> <small>enum</small>
+            <br />The platform from which the customer is making the payment.
+            <br /><small>Possible enum values: <code>WEB</code>, <code>IOS</code>, <code>ANDROID</code></small>
+          </p>
           <p><strong><code>color_depth</code></strong> <small>float</small>
             <br />The color depth of the customer's browser in bits per pixel. This should be obtained by using the
             browser's screen.colorDepth property. Accepted values: 1, 4, 8, 15, 16, 24, 30, 32 or 48 bit color depth
