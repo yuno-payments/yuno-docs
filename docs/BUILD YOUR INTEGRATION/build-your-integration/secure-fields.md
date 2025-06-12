@@ -39,6 +39,12 @@ The Secure Fields SDK enhances your checkout experience by simplifying payment c
 
 The following steps describe the integration process for the Secure Fields SDK to perform payments. However, if you need a more technical oriented instructions, refer to the corresponding platform guide:
 
+<Shelf classname="platform_shelf">
+  <YunoCard title="Web" href="/docs/secure-fields-payment" />
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="platform_shelf">
@@ -63,10 +69,9 @@ The following steps describe the integration process for the Secure Fields SDK t
 >
 > The Secure Fields SDK is designed to accept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose another Yuno integration:
 >
-> - [Full SDK](/docs/secure-fields-payment)
-> - [Lite SDK](/docs/secure-fields-payment) 
-> - [Direct Flow](/docs/secure-fields-payment)
-
+> * [Full SDK](/docs/secure-fields-payment)
+> * [Lite SDK](/docs/secure-fields-payment)
+> * [Direct Flow](/docs/secure-fields-payment)
 
 ### Step 1: Create a customer (Optional)
 
@@ -84,7 +89,6 @@ You can skip this step if you already have a customer `id` and plan to provide i
 >
 > While skipping the customer session can simplify integration, it removes features designed to streamline the user experience, which can improve conversion rates by reducing friction during checkout.
 
-
 ### Step 2: Create a checkout session
 
 Next, create a checkout session. A new checkout session must be created for each new payment. This session provides access to all available payment methods (whether previously enrolled or not) for a specific customer.
@@ -99,11 +103,9 @@ Query the available payment methods using the [Retrieve Payment Methods](ref:ret
 >
 > Secure Fields only accepts card payments. Therefore, if your customer chooses a payment method other than a card, you need to use another Yuno integration.
 
-
 > ❗️ Display Payment Methods
 >
 > You're responsible for displaying the payment methods and capturing the customer's selection when using the Secure Fields SDK.
-
 
 ### Step 4: Implement the SDK and get a one-time token
 
@@ -127,7 +129,6 @@ With the one-time token, create the payment. This process gathers all order deta
 >
 > To display the current payment status for your clients, you can use the [mountStatusPayment](/docs/payment-status#step-3-use-status) function.
 
-
 ### Step 6: Receive payment result through webhook
 
 Yuno also recommends configuring [Webhooks](doc:webhooks) in your [dashboard](https://auth.y.uno/u/login?). Webhooks are the best way to ensure your system stays updated with payment progress and status. Since the event notifications are triggered automatically, your system won't need to perform repeated requests to Yuno.
@@ -142,7 +143,6 @@ With Secure Fields SDK, you can save credit/debit cards for future purchases wit
 > 📘 Card Enrollment Options
 >
 > You should only use one option to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](enrollment-lite) page.
-
 
 After enrolling a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
 
