@@ -27,21 +27,9 @@ Yuno works with any identity providers supporting the **SAML 2.0** standard.
 
 ## How to set up SSO in Yuno
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					To activate SSO (Single Sign-On) in the dashboard, the user must have the Admin role in all accounts within the organization.
-          If the user does not meet this requirement, they will not be able to configure SSO. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 SSO Activation Requirement
+>
+> To activate SSO (Single Sign-On) in the dashboard, the user must have the Admin role in all accounts within the organization. If the user does not meet this requirement, they will not be able to configure SSO.
 
 ## Setting up SSO
 
@@ -52,11 +40,7 @@ You can connect Yuno with your identity provider and give your team secure, cent
 1. Log in to the Yuno dashboard as an administrator.
 2. Click your profile image and select **Security**. Go to the **Single sign-on** tab.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/Video1.mov" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/Video1.mov" />
 
 **Step 2: Select the identity provider**
 
@@ -79,11 +63,7 @@ You can connect Yuno with your identity provider and give your team secure, cent
 1. In the Yuno dashboard, upload the XML file provided by the identity provider or manually paste the tokens.
 2. Click **Save** to confirm the configuration.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
-  <video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/Video2.mov" loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
-</div>
-`}</HTMLBlock>
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/Video2.mov" />
 
 **Managing SSO**
 
