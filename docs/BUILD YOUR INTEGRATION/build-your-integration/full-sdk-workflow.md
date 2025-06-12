@@ -27,9 +27,7 @@ With Yuno Full SDK, you can seamlessly integrate Yuno into your system. This app
 2. Enroll a credit card while processing a payment.
 3. Use a vaulted token from an enrolled payment method.
 
-## Platform-specific SDK setup
-
-To implement the Full SDK integration, follow the platform-specific guides below:
+Follow the step-by-step guides below to integrate the full SDK:
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Payment workflow" href="#payment-workflow" titleSize="h4" />
