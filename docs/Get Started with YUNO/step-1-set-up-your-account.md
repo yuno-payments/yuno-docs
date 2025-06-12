@@ -72,6 +72,10 @@ To set up routing:
 
 Once published, you'll find your new route in the Published tab. This means the Card payment method will process all transactions through your configured route.
 
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_V2.mp4" />
+
+<br />
+
 <HTMLBlock>{`
 <div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
   <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_V2.mp4"  loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
@@ -87,6 +91,10 @@ After configuring your connection and routing, enable the Card payment method to
 3. Toggle the switch next to Card to enable it
 4. Click **Publish settings** apply your changes
 
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/checkoutbuilder.mp4" />
+
+<br />
+
 <HTMLBlock>{`
 <div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
   <video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/checkoutbuilder.mp4"  loop autoplay muted playsinline style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></video>
@@ -101,6 +109,10 @@ To complete the setup, you'll need to obtain your API credentials from the Yuno 
 2. Locate your API credentials in the Developer Tools section:
    * Public API Key - Used for client-side SDK initialization
    * Secret API Key - Used for server-side API calls
+
+<Video src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/set_up_you_account/developer_V2.mp4" />
+
+<br />
 
 <HTMLBlock>{`
 <div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px;">
