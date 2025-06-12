@@ -16,6 +16,16 @@ Yuno's **Headless SDK** gives you full control over the checkout UX and UI to en
 
 The following image describes the complete enrollment workflow. Below, each step is described in detail. However, if you need a more technical oriented instructions, refer to the corresponding platform guide:
 
+<Shelf classname="platform_shelf">
+  <YunoCard title="Web" href="/docs/headless-sdk-enrollment" />
+
+  <YunoCard title="iOS" href="/docs/headless-sdk-enrollment-ios" />
+
+  <YunoCard title="Android" href="/docs/headless-sdk-enrollment-android" />
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="platform_shelf">
@@ -85,11 +95,9 @@ Query the available payment methods using the [Retrieve Payment Methods To Enrol
 >
 > You can enable or disable payment methods using the [Checkout Builder](/docs/checkout-builder) in the [Yuno dashboard](https://auth.y.uno/u/login?).
 
-
 > 📘 Displaying payment methods
 >
 > You are responsible for displaying the available payment methods and collecting the necessary payment details from your when using the Headless SDK.
-
 
 ### Step 4: Enroll the payment method
 
@@ -113,17 +121,15 @@ Follow these steps to complete enrollment using the Headless SDK to capture and 
 >
 > This step is only necessary if you have received `enrollment.sdk_required_action = true` in [Step 4](#step-4-enroll-the-payment-method).
 
-
 > ❗️PCI Compliance
 >
 > Please bear in mind that you are capturing sensitive card data. When handling sensitive card data, follow good data management practices. If you are not PCI-certified, do not store card data other than the token provided by the SDK.
-
 
 ### Step 6: Webhook confirmation
 
 The enrollment process is asynchronous. You should use [webhooks](doc:webhooks) to get the final enrollment status.
 
-At the end of the process, you will receive the enrollment status, enrollment information, and the `vaulted_token`, equal to the `id` received when in [Step 4](doc:headless-sdk-enrollment-steps#step-4-enroll-the-payment-method). 
+At the end of the process, you will receive the enrollment status, enrollment information, and the `vaulted_token`, equal to the `id` received when in [Step 4](doc:headless-sdk-enrollment-steps#step-4-enroll-the-payment-method).
 
 > 🚧 Save the token for future payments
 >
