@@ -114,7 +114,9 @@ The following steps outline the complete interaction flow between all components
 18. Merchant Server: Receive payment result via webhook --> Yuno Server: Receive payment results from payment provider
 19. Yuno Server: Receive payment results from payment provider  --> Yuno SDK: Display payment result (optional)
 
-For platform-specific setup, refer to:
+## Platform-specific SDK setup
+
+To implement the Full SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/lite-checkout-sdk" />
