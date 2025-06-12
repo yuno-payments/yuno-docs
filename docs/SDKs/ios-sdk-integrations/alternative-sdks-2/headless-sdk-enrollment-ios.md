@@ -133,3 +133,45 @@ let enrollmentCollectedData: EnrollmentCollectedData = EnrollmentCollectedData(
 
 let result = try await apiClientEnroll.continueEnrollment(data: enrollmentCollectedData)
 ```
+
+<br />
+
+> 📘 PCI Compliance
+>
+> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
+
+After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function. The response is a dictionary of type `[String: Any]`.
+
+```swift
+[
+ vaulted_token: "9104911d-5df9-429e-8488-ad41abea1a4b",
+ status: "ENROLLED",
+
+//Same status for all SDKs: CREATED,
+    EXPIRED,
+    REJECTED,
+   
+ READY_TO_ENROLL,
+    ENROLL_IN_PROCESS,
+    UNENROLL_IN_PROCESS,
+    IN_PROCESS,
+    ENROLLED,
+    DECLINED,
+    CANCELED,
+    ERROR,
+    UNENROLLED;
+ customer: [
+   session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+ ]
+]
+```
+
+<br />
+
+> 📘 Enrollment Status via Webhooks
+>
+> Consider using the enrollment status received via [Webhooks](webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
+
+> 📘 Demo Application
+>
+> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
