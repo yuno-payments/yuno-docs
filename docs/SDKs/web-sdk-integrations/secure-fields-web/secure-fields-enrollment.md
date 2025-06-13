@@ -24,21 +24,9 @@ The integration guide provides three flexible methods:
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the secure fields functionality.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>TypeScript library</h3>
-      <div class="contentContainer">
-        <p>
-          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 TypeScript Library
+>
+> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
 
 ### Step 2: Initialize secure fields with the public key
 
@@ -52,21 +40,9 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your secure fields integration for enrollment. While creating the payment method object, you will need to define which one will be available for your customer to enroll (in the case of secure fields, only CARD is available).
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Verify</h3>
-      <div class="contentContainer">
-        <p>
-          If you need to verify cards through a zero-value authorization before enrolling a customer, you can include the <code>verify</code> structure when defining the payment method object for the customer session.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Verify
+>
+> If you need to verify cards through a zero-value authorization before enrolling a customer, you can include the `verify` structure when defining the payment method object for the customer session.
 
 ### Step 4: Start the enrollment process
 
@@ -74,43 +50,10 @@ Next, you have to create a configuration object. The essential parameters are th
 
 The following table lists all required parameters and their descriptions.
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `country_code`
-      </td>
-
-      <td>
-        This parameter specifies the country for which the payment process is being set up.
-        Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk)   page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `customerSession`
-      </td>
-
-      <td>
-        Refers to the current enrollment's customer session.
-        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter         | Description                                                                                                                                                                                                                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`    | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `customerSession` | Refers to the current enrollment's customer session. `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                        |
 
 ```javascript
 const secureFields = yuno.secureFields({
@@ -329,21 +272,9 @@ secureCvv.render('#cvv')
 
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Enrollment for Payouts</h3>
-      <div class="contentContainer">
-        <p>
-          If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the <code>secureNumber</code> object before creating the vaulted_token and ignore the <code>secureExpiration</code> and <code>secureCvv</code> objects.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Enrollment for Payouts
+>
+> If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the `secureNumber` object before creating the vaulted\_token and ignore the `secureExpiration` and `secureCvv` objects.
 
 After they are mounted, the three secure fields will be shown
 
