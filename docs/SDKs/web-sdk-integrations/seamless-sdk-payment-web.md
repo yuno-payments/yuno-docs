@@ -12,44 +12,15 @@ next:
 ---
 Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK payment functionality in your application.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Recommended SDKs</h3>
-      <div class="contentContainer">
-        <p>
-         We recommend using the <a href="full-checkout-sdk">Web Full SDK</a> or the <a href="lite-checkout-sdk">Web Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Recommended SDKs
+>
+> We recommend using the [Web Full SDK](full-checkout-sdk) or the [Web Lite SDK](lite-checkout-sdk) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Should I use Lite or Full Seamless SDK?</h3>
-      <div class="contentContainer">
-        <p>
-          Use the Full Seamless SDK for automatic payment method listing and separate display of payment buttons (like PayPal).
-        </p>
-        <p>
-          The Lite Seamless SDK gives you more control over how payment methods are displayed and organized.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Should I use Lite or Full Seamless SDK?
+>
+> Use the Full Seamless SDK for automatic payment method listing and separate display of payment buttons (like PayPal). The Lite Seamless SDK gives you more control over how payment methods are displayed and organized.
 
 <Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
-
-<br />
 
 ## Step 1: Include the library in your project
 
@@ -61,21 +32,9 @@ The integration guide provides [three flexible methods](https://docs.y.uno/docs/
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the Seamless functionality.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>TypeScript library</h3>
-      <div class="contentContainer">
-        <p>
-					If you're using TypeScript, Yuno offers a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that provides access to all available methods in the Yuno Web SDK.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 TypeScript Library
+>
+> If you're using TypeScript, Yuno offers a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that provides access to all available methods in the Yuno Web SDK.
 
 ## Step 2: Initialize SDK with the public key
 
@@ -133,229 +92,44 @@ yuno.startSeamlessCheckout({
 
 Notice that when using the `startCheckout` you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
+| Parameter                   | Description                                                                                                                                                                                                                                                                                   |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`           | Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`.                                                                                                                                    |
+| `elementSelector`           | The HTML element where the checkout will be rendered.                                                                                                                                                                                                                                         |
+| `country_code`              | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `language`                  | Defines the language to be used in the payment forms. Supported options include:                                                                                                                                                                                                              |
+|                             | ▪️ `es` (Spanish)                                                                                                                                                                                                                                                                             |
+|                             | ▪️ `en` (English)                                                                                                                                                                                                                                                                             |
+|                             | ▪️ `pt` (Portuguese)                                                                                                                                                                                                                                                                          |
+|                             | ▪️ `fil` (Filipino)                                                                                                                                                                                                                                                                           |
+|                             | ▪️ `id` (Indonesian)                                                                                                                                                                                                                                                                          |
+|                             | ▪️ `ms` (Malay)                                                                                                                                                                                                                                                                               |
+|                             | ▪️ `th` (Thai)                                                                                                                                                                                                                                                                                |
+|                             | By default, the SDK will use the browser language.                                                                                                                                                                                                                                            |
+| `showLoading`               | Controls the visibility of the Yuno loading/spinner page during the payment process. Default: `true`.                                                                                                                                                                                         |
+| `onLoading`                 | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                            |
+| `issuersFormEnable`         | Enables the issuer's form (e.g., a list of banks). Default: `true`.                                                                                                                                                                                                                           |
+| `showPaymentStatus`         | It shows the Yuno Payment Status page, which is useful when continuing a payment. Default: `true`.                                                                                                                                                                                            |
+| `showPayButton`             | Controls the visibility of the pay button in the customer or card form. Default: `true`.                                                                                                                                                                                                      |
+| `renderMode`                | Specify how and where the forms will be rendered. The options available are:                                                                                                                                                                                                                  |
+|                             | ▪️ `type: modal` (default)                                                                                                                                                                                                                                                                    |
+|                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                             |
+| `card`                      | Defines the configuration for the card form. It contains settings like render mode, custom styles, and save card option.                                                                                                                                                                      |
+| `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                    |
+| `yunoCreatePayment`         | Placeholder function for creating a payment. This function will not be called but should be implemented.                                                                                                                                                                                      |
+| `yunoPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                    |
+| `yunoPaymentResult`         | Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`).                                                                                                                                                                                         |
+| `yunoError`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                             |
 
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
+> 📘 Customer and Merchant-Initiated Transactions
+>
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](/docs/stored-credentials).
+>
+> The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
-  <tbody>
-    <tr>
-      <td>
-        `checkoutSession`
-      </td>
-
-      <td>
-        Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session).
-        Example: `438413b7-4921-41e4-b8f3-28a5a0141638`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `elementSelector`
-      </td>
-
-      <td>
-        The HTML element where the checkout will be rendered.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `country_code`
-      </td>
-
-      <td>
-        This parameter specifies the country for which the payment process is being set up.
-        Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `language`
-      </td>
-
-      <td>
-        Defines the language to be used in the payment forms. Supported options include:
-
-        * `es` (Spanish)
-        * `en` (English)
-        * `pt` (Portuguese)
-        * `fil` (Filipino)
-        * `id` (Indonesian)
-        * `ms` (Malay)
-        * `th` (Thai). By default, the SDK will use the browser language.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `showLoading`
-      </td>
-
-      <td>
-        Controls the visibility of the Yuno loading/spinner page during the payment process. Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `onLoading`
-      </td>
-
-      <td>
-        Required to receive notifications about server calls or loading events during the payment process.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `issuersFormEnable`
-      </td>
-
-      <td>
-        Enables the issuer's form (e.g., a list of banks). Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `showPaymentStatus`
-      </td>
-
-      <td>
-        It shows the Yuno Payment Status page, which is useful when continuing a payment. Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `showPayButton`
-      </td>
-
-      <td>
-        Controls the visibility of the pay button in the customer or card form. Default: `true`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `renderMode`
-      </td>
-
-      <td>
-        Specify how and where the forms will be rendered. The options available are:
-
-        * `type: modal'` (default)\
-          -`type: element`. If you select `element`you must inform the `elementSelector`, to specify where the form should be rendered.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Defines the configuration for the card form. It contains settings like render mode, custom styles, and save card option.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `texts`
-      </td>
-
-      <td>
-        Allows you to set custom button texts for card and non-card payment forms.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoCreatePayment`
-      </td>
-
-      <td>
-        Placeholder function for creating a payment. This function will not be called but should be implemented.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoPaymentMethodSelected`
-      </td>
-
-      <td>
-        Callback invoked when a payment method is selected, along with the method's type and name.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoPaymentResult`
-      </td>
-
-      <td>
-        Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`).
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoError`
-      </td>
-
-      <td>
-        Callback invoked when there is an error in the payment process. Receives error type and optional additional data.
-      </td>
-    </tr>
-  </tbody>
-</Table>
-
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Customer and merchant-initiated transactions</h3>
-      <div class="contentContainer">
-        <p>
-					Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in <a href="/docs/stored-credentials">Stored credentials</a>. 
-        </p>
-        <p>
-					The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
-        </p>     
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Rendering mode</h3>
-      <div class="contentContainer">
-        <p>
-          By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Rendering Mode
+>
+> By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. [Learn more](#test)
 
 ## Step 4: Mount the SDK
 
@@ -379,52 +153,16 @@ The `vaultedToken` is optional. It represents information of a previously enroll
 
 After mounting, the checkout flow for the selected payment method will automatically begin.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js">JavaScript</a> checkout demos available on GitHub.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo App
+>
+> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js">JavaScript</a> checkout demos available on GitHub.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo App
+>
+> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
 
 <br />
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs or go directly to the <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html">HTML<a/> and <a href="https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js">JavaScript</a> checkout demos available on GitHub.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo App
+>
+> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
