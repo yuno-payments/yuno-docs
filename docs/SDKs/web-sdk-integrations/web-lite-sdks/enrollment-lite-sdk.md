@@ -70,7 +70,7 @@ The configuration and mounting are done in the same step for the Enrollment Lite
       </td>
 
       <td>
-        Refers to the current payment's [customer session](ref:create-customer). `Example: 'e15648b0-fcd5-4799-a14c-cc463ae8a133'`
+        Refers to the current payment's [customer session](ref:create-customer). Example: `'e15648b0-fcd5-4799-a14c-cc463ae8a133'`.
       </td>
     </tr>
 
@@ -90,7 +90,7 @@ The configuration and mounting are done in the same step for the Enrollment Lite
       </td>
 
       <td>
-        Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), or th (Thai).
+        Defines the language to be used in the payment forms. You can set it to one of the available language options: `es` (Spanish), `en` (English), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), or `th` (Thai).
       </td>
     </tr>
 
@@ -140,18 +140,117 @@ The configuration and mounting are done in the same step for the Enrollment Lite
       </td>
 
       <td>
-        Define a call back to run after the enrollment process ends. It is called with `vaultedToken` and `status` parameters. The `status` returned can be one of:\ <br />\\
-        ▪️ `CREATED`: It is an initial and transitory state, only indicating that it is created and updated to another state.
-        ▪️ `EXPIRED`: For asynchronous enrollments, such as MercadoPago, where the user has to take an external action and may never do so.
-        ▪️ `REJECTED`: We reject it from our side. It may be because they entered incorrect Yuno credentials or are sending some data incorrectly.
-        ▪️ `READY_TO_ENROLL`: It follows `CREATED` if everything is okay, indicating that the enrollment has started.
-        ▪️ `ENROLL_IN_PROCESS`: For asynchronous enrollments, like MercadoPago, where the user has to take an action externally. It indicates that the user is performing the action.
-        ▪️ `UNENROLL_IN_PROCESS`: For asynchronous unenrollments, in case the provider has an asynchronous response. Currently, there are none.
-        ▪️ `ENROLLED`: Successfully enrolled.
-        ▪️ `DECLINED`: The provider declined the enrollment. Does not include cards.
-        ▪️ `CANCELED`: The enrollment flow is canceled halfway.
-        ▪️ `ERROR`: There was an ERROR in the service or credentials.
-        ▪️ `UNENROLLED`: The previously enrolled payment method has been unenrolled.
+        Define a callback to run after the enrollment process ends. It is called with `vaultedToken` and `status` parameters. The `status` returned can be one of:
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `CREATED`: It is an initial and transitory state, only indicating that it is created and updated to another state.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `EXPIRED`: For asynchronous enrollments, such as MercadoPago, where the user has to take an external action and may never do so.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `REJECTED`: We reject it from our side. It may be because they entered incorrect Yuno credentials or are sending some data incorrectly.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `READY_TO_ENROLL`: It follows `CREATED` if everything is okay, indicating that the enrollment has started.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `ENROLL_IN_PROCESS`: For asynchronous enrollments, like MercadoPago, where the user has to take an action externally. It indicates that the user is performing the action.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `UNENROLL_IN_PROCESS`: For asynchronous unenrollments, in case the provider has an asynchronous response. Currently, there are none.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `ENROLLED`: Successfully enrolled.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `DECLINED`: The provider declined the enrollment. Does not include cards.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `CANCELED`: The enrollment flow is canceled halfway.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `ERROR`: There was an ERROR in the service or credentials.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `UNENROLLED`: The previously enrolled payment method has been unenrolled.
       </td>
     </tr>
 
