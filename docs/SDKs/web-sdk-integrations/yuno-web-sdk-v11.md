@@ -12,6 +12,10 @@ next:
 ---
 Starting April 2025, Yuno is launching version 1.1 of its Web SDKs. It includes major performance improvements, a more flexible checkout experience, better visual consistency, and new features that improve both security and usability. Existing customers may choose to skip the upgrade, though they won’t have access to the enhancements.
 
+> 📘 Upgrade to v1.1
+>
+> Visit the [Web SDK documentation page](https://docs.y.uno/docs/full-checkout-sdk) for detailed instructions on how to implement v1.1.
+
 <HTMLBlock>{`
 <body>
   <div class="infoBlockContainer ">
