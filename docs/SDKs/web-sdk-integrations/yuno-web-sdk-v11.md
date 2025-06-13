@@ -16,22 +16,6 @@ Starting April 2025, Yuno is launching version 1.1 of its Web SDKs. It includes 
 >
 > Visit the [Web SDK documentation page](https://docs.y.uno/docs/full-checkout-sdk) for detailed instructions on how to implement v1.1.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Upgrade to v1.1</h3>
-      <div class="contentContainer">
-        <p>
-          <a href="https://docs.y.uno/docs/full-checkout-sdk">Visit the Web SDK documentation page</a> for detailed instructions on how to implement v1.1.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
 ## Implementation changes
 
 ### Async method update
