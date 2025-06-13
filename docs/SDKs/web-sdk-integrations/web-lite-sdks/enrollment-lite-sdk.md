@@ -227,32 +227,9 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 Control the use of the [loader](doc:loader).
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `showLoading`
-      </td>
-
-      <td>
-        You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.
-        The default value is true.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter     | Description                                                                                                                                                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `showLoading` | You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called. The default value is true. |
 
 ```javascript
 yuno.startCheckout({
