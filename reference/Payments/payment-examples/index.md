@@ -22,7 +22,7 @@ When using [Yuno's SDK](https://docs.y.uno/docs/web-sdk-integrations), we take c
     <div>
       <div class="contentContainer">
         <p>
-          This workflow is called <a onclick="window.location='https://docs.y.uno/docs/the-ultimate-checkout-full'">SDK_CHECKOUT</a>, in case you want to take care of the whole payment experience integrating directly to our APIs. You can use: 
+          This workflow is called SDK_CHECKOUT, in case you want to take care of the whole payment experience integrating directly to our APIs. You can use: 
         </p>
         <ul>
           <li>DIRECT Workflow - For Cards (only available for PCI compliant merchants).</li>
