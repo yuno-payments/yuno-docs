@@ -26,32 +26,9 @@ Yuno is dedicated to expanding its coverage of solutions worldwide. Use the butt
   <YunoCard title="Middle East" href="#middle-east" titleSize="h4" />
 </Shelf>
 
-<br />
-
 > 📘 SDK Availability
 >
 > If you require access to a Yuno SDK in a country that is not yet supported, reach out to our commercial team.
-
-<HTMLBlock>{`
-<style>
-  .contentContainer {
-    gap: 0;
-  }
-</style>
-
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          If you require access to a Yuno SDK in a country that is not yet supported, reach out to our commercial team.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
 
 ## Americas
 
