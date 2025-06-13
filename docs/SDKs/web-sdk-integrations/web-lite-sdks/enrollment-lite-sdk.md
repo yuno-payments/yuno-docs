@@ -50,19 +50,142 @@ Before continuing with the process, you will need to create a [customer session]
 
 The configuration and mounting are done in the same step for the Enrollment Lite. To do it, use the `yuno.mountEnrollmentLite` function and provide the necessary parameters. The following table lists all parameters and their descriptions.
 
-| Parameter                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `customerSession`                 | Refers to the current payment's [customer session](ref:create-customer). `Example: 'e15648b0-fcd5-4799-a14c-cc463ae8a133'`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `country_code`                    | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `language`                        | Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), or th (Thai).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `showLoading`                     | Control the visibility of the Yuno loading/spinner page during the payment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `onLoading`                       | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `elementSelector`                 | Specifies the HTML element where you want to mount the Yuno SDK. The SDK will be rendered within this element.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `card`                            | Define specific settings for the credit card form.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `yunoEnrollmentStatus`            | Define a call back to run after the enrollment process ends. It is called with `vaultedToken` and `status` parameters. The `status` returned can be one of:  \  ▪️ `CREATED`: It is an initial and transitory state, only indicating that it is created and updated to another state.  \  ▪️ `EXPIRED`: For asynchronous enrollments, such as MercadoPago, where the user has to take an external action and may never do so.  \  ▪️ `REJECTED`: We reject it from our side. It may be because they entered incorrect Yuno credentials or are sending some data incorrectly.  \  ▪️ `READY_TO_ENROLL`: It follows `CREATED` if everything is okay, indicating that the enrollment has started.  \  ▪️ `ENROLL_IN_PROCESS`: For asynchronous enrollments, like MercadoPago, where the user has to take an action externally. It indicates that the user is performing the action.  \  ▪️ `UNENROLL_IN_PROCESS`: For asynchronous unenrollments, in case the provider has an asynchronous response. Currently, there are none.  \  ▪️ `ENROLLED`: Successfully enrolled.  \  ▪️ `DECLINED`: The provider declined the enrollment. Does not include cards.  \  ▪️ `CANCELED`: The enrollment flow is canceled halfway.  \  ▪️ `ERROR`: There was an ERROR in the service or credentials.  \  ▪️ `UNENROLLED`: The previously enrolled payment method has been unenrolled. |
-| `issuersFormEnable`               | Enable the issuer's form (bank list).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `texts`                           | Provide custom text for payment form buttons to match your application's language or branding.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `card.isCreditCardProcessingOnly` | Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `customerSession`
+      </td>
+
+      <td>
+        Refers to the current payment's [customer session](ref:create-customer). `Example: 'e15648b0-fcd5-4799-a14c-cc463ae8a133'`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `language`
+      </td>
+
+      <td>
+        Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), or th (Thai).
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `showLoading`
+      </td>
+
+      <td>
+        Control the visibility of the Yuno loading/spinner page during the payment process.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `onLoading`
+      </td>
+
+      <td>
+        Required to receive notifications about server calls or loading events during the payment process.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `elementSelector`
+      </td>
+
+      <td>
+        Specifies the HTML element where you want to mount the Yuno SDK. The SDK will be rendered within this element.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `card`
+      </td>
+
+      <td>
+        Define specific settings for the credit card form.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoEnrollmentStatus`
+      </td>
+
+      <td>
+        Define a call back to run after the enrollment process ends. It is called with `vaultedToken` and `status` parameters. The `status` returned can be one of:\ <br />\\
+        ▪️ `CREATED`: It is an initial and transitory state, only indicating that it is created and updated to another state.
+        ▪️ `EXPIRED`: For asynchronous enrollments, such as MercadoPago, where the user has to take an external action and may never do so.
+        ▪️ `REJECTED`: We reject it from our side. It may be because they entered incorrect Yuno credentials or are sending some data incorrectly.
+        ▪️ `READY_TO_ENROLL`: It follows `CREATED` if everything is okay, indicating that the enrollment has started.
+        ▪️ `ENROLL_IN_PROCESS`: For asynchronous enrollments, like MercadoPago, where the user has to take an action externally. It indicates that the user is performing the action.
+        ▪️ `UNENROLL_IN_PROCESS`: For asynchronous unenrollments, in case the provider has an asynchronous response. Currently, there are none.
+        ▪️ `ENROLLED`: Successfully enrolled.
+        ▪️ `DECLINED`: The provider declined the enrollment. Does not include cards.
+        ▪️ `CANCELED`: The enrollment flow is canceled halfway.
+        ▪️ `ERROR`: There was an ERROR in the service or credentials.
+        ▪️ `UNENROLLED`: The previously enrolled payment method has been unenrolled.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `issuersFormEnable`
+      </td>
+
+      <td>
+        Enable the issuer's form (bank list).
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `texts`
+      </td>
+
+      <td>
+        Provide custom text for payment form buttons to match your application's language or branding.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `card.isCreditCardProcessingOnly`
+      </td>
+
+      <td>
+        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 The next code block presents an example of the Enrollment Lite parameter configuration and mounting.
 
