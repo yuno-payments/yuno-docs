@@ -16,21 +16,9 @@ next:
 ---
 Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Web SDK v1.1 release</h3>
-      <div class="contentContainer">
-        <p>
-          v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, <a href="https://docs.y.uno/docs/yuno-web-sdk-v11">visit the Web SDK v1.1 page</a>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Web SDK v1.1 Release
+>
+> v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, [visit the Web SDK v1.1 page](https://docs.y.uno/docs/yuno-web-sdk-v11).
 
 ## Choose your integration method
 
