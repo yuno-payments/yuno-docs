@@ -106,7 +106,7 @@ This object represents a recipient who will receive part of a [split payment](do
       </p>
       <p><strong><code>document_type</code></strong> <small>enum</small>
         <br/>The recipient's document type (MAX 6, MIN 2).
-        <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/customer-object#document-type-list">Document Type List</a>.  </small>
+        <br/><small> Possible enum values: Check the <a href="https://docs.y.uno/reference/the-customer-object#document-type-list">Document Type List</a>.  </small>
     </p>
     </div>
   </details>
