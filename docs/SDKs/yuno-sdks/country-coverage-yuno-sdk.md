@@ -28,6 +28,10 @@ Yuno is dedicated to expanding its coverage of solutions worldwide. Use the butt
 
 <br />
 
+> 📘 SDK Availability
+>
+> If you require access to a Yuno SDK in a country that is not yet supported, reach out to our commercial team.
+
 <HTMLBlock>{`
 <style>
   .contentContainer {
