@@ -14,17 +14,13 @@ next:
 ---
 Yuno is dedicated to expanding its coverage of solutions worldwide. Use the buttons to check the countries by region supported by Yuno's SDKs.
 
-<Shelf classname="link_cards_container">
-  <YunoCard title="Americas" href="#americas" />
-
-  <YunoCard title="Africa" href="#africa" />
-
-  <YunoCard title="Asia Pacific" href="#asia-pacific" />
-
-  <YunoCard title="Europe" href="#europe" />
-
-  <YunoCard title="Middle East" href="#middle-east" />
-</Shelf>
+\<Shelf classname="link\_cards\_container" >
+&#x20; \<YunoCard title="Americas" href="#americas" titleSize="h4 />
+&#x20; \<YunoCard title="Africa" href="#africa" titleSize="h4 />
+&#x20; \<YunoCard title="Asia Pacific" href="#asia-pacific" titleSize="h4 />
+&#x20; \<YunoCard title="Europe" href="#europe" titleSize="h4 />
+&#x20; \<YunoCard title="Middle East" href="#middle-east" titleSize="h4 />
+\</Shelf>
 
 <br />
 
