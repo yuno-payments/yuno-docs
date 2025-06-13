@@ -461,7 +461,7 @@ yuno.startCheckout({
 
 ### Mode of form rendering
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -482,9 +482,26 @@ yuno.startCheckout({
 
       <td>
         This parameter is optional. It determines the mode in which the payment forms will be displayed.
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `type`: can be one of `modal` or `element`.
-        * `elementSelector`: Element where the form will be rendered. Only required if `type `is `element`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`.
       </td>
     </tr>
 
@@ -495,8 +512,25 @@ yuno.startCheckout({
 
       <td>
         Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
       </td>
     </tr>
@@ -539,7 +573,7 @@ You also can choose one of the render options for the card form, `step` and `ext
 
 ### Card form configurations
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -560,9 +594,35 @@ You also can choose one of the render options for the card form, `step` and `ext
 
       <td>
         Define specific settings for the credit card form:
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `type`: `step` or `extends`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `styles`: You can edit card form styles. Only you should write CSS, then it will be injected into the iframe.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `texts`: Custom texts in the Card forms buttons.
       </td>
     </tr>
