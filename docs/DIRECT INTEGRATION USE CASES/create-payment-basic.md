@@ -47,7 +47,7 @@ The create payment process normally requires finishing the four steps listed bel
 
 > 📘 Additional payment methods and functionalities
 >
-> Different payment methods, such as with specific wallets or BNPL, or functionalities, such as split payments, may require additional steps before creating the payment. Yuno provides complementary guides for these situations. Check the [Create payments](create-payments) page to find them all.
+> Different payment methods, such as with specific wallets or BNPL, or functionalities, such as split payments, may require additional steps before creating the payment.
 
 ## Create a payment
 
