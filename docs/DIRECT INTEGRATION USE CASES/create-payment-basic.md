@@ -28,7 +28,7 @@ Before starting following the steps described in this guide, you need to:
   * `account_id`
 * [Set up your connections](doc:connections) on your Yuno Dashboard account.
 * [Build a route](doc:routing) for the payment method to define how it will be processed.
-* [Configure the checkout builder](ref:checkout-builder) to make your connected payments available.
+* [Configure the checkout builder](doc:checkout-builder) to make your connected payments available.
 
 Make sure to complete these requirements before following the create payment guide.
 
