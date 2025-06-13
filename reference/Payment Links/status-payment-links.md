@@ -13,13 +13,13 @@ metadata:
 next:
   description: ''
 ---
-Yuno's payment links solution enables businesses to accept payments effortlessly and offer subscriptions without additional websites or applications. These versatile links can be shared across various platforms, including social media, emails, and websites. Supporting diverse payment methods like credit and debit cards, Apple Pay, and Google Pay, payment links provide a secure and rapid way to collect payments. 
+Yuno's payment links solution enables businesses to accept payments effortlessly and offer subscriptions without additional websites or applications. These versatile links can be shared across various platforms, including social media, emails, and websites. Supporting diverse payment methods like credit and debit cards, Apple Pay, and Google Pay, payment links provide a secure and rapid way to collect payments.
 
 ## Workflow
 
-In the following workflow, you can find the different payment link statuses and how they can be updated. 
+In the following workflow, you can find the different payment link statuses and how they can be updated.
 
-<Image align="center" src="https://files.readme.io/749df69-Image_payment_link.png" />
+<Image align="center" src="https://files.readme.io/054999389730071ce7c1f43d122500eebcdc07344293ab219cec1540edf64be4-Image_payment_link.png" />
 
 ## Payment links status
 
