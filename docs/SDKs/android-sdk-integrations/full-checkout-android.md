@@ -33,21 +33,9 @@ Ensure the Yuno SDK file is included in your project through Gradle. Then, add t
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>SDK Version</h3>
-      <div class="contentContainer">
-        <p>
-          Access the <a href="/docs/release-notes-android-sdk">Release notes</a> or the <a href="https://github.com/yuno-payments/yuno-sdk-android">Yuno Android SDK repository</a> to verify the last SDK version available.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 SDK Version
+>
+> Access the [Release notes](#docs/release-notes-android-sdk) or the [Yuno Android SDK repository](#https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
 
 After, include the code below in the file `build.gradle` to add the Yuno SDK dependency to the application.
 
@@ -179,21 +167,9 @@ The following table includes descriptions for each customization available.
   </tbody>
 </Table>
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Loading Screen Persistence</h3>
-      <div class="contentContainer">
-        <p>
-          To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the <a href="/docs/loader-android"><code>startCompletePaymentFlow()</code></a> function.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Loading Screen Persistence
+>
+> To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the [startCompletePaymentFlow()](#loader-android) function.
 
 You also need to update your manifest to use your application:
 
@@ -205,21 +181,9 @@ You also need to update your manifest to use your application:
 
 Each payment requires a new `checkout_session`, which provides access to all available payment methods for a specific customer. To obtain a new `checkout_session`, use the [Create checkout session](ref:create-checkout-session) endpoint. This session is then used to initiate the payment.
 
-<HTMLBlock>{`
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>External browser return handling</h3>
-      <div class="contentContainer">
-        <p>
-          If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the <code>callback_url</code> when creating your checkout session.<br>
-          For a step-by-step guide on handling the return to your app, see
-          <a href="/docs/external-browser-callback-android"><b>Handle external browser return (callback_url)</b></a>.
-        </p>
-      </div>
-    </div>
-  </div>
-`}</HTMLBlock>
+> 📘 External Browser Return Handling
+>
+> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback\_url)](/docs/external-browser-callback-android).
 
 ## Step 4: Start the checkout process
 
@@ -304,21 +268,9 @@ Once the customer fills out the requested data in Yuno's payment forms, you will
 
 The one-time token will be shared by Yuno using the `callbackOTT` function you provided in Step 6 when initiating the payment. The one-time token will be available in the `onActivityResult`.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Loader Configuration</h3>
-      <div class="contentContainer">
-        <p>
-          While Yuno receives the customer information and shares the one-time token, a loader can be displayed to improve the user experience. Yuno provides a default loader that can be used out of the box. However, merchants may choose to implement their own loader and are responsible for making the necessary configurations.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Loader Configuration
+>
+> While Yuno receives the customer information and shares the one-time token, a loader can be displayed to improve the user experience. Yuno provides a default loader that can be used out of the box. However, merchants may choose to implement their own loader and are responsible for making the necessary configurations.
 
 ## Step 8: Create the payment
 
@@ -326,21 +278,9 @@ Once you receive the one-time token from [Step 7](doc:full-checkout-android#step
 
 The response from the Create payment endpoint will include the parameter `sdk_action_required`, which defines if additional actions are required to finish the payment based on the payment type.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Continue Payment Method Integration</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno <strong>requires</strong> you integrate the <code>continuePayment</code> method of the SDK after the payment is created because certain asynchronous payment methods require additional customer action to complete. The API will inform you of this scenario via the <code>sdk_action_required</code> field of the response, which will be returned as true. The <code>yuno.continuePayment()</code> function will display additional screens to customers, where they can carry out the necessary actions to complete the payment without you needing to handle every scenario.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Continue Payment Method Integration
+>
+> Yuno **requires** you integrate the `continuePayment` method of the SDK after the payment is created because certain asynchronous payment methods require additional customer action to complete. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display additional screens to customers, where they can carry out the necessary actions to complete the payment without you needing to handle every scenario.
 
 ## Step 9: Continue payment
 
@@ -516,21 +456,9 @@ class PaymentActivity : ComponentActivity() {
 }
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Lifecycle Management</h3>
-      <div class="contentContainer">
-        <p>
-          Ensure that the <code>CoroutineScope</code> is tied to the Activity/Fragment lifecycle to prevent memory leaks and ensure proper cleanup.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Lifecycle Management
+>
+> Ensure that the `CoroutineScope` is tied to the Activity/Fragment lifecycle to prevent memory leaks and ensure proper cleanup.
 
 ## Complementary features
 
@@ -589,18 +517,6 @@ You can choose between two card form render options. The following screenshots d
 
 You can change the SDK appearance to match your brand. For more information, access the [SDK customizations](https://docs.y.uno/docs/sdk-customizations-android) page.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo Application</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-android/tree/master">Yuno repository</a> for a complete implementation of Yuno Android SDKs.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo Application
+>
+> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) for a complete implementation of Yuno Android SDKs.
