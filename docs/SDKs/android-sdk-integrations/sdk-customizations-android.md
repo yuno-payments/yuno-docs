@@ -395,7 +395,7 @@ After creating the `screen_payment_card_form.xml` file, you can define your own 
 
 ### v1.10.0 or higher
 
-Additional components are available for the Yuno SDK version v1.10.0 or higher. These components are listed at the \<a href="#components-available-for-v1100-and-higher">subsection below\</a>.
+Additional components are available for the Yuno SDK version v1.10.0 or higher. These components are listed in the [subsection below](#components-available-for-v1100-and-higher).
 
 * `CloseButton`: Button to close the form.
 
