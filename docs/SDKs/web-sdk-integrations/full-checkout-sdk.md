@@ -1103,7 +1103,6 @@ The default value is true.</td></tr></tbody></table></div></div>
 <li><a target="_self" href="/docs/sdk-customizations">SDK Customizations</a>: Change the SDK appearance to match your brand</li>
 <li><a href="/docs/complementary-features-full-sdk#mercado-pago-checkout-pro-webview-handling" target="" title="" class="doc-link" data-sidebar="complementary-features-full-sdk">Mercado Pago Checkout Pro webview handling</a>: Learn how to handle Mercado Pago Checkout Pro integration in webview environments</li>
 <li><a target="_self" href="/docs/payment-status">Payment Status</a>: Update the user about the payment process</li>
-<li><a target="_self" href="/docs/3ds-setup-sdk">3DS Setup SDK</a>: Integrate 3DS into your payment flow</li>
 </ul></div>
 
   </div>
@@ -1577,7 +1576,6 @@ This parameter is not required.</td></tr></tbody></table></div></div>
 <ul>
 <li><a target="_self" href="/docs/sdk-customizations">SDK Customizations</a>: Change the SDK appearance to match your brand.</li>
 <li><a target="_self" href="/docs/payment-status">Payment Status</a>: Update the user about the payment process.</li>
-<li><a target="_self" href="/docs/3ds-setup-sdk">3DS Setup SDK</a>: Integrate 3DS into your payment flow.</li>
 </ul></div>
 
   </div>
