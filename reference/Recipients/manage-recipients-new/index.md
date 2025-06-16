@@ -37,7 +37,7 @@ During the onboarding lifecycle, a Recipient may go through several statuses whi
 | `CREATED`                          | Initial state after creation; onboarding process not yet started.            |
 | `PENDING_REVIEW`                   | Awaiting provider review after data was submitted.                           |
 | `PENDING_ADDITIONAL_DOCUMENTATION` | More documents are needed to continue onboarding.                            |
-| `PENDING_WAITING_USER_ACTION`      | Waiting for the submerchant to complete an external action (e.g., form).     |
+| `PENDING_WAITING_USER_INTERACTION` | Waiting for the submerchant to complete an external action (e.g., form).     |
 | `SUCCEEDED`                        | The recipient is fully onboarded and active.                                 |
 | `DECLINED`                         | The onboarding was rejected by the provider and cannot be retried.           |
 | `BLOCKED`                          | The provider has explicitly blocked the onboarding due to compliance issues. |
