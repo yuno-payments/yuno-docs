@@ -13,7 +13,7 @@ next:
 On this page, you will find all the steps to add, configure, and use the Seamless iOS SDK to make payments in your iOS project.
 
 > 📘 Recommended SDKs
-> 
+>
 > We recommend using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
 
 ## Step 1: Include the library in your project
@@ -58,9 +58,9 @@ Yuno.initialize(
 )
 ```
 
-> 📘 UISceneDelegate
-> 
-> If your app uses a `UISceneDelegate`, you must put your Yuno initialization code into your `SceneDelegate`.
+> 🚧 UISceneDelegate
+>
+> Ensure that if your app uses a `UISceneDelegate`, the Yuno initialization code is placed within your `SceneDelegate`.
 
 The Seamless checkout enables you to configure the appearance of the SDK. It is an optional step that you configure through the class `YunoConfig`. To set up configurations, use the following code block to configure the available elements:
 
@@ -83,7 +83,7 @@ Below, you find a description of each configuration variable available.
 | `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to false. |
 
 > 📘 Accessing Your API Key
-> 
+>
 > You can retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
 
 ## Step 3: Start the checkout and Payment process
@@ -139,7 +139,7 @@ Below, you will find a description of each parameter from `SeamlessParams`:
 
 ## Step 4: Handle Payment Status (Optional)
 
-> 📘 Deep Links and Mercado Pago Checkout Pro
+> ❗️ Deep Links and Mercado Pago Checkout Pro
 >
 > This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don't use deep links, you can skip this step.
 
@@ -180,7 +180,7 @@ After the payment is completed, the SDK can return different transaction states.
 The transaction state can be handled in two ways when using the `startPaymentSeamlessLite` method:
 
 * **Async/Await**: Use the async/await approach for a more streamlined flow. This method returns a Result asynchronously, making the code easier to read and manage.
-* **Callback**: You can handle the transaction state via a callback function, allowing immediate execution once the result is available.  
+* **Callback**: You can handle the transaction state via a callback function, allowing immediate execution once the result is available.
 
 Both options provide flexibility depending on your preferred approach to asynchronous code.
 
