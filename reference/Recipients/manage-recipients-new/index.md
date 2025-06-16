@@ -1,5 +1,5 @@
 ---
-title: Manage recipients-NEW
+title: Manage recipients with external providers
 deprecated: false
 hidden: true
 metadata:
