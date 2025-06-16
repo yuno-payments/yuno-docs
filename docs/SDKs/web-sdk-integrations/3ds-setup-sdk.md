@@ -1,10 +1,14 @@
 ---
-title: 3DS Setup SDK
+title: 3DS Setup SDK (Deprecated)
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
+> 🚧 Deprecated
+>
+> This service was deprecated and will be removed in the future.
+
 The 3DS Setup SDK enables you to collect the user's device information. This information determines whether a transaction is high-risk and whether a challenge is necessary for additional verification. After collecting the information, you can continue with the payment. This page explains how to integrate and use the SDK to collect user information.
 
 ## Requirements
