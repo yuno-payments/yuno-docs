@@ -124,13 +124,101 @@ data class YunoConfig(
 
 The following table includes descriptions for each customization available.
 
-| Customization option | Description                                                                                                                                                                                                                                                                 |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **cardFlow**         | It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options) for more information.                                                            |
-| **saveCardEnabled**  | Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments) section for more information.                                                                                                                                       |
-| **keepLoader**       | Keep Yuno's loading screen until you create and continue with payment. To use this feature you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.                               |
-| **language**         | Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options: `es` (Spanish), `en` (English), `pt` (Portuguese).                         |
-| **styles**           | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section. |
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Customization option
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        **cardFlow**
+      </td>
+
+      <td>
+        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options) for more information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **saveCardEnabled**
+      </td>
+
+      <td>
+        Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments) section for more information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **keepLoader**
+      </td>
+
+      <td>
+        Keep Yuno's loading screen until you create and continue with payment. To use this feature you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **language**
+      </td>
+
+      <td>
+        Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `es` (Spanish)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `en` (English)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `pt` (Portuguese)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **styles**
+      </td>
+
+      <td>
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 > 🚧 Loading Screen Persistence
 >
