@@ -29,7 +29,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `<body>`
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide. 
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno` constant.
 
@@ -41,7 +41,7 @@ Once you create the instance, choose between using the Status o Status Lite solu
 
 ## Step 3: Use Status
 
-To use the Status, you need to mount it. Use the `mountStatusPayment` function to define the `checkoutSession` related to the payment, the `country_code`, the `language`, and the callback `yunoPaymentResult`. 
+To use the Status, you need to mount it. Use the `mountStatusPayment` function to define the `checkoutSession` related to the payment, the `country_code`, the `language`, and the callback `yunoPaymentResult`.
 
 The callback will be executed when the status is received, informing the user. Defining the element to mount the Status is unnecessary since it will cover the entire screen. The next code block presents an example of the parameter configuration.
 
@@ -78,18 +78,6 @@ To receive the current payment status using Status Lite, you need to call the me
 const status = await yuno.yunoPaymentResult(checkoutSession)
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Custom payment status integration</h3>
-      <div class="contentContainer">
-        <p>
-          If you prefer to use your own custom Payment Status page instead of personalizing the one provided by our SDK, you can do so by editing the HTML file to connect to an edited <code>status-lite.js</code> script. This allows you to fully customize the appearance and behavior of the payment status display while still using Yuno's status functionality. For example, after calling the <code>yunoPaymentResult</code> function, you can handle the status result in your own version of the <code>status-lite.js</code> script, which will then update your custom HTML file.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 👍 Custom Payment Status Integration
+>
+> If you prefer to use your own custom Payment Status page instead of personalizing the one provided by our SDK, you can do so by editing the HTML file to connect to an edited `status-lite.js` script. This allows you to fully customize the appearance and behavior of the payment status display while still using Yuno's status functionality. For example, after calling the `yunoPaymentResult` function, you can handle the status result in your own version of the `status-lite.js` script, which will then update your custom HTML file.
