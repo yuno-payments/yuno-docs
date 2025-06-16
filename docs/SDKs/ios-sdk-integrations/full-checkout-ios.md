@@ -290,9 +290,13 @@ func yunoCreatePayment(with token: String) { ... }
 
 Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
-> ❗️ Important Integration Step
+> 📘 Continue Payment Method
 >
-> Yuno **requires** you to integrate the `continuePayment` method of the SDK after the payment is created. This is necessary because certain asynchronous payment methods require additional action from the customer to complete the transaction. The API will notify you of this scenario via the `sdk_action_required` field in the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, allowing them to complete the payment without requiring you to handle every scenario. [test](#test)
+> To ensure a seamless payment experience, it's crucial to integrate the `continuePayment` method after creating a payment. This step is particularly important for asynchronous payment methods that require additional customer actions. Here's what you need to know:
+>
+> * **Asynchronous Payment Handling**: The API will signal the need for further action with the `sdk_action_required` field set to true.
+> * **Functionality**: The `yuno.continuePayment()` function is designed to manage and display any additional screens necessary for the customer to complete the payment.
+> * **Process Simplification**: By using this method, you can streamline the payment process, as it automatically handles various scenarios for you.
 
 ```swift
 Yuno.continuePayment(showPaymentStatus: Bool)
