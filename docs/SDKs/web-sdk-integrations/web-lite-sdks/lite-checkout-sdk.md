@@ -424,5 +424,3 @@ Learn about the additional configurations from the Lite SDK accessing [Complemen
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
 
 * [Payment Status](doc:payment-status): Update the user about the payment process
-
-* [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
