@@ -64,7 +64,7 @@ dependencies {
 
 ### Permissions
 
-Yuno SDK includes, by default, the `INTERNET` permission, which is required to make network requests. 
+Yuno SDK includes, by default, the `INTERNET` permission, which is required to make network requests.
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET" />
@@ -106,7 +106,7 @@ data class YunoConfig(
 
 The following table includes descriptions for each customization available.
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -126,7 +126,7 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options)   for more information
+        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options) for more information.
       </td>
     </tr>
 
@@ -136,7 +136,7 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments)    section for more information.
+        Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments) section for more information.
       </td>
     </tr>
 
@@ -146,7 +146,7 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader)   for additional information.
+        Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.
       </td>
     </tr>
 
@@ -156,10 +156,36 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:  
+        Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `es` (Spanish)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `en` (English)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `pt` (Portuguese)
       </td>
     </tr>
@@ -170,14 +196,14 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)  section.
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.
       </td>
     </tr>
   </tbody>
 </Table>
 
-> 📘 Loading Screen Persistence
-> 
+> 🚧 Loading Screen Persistence
+>
 > To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the `startCompletePaymentFlow()` [function](loader-android).
 
 You also need to update your manifest to use your application:
@@ -235,11 +261,11 @@ fun AppCompatActivity.enrollmentStatus(
 ```
 
 > 📘 Optional Function
-> 
-> Using the function `enrollmentStatus` is optional. It isn't a requirement to complete the enrollment process.
+>
+> Using the function `enrollmentStatus` is optional. It isn't a requirement to complete the enrollment process. [Learn more](#enrollmentStatus)
 
-> 📘 Callback Override
-> 
+> 🚧 Callback Override
+>
 > If you provide a new callback when calling the function `enrollmentStatus`, it will override the callback you set when calling the function `initEnrollment`.
 
 The possible states are presented in the following code block:
@@ -268,12 +294,12 @@ The following table provide additional information about the possible states:
 
 The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes.  To process the enrollment result, follow these steps:
 
-> 📘 Deprecated Method
-> 
-> The `onActivityResult` method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using `initEnrollment()` contract, which follows Google's best practices.
+> ❗️ Deprecated Method
+>
+> The `onActivityResult` method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using the `initEnrollment()` contract, which follows Google's best practices.
 
-> 📘 Request Code
-> 
+> 📘 Using Default Request Code
+>
 > If you are using the `onActivityResult` method but did not inform a `requestCode` when calling the `startEnrollment` in [Step 3](#step-3-enroll-a-new-payment-method), you must use the `YUNO_ENROLLMENT_REQUEST_CODE` provided by Yuno.
 
 1. First, override the `onActivityResult` method. It ensures that the hierarchy calls are respected.
@@ -364,7 +390,7 @@ data class YunoButtonStyles(
 )
 ```
 
-To use the `styles` customization option, you have to use the `YunoConfig` data class, described in Step 2. 
+To use the `styles` customization option, you have to use the `YunoConfig` data class, described in Step 2.
 
 ### Loader
 
@@ -387,5 +413,5 @@ You can choose between two card form render options. The following screenshots d
 You can change the SDK appearance to match your brand. For more information, access the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
 
 > 📘 Demo App
-> 
+>
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
