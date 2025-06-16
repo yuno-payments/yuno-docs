@@ -5,7 +5,7 @@ hidden: false
 metadata:
   robots: index
 ---
-> 🚧 Deprecated
+> ❗️ Deprecated
 >
 > This service was deprecated and will be removed in the future.
 
