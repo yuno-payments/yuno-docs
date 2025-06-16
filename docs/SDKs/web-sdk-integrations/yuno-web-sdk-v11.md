@@ -40,8 +40,6 @@ As part of ongoing improvements, Yuno has updated the 3DS flow to increase relia
 * Direct 3DS integrations no longer require the setup service or SDK; a single API call handles this flow via redirect URLs
 * These changes go live in sandbox on 06/05/2025 and in production on 09/05/2025
 
-For more information, see the [3DS guide](https://docs.y.uno/docs/3ds-setup-sdk).
-
 ## Additional Updates in v1.1
 
 ### 3DS flow optimization
