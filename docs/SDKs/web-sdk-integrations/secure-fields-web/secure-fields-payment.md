@@ -587,4 +587,3 @@ You can access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand.
 * [Payment Status](doc:payment-status): Update the user about the payment process.
-* [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow.
