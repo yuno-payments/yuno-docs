@@ -57,9 +57,9 @@ Yuno.initialize(
 
 ```
 
-> 📘 UISceneDelegate
+> 🚧 UISceneDelegate Usage
 >
-> If your app is using a UISceneDelegate you will need to put your Yuno initialization code into your SceneDelegate.
+> If your app is using a UISceneDelegate, ensure to place your Yuno initialization code within your SceneDelegate.
 
 The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
 
@@ -81,9 +81,9 @@ Below, you find a description of each configuration variable available.
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
 | `keepLoadere`     | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
 
-> 📘 Accessing Your API Key
+> 📘 Access Your API Key
 >
-> You can retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
+> Retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
 
 ## Step 3: Start the checkout process
 
@@ -115,7 +115,7 @@ class ViewController: YunoPaymentDelegate {
 
 The following table presents all the protocol requirements you have to provide and their descriptions.
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -145,7 +145,7 @@ The following table presents all the protocol requirements you have to provide a
       </td>
 
       <td>
-        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk)  page.
+        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
       </td>
     </tr>
 
@@ -155,11 +155,37 @@ The following table presents all the protocol requirements you have to provide a
       </td>
 
       <td>
-        Defines the language to be used in the payment forms. You can set it to one of the available language options:  
+        Defines the language to be used in the payment forms. You can set it to one of the available language options:
+      </td>
+    </tr>
 
-        * en (English)
-        * es (Spanish)
-        * pt (Portuguese)
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `en` (English)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `es` (Spanish)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `pt` (Portuguese)
       </td>
     </tr>
 
@@ -195,7 +221,7 @@ The following table presents all the protocol requirements you have to provide a
 
     <tr>
       <td>
-        `yunoPaymentResult(\_ result: Yuno.Result)`
+        `yunoPaymentResult(_ result: Yuno.Result)`
       </td>
 
       <td>
@@ -205,7 +231,7 @@ The following table presents all the protocol requirements you have to provide a
   </tbody>
 </Table>
 
-> 📘 Using yunoCreatePayment
+> ❗️ Important Note on yunoCreatePayment
 >
 > You can call `yunoCreatePayment` with or without the `information` parameter based on your needs. However, use only one version in your code, as calling both is not required and may cause issues.
 
@@ -225,11 +251,11 @@ protocol YunoPaymentFullDelegate: YunoPaymentDelegate {
 
 The following table describes the functions available:
 
-| Function                                                      | Description                                                                                          |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)` | Called when the user selects a payment method. <br/>- `paymentMethod`: The method the user chose.     |
-| `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br/>- `success`: `true` if it worked, `false` if it didn’t. |
-| `yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)`       | Called when `getPaymentMethodView()` is invoked and whenever the view's height changes.              |
+| Function                                                      | Description                                                                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)` | Called when the user selects a payment method. <br />- `paymentMethod`: The method the user chose.     |
+| `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br />- `success`: `true` if it worked, `false` if it didn’t. |
+| `yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)`       | Called when `getPaymentMethodView()` is invoked and whenever the view's height changes.                |
 
 []()To display the payment methods, call the following method and pass your view model or controller as the delegate.
 
@@ -262,11 +288,11 @@ func yunoCreatePayment(with token: String) { ... }
 
 ## Step 7: Create the Payment
 
-Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session. 
+Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
-> 📘 Continue Payment Method
+> ❗️ Important Integration Step
 >
-> Yuno **requires** you integrate the `continuePayment` method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario. [test](#test)
+> Yuno **requires** you to integrate the `continuePayment` method of the SDK after the payment is created. This is necessary because certain asynchronous payment methods require additional action from the customer to complete the transaction. The API will notify you of this scenario via the `sdk_action_required` field in the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, allowing them to complete the payment without requiring you to handle every scenario. [test](#test)
 
 ```swift
 Yuno.continuePayment(showPaymentStatus: Bool)
@@ -274,13 +300,13 @@ Yuno.continuePayment(showPaymentStatus: Bool)
 
 The `showPaymentStatus` parameter is used to determine whether the payment status should be displayed or not. By passing `true` as an argument, the payment status might be shown, while passing `false` could indicate that the payment status should not be displayed.
 
-> 📘 Default Payment Status Display
+> ❗️ Default Payment Status Display
 >
 > In Yuno's iOS Full SDK, the default value for `showPaymentStatus` is `true`.
 
 ## Step 8: Handle Payment Status (Optional)
 
-> 📘 Deep Links and Mercado Pago Checkout Pro
+> 🚧 Deep Links and Mercado Pago Checkout Pro
 >
 > This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don't use deep links, you can skip this step.
 
