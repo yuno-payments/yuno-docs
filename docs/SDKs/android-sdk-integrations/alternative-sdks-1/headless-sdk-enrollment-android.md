@@ -12,10 +12,9 @@ next:
 ---
 The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards.
 
-> 📘 Recommended SDKs
-> 
+> 👍 Recommended SDKs
+>
 > We recommend using the [Android Full SDK](full-checkout-android) or the [Android Lite SDK](lite-checkout-android) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-
 
 This SDK offers complete control over the payment method enrollment process, making it ideal for merchants who:
 
@@ -51,9 +50,8 @@ You can obtain these credentials from the [Developers section of the Yuno dashbo
 * Create a `customer_session`, which initializes the enrollment flow
 
 > 📘 SDK Version Information
-> 
-> Access the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
-
+>
+> Verify the latest SDK version by accessing the [Release notes](release-notes-android-sdk) or visiting the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android).
 
 ## Step 1: Create a customer
 
@@ -107,9 +105,9 @@ dependencies {
 }
 ```
 
-> 📘 Required Permissions
-> 
-> Yuno SDK includes, by default, the `INTERNET` permission, which is required to make network requests.
+> 📘 Internet Permission Required
+>
+> The Yuno SDK automatically includes the `INTERNET` permission, necessary for network requests. Ensure your AndroidManifest.xml contains:
 >
 > `<uses-permission android:name="android.permission.INTERNET" />`
 
@@ -144,59 +142,26 @@ To start the enrollment process, you need to:
 
 The endpoint response will provide the `customer_session` value required for enrollment.
 
-> 📘 Customer Session Generation
-> 
+> 🚧 Customer Session Generation
+>
 > You need to generate a new `customer_session` each time you enroll a payment method.
-
 
 ## Step 6: Create an enrollment payment method object
 
 To set up the Headless SDK integration for enrollment, you need to create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. When creating this object, specify which payment method type your customer can enroll in. Currently, the Headless SDK only supports the CARD payment method type.
 
 > 📘 Card Verification
-> 
-> If you want to verify cards (zero value authorization) before enrollment, you need to provide the `verify` object when creating the payment method object for the customer session.
+>
+> To verify cards (zero value authorization) before enrollment, include the `verify` object when creating the payment method object for the customer session. [Learn more](#verify-cards)
 
 ## Step 7: Start the enrollment process
 
 To start the enrollment process, use the `apiClientEnroll` function. This function requires configuration parameters that define how the enrollment will be processed. The following table describes the required parameters.
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `country_code`
-      </td>
-
-      <td>
-        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `customer_session`
-      </td>
-
-      <td>
-        Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session)    endpoint.\
-        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter          | Description                                                                                                                                                                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
 
 The following code block presents an example of the parameter configuration.
 
@@ -266,10 +231,9 @@ apiClientEnroll.continueEnrollment(
 
 ```
 
-> 📘 PCI Compliance
+> 🚧 PCI Compliance
 >
-> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
-
+> Ensure you adhere to best practices for managing sensitive card data. Without PCI certification, you are prohibited from storing any card data except for the token provided by the SDK.
 
 The `apiClientEnroll.continueEnrollment` function returns an Observable type that extends `LiveData`. You can observe the response as a standard `LiveData` with type `SingleLiveEvent<Map<String, Any?>>`. This `LiveData` emits only once and returns a `Map` containing the complete response. Below is an example response from calling `apiClientEnroll.continueEnrollment`:
 
@@ -296,4 +260,4 @@ apiClientPayment.continueEnrollment(data, context).observe(context) { response -
 
 > 📘 Webhook Status Tracking
 >
-> Consider using the enrollment status received via [Webhooks](webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
+> Consider using the enrollment status received via [Webhooks](#webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
