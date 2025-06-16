@@ -12,15 +12,15 @@ next:
 ---
 Yuno's Headless iOS SDK lets you enroll in payment methods and tokenize cards, saving them for future use.
 
-> 📘 Recommended SDKs
+> 👍 Recommended SDKs
 >
-> We recommend using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
+> For a smooth integration experience, consider using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios). These options provide a complete solution with built-in forms and validation.
 
 The following steps describe enrolling a payment method using Yuno's Headless SDK.
 
-> 📘 Complete enrollment guide
+> 📘 Enrollment Guide
 >
-> On this page, you will find all the steps related to using the Headless SDK to enrol in a payment method. For a complete guide, including the customer creation, access [Headless SDK (Enrollment)](headless-sdk-enrollment-steps).
+> This page provides all the steps for using the Headless SDK to enroll in a payment method. For a comprehensive guide, including customer creation, visit [Headless SDK (Enrollment)](headless-sdk-enrollment-steps).
 
 ## Requirements
 
@@ -35,9 +35,9 @@ A complete enrollment process description is covered in [Headless SDK (Enrollmen
 
 The first step is to install Yuno SDK to your iOS project.
 
-> 📘 iOS SDK Versions
+> 📘 Check iOS SDK Versions
 >
-> To check all versions available, you can access the [release page](https://github.com/yuno-payments/yuno-sdk-ios/releases) from the Yuno iOS SDK repository.
+> To view all available versions, visit the [release page](https://github.com/yuno-payments/yuno-sdk-ios/releases) on the Yuno iOS SDK repository.
 
 You can install Yuno SDK in two ways:
 
@@ -56,9 +56,9 @@ You can install Yuno SDK in two ways:
 
 To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
 
-> 📘 UISceneDelegate initialization
+> 🚧 UISceneDelegate Initialization
 >
-> If your app is using a `UISceneDelegate`, you will need to put your Yuno initialization code into your `SceneDelegate`.
+> If your app is using a `UISceneDelegate`, ensure to place your Yuno initialization code within your `SceneDelegate`. [Learn more](#scene-delegate-initialization)
 
 The code block below presents an example of importing and initializing the `Yuno`.
 
@@ -81,9 +81,9 @@ After creating the customer, you can create the customer session. Use the  custo
 
 You need an enrollment payment method object to set Headless SDK integration for enrollment. You can create one using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. While creating the payment method object, you need to define which payment method your customer can enroll in. Currently, only CARD is available for Headless SDK.
 
-> 📘 Verify card
+> 📘 Card Verification
 >
-> If you want to verify cards (zero value authorization) before enrollment, you need to provide the `verify` object when creating the payment method object for the customer session.
+> To verify cards with zero value authorization before enrollment, include the `verify` object when creating the payment method object for the customer session.
 
 ## Step 5: Start the enrollment process
 
@@ -151,9 +151,7 @@ let enrollmentCollectedData: EnrollmentCollectedData = EnrollmentCollectedData(
 let result = try await apiClientEnroll.continueEnrollment(data: enrollmentCollectedData)
 ```
 
-<br />
-
-> 📘 PCI Compliance
+> 🚧 PCI Compliance
 >
 > Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
 
@@ -183,12 +181,10 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
 ]
 ```
 
-<br />
-
-> 📘 Enrollment Status via Webhooks
+> 📘 Using Webhooks for Enrollment Status
 >
 > Consider using the enrollment status received via [Webhooks](webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
 
-> 📘 Demo Application
+> 📘 Access the Demo Application
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
