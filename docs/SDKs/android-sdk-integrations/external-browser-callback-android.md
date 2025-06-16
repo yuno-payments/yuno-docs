@@ -27,7 +27,9 @@ Send the `callback_url` parameter when creating the checkout session:
 }
 ```
 
-> 📘 Without `callback_url`, the user may be left in the browser with no way to return to your app.
+> ❗️ Important
+>
+> Without `callback_url`, the user may be left in the browser with no way to return to your app.
 
 ## 2. Configure your Android app to handle the deep link
 
