@@ -16,26 +16,13 @@ next:
 ---
 To help you understand and check how the Yuno SDKs work, the Yuno team provides the Demo App. It provides implementation examples for all Yuno SDKs. Therefore, if you are having trouble running some SDK on your platform, you can check the working examples from the Demo App.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Connect payment methods</h3>
-      <div class="contentContainer">
-        <p>
-					To ensure the Demo App will work properly, be sure to connect at least one payment method to your account through the <a href="https://dashboard.y.uno/">Dashboard</a>. Otherwise, when you access the Demo App, some features won't work. If you don't know how to connect a payment method to your account, check the following contents:
-        </p>
-        <ul>
-          <li><a href="/docs/connections">Connections</a></li>
-          <li><a href="/docs/checkout-builder">Checkout Builder</a></li>
-          <li><a href="/docs/routing">Routing</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Connect Payment Methods
+>
+> To ensure the Demo App will work properly, be sure to connect at least one payment method to your account through the [Dashboard](https://dashboard.y.uno/). Otherwise, when you access the Demo App, some features won't work. If you don't know how to connect a payment method to your account, check the following contents:
+>
+> * [Connections](/docs/connections)
+> * [Checkout Builder](/docs/checkout-builder)
+> * [Routing](/docs/routing)
 
 ### Step 1: Clone the repository
 
@@ -56,7 +43,7 @@ YUNO_PUBLIC_API_KEY=your_public_api_key
 YUNO_PRIVATE_SECRET_KEY=your_private_secret_key
 ```
 
-You can find `account_code`, `public_apy_key`, and `private_secrete_key` in [Yuno Merchant Dashboard](https://docs.y.uno/reference/authentication). 
+You can find `account_code`, `public_apy_key`, and `private_secrete_key` in [Yuno Merchant Dashboard](https://docs.y.uno/reference/authentication).
 
 ### Step 3: Start the Demo App
 
@@ -88,8 +75,4 @@ http://localhost:8080?country=DE
 
 You will find a panel, as presented below, with all Yuno SDKs available by accessing the URL. Select the desired SDK to check its appearance and how it works.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px; max-width:500px; margin:auto">
-  <image src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true" style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></image>
-</div>
-`}</HTMLBlock>
+![Demo App Screenshot](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true)
