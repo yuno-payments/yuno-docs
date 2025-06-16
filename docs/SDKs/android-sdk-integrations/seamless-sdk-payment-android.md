@@ -10,12 +10,11 @@ metadata:
 next:
   description: ''
 ---
-The Yuno Seamless SDK for Android provides a flexible payment solution that combines pre-built UI components with customization options. 
+The Yuno Seamless SDK for Android provides a flexible payment solution that combines pre-built UI components with customization options.
 
-> 📘 Recommended SDKs
-> 
+> 👍 Recommended SDKs
+>
 > We recommend using the [Android Full SDK](full-checkout-android) or the [Android Lite SDK](lite-checkout-android) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-
 
 This SDK is ideal for merchants who:
 
@@ -42,10 +41,9 @@ Before starting the Yuno Android SDK integration, make sure your project meets t
   * Create a `checkout_session`, which initializes the payment flow
   * Create the payment associated with the session
 
-> 📘 SDK Version
-> 
+> 📘 Verify SDK Version
+>
 > Access the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
-
 
 ## Step 1: Create a customer
 
@@ -64,8 +62,8 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 * Include the customer ID obtained from the previous step
 * Store the returned `checkout_session` ID for use in Step 6 of the integration
 
-> 📘 Checkout Session Usage
-> 
+> 🚧 Checkout Session Usage
+>
 > The `checkout_session` is unique for each payment attempt and cannot be reused.
 
 ## Step 3: Add SDK to your project
@@ -133,7 +131,7 @@ Use the `YunoConfig` data class to set additional configurations for the SDK. Th
       </td>
 
       <td>
-        Defines the card form flow. The default option is `CardFormType.ONE_STEP`. Check the section [Render options](#render-options)   for more information.
+        Defines the card form flow. The default option is `CardFormType.ONE_STEP`. Check the section [Render options](#render-options) for more information.
       </td>
     </tr>
 
@@ -143,7 +141,7 @@ Use the `YunoConfig` data class to set additional configurations for the SDK. Th
       </td>
 
       <td>
-        Enables the save card checkbox for card flows. Check the [Save card](#save-card-for-future-payments)    section for more information.
+        Enables the save card checkbox for card flows. Check the [Save card](#save-card-for-future-payments) section for more information.
       </td>
     </tr>
 
@@ -153,10 +151,36 @@ Use the `YunoConfig` data class to set additional configurations for the SDK. Th
       </td>
 
       <td>
-        Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:  
+        Defines the language to be used in the payment forms. If you don't send or provide a null value, Yuno SDK will use the device language. You can set it to one of the available language options:
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `es` (Spanish)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `en` (English)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `pt` (Portuguese)
       </td>
     </tr>
@@ -167,7 +191,7 @@ Use the `YunoConfig` data class to set additional configurations for the SDK. Th
       </td>
 
       <td>
-        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)   section.
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.
       </td>
     </tr>
   </tbody>
@@ -296,7 +320,7 @@ data class YunoButtonStyles(
 )
 ```
 
-To use the `styles` customization option, you have to use the `YunoConfig` data class, described in Step 2. 
+To use the `styles` customization option, you have to use the `YunoConfig` data class, described in Step 2.
 
 ### Loader
 
@@ -314,6 +338,6 @@ You can choose between two card form render options. The following screenshots d
 
 <Image align="center" src="https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png" />
 
-> 📘 Explore the Demo App
-> 
+> 📘 Demo App Access
+>
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
