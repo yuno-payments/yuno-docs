@@ -80,7 +80,7 @@ The following table presents all the protocol requirements you have to provide a
 
 The parameter`showPaymentStatus`is used to determine whether the payment status should be displayed. Passing `true`as an argument will show the payment status while passing `false` indicates that the payment status should not be displayed.
 
-The class `ViewController ` is a subclass of `UIViewController `and conforms to the `YunoEnrollmentDelegate `protocol. It includes a function called` enrollPayment(with delegate: YunoEnrollmentDelegate, showPaymentStatus: Bool)`, which parameters are described below: 
+The class `ViewController ` is a subclass of `UIViewController `and conforms to the `YunoEnrollmentDelegate `protocol. It includes a function called` enrollPayment(with delegate: YunoEnrollmentDelegate, showPaymentStatus: Bool)`, which parameters are described below:
 
 * `delegate: YunoEnrollmentDelegate` : The delegate object that handles enrollment callbacks.
 * `showPaymentStatus: Bool`: A Boolean flag that determines whether to display status views during the payment enrollment process.
@@ -89,27 +89,9 @@ The method `enrollPayment` initiates the payment enrollment process. You should 
 
 ## Step 3: Enrollment status
 
-<HTMLBlock>{`
-<style> 
-  .noMargin {
-    margin: 0 !important;
-  }
-  </style>
-
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <div class="contentContainer">
-        <h3  class="noMargin">This feature is for payment methods executing deep links</h3>
-        <p>
-          This feature is only used if you enroll in a payment method that executes deep links. If you are not enrolling in a payment method that executes deep links, you can ignore Step 3.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Deep Link Enrollment
+>
+> This feature is only used if you enroll in a payment method that executes deep links. If you are not enrolling in a payment method that executes deep links, you can ignore Step 3.
 
 If you use a payment method that requires a deep link to return to your app, use the method described in the following code block to obtain the enrollment status in your AppDelegate. The `url.scheme` should be the same as the `callback_url` used when creating the `customer_session`.
 
@@ -126,13 +108,13 @@ func application(_ app: UIApplication, open url: URL, options: [UIApplication.Op
 
 ## Complementary Features
 
-Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience. 
+Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience.
 
 ### Render option
 
 When presenting the enrollment, you can also choose one of the render options for the card form. You have the following options:
 
-* `ONE_STEP` 
+* `ONE_STEP`
 * `STEP_BY_STEP`
 
 To change the render option, set the `cardFormType` equal one of the available options. Each option is presented below.
@@ -147,18 +129,6 @@ Control the use of the [Loader](https://docs.y.uno/docs/loader-1).
 
 Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="https://github.com/yuno-payments/yuno-sdk-ios">Yuno repository</a> for a complete implementation of Yuno iOS SDKs.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo App
+>
+> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
