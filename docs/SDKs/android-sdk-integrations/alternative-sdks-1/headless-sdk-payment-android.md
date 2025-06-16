@@ -10,12 +10,11 @@ metadata:
 next:
   description: ''
 ---
-The Headless Android SDK provides a flexible, low-level integration option that gives you complete control over the payment UI and flow. 
+The Headless Android SDK provides a flexible, low-level integration option that gives you complete control over the payment UI and flow.
 
-> 📘 Recommended SDKs
+> 👍 Recommended SDKs
 >
-> We recommend using the [Android Full SDK](full-checkout-android) or the [Android Lite SDK](lite-checkout-android) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-
+> For a smooth integration experience, we recommend using the [Android Full SDK](full-checkout-android) or the [Android Lite SDK](lite-checkout-android). These options provide a complete solution with built-in forms and validation.
 
 This SDK is ideal for merchants who:
 
@@ -42,10 +41,9 @@ Before starting the Yuno Android SDK integration, make sure your project meets t
   * Create a `checkout_session`, which initializes the payment flow
   * Create the payment associated with the session
 
-> 📘 SDK Version
+> 📘 Latest SDK Version
 >
-> Access the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
-
+> Check the [Release notes](release-notes-android-sdk) or visit the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
 
 ## Step 1: Create a customer
 
@@ -88,7 +86,7 @@ Yuno SDK includes, by default, the `INTERNET` permission, which is required to m
 
 ## Step 4: Initialize headless SDK with the public key
 
-To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard. 
+To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
 
 Create a custom application if you haven't already. In the `onCreate()` method of your application class, initialize the SDK by calling the `Yuno.initialize()` function, as shown in the following example:
 
@@ -111,7 +109,7 @@ To start the checkout process, call the `apiClientPayment` function after your c
 
 The table below describes the required parameters:
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -131,7 +129,17 @@ The table below describes the required parameters:
       </td>
 
       <td>
-        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
+        * This parameter determines the country for which the payment process is being configured.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
       </td>
     </tr>
 
@@ -141,8 +149,17 @@ The table below describes the required parameters:
       </td>
 
       <td>
-        Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint.\
-        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
+        * Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
       </td>
     </tr>
   </tbody>
@@ -291,10 +308,9 @@ apiClientPayment.generateToken(
 
 ```
 
-> 📘 PCI Compliance
+> 🚧 PCI Compliance
 >
-> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
-
+> Ensure you adhere to best practices for managing sensitive card data. Without PCI certification, you are prohibited from saving any card data except for the token provided by the SDK.
 
 The **apiClientPayment.generateToken** function returns an Observable type, which is a subclass of `LiveData`. As a result, you can observe the response as a common `LiveData` with the following type `SingleLiveEvent<Map<String, Any?>>`, which is a `LiveData` that only emits once. The response type is  a `Map` containing the whole response. The following code block presents the examples of response after calling the `apiClientPayment.generateToken` function.
 
@@ -408,7 +424,7 @@ The endpoint response includes the `sdk_action_required` parameter that indicate
 
 ## Step 8: Get the 3DS challenge URL (if required)
 
- When a payment requires 3DS authentication, an additional challenge may be needed to verify the customer's identity. For more details about this process, see the [3DS Card Verification (old version)](doc:3ds-card-verification-copy) page. If a 3DS verification challenge is required, the Create Payment endpoint response will include the following:
+When a payment requires 3DS authentication, an additional challenge may be needed to verify the customer's identity. For more details about this process, see the [3DS Card Verification (old version)](doc:3ds-card-verification-copy) page. If a 3DS verification challenge is required, the Create Payment endpoint response will include the following:
 
 * A `THREE_D_SECURE `transaction type
 * Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
@@ -436,7 +452,7 @@ data class ThreeDSecureChallengeResponse(
 
 The `type` can return `ERROR` or `URL`, defining if the function returned a valid URL for the challenge:
 
-* If `type = URL`, `data` will contain the URL your customer needs to access to complete the 3DS challenge.  
+* If `type = URL`, `data` will contain the URL your customer needs to access to complete the 3DS challenge.
 * If `type = ERROR`, `data` will contain the error message, informing the source of the problem.
 
 The code block below presents an example of how you can observe the response from `ThreeDSecureChallengeResponse`:
@@ -483,7 +499,7 @@ The JavaScript interface must use the name `messageFromWeb(data : String?)` and 
 To complete the Headless SDK payment flow:
 
 1. Use [Yuno Webhooks](doc:configure-webhooks) to receive notifications about:
-   * The outcome of the 3DS challenge 
+   * The outcome of the 3DS challenge
    * The final payment status
 
 2. Optionally, retrieve payment details using the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint.
@@ -502,6 +518,6 @@ The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the 
 
 You can change the SDK appearance to match your brand. For more information, access the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
 
-> 📘 Demo App
-> 
+> 📘 Access the Demo App
+>
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
