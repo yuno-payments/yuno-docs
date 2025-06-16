@@ -12,21 +12,9 @@ next:
 ---
 Yuno's Headless SDK lets you create payments. Note that when using the Headless SDK, you will need to request and send via API all the mandatory fields the payment provider requires to generate payment in their API.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Recommended SDKs</h3>
-      <div class="contentContainer">
-        <p>
-         We recommend using the <a href="full-checkout-sdk">Web Full SDK</a> or the <a href="lite-checkout-sdk">Web Lite SDK</a> for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Recommended SDKs
+>
+> We recommend using the [Web Full SDK](full-checkout-sdk) or the [Web Lite SDK](lite-checkout-sdk) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
 
 Yuno's Headless SDK enables you to create payments in two different scenarios:
 
@@ -37,7 +25,7 @@ The following steps describe creating a payment using Yuno's Headless SDK.
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project. 
+Before proceeding with the Headless SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -47,25 +35,13 @@ The integration guide provides three flexible methods:
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the Headless checkout functionality.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>TypeScript library</h3>
-      <div class="contentContainer">
-        <p>
-          If you are using TypeScript, Yuno provides a <a href="https://www.npmjs.com/package/@yuno-payments/sdk-web-types">library</a> that you can use to see all available methods available in the Yuno Web SDK.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 TypeScript Library
+>
+> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
 
 ## Step 2: Initialize Headless SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard. 
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
 
 The code block below presents an example of initializing the `Yuno` class and assigning it to the `yuno`constant.
 
@@ -75,45 +51,12 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 ## Step 3: Start the checkout process
 
-Next, you will start the checkout process using the `apiClientPayment` function, providing the necessary configuration parameters. The following table lists all required parameters and their descriptions. 
+Next, you will start the checkout process using the `apiClientPayment` function, providing the necessary configuration parameters. The following table lists all required parameters and their descriptions.
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `country_code`
-      </td>
-
-      <td>
-        This parameter specifies the country for which the payment process is being set up.\
-        Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk)   page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `checkout_session`
-      </td>
-
-      <td>
-        Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint.\
-        `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter          | Description                                                                                                                                                                                                                                                                                   |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `checkout_session` | Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint. `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                         |
 
 The next code block presents an example of the parameter configuration.
 
@@ -137,27 +80,13 @@ After collecting all user information, you can start the payment. First, you nee
 1. **Example 1**: Create a one-time token utilizing a card as the payment method and including all requisite card information.
 2. **Example 2**: Create a one-time token using the `vaulted_token` information.
 
-<HTMLBlock>{`
-<style>
-  .contentContainer {
-    gap: 0;
-  }
-</style>
+> 📘 Benefits of Using a Vaulted Token
+>
+> When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. In addition, you can add installment information and a security code if the provider requires it.
 
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3>Benefits of using a vaulted token</h3>
-        <p>
-          When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. In addition, you can add installment information and a security code if the provider requires it.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Benefits of Using a Vaulted Token
+>
+> When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. In addition, you can add installment information and a security code if the provider requires it.
 
 ```javascript Example 1
 /**
@@ -269,21 +198,9 @@ const oneTimeToken = await apiClientPayment.generateToken({
 })
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3 class="localH3">PCI Compliance</h3>
-        <p>
-					Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ PCI Compliance
+>
+> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
 
 The following code block presents the `apiClientPayment.generateToken` function responses for both examples above.
 
@@ -477,18 +394,6 @@ You are responsible for redirecting your customers to the URL provided by the `r
 
 To complete the Headless SDK payment flow, you need to use [Yuno Webhooks](doc:configure-webhooks), which will promptly notify you about the outcome of the 3DS challenge and the final payment status. Using webhooks ensures that you receive real-time updates on the progress of the payment transaction. In addition to the webhooks, you can retrieve the payment information using the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Demo App</h3>
-      <div class="contentContainer">
-        <p>
-          In addition to the code examples provided, you can access the <a href="/docs/demo-app">Demo App</a> for a complete implementation of Yuno SDKs.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Demo App
+>
+> In addition to the code examples provided, you can access the [Demo App](#demo-app) for a complete implementation of Yuno SDKs.
