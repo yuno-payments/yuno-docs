@@ -12,7 +12,7 @@ next:
 ---
 This page outlines the steps to integrate the Lite Flutter SDK payment functionalities into your project. Follow these instructions to add, configure, and use the Yuno Flutter SDK.
 
-> 📘 Prerequisites
+> 🚧 Prerequisites
 >
 > Ensure all required Flutter SDK dependencies are included in your project before following the setup example.
 
@@ -90,17 +90,77 @@ Below is a table describing the parameters required for initializing the Yuno SD
 
     <tr>
       <td>
-        `lang`
+        * `lang`
       </td>
 
       <td>
-        The language for SDK content. Supported options include: <br/> `en` - English <br/> `es` - Spanish <br/> `pt` - Portuguese <br/> `ms` - Malay <br/> `id` - Indonesian <br/> `th` - Thai
+        The language for SDK content. Supported options include:
       </td>
     </tr>
 
     <tr>
       <td>
-        `cardflow`
+
+      </td>
+
+      <td>
+        * `en` - English
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `es` - Spanish
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `pt` - Portuguese
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `ms` - Malay
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `id` - Indonesian
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `th` - Thai
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        * `cardflow`
       </td>
 
       <td>
@@ -110,7 +170,7 @@ Below is a table describing the parameters required for initializing the Yuno SD
 
     <tr>
       <td>
-        `saveCardEnable`
+        * `saveCardEnable`
       </td>
 
       <td>
@@ -120,7 +180,7 @@ Below is a table describing the parameters required for initializing the Yuno SD
 
     <tr>
       <td>
-        `keepLoader`
+        * `keepLoader`
       </td>
 
       <td>
@@ -208,16 +268,33 @@ The functions used in `Yuno.startPaymentLite` are described in the table below.
       </td>
 
       <td>
-        An instance of `MethodSelected` that includes:  
+        An instance of `MethodSelected` that includes:
+      </td>
+    </tr>
 
-        * `paymentMethodType`: Type of payment method selected by the customer. For the complete available options, access the [Payment types](ref:payment-type-list)  page.
-        * `VaultedToken`:  The vaulted token from a previously enrolled payment method.
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `paymentMethodType`: Type of payment method selected by the customer. For the complete available options, access the [Payment types](ref:payment-type-list) page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `VaultedToken`: The vaulted token from a previously enrolled payment method.
       </td>
     </tr>
   </tbody>
 </Table>
 
-By using the `methodSelected` parameter, the merchant specifies the payment method chosen by the customer. 
+By using the `methodSelected` parameter, the merchant specifies the payment method chosen by the customer.
 
 ## Step 4: Retrieve the one-time token (OTT)
 
@@ -238,10 +315,12 @@ YunoPaymentListener(
 
 Once you have obtained the one-time token, create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), using both the one-time token and the checkout session.
 
-> 📘 Continue Payment Method
+> 🚧 Important Integration Step
 >
-> Yuno **requires** you integrate the `continuePayment` method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario.
-
+> After creating a payment, it is essential to integrate the `continuePayment` method of the Yuno SDK. This step is crucial for handling asynchronous payment methods that may require additional customer actions. Here’s what you need to know:
+>
+> * **Notification of Requirement**: Certain asynchronous payment methods need additional customer actions to complete. The API will notify you of this requirement via the `sdk_action_required` field in the response, which will be set to true.
+> * **Functionality of`yuno.continuePayment()`**: This function will automatically display the necessary screens to guide customers through the completion of their payment. It simplifies the process by managing the required scenarios without additional input from you.
 
 Some asynchronous payment methods require additional customer actions after the payment initiation. The response from the Create Payment endpoint will indicate this with the `sdk_action_required` attribute, which will be set to `true` if further action is needed. When this occurs, you can use the `Yuno.continuePayment()` function to guide the customer through the necessary steps:
 
