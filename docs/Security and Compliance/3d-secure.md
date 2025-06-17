@@ -103,29 +103,14 @@ Before using 3DS DIRECT, you need to enable 3DS in your [Yuno Dashboard](https:/
 * **Merchant URL**: The merchant's website or online platform.
 * **Country Code**: The country where the payment needs to be processed, following the [ISO 3166-1](ref:country-reference) Standard Country Codes.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer ">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Using an external MPI for authentication</h3>
-      <div class="contentContainer">
-        <div>
-           If you are using an external MPI to perform the authentication, the following parameters are required for a successful connection with the provider:
-          <ul>
-            <li>Acquirer BIN</li>
-            <li>Acquirer country code</li>
-            <li>Merchant ID</li>
-            <li>MCC</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
-##
+> 📘 Using an External MPI for Authentication
+>
+> If you are using an external MPI to perform the authentication, the following parameters are required for a successful connection with the provider:
+>
+> * Acquirer BIN
+> * Acquirer country code
+> * Merchant ID
+> * MCC
 
 ## Yuno 3D Secure 2 integration
 
