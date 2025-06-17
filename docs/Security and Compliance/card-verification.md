@@ -24,28 +24,16 @@ With the Yuno card verification service, you can protect your business in real t
 
 First, you need to define a route to use the card verification feature. When configuring the route, be sure to select:
 
-* **Card** as payment method. 
+* **Card** as payment method.
 * Define the **Transaction type** **Equal** to **VERIFY**.
 
 With the above configurations, all card verifications will be processed following the configuration of the created route.
 
 <Image align="center" src="https://files.readme.io/ace8dd6aa4d7fe71f02ae0600949b59d8d59bfb329d55e66134a858fc7ea4a33-Screenshot_2024-10-14_at_3.09.35_PM.png" />
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Select the correct provider</h3>
-      <div class="contentContainer">
-        <p>
-					The credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Select the Correct Provider
+>
+> The credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.
 
 In addition to creating the route, you need to choose when to use the validation. You can verify cards during the [enrollment process](https://docs.y.uno/reference/enroll-payment-method-checkout) or while making a credit [card payment](https://docs.y.uno/reference/create-payment). Depending on your chosen process, you should use different endpoints or SDK functions.
 
@@ -69,6 +57,7 @@ If you are using an integration based on SDKs, you need to define the `verify` o
 }
 
 ```
+
 ```json Response
 {
     "id": "fbc68364-0456-41b6-9743-1acb07d55f14",
@@ -135,6 +124,7 @@ To verify the card at the enrollment with the Direct integration, you will use t
     }
 }
 ```
+
 ```json Response
 {
     "name": "VISA ****0000",
@@ -220,20 +210,9 @@ To verify the card at the enrollment with the Direct integration, you will use t
 }
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					The verify feature at the enrollment is only available for PCI-compliant merchants when using the Direct integration. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Verification Feature Availability
+>
+> The verify feature at the enrollment is only available for PCI-compliant merchants when using the Direct integration.
 
 ### Verify the card at the payment
 
@@ -275,6 +254,7 @@ The code block below presents an example of card verification using the payment 
     }
 }
 ```
+
 ```json Response
 {
     "id": "47646d8b-1f99-4097-9df2-3097bf318bb9",
@@ -493,6 +473,7 @@ The code block below presents an example of card verification using the payment 
     }
 }
 ```
+
 ```json Response
 {
     "id": "bcb42b81-c729-48cb-b782-1a0b6b706b31",
@@ -671,17 +652,6 @@ The code block below presents an example of card verification using the payment 
 }
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-					The verify feature at the payment is only available for PCI-compliant merchants when using the Direct integration. 
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Important
+>
+> The verify feature at the payment is only available for PCI-compliant merchants when using the Direct integration.
