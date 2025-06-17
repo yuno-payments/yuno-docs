@@ -10,27 +10,34 @@ metadata:
 next:
   description: ''
 ---
-In Yuno we allow users to easily catch up on overdue or declined payments through a payment link. If a credit card is expired or notified stolen/lost, and you need to update the credit card information, you can generate a secure payment link to share with your customers via email or text message.
+Yuno enables merchants to handle overdue or declined payments through secure payment links. When a credit card expires or is reported stolen/lost, you can generate a payment link to share with customers via email or text message, allowing them to update their payment information easily.
 
-This feature is mainly oriented to merchants that have their own subscription engine and want to update credit card details in order to continue generating payments with a new `vaulted_token` for a customer. 
+This feature is designed for merchants who manage their own subscription engine and need to update credit card details to continue processing payments with a new `vaulted_token` for their customers.
 
-### Benefits for Users
+## Benefits
 
-* *Speed and Ease*: Users can resolve payment issues instantly without needing to log in to their account or re-enter all their details.
-* *Seamless Update*: If the previous card has expired or been blocked, the new card used in the payment link will be automatically saved, preventing future payment issues.
-* Enhanced Security: All payments made through the link are protected with advanced encryption technology.\
-  This feature ensures a smoother payment experience, reducing friction and improving service continuity for users of our subscription product.
+* **Speed and Ease**: Users can resolve payment issues instantly without logging into their account or re-entering all their details
+* **Seamless Update**: The new card used in the payment link is automatically saved when the previous card expires or is blocked, preventing future payment issues
+* **Enhanced Security**: All payments made through the link are protected with advanced encryption technology
 
-### How It Works
+This feature ensures a smoother payment experience, reducing friction and improving service continuity for users of your subscription product.
 
-1- *Receiving the Payment Link*: Users will receive a secure payment link. This link allows them to complete the pending payment using a credit or debit card. Additional fields for the payment link creation for enrollment: 
+## How It Works
 
-* `customer_payer.id`: The id of the previously [generated customer](ref:create-customer).
-* `one_time_use`= true: The payment link will be for a one time use only.
-* `vault_on_success` = true: The flag in order to enroll the credit card after the succeeded payment. 
+### 1. Receiving the Payment Link
 
-2- *Automatic enrollment*: Upon completing the payment through the link, if the payment is succeeded, the new `vaulted_token` will be generated for the customer.
+Users receive a secure payment link that allows them to complete the pending payment using a credit or debit card. When creating the payment link for enrollment, include these additional fields:
 
-3- *Continue charging*: Get the `vaulted_token` from the customer and continue with your subscription schedule. [Get payment methods](ref:retrieve-enrolled-payment-methods-api) for a customer. 
+* `customer_payer.id`: The ID of the previously [generated customer](ref:create-customer)
+* `one_time_use`: Set to `true` to ensure the payment link can only be used once
+* `vault_on_success`: Set to `true` to enroll the credit card after successful payment
 
-For more information, please refer to the [Payment link API reference](ref:create-payment-link).
+### 2. Automatic Enrollment
+
+When the payment is completed successfully through the link, Yuno automatically generates a new `vaulted_token` for the customer.
+
+### 3. Continue Charging
+
+Retrieve the `vaulted_token` from the customer and continue with your subscription schedule. Use the [Get payment methods](ref:retrieve-enrolled-payment-methods-api) endpoint to access the customer's payment methods.
+
+For more information about creating and managing payment links, refer to the [Payment link API reference](ref:create-payment-link).

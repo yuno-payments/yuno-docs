@@ -12,24 +12,24 @@ next:
 ---
 ## Overview
 
-This feature allows merchants to split payments between multiple recipients. This is especially useful for marketplace models, where a transaction needs to be divided among different sellers or stakeholders. By utilizing this functionality, merchants can define how the payment is split, including the amounts, recipients, and any applicable fees.
+This feature enables merchants to split payments among multiple recipients, which is particularly beneficial for marketplace models where transactions need to be divided among different sellers or stakeholders. Merchants can specify how the payment is split, including the amounts, recipients, and any applicable fees.
 
-The split payment functionality depends on whether the selected payment provider supports it. Yuno acts solely as the orchestrator of the payment, not the processor. Make sure your provider supports split payments before attempting to use this functionality. At the moment, this feature is only available for the following providers:
+The split payment functionality is contingent on the support of the selected payment provider. Yuno serves solely as the orchestrator of the payment, not the processor. Ensure your provider supports split payments before using this functionality. Currently, this feature is available only for the following provider:
 
 * Pagarme
 
-## Key Features
+## Key features
 
-* *Split Payments*: Define how the total payment amount is distributed among different recipients.
-* *Flexible Configuration*: Support absolute-based splits.
-* *Integration with Providers*: Splits can be executed by payment providers that support this functionality.
-* *Detailed Handling of Fees*: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
+* **Split payments**: Define how the total payment amount is distributed among different recipients.
+* **Flexible configuration**: Support for absolute-based splits.
+* **Integration with providers**: Splits can be executed by payment providers that support this functionality.
+* **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
 
 ## Integration
 
 The split\_marketplace object defines how a [payment](ref:create-payment) should be split between recipients. It is an array of objects, where each object represents a recipient and their share of the payment.
 
-<Table align={["left","left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -49,7 +49,7 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
   <tbody>
     <tr>
       <td>
-        recipient\_id
+        `recipient_id`
       </td>
 
       <td>
@@ -57,13 +57,27 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
       </td>
 
       <td>
-        The ID of the recipient in the [Yuno system](ref:create-recipients). \[Conditional - Either the recipient\_id or the provider\_recipient\_id should be sent in the payment creation]\[Conditional - Either the recipient\_id or the provider\_recipient\_id should be sent in the payment creation]
+        The ID of the recipient in the [Yuno system](ref:create-recipients).
       </td>
     </tr>
 
     <tr>
       <td>
-        provider\_recipient\_id
+
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+        * Conditional - Either the `recipient_id` or the `provider_recipient_id` should be sent in the payment creation.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `provider_recipient_id`
       </td>
 
       <td>
@@ -71,13 +85,27 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
       </td>
 
       <td>
-        The recipient ID from the payment provider, if applicable. \[Conditional - Either the recipient\_id or the provider\_recipient\_id should be sent in the payment creation]\[Conditional - Either the recipient\_id or the provider\_recipient\_id should be sent in the payment creation]
+        The recipient ID from the payment provider, if applicable.
       </td>
     </tr>
 
     <tr>
       <td>
-        type
+
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+        * Conditional - Either the `recipient_id` or the `provider_recipient_id` should be sent in the payment creation.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `type`
       </td>
 
       <td>
@@ -85,13 +113,27 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
       </td>
 
       <td>
-        The type of split (PURCHASE, PAYMENTFEE, VAT, COMMISSION, MARKETPLACE, SHIPPING). \[Mandatory]
+        The type of split (`PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`, `SHIPPING`).
       </td>
     </tr>
 
     <tr>
       <td>
-        merchant\_reference
+
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+        * Mandatory
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `merchant_reference`
       </td>
 
       <td>
@@ -105,7 +147,7 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
 
     <tr>
       <td>
-        amount
+        `amount`
       </td>
 
       <td>
@@ -113,13 +155,27 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
       </td>
 
       <td>
-        Defines the amount or percentage of the split. \[Mandatory]
+        Defines the amount or percentage of the split.
       </td>
     </tr>
 
     <tr>
       <td>
-        * value
+
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+        * Mandatory
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        * `value`
       </td>
 
       <td>
@@ -133,7 +189,7 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
 
     <tr>
       <td>
-        * currency
+        * `currency`
       </td>
 
       <td>
@@ -147,7 +203,7 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
 
     <tr>
       <td>
-        liability
+        `liability`
       </td>
 
       <td>
@@ -161,7 +217,7 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
 
     <tr>
       <td>
-        * processing\_fee
+        * `processing_fee`
       </td>
 
       <td>
@@ -169,13 +225,13 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
       </td>
 
       <td>
-        Indicates who will be charged the transaction fee. MERCHANT, RECIPIENT, SHARED
+        Indicates who will be charged the transaction fee. `MERCHANT`, `RECIPIENT`, `SHARED`
       </td>
     </tr>
 
     <tr>
       <td>
-        * chargebacks
+        * `chargebacks`
       </td>
 
       <td>

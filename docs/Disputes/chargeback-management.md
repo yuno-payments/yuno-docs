@@ -57,66 +57,14 @@ The states of chargebacks in Yuno represent the various stages of the process:
 | `WON`            | The dispute was resolved in favor of the merchant.                                                           |
 | `LOST`           | The claim was accepted, resulting in a refund to the customer.                                               |
 
-<HTMLBlock>{`
-<style>
+<br />
 
-  .table-div .substatus,
-  .table-div .status {
-    font-size: 12px;
-  }
-
-  .table-div .substatus {
-    word-wrap: break-word;
-    word-break: break-all;
-  }
-</style>
-
-<body>
-  <div class="table-div">
-    <table>
-      <thead>
-        <tr>
-          <th>Payment Status</th>
-          <th>Payment Substatus</th>
-          <th>Transaction type</th>
-          <th>Transaction status</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td rowspan="1" class="status">SUCCEEDED</td>
-          <td class="substatus">APPROVED</td>
-          <td>Chargeback</td>
-          <td>Won</td>
-          <td>Chargeback dispute won</td>
-        </tr>
-        </tr>
-        <tr>
-          <td rowspan="2" class="status">IN_DISPUTE</td>
-          <td class="substatus">RECEIVED</td>
-          <td>Chargeback</td>
-          <td>Created</td>
-          <td>Chargeback or Inquiry received. Decision or documentation must be provided in order to initiate a dispute.</td>
-        </tr>
-        <tr>
-          <td class="substatus">PENDING_REVIEW</td>
-          <td>Chargeback</td>
-          <td>Pending_review</td>
-          <td>Dispute in review by the provider</td>
-        </tr>
-        <tr>
-          <td rowspan="1" class="status">CHARGEBACK</td>
-          <td class="substatus">LOST</td>
-          <td>Chargeback</td>
-          <td>Lost</td>
-          <td>Expired/Closed/Review_lost</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</body>
-`}</HTMLBlock>
+| **Payment Status** | **Payment Substatus** | **Transaction Type** | **Transaction Status** | **Description**                                                                                            |
+| ------------------ | --------------------- | -------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `SUCCEEDED`        | APPROVED              | Chargeback           | Won                    | Chargeback dispute won                                                                                     |
+| `IN_DISPUTE`       | RECEIVED              | Chargeback           | Created                | Chargeback or Inquiry received. Decision or documentation must be provided in order to initiate a dispute. |
+|                    | PENDING\_REVIEW       | Chargeback           | Pending\_review        | Dispute in review by the provider                                                                          |
+| `CHARGEBACK`       | LOST                  | Chargeback           | Lost                   | Expired/Closed/Review\_lost                                                                                |
 
 ## Key benefits of managing chargebacks with Yuno
 

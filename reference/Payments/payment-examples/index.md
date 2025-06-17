@@ -15,29 +15,16 @@ When using [Yuno's SDK](https://docs.y.uno/docs/web-sdk-integrations), we take c
 * **Document/phone**: Some alternative payment methods require either the customers document or phone number, so in case you don't have that information in your integration, we'll ask for them in the form mentioned before so you don't have to.
 * **PSE**: This payment method requires the customer to select the bank they will use to make the payment, so we offer them a list of banks to choose from.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          This workflow is called SDK_CHECKOUT, in case you want to take care of the whole payment experience integrating directly to our APIs. You can use: 
-        </p>
-        <ul>
-          <li>DIRECT Workflow - For Cards (only available for PCI compliant merchants).</li>
-          <li>REDIRECT Workflow - For alternative payment methods. </li>
-        </ul>
-        <p>
-          You can find payment examples in the corresponding sections for each payment method category.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 `SDK_CHECKOUT` Workflow
+>
+> The `SDK_CHECKOUT` workflow allows you to manage the entire payment experience by integrating directly with our APIs. Depending on your needs, you can choose from the following workflows:
+>
+> * **DIRECT Workflow**: Suitable for Cards (available only for PCI compliant merchants).
+> * **REDIRECT Workflow**: Ideal for alternative payment methods.
+>
+> For detailed payment examples, refer to the respective sections for each payment method category.
 
-For the SDK\_CHECKOUT workflow, all the information is going to be stored in the [`One Time Token`](https://docs.y.uno/docs/the-ultimate-checkout-full) returned by Yuno's SDK, so you don't have to change your integration depending on the payment method. The basic structure of the payment will be the same for every payment method, as in the example below.
+For the `SDK_CHECKOUT` workflow, all the information is going to be stored in the [`One-time token`](https://docs.y.uno/docs/network-tokens#/on-time-use-token-vs-vaulted-token-vs-network-token) returned by Yuno's SDK, so you don't have to change your integration depending on the payment method. The basic structure of the payment will be the same for every payment method, as in the example below.
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
