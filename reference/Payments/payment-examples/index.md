@@ -15,9 +15,9 @@ When using [Yuno's SDK](https://docs.y.uno/docs/web-sdk-integrations), we take c
 * **Document/phone**: Some alternative payment methods require either the customers document or phone number, so in case you don't have that information in your integration, we'll ask for them in the form mentioned before so you don't have to.
 * **PSE**: This payment method requires the customer to select the bank they will use to make the payment, so we offer them a list of banks to choose from.
 
-> 📘 SDK\_CHECKOUT Workflow
+> 📘 `SDK_CHECKOUT` Workflow
 >
-> The **SDK\_CHECKOUT** workflow allows you to manage the entire payment experience by integrating directly with our APIs. Depending on your needs, you can choose from the following workflows:
+> The `SDK_CHECKOUT` workflow allows you to manage the entire payment experience by integrating directly with our APIs. Depending on your needs, you can choose from the following workflows:
 >
 > * **DIRECT Workflow**: Suitable for Cards (available only for PCI compliant merchants).
 > * **REDIRECT Workflow**: Ideal for alternative payment methods.
