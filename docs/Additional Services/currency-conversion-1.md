@@ -11,17 +11,17 @@ Yuno's currency conversion service allows you to settle payments in both your cu
 
 ### Benefits
 
-* *Global Reach*: Allows businesses to operate internationally by accepting and making payments in multiple currencies.
-* *Customer Convenience*: Customers can pay in their preferred currency, enhancing their buying experiences. 
-* *Cost Efficiency*: Optimizing conversion rates can reduce transaction costs.
-* *Revenue Optimization*: Businesses can leverage favorable exchange rates to maximize profits.
+* **Global Reach**: Allows businesses to operate internationally by accepting and making payments in multiple currencies.
+* **Customer Convenience**: Customers can pay in their preferred currency, enhancing their buying experiences. 
+* **Cost Efficiency**: Optimizing conversion rates can reduce transaction costs.
+* **Revenue Optimization**: Businesses can leverage favorable exchange rates to maximize profits.
 
 ### Some use Cases
 
-* *E-commerce Platforms*: Online stores that sell products internationally use currency conversion to display prices in local currencies and process payments accordingly.
-* *Remittance Services*: Companies that facilitate money transfers across borders rely on currency conversion to ensure recipients receive funds in their local currency.
-* *Travel and Hospitality*: Businesses in this sector use currency conversion to handle payments from international travelers.
-* *Investment Platforms*: Fintech platforms that offer trading in foreign stocks, bonds, or cryptocurrencies use currency conversion to manage investments across different currencies.
+* **E-commerce Platforms**: Online stores that sell products internationally use currency conversion to display prices in local currencies and process payments accordingly.
+* **Remittance Services**: Companies that facilitate money transfers across borders rely on currency conversion to ensure recipients receive funds in their local currency.
+* **Travel and Hospitality**: Businesses in this sector use currency conversion to handle payments from international travelers.
+* **Investment Platforms**: Fintech platforms that offer trading in foreign stocks, bonds, or cryptocurrencies use currency conversion to manage investments across different currencies.
 
 ## Implementation
 
@@ -29,11 +29,11 @@ In Yuno, we connect different currency conversion providers, so you dont have to
 
 ### Key Concepts
 
-* *Exchange Rate*: The rate at which one currency can be exchanged for another. This can be a fixed rate or a floating rate that fluctuates based on market conditions.
-* *Base Currency*: The currency you are converting from.
-* *Cardholder Currency*: The currency you are converting to.
-* *Conversion Spread*: The difference between the buy and sell rates, representing the profit margin for the entity providing the conversion service.
-* *Real-Time Conversion*: Using up-to-date exchange rates to perform conversions at the exact time of the transaction.
+* **Exchange Rate**: The rate at which one currency can be exchanged for another. This can be a fixed rate or a floating rate that fluctuates based on market conditions.
+* **Base Currency**: The currency you are converting from.
+* **Cardholder Currency**: The currency you are converting to.
+* **Conversion Spread**: The difference between the buy and sell rates, representing the profit margin for the entity providing the conversion service.
+* **Real-Time Conversion**: Using up-to-date exchange rates to perform conversions at the exact time of the transaction.
 
 ### API implementation
 
@@ -41,7 +41,9 @@ In order to be able to use the currency conversion service you have two API impl
 
 #### Provider's rate service
 
-The merchant can use the currency conversion service of an external provider and send the corresponding information directly in the payment in Yuno. In order to use this, please contact your technical account manager to make sure that the information is set properly. Example:
+The merchant can use the currency conversion service of an external provider and send the corresponding information directly in the payment in Yuno. In order to use this, please contact your technical account manager to make sure that the information is set properly.
+
+Example:
 
 ```json
  "amount": {
