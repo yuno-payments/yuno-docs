@@ -12,7 +12,7 @@ next:
 ---
 You can use the Merchant Installments options when you, the merchant, have your own commercial agreements and installment capabilities defined within your payment processors. In this case, you are responsible for handling the logic behind the installment options available for each transaction. When creating the payment, you will inform Yuno of the available number of installments that customers can choose from.
 
-<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4" />
+<Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/installments.mp4" />
 
 <br />
 
