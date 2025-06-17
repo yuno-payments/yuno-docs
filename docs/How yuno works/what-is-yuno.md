@@ -2,7 +2,7 @@
 title: What is Yuno?
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: What is Yuno?
   description: >-
