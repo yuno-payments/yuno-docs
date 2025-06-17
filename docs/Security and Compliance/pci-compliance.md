@@ -29,11 +29,7 @@ Tokenization involves collecting sensitive payment details and generating a shor
 
 Yuno simplifies the process of making payments across different providers by tokenizing users' payment information. This means you only need to store a single token, making future payment transactions easier.
 
-<HTMLBlock>{`
-<div style="background-color: #FFFFF; padding: 16px; display: flex; justify-content: center; border-radius:14px">
-  <image src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/PCICompliance/pci_compliance1.png" style="width:100%; height:100%; border-radius:14px; display:block; object-fit:cover; background-color:rgba(0, 0, 0, 0); object-position:50% 50%; box-shadow: 0px 0px 0px 0px rgba(40, 42, 47, 0.05), 0px 3px 6px 0px rgba(40, 42, 47, 0.05), 0px 11px 11px 0px rgba(40, 42, 47, 0.04), 0px 25px 15px 0px rgba(40, 42, 47, 0.02), 0px 44px 18px 0px rgba(40, 42, 47, 0.01), 0px 69px 19px 0px rgba(40, 42, 47, 0.00);"></image>
-</div>
-`}</HTMLBlock>
+![PCI Compliance](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/PCICompliance/pci_compliance1.png)
 
 ## What is PCI compliance?
 
@@ -66,7 +62,7 @@ Using Yuno solutions, the transaction and cardholder data are tokenized. Therefo
 
 Since your business reduces the contact and exposure of cardholder data, the PCI compliance process is simplified. Instead of an internal audition, you have to complete a questionnaire. Thus, your business saves costs and offers customers a more secure payment experience.
 
-Using a third-party service like Yuno, you will probably be required to fill out the SAQ A or SAQ D. If all cardholder data functions are outsourced, and your business systems or premises do not store, process, or transmit cardholder data, you would probably need to fill out the SAQ A, composed of 22 questions. On the other hand, if your business does not use outsourced systems and stores card data, you would probably need to fill out the SAQ D, composed of 329 questions. 
+Using a third-party service like Yuno, you will probably be required to fill out the SAQ A or SAQ D. If all cardholder data functions are outsourced, and your business systems or premises do not store, process, or transmit cardholder data, you would probably need to fill out the SAQ A, composed of 22 questions. On the other hand, if your business does not use outsourced systems and stores card data, you would probably need to fill out the SAQ D, composed of 329 questions.
 
 In the case of your business integrating the Yuno [Direct Flow](doc:direct-flow), you must share an Attestation of Compliance (AOC) signed by your company and a certified auditor.
 
