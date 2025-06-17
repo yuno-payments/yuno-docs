@@ -57,6 +57,15 @@ The states of chargebacks in Yuno represent the various stages of the process:
 | `WON`            | The dispute was resolved in favor of the merchant.                                                           |
 | `LOST`           | The claim was accepted, resulting in a refund to the customer.                                               |
 
+<br />
+
+| **Payment Status** | **Payment Substatus** | **Transaction Type** | **Transaction Status** | **Description**                                                                                            |
+| ------------------ | --------------------- | -------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **SUCCEEDED**      | *APPROVED*            | Chargeback           | Won                    | Chargeback dispute won                                                                                     |
+| **IN\_DISPUTE**    | *RECEIVED*            | Chargeback           | Created                | Chargeback or Inquiry received. Decision or documentation must be provided in order to initiate a dispute. |
+|                    | *PENDING\_REVIEW*     | Chargeback           | Pending\_review        | Dispute in review by the provider                                                                          |
+| **CHARGEBACK**     | *LOST*                | Chargeback           | Lost                   | Expired/Closed/Review\_lost                                                                                |
+
 <HTMLBlock>{`
 <style>
 
@@ -117,6 +126,8 @@ The states of chargebacks in Yuno represent the various stages of the process:
   </div>
 </body>
 `}</HTMLBlock>
+
+<br />
 
 ## Key benefits of managing chargebacks with Yuno
 
