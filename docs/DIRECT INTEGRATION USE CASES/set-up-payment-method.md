@@ -10,20 +10,18 @@ next:
       title: Create Payments
       type: basic
 ---
-# Setting Up Connections and Routing for Payments
+# Set Up Connections and Routing for Payments
 
-Before you can create payments using direct integration with Yuno's API, you must configure your account by setting up payment connections, defining payment routing, enabling payment methods, and obtaining your API credentials. This guide walks you through these essential setup steps.
+Before you can create payments using direct integration with Yuno's API, you must configure your account by setting up payment connections, defining payment routing, enabling payment methods, and obtaining your API credentials. This page explains these essential setup steps.
 
-## Requirements Overview
-
-To process payments, ensure you complete the following steps in your Yuno Dashboard:
+You'll learn how to:
 
 * Configure your first payment connection.
 * Set up payment routing.
 * Enable payment methods in the checkout builder.
-* Obtain your API credentials, including your `public-api-key` and `private-secret-key`.
+* Get your API credentials, including your `public-api-key` and `private-secret-key`.
 
-## Detailed Setup Steps
+## Set up Your Account
 
 ### Step 1: Set up Your Connection
 
@@ -54,7 +52,7 @@ After adding a connection, you must assign it to a route, which determines which
 6. Choose a **processor** from the list and click **Select**.
 7. Click **Publish** to save all your changes.
 
-Once published, your new route will appear in the Published tab, indicating that the configured payment method will now process all transactions through this configured route.
+Your new route now appears in the **Published** tab, indicating that the configured payment method will now process all transactions through this configured route.
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_V2.mp4" />
 
@@ -80,4 +78,4 @@ To complete the setup and integrate Yuno into your application, you will need to
 
 <Video src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/set_up_you_account/developer_V2.mp4" />
 
-Now that you've completed these dashboard setup steps and obtained your API credentials, you're ready to use **direct integration** for your payments.
+After you complete these steps, you're ready to create payments using **direct integration**.
