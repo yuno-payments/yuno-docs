@@ -40,41 +40,6 @@ Where:
   <CompanyCard title="Cartes Bancaires" image="https://icons.prod.y.uno/cartabancaire_logosimbolo.png" />
 </TableWrapper>
 
-<br />
-
-<br />
-
-<HTMLBlock>{`
-<style>
-    .psp-card .psp-card-logo {
-    max-width: 60px;
-  }
-  
-  .psp-card .detail-psp-card-content {
-    display: flex;
-    justify-content: space-evenly;
-  }
-</style>
-
-<body>
-  <div class="shelf">
-    <div class=" psp-card">
-      <section class="detail-psp-card ">
-        <div class=" detail-psp-card-content">
-     			 <img class="psp-card-logo" src="https://icons.prod.y.uno/visa_logosimbolo.png">
-            <img class="psp-card-logo" src="https://icons.prod.y.uno/mastercard_logosimbolo.png">
-          	<img class="psp-card-logo" src="https://icons.prod.y.uno/amex_logosimbolo.png">
-            <img class="psp-card-logo" src="https://icons.prod.y.uno/jcb_logosimbolo.png">
-          	<img class="psp-card-logo" src="https://icons.prod.y.uno/dinnersclub_logosimbolo.png">
-          	<img class="psp-card-logo" src="https://icons.prod.y.uno/unionpay_logosimbolo.png">
-          <img class="psp-card-logo" src="https://icons.prod.y.uno/cartabancaire_logosimbolo.png">
-		    </div>
-      </section>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
 ## Benefits of 3D Secure 2
 
 As mentioned, 3DS2 was developed to enhance the user experience and adapt the 3DS protocol to the modern payment landscape.
