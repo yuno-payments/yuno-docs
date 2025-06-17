@@ -37,7 +37,9 @@ To register new customers, You will need to provide their personal information. 
 
 > 📘 Customer Complementary Information
 >
-> When creating a **Customer**, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of non-mandatory data you can provide. If you add optional information, be aware of the required mandatory fields.
+> When creating a **Customer**, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of non-mandatory data you can provide.
+>
+> If you add optional information, be aware of the required mandatory fields.
 
 <HTMLBlock>{`
 <body>
