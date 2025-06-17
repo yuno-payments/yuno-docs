@@ -200,15 +200,15 @@ curl --request POST \
      --header 'public-api-key: <Your public-api-key>' \
      --data '
 {
-  "country": "CO",
+  "country": "US",
   "amount": {
-    "currency": "COP",
-    "value": "20000"
+    "currency": "USD",
+    "value": "200"
   },
   "customer_payer": {
     "first_name": "JOHN",
     "last_name": "DOE",
-    "email": "test@test.com"
+    "email": "john.doe@example.com"
   },
   "payment_method": {
     "detail": {
@@ -225,160 +225,332 @@ curl --request POST \
     },
     "type": "CARD"
   },
-  "account_id": "c004cfd7-0c65-4add-b9b3-3d7e3949c9f1",
-  "description": "SUCCESSFUL",
-  "merchant_order_id": "Order_id",
+  "account_id": "<account_id>",
+  "description": "Card payment for authorization",
+  "merchant_order_id": "reference-001",
   "workflow": "DIRECT"
 }
 '
 ```
 ```json Response (JSON)
 {
-  "id": "bffb54d7-6177-4583-9865-529966ee1cc2",
-  "account_id": "c004cfd7-0c65-4add-b9b3-3d7e3949c9f1",
-  "description": "SUCCESSFUL",
-  "country": "CO",
-  "status": "PENDING",
-  "sub_status": "AUTHORIZED",
-  "merchant_order_id": "Order_id",
-  "created_at": "2023-04-12T02:01:14.609045Z",
-  "updated_at": "2023-04-12T02:01:14.972537Z",
-  "amount": {
-    "currency": "COP",
-    "value": 20000,
-    "refunded": 0,
-    "captured": 0
-  },
-  "checkout": {
-    "session": "",
-    "sdk_action_required": false
-  },
-  "payment_method": {
-    "vaulted_token": "",
-    "type": "CARD",
-    "vault_on_success": false,
-    "token": "",
-    "payment_method_detail": {
-      "card": {
-        "verify": null,
-        "capture": false,
-        "installments": 1,
-        "first_installment_deferral": 0,
-        "installments_type": "",
-        "installment_amount": null,
-        "soft_descriptor": "",
-        "authorization_code": "",
-        "retrieval_reference_number": "",
-        "voucher": null,
-        "card_data": {
-          "holder_name": "JOHN DOE",
-          "iin": "41111111",
-          "lfd": "1111",
-          "number_length": 16,
-          "security_code_length": 3,
-          "brand": "VISA",
-          "issuer_name": "JPMORGAN CHASE BANK, N.A.",
-          "issuer_code": null,
-          "category": "",
-          "type": "CREDIT"
-        }
-      }
-    }
-  },
-  "customer_payer": {
-    "id": null,
-    "merchant_customer_id": null,
-    "first_name": "JOHN",
-    "last_name": "DOE",
-    "gender": null,
-    "date_of_birth": null,
-    "email": "test@test.com",
-    "nationality": null,
-    "ip_address": null,
-    "device_fingerprint": null,
-    "browser_info": null,
-    "document": null,
-    "phone": null,
-    "billing_address": null,
-    "shipping_address": null
-  },
-  "additional_data": {
-    "airline": null,
-    "order": null,
-    "seller_details": null
-  },
-  "taxes": null,
-  "transactions": {
-    "id": "e40b36bd-a785-4f10-ab94-95b1abed1c3a",
-    "type": "AUTHORIZE",
-    "status": "SUCCEEDED",
-    "category": "CARD",
-    "amount": 20000,
-    "provider_id": "YUNO_TEST_PAYMENT_GW",
+    "id": "44679b15-6cf1-4ae5-9a04-e2c1308e2572",
+    "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
+    "description": "Card payment for authorization",
+    "country": "US",
+    "status": "PENDING",
+    "sub_status": "AUTHORIZED",
+    "merchant_order_id": "reference-001",
+    "created_at": "2025-06-17T20:36:52.545949Z",
+    "updated_at": "2025-06-17T20:36:52.891071Z",
+    "amount": {
+        "captured": 0.00,
+        "currency": "USD",
+        "currency_conversion": null,
+        "refunded": 0.00,
+        "value": 200.00
+    },
+    "checkout": {
+        "session": "",
+        "sdk_action_required": false
+    },
     "payment_method": {
-      "vaulted_token": "",
-      "type": "CARD",
-      "vault_on_success": false,
-      "token": "",
-      "detail": {
-        "card": {
-          "verify": null,
-          "capture": false,
-          "installments": 1,
-          "first_installment_deferral": 0,
-          "installments_type": "",
-          "installment_amount": null,
-          "soft_descriptor": "",
-          "authorization_code": "",
-          "retrieval_reference_number": "",
-          "voucher": null,
-          "card_data": {
-            "holder_name": "JOHN DOE",
-            "iin": "41111111",
-            "lfd": "1111",
-            "number_length": 16,
-            "security_code_length": 3,
-            "brand": "VISA",
-            "issuer_name": "JPMORGAN CHASE BANK, N.A.",
-            "issuer_code": null,
-            "category": "",
-            "type": "CREDIT"
-          }
+        "vaulted_token": "",
+        "type": "CARD",
+        "vault_on_success": false,
+        "token": "",
+        "parent_payment_method_type": null,
+        "payment_method_detail": {
+            "card": {
+                "verify": false,
+                "capture": false,
+                "installments": 1,
+                "installments_plan_id": null,
+                "first_installment_deferral": 0,
+                "installments_type": "",
+                "installment_amount": null,
+                "soft_descriptor": "",
+                "authorization_code": "363571",
+                "retrieval_reference_number": "",
+                "voucher": null,
+                "card_data": {
+                    "holder_name": "JOHN DOE",
+                    "iin": "41111111",
+                    "lfd": "1111",
+                    "number_length": 16,
+                    "security_code_length": 3,
+                    "brand": "VISA",
+                    "issuer_name": "CONOTOXIA SP Z O O",
+                    "issuer_code": null,
+                    "country_code": "PL",
+                    "category": "CLASSIC",
+                    "type": "DEBIT",
+                    "three_d_secure": {
+                        "version": null,
+                        "electronic_commerce_indicator": null,
+                        "cryptogram": null,
+                        "transaction_id": null,
+                        "directory_server_transaction_id": null,
+                        "pares_status": null,
+                        "acs_id": null
+                    },
+                    "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                    "expiration_month": 11,
+                    "expiration_year": 28
+                },
+                "stored_credentials": {
+                    "reason": null,
+                    "usage": null,
+                    "subscription_agreement_id": null,
+                    "network_transaction_id": null
+                }
+            }
         }
-      }
     },
-    "response_code": "SUCCEEDED",
-    "response_message": "Transaction successful",
-    "reason": null,
-    "description": null,
-    "merchant_reference": null,
-    "provider_data": {
-      "id": "YUNO_TEST_PAYMENT_GW",
-      "transaction_id": "717c2ee8-603d-4633-9ca9-37ec82d52a76",
-      "account_id": "",
-      "status": "SUCCEEDED",
-      "sub_status": "",
-      "status_detail": "",
-      "response_message": "",
-      "raw_response": {
-        "amount": {
-          "currency": "BRL",
-          "value": 2100
+    "customer_payer": {
+        "id": null,
+        "merchant_customer_id": null,
+        "first_name": "JOHN",
+        "last_name": "DOE",
+        "gender": null,
+        "date_of_birth": null,
+        "email": "john.doe@example.com",
+        "nationality": null,
+        "ip_address": null,
+        "device_fingerprint": null,
+        "device_fingerprints": [],
+        "browser_info": {
+            "user_agent": "",
+            "accept_header": "",
+            "accept_content": null,
+            "accept_browser": null,
+            "color_depth": "",
+            "screen_height": "",
+            "screen_width": "",
+            "javascript_enabled": null,
+            "java_enabled": null,
+            "browser_time_difference": null,
+            "language": "",
+            "platform": null
         },
-        "merchantAccount": "YunoPaymentsECOM",
-        "paymentPspReference": "ZKHXKZGXMLBX8N82",
-        "pspReference": "VKJTCWZ9575ZGN82",
-        "reference": "34343434",
-        "status": "received"
-      }
+        "document": null,
+        "phone": null,
+        "billing_address": null,
+        "shipping_address": null,
+        "merchant_customer_created_at": null
     },
-    "created_at": "2023-04-12T02:01:14.758882Z",
-    "updated_at": "2023-04-12T02:01:14.934272Z"
-  },
-  "split": [],
-  "workflow": "DIRECT",
-  "metadata": null,
-  "fraud_screening": null
+    "additional_data": null,
+    "transactions": {
+        "id": "45a0e917-f989-456d-a85b-b08fc5c24950",
+        "type": "AUTHORIZE",
+        "status": "SUCCEEDED",
+        "category": "CARD",
+        "amount": 200.00,
+        "provider_id": "YUNO_TEST_PAYMENT_GW",
+        "payment_method": {
+            "vaulted_token": "",
+            "type": "CARD",
+            "vault_on_success": false,
+            "token": "",
+            "parent_payment_method_type": null,
+            "detail": {
+                "card": {
+                    "verify": false,
+                    "capture": false,
+                    "installments": 1,
+                    "installments_plan_id": null,
+                    "first_installment_deferral": 0,
+                    "installments_type": "",
+                    "installment_amount": null,
+                    "soft_descriptor": "",
+                    "authorization_code": "363571",
+                    "retrieval_reference_number": "",
+                    "voucher": null,
+                    "card_data": {
+                        "holder_name": "JOHN DOE",
+                        "iin": "41111111",
+                        "lfd": "1111",
+                        "number_length": 16,
+                        "security_code_length": 3,
+                        "brand": "VISA",
+                        "issuer_name": "CONOTOXIA SP Z O O",
+                        "issuer_code": null,
+                        "country_code": "PL",
+                        "category": "CLASSIC",
+                        "type": "DEBIT",
+                        "three_d_secure": {
+                            "version": null,
+                            "electronic_commerce_indicator": null,
+                            "cryptogram": null,
+                            "transaction_id": null,
+                            "directory_server_transaction_id": null,
+                            "pares_status": null,
+                            "acs_id": null
+                        },
+                        "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                        "expiration_month": 11,
+                        "expiration_year": 28
+                    },
+                    "stored_credentials": {
+                        "reason": null,
+                        "usage": null,
+                        "subscription_agreement_id": null,
+                        "network_transaction_id": null
+                    }
+                }
+            }
+        },
+        "response_code": "SUCCEEDED",
+        "response_message": "Transaction successful",
+        "reason": null,
+        "description": "Card payment for authorization",
+        "merchant_reference": "reference-001",
+        "provider_data": {
+            "id": "YUNO_TEST_PAYMENT_GW",
+            "transaction_id": "256f6051-89cf-4114-aadc-57e740c0ab51",
+            "account_id": "",
+            "status": "SUCCEEDED",
+            "sub_status": "",
+            "status_detail": "",
+            "response_message": null,
+            "response_code": null,
+            "raw_response": {
+                "amount": {
+                    "currency": "BRL",
+                    "value": 2100
+                },
+                "merchantAccount": "YunoPaymentsECOM",
+                "paymentPspReference": "ZKHXKZGXMLBX8N82",
+                "pspReference": "VKJTCWZ9575ZGN82",
+                "reference": "34343434",
+                "status": "received"
+            },
+            "third_party_transaction_id": "",
+            "third_party_account_id": null,
+            "iso8583_response_code": null,
+            "iso8583_response_message": null
+        },
+        "connection_data": {
+            "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+            "name": null
+        },
+        "created_at": "2025-06-17T20:36:52.701554Z",
+        "updated_at": "2025-06-17T20:36:52.811378Z"
+    },
+    "transactions_history": [
+        {
+            "id": "45a0e917-f989-456d-a85b-b08fc5c24950",
+            "type": "AUTHORIZE",
+            "status": "SUCCEEDED",
+            "category": "CARD",
+            "amount": 200.00,
+            "provider_id": "YUNO_TEST_PAYMENT_GW",
+            "payment_method": {
+                "vaulted_token": "",
+                "type": "CARD",
+                "vault_on_success": false,
+                "token": "",
+                "parent_payment_method_type": null,
+                "detail": {
+                    "card": {
+                        "verify": false,
+                        "capture": false,
+                        "installments": 1,
+                        "installments_plan_id": null,
+                        "first_installment_deferral": 0,
+                        "installments_type": "",
+                        "installment_amount": null,
+                        "soft_descriptor": "",
+                        "authorization_code": "363571",
+                        "retrieval_reference_number": "",
+                        "voucher": null,
+                        "card_data": {
+                            "holder_name": "JOHN DOE",
+                            "iin": "41111111",
+                            "lfd": "1111",
+                            "number_length": 16,
+                            "security_code_length": 3,
+                            "brand": "VISA",
+                            "issuer_name": "CONOTOXIA SP Z O O",
+                            "issuer_code": null,
+                            "country_code": "PL",
+                            "category": "CLASSIC",
+                            "type": "DEBIT",
+                            "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
+                            },
+                            "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                            "expiration_month": 11,
+                            "expiration_year": 28
+                        },
+                        "stored_credentials": {
+                            "reason": null,
+                            "usage": null,
+                            "subscription_agreement_id": null,
+                            "network_transaction_id": null
+                        }
+                    }
+                }
+            },
+            "response_code": "SUCCEEDED",
+            "response_message": "Transaction successful",
+            "reason": null,
+            "description": "Card payment for authorization",
+            "merchant_reference": "reference-001",
+            "provider_data": {
+                "id": "YUNO_TEST_PAYMENT_GW",
+                "transaction_id": "256f6051-89cf-4114-aadc-57e740c0ab51",
+                "account_id": "",
+                "status": "SUCCEEDED",
+                "sub_status": "",
+                "status_detail": "",
+                "response_message": null,
+                "response_code": null,
+                "raw_response": {
+                    "amount": {
+                        "currency": "BRL",
+                        "value": 2100
+                    },
+                    "merchantAccount": "YunoPaymentsECOM",
+                    "paymentPspReference": "ZKHXKZGXMLBX8N82",
+                    "pspReference": "VKJTCWZ9575ZGN82",
+                    "reference": "34343434",
+                    "status": "received"
+                },
+                "third_party_transaction_id": "",
+                "third_party_account_id": null,
+                "iso8583_response_code": null,
+                "iso8583_response_message": null
+            },
+            "connection_data": {
+                "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+                "name": null
+            },
+            "created_at": "2025-06-17T20:36:52.701554Z",
+            "updated_at": "2025-06-17T20:36:52.811378Z"
+        }
+    ],
+    "workflow": "DIRECT",
+    "metadata": [],
+    "fraud_screening": null,
+    "payment_link_id": "",
+    "subscription_code": null,
+    "routing_rules": {
+        "smart_routing": false,
+        "monitors": false,
+        "condition": {
+            "id": 192539,
+            "name": "Card",
+            "description": ""
+        }
+    },
+    "simplified_mode": false
 }
 ```
 
