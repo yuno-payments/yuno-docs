@@ -25,20 +25,22 @@ Where:
 3D Secure 2, or 3DS2, published in 2016, is an updated version of the original 3DS protocol and uses dynamic authentication methods such as biometrics and token-based authentication, whereas the original 3DS protocol relies on static passwords. 3DS2 aims to provide a better user experience with a more fluid flow for end users during authentication. EMVCo, an organization owned by major card brands, developed and managed both protocols. All major card brands stopped supporting the first version of 3DS in October 2022. Therefore, integrating the 3DS2 verification step is essential to ensure your customers' experience and security. Yuno already provides an easy 3DS2 integration for your business.
 
 <TableWrapper>
-  <CompanyCard title="Visa" image="https://icons.prod.y.uno/visa_logosimbolo.png" href="#visa" />
+  <CompanyCard title="Visa" image="https://icons.prod.y.uno/visa_logosimbolo.png" />
 
-  <CompanyCard title="Mastercard" image="https://icons.prod.y.uno/mastercard_logosimbolo.png" href="#mastercard" />
+  <CompanyCard title="Mastercard" image="https://icons.prod.y.uno/mastercard_logosimbolo.png" />
 
-  <CompanyCard title="American Express" image="https://icons.prod.y.uno/amex_logosimbolo.png" href="#amex" />
+  <CompanyCard title="American Express" image="https://icons.prod.y.uno/amex_logosimbolo.png" />
 
-  <CompanyCard title="JCB" image="https://icons.prod.y.uno/jcb_logosimbolo.png" href="#jcb" />
+  <CompanyCard title="JCB" image="https://icons.prod.y.uno/jcb_logosimbolo.png" />
 
-  <CompanyCard title="Diners Club" image="https://icons.prod.y.uno/dinnersclub_logosimbolo.png" href="#dinnersclub" />
+  <CompanyCard title="Diners Club" image="https://icons.prod.y.uno/dinnersclub_logosimbolo.png" />
 
-  <CompanyCard title="UnionPay" image="https://icons.prod.y.uno/unionpay_logosimbolo.png" href="#unionpay" />
+  <CompanyCard title="UnionPay" image="https://icons.prod.y.uno/unionpay_logosimbolo.png" />
 
-  <CompanyCard title="Cartes Bancaires" image="https://icons.prod.y.uno/cartabancaire_logosimbolo.png" href="#cartabancaire" />
+  <CompanyCard title="Cartes Bancaires" image="https://icons.prod.y.uno/cartabancaire_logosimbolo.png" />
 </TableWrapper>
+
+<br />
 
 <br />
 
