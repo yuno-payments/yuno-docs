@@ -24,6 +24,24 @@ Where:
 
 3D Secure 2, or 3DS2, published in 2016, is an updated version of the original 3DS protocol and uses dynamic authentication methods such as biometrics and token-based authentication, whereas the original 3DS protocol relies on static passwords. 3DS2 aims to provide a better user experience with a more fluid flow for end users during authentication. EMVCo, an organization owned by major card brands, developed and managed both protocols. All major card brands stopped supporting the first version of 3DS in October 2022. Therefore, integrating the 3DS2 verification step is essential to ensure your customers' experience and security. Yuno already provides an easy 3DS2 integration for your business.
 
+<TableWrapper>
+  <CompanyCard title="Visa" image="https://icons.prod.y.uno/visa_logosimbolo.png" href="#visa" />
+
+  <CompanyCard title="Mastercard" image="https://icons.prod.y.uno/mastercard_logosimbolo.png" href="#mastercard" />
+
+  <CompanyCard title="American Express" image="https://icons.prod.y.uno/amex_logosimbolo.png" href="#amex" />
+
+  <CompanyCard title="JCB" image="https://icons.prod.y.uno/jcb_logosimbolo.png" href="#jcb" />
+
+  <CompanyCard title="Diners Club" image="https://icons.prod.y.uno/dinnersclub_logosimbolo.png" href="#dinnersclub" />
+
+  <CompanyCard title="UnionPay" image="https://icons.prod.y.uno/unionpay_logosimbolo.png" href="#unionpay" />
+
+  <CompanyCard title="Cartes Bancaires" image="https://icons.prod.y.uno/cartabancaire_logosimbolo.png" href="#cartabancaire" />
+</TableWrapper>
+
+<br />
+
 <HTMLBlock>{`
 <style>
     .psp-card .psp-card-logo {
@@ -61,11 +79,11 @@ As mentioned, 3DS2 was developed to enhance the user experience and adapt the 3D
 
 ### Prepared for new technologies
 
-3DS2 was designed with the rise of smartphones in mind and allowed banks to offer innovative authentication experiences through their mobile banking apps, such as biometric authentication using fingerprints or facial recognition. Therefore, merchants can offer several authentication methods that align with consumer preferences and technological advancements, resulting in a more convenient and secure authentication process. 
+3DS2 was designed with the rise of smartphones in mind and allowed banks to offer innovative authentication experiences through their mobile banking apps, such as biometric authentication using fingerprints or facial recognition. Therefore, merchants can offer several authentication methods that align with consumer preferences and technological advancements, resulting in a more convenient and secure authentication process.
 
 ### Integration capabilities
 
-Regarding integration, 3DS2 includes an SDK component that enables native integration into mobile apps. As a result, merchants can authenticate transactions within their own apps. Now, the challenge flow happens directly within the mobile checkout flows, eliminating the need for full-page redirects and providing a more seamless user experience. 
+Regarding integration, 3DS2 includes an SDK component that enables native integration into mobile apps. As a result, merchants can authenticate transactions within their own apps. Now, the challenge flow happens directly within the mobile checkout flows, eliminating the need for full-page redirects and providing a more seamless user experience.
 
 ### Amount of data available for authentication
 
@@ -73,7 +91,7 @@ Regarding integration, 3DS2 includes an SDK component that enables native integr
 
 #### Frictionless flow
 
-In a frictionless flow, the customer's data is confirmed without any manual data entry. It happens when the system recognizes and verifies the customer’s device, and the data is exchanged in the background. As the customer is identified and validated with this information, no additional requests from the payment systems are necessary. 
+In a frictionless flow, the customer's data is confirmed without any manual data entry. It happens when the system recognizes and verifies the customer’s device, and the data is exchanged in the background. As the customer is identified and validated with this information, no additional requests from the payment systems are necessary.
 
 #### Challenge flow
 
@@ -105,7 +123,7 @@ Adding the 3DS2 verification step to the checkout process changes the normal wor
 
 You decide if your system will implement the 3DS2 or not. The 3DS2 verification step is added while defining your cards [dynamic routing](doc:routing#configuring-the-dynamic-routing). When starting your card routes, you can add the 3DS2 step before defining the payment provider. When adding the 3DS2 verification step, when a payment using a card is initialized, the Yuno system will analyze if the card needs an extra challenge. If an extra challenge is necessary, the user will be redirected to the bank environment to complete the authorization. On the other hand, the payment process will proceed normally.
 
-To create payments with the 3DS DIRECT workflow, you need to fulfill some requirements. 
+To create payments with the 3DS DIRECT workflow, you need to fulfill some requirements.
 
 ### Requirements
 
@@ -144,14 +162,14 @@ Before using 3DS DIRECT, you need to enable 3DS in your [Yuno Dashboard](https:/
 
 ## Yuno 3D Secure 2 integration
 
-There are different ways of integrating 3DS in Yuno, depending on your needs. 
+There are different ways of integrating 3DS in Yuno, depending on your needs.
 
-In general terms, a 3DS integration requires a `setup_id`/`device_fingerprint` for the payment session as the first step for security analysis, and that id can only be obtained by executing a SDK/JS powered by a 3DS authorized provider. While using our SDKs **we take care of all the logic for you**, so you don't have to worry about different provider needs. 
+In general terms, a 3DS integration requires a `setup_id`/`device_fingerprint` for the payment session as the first step for security analysis, and that id can only be obtained by executing a SDK/JS powered by a 3DS authorized provider. While using our SDKs **we take care of all the logic for you**, so you don't have to worry about different provider needs.
 
 Therefore, depending on your Yuno integration, you have three different options:
 
 1. **Checkout integration**: The Checkout workflow is part of the [Checkout](doc:build-your-integration#checkout) solution provided by Yuno. Use our SDKs so we can handle all the logic regarding external provider requirements and executions for 3DS. If you want to define specific cases for 3DS analysis, you can define that in the CARD route of your Yuno dashboard.
-2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](ref:create-payment) (card\_data - eci, cryptogram, etc). Only available for PCI-compliant merchants. 
+2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](ref:create-payment) (card\_data - eci, cryptogram, etc). Only available for PCI-compliant merchants.
 3. **Direct integration**: The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. For each payment you'll have a:
    1. `PENDING/WAITING_ADDITIONAL_STEP` status/sub status.
    2. `sdk_action_required` set as `true`.
@@ -161,7 +179,7 @@ You are responsible for redirecting your customers to the URL provided by the `r
 
 For every scenario the Yuno [webhooks](doc:configuring-yuno-webhooks) will promptly notify you about the outcome of the 3DS challenge and the final payment status. This ensures that you receive real-time updates on the progress and completion of the payment transaction. Also, you can always get the payment information by using our [get payment service](ref:retrieve-payment-by-id).
 
-After executing the 3DS for each scenario, you'll receive all the necessary information in the payment's response inside the `payment_method.detail.card.card_data.three_d_secure` object: 
+After executing the 3DS for each scenario, you'll receive all the necessary information in the payment's response inside the `payment_method.detail.card.card_data.three_d_secure` object:
 
 | Field                              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Example                                                                                      |
 | :--------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
