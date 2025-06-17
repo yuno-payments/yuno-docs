@@ -94,7 +94,67 @@ Below is a table describing the parameters required for initializing the Yuno SD
       </td>
 
       <td>
-        The language for SDK content. Supported options include: <br/> `en` - English <br/> `es` - Spanish <br/> `pt` - Portuguese <br/> `ms` - Malay <br/> `id` - Indonesian <br/> `th` - Thai
+        The language for SDK content. Supported options include:
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `en` - English
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `es` - Spanish
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `pt` - Portuguese
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `ms` - Malay
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `id` - Indonesian
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `th` - Thai
       </td>
     </tr>
 
@@ -163,41 +223,10 @@ YunoPaymentMethods(
 
 The functions used in `YunoPaymentMethods` are described in the table below.
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Function
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `config`
-      </td>
-
-      <td>
-        An instance of `PaymentMethodConf` that configures the payment method list based on session and locale. Key properties include:  <br/>- `checkoutSession`: Unique identifier for the current checkout session.<br/>- `country_code`: User’s country code for displaying relevant payment methods.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `listener`
-      </td>
-
-      <td>
-        Triggered when the payment method selection state changes. Parameters:<br/>- `context`: Allows interactions with other UI elements or navigation.<br/>- `isSelected`: Boolean indicating whether a payment method is selected (`true`) or not (`false`).
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Function   | Description                                                                                                                                                                                                                                                                                                    |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`   | An instance of `PaymentMethodConf` that configures the payment method list based on session and locale. Key properties include:  <ul><li>`checkoutSession`: Unique identifier for the current checkout session.</li><li>`country_code`: User’s country code for displaying relevant payment methods.</li></ul> |
+| `listener` | Triggered when the payment method selection state changes. Parameters: <ul><li>`context`: Allows interactions with other UI elements or navigation.</li><li>`isSelected`: Boolean indicating whether a payment method is selected (`true`) or not (`false`).</li></ul>                                         |
 
 By using the `listener` callback, the merchant is notified as soon as a customer selects a payment method. This allows the merchant to initiate the payment process immediately upon selection, improving the user experience.
 
@@ -205,7 +234,7 @@ By using the `listener` callback, the merchant is notified as soon as a customer
 
 Once a payment method is selected, initiate the payment by calling the `Yuno.startPayment` method.
 
-The `isSelected` variable indicates when the merchant has selected a payment option. This variable name, `isSelected`, is customizable by the merchant. 
+The `isSelected` variable indicates when the merchant has selected a payment option. This variable name, `isSelected`, is customizable by the merchant.
 
 With `isSelected` set to `true`, proceed with the `Yuno.startPayment` method to initiate the payment process.
 
@@ -228,15 +257,15 @@ YunoPaymentListener(
 )
 ```
 
-Once you have the one-time token, the next step is to create the payment. This process must be handled on the backend by calling Yuno's [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to initiate the payment within Yuno, passing both the one-time token and the checkout session to complete the payment process. 
+Once you have the one-time token, the next step is to create the payment. This process must be handled on the backend by calling Yuno's [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to initiate the payment within Yuno, passing both the one-time token and the checkout session to complete the payment process.
 
 > 📘 Backend Setup
-> 
+>
 > Ensure that your backend is set up to handle this call to Yuno's Create Payment endpoint for successful payment processing.
 
 ## Step 6: Create the Payment
 
-Once you have the one-time token, initiate the payment within Yuno by using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), leveraging both the one-time token and the checkout session. 
+Once you have the one-time token, initiate the payment within Yuno by using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), leveraging both the one-time token and the checkout session.
 
 After the payment is created, some asynchronous payment methods may require additional customer action. In such cases, the  Create Payment endpoint will indicate this requirement through the `sdk_action_required` field in the response, which will be set to `true`. When this occurs, you should call the `Yuno.continuePayment()` function in your mobile app to display the necessary screens for the customer, where they can complete the required steps for the payment.
 
@@ -244,7 +273,7 @@ After the payment is created, some asynchronous payment methods may require addi
 >
 > Yuno **requires** you integrate the `continuePayment` method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario.
 
-If `sdk_action_required` is `false`, there is no need to call `continuePayment`, and you can proceed without it. 
+If `sdk_action_required` is `false`, there is no need to call `continuePayment`, and you can proceed without it.
 
 ```dart Dart
 Yuno.continuePayment(bool showPaymentStatus)
