@@ -26,7 +26,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 Control the use of the [loader](doc:loader).
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -46,8 +46,27 @@ Control the use of the [loader](doc:loader).
       </td>
 
       <td>
-        You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.\
-        The default value is true.
+        * You can hide or show the Yuno loading/spinner page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * The default value is true.
       </td>
     </tr>
   </tbody>
@@ -73,7 +92,7 @@ yuno.startCheckout({
 
 ## Mode of form rendering
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -93,10 +112,27 @@ yuno.startCheckout({
       </td>
 
       <td>
-        This parameter is optional. It determines the mode in which the payment forms will be displayed.  
+        This parameter is optional. It determines the mode in which the payment forms will be displayed.
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `type`: can be one of `modal` or `element`.
-        * `elementSelector`: Element where the form will be rendered. Only required if `type `is `element`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`.
       </td>
     </tr>
 
@@ -106,10 +142,37 @@ yuno.startCheckout({
       </td>
 
       <td>
-        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:  
+        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted.
-        * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
       </td>
     </tr>
   </tbody>
@@ -143,7 +206,7 @@ yuno.startCheckout({
 
 ## Card form configurations
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -163,11 +226,46 @@ yuno.startCheckout({
       </td>
 
       <td>
-        Define specific settings for the credit card form:  
+        Define specific settings for the credit card form:
+      </td>
+    </tr>
 
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `type`: `step` or `extends`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `styles`: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `cardSaveEnable`: Show checkbox for save/enroll card. The default value is false.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
         * `texts`: Custom texts in the Card forms buttons.
       </td>
     </tr>
@@ -193,9 +291,9 @@ In addition, you can display a checkbox for saving or enrolling cards using the 
 
 ### Rendering modes
 
-Below you find screenshots presenting the difference between the following: 
+Below you find screenshots presenting the difference between the following:
 
-* Render modes `modal` and `elements` for the payment method list. 
+* Render modes `modal` and `elements` for the payment method list.
 * Render modes `step` and `extends` for the credit card form.
 
 <Image align="center" src="https://files.readme.io/b56fe6dfdebaee158495dea86d5269d865fae2dfcb81eb8b34879f9e5e737f0e-caracteristicas_Complemetarias_web_1.png" />
@@ -225,16 +323,16 @@ yuno.startCheckout({
 
 ### Persist credit card form to retry payments
 
-If a transaction is rejected, you can use the credit card form to retry a payment after the customer has entered the credit card details. To do that, you will need to: 
+If a transaction is rejected, you can use the credit card form to retry a payment after the customer has entered the credit card details. To do that, you will need to:
 
-1. Add the following parameter while initializing the SDK to persist the credit card form after the one-time use token is created: 
+1. Add the following parameter while initializing the SDK to persist the credit card form after the one-time use token is created:
    ```javascript
    yuno.startCheckout({
      automaticallyUnmount: false,
    })
    ```
-2. In case the transaction is rejected, you will need to: 
-   1. Execute the method `yuno.notifyError() `to delete the previously entered CVV for the first transaction. 
+2. In case the transaction is rejected, you will need to:
+   1. Execute the method `yuno.notifyError() `to delete the previously entered CVV for the first transaction.
    2. Create a new checkout session and update the SDK with the new one by executing `yuno.updateCheckoutSession(checkoutsession)`
 3. Continue with the new checkout and one-time use token with the regular payment flow.
 
@@ -272,21 +370,9 @@ yuno.submitOneTimeTokenForm()
 
 ## Mercado Pago Checkout Pro webview handling
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Special exception</h3>
-      <div class="contentContainer">
-        <p>
-          This section describes a special exception for handling Mercado Pago Checkout Pro integration in webview environments. This is the only payment method that requires custom redirect handling, and it is documented here to avoid overwhelming merchants with unnecessary implementation details for other payment methods.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Special Exception
+>
+> This section describes a special exception for handling Mercado Pago Checkout Pro integration in webview environments. This is the only payment method that requires custom redirect handling, and it is documented here to avoid overwhelming merchants with unnecessary implementation details for other payment methods.
 
 For Mercado Pago Checkout Pro integration in webview environments, the `await yuno.continuePayment()` method will return either an object with redirect information or null. When the method returns an object, it allows you to handle the custom redirect flow required by Mercado Pago Checkout Pro. When it returns null, no additional merchant-side action is needed.
 
@@ -304,7 +390,7 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
 
 ### Properties
 
-<Table align={["left","left"]}>
+<Table>
   <thead>
     <tr>
       <th>
@@ -324,7 +410,7 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
       </td>
 
       <td>
-        Always set to `'REDIRECT_URL'` when redirect handling is required.
+        * Always set to `'REDIRECT_URL'` when redirect handling is required.
       </td>
     </tr>
 
@@ -334,7 +420,7 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
       </td>
 
       <td>
-        Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying Mercado Pago Checkout Pro as the payment method requiring custom handling.
+        * Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying Mercado Pago Checkout Pro as the payment method requiring custom handling.
       </td>
     </tr>
 
@@ -344,7 +430,7 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
       </td>
 
       <td>
-        URL to redirect the customer to for completing the payment with Mercado Pago Checkout Pro.
+        * URL to redirect the customer to for completing the payment with Mercado Pago Checkout Pro.
       </td>
     </tr>
 
@@ -354,7 +440,7 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
       </td>
 
       <td>
-        URL to redirect the customer to after a successful payment with Mercado Pago Checkout Pro.
+        * URL to redirect the customer to after a successful payment with Mercado Pago Checkout Pro.
       </td>
     </tr>
 
@@ -364,7 +450,7 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
       </td>
 
       <td>
-        URL to redirect the customer to if the payment with Mercado Pago Checkout Pro fails.
+        * URL to redirect the customer to if the payment with Mercado Pago Checkout Pro fails.
       </td>
     </tr>
   </tbody>
