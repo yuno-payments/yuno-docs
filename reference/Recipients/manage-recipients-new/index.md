@@ -26,8 +26,8 @@ This design ensures flexibility, transparency, and full traceability throughout 
 
 Yuno supports two **onboarding flows** for submerchants:
 
-1. **Pre-created Accounts**: If the submerchant has already completed the onboarding process with a given provider (e.g., via an external dashboard or platform), the marketplace can provide the corresponding **recipient\_id** at the time of creation. In this case, **no further onboarding is needed**, and the status will immediately be set to **SUCCEEDED**.
-2. **Dynamic Onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the selected provider. Depending on the provider’s requirements, this may involve:
+1. **Pre-onboarded Accounts**: If the submerchant has already completed the onboarding process with a given provider (e.g., via an external dashboard or platform), the marketplace can provide the corresponding **recipient\_id** at the time of creation. In this case, **no further onboarding is needed**, and the status will immediately be set to **SUCCEEDED**. (`onboardings.type`='PREVIOUSLY\_ONBOARDED')
+2. **Dynamic Onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the selected provider. (`onboardings.type`='ONBOARD\_ONTO\_PROVIDER') Depending on the provider’s requirements, this may involve:
    1. Form submission or redirection to hosted onboarding.
    2. Upload of legal or financial documentation.
    3. KYC/KYB validation steps.
