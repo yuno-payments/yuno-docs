@@ -18,6 +18,20 @@ Yuno's Flutter SDKs are crafted to simplify the integration of payment processin
 
 Choose from the available Flutter SDK integration options to start processing payments effectively:
 
+<Shelf classname="cards_container">
+  <div class="second_row">
+    <YunoCard title="Full SDK (Flutter)" href="/docs/full-sdk-flutter">
+      Comprehensive integration for all payment methods and enrollment in Flutter, ideal for full-featured checkouts.
+    </YunoCard>
+
+    <YunoCard title="Lite SDK (Payment Flutter)" href="/docs/lite-sdk-payment-flutter">
+      Streamlined payment SDK for Flutter, allowing customized control over displayed payment methods.
+    </YunoCard>
+  </div>
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="cards_container">
@@ -62,5 +76,5 @@ Choose from the available Flutter SDK integration options to start processing pa
 `}</HTMLBlock>
 
 > 📘 Explore the SDK Project Example
-> 
+>
 > Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
