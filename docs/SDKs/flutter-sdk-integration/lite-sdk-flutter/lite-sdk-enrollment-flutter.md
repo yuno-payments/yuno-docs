@@ -12,8 +12,8 @@ next:
 ---
 This page provides a step-by-step guide to integrating the Lite Flutter SDK for enrollment functionalities into your application.
 
-> 📘 Prerequisites
-> 
+> 🚧 Prerequisites
+>
 > Ensure all required Flutter SDK dependencies are included in your project before proceeding with the setup.
 
 ## Step 1: Add the SDK Dependency
@@ -46,84 +46,161 @@ await Yuno.init(
 
 Below is a table describing the parameters required for initializing the Yuno SDK in your Flutter application. These settings allow you to customize the SDK behavior to align with your application needs:
 
-<table>
+<Table>
   <thead>
     <tr>
       <th>
         Parameter
       </th>
+
       <th>
         Description
       </th>
     </tr>
   </thead>
+
   <tbody>
     <tr>
       <td>
         `apiKey`
       </td>
+
       <td>
         Your unique public API key for authentication.
       </td>
     </tr>
+
     <tr>
       <td>
         `country_code`
       </td>
+
       <td>
         The user’s country code. Refer to the [Country Coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page for a complete list of supported country codes.
       </td>
     </tr>
+
     <tr>
       <td>
         `yunoConfig`
       </td>
+
       <td>
         Configures various SDK settings. Contains additional parameters listed below.
       </td>
     </tr>
+
     <tr>
       <td>
         `lang`
       </td>
+
       <td>
-        The language for SDK content. Supported options include: <br/> `en` - English <br/> `es` - Spanish <br/> `pt` - Portuguese <br/> `ms` - Malay <br/> `id` - Indonesian <br/> `th` - Thai
+        The language for SDK content. Supported options include:
       </td>
     </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `en` - English
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `es` - Spanish
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `pt` - Portuguese
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `ms` - Malay
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `id` - Indonesian
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `th` - Thai
+      </td>
+    </tr>
+
     <tr>
       <td>
         `cardflow`
       </td>
+
       <td>
         Defines the card flow type for the payment process. The default is `CardFlow.multiStep`.
       </td>
     </tr>
+
     <tr>
       <td>
         `saveCardEnable`
       </td>
+
       <td>
         Specifies whether to enable the "Save Card" option. Defaults to `true`.
       </td>
     </tr>
+
     <tr>
       <td>
         `keepLoader`
       </td>
+
       <td>
         Controls whether to keep the loader visible. Defaults to `true`.
       </td>
     </tr>
+
     <tr>
       <td>
         `iosConfig`
       </td>
+
       <td>
         Optional iOS-specific configurations. If omitted, the default configuration is used.
       </td>
     </tr>
   </tbody>
-</table>
+</Table>
 
 ## Step 3: Add the SDK Widget Handler
 
@@ -165,7 +242,7 @@ The following table presents all the protocol requirements you have to provide a
 
 ## Step 5: Enrollment Status
 
-The possible enrollment states are listed below:  
+The possible enrollment states are listed below:
 
 | Status          | Description                                                                                                    |
 | --------------- | -------------------------------------------------------------------------------------------------------------- |
