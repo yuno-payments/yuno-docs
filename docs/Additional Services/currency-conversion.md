@@ -60,7 +60,6 @@ The merchant can use the currency conversion service of an external provider and
     }
 ```
 
-<br />
 
 #### Yuno's rate service
 
@@ -82,7 +81,6 @@ Also, the merchant can use directly the [currency conversion service of Yuno](re
 }
 ```
 
-<br />
 
 ```json Payment
     "amount": {
