@@ -16,9 +16,8 @@ next:
 On this page, you will find a walk-through guide on enrolling a payment method into a customer account and get a `vauletd_token` for future purchases.
 
 > 📘 Vaulted Token
-> 
+>
 > A Vaulted Token is created once a payment method is enrolled and stored with the customer information. You can use the created Vaulted Token to identify the payment method in future payments.
-
 
 Yuno tokenization service and centralized vault enable you to handle recurring payments, fallbacks, and retries across processors without compromising UX. Today, the following payment methods are available for enrollment in Yuno:
 
@@ -60,15 +59,13 @@ Use the [Create Customer](ref:create-customer) to register the customer info. Yo
 >
 > When creating a **Customer**, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of not mandatory data you can provide. If you add optional information, be aware of the required mandatory fields.
 
-
 At the end of the create a customer process, you will receive an `id`, which identifies the user within the Yuno system. If you are enrolling a payment method for an existing user, who was previously created and already had an `id`, you can skip this step.
 
 ### Step 2: Create a customer session
 
-> 📘 Customer Session Requirement
+> 🚧 Customer Session Requirement
 >
-> Only the Checkout workflow requires the utilization of a customer session. If you are using the Direct workflow (For Cards, only available for PCI complaint merchants), you may proceed directly to Step 3 since you will solely be using the `id` generated in Step 1.
-
+> Only the Checkout workflow requires the utilization of a customer session. If you are using the Direct workflow (for Cards, only available for PCI compliant merchants), you may proceed directly to Step 3 since you will solely be using the `id` generated in Step 1.
 
 After creating the customer, you will create a customer session to identify and store customers' information regarding payment preferences. Use the endpoint [Create Customer Session](ref:create-customer-session) to perform the request. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](doc:enroll-payment-methods#step-1-create-a-customer).
 
@@ -85,7 +82,6 @@ The response to the endpoint **Retrieve Payment Methods To Enroll** will contain
 > 📘 Available Payment Methods
 >
 > When you retrieve the payment methods available to enroll, only the ones which you have connected, created a route, and added to you checkout will be present on the response.
-
 
 ### Step 4: Enroll a payment method
 
