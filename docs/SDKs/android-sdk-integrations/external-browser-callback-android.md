@@ -1,5 +1,5 @@
 ---
-title: Handle external browser return (callback_url)
+title: Handle External Browser Return (callback_url)
 deprecated: false
 hidden: false
 metadata:
