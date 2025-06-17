@@ -37,7 +37,7 @@ When using [Yuno's SDK](https://docs.y.uno/docs/web-sdk-integrations), we take c
 </body>
 `}</HTMLBlock>
 
-For the SDK\_CHECKOUT workflow, all the information is going to be stored in the [`One Time Token`](https://docs.y.uno/docs/the-ultimate-checkout-full) returned by Yuno's SDK, so you don't have to change your integration depending on the payment method. The basic structure of the payment will be the same for every payment method, as in the example below.
+For the `SDK_CHECKOUT` workflow, all the information is going to be stored in the [`One-time token`](https://docs.y.uno/docs/network-tokens#/on-time-use-token-vs-vaulted-token-vs-network-token) returned by Yuno's SDK, so you don't have to change your integration depending on the payment method. The basic structure of the payment will be the same for every payment method, as in the example below.
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
