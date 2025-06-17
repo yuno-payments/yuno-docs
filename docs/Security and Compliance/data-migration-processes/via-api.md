@@ -41,25 +41,6 @@ To register new customers, You will need to provide their personal information. 
 >
 > If you add optional information, be aware of the required mandatory fields.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Customer complementary information</h3>
-      <div class="contentContainer">
-        <p>
-          When creating a <b>Customer</b>, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of not mandatory data you can provide. 
-        </p>
-        <p>
-           If you add optional information, be aware of the required mandatory fields. 
-          </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
-
 At the end of the create a customer process, you will receive an `id`, which identifies the user within the Yuno system. Use the `id` to enroll the existing payment methods.
 
 ### Step 2: Check the customer data (optional)
