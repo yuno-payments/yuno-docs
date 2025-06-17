@@ -102,6 +102,16 @@ Currently, you can execute the token migration process using the Yuno API, which
 
 Access the step-by-step guide on how to perform the token migration using the API using the button below:
 
+<Shelf classname="cards_container">
+  <div class="first_row">
+    <YunoCard title="Token migration via API" href="via-api">
+      Access the step-by-step guide on how to perform the token migration using the API.
+    </YunoCard>
+  </div>
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   
@@ -174,7 +184,7 @@ When making payments through Yuno, the platform connects to payment processors. 
 
 To move forward with the process, you'll be requested to provide the following:
 
-* A public SSH key (you can provide one for production and another for testing). For this, you can use the following command: `ssh-keygen -t rsa -b 4096 -C your_email@example.com` 
+* A public SSH key (you can provide one for production and another for testing). For this, you can use the following command: `ssh-keygen -t rsa -b 4096 -C your_email@example.com`
 * The outbound IPs that will be used during the migration.
 * A template file of the data to be migrated to understand its structure. It must include the following mandatory data:
   * **Cardholder Name**: The full name of the cardholder as stored by the current provider.
