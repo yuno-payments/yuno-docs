@@ -12,8 +12,8 @@ next:
 ---
 This page provides step-by-step instructions for integrating the Seamless Flutter SDK payment functionalities into your application.
 
-> 📘 Prerequisites
-> 
+> 🚧 Prerequisites
+>
 > Ensure all [required Flutter SDK dependencies](/docs/requirements) are included in your project before following the setup example.
 
 ## Step 1: Add the SDK Dependency
@@ -48,42 +48,155 @@ Below is a table describing the parameters required for initializing the Yuno SD
 <Table>
   <thead>
     <tr>
-      <th>Parameter</th>
-      <th>Description</th>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Description
+      </th>
     </tr>
   </thead>
+
   <tbody>
     <tr>
-      <td>`apiKey`</td>
-      <td>Your unique public API key for authentication.</td>
+      <td>
+        `apiKey`
+      </td>
+
+      <td>
+        Your unique public API key for authentication.
+      </td>
     </tr>
+
     <tr>
-      <td>`country_code`</td>
-      <td>The user’s country code. Refer to the [Country Coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page for a complete list of supported country codes.</td>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        The user’s country code. Refer to the [Country Coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page for a complete list of supported country codes.
+      </td>
     </tr>
+
     <tr>
-      <td>`yunoConfig`</td>
-      <td>Configures various SDK settings. Contains additional parameters listed below.</td>
+      <td>
+        `yunoConfig`
+      </td>
+
+      <td>
+        Configures various SDK settings. Contains additional parameters listed below.
+      </td>
     </tr>
+
     <tr>
-      <td>`lang`</td>
-      <td>The language for SDK content. Supported options include: <br/> `en` - English <br/> `es` - Spanish <br/> `pt` - Portuguese <br/> `ms` - Malay <br/> `id` - Indonesian <br/> `th` - Thai</td>
+      <td>
+        `lang`
+      </td>
+
+      <td>
+        The language for SDK content. Supported options include:
+      </td>
     </tr>
+
     <tr>
-      <td>`cardflow`</td>
-      <td>Defines the card flow type for the payment process. The default is `CardFlow.multiStep`.</td>
+      <td>
+
+      </td>
+
+      <td>
+        * `en` - English
+      </td>
     </tr>
+
     <tr>
-      <td>`saveCardEnable`</td>
-      <td>Specifies whether to enable the "Save Card" option. Defaults to `true`.</td>
+      <td>
+
+      </td>
+
+      <td>
+        * `es` - Spanish
+      </td>
     </tr>
+
     <tr>
-      <td>`keepLoader`</td>
-      <td>Controls whether to keep the loader visible. Defaults to `true`.</td>
+      <td>
+
+      </td>
+
+      <td>
+        * `pt` - Portuguese
+      </td>
     </tr>
+
     <tr>
-      <td>`iosConfig`</td>
-      <td>Optional iOS-specific configurations. If omitted, the default configuration is used.</td>
+      <td>
+
+      </td>
+
+      <td>
+        * `ms` - Malay
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `id` - Indonesian
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `th` - Thai
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `cardflow`
+      </td>
+
+      <td>
+        Defines the card flow type for the payment process. The default is `CardFlow.multiStep`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `saveCardEnable`
+      </td>
+
+      <td>
+        Specifies whether to enable the "Save Card" option. Defaults to `true`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `keepLoader`
+      </td>
+
+      <td>
+        Controls whether to keep the loader visible. Defaults to `true`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `iosConfig`
+      </td>
+
+      <td>
+        Optional iOS-specific configurations. If omitted, the default configuration is used.
+      </td>
     </tr>
   </tbody>
 </Table>
