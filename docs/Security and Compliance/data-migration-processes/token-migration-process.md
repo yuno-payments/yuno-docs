@@ -53,6 +53,12 @@ Currently, you can execute the token migration process using the Yuno API, which
 
 Access the step-by-step guide on how to perform the token migration using the API using the button below:
 
+<Shelf classname="link_cards_container">
+  <YunoCard title="Token migration via API" href="via-api" titleSize="h4" />
+</Shelf>
+
+<br />
+
 <Shelf classname="cards_container">
   <div class="first_row">
     <YunoCard title="Token migration via API" href="via-api">
