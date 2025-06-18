@@ -25,7 +25,7 @@ You'll learn how to:
 > >
 > > Make sure to choose the payment connection that suits your needs when following these instructions. If you want to test credit card payments, use [Yuno Testing Gateway](doc:yuno-testing-gateway) as your provider.
 
-## Set Up Your Account
+## Configure Payment Method
 
 ### Step 1: Set Up Your Connection
 
