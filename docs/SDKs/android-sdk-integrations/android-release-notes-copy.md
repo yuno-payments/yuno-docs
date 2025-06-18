@@ -1,5 +1,5 @@
 ---
-title: Android release notes (COPY)
+title: '[Release notes]'
 deprecated: false
 hidden: true
 metadata:
