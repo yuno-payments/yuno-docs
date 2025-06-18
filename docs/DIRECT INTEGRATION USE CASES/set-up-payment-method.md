@@ -1,5 +1,5 @@
 ---
-title: Set Up Payment Method
+title: Set Up Payment Connection
 deprecated: false
 hidden: true
 metadata:
@@ -23,7 +23,7 @@ You'll learn how to:
 
 > > 📘 Yuno Testing Gateway
 > >
-> > When following the instructions in this page, make sure to choose the payment connection that suits your needs. Yuno provides the [Yuno Testing Gateway](doc:yuno-testing-gateway) connection for testing purposes.
+> > Make sure to choose the payment connection that suits your needs when following these instructions. If you want to test credit card payments, use [Yuno Testing Gateway](doc:yuno-testing-gateway) as your provider.
 
 ## Set Up Your Account
 
