@@ -32,14 +32,6 @@ Yuno is dedicated to expanding its coverage of solutions worldwide. Use the butt
 
 ## Americas
 
-<HTMLBlock>{`
-<style>
-  th,td {
-  text-align:center;
-  }
-</style>
-`}</HTMLBlock>
-
 The table below lists all supported American countries and provides the respective country code.
 
 |              Country             | Country Code |
