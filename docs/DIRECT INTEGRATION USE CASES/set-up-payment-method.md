@@ -23,7 +23,7 @@ You'll learn how to:
 
 > > 📘 Yuno Testing Gateway
 > >
-> > When following the instructions in this page, make sure to choose the payment connection that suits your needs. Yuno provides the \*\*[Yuno Testing Gateway](doc:yuno-testing-gateway) \*\* connection for testing purposes.
+> > When following the instructions in this page, make sure to choose the payment connection that suits your needs. Yuno provides the [Yuno Testing Gateway](doc:yuno-testing-gateway) connection for testing purposes.
 
 ## Set Up Your Account
 
