@@ -380,20 +380,9 @@ Inform the payment method information through the object `payment_method`. Here,
 
 You can use the payment description or specific card data to get the desired result when you test payment with Yuno Test Payment Gateway. The following sections describe in detail each approach.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          Yuno system follows a sequential process, initially examining card data and subsequently evaluating the provided description. Consequently, if there is a disparity in the status indicated by the card data and the description for a testing payment, Yuno will prioritize and reflect the status associated with the card data.
-        </p>          
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Yuno System Process
+>
+> Yuno system follows a sequential process, initially examining card data and subsequently evaluating the provided description. Consequently, if there is a disparity in the status indicated by the card data and the description for a testing payment, Yuno will prioritize and reflect the status associated with the card data.
 
 ##### 4.4.1 - Payment Description
 
