@@ -81,6 +81,24 @@ The attributes of the JSON for the Yuno webhooks are listed below:
 
 Yuno provides several webhooks related to enrollment and payment notifications. Here you will find some examples of data structures related to each event.
 
+<Shelf classname="link_cards_container">
+  <YunoCard title="Payment Webhook V2" href="/docs/examples#payment-webhook-v2" titleSize="h4" />
+
+  <YunoCard title="Payment Webhook V1" href="/docs/examples#payment-webhook-v1" titleSize="h4" />
+
+  <YunoCard title="Chargeback Webhook V2" href="/docs/examples#chargeback-webhook-v2" titleSize="h4" />
+
+  <YunoCard title="Chargeback Webhook V1" href="/docs/examples#chargeback-webhook-v1" titleSize="h4" />
+
+  <YunoCard title="Enrollment" href="/docs/examples#enrollment" titleSize="h4" />
+
+  <YunoCard title="Payouts" href="/docs/examples#payouts" titleSize="h4" />
+
+  <YunoCard title="Subscriptions" href="/docs/examples#subscriptions" titleSize="h4" />
+</Shelf>
+
+<br />
+
 <HTMLBlock>{`
 <body>
   <section class="link_cards_container">
