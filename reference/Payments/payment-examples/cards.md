@@ -572,16 +572,16 @@ curl --request POST \
     "airline": {
       "legs": [
         {
-          "departure_airport": "BOG",
+          "departure_airport": "JFK",
           "departure_datetime": "2024-07-03T05:00:00",
-          "departure_airport_timezone": "GMT-05",
+          "departure_airport_timezone": "GMT-04",
           "arrival_airport": "BOM",
           "carrier_code": "PR",
           "flight_number": "AV348",
           "fare_basis_code": "Y",
           "fare_class_code": "S",
-          "base_fare": 18000,
-          "base_fare_currency": "COP",
+          "base_fare": 950,
+          "base_fare_currency": "USD",
           "stopover_code": "O"
         }
       ],
@@ -589,15 +589,15 @@ curl --request POST \
         {
           "document": {
             "document_number": "1092456327",
-            "document_type": "CC",
-            "country": "CO"
+            "document_type": "PASS",
+            "country": "US"
           },
           "first_name": "JOHN",
           "last_name": "DOE",
           "middle_name": "STEPHEN",
           "type": "A",
           "date_of_birth": "1998-01-01",
-          "nationality": "CO",
+          "nationality": "US",
           "loyalty_number": "79250001",
           "loyalty_tier": "DIAMOND"
         }
@@ -605,76 +605,68 @@ curl --request POST \
       "tickets": [
         {
           "issue": {
-            "carrier_prefix_code": "134",
-            "travel_agent_code": "A104121",
-            "travel_agent_name": "AEROVIAJES",
-            "date": "2023-10-31T01:30:00.000-05:00",
-            "address": "Calle 123 2564",
-            "city": "BOGOTA",
-            "country": "CO",
-            "zip_code": "111111"
+            "carrier_prefix_code": "016",
+            "travel_agent_code": "B987654",
+            "travel_agent_name": "GLOBAL TRAVELS",
+            "date": "2024-12-01 10:00:00",
+            "address": "789 Broadway Ave",
+            "city": "NEW YORK",
+            "country": "US",
+            "zip_code": "10003"
           },
           "ticket_number": "BRB0001",
           "e_ticket": true,
           "restricted": false,
-          "total_fare_amount": 20000,
-          "total_tax_amount": 18000,
-          "total_fee_amount": 1000
+          "total_fare_amount": 1000,
+          "total_tax_amount": 150,
+          "total_fee_amount": 25
         },
         {
           "issue": {
-            "carrier_prefix_code": "134",
-            "travel_agent_code": "A104121",
-            "travel_agent_name": "AEROVIAJES",
-            "date": "2023-10-31T01:30:00.000-05:00",
-            "address": "Calle 123 2564",
-            "city": "BOGOTA",
-            "country": "CO",
-            "zip_code": "111111"
+            "carrier_prefix_code": "016",
+            "travel_agent_code": "B987654",
+            "travel_agent_name": "GLOBAL TRAVELS",
+            "date": "2024-12-01 10:00:00",
+            "address": "789 Broadway Ave",
+            "city": "NEW YORK",
+            "country": "US",
+            "zip_code": "10003"
           },
           "ticket_number": "BRB0002",
           "e_ticket": true,
           "restricted": false,
-          "total_fare_amount": 20000,
-          "total_tax_amount": 18000,
-          "total_fee_amount": 1000
+          "total_fare_amount": 1000,
+          "total_tax_amount": 150,
+          "total_fee_amount": 25
         }
       ],
       "pnr": "ABC123"
     }
   },
-  "country": "MX",
+  "country": "US",
   "amount": {
-    "currency": "MXN",
-    "value": "2000"
+    "currency": "USD",
+    "value": "2350"
   },
   "customer_payer": {
-    "browser_info": {
-      "accept_browser": true,
-      "accept_content": true,
-      "javascript_enabled": true
-    },
     "document": {
       "document_number": "1092345673",
-      "document_type": "CC"
+      "document_type": "PASS"
     },
     "billing_address": {
-      "country": "CO",
-      "address_line_1": "Calle 123",
-      "address_line_2": "25-42",
-      "city": "BOGOTA",
-      "state": "CUNDINAMARCA",
-      "zip_code": "110110"
-    },
-    "shipping_address": {
-      "country": "AR"
+      "address_line_1": "123 Main Street",
+      "address_line_2": "Apt 4B",
+      "country": "US",
+      "state": "NY",
+      "city": "NEW YORK",
+      "zip_code": "10001"
     },
     "first_name": "JOHN",
     "last_name": "DOE",
     "gender": "M",
     "date_of_birth": "1998-01-01",
-    "email": "test@test.com",
-    "nationality": "CO",
+    "email": "john.doe@example.com",
+    "nationality": "US",
     "ip_address": "192.0.0.1"
   },
   "payment_method": {
@@ -692,9 +684,9 @@ curl --request POST \
     },
     "type": "CARD"
   },
-  "account_id": "c004cfd7-0c65-4add-b9b3-3d7e3949c9f1",
-  "description": "SUCCESSFUL",
-  "merchant_order_id": "Order_id",
+  "account_id": "<accound_id>",
+  "description": "Card payment with airline data",
+  "merchant_order_id": "00024",
   "merchant_reference": "Example_Merchant_Reference",
   "workflow": "DIRECT"
 }
