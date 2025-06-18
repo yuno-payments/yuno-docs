@@ -57,16 +57,6 @@ Access the step-by-step guide on how to perform the token migration using the AP
   <YunoCard title="Token migration via API" href="via-api" titleSize="h4" />
 </Shelf>
 
-<br />
-
-<Shelf classname="cards_container">
-  <div class="first_row">
-    <YunoCard title="Token migration via API" href="via-api">
-      Access the step-by-step guide on how to perform the token migration using the API.
-    </YunoCard>
-  </div>
-</Shelf>
-
 ### Data format
 
 Yuno defines the required parameters for each customer and credit card to proceed with the migration process. The list of the required parameters is present below:
