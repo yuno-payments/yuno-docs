@@ -9,10 +9,6 @@ To test Card payments in general, Yuno provides the **Yuno Test Payment Gateway*
 
 ## Connecting with Yuno
 
-| **Mandatory fields when integrating via Yuno**     |   |
-| -------------------------------------------------- | - |
-| Yuno Test Payment Gateway doesn't require any key. |   |
-
 <HTMLBlock>{`
 <style>
   * {
