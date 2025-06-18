@@ -574,8 +574,6 @@ metadata:
 
 <br />
 
-<br />
-
 ## New version
 
 <Table>
