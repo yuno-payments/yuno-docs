@@ -5,7 +5,7 @@ hidden: false
 metadata:
   robots: index
 ---
-Welcome to the iOS SDK Release Notes. This document provides a comprehensive overview of the updates, improvements, and fixes introduced in each version of the iOS SDK.
+The iOS SDK Release Notes provide a comprehensive overview of the updates, improvements, and fixes introduced in each version of the iOS SDK.
 
 | Version | Changes                                                                                                                                            |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
