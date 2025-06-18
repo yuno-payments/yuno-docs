@@ -1630,25 +1630,3 @@ metadata:
     </tr>
   </tbody>
 </Table>
-
-### Single parameter
-
-<ObjCard title="Test" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-
-### Object
-
-<ObjCard title="Object" type="object" description="This is a object card">
-  <ObjCard title="Test1" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-
-  <ObjCard title="Test2" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-
-  <ObjCard title="Object" type="object" description="This is a object card">
-    <ObjCard title="Test1" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-
-    <ObjCard title="Test2" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-
-    <ObjCard title="Test3" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-  </ObjCard>
-
-  <ObjCard title="Test3" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-</ObjCard>
