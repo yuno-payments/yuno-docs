@@ -323,24 +323,9 @@ The create payment process normally requires finishing the four steps listed bel
 
 Use the [Create Customer](ref:create-customer) to register the customer info. You will need to provide personal customer information. In addition, you also need to supply the `merchant_customer_id`, a unique identifier for the customer used on your system.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Customer complementary information</h3>
-      <div class="contentContainer">
-        <p>
-          When creating a <b>Customer</b>, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of not mandatory data you can provide.
-        </p>          
-        <p>
-          If you add optional information, be aware of the required mandatory fields.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Customer Complementary Information
+>
+> When creating a **Customer**, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of non-mandatory data you can provide. If you add optional information, be aware of the required mandatory fields.
 
 At the end of the create a customer process, you will receive an `id`, which identifies the user within the Yuno system. Use the `id` to initialize the checkout.
 
@@ -350,21 +335,9 @@ If you are creating a payment for an existing user who was previously created an
 
 With a customer registered, you can create a checkout session. The checkout is when the customer finalizes their order and proceeds to pay for the products or services they wish to acquire. Therefore, at this stage, you will provide information regarding the payment amount and the location where it is being created.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <h3>Route conditions filtering</h3>
-      <div class="contentContainer">
-        <p>
-          When creating the route, you can define condition that work as filters. If you have used country as a condition, check if the provided country when creating the checkout session in on the condition list. Otherwise, the card payment may not be processed by the Yuno Testing Gateway.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 🚧 Route Conditions Filtering
+>
+> When creating the route, you can define conditions that work as filters. If you have used country as a condition, check if the provided country when creating the checkout session is on the condition list. Otherwise, the card payment may not be processed by the Yuno Testing Gateway.
 
 Use the [Create Checkout Session](ref:create-checkout-session) endpoint. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](doc:yuno-testing-gateway#1-create-a-customer).
 
