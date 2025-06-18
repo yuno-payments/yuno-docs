@@ -37,21 +37,9 @@ You need to cover some steps to integrate Google Pay into your system using Yuno
    4. Finally, you will request your production access.
 2. Get the developer credentials from the provider you choose to start using with Yuno.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Adyen connection</h3>
-      <div class="contentContainer">
-        <p>
-				For Adyen, merchants need to create a <a onclick="window.location='https://www.adyen.com/signup'">testing account</a> and get a <b>Merchant Account</b> and a <b>x-api-key</b>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Adyen Connection
+>
+> For Adyen, merchants need to create a [testing account](https://www.adyen.com/signup) and get a **Merchant Account** and a **x-api-key**.
 
 1. Within the [Yuno dashboard](https://dashboard.y.uno/), select the **Connections** tab. Find the provider you choose and click **Connect**. Fulfill the side panel fields with your credentials. Below, you will find examples of connecting panels for Adyen and Cielo.
 
