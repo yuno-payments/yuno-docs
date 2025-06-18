@@ -25,9 +25,9 @@ You'll learn how to:
 > >
 > > When following the instructions in this page, make sure to choose the payment connection that suits your needs. Yuno provides the \*\*[Yuno Testing Gateway](doc:yuno-testing-gateway) \*\* connection for testing purposes.
 
-## Set up Your Account
+## Set Up Your Account
 
-### Step 1: Set up Your Connection
+### Step 1: Set Up Your Connection
 
 To set up your first payment connection:
 
@@ -41,7 +41,7 @@ A confirmation message will appear in the dashboard once your connection is succ
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4" />
 
-### Step 2: Set up Routing for Your New Connection
+### Step 2: Set Up Routing for Your New Connection
 
 After adding a connection, you must assign it to a route, which determines which provider processes payments. For a basic setup, follow these steps:
 
