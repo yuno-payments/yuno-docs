@@ -43,7 +43,7 @@ After adding a connection, you must assign it to a route, which determines which
 
 1. Navigate to [Routing](https://dashboard.y.uno/routing) in the dashboard sidebar.
 2. Click on the **Not published** tab to view payment methods that have available connections but no configured routes.
-3. Find the desired payment method (for example, **Card**) and click **Set Up**.
+3. Find the desired payment method and click **Set Up**.
 4. In the pop-up window:
    * Click **+ Create new route**.
    * Enter a descriptive name for the route.
