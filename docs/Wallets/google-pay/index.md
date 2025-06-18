@@ -28,6 +28,20 @@ Familiarizing yourself with how Google Pay™ operates and understanding the pro
 
 Yuno provides two different integrations you can use to add Google Pay to your checkout:
 
+<Shelf classname="cards_container">
+  <div class="first_row">
+    <YunoCard title="Direct" href="google-pay-direct-integration">
+      Direct integration with Google Pay.
+    </YunoCard>
+
+    <YunoCard title="Via a Provider" href="integration-via-provider-google-pay">
+      Integration via a provider for Google Pay.
+    </YunoCard>
+  </div>
+</Shelf>
+
+<br />
+
 <Shelf classname="link_cards_container">
   <YunoCard title="Direct" href="google-pay-direct-integration" titleSize="h4" />
 
