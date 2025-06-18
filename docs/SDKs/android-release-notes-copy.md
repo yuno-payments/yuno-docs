@@ -1,5 +1,5 @@
 ---
-title: '[Release notes]'
+title: '[Release notes examples]'
 deprecated: false
 hidden: true
 metadata:
