@@ -21,6 +21,10 @@ You'll learn how to:
 * Enable payment methods in the checkout builder.
 * Get your API credentials, including your `public-api-key` and `private-secret-key`.
 
+> > 📘 Yuno Testing Gateway
+> >
+> > When following the instructions in this page, make sure to choose the payment connection that suits your needs. Yuno provides the \*\*[Yuno Testing Gateway](doc:yuno-testing-gateway) \*\* connection for testing purposes.
+
 ## Set up Your Account
 
 ### Step 1: Set up Your Connection
