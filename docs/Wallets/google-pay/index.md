@@ -18,7 +18,7 @@ Google Pay™, a cutting-edge digital wallet and online payment system, revoluti
 
 When utilizing Google Pay™, your confidential credit or debit card details are never directly shared with the merchant. Instead, a unique token is generated, serving as a representation of your payment information. This token is utilized to process the payment, provide an extra layer of protection, and prevent unauthorized access to your data.
 
-Considering the distinct mechanism of Google Pay™, it is essential to grasp its working principles before seamlessly integrating it with Yuno. 
+Considering the distinct mechanism of Google Pay™, it is essential to grasp its working principles before seamlessly integrating it with Yuno.
 
 ![](https://files.readme.io/0e1e3fe-Mod1-Pay_API_Pay-D2x1.png)
 
@@ -27,6 +27,14 @@ Familiarizing yourself with how Google Pay™ operates and understanding the pro
 ## Integration options
 
 Yuno provides two different integrations you can use to add Google Pay to your checkout:
+
+<Shelf classname="link_cards_container">
+  <YunoCard title="Direct" href="google-pay-direct-integration" titleSize="h4" />
+
+  <YunoCard title="Via a Provider" href="integration-via-provider-google-pay" titleSize="h4" />
+</Shelf>
+
+<br />
 
 <HTMLBlock>{`
 <body>
@@ -70,5 +78,3 @@ Yuno provides two different integrations you can use to add Google Pay to your c
   </section>
 </body>
 `}</HTMLBlock>
-
-<br />
