@@ -27,9 +27,9 @@ The split payment functionality is contingent on the support of the selected pay
 
 ## Integration
 
-The split\_marketplace object defines how a [payment](ref:create-payment) should be split between recipients. It is an array of objects, where each object represents a recipient and their share of the payment.
+The `split_marketplace` object defines how a [payment](ref:create-payment) should be split between recipients. It is an array of objects, where each object represents a recipient and their share of the payment.
 
-<Table>
+<Table align={["left","left","left"]}>
   <thead>
     <tr>
       <th>
@@ -280,11 +280,11 @@ The split\_marketplace object defines how a [payment](ref:create-payment) should
 ### Rules
 
 * The sum of all splits must equal the total payment amount.
-* Either recipíent\_id or provider\_recipient\_id must be provided for the split, but not both.
+* Either `recipient_id` or `provider_recipient_id` must be provided for the split, but not both.
   * In case you use more than one payment provider for the split payments, we recommend using the [recipients object](ref:create-recipients), as it lets you define more than one provider for each recipient.
 * If any required fields are missing or invalid, the request will return an error.
 
-## API Endpoints Involved
+## API endpoints involved
 
 * *[Recipients](ref:create-recipients)*: POST /v1/recipients
 * [*Payment Creation*](ref:create-payment): POST /v1/payments
