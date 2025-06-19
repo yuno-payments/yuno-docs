@@ -32,7 +32,7 @@ We have simplified the process for you to adhere to these scheme rules, allowing
 
 Defining whether a transaction is initiated by the merchant or the customer has significant implications for security, user experience, fraud prevention, and regulatory compliance. This ensures an efficient and secure payment process for all parties involved.
 
-## General Considerations
+## General considerations
 
 * **Responsibility**: In the context of Strong Customer Authentication (SCA) under PSD2 regulation in the European Union, CIT generally requires higher authentication compared to MIT.
 * **Frequency**: MIT transactions are often recurring and periodic, while CIT are more ad hoc events based on customer actions.
@@ -56,7 +56,7 @@ Store credential reasons
 | `SUBSCRIPTION`             | A merchant-initiated payment as part of a subscription schedule and with a set amount. Payments are processed in regular intervals to which the user has given consent.        |
 | `UNSCHEDULED_CARD_ON_FILE` | A merchant initiated payment using stored credit card details that is not related to a subscription schedule or amount. Payment that could happen at any given time.           |
 
-### Request Example
+### Request example
 
 ```curl Request (cURL)
 curl --request POST \
@@ -97,7 +97,7 @@ curl --request POST \
 '
 ```
 
-## Subscription Agreement
+## Subscription agreement
 
 For certain markets (MX for example) and payment processors, when a subscription-related payment is made, the ID of the agreement with the customer needs to be specified in the payment request to ensure correct processing. To facilitate this, we have enabled the `subscription_agreement_id` field inside the `stored_credentials` struct, allowing you to share the agreement made with the customer.
 
@@ -117,7 +117,7 @@ For certain markets (MX for example) and payment processors, when a subscription
     }
 ```
 
-## Network Transaction ID
+## Network transaction ID
 
 Is a unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle.
 
