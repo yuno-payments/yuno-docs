@@ -173,14 +173,14 @@ This object represents a recipient who will receive part of a [split payment](do
   
   <div>
   <div class="yuno">
-    <p><strong><code>withdrawal_methods</code></strong> <small>struct</small>
-      <br/>Withdrawal methods (applicable in both recipients and onboardings).
+    <p><strong><code>withdrawal_methods</code></strong> <small>array of objects</small>
+      <br/>A list of withdrawal method objects; each item contains a <code>bank</code> struct with the details below.
     </p>
   </div>
 
   <div class="yuno">
     <p><strong><code>bank</code></strong> <small>struct</small>
-      <br/>Bank details for the withdrawal method.
+      <br/>Bank details for this withdrawal method.
     </p>
   </div>
 
@@ -194,14 +194,14 @@ This object represents a recipient who will receive part of a [split payment](do
   <div class="yuno">
     <p><strong><code>branch</code></strong> <small>string</small>
       <br/>Bank’s branch (MAX 3; MIN 3).
-      <br/><small>Example: XXXX</small>
+      <br/><small>Example: 123</small>
     </p>
   </div>
 
   <div class="yuno">
     <p><strong><code>branch_digit</code></strong> <small>string</small>
-      <br/>Bank’s branch digit (MAX 3; MIN 3).
-      <br/><small>Example: X</small>
+      <br/>Bank’s branch digit (MAX 1; MIN 1).
+      <br/><small>Example: 5</small>
     </p>
   </div>
 
@@ -214,22 +214,22 @@ This object represents a recipient who will receive part of a [split payment](do
 
   <div class="yuno">
     <p><strong><code>account_digit</code></strong> <small>string</small>
-      <br/>Beneficiary’s bank account digit (MAX 250; MIN 1).
-      <br/><small>Example: 5</small>
+      <br/>Beneficiary’s bank account digit (MAX 1; MIN 1).
+      <br/><small>Example: 7</small>
     </p>
   </div>
 
   <div class="yuno">
     <p><strong><code>account_type</code></strong> <small>enum</small>
-      <br/>Beneficiary’s bank account type (CHECKINGS or SAVINGS).
-      <br/><small>Example: CHECKINGS</small>
+      <br/>Beneficiary’s bank account type: <code>CHECKINGS</code> or <code>SAVINGS</code>.
+      <br/><small>Example: SAVINGS</small>
     </p>
   </div>
 
   <div class="yuno">
     <p><strong><code>routing</code></strong> <small>string</small>
       <br/>Beneficiary’s bank account routing number.
-      <br/><small>Example: XXXXYYYYC</small>
+      <br/><small>Example: 021000021</small>
     </p>
   </div>
 
@@ -247,7 +247,7 @@ This object represents a recipient who will receive part of a [split payment](do
     </p>
   </div>
 </div>
-
+  
   <div class="yuno">
     <p><strong><code>created_at</code></strong> <small>timestamp</small>
       <br/>Recipient creation date and time (MAX 27; MIN 27; <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>).
