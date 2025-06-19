@@ -250,6 +250,47 @@ This object represents a recipient who will receive part of a [split payment](do
     </details>
   </details>
 </div>
+
+<div>
+  <details class="yuno">
+    <summary>
+      <strong><code>documentation</code></strong> <small>array of objects</small>
+      <br/><p>An array of documentation objects provided by the merchant.</p>
+    </summary>
+
+    <details class="yuno" style="margin-left:1em;">
+      <summary>
+        <strong><code>file_name</code></strong> <small>string</small>
+        <br/><p>The name of the documentation sent (MAX 255; MIN 3).</p>
+        <br/><small>Example: receipt.pdf</small>
+      </summary>
+    </details>
+
+    <details class="yuno" style="margin-left:1em;">
+      <summary>
+        <strong><code>content_type</code></strong> <small>enum</small>
+        <br/><p>The type of the documentation sent by the merchant.</p>
+        <br/><small>Example: RECEIPT</small>
+      </summary>
+    </details>
+
+    <details class="yuno" style="margin-left:1em;">
+      <summary>
+        <strong><code>content_category</code></strong> <small>string</small>
+        <br/><p>The category of the documentation sent by the merchant (e.g., INVOICE, ID_PROOF).</p>
+      </summary>
+    </details>
+
+    <details class="yuno" style="margin-left:1em;">
+      <summary>
+        <strong><code>content</code></strong> <small>string</small>
+        <br/><p>The content of the documentation encoded in base64 (Max size: 1MB).</p>
+        <br/><small>Example: JVBERi0xLjQKJcfs…</small>
+      </summary>
+    </details>
+
+  </details>
+</div>
   
   <div class="yuno">
     <p><strong><code>created_at</code></strong> <small>timestamp</small>
