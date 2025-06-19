@@ -317,7 +317,7 @@ This object represents a recipient who will receive part of a [split payment](do
       <p>List of onboarding records for each provider connection.</p>
     </summary>
 
-    <!-- Single onboarding object -->
+    <!-- id -->
     <div class="yuno" style="margin-left:1em;">
       <p><strong><code>id</code></strong> <small>enum</small>
         <br/>The unique identifier of the onboarding.
@@ -325,13 +325,15 @@ This object represents a recipient who will receive part of a [split payment](do
       </p>
     </div>
 
+    <!-- type -->
     <div class="yuno" style="margin-left:1em;">
       <p><strong><code>type</code></strong> <small>enum</small>
-        <br/>Type of onboarding. If done previously or via Yuno.
+        <br/>Type of onboarding—previously onboarded or via Yuno.
         <br/><small>PREVIOUSLY_ONBOARDED, ONBOARD_ONTO_THE_PROVIDER</small>
       </p>
     </div>
 
+    <!-- workflow -->
     <div class="yuno" style="margin-left:1em;">
       <p><strong><code>workflow</code></strong> <small>enum</small>
         <br/>Workflow used for onboarding.
@@ -339,6 +341,7 @@ This object represents a recipient who will receive part of a [split payment](do
       </p>
     </div>
 
+    <!-- status -->
     <div class="yuno" style="margin-left:1em;">
       <p><strong><code>status</code></strong> <small>enum</small>
         <br/>Status of the onboarding process.
@@ -346,18 +349,20 @@ This object represents a recipient who will receive part of a [split payment](do
       </p>
     </div>
 
+    <!-- callback_url -->
     <div class="yuno" style="margin-left:1em;">
       <p><strong><code>callback_url</code></strong> <small>string</small>
-        <br/>URL to redirect the customer after provider onboarding, if required.
+        <br/>URL to redirect the customer after onboarding.
         <br/><small>Example: https://www.google.com</small>
       </p>
     </div>
 
-    <!-- Provider object -->
-    <div class="yuno" style="margin-left:1em;">
-      <p><strong><code>provider</code></strong> <small>object</small>
-        <br/>Information about the payment provider connection.
-      </p>
+    <!-- provider object -->
+    <details class="yuno" style="margin-left:1em;">
+      <summary>
+        <strong><code>provider</code></strong> <small>object</small>
+        <br/><p>Payment provider connection details.</p>
+      </summary>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>id</code></strong> <small>string</small>
           <br/>Provider identifier.
@@ -366,38 +371,39 @@ This object represents a recipient who will receive part of a [split payment](do
       </div>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>redirect_url</code></strong> <small>string</small>
-          <br/>URL to redirect the recipient to complete onboarding.
+          <br/>URL to finalize onboarding.
           <br/><small>Example: https://www.stripe.com</small>
         </p>
       </div>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>recipient_id</code></strong> <small>string</small>
-          <br/>The unique identifier of the recipient at the provider.
+          <br/>Provider’s submerchant ID.
           <br/><small>Example: AAAAA01</small>
         </p>
       </div>
-    </div>
+    </details>
 
     <!-- documentation array -->
-    <div class="yuno" style="margin-left:1em;">
-      <p><strong><code>documentation</code></strong> <small>array of objects</small>
-        <br/>An array of documentation objects provided by the merchant.
-      </p>
+    <details class="yuno" style="margin-left:1em;">
+      <summary>
+        <strong><code>documentation</code></strong> <small>array of objects</small>
+        <br/><p>Documentation objects provided by the merchant.</p>
+      </summary>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>file_name</code></strong> <small>string</small>
-          <br/>The name of the documentation sent (MAX 255; MIN 3).
+          <br/>Name of the document (MAX 255; MIN 3).
           <br/><small>Example: receipt.pdf</small>
         </p>
       </div>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>content_type</code></strong> <small>enum</small>
-          <br/>The type of the documentation sent by the merchant.
+          <br/>Type of document.
           <br/><small>Example: RECEIPT</small>
         </p>
       </div>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>content_category</code></strong> <small>string</small>
-          <br/>The category of the documentation (e.g., INVOICE, ID_PROOF).
+          <br/>Category of the documentation.
         </p>
       </div>
       <div class="yuno" style="margin-left:2em;">
@@ -406,37 +412,39 @@ This object represents a recipient who will receive part of a [split payment](do
           <br/><small>Example: JVBERi0xLjQKJcfs…</small>
         </p>
       </div>
-    </div>
+    </details>
 
     <!-- withdrawal_methods struct -->
-    <div class="yuno" style="margin-left:1em;">
-      <p><strong><code>withdrawal_methods</code></strong> <small>struct</small>
-        <br/>Withdrawal method objects; each contains a <code>bank</code> struct.
-      </p>
-      <div class="yuno" style="margin-left:2em;">
-        <p><strong><code>bank</code></strong> <small>struct</small>
-          <br/>Bank details for this withdrawal method.
-        </p>
+    <details class="yuno" style="margin-left:1em;">
+      <summary>
+        <strong><code>withdrawal_methods</code></strong> <small>struct</small>
+        <br/><p>Withdrawal methods; each contains a bank object.</p>
+      </summary>
+      <details class="yuno" style="margin-left:2em;">
+        <summary>
+          <strong><code>bank</code></strong> <small>struct</small>
+          <br/><p>Bank details for withdrawals.</p>
+        </summary>
         <div class="yuno" style="margin-left:3em;">
           <p><strong><code>code</code></strong> <small>string</small>
             <br/>Bank’s code (MAX 3; MIN 3).
             <br/><small>Example: 246</small>
           </p>
         </div>
-        <!-- add other bank fields (branch, account, etc.) similarly -->
-      </div>
-    </div>
+        <!-- add remaining bank fields here -->
+      </details>
+    </details>
 
+    <!-- timestamps -->
     <div class="yuno" style="margin-left:1em;">
       <p><strong><code>created_at</code></strong> <small>timestamp</small>
         <br/>Onboarding creation date (ISO 8601).
         <br/><small>Example: 2022-05-09T20:46:54.786342Z</small>
       </p>
     </div>
-
     <div class="yuno" style="margin-left:1em;">
       <p><strong><code>updated_at</code></strong> <small>timestamp</small>
-        <br/>Last onboarding update date (ISO 8601).
+        <br/>Last update date (ISO 8601).
         <br/><small>Example: 2022-07-09T20:43:54.786342Z</small>
       </p>
     </div>
