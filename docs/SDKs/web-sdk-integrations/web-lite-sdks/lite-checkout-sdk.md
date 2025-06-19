@@ -192,10 +192,6 @@ yuno.startCheckout({
 >
 > The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
-> 📘 Rendering mode
->
-> By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. To learn how to use the Lite SDK to perform MIT operations, access the [Mode of form rendering](https://docs.y.uno/docs/lite-checkout-sdk#mode-of-form-rendering) section.
-
 ## Step 4: Mount the SDK
 
 Next, you have to mount the SDK, presenting the checkout based on the payment method selected by your customer. Remember, when using the Lite SDK, you're responsible for displaying the payment methods and capturing the customer's selection. Access [Lite SDK (Payment)](doc:the-ultimate-checkout-lite) for additional information.
