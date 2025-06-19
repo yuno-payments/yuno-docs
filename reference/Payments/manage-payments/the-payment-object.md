@@ -12,7 +12,7 @@ metadata:
 next:
   description: ''
 ---
-This object represents the payment created after generating the checkout session for a customer. 
+This object represents the payment created after generating the checkout session for a customer.
 
 <HTMLBlock>{`
 <style>
@@ -1061,13 +1061,13 @@ This object represents the payment created after generating the checkout session
             <br />The accept header value of the customer's browser.
             <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
           </p>
-          <p><strong><code>accept_browser</code></strong> <small>boolean</small>
-            <br />The accept broser value of the customer's browser
-            <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
+          <p><strong><code>accept_browser</code></strong> <small>string</small>
+            <br />The accept browser value of the customer's browser
+            <br /><small> Accepted values: <code>"True"</code> or <code>"False"</code> </small>
           </p>
-          <p><strong><code>accept_content</code></strong> <small>boolean</small>
+          <p><strong><code>accept_content</code></strong> <small>string</small>
             <br />The accept content value of the customer's browser
-            <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
+            <br /><small> Accepted values: <code>"True"</code> or <code>"False"</code> </small>
           </p>
           <p><strong><code>platform</code></strong> <small>enum</small>
             <br />The platform from which the customer is making the payment.
