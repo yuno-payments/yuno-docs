@@ -50,73 +50,7 @@ To achieve a truly unified onboarding experience, Yuno's standardized API integr
 | Adyen          | API/KYC/KYB       | Documents, `accountHolder` creation, payouts | API or Hosted Onboarding | `accountHolderCode` and `accountCode` used for payments/payouts |
 | dLocal         | API/KYC           | Payer creation, KYC document upload          | API Only                 | `payer_id` used for identifying merchant in payments/payouts    |
 | Stripe Connect | API/OAuth Hybrid  | Person object, external accounts             | API or Hosted Onboarding | `account_id` (e.g., `acct_123`) used for charges and transfers  |
-| MercadoPago    | OAuth Marketplace | Requires merchant to authenticate via OAuth  | OAuth Only - Hosted      | Dedicated `access_token` for payment creation                   |
-
-## Detailed Provider Onboarding Steps
-
-Below are the specific steps Yuno orchestrates when onboarding submerchants with various payment providers, depending on their integration modes.
-
-### A - [Adyen](https://docs.adyen.com/platforms/onboard-users/onboarding-steps/?onboarding_type=custom\&hosted_onboarding_page=api\&location=us\&legal_entity=organization#add-payment-methods-to-store)
-
-**Hosted Flow**
-
-1. Create [legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/post/legalEntities)
-2. Create a [business line](https://docs.adyen.com/api-explorer/legalentity/latest/post/businessLines) to add info of the industry
-3. Create a [store](https://docs.adyen.com/api-explorer/Management/latest/post/stores)
-4. Add supported [payment methods](https://docs.adyen.com/platforms/onboard-users/onboarding-steps/?onboarding_type=hosted\&hosted_onboarding_page=api\&location=us\&legal_entity=organization#add-payment-methods-to-store) to the store
-   * *After these initial steps, the process often involves a hand-off or additional user interaction:*
-5. Create an [account holder](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/accountHolders)
-6. Create [balance](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts)
-7. Create an [onboarding payment link](https://docs.adyen.com/platforms/onboard-users/onboarding-steps/?onboarding_type=hosted\&hosted_onboarding_page=api\&location=us\&legal_entity=organization#create-hosted-onboarding-link) and wait for updates
-
-**API Only Flow**
-
-1. Create [legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/post/legalEntities)
-2. Associate [entities to the legal entity](https://docs.adyen.com/api-explorer/legalentity/latest/patch/legalEntities/\(id\)#request-entityAssociations)
-3. Create [transfer instrument](https://docs.adyen.com/api-explorer/legalentity/latest/post/transferInstruments)
-4. Create a [business line](https://docs.adyen.com/api-explorer/legalentity/latest/post/businessLines) to add info of the industry
-5. Create a [store](https://docs.adyen.com/api-explorer/Management/latest/post/stores)
-6. Add supported [payment methods](https://docs.adyen.com/platforms/onboard-users/onboarding-steps/?onboarding_type=hosted\&hosted_onboarding_page=api\&location=us\&legal_entity=organization#add-payment-methods-to-store) to the store
-7. Create an [account holder](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/accountHolders)
-8. Create [balance](https://docs.adyen.com/api-explorer/balanceplatform/latest/post/balanceAccounts)
-9. Ask for [terms and conditions](https://docs.adyen.com/platforms/onboard-users/onboarding-steps/?onboarding_type=custom\&location=us\&legal_entity=organization#determine-the-terms-of-service)
-10. Create an [onboarding payment link](https://docs.adyen.com/platforms/onboard-users/onboarding-steps/?onboarding_type=hosted\&hosted_onboarding_page=api\&location=us\&legal_entity=organization#create-hosted-onboarding-link) and wait for updates
-
-*For Adyen payments with automatic split configuration, refer to:[Adyen Split Payments](https://docs.adyen.com/platforms/automatic-split-configuration/create-split-configuration/)*
-
-### B - [Stripe](https://docs.stripe.com/connect/how-connect-works)
-
-**Hosted Onboarding**
-
-1. Create an [account](https://docs.stripe.com/api/accounts/create)
-2. Create an [account link](https://docs.stripe.com/api/account_links)
-
-**API Only Onboarding**
-
-1. Create an [account](https://docs.stripe.com/api/accounts/create)
-2. Gather information and [update the account](https://docs.stripe.com/api/accounts/update)
-
-### C - [Dlocal](https://docs.dlocal.com/docs/onboard-user-accounts-platforms)
-
-1. Create an account
-2. Get required information and upload documentation
-3. Wait for updates. You could also block or unblock an account
-
-*For Dlocal split payments, refer to:[Dlocal Split Struct](https://docs.dlocal.com/docs/split-payments-platforms)*
-
-### D - [MercadoPago](https://www.mercadopago.com.ar/developers/es/docs/split-payments/landing)
-
-1. [OAuth process](https://www.mercadopago.com.ar/developers/es/docs/split-payments/additional-content/security/oauth/introduction) is created to redirect the customer
-2. Redirect customer and wait for authorization grant.
-3. Get [access\_token](https://www.mercadopago.com.ar/developers/es/docs/security/oauth/creation#bookmark_authorization_code)
-
-### E - [Gr4vy](https://docs.gr4vy.com/guides/features/merchant-accounts/overview)
-
-Gr4vy's approach is more aligned with creating "merchant accounts" via API or dashboard, which are then used for payments. While it supports **split payments** (as indicated by my search and your linked article about "split-tender support"), the core concept is the creation of distinct merchant accounts that can handle their own payments. Yuno's integration would focus on creating and managing these merchant accounts.
-
-### F - [Juspay](https://juspay.io/in/docs/split-settlements/docs/split-settlements/description)
-
-Similar to Gr4vy, Juspay requires the configuration of separate accounts where amounts need to be settled for split orders. Yuno's process for Juspay would involve configuring these merchant and vendor account details.
+| PAGARME        | API               | Payer creation, KYC document upload          | API                      | `recipient.id` used for identifying merchant in payments/payouts |
 
 ## Recipient onboarding statuses
 
