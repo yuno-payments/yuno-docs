@@ -1,5 +1,5 @@
 ---
-title: Split Payments Marketplace (COPY) (COPY)
+title: Split Payments Marketplace (COPY) II
 deprecated: false
 hidden: true
 metadata:
@@ -16,6 +16,8 @@ The split payment functionality is contingent on the support of the selected pay
 * Stripe
 * dLocal
 
+**First** you'll need to **onboard your recipients** for the payment split, and **then** create the **payment** specifying the necessary information.
+
 ## Key features
 
 * **Split payments**: Define how the total payment amount is distributed among different recipients.
@@ -23,7 +25,53 @@ The split payment functionality is contingent on the support of the selected pay
 * **Integration with providers**: Splits can be executed by payment providers that support this functionality.
 * **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
 
-## Integration
+## Onboardings
+
+Yuno’s onboarding model is designed to help marketplaces seamlessly connect and manage their **submerchants** across **multiple payment providers**. At the core of this system is the **Recipient object**, which represents each individual submerchant within the marketplace ecosystem.
+
+* Each **Marketplace Owner** is represented in **Yuno as an Organization**.
+* Within an organization, one or more Accounts can be created, each configured with its own set of **Connections** to payment providers (e.g., Stripe, MercadoPago, Adyen, dLocal).
+* For every account, the marketplace can register one or more **Recipients** — these are the submerchants to be onboarded.
+* Each **Recipient** is then linked individually to one or more **Connections**, depending on which payment processors they will use.
+
+This **architecture** enables:
+
+* A single, unified onboarding process.
+* Independent status tracking per provider.
+* Easy scaling of submerchant operations across providers.
+
+This design ensures flexibility, transparency, and full traceability throughout the onboarding lifecycle. The /recipients endpoint is used to create and manage each submerchant profile, and to trigger the corresponding provider-specific onboarding workflows.
+
+### Onboarding flows
+
+Yuno supports two **onboarding flows** for submerchants:
+
+1. **Pre-onboarded Accounts**: If the submerchant has already completed the onboarding process with a given provider (e.g., via an external dashboard or platform), the marketplace can provide the corresponding **recipient\_id** at the time of creation. In this case, **no further onboarding is needed**, and the status will immediately be set to **SUCCEEDED**. (`onboardings.type`='PREVIOUSLY\_ONBOARDED')
+2. **Dynamic Onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the selected provider. (`onboardings.type`='ONBOARD\_ONTO\_PROVIDER') Depending on the provider’s requirements, this may involve:
+   1. Form submission or redirection to hosted onboarding.
+   2. Upload of legal or financial documentation.
+   3. KYC/KYB validation steps.
+
+During the onboarding lifecycle, a Recipient may go through several statuses which indicate the current state of the process:
+
+| Status                             | Description                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------------------- |
+| `CREATED`                          | Initial state after creation; onboarding process not yet started.            |
+| `PENDING_REVIEW`                   | Awaiting provider review after data was submitted.                           |
+| `PENDING_ADDITIONAL_DOCUMENTATION` | More documents are needed to continue onboarding.                            |
+| `PENDING_WAITING_USER_INTERACTION` | Waiting for the submerchant to complete an external action (e.g., form).     |
+| `SUCCEEDED`                        | The recipient is fully onboarded and active.                                 |
+| `DECLINED`                         | The onboarding was rejected by the provider and cannot be retried.           |
+| `BLOCKED`                          | The provider has explicitly blocked the onboarding due to compliance issues. |
+| `CANCELED`                         | The onboarding process was voluntarily canceled before completion.           |
+| `REJECTED`                         | The onboarding failed due to incorrect data or failed validations.           |
+| `ERROR`                            | A technical error occurred during the onboarding flow.                       |
+
+These statuses help the marketplace understand the onboarding lifecycle and implement appropriate retry, alert, or fallback mechanisms when required.
+
+This flexibility allows marketplaces to adapt the onboarding process to their operational needs, without sacrificing control or visibility.
+
+## Payment Split Integration
 
 The `split_marketplace` object defines how a [payment](ref:create-payment) should be split between recipients. It is an array of objects, where each object represents a recipient and their share of the payment.
 
@@ -40,8 +88,6 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 | `liability`             | `struct`  | Optional information regarding the recipient’s liability for fees and chargebacks.                                                                                                                    | No          |                |
 |     `processing_fee`    | `enum`    | Indicates who will be charged the transaction fee: `MERCHANT`, `RECIPIENT`, `SHARED`.                                                                                                                 | No          | `MERCHANT`     |
 |     `chargebacks`       | `boolean` | If `true`, the recipient is responsible in case of a chargeback.                                                                                                                                      | No          | `false`        |
-
-### Provider-Specific Split Parameters
 
 The `split_marketplace` object defines how a [payment](ref:create-payment) should be split between recipients. It is an array of objects, where each object represents a recipient and their share of the payment.
 
@@ -77,7 +123,7 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 
 ```
 
-### Rules
+### Validations
 
 * The sum of all splits must equal the total payment amount.
 * For each split, you must send an object for every participant, and the sum of amounts must equal the total payment amount.
