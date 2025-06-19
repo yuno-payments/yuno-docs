@@ -10,24 +10,24 @@ next:
       title: Create Payments
       type: basic
 ---
-# Set Up Connections and Routing for Payments
-
 Before you can create payments using direct integration with Yuno's API, you must configure your account by setting up payment connections, defining payment routing, enabling payment methods, and obtaining your API credentials. This page explains these essential setup steps.
 
 You'll learn how to:
 
-* Configure your first payment connection.
-* Set up payment routing.
-* Enable payment methods in the checkout builder.
-* Get your API credentials, including your `public-api-key` and `private-secret-key`.
+* Configure your first payment connection
+* Set up payment routing
+* Enable payment methods in the checkout builder
+* Get your API credentials, including your `public-api-key` and `private-secret-key`
 
 > > 📘 Yuno Testing Gateway
 > >
 > > Make sure to choose the payment connection that suits your needs when following these instructions. If you want to test credit card payments, use [Yuno Testing Gateway](doc:yuno-testing-gateway) as your provider.
 
-## Configure Payment Method
+## Configure payment method
 
-### Step 1: Set Up Your Connection
+/COMMENT/ insert introductory paragraph
+
+### Step 1: Set up your Connection
 
 To set up your first payment connection:
 
@@ -42,6 +42,8 @@ A confirmation message will appear in the dashboard once your connection is succ
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4" />
 
 ### Step 2: Set Up Routing for Your New Connection
+
+// COMMENT explansatiom
 
 After adding a connection, you must assign it to a route, which determines which provider processes payments. For a basic setup, follow these steps:
 
