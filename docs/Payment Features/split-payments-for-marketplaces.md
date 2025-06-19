@@ -25,6 +25,8 @@ The split payment functionality is contingent on the support of the selected pay
 
 **First** you'll need to **onboard your recipients** for the payment split, and **then** create the **payment** specifying the necessary information.
 
+***
+
 ## 1- Onboardings
 
 Yuno’s onboarding model is designed to help marketplaces seamlessly connect and manage their **submerchants** across **multiple payment providers**. At the core of this system is the **Recipient object**, which represents each individual submerchant within the marketplace ecosystem.
@@ -70,6 +72,8 @@ During the onboarding lifecycle, a Recipient may go through several statuses whi
 These statuses help the marketplace understand the onboarding lifecycle and implement appropriate retry, alert, or fallback mechanisms when required.
 
 This flexibility allows marketplaces to adapt the onboarding process to their operational needs, without sacrificing control or visibility.
+
+***
 
 ## 2- Payment Split Integration
 
@@ -122,6 +126,8 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 }
 
 ```
+
+***
 
 ## Validations
 
