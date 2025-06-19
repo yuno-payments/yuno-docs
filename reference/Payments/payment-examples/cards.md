@@ -2399,7 +2399,7 @@ curl --request POST \
 }
 '
 ```
-```json
+```json Response (JSON)
 {
     "id": "d1ba99e3-cfe4-44d0-8ff2-7393f5ca4dcc",
     "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
@@ -2757,16 +2757,16 @@ curl --request POST \
      --header 'public-api-key: <Your public-api-key>' \
      --data '
 {
-  "country": "CO",
+  "country": "US",
   "amount": {
-    "currency": "COP",
-    "value": "20000"
+    "currency": "USD",
+    "value": 75.50
   },
   "customer_payer": {
-    "id":"customer-123",
+    "id": "<account_id>",
     "first_name": "JOHN",
     "last_name": "DOE",
-    "email": "test@test.com"
+    "email": "john.doe@example.com"
   },
   "payment_method": {
     "detail": {
@@ -2785,251 +2785,355 @@ curl --request POST \
     },
     "type": "CARD"
   },
-  "account_id": "<Your account_id>",
-  "description": "SUCCESSFUL",
-  "merchant_order_id": "Order_id",
+  "account_id": "<account_id>",
+  "description": "Card payment with 3DS",
+  "merchant_order_id": "000022",
   "callback_url":"www.google.com",
   "workflow": "DIRECT"
 }
 '
 ```
-```json
+```json Response (JSON)
 {
-    "payment": {
-        "id": "cb3ca163-cb79-41d7-b9a3-0115e30a7c01",
-        "idempotency_key": "fc0d89a1-8d18-4759-8d0a-ee1c6d0386e2",
-        "account_code": "26a6626c-d3ec-4caa-bf7c-a994b145dc00",
-        "account_id": "26a6626c-d3ec-4caa-bf7c-a994b145dc00",
-        "description": "TEST_3DS",
-        "country": "CO",
+    "id": "b29ad2ec-3f39-4317-bd91-b5e32225ac6c",
+    "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
+    "description": "Card payment with 3DS",
+    "country": "US",
+    "status": "SUCCEEDED",
+    "sub_status": "APPROVED",
+    "merchant_order_id": "000022",
+    "created_at": "2025-06-19T19:37:53.686162Z",
+    "updated_at": "2025-06-19T19:37:53.903636Z",
+    "amount": {
+        "captured": 0.00,
+        "currency": "USD",
+        "currency_conversion": null,
+        "refunded": 0.00,
+        "value": 75.50
+    },
+    "checkout": {
+        "session": "",
+        "sdk_action_required": false
+    },
+    "payment_method": {
+        "vaulted_token": "",
+        "type": "CARD",
+        "vault_on_success": false,
+        "token": "",
+        "parent_payment_method_type": null,
+        "payment_method_detail": {
+            "card": {
+                "verify": false,
+                "capture": true,
+                "installments": 1,
+                "installments_plan_id": null,
+                "first_installment_deferral": 0,
+                "installments_type": "",
+                "installment_amount": null,
+                "soft_descriptor": "",
+                "authorization_code": "422885",
+                "retrieval_reference_number": "",
+                "voucher": null,
+                "card_data": {
+                    "holder_name": "JOHN DOE",
+                    "iin": "41111111",
+                    "lfd": "1111",
+                    "number_length": 16,
+                    "security_code_length": 3,
+                    "brand": "VISA",
+                    "issuer_name": "CONOTOXIA SP Z O O",
+                    "issuer_code": null,
+                    "country_code": "PL",
+                    "category": "CLASSIC",
+                    "type": "DEBIT",
+                    "three_d_secure": {
+                        "version": null,
+                        "electronic_commerce_indicator": null,
+                        "cryptogram": null,
+                        "transaction_id": null,
+                        "directory_server_transaction_id": null,
+                        "pares_status": null,
+                        "acs_id": null
+                    },
+                    "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                    "expiration_month": 11,
+                    "expiration_year": 28
+                },
+                "stored_credentials": {
+                    "reason": null,
+                    "usage": null,
+                    "subscription_agreement_id": null,
+                    "network_transaction_id": null
+                }
+            }
+        }
+    },
+    "customer_payer": {
+        "id": "33a9e979-6558-4694-b00c-3d0844524681",
+        "merchant_customer_id": "1749820178",
+        "first_name": "JOHN",
+        "last_name": "DOE",
+        "gender": "F",
+        "date_of_birth": "1990-02-28",
+        "email": "john.doe@example.com",
+        "nationality": "CO",
+        "ip_address": null,
+        "device_fingerprint": null,
+        "device_fingerprints": [],
+        "browser_info": {
+            "user_agent": "",
+            "accept_header": "",
+            "accept_content": null,
+            "accept_browser": null,
+            "color_depth": "",
+            "screen_height": "",
+            "screen_width": "",
+            "javascript_enabled": null,
+            "java_enabled": null,
+            "browser_time_difference": null,
+            "language": "",
+            "platform": null
+        },
+        "document": {
+            "document_type": "CC",
+            "document_number": "1010268952"
+        },
+        "phone": {
+            "number": "3132450765",
+            "country_code": "57"
+        },
+        "billing_address": {
+            "address_line_1": "Calle 34 # 56 - 78",
+            "address_line_2": "Apartamento 502, Torre I",
+            "country": "CO",
+            "state": "Cundinamarca",
+            "city": "Bogotá",
+            "zip_code": "111111",
+            "neighborhood": null
+        },
+        "shipping_address": {
+            "address_line_1": "Calle 34 # 56 - 78",
+            "address_line_2": "Apartamento 502, Torre I",
+            "country": "CO",
+            "state": "Cundinamarca",
+            "city": "Bogotá",
+            "zip_code": "111111",
+            "neighborhood": null
+        },
+        "merchant_customer_created_at": null
+    },
+    "additional_data": null,
+    "transactions": {
+        "id": "c8dd3355-ad7c-40e7-95a4-c41bd34f994b",
+        "type": "PURCHASE",
         "status": "SUCCEEDED",
-        "sub_status": "APPROVED",
-        "merchant_order_id": "0000023",
-        "created_at": "2023-07-17T17:00:39.678379Z",
-        "updated_at": "2023-07-17T17:41:48.453381Z",
-        "amount": {
-            "currency": "COP",
-            "value": 5000.00,
-            "refunded": 0.00,
-            "captured": 0.00
-        },
-        "checkout": {
-            "session": "b0751c96-0b00-4b8c-8372-c16f72f60598",
-            "sdk_action_required": false
-        },
-        "customer_payer": {
-            "id": "fc7ef8ae-000d-4903-ab76-494ebc8d5fa3",
-            "merchant_customer_id": "1689374657",
-            "first_name": "Rashad",
-            "last_name": "Rath",
-            "gender": null,
-            "date_of_birth": null,
-            "email": "Newell.Cronin79@hotmail.com",
-            "nationality": null,
-            "ip_address": null,
-            "device_fingerprint": null,
-            "browser_info": null,
-            "document": {
-                "document_type": "CC",
-                "document_number": "38799999"
-            },
-            "phone": null,
-            "billing_address": {
-                "address_line_1": "",
-                "address_line_2": ""
-            },
-            "shipping_address": {
-                "address_line_1": "",
-                "address_line_2": ""
+        "category": "CARD",
+        "amount": 75.5,
+        "provider_id": "YUNO_TEST_PAYMENT_GW",
+        "payment_method": {
+            "vaulted_token": "",
+            "type": "CARD",
+            "vault_on_success": false,
+            "token": "",
+            "parent_payment_method_type": null,
+            "detail": {
+                "card": {
+                    "verify": false,
+                    "capture": true,
+                    "installments": 1,
+                    "installments_plan_id": null,
+                    "first_installment_deferral": 0,
+                    "installments_type": "",
+                    "installment_amount": null,
+                    "soft_descriptor": "",
+                    "authorization_code": "422885",
+                    "retrieval_reference_number": "",
+                    "voucher": null,
+                    "card_data": {
+                        "holder_name": "JOHN DOE",
+                        "iin": "41111111",
+                        "lfd": "1111",
+                        "number_length": 16,
+                        "security_code_length": 3,
+                        "brand": "VISA",
+                        "issuer_name": "CONOTOXIA SP Z O O",
+                        "issuer_code": null,
+                        "country_code": "PL",
+                        "category": "CLASSIC",
+                        "type": "DEBIT",
+                        "three_d_secure": {
+                            "version": null,
+                            "electronic_commerce_indicator": null,
+                            "cryptogram": null,
+                            "transaction_id": null,
+                            "directory_server_transaction_id": null,
+                            "pares_status": null,
+                            "acs_id": null
+                        },
+                        "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                        "expiration_month": 11,
+                        "expiration_year": 28
+                    },
+                    "stored_credentials": {
+                        "reason": null,
+                        "usage": null,
+                        "subscription_agreement_id": null,
+                        "network_transaction_id": null
+                    }
+                }
             }
         },
-        "additional_data": {
-            "airline": null,
-            "order": null,
-            "seller_details": null
-        },
-        "taxes": null,
-        "transactions": [
-            {
-                "id": "caada737-27ab-46ca-91a9-744da64c4787",
-                "type": "THREE_D_SECURE",
-                "status": "SUCCEEDED",
-                "category": "CARD",
-                "amount": 5000.00,
-                "provider_id": "CYBERSOURCE_3DS",
-                "payment_method": {
-                    "vaulted_token": "",
-                    "type": "CARD",
-                    "vault_on_success": false,
-                    "token": "",
-                    "detail": {
-                        "card": {
-                            "verify": null,
-                            "capture": true,
-                            "installments": 1,
-                            "first_installment_deferral": 0,
-                            "installments_type": "",
-                            "installment_amount": null,
-                            "soft_descriptor": "",
-                            "authorization_code": "",
-                            "retrieval_reference_number": "",
-                            "voucher": null,
-                            "redirect_url": "https://checkout.staging.y.uno/payment?session=14c263bd-e01d-400f-885a-70205df8b417",
-                            "card_data": {
-                                "holder_name": "John Doe",
-                                "iin": "44565300",
-                                "lfd": "0007",
-                                "number_length": 16,
-                                "security_code_length": 3,
-                                "brand": "VISA",
-                                "issuer_name": "",
-                                "issuer_code": null,
-                                "category": null,
-                                "type": "CREDIT",
-                                "three_d_secure": {
-                                    "three_d_secure_setup_id": "24127d61-b852-42fb-acd4-1ee661645376",
-                                    "version": null,                        
-                                  	"electronic_commerce_indicator": null,
-                                    "cryptogram": null,
-                                    "transaction_id": null,
-                                  	"directory_server_transaction_id": null,
-                                    "pares_status": "Y"
-                                }
-                            }
-                        }
-                    }
+        "response_code": "SUCCEEDED",
+        "response_message": "Transaction successful",
+        "reason": null,
+        "description": "Card payment with 3DS",
+        "merchant_reference": "000022",
+        "provider_data": {
+            "id": "YUNO_TEST_PAYMENT_GW",
+            "transaction_id": "19a36e27-5448-48f8-9b6b-20c28735fef7",
+            "account_id": "",
+            "status": "SUCCEEDED",
+            "sub_status": "",
+            "status_detail": "",
+            "response_message": null,
+            "response_code": null,
+            "raw_response": {
+                "amount": {
+                    "currency": "BRL",
+                    "value": 2100
                 },
-                "response_code": "SUCCEEDED",
-                "response_message": "Transaction successful",
-                "reason": null,
-                "description": "TEST_3DS",
-                "merchant_reference": "reference-5f6dd991-ab14-4da3-b7d8-9f24a04ebd92",
-                "provider_data": {
-                    "id": "CYBERSOURCE_3DS",
-                    "transaction_id": "6896132402506977804951",
-                    "account_id": "",
-                    "status": "AUTHENTICATION_SUCCESSFUL",
-                    "sub_status": "",
-                    "status_detail": "",
-                    "response_message": "CONSUMER_AUTHENTICATION_REQUIRED",
-                    "raw_response": {
-                        "clientReferenceInformation": {
-                            "code": "24127d61-b852-42fb-acd4-1ee661645376"
-                        },
-                        "consumerAuthenticationInformation": {
-                            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZmM5ZDVhMS04M2ZhLTQwYWEtYjI5Ny1iZDM1ZGIxODQ4ZjAiLCJpYXQiOjE2ODk2MTMyNDAsImlzcyI6IjVkZDgzYmYwMGU0MjNkMTQ5OGRjYmFjYSIsImV4cCI6MTY4OTYxNjg0MCwiT3JnVW5pdElkIjoiNjQwYTM1NjlkODdhMjUwYTQyNTEwOWRjIiwiUGF5bG9hZCI6eyJBQ1NVcmwiOiJodHRwczovL21lcmNoYW50YWNzc3RhZy5jYXJkaW5hbGNvbW1lcmNlLmNvbS9NZXJjaGFudEFDU1dlYi9wYXJlcS5qc3A_dmFhPWImZ29sZD1BQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUEiLCJQYXlsb2FkIjoiZU5wVlVWMXZna0FRZkw5ZlFVd2ZHKzZBS3RHc2w5QnE2a2MwdHRCb254cUViU1dWRDQvRHFMKytkd2kxdmFlZHljN3R6aXdFTzRFNDhqR3FCSEpZWUZtR1gyZ2s4YkRqWC9KcHZqaVV6M0kyUzc4LzAvUE1ZeDBPSys4VkR4eU9LTW9rejdobE10TUcya0tpdmhEUkxzd2toekE2UEU2WC9LSFh0NjBlMEFZU1NGRk1SendZKzhHSE0vS0JYakdCTEV5UnYxZFpiaWphQ0xDVVFHdU9RSlJYbVJSbmJya01hQXNJVkdMUGQxSVc1WURTczZtVVFEVkZnTjYyV0ZXNktwVzVVeEx6TjZjNCt1ditNdG9zSi9HNG1HL1hNdDF1OXZPWHdCc0MxUjBFNGxBaXQ1bnRNTmR5RGNzZE1EWncra0JybmtDWTZ2bjhybXN5eHU2WldxaGhDQlI2bG5kRlhhWWYwTCtjTWxJSmdWblVPbWtSQVR3VmVZYXFSNFg1V3lzanQvV2ZKanJTU0txc1hPWTR6TEoxcGpXdTVZbUt4TzR4cTlZbmRUNVVhMmh6TWRvY1YxWC9qdjREQVEybVdnPT0iLCJUcmFuc2FjdGlvbklkIjoiU3pvSW9NcXNHdEpKbWtmbXlKQTAifSwiT2JqZWN0aWZ5UGF5bG9hZCI6dHJ1ZSwiUmV0dXJuVXJsIjoiaHR0cHM6Ly9zdGFnaW5nLnkudW5vL2N5YmVyc291cmNlLTNkcy13ZWJob29rL3YxL2NvbmZpcm1hdGlvbnMvYXV0aC8yNDEyN2Q2MS1iODUyLTQyZmItYWNkNC0xZWU2NjE2NDUzNzYifQ.5ehSTA5uUKc2DfvTRGJZ8dPKbxAJ5WproKSTLqu4egM",
-                            "acsUrl": "https://merchantacsstag.cardinalcommerce.com/MerchantACSWeb/pareq.jsp?vaa=b&gold=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                            "authenticationPath": "ENROLLED",
-                            "authenticationTransactionId": "SzoIoMqsGtJJmkfmyJA0",
-                            "pareq": "eNpVUV1vgkAQfL9fQUwfG+6AKtGsl9Bq6kc0ttBonxqEbSWVD4/DqL++dwi1vaedyc7tziwEO4E48jGqBHJYYFmGX2gk8bDjX/JpvjiUz3I2S78/0/PMYx0OK+8VDxyOKMokz7hlMtMG2kKivhDRLswkhzA6PE6X/KHXt60e0AYSSFFMRzwY+8GHM/KBXjGBLEyRv1dZbijaCLCUQGuOQJRXmRRnbrkMaAsIVGLPd1IW5YDSs6mUQDVFgN62WFW6KpW5UxLzN6c4+uv+MtosJ/G4mG/XMt1u9vOXwBsC1R0E4lAit5ntMNdyDcsdMDZw+kBrnkCY6vn8rmsyxu6ZWqhhCBR6lndFXaYf0L+cMlIJgVnUOmkRATwVeYaqR4X5Wysjt/WfJjrSSKqsXOY4zLJ1pjWu5YmKxO4xq9YndT5Ua2hzMdocV1X/jv4DAQ2mWg==",
-                            "proofXml": "<AuthProof><Time>2023 Jul 17 17:00:39</Time><DSUrl>https://merchantacsstag.cardinalcommerce.com/MerchantACSWeb/vereq.jsp?acqid=CYBS</DSUrl><VEReqProof><Message id=\"SzoIoMqsGtJJmkfmyJA0\"><VEReq><version>1.0.2</version><pan>XXXXXXXXXXXX0007</pan><Merchant><acqBIN>469216</acqBIN><merID>TEST_3DS</merID></Merchant><Browser><deviceCategory>0</deviceCategory><accept>*/*</accept><userAgent>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36</userAgent></Browser></VEReq></Message></VEReqProof><VEResProof><Message id=\"SzoIoMqsGtJJmkfmyJA0\"><VERes><version>1.0.2</version><CH><enrolled>Y</enrolled><acctID>7033012</acctID></CH><url>https://merchantacsstag.cardinalcommerce.com/MerchantACSWeb/pareq.jsp?vaa=b&amp;gold=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</url><protocol>ThreeDSecure</protocol></VERes></Message></VEResProof></AuthProof>",
-                            "proxyPan": "7033012",
-                            "specificationVersion": "1.0.2",
-                            "stepUpUrl": "https://centinelapistag.cardinalcommerce.com/V2/Cruise/StepUp",
-                            "strongAuthentication": {
-                                "OutageExemptionIndicator": "0"
+                "merchantAccount": "YunoPaymentsECOM",
+                "paymentPspReference": "ZKHXKZGXMLBX8N82",
+                "pspReference": "VKJTCWZ9575ZGN82",
+                "reference": "34343434",
+                "status": "received"
+            },
+            "third_party_transaction_id": "",
+            "third_party_account_id": null,
+            "iso8583_response_code": null,
+            "iso8583_response_message": null
+        },
+        "connection_data": {
+            "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+            "name": null
+        },
+        "created_at": "2025-06-19T19:37:53.815080Z",
+        "updated_at": "2025-06-19T19:37:53.868518Z"
+    },
+    "transactions_history": [
+        {
+            "id": "c8dd3355-ad7c-40e7-95a4-c41bd34f994b",
+            "type": "PURCHASE",
+            "status": "SUCCEEDED",
+            "category": "CARD",
+            "amount": 75.5,
+            "provider_id": "YUNO_TEST_PAYMENT_GW",
+            "payment_method": {
+                "vaulted_token": "",
+                "type": "CARD",
+                "vault_on_success": false,
+                "token": "",
+                "parent_payment_method_type": null,
+                "detail": {
+                    "card": {
+                        "verify": false,
+                        "capture": true,
+                        "installments": 1,
+                        "installments_plan_id": null,
+                        "first_installment_deferral": 0,
+                        "installments_type": "",
+                        "installment_amount": null,
+                        "soft_descriptor": "",
+                        "authorization_code": "422885",
+                        "retrieval_reference_number": "",
+                        "voucher": null,
+                        "card_data": {
+                            "holder_name": "JOHN DOE",
+                            "iin": "41111111",
+                            "lfd": "1111",
+                            "number_length": 16,
+                            "security_code_length": 3,
+                            "brand": "VISA",
+                            "issuer_name": "CONOTOXIA SP Z O O",
+                            "issuer_code": null,
+                            "country_code": "PL",
+                            "category": "CLASSIC",
+                            "type": "DEBIT",
+                            "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
                             },
-                            "token": "AxjzbwSTddcP6s4BiIKXABEBURzGv4QYVRP0JAY/LtaSZejFq0T8BEAAwwdp",
-                            "veresEnrolled": "Y",
-                            "xid": "U3pvSW9NcXNHdEpKbWtmbXlKQTA="
+                            "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                            "expiration_month": 11,
+                            "expiration_year": 28
                         },
-                        "errorInformation": {
-                            "message": "The cardholder is enrolled in Payer Authentication. Please authenticate the cardholder before continuing with the transaction.",
-                            "reason": "CONSUMER_AUTHENTICATION_REQUIRED"
-                        },
-                        "id": "6896132402506977804951",
-                        "paymentInformation": {
-                            "card": {
-                                "bin": "445653",
-                                "type": "VISA"
-                            }
-                        },
-                        "status": "PENDING_AUTHENTICATION",
-                        "submitTimeUtc": "2023-07-17T17:00:40Z"
-                    },
-                    "third_party_transaction_id": null
-                },
-                "three_d_secure_action_required": null,
-                "created_at": "2023-07-17T17:00:39.765728Z",
-                "updated_at": "2023-07-17T17:41:43.593769Z"
-            },
-            {
-                "id": "4081b900-3efa-44a2-83d8-bca350476b06",
-                "type": "PURCHASE",
-                "status": "SUCCEEDED",
-                "category": "CARD",
-                "amount": 5000.00,
-                "provider_id": "DLOCAL",
-                "payment_method": {
-                    "vaulted_token": "",
-                    "type": "CARD",
-                    "vault_on_success": false,
-                    "token": "",
-                    "detail": {
-                        "card": {
-                            "verify": null,
-                            "capture": true,
-                            "installments": 1,
-                            "first_installment_deferral": 0,
-                            "installments_type": "",
-                            "installment_amount": null,
-                            "soft_descriptor": "",
-                            "authorization_code": "445975",
-                            "retrieval_reference_number": "",
-                            "voucher": null,
-                            "card_data": {
-                                "holder_name": "John Doe",
-                                "iin": "44565300",
-                                "lfd": "0007",
-                                "number_length": 16,
-                                "security_code_length": 3,
-                                "brand": "VISA",
-                                "issuer_name": "",
-                                "issuer_code": null,
-                                "category": null,
-                                "type": "CREDIT",
-                                "three_d_secure": {
-                                    "three_d_secure_setup_id": "24127d61-b852-42fb-acd4-1ee661645376",
-                                    "version": null,                        
-                                  	"electronic_commerce_indicator": null,
-                                    "cryptogram": null,
-                                    "transaction_id": null,
-                                  	"directory_server_transaction_id": null,
-                                    "pares_status": "Y"
-                                }
-                            }
+                        "stored_credentials": {
+                            "reason": null,
+                            "usage": null,
+                            "subscription_agreement_id": null,
+                            "network_transaction_id": null
                         }
                     }
-                },
-                "response_code": "SUCCEEDED",
-                "response_message": "Transaction successful",
-                "reason": null,
-                "description": "TEST_3DS",
-                "merchant_reference": null,
-                "provider_data": {
-                    "id": "DLOCAL",
-                    "transaction_id": "T-385928-57934367-25ca-4445-a973-da5c1a4635b2",
-                    "account_id": "",
-                    "status": "PAID",
-                    "sub_status": "",
-                    "status_detail": "200",
-                    "response_message": "The payment was paid.",
-                    "raw_response": {
-                        "value": "{\"id\":\"T-385928-57934367-25ca-4445-a973-da5c1a4635b2\",\"amount\":5000,\"currency\":\"COP\",\"payment_method_id\":\"CARD\",\"payment_method_type\":\"CARD\",\"payment_method_flow\":\"DIRECT\",\"country\":\"CO\",\"card\":{\"holder_name\":\"John Doe\",\"expiration_month\":1,\"expiration_year\":2026,\"brand\":\"VI\",\"last4\":\"0007\",\"installments\":1,\"installments_responsible\":\"customer\"},\"three_dsecure\":{},\"created_date\":\"2023-07-17T17:41:44.000+0000\",\"approved_date\":\"2023-07-17T17:41:48.000+0000\",\"status\":\"PAID\",\"status_detail\":\"The payment was paid.\",\"status_code\":\"200\",\"order_id\":\"4081b900-3efa-44a2-83d8-bca350476b06\",\"description\":\"TEST_3DS\",\"notification_url\":\"https://staging.y.uno/dlocal-webhook/v1/confirmations\",\"acquirer\":{\"authorization_code\":\"445975\"}}"
+                }
+            },
+            "response_code": "SUCCEEDED",
+            "response_message": "Transaction successful",
+            "reason": null,
+            "description": "Card payment with 3DS",
+            "merchant_reference": "000022",
+            "provider_data": {
+                "id": "YUNO_TEST_PAYMENT_GW",
+                "transaction_id": "19a36e27-5448-48f8-9b6b-20c28735fef7",
+                "account_id": "",
+                "status": "SUCCEEDED",
+                "sub_status": "",
+                "status_detail": "",
+                "response_message": null,
+                "response_code": null,
+                "raw_response": {
+                    "amount": {
+                        "currency": "BRL",
+                        "value": 2100
                     },
-                    "third_party_transaction_id": ""
+                    "merchantAccount": "YunoPaymentsECOM",
+                    "paymentPspReference": "ZKHXKZGXMLBX8N82",
+                    "pspReference": "VKJTCWZ9575ZGN82",
+                    "reference": "34343434",
+                    "status": "received"
                 },
-                "three_d_secure_action_required": null,
-                "created_at": "2023-07-17T17:41:43.752435Z",
-                "updated_at": "2023-07-17T17:41:48.395863Z"
-            }
-        ],
-        "split": [],
-        "callback_url": "https://google.com",
-        "workflow": "REDIRECT",
-        "fraud_screening": null,
-        "metadata": [],
-        "payment_link_code": ""
-    }
+                "third_party_transaction_id": "",
+                "third_party_account_id": null,
+                "iso8583_response_code": null,
+                "iso8583_response_message": null
+            },
+            "connection_data": {
+                "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+                "name": null
+            },
+            "created_at": "2025-06-19T19:37:53.815080Z",
+            "updated_at": "2025-06-19T19:37:53.868518Z"
+        }
+    ],
+    "callback_url": "www.google.com",
+    "workflow": "DIRECT",
+    "metadata": [],
+    "fraud_screening": null,
+    "payment_link_id": "",
+    "subscription_code": null,
+    "routing_rules": {
+        "smart_routing": false,
+        "monitors": false,
+        "condition": {
+            "id": 192539,
+            "name": "Card",
+            "description": ""
+        }
+    },
+    "simplified_mode": false
 }
 ```
