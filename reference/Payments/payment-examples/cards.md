@@ -208,7 +208,15 @@ curl --request POST \
   "customer_payer": {
     "first_name": "JOHN",
     "last_name": "DOE",
-    "email": "john.doe@example.com"
+    "email": "john.doe@example.com",
+    "country": "US",
+    "gender": "M",
+    "date_of_birth": "1998-07-20",
+    "nationality": "US",
+    "document": {
+      "document_type": "PASSPORT",
+      "document_number": "123456789"
+    }
   },
   "payment_method": {
     "detail": {
@@ -227,28 +235,29 @@ curl --request POST \
   },
   "account_id": "<account_id>",
   "description": "Card payment for authorization",
-  "merchant_order_id": "reference-001",
+  "merchant_order_id": "000022",
+  "merchant_reference": "reference-0001",
   "workflow": "DIRECT"
 }
 '
 ```
 ```json Response (JSON)
 {
-    "id": "44679b15-6cf1-4ae5-9a04-e2c1308e2572",
+    "id": "d9b4e33a-5c9f-4f1a-9ccb-ee13cc432390",
     "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
-    "description": "Card payment for authorization",
+    "description": "Online purchase",
     "country": "US",
-    "status": "PENDING",
-    "sub_status": "AUTHORIZED",
-    "merchant_order_id": "reference-001",
-    "created_at": "2025-06-17T20:36:52.545949Z",
-    "updated_at": "2025-06-17T20:36:52.891071Z",
+    "status": "SUCCEEDED",
+    "sub_status": "APPROVED",
+    "merchant_order_id": "00000233",
+    "created_at": "2025-06-19T18:48:36.294677Z",
+    "updated_at": "2025-06-19T18:48:36.591107Z",
     "amount": {
         "captured": 0.00,
         "currency": "USD",
         "currency_conversion": null,
         "refunded": 0.00,
-        "value": 200.00
+        "value": 55.75
     },
     "checkout": {
         "session": "",
@@ -263,28 +272,28 @@ curl --request POST \
         "payment_method_detail": {
             "card": {
                 "verify": false,
-                "capture": false,
+                "capture": true,
                 "installments": 1,
                 "installments_plan_id": null,
                 "first_installment_deferral": 0,
                 "installments_type": "",
                 "installment_amount": null,
                 "soft_descriptor": "",
-                "authorization_code": "363571",
+                "authorization_code": "554791",
                 "retrieval_reference_number": "",
                 "voucher": null,
                 "card_data": {
-                    "holder_name": "JOHN DOE",
-                    "iin": "41111111",
-                    "lfd": "1111",
+                    "holder_name": "JANE SMITH",
+                    "iin": "41234567",
+                    "lfd": "2345",
                     "number_length": 16,
                     "security_code_length": 3,
                     "brand": "VISA",
-                    "issuer_name": "CONOTOXIA SP Z O O",
+                    "issuer_name": "INTL HDQTRSCENTER OWNED",
                     "issuer_code": null,
-                    "country_code": "PL",
+                    "country_code": "VN",
                     "category": "CLASSIC",
-                    "type": "DEBIT",
+                    "type": "CREDIT",
                     "three_d_secure": {
                         "version": null,
                         "electronic_commerce_indicator": null,
@@ -294,9 +303,9 @@ curl --request POST \
                         "pares_status": null,
                         "acs_id": null
                     },
-                    "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
-                    "expiration_month": 11,
-                    "expiration_year": 28
+                    "fingerprint": "e5fb7cbd-c42b-4ec2-ab9c-a421f049a3b8",
+                    "expiration_month": 10,
+                    "expiration_year": 29
                 },
                 "stored_credentials": {
                     "reason": null,
@@ -309,13 +318,13 @@ curl --request POST \
     },
     "customer_payer": {
         "id": null,
-        "merchant_customer_id": null,
-        "first_name": "JOHN",
-        "last_name": "DOE",
-        "gender": null,
-        "date_of_birth": null,
-        "email": "john.doe@example.com",
-        "nationality": null,
+        "merchant_customer_id": "1750358916",
+        "first_name": "JANE",
+        "last_name": "SMITH",
+        "gender": "F",
+        "date_of_birth": "1985-07-20",
+        "email": "jane.smith@example.com",
+        "nationality": "US",
         "ip_address": null,
         "device_fingerprint": null,
         "device_fingerprints": [],
@@ -333,7 +342,10 @@ curl --request POST \
             "language": "",
             "platform": null
         },
-        "document": null,
+        "document": {
+            "document_type": "PASSPORT",
+            "document_number": "123456789"
+        },
         "phone": null,
         "billing_address": null,
         "shipping_address": null,
@@ -341,11 +353,11 @@ curl --request POST \
     },
     "additional_data": null,
     "transactions": {
-        "id": "45a0e917-f989-456d-a85b-b08fc5c24950",
-        "type": "AUTHORIZE",
+        "id": "8ec993f5-20a4-4aae-9cc9-d830adfa6948",
+        "type": "PURCHASE",
         "status": "SUCCEEDED",
         "category": "CARD",
-        "amount": 200.00,
+        "amount": 55.75,
         "provider_id": "YUNO_TEST_PAYMENT_GW",
         "payment_method": {
             "vaulted_token": "",
@@ -356,28 +368,28 @@ curl --request POST \
             "detail": {
                 "card": {
                     "verify": false,
-                    "capture": false,
+                    "capture": true,
                     "installments": 1,
                     "installments_plan_id": null,
                     "first_installment_deferral": 0,
                     "installments_type": "",
                     "installment_amount": null,
                     "soft_descriptor": "",
-                    "authorization_code": "363571",
+                    "authorization_code": "554791",
                     "retrieval_reference_number": "",
                     "voucher": null,
                     "card_data": {
-                        "holder_name": "JOHN DOE",
-                        "iin": "41111111",
-                        "lfd": "1111",
+                        "holder_name": "JANE SMITH",
+                        "iin": "41234567",
+                        "lfd": "2345",
                         "number_length": 16,
                         "security_code_length": 3,
                         "brand": "VISA",
-                        "issuer_name": "CONOTOXIA SP Z O O",
+                        "issuer_name": "INTL HDQTRSCENTER OWNED",
                         "issuer_code": null,
-                        "country_code": "PL",
+                        "country_code": "VN",
                         "category": "CLASSIC",
-                        "type": "DEBIT",
+                        "type": "CREDIT",
                         "three_d_secure": {
                             "version": null,
                             "electronic_commerce_indicator": null,
@@ -387,9 +399,9 @@ curl --request POST \
                             "pares_status": null,
                             "acs_id": null
                         },
-                        "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
-                        "expiration_month": 11,
-                        "expiration_year": 28
+                        "fingerprint": "e5fb7cbd-c42b-4ec2-ab9c-a421f049a3b8",
+                        "expiration_month": 10,
+                        "expiration_year": 29
                     },
                     "stored_credentials": {
                         "reason": null,
@@ -403,11 +415,11 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Card payment for authorization",
-        "merchant_reference": "reference-001",
+        "description": "Online purchase",
+        "merchant_reference": "reference-d84c8065-06d6-4caf-9fcd-a7fede9f22c2",
         "provider_data": {
             "id": "YUNO_TEST_PAYMENT_GW",
-            "transaction_id": "256f6051-89cf-4114-aadc-57e740c0ab51",
+            "transaction_id": "26a91a1a-674a-425f-8bc1-d33c8f43975c",
             "account_id": "",
             "status": "SUCCEEDED",
             "sub_status": "",
@@ -434,16 +446,16 @@ curl --request POST \
             "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
             "name": null
         },
-        "created_at": "2025-06-17T20:36:52.701554Z",
-        "updated_at": "2025-06-17T20:36:52.811378Z"
+        "created_at": "2025-06-19T18:48:36.492840Z",
+        "updated_at": "2025-06-19T18:48:36.552678Z"
     },
     "transactions_history": [
         {
-            "id": "45a0e917-f989-456d-a85b-b08fc5c24950",
-            "type": "AUTHORIZE",
+            "id": "8ec993f5-20a4-4aae-9cc9-d830adfa6948",
+            "type": "PURCHASE",
             "status": "SUCCEEDED",
             "category": "CARD",
-            "amount": 200.00,
+            "amount": 55.75,
             "provider_id": "YUNO_TEST_PAYMENT_GW",
             "payment_method": {
                 "vaulted_token": "",
@@ -454,28 +466,28 @@ curl --request POST \
                 "detail": {
                     "card": {
                         "verify": false,
-                        "capture": false,
+                        "capture": true,
                         "installments": 1,
                         "installments_plan_id": null,
                         "first_installment_deferral": 0,
                         "installments_type": "",
                         "installment_amount": null,
                         "soft_descriptor": "",
-                        "authorization_code": "363571",
+                        "authorization_code": "554791",
                         "retrieval_reference_number": "",
                         "voucher": null,
                         "card_data": {
-                            "holder_name": "JOHN DOE",
-                            "iin": "41111111",
-                            "lfd": "1111",
+                            "holder_name": "JANE SMITH",
+                            "iin": "41234567",
+                            "lfd": "2345",
                             "number_length": 16,
                             "security_code_length": 3,
                             "brand": "VISA",
-                            "issuer_name": "CONOTOXIA SP Z O O",
+                            "issuer_name": "INTL HDQTRSCENTER OWNED",
                             "issuer_code": null,
-                            "country_code": "PL",
+                            "country_code": "VN",
                             "category": "CLASSIC",
-                            "type": "DEBIT",
+                            "type": "CREDIT",
                             "three_d_secure": {
                                 "version": null,
                                 "electronic_commerce_indicator": null,
@@ -485,9 +497,9 @@ curl --request POST \
                                 "pares_status": null,
                                 "acs_id": null
                             },
-                            "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
-                            "expiration_month": 11,
-                            "expiration_year": 28
+                            "fingerprint": "e5fb7cbd-c42b-4ec2-ab9c-a421f049a3b8",
+                            "expiration_month": 10,
+                            "expiration_year": 29
                         },
                         "stored_credentials": {
                             "reason": null,
@@ -501,11 +513,11 @@ curl --request POST \
             "response_code": "SUCCEEDED",
             "response_message": "Transaction successful",
             "reason": null,
-            "description": "Card payment for authorization",
-            "merchant_reference": "reference-001",
+            "description": "Online purchase",
+            "merchant_reference": "reference-d84c8065-06d6-4caf-9fcd-a7fede9f22c2",
             "provider_data": {
                 "id": "YUNO_TEST_PAYMENT_GW",
-                "transaction_id": "256f6051-89cf-4114-aadc-57e740c0ab51",
+                "transaction_id": "26a91a1a-674a-425f-8bc1-d33c8f43975c",
                 "account_id": "",
                 "status": "SUCCEEDED",
                 "sub_status": "",
@@ -532,8 +544,8 @@ curl --request POST \
                 "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
                 "name": null
             },
-            "created_at": "2025-06-17T20:36:52.701554Z",
-            "updated_at": "2025-06-17T20:36:52.811378Z"
+            "created_at": "2025-06-19T18:48:36.492840Z",
+            "updated_at": "2025-06-19T18:48:36.552678Z"
         }
     ],
     "workflow": "DIRECT",
