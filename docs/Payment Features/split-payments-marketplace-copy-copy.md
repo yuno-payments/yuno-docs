@@ -123,7 +123,7 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 
 ```
 
-### Validations
+## Validations
 
 * The sum of all splits must equal the total payment amount.
 * For each split, you must send an object for every participant, and the sum of amounts must equal the total payment amount.
