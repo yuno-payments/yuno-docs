@@ -172,80 +172,79 @@ This object represents a recipient who will receive part of a [split payment](do
   </details>
   
   <div>
-  <div class="yuno">
-    <p><strong><code>withdrawal_methods</code></strong> <small>array of objects</small>
-      <br/>A list of withdrawal method objects; each item contains a <code>bank</code> struct with the details below.
-    </p>
-  </div>
-
-  <div class="yuno">
-    <p><strong><code>bank</code></strong> <small>struct</small>
+  <details class="yuno">
+    <summary><strong><code>withdrawal_methods</code></strong> <small>array of objects</small></summary>
+    <br/>A list of withdrawal method objects; each item contains a <code>bank</code> struct.
+    
+    <details class="yuno" style="margin-left:1em;">
+      <summary><strong><code>bank</code></strong> <small>struct</small></summary>
       <br/>Bank details for this withdrawal method.
-    </p>
-  </div>
 
-  <div class="yuno">
-    <p><strong><code>code</code></strong> <small>string</small>
-      <br/>Bank’s code (MAX 3; MIN 3).
-      <br/><small>Example: 246</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>code</code></strong> <small>string</small>
+          <br/>Bank’s code (MAX 3; MIN 3).
+          <br/><small>Example: 246</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>branch</code></strong> <small>string</small>
-      <br/>Bank’s branch (MAX 3; MIN 3).
-      <br/><small>Example: 123</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>branch</code></strong> <small>string</small>
+          <br/>Bank’s branch (MAX 3; MIN 3).
+          <br/><small>Example: 123</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>branch_digit</code></strong> <small>string</small>
-      <br/>Bank’s branch digit (MAX 1; MIN 1).
-      <br/><small>Example: 5</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>branch_digit</code></strong> <small>string</small>
+          <br/>Bank’s branch digit (MAX 1; MIN 1).
+          <br/><small>Example: 5</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>account</code></strong> <small>string</small>
-      <br/>Beneficiary’s bank account number (MAX 250; MIN 3).
-      <br/><small>Example: 1093333333</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>account</code></strong> <small>string</small>
+          <br/>Beneficiary’s bank account number (MAX 250; MIN 3).
+          <br/><small>Example: 1093333333</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>account_digit</code></strong> <small>string</small>
-      <br/>Beneficiary’s bank account digit (MAX 1; MIN 1).
-      <br/><small>Example: 7</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>account_digit</code></strong> <small>string</small>
+          <br/>Beneficiary’s bank account digit (MAX 1; MIN 1).
+          <br/><small>Example: 7</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>account_type</code></strong> <small>enum</small>
-      <br/>Beneficiary’s bank account type: <code>CHECKINGS</code> or <code>SAVINGS</code>.
-      <br/><small>Example: SAVINGS</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>account_type</code></strong> <small>enum</small>
+          <br/>Beneficiary’s bank account type: <code>CHECKINGS</code> or <code>SAVINGS</code>.
+          <br/><small>Example: SAVINGS</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>routing</code></strong> <small>string</small>
-      <br/>Beneficiary’s bank account routing number.
-      <br/><small>Example: 021000021</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>routing</code></strong> <small>string</small>
+          <br/>Beneficiary’s bank account routing number.
+          <br/><small>Example: 021000021</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>country</code></strong> <small>string</small>
-      <br/>The bank account’s country (ISO 3166-1 alpha-2).
-      <br/><small>Example: CO</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>country</code></strong> <small>string</small>
+          <br/>The bank account’s country (ISO 3166-1 alpha-2).
+          <br/><small>Example: CO</small>
+        </p>
+      </div>
 
-  <div class="yuno">
-    <p><strong><code>currency</code></strong> <small>string</small>
-      <br/>The bank account’s currency (ISO 4217).
-      <br/><small>Example: COP</small>
-    </p>
-  </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>currency</code></strong> <small>string</small>
+          <br/>The bank account’s currency (ISO 4217).
+          <br/><small>Example: COP</small>
+        </p>
+      </div>
+
+    </details>
+  </details>
 </div>
   
   <div class="yuno">
