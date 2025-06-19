@@ -43,15 +43,7 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 
 ### Provider-Specific Split Parameters
 
-Yuno's `split_marketplace` object abstracts these provider-specific configurations for payment splitting:
-
-| Provider | Parameters                                      | Description                    | Documentation                                                                                            |
-| :------- | :---------------------------------------------- | :----------------------------- | :------------------------------------------------------------------------------------------------------- |
-| Stripe   | `Application_fee` + `transfer_data.destination` | Commission and submerchant ID  | [Stripe Split Payments](https://docs.stripe.com/connect/separate-charges-and-transfers)                  |
-| Adyen    | Array of splits                                 | With commission and account ID | [Adyen Split Payments](https://docs.adyen.com/api-explorer/Checkout/latest/post/payments#request-splits) |
-| Dlocal   | Array of splits                                 | With amount and account ID     | [Dlocal Split Payments](https://docs.dlocal.com/reference/create-payment)                                |
-
-> While Yuno supports onboarding merchants with Gr4vy and Juspay, their native split payment mechanisms may differ from other providers. Gr4vy typically supports split-tender at the checkout level and manages payments through "merchant accounts," which are created during the onboarding process. Juspay also relies on pre-configured accounts for settlement. For detailed integration with these providers regarding split payments, please consult their respective documentation and Yuno's specific implementation guides for advanced configurations.
+The `split_marketplace` object defines how a [payment](ref:create-payment) should be split between recipients. It is an array of objects, where each object represents a recipient and their share of the payment.
 
 ```json json
 {
