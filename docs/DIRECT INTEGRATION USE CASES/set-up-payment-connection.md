@@ -25,7 +25,7 @@ You'll learn how to:
 
 ## Configure payment method
 
-/COMMENT/ insert introductory paragraph
+Before configuring a payment method, you first need to create a connection with one of the available providers.
 
 ### Step 1: Set up your Connection
 
@@ -43,9 +43,7 @@ A confirmation message will appear in the dashboard once your connection is succ
 
 ### Step 2: Set Up Routing for Your New Connection
 
-// COMMENT explansatiom
-
-After adding a connection, you must assign it to a route, which determines which provider processes payments. For a basic setup, follow these steps:
+Payment routing in Yuno allows you to define which connections will be used to process specific types of transactions. This enables dynamic routing logic and gives you flexibility to manage providers based on currency, country, or other factors. For a basic setup, follow these steps:
 
 1. Navigate to [Routing](https://dashboard.y.uno/routing) in the dashboard sidebar.
 2. Click on the **Not published** tab to view payment methods that have available connections but no configured routes.
