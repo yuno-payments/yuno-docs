@@ -16,14 +16,14 @@ The split payment functionality is contingent on the support of the selected pay
 * Stripe
 * dLocal
 
-**First** you'll need to **onboard your recipients** for the payment split, and **then** create the **payment** specifying the necessary information.
-
 ## Key features
 
 * **Split payments**: Define how the total payment amount is distributed among different recipients.
 * **Flexible configuration**: Support for absolute-based splits.
 * **Integration with providers**: Splits can be executed by payment providers that support this functionality.
 * **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
+
+**First** you'll need to **onboard your recipients** for the payment split, and **then** create the **payment** specifying the necessary information.
 
 ## 1- Onboardings
 
