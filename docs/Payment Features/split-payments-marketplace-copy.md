@@ -58,7 +58,7 @@ Yuno's `split_marketplace` object abstracts these provider-specific configuratio
 | Juspay      | `metadata.split_settlement`                     | Amount and `sub_mid`                | [Juspay Split Settlements](https://juspay.io/in/docs/split-settlements/docs/split-settlements/create-order-api) |
 | Gr4vy       | *(Refer to note below)*                         | *(Refer to note below)*             | *(See note below)*                                                                                              |
 
-*Note on Gr4vy and Juspay:* While Yuno supports onboarding merchants with Gr4vy and Juspay, their native split payment mechanisms may differ from other providers. Gr4vy typically supports split-tender at the checkout level and manages payments through "merchant accounts," which are created during the onboarding process. Juspay also relies on pre-configured accounts for settlement. For detailed integration with these providers regarding split payments, please consult their respective documentation and Yuno's specific implementation guides for advanced configurations.
+> While Yuno supports onboarding merchants with Gr4vy and Juspay, their native split payment mechanisms may differ from other providers. Gr4vy typically supports split-tender at the checkout level and manages payments through "merchant accounts," which are created during the onboarding process. Juspay also relies on pre-configured accounts for settlement. For detailed integration with these providers regarding split payments, please consult their respective documentation and Yuno's specific implementation guides for advanced configurations.
 
 ```json json
 {
@@ -95,8 +95,9 @@ Yuno's `split_marketplace` object abstracts these provider-specific configuratio
 ### Rules
 
 * The sum of all splits must equal the total payment amount.
+* For each split, you must send an object for every participant, and the sum of amounts must equal the total payment amount.
+* For scenarios where a direct recipient ID is not required for the marketplace owner (e.g., with Adyen), the `type` field can be used as a flag (e.g., `COMMISSION`) to indicate the marketplace owner's share, and the `provider_recipient_id` will be optional for that specific split.
 * Either `recipient_id` or `provider_recipient_id` must be provided for the split, but not both.
-  * In cases where a direct `provider_recipient_id` is not required for the marketplace owner (e.g., with Adyen), the `type` field can be used as a flag (e.g., `COMMISSION`) to indicate the marketplace owner's share, and the `provider_recipient_id` will be optional for that specific split.
 * If any required fields are missing or invalid, the request will return an error.
 * In case you use more than one payment provider for the split payments, we recommend using the [recipients object](ref:create-recipients), as it lets you define more than one provider for each recipient.
 
