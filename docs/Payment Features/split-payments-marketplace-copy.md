@@ -96,8 +96,9 @@ Yuno's `split_marketplace` object abstracts these provider-specific configuratio
 
 * The sum of all splits must equal the total payment amount.
 * Either `recipient_id` or `provider_recipient_id` must be provided for the split, but not both.
-  * In case you use more than one payment provider for the split payments, we recommend using the [recipients object](ref:create-recipients), as it lets you define more than one provider for each recipient.
+  * In cases where a direct `provider_recipient_id` is not required for the marketplace owner (e.g., with Adyen), the `type` field can be used as a flag (e.g., `COMMISSION`) to indicate the marketplace owner's share, and the `provider_recipient_id` will be optional for that specific split.
 * If any required fields are missing or invalid, the request will return an error.
+* In case you use more than one payment provider for the split payments, we recommend using the [recipients object](ref:create-recipients), as it lets you define more than one provider for each recipient.
 
 ## API endpoints involved
 
