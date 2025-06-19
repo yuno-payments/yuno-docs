@@ -1,5 +1,5 @@
 ---
-title: Split Payments Marketplace - II
+title: Split Payments Marketplace
 deprecated: false
 hidden: true
 metadata:
@@ -7,12 +7,7 @@ metadata:
 ---
 This feature enables **merchants to split payments among multiple recipients**, which is particularly beneficial for marketplace models where transactions need to be divided among different sellers or stakeholders. Merchants can specify how the payment is split, including the amounts, recipients, and any applicable fees.
 
-The split payment functionality is contingent on the support of the selected payment provider. Yuno serves solely as the orchestrator of the payment, not the processor. Ensure your provider supports split payments before using this functionality. Currently, this feature is available for the following providers:
-
-* Pagarme
-* Adyen
-* Stripe
-* dLocal
+The split payment functionality is contingent on the support of the selected payment provider. Yuno serves solely as the orchestrator of the payment, not the processor. Ensure your provider supports split payments before using this functionality.
 
 ## Key features
 
@@ -54,18 +49,16 @@ Yuno supports two **onboarding flows** for submerchants:
 
 During the onboarding lifecycle, a Recipient may go through several statuses which indicate the current state of the process:
 
-| Status                             | Description                                                                  |
-| ---------------------------------- | ---------------------------------------------------------------------------- |
-| `CREATED`                          | Initial state after creation; onboarding process not yet started.            |
-| `PENDING_REVIEW`                   | Awaiting provider review after data was submitted.                           |
-| `PENDING_ADDITIONAL_DOCUMENTATION` | More documents are needed to continue onboarding.                            |
-| `PENDING_WAITING_USER_INTERACTION` | Waiting for the submerchant to complete an external action (e.g., form).     |
-| `SUCCEEDED`                        | The recipient is fully onboarded and active.                                 |
-| `DECLINED`                         | The onboarding was rejected by the provider and cannot be retried.           |
-| `BLOCKED`                          | The provider has explicitly blocked the onboarding due to compliance issues. |
-| `CANCELED`                         | The onboarding process was voluntarily canceled before completion.           |
-| `REJECTED`                         | The onboarding failed due to incorrect data or failed validations.           |
-| `ERROR`                            | A technical error occurred during the onboarding flow.                       |
+| Status      | Description                                                                  |
+| ----------- | ---------------------------------------------------------------------------- |
+| `CREATED`   | Initial state after creation; onboarding process not yet started.            |
+| `PENDING`   | Awaiting provider review after data was submitted.                           |
+| `SUCCEEDED` | The recipient is fully onboarded and active.                                 |
+| `DECLINED`  | The onboarding was rejected by the provider and cannot be retried.           |
+| `BLOCKED`   | The provider has explicitly blocked the onboarding due to compliance issues. |
+| `CANCELED`  | The onboarding process was voluntarily canceled before completion.           |
+| `REJECTED`  | The onboarding failed due to incorrect data or failed validations.           |
+| `ERROR`     | A technical error occurred during the onboarding flow.                       |
 
 These statuses help the marketplace understand the onboarding lifecycle and implement appropriate retry, alert, or fallback mechanisms when required.
 
