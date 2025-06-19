@@ -1,5 +1,5 @@
 ---
-title: Split Payments Marketplace (COPY) II
+title: Split Payments Marketplace - II
 deprecated: false
 hidden: true
 metadata:
