@@ -127,10 +127,6 @@ Notice that when using the `startCheckout` you already have to specify the callb
 >
 > The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
-> 📘 Rendering Mode
->
-> By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. [Learn more](#test)
-
 ## Step 4: Mount the SDK
 
 To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckoutLite()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
