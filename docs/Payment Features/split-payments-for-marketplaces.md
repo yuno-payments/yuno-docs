@@ -30,7 +30,7 @@ The split payment functionality is contingent on the support of the selected pay
 Yuno’s onboarding model is designed to help marketplaces seamlessly connect and manage their **submerchants** across **multiple payment providers**. At the core of this system is the **Recipient object**, which represents each individual submerchant within the marketplace ecosystem.
 
 * Each **Marketplace Owner** is represented in **Yuno as an Organization**.
-* Within an organization, one or more Accounts can be created, each configured with its own set of **Connections** to payment providers (e.g., Stripe, MercadoPago, Adyen, dLocal).
+* Within an organization, one or more Accounts can be created, each configured with its own set of **Connections** to payment providers (e.g., Stripe, Adyen, dLocal).
 * For every account, the marketplace can register one or more **Recipients** — these are the submerchants to be onboarded.
 * Each **Recipient** is then linked individually to one or more **Connections**, depending on which payment processors they will use.
 
@@ -47,7 +47,7 @@ This design ensures flexibility, transparency, and full traceability throughout 
 Yuno supports two **onboarding flows** for submerchants:
 
 1. **Pre-onboarded Accounts**: If the submerchant has already completed the onboarding process with a given provider (e.g., via an external dashboard or platform), the marketplace can provide the corresponding **recipient\_id** at the time of creation. In this case, **no further onboarding is needed**, and the status will immediately be set to **SUCCEEDED**. (`onboardings.type`='PREVIOUSLY\_ONBOARDED')
-2. **Dynamic Onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the selected provider. (`onboardings.type`='ONBOARD\_ONTO\_PROVIDER') Depending on the provider’s requirements, this may involve:
+2. **Dynamic Onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the selected provider. (`onboardings.type`='ONBOARD\_ONTO\_PROVIDER'). Depending on the provider’s requirements, this may involve:
    1. Form submission or redirection to hosted onboarding.
    2. Upload of legal or financial documentation.
    3. KYC/KYB validation steps.
@@ -82,18 +82,18 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 | `recipient_id`          | `string`  | The ID of the recipient in the [Yuno system](ref:create-recipients).                                                                                                                                  | Conditional | `rec_test123`  |
 | `provider_recipient_id` | `string`  | The recipient ID from the payment provider, if applicable.                                                                                                                                            | Conditional | `prov_rec_abc` |
 | **Note:**               |           | Either `recipient_id` or `provider_recipient_id` must be provided. For marketplace owners (`type`='COMMISSION'), `provider_recipient_id` can be optional if not applicable for the specific provider. |             |                |
-| `type`\*                | `enum`    | Split type. Could be `PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`, `SHIPPING`. (MAX 10; MIN 4 characters).                                                                            | Yes         | `PURCHASE`     |
+| `type`\*                | `enum`    | Split type. Could be `PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`, `SHIPPING`.                                                                                                        | Yes         | `PURCHASE`     |
 | `merchant_reference`    | `string`  | Identification of the payment transaction. Optional. If not defined, the same value as the main payment's merchant reference will be used for all split transactions. (MAX 255; MIN 3 characters).    | No          | `AAB01-432245` |
 | `amount`\*              | `struct`  | Defines the amount of the split.                                                                                                                                                                      | Yes         |                |
-|     `value`             | `number`  | Amount of the split (e.g., 7500 for 75.00).                                                                                                                                                           | Yes         | `7500`         |
+|     `value`\*           | `number`  | Amount of the split (e.g., 7500 for 75.00).                                                                                                                                                           | Yes         | `7500`         |
 |     `currency`\*        | `enum`    | The currency used to make the payment (ISO 4217, 3 characters).                                                                                                                                       | Yes         | `COP`          |
 | `liability`             | `struct`  | Optional information regarding the recipient’s liability for fees and chargebacks.                                                                                                                    | No          |                |
 |     `processing_fee`    | `enum`    | Indicates who will be charged the transaction fee: `MERCHANT`, `RECIPIENT`, `SHARED`.                                                                                                                 | No          | `MERCHANT`     |
 |     `chargebacks`       | `boolean` | If `true`, the recipient is responsible in case of a chargeback.                                                                                                                                      | No          | `false`        |
 
-The `split_marketplace` object defines how a [payment](ref:create-payment) should be split between recipients. It is an array of objects, where each object represents a recipient and their share of the payment.
+<br />
 
-```json json
+```json Example using provider recipients directly
 {
   "split_marketplace": [
     {
@@ -102,27 +102,40 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
       "amount": {
         "value": 750,
         "currency": "EUR"
-      },
-      "liability": {
-        "processing_fee": "MERCHANT",
-        "chargebacks": false
       }
     },
     {
-      "provider_recipient_id": "recipient_456",
       "type": "COMMISSION",
       "amount": {
         "value": 30,
         "currency": "EUR"
-      },
-      "liability": {
-        "processing_fee": "RECIPIENT",
-        "chargebacks": true
       }
     }
   ]
 }
 
+```
+```json Example using Yuno recipients
+{
+  "split_marketplace": [
+    {
+      "recipient_id": "4b31a9b8-4cd2-4e47-93cf-03729241bd68",
+      "type": "PURCHASE",
+      "amount": {
+        "value": 750,
+        "currency": "EUR"
+      }
+    },
+    {
+      "recipient_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+      "type": "COMMISSION",
+      "amount": {
+        "value": 30,
+        "currency": "EUR"
+      }
+    }
+  ]
+}
 ```
 
 ***
