@@ -173,12 +173,15 @@ This object represents a recipient who will receive part of a [split payment](do
   
   <div>
   <details class="yuno">
-    <summary><strong><code>withdrawal_methods</code></strong> <small>array of objects</small></summary>
-    <br/>A list of withdrawal method objects; each item contains a <code>bank</code> struct.
+    <summary><strong><code>withdrawal_methods</code></strong> <small>array of objects</small>
+    <br/>A list of withdrawal method objects; each item contains a
+</summary>
     
     <details class="yuno" style="margin-left:1em;">
-      <summary><strong><code>bank</code></strong> <small>struct</small></summary>
-      <br/>Bank details for this withdrawal method.
+      <summary><strong><code>bank</code></strong> <small>struct</small>
+        <br/>Bank details for this withdrawal method.
+        </summary>
+
 
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>code</code></strong> <small>string</small>
