@@ -453,7 +453,7 @@ This object represents a recipient who will receive part of a [split payment](do
         </div>
         <div class="yuno" style="margin-left:3em;">
           <p><strong><code>account_type</code></strong> <small>enum</small>
-            <br/>Beneficiary’s bank account type: <code>CHECKINGS</code>, <code>SAVINGS</code>, <code>VISTA</code>, <code>PIX_EMAIL</code>, <code>PIX_PHONE</code>, <code>PIX_DOCUMENT_ID</code>, or <code>PIX_BANK_ACCOUNT</code>.
+            <br/>Beneficiary’s bank account type: <code>CHECKINGS</code>, <code>SAVINGS</code>
             <br/><small>Example: SAVINGS</small>
           </p>
         </div>
