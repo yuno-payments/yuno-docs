@@ -2375,79 +2375,82 @@ curl --request POST \
      --header 'public-api-key: <Your public-api-key>' \
      --data '
 {
-    "description": "Test",
-    "account_id": "{{account-code}}",
-    "merchant_order_id": "0000023",
-    "country": "CO",
-    "merchant_reference" : "reference-{{$randomUUID}}",
+    "description": "Card payment with vaulted token",
+    "account_id": "<account_id>",
+    "merchant_order_id": "0000022",
+    "country": "US",
+    "merchant_reference": "reference-0001",
     "amount": {
-        "currency": "COP",
-        "value": 5000
+      "currency": "USD",
+      "value": 125.00
     },
     "customer_payer": {
-        "id":"967ecd18-d898-4b88-9400-dd5b01b18edc",
-        "merchant_customer_id": "1690161049",
-        "first_name": "Giovanna",
-        "last_name": "Bartell",
-        "email": "Lisandro_Leannon58@hotmail.com",
-        "device_fingerprint": "hi88287gbd8d7d782ge287gbd8d7d78"
+      "id": "<customer_id>",
+      "merchant_customer_id": "1234567",
+      "first_name": "JOHN",
+      "last_name": "DOE",
+      "email": "john.doe@example.com"
     },
     "workflow": "DIRECT",
     "payment_method": {
         "type":"CARD",
-        "vaulted_token": "eb8caa17-6407-457b-960e-125d8d7a90c1"
+        "vaulted_token": "<your_vaulted_token>"
     }
 }
 '
 ```
 ```json
 {
-    "id": "821ddfe4-309a-46a8-bd4b-819564aa9c5a",
-    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test",
-    "country": "CO",
+    "id": "d1ba99e3-cfe4-44d0-8ff2-7393f5ca4dcc",
+    "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
+    "description": "Card payment with vaulted token",
+    "country": "US",
     "status": "SUCCEEDED",
     "sub_status": "APPROVED",
-    "merchant_order_id": "0000023",
-    "created_at": "2023-07-24T01:28:45.444722Z",
-    "updated_at": "2023-07-24T01:28:47.712002Z",
+    "merchant_order_id": "0000022",
+    "created_at": "2025-06-19T19:30:26.190706Z",
+    "updated_at": "2025-06-19T19:30:26.543078Z",
     "amount": {
         "captured": 0.00,
-        "currency": "COP",
+        "currency": "USD",
+        "currency_conversion": null,
         "refunded": 0.00,
-        "value": 5000.00
+        "value": 125.00
     },
     "checkout": {
         "session": "",
         "sdk_action_required": false
     },
     "payment_method": {
-        "vaulted_token": "eb8caa17-6407-457b-960e-125d8d7a90c1",
+        "vaulted_token": "b813ce30-c261-4341-8d33-b85698491d18",
         "type": "CARD",
         "vault_on_success": false,
         "token": "",
+        "parent_payment_method_type": null,
         "payment_method_detail": {
             "card": {
-                "verify": null,
+                "verify": false,
                 "capture": true,
                 "installments": 1,
+                "installments_plan_id": null,
                 "first_installment_deferral": 0,
                 "installments_type": "",
                 "installment_amount": null,
                 "soft_descriptor": "",
-                "authorization_code": "123456",
+                "authorization_code": "819502",
                 "retrieval_reference_number": "",
                 "voucher": null,
                 "card_data": {
                     "holder_name": "JOHN DOE",
-                    "iin": "40518856",
-                    "lfd": "6623",
+                    "iin": "41234567",
+                    "lfd": "2345",
                     "number_length": 16,
-                    "security_code_length": 3,
+                    "security_code_length": 0,
                     "brand": "VISA",
-                    "issuer_name": "",
+                    "issuer_name": "INTL HDQTRSCENTER OWNED",
                     "issuer_code": null,
-                    "category": null,
+                    "country_code": "VN",
+                    "category": "CLASSIC",
                     "type": "CREDIT",
                     "three_d_secure": {
                         "version": null,
@@ -2457,22 +2460,32 @@ curl --request POST \
                         "directory_server_transaction_id": null,
                         "pares_status": null,
                         "acs_id": null
-                    }
+                    },
+                    "fingerprint": "e5fb7cbd-c42b-4ec2-ab9c-a421f049a3b8",
+                    "expiration_month": 10,
+                    "expiration_year": 29
+                },
+                "stored_credentials": {
+                    "reason": null,
+                    "usage": null,
+                    "subscription_agreement_id": null,
+                    "network_transaction_id": null
                 }
             }
         }
     },
     "customer_payer": {
-        "id": "967ecd18-d898-4b88-9400-dd5b01b18edc",
-        "merchant_customer_id": "1690161049",
-        "first_name": "Giovanna",
-        "last_name": "Bartell",
-        "gender": null,
-        "date_of_birth": null,
-        "email": "Lisandro_Leannon58@hotmail.com",
-        "nationality": null,
+        "id": "33a9e979-6558-4694-b00c-3d0844524681",
+        "merchant_customer_id": "1234567",
+        "first_name": "JOHN",
+        "last_name": "DOE",
+        "gender": "F",
+        "date_of_birth": "1990-02-28",
+        "email": "john.doe@example.com",
+        "nationality": "CO",
         "ip_address": null,
-        "device_fingerprint": "hi88287gbd8d7d782ge287gbd8d7d78",
+        "device_fingerprint": null,
+        "device_fingerprints": [],
         "browser_info": {
             "user_agent": "",
             "accept_header": "",
@@ -2484,49 +2497,75 @@ curl --request POST \
             "javascript_enabled": null,
             "java_enabled": null,
             "browser_time_difference": null,
-            "language": ""
+            "language": "",
+            "platform": null
         },
-        "document": null,
-        "phone": null,
-        "billing_address": null,
-        "shipping_address": null
+        "document": {
+            "document_type": "CC",
+            "document_number": "1010268952"
+        },
+        "phone": {
+            "number": "3132450765",
+            "country_code": "57"
+        },
+        "billing_address": {
+            "address_line_1": "Calle 34 # 56 - 78",
+            "address_line_2": "Apartamento 502, Torre I",
+            "country": "CO",
+            "state": "Cundinamarca",
+            "city": "Bogotá",
+            "zip_code": "111111",
+            "neighborhood": null
+        },
+        "shipping_address": {
+            "address_line_1": "Calle 34 # 56 - 78",
+            "address_line_2": "Apartamento 502, Torre I",
+            "country": "CO",
+            "state": "Cundinamarca",
+            "city": "Bogotá",
+            "zip_code": "111111",
+            "neighborhood": null
+        },
+        "merchant_customer_created_at": null
     },
     "additional_data": null,
-    "taxes": null,
     "transactions": {
-        "id": "a47e879e-3cd1-49f3-ab72-fc33b0185057",
+        "id": "044a1535-43d9-44c7-8dfa-4bcc67e11ec6",
         "type": "PURCHASE",
         "status": "SUCCEEDED",
         "category": "CARD",
-        "amount": 5000.00,
+        "amount": 125.00,
         "provider_id": "YUNO_TEST_PAYMENT_GW",
         "payment_method": {
-            "vaulted_token": "eb8caa17-6407-457b-960e-125d8d7a90c1",
+            "vaulted_token": "b813ce30-c261-4341-8d33-b85698491d18",
             "type": "CARD",
             "vault_on_success": false,
             "token": "",
+            "parent_payment_method_type": null,
             "detail": {
                 "card": {
-                    "verify": null,
+                    "verify": false,
                     "capture": true,
                     "installments": 1,
+                    "installments_plan_id": null,
                     "first_installment_deferral": 0,
                     "installments_type": "",
                     "installment_amount": null,
                     "soft_descriptor": "",
-                    "authorization_code": "123456",
+                    "authorization_code": "819502",
                     "retrieval_reference_number": "",
                     "voucher": null,
                     "card_data": {
                         "holder_name": "JOHN DOE",
-                        "iin": "40518856",
-                        "lfd": "6623",
+                        "iin": "41234567",
+                        "lfd": "2345",
                         "number_length": 16,
-                        "security_code_length": 3,
+                        "security_code_length": 0,
                         "brand": "VISA",
-                        "issuer_name": "",
+                        "issuer_name": "INTL HDQTRSCENTER OWNED",
                         "issuer_code": null,
-                        "category": null,
+                        "country_code": "VN",
+                        "category": "CLASSIC",
                         "type": "CREDIT",
                         "three_d_secure": {
                             "version": null,
@@ -2536,7 +2575,16 @@ curl --request POST \
                             "directory_server_transaction_id": null,
                             "pares_status": null,
                             "acs_id": null
-                        }
+                        },
+                        "fingerprint": "e5fb7cbd-c42b-4ec2-ab9c-a421f049a3b8",
+                        "expiration_month": 10,
+                        "expiration_year": 29
+                    },
+                    "stored_credentials": {
+                        "reason": null,
+                        "usage": null,
+                        "subscription_agreement_id": null,
+                        "network_transaction_id": null
                     }
                 }
             }
@@ -2544,16 +2592,17 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test",
-        "merchant_reference": "reference-22103236-c3fc-4871-9fc0-98ce48a9f553",
+        "description": "Card payment with vaulted token",
+        "merchant_reference": "reference-0001",
         "provider_data": {
             "id": "YUNO_TEST_PAYMENT_GW",
-            "transaction_id": "f9bcb8a8-d5d8-4c53-b551-5932c9804f16",
+            "transaction_id": "ba96ce21-3808-44c3-bdf3-c8838598e19c",
             "account_id": "",
             "status": "SUCCEEDED",
             "sub_status": "",
             "status_detail": "",
-            "response_message": "",
+            "response_message": null,
+            "response_code": null,
             "raw_response": {
                 "amount": {
                     "currency": "BRL",
@@ -2565,16 +2614,132 @@ curl --request POST \
                 "reference": "34343434",
                 "status": "received"
             },
-            "third_party_transaction_id": ""
+            "third_party_transaction_id": "",
+            "third_party_account_id": null,
+            "iso8583_response_code": null,
+            "iso8583_response_message": null
         },
-        "created_at": "2023-07-24T01:28:45.562437Z",
-        "updated_at": "2023-07-24T01:28:47.639121Z"
+        "connection_data": {
+            "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+            "name": null
+        },
+        "created_at": "2025-06-19T19:30:26.395712Z",
+        "updated_at": "2025-06-19T19:30:26.493844Z"
     },
-    "split": [],
+    "transactions_history": [
+        {
+            "id": "044a1535-43d9-44c7-8dfa-4bcc67e11ec6",
+            "type": "PURCHASE",
+            "status": "SUCCEEDED",
+            "category": "CARD",
+            "amount": 125.00,
+            "provider_id": "YUNO_TEST_PAYMENT_GW",
+            "payment_method": {
+                "vaulted_token": "b813ce30-c261-4341-8d33-b85698491d18",
+                "type": "CARD",
+                "vault_on_success": false,
+                "token": "",
+                "parent_payment_method_type": null,
+                "detail": {
+                    "card": {
+                        "verify": false,
+                        "capture": true,
+                        "installments": 1,
+                        "installments_plan_id": null,
+                        "first_installment_deferral": 0,
+                        "installments_type": "",
+                        "installment_amount": null,
+                        "soft_descriptor": "",
+                        "authorization_code": "819502",
+                        "retrieval_reference_number": "",
+                        "voucher": null,
+                        "card_data": {
+                            "holder_name": "JOHN DOE",
+                            "iin": "41234567",
+                            "lfd": "2345",
+                            "number_length": 16,
+                            "security_code_length": 0,
+                            "brand": "VISA",
+                            "issuer_name": "INTL HDQTRSCENTER OWNED",
+                            "issuer_code": null,
+                            "country_code": "VN",
+                            "category": "CLASSIC",
+                            "type": "CREDIT",
+                            "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
+                            },
+                            "fingerprint": "e5fb7cbd-c42b-4ec2-ab9c-a421f049a3b8",
+                            "expiration_month": 10,
+                            "expiration_year": 29
+                        },
+                        "stored_credentials": {
+                            "reason": null,
+                            "usage": null,
+                            "subscription_agreement_id": null,
+                            "network_transaction_id": null
+                        }
+                    }
+                }
+            },
+            "response_code": "SUCCEEDED",
+            "response_message": "Transaction successful",
+            "reason": null,
+            "description": "Card payment with vaulted token",
+            "merchant_reference": "reference-0001",
+            "provider_data": {
+                "id": "YUNO_TEST_PAYMENT_GW",
+                "transaction_id": "ba96ce21-3808-44c3-bdf3-c8838598e19c",
+                "account_id": "",
+                "status": "SUCCEEDED",
+                "sub_status": "",
+                "status_detail": "",
+                "response_message": null,
+                "response_code": null,
+                "raw_response": {
+                    "amount": {
+                        "currency": "BRL",
+                        "value": 2100
+                    },
+                    "merchantAccount": "YunoPaymentsECOM",
+                    "paymentPspReference": "ZKHXKZGXMLBX8N82",
+                    "pspReference": "VKJTCWZ9575ZGN82",
+                    "reference": "34343434",
+                    "status": "received"
+                },
+                "third_party_transaction_id": "",
+                "third_party_account_id": null,
+                "iso8583_response_code": null,
+                "iso8583_response_message": null
+            },
+            "connection_data": {
+                "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+                "name": null
+            },
+            "created_at": "2025-06-19T19:30:26.395712Z",
+            "updated_at": "2025-06-19T19:30:26.493844Z"
+        }
+    ],
     "workflow": "DIRECT",
     "metadata": [],
     "fraud_screening": null,
-    "payment_link_code": ""
+    "payment_link_id": "",
+    "subscription_code": null,
+    "routing_rules": {
+        "smart_routing": false,
+        "monitors": false,
+        "condition": {
+            "id": 192539,
+            "name": "Card",
+            "description": ""
+        }
+    },
+    "simplified_mode": false
 }
 ```
 
