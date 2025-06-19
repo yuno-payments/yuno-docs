@@ -13,19 +13,6 @@ Our goal is to enable Yuno's clients to provide merchant data once, allowing Yun
 
 By defining a common merchant data model, implementing adapter services for each provider, and enforcing validation rules based on country and business type, this product development lays the groundwork for a future-proof, flexible onboarding orchestration engine.
 
-## Core architecture
-
-In this onboarding architecture, Yuno will leverage its Recipient object model to enable submerchant onboarding across multiple payment providers.\
-Each Marketplace Owner will be represented as an Organization in Yuno.
-
-Each organization will have one or more Accounts, each configured with the necessary Connections to payment providers (e.g., Stripe, MercadoPago, etc.).
-
-Under each account, the marketplace can register Recipients (i.e., submerchants).
-
-Each Recipient will then be onboarded or linked individually to one or more connections (providers), based on which payment networks they will operate in.
-
-<Image align="center" src="https://files.readme.io/8d2bba98a9be215417b5c111a504433375b774586df7c3c1031a412452447c2e-Screenshot_2025-06-19_at_12.55.57_AM.png" />
-
 ## Yuno's core onboarding framework
 
 Yuno's onboarding model helps marketplaces seamlessly connect and manage their **submerchants** across multiple payment providers. The core of this system is the **Recipient object**, which represents each individual submerchant within the marketplace ecosystem. This existing framework will be leveraged by our new standardized API to provide a unified experience.
