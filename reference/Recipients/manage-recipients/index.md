@@ -2,7 +2,7 @@
 title: Manage Recipients
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
