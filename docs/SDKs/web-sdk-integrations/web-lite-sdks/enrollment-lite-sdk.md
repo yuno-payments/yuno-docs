@@ -407,12 +407,6 @@ yuno.mountEnrollmentLite({
 });
 ```
 
-<br />
-
-> 📘 Rendering Mode
->
-> By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. To learn how to use the Lite SDK to perform MIT operations, access the [Mode of form rendering](https://docs.y.uno/docs/enrollment-lite-sdk#mode-of-form-rendering) section.
-
 ## `continuePayment` return value or null
 
 For payment methods that require merchant-side action (e.g., when the payment provider requires a redirect URL in a webview), the `await yuno.continuePayment()` method will return either an object with the following structure or null:
