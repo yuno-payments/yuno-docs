@@ -171,7 +171,83 @@ This object represents a recipient who will receive part of a [split payment](do
     </div>
   </details>
   
-  
+  <div>
+  <div class="yuno">
+    <p><strong><code>withdrawal_methods</code></strong> <small>struct</small>
+      <br/>Withdrawal methods (applicable in both recipients and onboardings).
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>bank</code></strong> <small>struct</small>
+      <br/>Bank details for the withdrawal method.
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>code</code></strong> <small>string</small>
+      <br/>Bank’s code (MAX 3; MIN 3).
+      <br/><small>Example: 246</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>branch</code></strong> <small>string</small>
+      <br/>Bank’s branch (MAX 3; MIN 3).
+      <br/><small>Example: XXXX</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>branch_digit</code></strong> <small>string</small>
+      <br/>Bank’s branch digit (MAX 3; MIN 3).
+      <br/><small>Example: X</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>account</code></strong> <small>string</small>
+      <br/>Beneficiary’s bank account number (MAX 250; MIN 3).
+      <br/><small>Example: 1093333333</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>account_digit</code></strong> <small>string</small>
+      <br/>Beneficiary’s bank account digit (MAX 250; MIN 1).
+      <br/><small>Example: 5</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>account_type</code></strong> <small>enum</small>
+      <br/>Beneficiary’s bank account type (CHECKINGS or SAVINGS).
+      <br/><small>Example: CHECKINGS</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>routing</code></strong> <small>string</small>
+      <br/>Beneficiary’s bank account routing number.
+      <br/><small>Example: XXXXYYYYC</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>country</code></strong> <small>string</small>
+      <br/>The bank account’s country (ISO 3166-1 alpha-2).
+      <br/><small>Example: CO</small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>currency</code></strong> <small>string</small>
+      <br/>The bank account’s currency (ISO 4217).
+      <br/><small>Example: COP</small>
+    </p>
+  </div>
+</div>
+
   <div class="yuno">
     <p><strong><code>created_at</code></strong> <small>timestamp</small>
       <br/>Recipient creation date and time (MAX 27; MIN 27; <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>).
