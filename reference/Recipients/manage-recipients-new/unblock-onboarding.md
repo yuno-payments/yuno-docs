@@ -2,7 +2,7 @@
 title: Unblock Onboarding
 api:
   file: recipients.json
-  operationId: update-block-onboarding
+  operationId: unblock-onboarding
 deprecated: false
 hidden: true
 link:
