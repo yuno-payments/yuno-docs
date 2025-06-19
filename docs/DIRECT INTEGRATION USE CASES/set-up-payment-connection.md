@@ -27,7 +27,7 @@ You'll learn how to:
 
 Before configuring a payment method, you first need to create a connection with one of the available providers.
 
-### Step 1: Set up your Connection
+### Step 1: set up your connection
 
 To set up your first payment connection:
 
@@ -41,7 +41,7 @@ A confirmation message will appear in the dashboard once your connection is succ
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/connection_setup_V4_v2.mp4" />
 
-### Step 2: Set Up Routing for Your New Connection
+### Step 2: set up routing for your new connection
 
 Payment routing in Yuno allows you to define which connections will be used to process specific types of transactions. This enables dynamic routing logic and gives you flexibility to manage providers based on currency, country, or other factors. For a basic setup, follow these steps:
 
@@ -60,7 +60,7 @@ Your new route now appears in the **Published** tab, indicating that the configu
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/routing_V2.mp4" />
 
-### Step 3: Enable the Payment Method in the Checkout Builder
+### Step 3: enable the payment method in the Checkout Builder
 
 After configuring your connection and routing, you need to enable the payment method to make it available in your checkout:
 
@@ -71,7 +71,7 @@ After configuring your connection and routing, you need to enable the payment me
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/set_up_you_account/checkoutbuilder.mp4" />
 
-### Step 4: Get Your API Credentials
+### Step 4: get your API credentials
 
 To complete the setup and integrate Yuno into your application, you will need to obtain your API credentials from the Yuno dashboard. These credentials are specific to the Sandbox environment:
 
