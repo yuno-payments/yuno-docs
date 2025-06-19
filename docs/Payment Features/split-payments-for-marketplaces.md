@@ -5,9 +5,7 @@ hidden: true
 metadata:
   robots: index
 ---
-## Overview
-
-This feature enables merchants to split payments among multiple recipients, which is particularly beneficial for marketplace models where transactions need to be divided among different sellers or stakeholders. Merchants can specify how the payment is split, including the amounts, recipients, and any applicable fees.
+This feature enables **merchants to split payments among multiple recipients**, which is particularly beneficial for marketplace models where transactions need to be divided among different sellers or stakeholders. Merchants can specify how the payment is split, including the amounts, recipients, and any applicable fees.
 
 The split payment functionality is contingent on the support of the selected payment provider. Yuno serves solely as the orchestrator of the payment, not the processor. Ensure your provider supports split payments before using this functionality. Currently, this feature is available for the following providers:
 
