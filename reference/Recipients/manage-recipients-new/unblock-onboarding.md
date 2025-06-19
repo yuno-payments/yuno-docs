@@ -4,7 +4,7 @@ api:
   file: recipients.json
   operationId: unblock-onboarding
 deprecated: false
-hidden: true
+hidden: false
 link:
   new_tab: false
 metadata:
