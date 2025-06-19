@@ -10,38 +10,36 @@ metadata:
 next:
   description: ''
 ---
-Network tokens represent a pivotal advancement in the of payment processing industry, acting as digital surrogates for sensitive payment card details, including credit card numbers. Issued by payment networks such as Visa, Mastercard and American Express, these tokens are at the forefront of enhancing transaction security within our evolving digital landscape.
+Network tokens represent a significant advancement in the payment processing industry, acting as digital surrogates for sensitive payment card details, including credit card numbers. Issued by payment networks such as Visa, Mastercard, and American Express, these tokens are at the forefront of enhancing transaction security within our evolving digital landscape.
 
 <Image align="center" src="https://files.readme.io/12b72d4-desktop_Network_token_2.png" />
 
-### Benefits of Network Tokens:
+### Benefits of network tokens
 
-* *Enhanced Security*: By replacing actual card data during transactions, network tokens play a pivotal role in fortifying security measures, significantly reducing the risk of exposure to potential fraud.
-* *Seamless Integration*: With minimal integration efforts adhering to EMVCo's network token standards, our solution ensures a seamless and efficient implementation process, allowing for quick adaptation within various payment scenarios.
-* *Automatic Updates*: Network tokens, managed and updated automatically by card networks, contribute to a reduction in shopper friction and declined payments. This inherent adaptability ensures a higher authorization rate in comparison to transactions without network tokens.
+* **Enhanced security**: By replacing actual card data during transactions, network tokens play a crucial role in strengthening security measures, significantly reducing the risk of exposure to potential fraud.
+* **Seamless integration**: With minimal integration efforts adhering to EMVCo's network token standards, our solution ensures a seamless and efficient implementation process, allowing for quick adaptation within various payment scenarios.
+* **Automatic updates**: Network tokens, managed and updated automatically by card networks, contribute to a reduction in shopper friction and declined payments. This inherent adaptability ensures a higher authorization rate compared to transactions without network tokens.
 
-## On-time use token vs Vaulted token vs Network Token
+## One-time use token vs vaulted token vs network token
 
-| One-time Use Token                                                                                                                                                                                                                                                                                                                                             | Vaulted Token                                                                                                                                                                                           | Network Token                                                                                                                                                                                                                                                                                                                                     |
+| One-time use token                                                                                                                                                                                                                                                                                                                                             | Vaulted token                                                                                                                                                                                           | Network token                                                                                                                                                                                                                                                                                                                                     |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| While using Yuno's SDK, we gather all the necessary information to process the payment and store it in a One Time Use Token, regardless of the customer's chosen payment method. You will use the token when creating the payment. Note that this token only works one time. You will need to generate a new one-time token for each checkout session created. | A Vaulted Token is created by Yuno once a payment method is enrolled and stored with the customer information. You can use the created Vaulted Token to identify the payment method in future payments. | Digitized representations of sensitive payment card information, such as credit card numbers, issued by major payment networks like Visa, Mastercard, or American Express. These tokens serve the purpose of substituting actual card data in transactions, thereby enhancing security by minimizing exposure to potential fraudulent activities. |
+| While using Yuno's SDK, we gather all the necessary information to process the payment and store it in a one-time use token, regardless of the customer's chosen payment method. You will use the token when creating the payment. Note that this token only works one time. You will need to generate a new one-time token for each checkout session created. | A vaulted token is created by Yuno once a payment method is enrolled and stored with the customer information. You can use the created vaulted token to identify the payment method in future payments. | Digitized representations of sensitive payment card information, such as credit card numbers, issued by major payment networks like Visa, Mastercard, or American Express. These tokens serve the purpose of substituting actual card data in transactions, thereby enhancing security by minimizing exposure to potential fraudulent activities. |
 
-When the network tokens feature is enabled, Yuno generates network tokens for all cards enrolled and securely stored in our Vault. This approach is fully aligned with how network tokenization is intended to work, as defined by Visa and Mastercard after the card validation — ensuring better performance, security, and reliability in recurring and future transactions. Cards not stored in Yuno — such as one-time use cards — are naturally excluded from this process, since network tokenization is not applicable in those cases.
+When the network tokens feature is enabled, Yuno generates network tokens for all cards enrolled and securely stored in our vault. This approach is fully aligned with how network tokenization is intended to work, as defined by Visa and Mastercard after the card validation — ensuring better performance, security, and reliability in recurring and future transactions. Cards not stored in Yuno — such as one-time use cards — are naturally excluded from this process, since network tokenization is not applicable in those cases.
 
-## Network tokens Lifecycle
+## Network tokens lifecycle
 
 Network tokens can have the statuses described in the section below.
 
 <Image align="center" src="https://files.readme.io/654f542-Image_-_nico2.png" />
 
-<br />
-
-| STATUS    | Description                                                                                                                  |
+| Status    | Description                                                                                                                  |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| CREATED   | The initial status of a network token that has been created.                                                                 |
-| ACTIVE    | The network token is active and can be used to make a payment.                                                               |
-| SUSPENDED | Tokens may be suspended if the cardholder calls the issuer and requests that payments from a particular merchant be blocked. |
-| CANCELED  | Tokens may be cancelled for various reasons, such as the cardholder account associated with the token has been closed.       |
+| Created   | The initial status of a network token that has been created.                                                                 |
+| Active    | The network token is active and can be used to make a payment.                                                               |
+| Suspended | Tokens may be suspended if the cardholder contacts the issuer and requests that payments from a particular merchant be blocked. |
+| Canceled  | Tokens may be canceled for various reasons, such as the cardholder account associated with the token being closed.            |
 
 ## Types of integration
 
@@ -50,17 +48,17 @@ To make payments with network tokens, you have two available options:
 1. Let Yuno provision and collect network tokens.
 2. Use your existing network tokens.
 
-### 1- Let Yuno provision and collect network tokens
+### 1. Let Yuno provision and collect network tokens
 
-We procure network tokens from leading card networks including Visa, Mastercard, and American Express. These tokens are meticulously safeguarded within the Yuno infrastructure and are used instead of the actual cards during the authorization process.
+We procure network tokens from leading card networks, including Visa, Mastercard, and American Express. These tokens are securely stored within the Yuno infrastructure and are used instead of the actual cards during the authorization process.
 
-There is no need for additional integration to access the advantages of network tokenization when Yuno manages the solicitation and accumulation of tokens on your behalf. Simply adhere to the standard payment workflow corresponding to your specific card payment integration. Yuno seamlessly handles the process, adeptly substituting card details for a network token, resulting in heightened authorization rates.
+There is no need for additional integration to access the benefits of network tokenization when Yuno manages the solicitation and accumulation of tokens on your behalf. Simply follow the standard payment workflow corresponding to your specific card payment integration. Yuno seamlessly handles the process, substituting card details for a network token, resulting in increased authorization rates.
 
-To activate payments using network tokens, kindly contact our Support Team to provision or request the necessary credentials.
+To activate payments using network tokens, please contact our support team to provision or request the necessary credentials.
 
 #### Response example
 
-Either during the enrollment or payment creation, you will receive the basic information of the Network token used in the corresponding operation.
+During either the enrollment or payment creation, you will receive the basic information of the network token used in the corresponding operation.
 
 ```json
 {
@@ -100,32 +98,32 @@ Either during the enrollment or payment creation, you will receive the basic inf
            }
         }
     }
-  ...
+  [...]
 }
 ```
 
 ### 2- Use your existing network tokens
 
-After establishing the corresponding credentials in your Yuno account and contacting our Support team, you'll be prepared to execute tokenized transactions seamlessly.
+After setting up the necessary credentials in your Yuno account and contacting our support team, you will be ready to execute tokenized transactions seamlessly.
 
 > ❗️
 >
-> With this option, Yuno operates only as a passthrough for the network token information. The merchant will need to send the necessary information about the network tokens so Yuno can share them with upstream payment partners.
+> With this option, Yuno acts only as a passthrough for the network token information. The merchant must provide the necessary information about the network tokens so Yuno can share them with upstream payment partners.
 
-Network token transactions make use of existing payment transaction API requests. Similarly to the process of creating a payment with credit card details, when a merchant employs the Yuno API to finalize a payment they can opt to include the "network\_token" object to endeavor the utilization of a network token for the transaction.
+Network token transactions utilize existing payment transaction API requests. Similar to creating a payment with credit card details, when a merchant uses the Yuno API to finalize a payment, they can choose to include the "network_token" object to use a network token for the transaction.
 
-#### Payment Request Fields
+#### Payment request fields
 
-Together with the `card_data` object, these fields should be added to the `payment_method.detail.card.network_token.token_data` object for sending payments using Yuno's API.
+Along with the `card_data` object, these fields should be added to the `payment_method.detail.card.network_token.token_data` object for sending payments using Yuno's API.
 
 | Field                           | Type   | Description                                                                                                                                                                                              |
 | ------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `number`                        | number | \[Mandatory] - Token’s number without any separators. (MAX 19; MIN 8) - only available for PCI certified merchants                                                                                       |
-| `holder_name`                   | string | Cardholder’s full name as it appears on the Token (MAX 26; MIN 3) - only available for PCI certified merchants                                                                                           |
-| `expiration_month`              | number | \[Mandatory] - Token’s expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants                                                                                                 |
-| `expiration_year`               | number | \[Mandatory] - Token’s expiration year - YYYY (MAX 4; MIN 4) - only available for PCI certified merchants                                                                                                |
+| `number`                        | number | \[Mandatory] - Token's number without any separators. (MAX 19; MIN 8) - only available for PCI certified merchants                                                                                       |
+| `holder_name`                   | string | Cardholder's full name as it appears on the token (MAX 26; MIN 3) - only available for PCI certified merchants                                                                                           |
+| `expiration_month`              | number | \[Mandatory] - Token's expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants                                                                                                 |
+| `expiration_year`               | number | \[Mandatory] - Token's expiration year - YYYY (MAX 4; MIN 4) - only available for PCI certified merchants                                                                                                |
 | `cryptogram`                    | string | \[Mandatory] - The unique cryptogram generated by the issuer for the network token in use in the transaction. Optional for recurring transactions                                                        |
-| `electronic_commerce_indicator` | string | \[Only required for certain providers] - In case the token has been authenticated by Mastercard the field should be set to 02. For Visa or not authenticated tokens, is not necessary to send the field. |
+| `electronic_commerce_indicator` | string | \[Only required for certain providers] - If the token has been authenticated by Mastercard, the field should be set to 02. For Visa or non-authenticated tokens, it is not necessary to send the field. |
 | `token_requestor_id`            | string | \[Only required for certain providers] - Token requestor ID of the merchant                                                                                                                              |
 
 #### Request example
@@ -229,6 +227,6 @@ Together with the `card_data` object, these fields should be added to the `payme
            }
         }
     }
-  ...
+  [...]
 }
 ```
