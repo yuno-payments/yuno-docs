@@ -1,7 +1,7 @@
 ---
-title: Full SDK v1.1 (COPY)
+title: Full SDK v1.2
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
