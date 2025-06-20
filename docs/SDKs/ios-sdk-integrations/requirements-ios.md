@@ -2,7 +2,7 @@
 title: Requirements
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Requirements
   description: >-
