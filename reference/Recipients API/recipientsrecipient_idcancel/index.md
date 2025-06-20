@@ -1,4 +1,4 @@
 ---
 title: /recipients/{recipient_id}/cancel
-hidden: false
+hidden: true
 ---
