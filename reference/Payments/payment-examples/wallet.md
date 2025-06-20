@@ -156,7 +156,7 @@ Example of a request for a payment using Mercado Pago Checkout Pro. Below are ex
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <your-idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
      --header 'private-secret-key: <your-private-secret-key>' \
@@ -353,7 +353,7 @@ Example of a request for a payment using Astropay. Below are examples of a reque
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
---header 'X-idempotency-key: <your-idempotency-key>' \
+--header 'X-idempotency-key: <your-X-idempotency-key>' \
 --header 'public-api-key: <your-public-api-key> ' \
 --header 'private-secret-key: <your-private-secret-key>' \
 --header 'Content-Type: application/json' \
@@ -637,9 +637,9 @@ Example of a request for creating a payment Nupay Enrollment. Below are examples
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
---header 'X-idempotency-key: <your-idempotency-key>' \
---header 'public-api-key: <Your-public-api-key>' \
---header 'private-secret-key: <Your-private-secret-key>' \
+--header 'X-idempotency-key: <your-X-idempotency-key>' \
+--header 'public-api-key: <your-public-api-key>' \
+--header 'private-secret-key: <your-private-secret-key>' \
 --header 'Content-Type: application/json' \
 --data '{
     "description": "Payment with NuPay",
@@ -914,7 +914,7 @@ Below is an example of a payment request using Nequi. This example demonstrates 
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
---header 'X-idempotency-key: <your-idempotency-key>' \
+--header 'X-idempotency-key: <your-X-idempotency-key>' \
 --header 'public-api-key: <your-public-api-key>' \
 --header 'Content-Type: application/json' \
 --data-raw '{

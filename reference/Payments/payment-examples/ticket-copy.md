@@ -145,11 +145,11 @@ Example of a request for a Cash payment using Arcus. Below are examples of a req
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>'\
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>'\
 --data '{
     "description": "Payment with Arcus",
     "account_id":"<account_id>",
@@ -400,11 +400,11 @@ Example of a request for a Ticket payment using Efecty. Below you find the JSON 
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>'\
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>'\
 --data '
 {
     "description": "Payment with Efecty",
@@ -550,11 +550,11 @@ Example of a request for a Ticket payment using Oxxo. Below you find the JSON bo
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>'\
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>'\
 --data '{
     "description": "Payment with Oxxo",
     "account_id":"<account_id>",

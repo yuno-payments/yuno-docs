@@ -143,11 +143,11 @@ Example of a request for a BNPL payment using Acuotaz. Below are examples of a r
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your-private-secret-key>' \
-     --header 'public-api-key: <Your-public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Payment with Acuotaz",
@@ -321,8 +321,8 @@ curl --request POST \
      --header 'X-Idempotency-Key: <Your--Idempotency-Key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your-private-secret-key>' \
-     --header 'public-api-key: <Your-public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Payment with Addi",
@@ -483,11 +483,11 @@ Example of a request for a BNPL payment using Wibond. Below are examples of a re
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your-private-secret-key>' \
-     --header 'public-api-key: <Your-public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Payment with Wibond",

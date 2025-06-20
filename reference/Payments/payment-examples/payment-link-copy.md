@@ -156,11 +156,11 @@ Example of a request for a Payment Link payment using Payvalida. Below are examp
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your-idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your-private-secret-key>' \
-     --header 'public-api-key: <Your-public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Payment wiht Payvalida",
@@ -316,11 +316,11 @@ Example of a request for a Payment Link payment using Tarjeta Clave. Below are e
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your-idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your-private-secret-key>' \
-     --header 'public-api-key: <Your-public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Payment with Tarjeta Clave",
@@ -472,11 +472,11 @@ Example of a request for a Payment Link payment using Webpay. Below are examples
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your-idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your-private-secret-key>' \
-     --header 'public-api-key: <Your-public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Payment with Webpay",
@@ -622,11 +622,11 @@ Example of a request for a Payment Link payment using Pago Efectivo. Below are e
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your-idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your-private-secret-key>' \
-     --header 'public-api-key: <Your-public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Payment with Pago Efectivo",

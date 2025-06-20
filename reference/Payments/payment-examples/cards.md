@@ -193,11 +193,11 @@ Example of a request for authorization using Card Direct. Below are examples of 
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
   "country": "US",
@@ -573,11 +573,11 @@ Example of a request for authorization with airline data using Card Direct. Belo
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
   "account_id": "<accound_id>",
@@ -1143,11 +1143,11 @@ Example of a request for payment with installments using Card Direct. Below are 
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
   "account_id": "<account_id>",
@@ -1512,11 +1512,11 @@ Example of a declined request for payment using Card Direct. Below are examples 
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Card payment with shipping and order",
@@ -1975,11 +1975,11 @@ Example of a successful request for payment using Card Direct. Below are example
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Card payment with vault on success",
@@ -2368,11 +2368,11 @@ Example of a request for payment using Card Direct with a vaulted token. Below a
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
     "description": "Card payment with vaulted token",
@@ -2750,11 +2750,11 @@ Example of a request for payment using Card Direct with the 3DS implementation t
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
   "country": "US",
