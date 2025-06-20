@@ -257,15 +257,15 @@ Once you have completed the steps described before, you will be able to create a
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Form loader](doc:lite-checkout-sdk#loader)
-* [Bank Issuer List](doc:lite-checkout-sdk#form-of-the-issuer)
-* [Render mode ](doc:lite-checkout-sdk#mode-of-form-rendering)
-* [Card form configurations ](doc:lite-checkout-sdk#card-form-configurations)
-  * [Save Card for future payments](doc:lite-checkout-sdk#save-card-for-future-payments)
-  * [Render mode](doc:lite-checkout-sdk#rendering-modes)
-  * [Text payment form buttons](doc:lite-checkout-sdk#text-payment-form-buttons)
-  * [Persist credit card form to retry payments](doc:lite-checkout-sdk#persist-credit-card-form-to-retry-payments)
-  * [Hide Pay button](doc:lite-checkout-sdk#hide-pay-button)
+* [Form loader](#loader)
+* [Bank Issuer List](#form-of-the-issuer)
+* [Render mode ](#mode-of-form-rendering)
+* [Card form configurations ](#card-form-configurations)
+  * [Save Card for future payments](#save-card-for-future-payments)
+  * [Render mode](#rendering-modes)
+  * [Text payment form buttons](#text-payment-form-buttons)
+  * [Persist credit card form to retry payments](#persist-credit-card-form-to-retry-payments)
+  * [Hide Pay button](#hide-pay-button)
 
 ### Loader
 
