@@ -1,5 +1,5 @@
 ---
-title: Full SDK (Web) v1.0
+title: Yuno Web SDK v1.0
 excerpt: ''
 deprecated: false
 hidden: true
