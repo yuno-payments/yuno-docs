@@ -35,7 +35,7 @@ This **architecture** enables:
 * Independent status tracking per provider.
 * Easy scaling of submerchant operations across providers.
 
-This design ensures flexibility, transparency, and full traceability throughout the onboarding lifecycle. The [/recipients endpoint](ref:create-recipient) is used to create and manage each submerchant profile, and to trigger the corresponding provider-specific onboarding workflows.
+This design ensures flexibility, transparency, and full traceability throughout the onboarding lifecycle. The [/recipients endpoint](ref:create-recipient-1) is used to create and manage each submerchant profile, and to trigger the corresponding provider-specific onboarding workflows.
 
 ### Onboarding flows
 
