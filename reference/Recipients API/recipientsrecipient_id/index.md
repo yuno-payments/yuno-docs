@@ -1,4 +1,4 @@
 ---
 title: /recipients/{recipient_id}
-hidden: false
+hidden: true
 ---
