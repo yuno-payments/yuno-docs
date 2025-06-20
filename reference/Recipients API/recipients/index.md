@@ -1,4 +1,4 @@
 ---
 title: /recipients
-hidden: false
+hidden: true
 ---
