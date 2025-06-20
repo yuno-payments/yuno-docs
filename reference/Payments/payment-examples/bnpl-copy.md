@@ -143,15 +143,15 @@ Example of a request for a BNPL payment using Acuotaz. Below are examples of a r
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <Your-Idempotency-Key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <Your-private-secret-key>' \
+     --header 'public-api-key: <Your-public-api-key>' \
      --data '
 {
-    "description": "Test ACUOTAZ",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Acuotaz",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "PE",
     "additional_data": {
@@ -178,9 +178,9 @@ curl --request POST \
     },
     "customer_payer": {
         "merchant_customer_id": "1668863583",
-        "first_name": "Tyler",
-        "last_name": "Rosenbaum",
-        "email": "Jadon56@hotmail.com"
+        "first_name": "Juan",
+        "last_name": "Perez",
+        "email": "juan.perez@example.com"
      },
     "workflow":"REDIRECT",
     "payment_method": {
@@ -193,7 +193,7 @@ curl --request POST \
 {
   "id": "1c3c6bee-0230-4989-af06-a2c97c433ac6",
   "account_id": "d3d38fc9-49ec-4277-9115-bbad5d17d236",
-  "description": "Test ACUOTAZ",
+  "description": "Payment with Acuotaz",
   "country": "PE",
   "status": "READY_TO_PAY",
   "sub_status": "CREATED",
@@ -225,11 +225,11 @@ curl --request POST \
   "customer_payer": {
     "id": "71caa74c-f759-4a7c-a1c4-a983bcf24812",
     "merchant_customer_id": "1668863583",
-    "first_name": "Tyler",
-    "last_name": "Rosenbaum",
+    "first_name": "Juan",
+    "last_name": "Perez",
     "gender": "",
     "date_of_birth": null,
-    "email": "Jadon56@hotmail.com",
+    "email": "juan.perez@example.com",
     "nationality": null,
     "ip_address": null,
     "device_fingerprint": null,
@@ -318,15 +318,15 @@ Example of a request for a BNPL payment using Addi. Below are examples of a requ
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <Your--Idempotency-Key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <Your-private-secret-key>' \
+     --header 'public-api-key: <Your-public-api-key>' \
      --data '
 {
-    "description": "Test ADDI",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Addi",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CO",
     "amount": {
@@ -334,10 +334,10 @@ curl --request POST \
         "value": 52000
     },
    "customer_payer": {
-        "first_name": "Pepito",
+        "first_name": "Juan",
         "last_name": "Perez",
-        "email":"test@gmail.com",
-        "merchant_customer_id": "example00234",
+        "email":"juan.perez@example.com",
+        "merchant_customer_id": "1234567",
         "document": {
             "document_type": "CC",
             "document_number": "1032765432"
@@ -358,7 +358,7 @@ curl --request POST \
 {
     "id": "087be3a5-bed7-4c58-bbe0-c2ebcf376ebb",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test ADDI",
+    "description": "Payment with Addi",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -391,12 +391,12 @@ curl --request POST \
     },
     "customer_payer": {
         "id": null,
-        "merchant_customer_id": "example00234",
-        "first_name": "Pepito",
+        "merchant_customer_id": "1234567",
+        "first_name": "Juan",
         "last_name": "Perez",
         "gender": null,
         "date_of_birth": null,
-        "email": "test@gmail.com",
+        "email": "juan.perez@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -483,16 +483,16 @@ Example of a request for a BNPL payment using Wibond. Below are examples of a re
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <Your-Idempotency-Key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <Your-private-secret-key>' \
+     --header 'public-api-key: <Your-public-api-key>' \
      --data '
 {
-    "description": "Test Wibond",
-    "account_id": "{{account-code}}",
-    "merchant_order_id":"1689888540",
+    "description": "Payment with Wibond",
+    "account_id": "<account_id>",
+    "merchant_order_id":"000022",
     "country": "AR",
     "amount": {
         "currency": "ARS",
@@ -500,9 +500,9 @@ curl --request POST \
     },
     "customer_payer": {
             "merchant_customer_id": "1689888540",
-            "first_name": "Alessandra",
-            "last_name": "CANO",
-            "email": "Darius48@gmail.com"
+            "first_name": "Juan",
+            "last_name": "Diaz",
+            "email": "juan.diaz@example.com"
         },
     "workflow":"REDIRECT",
     "payment_method": {
@@ -515,7 +515,7 @@ curl --request POST \
 {
     "id": "2f9d9279-d9cc-451b-bf79-b6d176927b0b",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Wibond",
+    "description": "Payment with Wibond",
     "country": "AR",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -549,11 +549,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1689888540",
-        "first_name": "Alessandra",
-        "last_name": "CANO",
+        "first_name": "Juan",
+        "last_name": "Diaz",
         "gender": null,
         "date_of_birth": null,
-        "email": "Darius48@gmail.com",
+        "email": "juan.diaz@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -601,7 +601,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test Wibond",
+        "description": "Payment with Wibond",
         "merchant_reference": null,
         "provider_data": {
             "id": "WIBOND",
@@ -618,7 +618,7 @@ curl --request POST \
                 "externalId": "eb4d1f14-d004-47a7-a5e9-527062b74b29",
                 "features": "",
                 "id": 6286140,
-                "productName": "Test Wibond",
+                "productName": "Payment with Wibond",
                 "requiresAddressInfo": false,
                 "shortDescription": "",
                 "status": "ACTIVE",
