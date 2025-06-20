@@ -156,15 +156,15 @@ Example of a request for a Payment Link payment using Payvalida. Below are examp
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <Your-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <Your-private-secret-key>' \
+     --header 'public-api-key: <Your-public-api-key>' \
      --data '
 {
-    "description": "Test Payvalida",
-    "account_id":"{{account-code}}",
+    "description": "Payment wiht Payvalida",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CO",
     "amount": {
@@ -172,7 +172,7 @@ curl --request POST \
         "value": 52000
     },
     "customer_payer": {
-        "email": "pepitoperez@y.uno",
+        "email": "pepitoperez@example.com",
         "first_name": "Pepito",
         "last_name": "Perez"
     },
@@ -180,7 +180,7 @@ curl --request POST \
         "type": "PAYVALIDA"
     },
     "workflow":"REDIRECT",
-    "callback_url":"www.y.uno",
+    "callback_url":"www.google.com",
     "taxes": {
         "value": 100,
         "percentage": 21,
@@ -194,7 +194,7 @@ curl --request POST \
 {
     "id": "c6c81ce5-acbe-480b-9bd4-1f401a3c2c96",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Payvalida",
+    "description": "Payment wiht Payvalida",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -238,7 +238,7 @@ curl --request POST \
         "last_name": "Perez",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@y.uno",
+        "email": "pepitoperez@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
