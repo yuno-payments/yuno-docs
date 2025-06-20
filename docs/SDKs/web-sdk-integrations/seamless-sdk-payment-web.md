@@ -152,13 +152,3 @@ After mounting, the checkout flow for the selected payment method will automatic
 > 📘 Demo App
 >
 > In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
-
-> 📘 Demo App
->
-> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
-
-<br />
-
-> 📘 Demo App
->
-> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
