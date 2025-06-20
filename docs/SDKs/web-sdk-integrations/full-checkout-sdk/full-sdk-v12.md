@@ -243,14 +243,14 @@ When the method returns an object, it allows you to handle your application's pa
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Form loader](doc:web-sdk-integration-guide-v11#form-loader)
-* [Render mode ](doc:web-sdk-integration-guide-v11#mode-of-form-rendering)
-* [Card form configurations ](doc:web-sdk-integration-guide-v11#card-form-configurations)
-  * [Save Card for future payments](doc:web-sdk-integration-guide-v11#save-card-for-future-payments)
-  * [Rendering modes](doc:web-sdk-integration-guide-v11#rendering-modes)
-  * [Text payment form buttons](doc:web-sdk-integration-guide-v11#text-payment-form-buttons)
-  * [Persist credit card form to retry payments](doc:web-sdk-integration-guide-v11#persist-credit-card-form-to-retry-payments)
-  * [Hide Pay button](doc:web-sdk-integration-guide-v11#hide-pay-button)
+* [Form loader](#form-loader)
+* [Render mode ](#mode-of-form-rendering)
+* [Card form configurations ](#card-form-configurations)
+  * [Save Card for future payments](#save-card-for-future-payments)
+  * [Rendering modes](#rendering-modes)
+  * [Text payment form buttons](#text-payment-form-buttons)
+  * [Persist credit card form to retry payments](#persist-credit-card-form-to-retry-payments)
+  * [Hide Pay button](#hide-pay-button)
 
 ### Form loader
 
