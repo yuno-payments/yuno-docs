@@ -316,15 +316,15 @@ Example of a request for a Payment Link payment using Tarjeta Clave. Below are e
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <Your-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <Your-private-secret-key>' \
+     --header 'public-api-key: <Your-public-api-key>' \
      --data '
 {
-    "description": "Test TARJETA CLAVE",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Tarjeta Clave",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "PA",
     "amount": {
@@ -332,7 +332,7 @@ curl --request POST \
         "value": 5200
     },
     "customer_payer": {
-        "email": "pepitoperez@y.uno",
+        "email": "pepitoperez@example.com",
         "first_name": "Pepito",
         "last_name": "Perez",
         "document":{
@@ -352,7 +352,7 @@ curl --request POST \
 {
     "id": "137d6ae2-5c26-4489-bfeb-cd5221d4d00e",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test TARJETA CLAVE",
+    "description": "Payment with Tarjeta Clave",
     "country": "PA",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -396,7 +396,7 @@ curl --request POST \
         "last_name": "Perez",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@y.uno",
+        "email": "pepitoperez@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -440,7 +440,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test TARJETA CLAVE",
+        "description": "Payment with Tarjeta Clave",
         "merchant_reference": null,
         "provider_data": {
             "id": "DLOCAL",
