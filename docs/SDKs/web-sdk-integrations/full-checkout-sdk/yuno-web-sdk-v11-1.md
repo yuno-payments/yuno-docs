@@ -2,7 +2,7 @@
 title: Yuno Web SDK v1.1
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
