@@ -1,7 +1,7 @@
 ---
 title: Manage Recipients
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
