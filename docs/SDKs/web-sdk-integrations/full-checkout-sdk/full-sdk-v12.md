@@ -18,16 +18,27 @@ Starting from version 1.2.0, the `continuePayment` method now accepts additional
 
 ### Enhanced `continuePayment` method
 
-<br />
+The `continuePayment` method can now receive the following new properties:
 
-| Parameter           | Description                                                                                                                                                                                                                              |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkoutSession`   | The checkout session for the current payment. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                          |
-| `showPaymentStatus` | Controls whether to show the Yuno Payment Status page. By default, it's `true`.                                                                                                                                                          |
-| `yunoPaymentResult` | Callback function that executes when the payment result is obtained. Receives the payment status as a parameter.                                                                                                                         |
-| `yunoError`         | Callback function that executes when an error occurs during the payment process. Receives the error message and optional additional data.                                                                                                |
-| `countryCode`       | Specifies the country code for the payment process. Use an `ENUM` value representing the desired country code.                                                                                                                           |
-| `language`          | Defines the language to be used in the payment forms. Available options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul> |
+```typescript
+continuePayment({
+  checkoutSession?: string
+  showPaymentStatus?: boolean
+  yunoPaymentResult?: (status: string) => void
+  yunoError?: (message: string, data?: unknown) => void
+  countryCode?: string
+  language?: string
+})
+```
+
+| Parameter           | Description                                                                                                                                                                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `checkoutSession`   | The checkout session for the current payment. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                |
+| `showPaymentStatus` | Controls whether to show the Yuno Payment Status page. By default, it's `true`.                                                                                                                                                                                                |
+| `yunoPaymentResult` | Callback function that executes when the payment result is obtained. Receives the payment status as a parameter.                                                                                                                                                               |
+| `yunoError`         | Callback function that executes when an error occurs during the payment process. Receives the error message and optional additional data.                                                                                                                                      |
+| `countryCode`       | Specifies the country code for the payment process. Use an `ENUM` value representing the desired country code.                                                                                                                                                                 |
+| `language`          | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul> |
 
 ### Example usage
 
@@ -238,14 +249,14 @@ When the method returns an object, it allows you to handle your application's pa
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Form loader](doc:web-sdk-integration-guide-v11#form-loader)
-* [Render mode ](doc:web-sdk-integration-guide-v11#mode-of-form-rendering)
-* [Card form configurations ](doc:web-sdk-integration-guide-v11#card-form-configurations)
-  * [Save Card for future payments](doc:web-sdk-integration-guide-v11#save-card-for-future-payments)
-  * [Rendering modes](doc:web-sdk-integration-guide-v11#rendering-modes)
-  * [Text payment form buttons](doc:web-sdk-integration-guide-v11#text-payment-form-buttons)
-  * [Persist credit card form to retry payments](doc:web-sdk-integration-guide-v11#persist-credit-card-form-to-retry-payments)
-  * [Hide Pay button](doc:web-sdk-integration-guide-v11#hide-pay-button)
+* [Form loader](#form-loader)
+* [Render mode ](#mode-of-form-rendering)
+* [Card form configurations ](#card-form-configurations)
+  * [Save Card for future payments](#save-card-for-future-payments)
+  * [Rendering modes](#rendering-modes)
+  * [Text payment form buttons](#text-payment-form-buttons)
+  * [Persist credit card form to retry payments](#persist-credit-card-form-to-retry-payments)
+  * [Hide Pay button](#hide-pay-button)
 
 ### Form loader
 
