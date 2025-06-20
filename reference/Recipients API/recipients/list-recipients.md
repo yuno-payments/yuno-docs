@@ -6,5 +6,5 @@ excerpt: >-
 api:
   file: openapi.json
   operationId: list-recipients
-hidden: false
+hidden: true
 ---
