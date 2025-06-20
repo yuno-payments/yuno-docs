@@ -131,12 +131,6 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 
 After integrating the SDK using one of the methods described above, follow these steps to implement the full checkout functionality:
 
-<Shelf classname="link_cards_container">
-  <YunoCard title="Yuno Web SDK v1.1" href="#yuno-web-sdk-v1.1" titleSize="h4" />
-
-  <YunoCard title="Yuno Web SDK v1.0" href="#yuno-web-sdk-v1.0" titleSize="h4" />  
-</Shelf>
-
 ## Yuno Web SDK v1.1
 
 Follow this step-by-step guide to implement and enable Yuno's Full Web SDK functionality in your application.
@@ -168,7 +162,7 @@ The following table lists all required parameters and their descriptions. For op
 
 | Parameter                        | Description                                                                                                                                                                                                 |
 |----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `checkoutSession`                | Refers to the current payment's [checkout session](ref:create-checkout-session).<br>Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                       |
+| `checkoutSession`                | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                       |
 | `countryCode`                    | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
 | `language`                       | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul> |
 | `onLoading`                      | Required to receive notifications about server calls or loading events during the payment process.                                                                                                          |
@@ -563,7 +557,7 @@ To start the checkout, you'll use the function `yuno.startCheckout`, providing t
 The following table lists all required parameters and their descriptions. For optional parameters, go to [Complementary Features](https://docs.y.uno/docs/full-checkout-sdk#complementary-features).
 | Parameter                        | Description                                                                                                                                                                                                 |
 |----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `checkoutSession`                | Refers to the current payment's [checkout session](ref:create-checkout-session).<br>Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                       |
+| `checkoutSession`                | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                       |
 | `countryCode`                    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
 | `language`                       | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul> |
 | `onLoading`                      | Required to receive notifications about server calls or loading events during the payment process.                                                                                                          |
