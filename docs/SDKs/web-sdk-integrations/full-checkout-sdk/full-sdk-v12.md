@@ -29,15 +29,6 @@ Starting from version 1.2.0, the `continuePayment` method now accepts additional
 | `countryCode`       | Specifies the country code for the payment process. Use an `ENUM` value representing the desired country code.                                                                                                                           |
 | `language`          | Defines the language to be used in the payment forms. Available options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul> |
 
-| Parameter           | Description                                                                                                                                                                   |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkoutSession`   | The checkout session for the current payment. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                               |
-| `showPaymentStatus` | Controls whether to show the Yuno Payment Status page. By default, it's `true`.                                                                                               |
-| `yunoPaymentResult` | Callback function that executes when the payment result is obtained. Receives the payment status as a parameter.                                                              |
-| `yunoError`         | Callback function that executes when an error occurs during the payment process. Receives the error message and optional additional data.                                     |
-| `countryCode`       | Specifies the country code for the payment process. Use an `ENUM` value representing the desired country code.                                                                |
-| `language`          | Defines the language to be used in the payment forms. Available options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), th (Thai). |
-
 ### Example usage
 
 ```javascript
