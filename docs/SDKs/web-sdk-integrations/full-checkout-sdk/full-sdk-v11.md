@@ -204,7 +204,7 @@ When the method returns an object, it allows you to handle your application's pa
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Form loader](doc:/docs/full-sdk-v11#form-loader)
+* [Form loader](#form-loader)
 * [Render mode ](doc:web-sdk-integration-guide-v11#mode-of-form-rendering)
 * [Card form configurations ](doc:web-sdk-integration-guide-v11#card-form-configurations)
   * [Save Card for future payments](doc:web-sdk-integration-guide-v11#save-card-for-future-payments)
