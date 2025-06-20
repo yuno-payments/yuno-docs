@@ -12,9 +12,9 @@ next:
 ---
 On this page, you will find all the steps to add, configure, and use the Seamless iOS SDK to make payments in your iOS project.
 
-> 📘 Recommended SDKs
+> 📘 Recommended SDK
 >
-> We recommend using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
+> We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
 ## Step 1: Include the library in your project
 

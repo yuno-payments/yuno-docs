@@ -12,9 +12,9 @@ next:
 ---
 Yuno's Headless SDK lets you create payments. Note that when using the Headless SDK, you will need to request and send via API all the mandatory fields the payment provider requires to generate payment in their API.
 
-> 📘 Recommended SDKs
+> 📘 Recommended SDK
 >
-> We recommend using the [Web Full SDK](full-checkout-sdk) or the [Web Lite SDK](lite-checkout-sdk) for a smooth integration experience. These options provide a complete solution with built-in forms and validation.
+> We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
 Yuno's Headless SDK enables you to create payments in two different scenarios:
 

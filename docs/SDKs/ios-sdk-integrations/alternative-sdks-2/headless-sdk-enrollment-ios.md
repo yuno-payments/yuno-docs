@@ -12,9 +12,9 @@ next:
 ---
 Yuno's Headless iOS SDK lets you enroll in payment methods and tokenize cards, saving them for future use.
 
-> 👍 Recommended SDKs
+> 👍 Recommended SDK
 >
-> For a smooth integration experience, consider using the [iOS Full SDK](full-checkout-ios) or the [iOS Lite SDK](enrollment-ios). These options provide a complete solution with built-in forms and validation.
+> For a smooth integration experience, consider using the [iOS Seamless SDK](seamless-sdk-payment-ios). This option provides a flexible payment solution with pre-built UI components and customization options.
 
 The following steps describe enrolling a payment method using Yuno's Headless SDK.
 
