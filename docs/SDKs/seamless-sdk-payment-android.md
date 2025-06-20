@@ -31,6 +31,8 @@ The Seamless SDK includes features like:
 
 For merchants requiring complete UI control or more advanced features, consider using our [Full SDK](doc:full-sdk-android) instead.
 
+<Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+
 ## Requirements
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
