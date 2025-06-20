@@ -67,9 +67,9 @@ The Lite checkout enables you to configure the appearance and process. It is an 
 
 ```swift
 final class YunoConfig {
-    let cardFormType: CardFormType, 
+    let cardFormType: CardFormType,
     let appearance: Yuno.Appearance,
-    let saveCardEnabled: Bool, 
+    let saveCardEnabled: Bool,
     let keepLoader: Bool
 }
 ```
@@ -101,7 +101,7 @@ protocol YunoPaymentDelegate: AnyObject {
     var viewController: UIViewController? { get }
 
     func yunoCreatePayment(with token: String)
-    func yunoCreatePayment(with token: String, information: [String: Any]) 
+    func yunoCreatePayment(with token: String, information: [String: Any])
     func yunoPaymentResult(_ result: Yuno.Result)
 }
 
@@ -117,7 +117,7 @@ class ViewController: YunoPaymentDelegate {
 
 The following table presents all the protocol requirements you have to provide and their descriptions.
 
-<Table>
+<Table align={["left","left"]}>
   <thead>
     <tr>
       <th>
@@ -167,7 +167,7 @@ The following table presents all the protocol requirements you have to provide a
       </td>
 
       <td>
-        * en (English)
+        * `en` (English)
       </td>
     </tr>
 
@@ -177,7 +177,7 @@ The following table presents all the protocol requirements you have to provide a
       </td>
 
       <td>
-        * es (Spanish)
+        * `es` (Spanish)
       </td>
     </tr>
 
@@ -187,7 +187,7 @@ The following table presents all the protocol requirements you have to provide a
       </td>
 
       <td>
-        * pt (Portuguese)
+        * `pt` (Portuguese)
       </td>
     </tr>
 
@@ -286,7 +286,7 @@ The parameter `showPaymentStatus` is used to determine whether the payment statu
 
 > ❗️ Deep Links and Mercado Pago Checkout Pro
 >
-> This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don’t use deep links, you can skip this step.
+> This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don't use deep links, you can skip this step.
 
 Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back to your app using a deep link. The SDK uses this deep link to check what happened, checking if the payment was successful, failed, or canceled, and can show a status screen to the user.
 
@@ -348,6 +348,459 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 
 * [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
-> 📘 Demo App
+## Render mode integration
+
+The render mode in the Yuno SDK offers enhanced UI flexibility, enabling developers to integrate payment flows with complete control over the user interface while retaining full SDK functionality. This mode provides SwiftUI views that can be seamlessly incorporated into your existing UI.
+
+### Main function: `startPaymentRender`
+
+The `startPaymentRender` function is a feature of the Yuno SDK that allows merchants to integrate the payment process in a more detailed and customizable manner. This function grants full control over when and how payment forms are displayed, facilitating smoother integration with the merchant's existing application UI.
+
+#### Purpose
+
+This function is designed to offer greater control over the payment flow, allowing merchants to:
+
+* Integrate payment forms in a customized manner within their own UI.
+* Precisely control when payment data forms are displayed.
+* Gain detailed control over the payment confirmation process.
+* Provide a more fluid and consistent user experience within the merchant's application.
+
+#### Syntax
+
+The syntax section provides the method signature for the `startPaymentRender` function. This function is central to integrating the payment process within your application, offering a customizable and detailed approach to handling payment forms and flows.
+
+```swift
+@MainActor static func startPaymentRender(
+    paymentMethodSelected: PaymentMethodSelected,
+    with delegate: YunoPaymentDelegate
+) -> some YunoPaymentRenderFlowProtocol
+```
+
+#### Parameters
+
+The `startPaymentRender` function requires specific parameters to operate effectively. These parameters are essential for defining the payment method and handling the payment process responses. Below is a detailed description of each parameter:
+
+| Parameter               | Type                    | Description                                                                                                      |
+| ----------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodSelected` | `PaymentMethodSelected` | The payment method selected by the user. Must include the `vaultedToken` (if exists) and the `paymentMethodType` |
+| `delegate`              | `YunoPaymentDelegate`   | The delegate that will handle payment process responses, including token creation and final result               |
+
+#### Return value
+
+Returns an instance that conforms to `YunoPaymentRenderFlowProtocol`, which provides methods to handle the payment rendering flow.
+
+### YunoPaymentRenderFlowProtocol protocol
+
+The instance returned by `startPaymentRender` conforms to this protocol which includes the following methods:
+
+#### formView(paymentMethodSelected:with:)
+
+```swift
+func formView(
+    paymentMethodSelected: PaymentMethodSelected,
+    with delegate: YunoPaymentDelegate
+) async -> AnyView?
+```
+
+* **Purpose**: Gets the form view to capture payment data
+* **Behavior**:
+  * If the payment method requires showing a form, returns an `AnyView` with the corresponding form
+  * If the payment method doesn't need to show any form (e.g., already configured methods), returns `nil`
+* **When to use**: Call immediately after creating the payment flow instance
+
+#### submitForm()
+
+```swift
+func submitForm()
+```
+
+* **Purpose**: Submits form data for validation
+* **Behavior**: Executes all necessary validations and, if successful, proceeds to generate a new one-time token
+* **When to use**: When the user executes the "pay" action in the merchant's application
+
+#### continuePayment()
+
+```swift
+func continuePayment() async -> AnyView?
+```
+
+* **Purpose**: Continues the payment process after the one-time token has been generated
+* **Behavior**:
+  * If it's necessary to show any additional view (e.g., 3DS authentication), returns an `AnyView`
+  * If no additional view is required, returns `nil`
+* **When to use**: After receiving the one-time token through the delegate and creating the payment
+
+### Implementation flow
+
+This section outlines the sequence of steps required to implement the payment rendering process using the Yuno SDK.
+
+#### Step 1: Initial setup
+
+To begin using `startPaymentRender`, make sure the SDK is properly initialized and you possess a valid `checkoutSession`. Follow the steps below to set up your environment:
+
+```swift
+// Initialize the SDK
+await Yuno.initialize(apiKey: "your_api_key")
+
+// Start checkout to get the configured delegate
+Yuno.startCheckout(with: self) // where self conforms to YunoPaymentDelegate
+```
+
+#### Step 2: Create payment flow instance
+
+Create a payment flow instance to manage and render the payment process using the selected method.
+
+```swift
+// Create the render flow instance
+let paymentFlow = Yuno.startPaymentRender(
+    paymentMethodSelected: selectedPaymentMethod,
+    with: self // YunoPaymentDelegate
+)
+```
+
+#### Step 3: Get and display the form
+
+Retrieve and present the payment form to collect user payment information efficiently.
+
+```swift
+// Get the form view
+let formView = await paymentFlow.formView(
+    paymentMethodSelected: selectedPaymentMethod,
+    with: self
+)
+
+// Display the view if it exists
+if let formView = formView {
+    // Integrate formView into your existing UI
+    // For example, in SwiftUI:
+    VStack {
+        // Your custom content
+        Text("Payment Information")
+
+        // SDK form
+        formView
+
+        // Your custom button
+        Button("Pay") {
+            paymentFlow.submitForm()
+        }
+    }
+} else {
+    // No form required, proceed directly
+    paymentFlow.submitForm()
+}
+```
+
+#### Step 4: Handle the one time token
+
+Implement the delegate method to receive the token:
+
+```swift
+extension MyViewController: YunoPaymentDelegate {
+    var checkoutSession: String {
+        return "your_checkout_session"
+    }
+
+    var countryCode: String {
+        return "CO" // or the corresponding country code
+    }
+
+    var viewController: UIViewController? {
+        return self
+    }
+
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        // The SDK has generated a one-time token
+        // Create the payment in your backend using this token
+        createPaymentInBackend(token: token) { [weak self] success in
+            if success {
+                // Continue the payment process
+                Task {
+                    let additionalView = await self?.paymentFlow?.continuePayment()
+                    if let additionalView = additionalView {
+                        // Show additional view if necessary
+                        self?.showAdditionalView(additionalView)
+                    }
+                    // If additionalView is nil, the payment will complete automatically
+                }
+            }
+        }
+    }
+
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        // Handle the final payment result
+        switch result {
+        case .succeeded:
+            // Successful payment
+            showSuccessMessage()
+        case .reject:
+            // Rejected payment
+            showRejectionMessage()
+        case .fail:
+            // Failed payment
+            showErrorMessage()
+        case .processing:
+            // Payment in process
+            showProcessingMessage()
+        case .userCancell:
+            // User cancelled
+            handleCancellation()
+        case .internalError:
+            // Internal error
+            showInternalErrorMessage()
+        }
+    }
+}
+```
+
+### Complete example
+
+```swift
+import SwiftUI
+import YunoSDK
+
+struct PaymentRenderView: View {
+    @State private var paymentFlow: YunoPaymentRenderFlowProtocol?
+    @State private var formView: AnyView?
+    @State private var additionalView: AnyView?
+
+    let selectedPaymentMethod: PaymentMethodSelected
+    let delegate: YunoPaymentDelegate
+
+    var body: some View {
+        VStack(spacing: 20) {
+            // Custom header
+            Text("Complete Purchase")
+                .font(.title2)
+                .fontWeight(.bold)
+
+            // Order summary
+            OrderSummaryView()
+
+            // Payment form (if necessary)
+            if let formView = formView {
+                VStack(alignment: .leading) {
+                    Text("Payment Information")
+                        .font(.headline)
+
+                    formView
+                }
+            }
+
+            // Additional view (e.g., 3DS)
+            if let additionalView = additionalView {
+                additionalView
+            }
+
+            Spacer()
+
+            // Custom payment button
+            Button(action: {
+                paymentFlow?.submitForm()
+            }) {
+                Text("Confirm Payment")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+        }
+        .padding()
+        .onAppear {
+            setupPaymentFlow()
+        }
+    }
+
+    private func setupPaymentFlow() {
+        // Create the payment flow
+        paymentFlow = Yuno.startPaymentRender(
+            paymentMethodSelected: selectedPaymentMethod,
+            with: delegate
+        )
+
+        // Get the form view
+        Task {
+            formView = await paymentFlow?.formView(
+                paymentMethodSelected: selectedPaymentMethod,
+                with: delegate
+            )
+        }
+    }
+}
+
+// Delegate implementation
+class PaymentDelegate: YunoPaymentDelegate {
+    let checkoutSession: String
+    let countryCode: String
+    weak var viewController: UIViewController?
+
+    init(checkoutSession: String, countryCode: String, viewController: UIViewController?) {
+        self.checkoutSession = checkoutSession
+        self.countryCode = countryCode
+        self.viewController = viewController
+    }
+
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        // Implement logic to create the payment
+        PaymentService.createPayment(token: token) { [weak self] result in
+            switch result {
+            case .success:
+                Task {
+                    // Continue the payment process
+                    await self?.continuePaymentProcess()
+                }
+            case .failure(let error):
+                print("Error creating payment: \(error)")
+            }
+        }
+    }
+
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        DispatchQueue.main.async {
+            // Handle final result
+            switch result {
+            case .succeeded:
+                NotificationCenter.default.post(name: .paymentSucceeded, object: nil)
+            case .reject:
+                NotificationCenter.default.post(name: .paymentRejected, object: nil)
+            // ... other cases
+            }
+        }
+    }
+
+    private func continuePaymentProcess() async {
+        // This function would be called from yunoCreatePayment
+        // after successfully creating the payment in the backend
+    }
+}
+```
+
+### Common use cases
+
+This section outlines typical scenarios where the Yuno SDK can be utilized to handle various payment methods, providing flexibility and ease of integration.
+
+#### 1. Credit card payment
+
+In this use case, we demonstrate how to process payments using new credit card information, requiring the user to fill out a form to capture the necessary card details.
+
+```swift
+// For payment methods that require a form (new cards)
+let cardPayment = CardPaymentMethod(paymentMethodType: "CARD")
+let flow = Yuno.startPaymentRender(paymentMethodSelected: cardPayment, with: delegate)
+
+// Will show form to capture card data
+let form = await flow.formView(paymentMethodSelected: cardPayment, with: delegate)
+```
+
+#### 2. Payment with saved method
+
+This scenario demonstrates using a saved payment method, allowing users to pay without re-entering details by utilizing a vaulted token.
+
+```swift
+// For already saved payment methods (don't require form)
+let savedCard = SavedCardPayment(
+    paymentMethodType: "CARD",
+    vaultedToken: "saved_token_123"
+)
+let flow = Yuno.startPaymentRender(paymentMethodSelected: savedCard, with: delegate)
+
+// Will return nil since no form is required
+let form = await flow.formView(paymentMethodSelected: savedCard, with: delegate)
+// form will be nil
+```
+
+#### 3. Payment with 3DS authentication
+
+3D Secure (3DS) adds an extra verification step for enhanced security. The Yuno SDK integrates this process into your payment flow seamlessly.
+
+```swift
+// After creating the payment, if it requires 3DS
+func yunoCreatePayment(with token: String, information: [String: Any]) {
+    createPayment(token: token) { [weak self] success in
+        if success {
+            Task {
+                // May return a view for 3DS
+                let authView = await self?.paymentFlow?.continuePayment()
+                if let authView = authView {
+                    self?.show3DSView(authView)
+                }
+            }
+        }
+    }
+}
+```
+
+### Important considerations
+
+This section highlights key points for integrating the Yuno SDK effectively, ensuring a seamless and secure payment process.
+
+#### Prerequisites
+
+* Make sure to call `Yuno.startCheckout(with:)` before using `startPaymentRender`
+* The delegate must implement all required methods of `YunoPaymentDelegate`
+* The `checkoutSession` must be valid and active
+
+#### State management
+
+* Always check if `formView()` returns `nil` before displaying the view
+* Properly handle the case where `continuePayment()` returns `nil`
+* Implement loading states during asynchronous operations
+
+#### Security
+
+* Never store one-time tokens - use them immediately
+* Always validate payment results in your backend
+* Implement appropriate timeouts for network operations
+
+#### Performance
+
+* Calls to `formView()` and `continuePayment()` are asynchronous
+* Consider showing loading indicators during these operations
+* Reuse the payment flow instance when possible
+
+### Troubleshooting
+
+This section offers quick solutions to common issues encountered during Yuno SDK integration, ensuring a smoother payment process.
+
+#### Common issues
+
+1. **`formView()`always returns`nil`**
+   * Verify that the selected payment method requires a form
+   * Ensure the SDK is initialized correctly
+
+2. **Delegate doesn't receive`yunoCreatePayment`**
+   * Verify that `submitForm()` is being called correctly
+   * Confirm that the form has valid data
+
+3. **`continuePayment()`doesn't return view when expected**
+   * Some payment methods don't require additional views
+   * Check the payment method configuration in your Yuno dashboard
+
+#### Debugging logs
+
+```swift
+// Enable logs for debugging
+Yuno.config.environment = .staging // or .sandbox for testing
+```
+
+### Migration from other methods
+
+If you're migrating from `startPayment()` or `startPaymentLite()`:
+
+```swift
+// Previous method
+Yuno.startPayment(showPaymentStatus: true)
+
+// New render method
+let flow = Yuno.startPaymentRender(paymentMethodSelected: method, with: delegate)
+let form = await flow.formView(paymentMethodSelected: method, with: delegate)
+// Integrate form into your custom UI
+```
+
+The primary benefit of using the new method is the detailed control it provides over both the user interface and the payment process.
+
+> 📘 Demo app
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
