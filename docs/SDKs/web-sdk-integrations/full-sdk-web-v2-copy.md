@@ -1,5 +1,5 @@
 ---
-title: Full SDK (Web) v2 (COPY)
+title: Full SDK (Web) v3
 deprecated: false
 hidden: true
 metadata:
