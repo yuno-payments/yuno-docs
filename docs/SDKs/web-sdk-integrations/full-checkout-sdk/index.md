@@ -14,6 +14,10 @@ metadata:
 next:
   description: ''
 ---
+> 👍 Recommended SDK
+>
+> We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+
 Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
 
 > 📘 Web SDK v1.1 Release

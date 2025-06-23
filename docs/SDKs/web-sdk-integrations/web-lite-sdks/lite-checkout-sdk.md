@@ -12,6 +12,10 @@ metadata:
 next:
   description: ''
 ---
+> 👍 Recommended SDK
+>
+> We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+
 > 📘 Web SDK v1.1 Release
 >
 > v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, [visit the Web SDK v1.1 page](https://docs.y.uno/docs/yuno-web-sdk-v11).
