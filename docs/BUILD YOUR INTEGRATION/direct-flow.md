@@ -1,5 +1,5 @@
 ---
-title: Direct Flow
+title: Direct Flow Integration
 excerpt: ''
 deprecated: false
 hidden: false
