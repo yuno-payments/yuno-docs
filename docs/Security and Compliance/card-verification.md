@@ -34,7 +34,7 @@ With the above configurations, all card verifications will be processed followin
 > 📘 Select the Correct Provider
 >
 > * The credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.
-> * Yuno uses a zero-dollar authorization for card validations. If the provider does not support this flow, we will instead:
+> * Yuno uses a zero-dollar authorization for card validations. If the provider does not support this flow, we will internally:
 >   * Authorize the minimum possible amount and then cancel the authorization for credit cards.
 >   * Perform a purchase for the minimum possible amount and then refund it for debit cards.
 
