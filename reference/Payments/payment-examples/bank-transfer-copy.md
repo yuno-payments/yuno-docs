@@ -16,6 +16,10 @@ This page presents examples of requests and responses for creating Bank Transfer
 
 To test the creation of each payment, you can copy the content from the request code and use it on your machine or paste it on the [Create Payment](ref:create-payment) endpoint to test using Readme.
 
+> 🚧 Important
+>
+> Some payment methods and providers may only be available in specific countries and/or currencies. Make sure you choose the right provider for your needs.
+
 ## Bank Transfer available examples
 
 <HTMLBlock>{`
