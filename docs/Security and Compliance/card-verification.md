@@ -33,7 +33,10 @@ With the above configurations, all card verifications will be processed followin
 
 > 📘 Select the Correct Provider
 >
-> The credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.
+> * The credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.
+> * Yuno uses a zero-dollar authorization for card validations. If the provider does not support this flow, we will internally:
+>   * Authorize the minimum possible amount and then cancel the authorization for credit cards.
+>   * Perform a purchase for the minimum possible amount and then refund it for debit cards.
 
 In addition to creating the route, you need to choose when to use the validation. You can verify cards during the [enrollment process](https://docs.y.uno/reference/enroll-payment-method-checkout) or while making a credit [card payment](https://docs.y.uno/reference/create-payment). Depending on your chosen process, you should use different endpoints or SDK functions.
 
