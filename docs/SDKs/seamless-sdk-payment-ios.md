@@ -12,9 +12,9 @@ next:
 ---
 On this page, you will find all the steps to add, configure, and use the Seamless iOS SDK to make payments in your iOS project.
 
-> 📘 Recommended SDK
+> 👍 Recommended SDK
 >
-> We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+> We recommend using the **iOS Seamless SDK** for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
 <Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
