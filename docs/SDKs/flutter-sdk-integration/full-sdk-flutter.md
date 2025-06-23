@@ -10,6 +10,10 @@ metadata:
 next:
   description: ''
 ---
+> 👍 Recommended SDK
+>
+> We recommend using the [Flutter Seamless SDK](seamless-flutter) for a smooth integration experience. This option offers a flexible payment solution with pre-built UI components and customization options.
+
 This page provides a step-by-step guide to integrating the Full Flutter SDK functionalities into your application.
 
 > 📘 Dependencies

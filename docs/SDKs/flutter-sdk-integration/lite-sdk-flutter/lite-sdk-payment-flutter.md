@@ -10,6 +10,10 @@ metadata:
 next:
   description: ''
 ---
+> 👍 Recommended SDK
+>
+> We recommend using the [Flutter Seamless SDK](seamless-flutter) for a smooth integration experience. This option offers a flexible payment solution with pre-built UI components and customization options.
+
 This page outlines the steps to integrate the Lite Flutter SDK payment functionalities into your project. Follow these instructions to add, configure, and use the Yuno Flutter SDK.
 
 > 🚧 Prerequisites
