@@ -15,43 +15,43 @@ next:
 ---
 Token migration is the process of transferring card numbers from an existing provider to Yuno's secure vault. During this process, a new token is generated for each card, ensuring seamless continuity and security for payment processing. The token migration process consists of three main steps:
 
-1. The merchant requests the token migration process to its current payment processor.
-2. Yuno and the payment provider collaborate to securely import all card data into the Yuno Token Vault.
-3. The merchant uses Yuno's Token Migration API to map the tokens from the payment provider to the `vaulted_tokens` of Yuno.
+1. The merchant requests the token migration process from their current payment processor.
+2. Yuno and the payment provider collaborate to securely import all card data into the Yuno token vault.
+3. The merchant uses Yuno's token migration API to map the tokens from the payment provider to the `vaulted_tokens` of Yuno.
 
-> 📘 First Step
+> 📘 First step
 >
 > To initiate the token migration process, contact your business advisor at Yuno to assess the viability and schedule of the procedure.
 
 ## Importing cards from a gateway account (steps 1 and 2)
 
-Since token migration involves sensitive information, strict security protocols must be followed. To import card data into Yuno from an existing gateway, complete the following steps:
+Importing card data from a gateway account involves handling sensitive information, so strict security protocols must be followed. To import card data into Yuno from an existing gateway, complete the following steps:
 
-1. **Coordinate with the Current Gateway:** Contact your current third-party vault or gateway and request an export of the payment method data. Ensure you follow their specified protocols.
-2. **Complete the Formal Request:** Submit a formal request to Yuno, ensuring all required details and processes are documented. The gateway's response time and procedures will determine the data transfer process.
+1. **Coordinate with the current gateway:** Contact your current third-party vault or gateway and request an export of the payment method data. Ensure you follow their specified protocols.
+2. **Complete the formal request:** Submit a formal request to Yuno, ensuring all required details and processes are documented. The gateway's response time and procedures will determine the data transfer process.
 
 > 🚧 Your responsibilities when migrating tokens
 >
-> You are responsible for managing communication with your gateway provider throughout the migration process. The Yuno team will support and collaborate directly with the third-party vault/gateway to facilitate the importing process. In addition, the customer subscription information, including amounts, dates, etc., must be obtained directly from the exporting entity, as Yuno will not extract this data from encrypted files.
+> You are responsible for managing communication with your gateway provider throughout the migration process. The Yuno team will support and collaborate directly with the third-party vault/gateway to facilitate the importing process. Additionally, the customer subscription information, including amounts, dates, etc., must be obtained directly from the exporting entity, as Yuno will not extract this data from encrypted files.
 
-> 📘 Data Transfer Security
+> 📘 Data transfer security
 >
 > All data throughout the migration process is encrypted using PGP keys and transferred using SFTP (Secure File Transfer Protocol).
 
-## Client Side Requirements (step 3)
+## Client-side requirements (step 3)
 
-At this point, you will provide the user's data (the buyers) and their existing payment methods.
+To successfully complete the token migration process, it is essential to fulfill the client-side requirements outlined in step 3. This involves providing the necessary user data, including the buyers and their existing payment methods.
 
-Currently, you can execute the token migration process using the Yuno API, which is specifically designed for merchant use. As a merchant, you will use this API to:
+You can execute the token migration process using the Yuno API, which is specifically designed for merchants. As a merchant, you will use this API to:
 
-1. **Add customers**: Create customers into the Yuno system.
-2. **Enroll payment methods**: Enroll payment methods acquired from payment processors for each customer on the Yuno system.
+1. **Add customers**: Register customers in the Yuno system.
+2. **Enroll payment methods**: Register payment methods obtained from payment processors for each customer in the Yuno system.
 
-> 📘 API Migration Option
+> 📘 API migration option
 >
-> The API migration option is available for merchants to use to manage their customers and their respective payment data. [Learn more](#api-migration)
+> The API migration option allows merchants to manage their customers and their respective payment data. [Learn more](#api-migration)
 
-Access the step-by-step guide on how to perform the token migration using the API using the button below:
+For a detailed guide on performing token migration using the API, click the button below:
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Token migration via API" href="via-api" titleSize="h4" />
@@ -59,7 +59,7 @@ Access the step-by-step guide on how to perform the token migration using the AP
 
 ### Data format
 
-Yuno defines the required parameters for each customer and credit card to proceed with the migration process. The list of the required parameters is present below:
+Yuno specifies the required parameters for each customer and credit card to proceed with the migration process. The required parameters are listed below:
 
 * Account ID
 * Merchant customer ID
@@ -73,39 +73,39 @@ Yuno defines the required parameters for each customer and credit card to procee
 * Payment method ID
 * Payment method token
 
-You can use the [Customer Object](ref:the-customer-object) and [Payment Method Object](ref:the-payment-method-object-api) to find all the possible parameters that can be used when importing/creating customers or enrolling payment objects.
+Refer to the [Customer Object](ref:the-customer-object) and [Payment Method Object](ref:the-payment-method-object-api) to explore all possible parameters for importing/creating customers or enrolling payment objects.
 
-Different technical limitations associated with alternative payment methods may render them ineligible for migration between service providers. Contact the Yuno support team if you're contemplating the migration of alternative payment method tokens, such as Mercado Pago Wallet Connect, Bancolombia Tokenbox, etc., to the Yuno vault.
+Technical limitations associated with alternative payment methods may make them ineligible for migration between service providers. If you are considering migrating alternative payment method tokens, such as Mercado Pago Wallet Connect or Bancolombia Tokenbox, to the Yuno vault, please contact the Yuno support team.
 
 ## Data validation
 
-To ensure efficient processing and prevent delays, please include the following information when communicating with Support:
+To ensure efficient processing and prevent delays during the token migration process, please provide the following information when communicating with Yuno Support:
 
-* The external identifier name to be used for the import.
+* The external identifier name that will be used for the import.
 * An approximate count of the expected number of payment methods to be included (a rough estimate is acceptable).
 * Any known data gaps, such as missing names or expiration dates.
 
-> 🚧 Important Notice
+> 🚧 Important notice
 >
 > Yuno does not validate expiration dates during credit card import.
 
 ## Data protection
 
-When making payments through Yuno, the platform connects to payment processors. Yuno tokenizes and encrypts the data to ensure data security, simplifying the PCI compliance process. However, you remain responsible for managing and protecting your customer's (the buyer's) data. In addition, you are responsible for communicating any additional fees or other issues to your customer.
+When processing payments through Yuno, the platform connects to payment processors. Yuno tokenizes and encrypts the data to ensure security, simplifying the PCI compliance process. However, you are responsible for managing and protecting your customer's data. Additionally, you must communicate any additional fees or issues to your customer.
 
-## Gateway / Payment Provider Requirements
+## Gateway and payment provider requirements
 
-To move forward with the process, you'll be requested to provide the following:
+To proceed with the migration process, you will need to provide the following:
 
-* A public SSH key (you can provide one for production and another for testing). For this, you can use the following command: `ssh-keygen -t rsa -b 4096 -C your_email@example.com`
+* A public SSH key (you can provide one for production and another for testing). Use the following command to generate it: `ssh-keygen -t rsa -b 4096 -C your_email@example.com`
 * The outbound IPs that will be used during the migration.
 * A template file of the data to be migrated to understand its structure. It must include the following mandatory data:
-  * **Cardholder Name**: The full name of the cardholder as stored by the current provider.
-  * **Expiration Date**: The expiry date of the card.
-  * **Card Number**: The complete card number (PAN) that will be tokenized by Yuno.
+  * **Cardholder name**: The full name of the cardholder as stored by the current provider.
+  * **Expiration date**: The expiry date of the card.
+  * **Card number**: The complete card number (PAN) that will be tokenized by Yuno.
   * **Card ID**: A unique identifier assigned to each card by the current provider, used by the client for referencing that card during transactions.
 
-### PGP Public Key
+### PGP public key
 
 Use our public key to encrypt the PCI-sensitive files you send to Yuno.
 
