@@ -19,7 +19,7 @@ next:
 
 On this page, you will find all the steps to add, configure, and use the Lite iOS SDK to make payments in your iOS project.
 
-##Requirements
+## Requirements
 
 In order to implement the Yuno iOS SDK, first, you need to address the following requirements:
 
