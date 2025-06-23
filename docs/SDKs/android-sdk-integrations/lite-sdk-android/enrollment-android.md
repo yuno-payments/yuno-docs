@@ -13,6 +13,10 @@ metadata:
 next:
   description: ''
 ---
+> 👍 Recommended SDK
+>
+> We recommend using the [Android Seamless SDK](seamless-sdk-payment-android) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+
 The Yuno Lite SDK for Android provides a pre-built UI solution focused on payment method enrollment. This SDK offers a streamlined integration process with essential enrollment functionality, making it ideal for merchants who:
 
 * Need a quick implementation with minimal customization requirements

@@ -13,11 +13,11 @@ metadata:
 next:
   description: ''
 ---
-Yuno's Headless SDK lets you enroll in payment methods and tokenize cards, saving them for future usage.
-
-> 📘 Recommended SDK
+> 👍 Recommended SDK
 >
 > We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+
+Yuno's Headless SDK lets you enroll in payment methods and tokenize cards, saving them for future usage.
 
 The following steps describe creating a payment using Yuno's Headless SDK.
 

@@ -13,6 +13,10 @@ metadata:
 next:
   description: ''
 ---
+> 👍 Recommended SDK
+>
+> We recommend using the [Android Seamless SDK](seamless-sdk-payment-android) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+
 The Yuno Full SDK for Android provides a complete payment solution with a customizable UI. It offers advanced features like payment method management, fraud prevention, and seamless checkout flows, making it more feature-rich than our Headless SDK, which is specific to core payment processing capabilities.
 
 ## Requirements

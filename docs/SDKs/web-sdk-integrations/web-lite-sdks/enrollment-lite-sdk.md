@@ -12,6 +12,10 @@ metadata:
 next:
   description: ''
 ---
+> 👍 Recommended SDK
+>
+> We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK enrollment functionality in your application.
 
 ## Step 1: Include the library in your project

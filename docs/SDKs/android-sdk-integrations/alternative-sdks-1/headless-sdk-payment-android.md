@@ -10,11 +10,11 @@ metadata:
 next:
   description: ''
 ---
-The Headless Android SDK provides a flexible, low-level integration option that gives you complete control over the payment UI and flow.
-
 > 👍 Recommended SDK
 >
 > For a smooth integration experience, we recommend using the [Android Seamless SDK](seamless-sdk-payment-android). This option provides a flexible payment solution with pre-built UI components and customization options.
+
+The Headless Android SDK provides a flexible, low-level integration option that gives you complete control over the payment UI and flow.
 
 This SDK is ideal for merchants who:
 
