@@ -10,11 +10,13 @@ metadata:
 next:
   description: ''
 ---
-The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards.
-
 > 👍 Recommended SDK
 >
-> We recommend using the [Android Seamless SDK](seamless-sdk-payment-android) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+> For a smooth integration experience, we recommend using the [Android Seamless SDK](seamless-sdk-payment-android). This option provides a flexible payment solution with pre-built UI components and customization options.
+
+This option provides a flexible payment solution with pre-built UI components and customization options.
+
+The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards.
 
 This SDK offers complete control over the payment method enrollment process, making it ideal for merchants who:
 
