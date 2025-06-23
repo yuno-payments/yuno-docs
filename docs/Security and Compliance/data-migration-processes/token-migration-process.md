@@ -27,8 +27,8 @@ Token migration is the process of transferring card numbers from an existing pro
 
 Importing card data from a gateway account involves handling sensitive information, so strict security protocols must be followed. To import card data into Yuno from an existing gateway, complete the following steps:
 
-1. **Coordinate with the current gateway:** Contact your current third-party vault or gateway and request an export of the payment method data. Ensure you follow their specified protocols.
-2. **Complete the formal request:** Submit a formal request to Yuno, ensuring all required details and processes are documented. The gateway's response time and procedures will determine the data transfer process.
+1. **Coordinate with the current gateway**: Contact your current third-party vault or gateway and request an export of the payment method data. Ensure you follow their specified protocols.
+2. **Complete the formal request**: Submit a formal request to Yuno, ensuring all required details and processes are documented. The gateway's response time and procedures will determine the data transfer process.
 
 > 🚧 Your responsibilities when migrating tokens
 >
