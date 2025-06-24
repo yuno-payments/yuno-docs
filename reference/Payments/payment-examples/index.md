@@ -57,7 +57,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 {
     "id": "182ffc6e-9b3b-4e66-855b-94d2cfe07354",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "SDK Checkout",
+    "description": "Test Card",
     "country": "US",
     "status": "SUCCEEDED",
     "sub_status": "APPROVED",
@@ -214,7 +214,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "SDK Checkout",
+        "description": "Test Card",
         "merchant_reference": "referece_0001",
         "provider_data": {
             "id": "DLOCAL",
