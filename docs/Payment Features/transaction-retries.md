@@ -10,29 +10,37 @@ metadata:
 next:
   description: ''
 ---
-Yuno allows merchants to retry capture and refund transactions that received an error or declined responses from the provider by adding a field to the transaction request. This feature is designed to enhance transaction success rates and improve user experience. By setting the `simplified_mode` field to `true` in [capture](ref:capture-authorization) and [refund](ref:refund-payment) requests, Yuno will automatically retry failed transactions up to seven times within a 96-hour period. The system manages the following scenarios during the retry process:
+Yuno provides merchants with the ability to retry capture and refund transactions that have encountered errors or been declined by the provider. This feature aims to enhance transaction success rates and improve the user experience. By setting the `simplified_mode` field to `true` in [capture](ref:capture-authorization) and [refund](ref:refund-payment) requests, Yuno will automatically retry failed transactions up to seven times within a 96-hour period. The system handles the following scenarios during the retry process:
 
 #### Capture transactions
 
-| Payment while retry is ongoing          | Payment after succeeded retries                                      | Payment after failed retries                |
+Capture transactions can encounter various statuses during and after the retry process. The table below details these statuses:
+
+| Payment while retry is ongoing          | Payment after successful retries                                      | Payment after failed retries                |
 | :-------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------ |
 | SUCCEEDED / CAPTURE\_RETRY\_IN\_PROCESS | SUCCEEDED / CAPTURED or PARTIALLY\_CAPTURED depending on the amount. | SUCCEEDED / CAPTURE\_RETRY\_PROCESS\_FAILED |
 
 #### Refund transactions
 
-| Payment while retry is ongoing         | Payment after succeeded retries                                                 | Payment after failed retries |
+Refund transactions also have specific statuses during and after the retry process. The table below outlines these statuses:
+
+| Payment while retry is ongoing         | Payment after successful retries                                                 | Payment after failed retries |
 | :------------------------------------- | :------------------------------------------------------------------------------ | :--------------------------- |
 | SUCCEEDED / REFUND\_RETRY\_IN\_PROCESS | REFUNDED / REFUNDED or SUCCEEDED / PARTIALLY\_REFUNDED depending on the amount. | SUCCEEDED / APPROVED         |
 
 ## Benefits
 
-* **Improved Transaction Success Rates**: Automatic retries increase the likelihood of successful transaction completions, leading to higher approval rates and revenue generation.
-* **Enhanced User Experience**: Reduces user friction by automatically retrying failed transactions, improving overall customer satisfaction and retention.
-* **Operational Efficiency**: Automating retry attempts optimizes time and resources by reducing manual intervention for failed transactions, allowing teams to focus on strategic tasks.
+This feature provides several advantages:
+
+* **Improved transaction success rates**: Automatic retries enhance the likelihood of successful transaction completions, leading to higher approval rates and increased revenue.
+* **Enhanced user experience**: By automatically retrying failed transactions, user friction is reduced, improving overall customer satisfaction and retention.
+* **Operational efficiency**: Automating retry attempts optimizes time and resources by minimizing manual intervention for failed transactions, allowing teams to focus on strategic tasks.
 
 ## Retry scheme
 
-The following table describes the intervals between each retry. It is important to note that each retry is scheduled based on the timing of the last attempt, meaning the time between retries is cumulative:
+The retry scheme is crafted to maximize transaction success by scheduling retries at strategic intervals.
+
+The table below describes the intervals between each retry. Note that each retry is scheduled based on the timing of the last attempt, meaning the time between retries is cumulative:
 
 | Event       | Deadline after the first try |
 | :---------- | :--------------------------- |
@@ -42,13 +50,13 @@ The following table describes the intervals between each retry. It is important 
 | Fourth try  | 6 hours                      |
 | Fifth try   | 24 hours                     |
 | Sixth try   | 48 hours                     |
-| Seventh Try | 96 hours                     |
+| Seventh try | 96 hours                     |
 
-The table shows that each retry is performed based on the time elapsed since the previous attempt, not the initial attempt. For example, the fourth retry happens 6 hours after the third retry rather than 6 hours after the first attempt. The entire schedule consists of 7 days and 7 hours in total. 
+This table illustrates that each retry is performed based on the time elapsed since the previous attempt, not the initial attempt. For example, the fourth retry occurs 6 hours after the third retry rather than 6 hours after the first attempt. The entire schedule spans 7 days and 7 hours in total.
 
 ## Examples
 
-The following code block presents examples of capture authorization and refund requests using the simplified mode.
+Below are examples of capture authorization and refund requests using the simplified mode.
 
 ```Text Capture
 curl --request POST \
