@@ -10,34 +10,34 @@ metadata:
 next:
   description: ''
 ---
-Yuno enables merchants to handle overdue or declined payments through secure payment links. When a credit card expires or is reported stolen/lost, you can generate a payment link to share with customers via email or text message, allowing them to update their payment information easily.
+Yuno provides merchants with the ability to manage overdue or declined payments using secure payment links. When a credit card expires or is reported as stolen or lost, you can generate a payment link to share with customers via email or text message, allowing them to easily update their payment information.
 
-This feature is designed for merchants who manage their own subscription engine and need to update credit card details to continue processing payments with a new `vaulted_token` for their customers.
+This feature is tailored for merchants who operate their own subscription engine and need to update credit card details to continue processing payments with a new `vaulted_token` for their customers.
 
 ## Benefits
 
-* **Speed and Ease**: Users can resolve payment issues instantly without logging into their account or re-entering all their details
-* **Seamless Update**: The new card used in the payment link is automatically saved when the previous card expires or is blocked, preventing future payment issues
-* **Enhanced Security**: All payments made through the link are protected with advanced encryption technology
+* **Speed and ease**: Users can resolve payment issues instantly without logging into their account or re-entering all their details
+* **Seamless update**: The new card used in the payment link is automatically saved when the previous card expires or is blocked, preventing future payment issues
+* **Enhanced security**: All payments made through the link are protected with advanced encryption technology
 
 This feature ensures a smoother payment experience, reducing friction and improving service continuity for users of your subscription product.
 
-## How It Works
+## How it works
 
-### 1. Receiving the Payment Link
+### 1. Receiving the payment link
 
-Users receive a secure payment link that allows them to complete the pending payment using a credit or debit card. When creating the payment link for enrollment, include these additional fields:
+When users need to update their payment information, they receive a secure payment link. This link allows them to complete any pending payments using a credit or debit card. To create the payment link for enrollment, make sure to include the following fields:
 
 * `customer_payer.id`: The ID of the previously [generated customer](ref:create-customer)
-* `one_time_use`: Set to `true` to ensure the payment link can only be used once
-* `vault_on_success`: Set to `true` to enroll the credit card after successful payment
+* `one_time_use`: Set this to `true` to ensure the payment link can only be used once
+* `vault_on_success`: Set this to `true` to enroll the credit card after a successful payment
 
-### 2. Automatic Enrollment
+### 2. Automatic enrollment
 
-When the payment is completed successfully through the link, Yuno automatically generates a new `vaulted_token` for the customer.
+Once the payment is successfully completed through the link, Yuno automatically generates a new `vaulted_token` for the customer.
 
-### 3. Continue Charging
+### 3. Continue charging
 
-Retrieve the `vaulted_token` from the customer and continue with your subscription schedule. Use the [Get payment methods](ref:retrieve-enrolled-payment-methods-api) endpoint to access the customer's payment methods.
+After obtaining the `vaulted_token`, you can proceed with your subscription schedule. Use the [Get payment methods](ref:retrieve-enrolled-payment-methods-api) endpoint to access the customer's payment methods.
 
-For more information about creating and managing payment links, refer to the [Payment link API reference](ref:create-payment-link).
+For more information about creating and managing payment links, refer to the [payment link API reference](ref:create-payment-link).
