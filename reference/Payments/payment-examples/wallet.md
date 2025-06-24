@@ -189,9 +189,9 @@ curl --request POST \
         "value": 3000
     },
     "customer_payer": {
-        "email": "pepitoperez@example.com",
-        "first_name": "Pepito",
-        "last_name": "Perez"
+        "email": "john.smith@example.com",
+        "first_name": "John",
+        "last_name": "Smith"
     },
     "payment_method": {
         "type": "MERCADO_PAGO_CHECKOUT_PRO"
@@ -247,11 +247,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": null,
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@example.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -337,7 +337,7 @@ curl --request POST \
             "status_detail": "",
             "response_message": "",
             "raw_response": {
-                "value":"{\"additional_info\":\"\",\"auto_return\":\"approved\",\"back_urls\":{\"failure\":\"http://www.y.uno\",\"pending\":\"http://www.y.uno\",\"success\":\"http://www.y.uno\"},\"binary_mode\":true,\"client_id\":\"3615163740385056\",\"collector_id\":1131498549,\"coupon_code\":null,\"coupon_labels\":null,\"date_created\":\"2023-07-23T19:02:40.082-04:00\",\"date_of_expiration\":null,\"expiration_date_from\":null,\"expiration_date_to\":null,\"expires\":false,\"external_reference\":\"286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"id\":\"1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"init_point\":\"https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"internal_metadata\":null,\"items\":[{\"id\":\"123AD\",\"category_id\":\"others\",\"currency_id\":\"ARS\",\"description\":\"\",\"title\":\"Skirt\",\"quantity\":1,\"unit_price\":3000}],\"marketplace\":\"MP-MKT-3615163740385056\",\"marketplace_fee\":0,\"metadata\":{},\"notification_url\":\"https://sandbox.y.uno/mercadopago-webhook/v1/checkout-pro/events?source_news=webhooks\&transaction=286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"operation_type\":\"regular_payment\",\"payer\":{\"phone\":{\"area_code\":\"\",\"number\":\"\"},\"address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null},\"email\":\"pepitoperez@y.uno\",\"identification\":{\"number\":\"\",\"type\":\"\"},\"name\":\"Pepito\",\"surname\":\"Perez\",\"date_created\":null,\"last_purchase\":null},\"payment_methods\":{\"default_card_id\":null,\"default_payment_method_id\":null,\"excluded_payment_methods\":[{\"id\":\"\"}],\"excluded_payment_types\":[{\"id\":\"ticket\"},{\"id\":\"atm\"}],\"installments\":null,\"default_installments\":null},\"processing_modes\":null,\"product_id\":null,\"redirect_urls\":{\"failure\":\"\",\"pending\":\"\",\"success\":\"\"},\"sandbox_init_point\":\"https://sandbox.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"site_id\":\"MLA\",\"shipments\":{\"mode\":\"not_specified\",\"default_shipping_method\":null,\"cost\":0,\"receiver_address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null,\"floor\":\"\",\"apartment\":\"\",\"city_name\":null,\"state_name\":null,\"country_name\":null}},\"total_amount\":null,\"last_updated\":null}"
+                "value":"{\"additional_info\":\"\",\"auto_return\":\"approved\",\"back_urls\":{\"failure\":\"http://www.y.uno\",\"pending\":\"http://www.y.uno\",\"success\":\"http://www.y.uno\"},\"binary_mode\":true,\"client_id\":\"3615163740385056\",\"collector_id\":1131498549,\"coupon_code\":null,\"coupon_labels\":null,\"date_created\":\"2023-07-23T19:02:40.082-04:00\",\"date_of_expiration\":null,\"expiration_date_from\":null,\"expiration_date_to\":null,\"expires\":false,\"external_reference\":\"286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"id\":\"1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"init_point\":\"https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"internal_metadata\":null,\"items\":[{\"id\":\"123AD\",\"category_id\":\"others\",\"currency_id\":\"ARS\",\"description\":\"\",\"title\":\"Skirt\",\"quantity\":1,\"unit_price\":3000}],\"marketplace\":\"MP-MKT-3615163740385056\",\"marketplace_fee\":0,\"metadata\":{},\"notification_url\":\"https://sandbox.y.uno/mercadopago-webhook/v1/checkout-pro/events?source_news=webhooks\&transaction=286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"operation_type\":\"regular_payment\",\"payer\":{\"phone\":{\"area_code\":\"\",\"number\":\"\"},\"address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null},\"email\":\"john.smith@y.uno\",\"identification\":{\"number\":\"\",\"type\":\"\"},\"name\":\"John\",\"surname\":\"Smith\",\"date_created\":null,\"last_purchase\":null},\"payment_methods\":{\"default_card_id\":null,\"default_payment_method_id\":null,\"excluded_payment_methods\":[{\"id\":\"\"}],\"excluded_payment_types\":[{\"id\":\"ticket\"},{\"id\":\"atm\"}],\"installments\":null,\"default_installments\":null},\"processing_modes\":null,\"product_id\":null,\"redirect_urls\":{\"failure\":\"\",\"pending\":\"\",\"success\":\"\"},\"sandbox_init_point\":\"https://sandbox.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"site_id\":\"MLA\",\"shipments\":{\"mode\":\"not_specified\",\"default_shipping_method\":null,\"cost\":0,\"receiver_address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null,\"floor\":\"\",\"apartment\":\"\",\"city_name\":null,\"state_name\":null,\"country_name\":null}},\"total_amount\":null,\"last_updated\":null}"
             },
             "third_party_transaction_id": ""
         },
@@ -932,9 +932,9 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     },
     "customer_payer": {
         "merchant_customer_id": "1737124506",
-        "first_name": "Juan",
-        "last_name": "Perez",
-        "email": "juan.perez@example.com",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com",
         "document":{
             "document_type": "CC",
             "document_number": "1032765432"
@@ -1018,11 +1018,11 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1737124506",
-        "first_name": "Juan",
-        "last_name": "Perez",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "juan.perez@example.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,

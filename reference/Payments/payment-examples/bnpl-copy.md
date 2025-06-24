@@ -182,9 +182,9 @@ curl --request POST \
     },
     "customer_payer": {
         "merchant_customer_id": "1668863583",
-        "first_name": "Juan",
-        "last_name": "Perez",
-        "email": "juan.perez@example.com"
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com"
      },
     "workflow":"REDIRECT",
     "payment_method": {
@@ -229,11 +229,11 @@ curl --request POST \
   "customer_payer": {
     "id": "71caa74c-f759-4a7c-a1c4-a983bcf24812",
     "merchant_customer_id": "1668863583",
-    "first_name": "Juan",
-    "last_name": "Perez",
+    "first_name": "John",
+    "last_name": "Smith",
     "gender": "",
     "date_of_birth": null,
-    "email": "juan.perez@example.com",
+    "email": "john.smith@example.com",
     "nationality": null,
     "ip_address": null,
     "device_fingerprint": null,
@@ -338,9 +338,9 @@ curl --request POST \
         "value": 52000
     },
    "customer_payer": {
-        "first_name": "Juan",
-        "last_name": "Perez",
-        "email":"juan.perez@example.com",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email":"john.smith@example.com",
         "merchant_customer_id": "1234567",
         "document": {
             "document_type": "CC",
@@ -396,11 +396,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1234567",
-        "first_name": "Juan",
-        "last_name": "Perez",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "juan.perez@example.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -504,9 +504,9 @@ curl --request POST \
     },
     "customer_payer": {
             "merchant_customer_id": "1689888540",
-            "first_name": "Juan",
-            "last_name": "Diaz",
-            "email": "juan.diaz@example.com"
+            "first_name": "John",
+            "last_name": "Smith",
+            "email": "john.smith@example.com"
         },
     "workflow":"REDIRECT",
     "payment_method": {
@@ -553,11 +553,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1689888540",
-        "first_name": "Juan",
-        "last_name": "Diaz",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "juan.diaz@example.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
