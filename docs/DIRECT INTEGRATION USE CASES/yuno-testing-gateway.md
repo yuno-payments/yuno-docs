@@ -300,7 +300,7 @@ On this page, you will find a walk-through guide on creating a card payment usin
 
 Before starting following the steps described in this guide, you need to:
 
-* Access your [API credentials](doc:get-your-api-credentials) on the Yuno Dashboard, which are composed by:
+* Access your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which are composed by:
   * `public-api-key`
   * `private-secrete-key`
   * `account_id`

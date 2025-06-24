@@ -13,45 +13,45 @@ metadata:
 next:
   description: ''
 ---
-On this page, you will find a walk-through guide on migrating tokens using the Yuno API endpoints. After completing the guide steps, you will have a list of customers with enrolled payment methods in their accounts.
+This guide provides a step-by-step process for migrating tokens using the Yuno API endpoints. By following the steps outlined, you will compile a list of customers with their enrolled payment methods.
 
 ## Requirements
 
-Before starting following the steps described in this guide, you need to:
+Before proceeding with the steps in this guide, ensure you have:
 
-* Have concluded the three steps related to the [importing cards from a gateway account](docs:token-migration-process-copy#importing-cards-from-a-gateway-account) process.
-* Access your [API credentials](doc:get-your-api-credentials) on the Yuno Dashboard, which are composed by:
+* Completed the three steps related to the [importing cards from a gateway account](docs:token-migration-process-copy#importing-cards-from-a-gateway-account) process.
+* Accessed your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which include:
   * `public-api-key`
-  * `private-secrete-key`
+  * `private-secret-key`
   * `account_id`
 
-Ensure to have concluded the steps and have the above data before following the guide.
+Make sure you have completed these steps and have the necessary data before continuing with the guide.
 
 ## Migrate tokens via API
 
 ### Step 1: Create customers
 
-Use the [Create Customer](ref:create-customer) endpoint to create customers on the Yuno system. You can't enroll payment methods to customers that do not exist on the Yuno system. However, you can skip this step if customers already exist in Yuno.
+To begin the token migration process, you will use the [Create Customer](ref:create-customer) endpoint to add customers to the Yuno system. It is important to note that payment methods cannot be enrolled for customers who do not exist in the Yuno system. If the customers are already present in Yuno, you may skip this step.
 
-To register new customers, You will need to provide their personal information. In addition, you also need to supply the `merchant_customer_id`, a unique identifier for the customer used on your system.
+To register new customers, provide their personal information. Additionally, you must supply the `merchant_customer_id`, which is a unique identifier for the customer used in your system.
 
-> 📘 Customer Complementary Information
+> 📘 Customer complementary information
 >
-> When creating a **Customer**, certain information is not required but can improve the user's payment experience if provided. Phone, billing address, and shipping address are examples of non-mandatory data you can provide.
+> When creating a customer, certain information is optional but can enhance the user's payment experience if provided. Examples of non-mandatory data include phone number, billing address, and shipping address.
 >
-> If you add optional information, be aware of the required mandatory fields.
+> If you choose to add optional information, ensure that all required mandatory fields are also provided.
 
-At the end of the create a customer process, you will receive an `id`, which identifies the user within the Yuno system. Use the `id` to enroll the existing payment methods.
+Upon completing the customer creation process, you will receive an `id` that identifies the user within the Yuno system. Use this `id` to enroll the existing payment methods.
 
 ### Step 2: Check the customer data (optional)
 
-After creating each customer, you can use the [Retrieve Customer](ref:create-customer) endpoint to confirm the registered customer information. To retrieve the customer data, you need to provide the `id` received when the customer was created.
+In this step, you have the option to verify the information of each registered customer. Use the [Retrieve Customer](ref:create-customer) endpoint to access the customer data. To do this, provide the `id` that was generated when the customer was initially created.
 
 ### Step 3: Enroll a payment method
 
-To finish the migration process, you will use the third-party vault/gateway data to enroll payment methods for each customer on the Yuno system.
+To complete the migration process, you need to enroll payment methods for each customer using the third-party vault or gateway data.
 
-Use the [Enroll Payment Method](ref:enroll-payment-method-api) endpoint to enroll the received payment methods. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](doc:via-api#step-1-create-customers). You will also need to provide the `provider_data` object with the external provider's token, as presented in the code snip below:
+Utilize the [Enroll Payment Method](ref:enroll-payment-method-api) endpoint to register the payment methods. Remember, the `customer_id` required for this request is the `id` obtained during the customer creation in [Step 1](doc:via-api#step-1-create-customers). Additionally, include the `provider_data` object containing the external provider's token, as shown in the code snippet below:
 
 ```curl Request
 curl --request POST \
@@ -76,8 +76,8 @@ curl --request POST \
 '
 ```
 
-Within the endpoint response, you will have access to the `vaulted_token` which identifies the enrolled payment method. You will use the received `vaulted_token` to perform future payments, making additional payment method information unnecessary.
+In the response from the endpoint, you will receive a `vaulted_token` that identifies the enrolled payment method. This `vaulted_token` will be used for future payments, eliminating the need for additional payment method details.
 
 ### Step 4: Check the enrolled payment method (optional)
 
-After enrolling the payment method, you can use the [Retrieve Enrolled Payment Methods](ref:retrieve-enrolled-payment-methods-api) endpoint to confirm that the payment method was enrolled correctly. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](doc:via-api#step-1-create-customers).
+Once the payment method is enrolled, you can verify its successful enrollment using the [retrieve enrolled payment methods](ref:retrieve-enrolled-payment-methods-api) endpoint. Remember, the `customer_id` needed for this request is the `id` obtained during the customer creation in [Step 1](doc:via-api#step-1-create-customers).

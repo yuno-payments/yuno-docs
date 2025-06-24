@@ -31,7 +31,7 @@ Yuno tokenization service and centralized vault enable you to handle recurring p
 
 Before starting the enrollment process, you need to:
 
-* Access your [API credentials](doc:get-your-api-credentials) on the Yuno Dashboard, which are composed by:
+* Access your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which are composed by:
   * `public-api-key`
   * `private-secrete-key`
   * `account_id`

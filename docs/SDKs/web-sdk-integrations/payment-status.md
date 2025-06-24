@@ -29,7 +29,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `<body>`
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:get-your-api-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno` constant.
 
