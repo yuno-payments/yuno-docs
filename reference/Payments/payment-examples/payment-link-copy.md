@@ -184,7 +184,7 @@ curl --request POST \
         "type": "PAYVALIDA"
     },
     "workflow":"REDIRECT",
-    "callback_url":"www.google.com",
+    "callback_url":"www.y.uno",
     "taxes": {
         "value": 100,
         "percentage": 21,
