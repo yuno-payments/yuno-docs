@@ -28,28 +28,28 @@ For the `SDK_CHECKOUT` workflow, all the information is going to be stored in th
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
---header 'X-idempotency-key: <Your X-Idempotency-Key>' \
---header 'public-api-key: <Your public-api-key>' \
---header 'private-secret-key: <Your private-secret-key>' \
+--header 'X-idempotency-key: <your-X-idempotency-key>' \
+--header 'public-api-key: <your-public-api-key>' \
+--header 'private-secret-key: <your-private-secret-key>' \
 --header 'Content-Type: application/json' \
 --data '{
-    "description": "Test",
-    "account_id": "<Your account id>",
-    "merchant_order_id": "000001",
-    "merchant_reference": "Test_A01",
-    "country": "AR",
+    "description": "SDK Checkout",
+    "account_id": "<account_id>",
+    "merchant_order_id": "123456",
+    "merchant_reference": "reference_001",
+    "country": "US",
     "amount": {
-        "currency": "ARS",
+        "currency": "USD",
         "value": 100
     },
     "checkout": {
-        "session": "<:checkout_session>"
+        "session": "<checkout_session>"
     },
     "customer_payer": {
-        "id": "<:customer_id>"
+        "id": "<customer_id>"
     },
     "payment_method": {
-        "token": "<:one_time_token>"
+        "token": "<one_time_token>"
     }
 }'
 ```
@@ -57,8 +57,8 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 {
     "id": "182ffc6e-9b3b-4e66-855b-94d2cfe07354",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Cards",
-    "country": "AR",
+    "description": "Test Card",
+    "country": "US",
     "status": "SUCCEEDED",
     "sub_status": "APPROVED",
     "merchant_order_id": "0000022",
@@ -66,7 +66,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     "updated_at": "2023-07-20T20:42:28.479089Z",
     "amount": {
         "captured": 0.00,
-        "currency": "ARS",
+        "currency": "USD",
         "refunded": 0.00,
         "value": 100.00
     },
@@ -125,11 +125,11 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     "customer_payer": {
         "id": "d7cd334c-da1e-444a-8502-2f747fe67c52",
         "merchant_customer_id": "1689885733",
-        "first_name": "Fernando",
-        "last_name": "Iglesias",
-        "gender": "",
+        "first_name": "John",
+        "last_name": "Smith",
+        "gender": "M",
         "date_of_birth": null,
-        "email": "Adaline38@gmail.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -147,7 +147,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
             "language": ""
         },
         "document": {
-            "document_type": "DNI",
+            "document_type": "PASSPORT",
             "document_number": "38799992"
         },
         "phone": null,
@@ -214,8 +214,8 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test Cards",
-        "merchant_reference": "Pago de test 001",
+        "description": "Test Card",
+        "merchant_reference": "referece_0001",
         "provider_data": {
             "id": "DLOCAL",
             "transaction_id": "T-385928-006c26bc-db49-467c-ba60-6c4485cc6120",

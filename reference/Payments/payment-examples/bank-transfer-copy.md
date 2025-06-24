@@ -16,6 +16,10 @@ This page presents examples of requests and responses for creating Bank Transfer
 
 To test the creation of each payment, you can copy the content from the request code and use it on your machine or paste it on the [Create Payment](ref:create-payment) endpoint to test using Readme.
 
+> 🚧 Important
+>
+> Some payment methods and providers may only be available in specific countries and/or currencies. Make sure you choose the right provider for your needs.
+
 ## Bank Transfer available examples
 
 <HTMLBlock>{`
@@ -231,15 +235,15 @@ Example of a request for a Bank Transfer payment using Bancolombia Button. Below
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <Your--Idempotency-Key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <Your-private-secret-key>' \
+     --header 'public-api-key: <Your-public-api-key>' \
      --data '
 {
-    "description": "Test Bancolombia",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Bancolombia",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CO",
     "amount": {
@@ -248,9 +252,9 @@ curl --request POST \
     },
     "customer_payer": {
         "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
-        "email": "Tyreek27@yahoo.com"
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com"
     },
     "workflow":"REDIRECT",
     "payment_method": {
@@ -262,7 +266,7 @@ curl --request POST \
 {
     "id": "ac427adb-3ac9-4a7c-9389-0a923146b39b",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Bancolombia",
+    "description": "Payment with Bancolombia",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -302,11 +306,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "Tyreek27@yahoo.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -360,7 +364,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test Bancolombia",
+        "description": "Payment with Bancolombia",
         "merchant_reference": null,
         "provider_data": {
             "id": "WOMPI",
@@ -386,7 +390,7 @@ curl --request POST \
                         "extra": {
                             "is_three_ds": false
                         },
-                        "payment_description": "Test Bancolombia",
+                        "payment_description": "Payment with Bancolombia",
                         "sandbox_status": "APPROVED",
                         "type": "BANCOLOMBIA_TRANSFER",
                         "user_type": "PERSON"
@@ -420,16 +424,16 @@ Example of a request for a Bank Transfer payment using Daviplata. Below you find
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test DAVIPLATA",
-    "account_id": "{{account-code}}",
-    "merchant_order_id": "2342",
+    "description": "Payment with Daviplata",
+    "account_id": "<accound_id>",
+    "merchant_order_id": "000022",
     "country": "CO",
     "nationality": "CO",
     "amount": {
@@ -437,7 +441,7 @@ curl --request POST \
         "value": 250
     },
     "customer_payer": {
-        "id": "{{customer_id}}",
+        "id": "<customer_id>",
         "nationality": "CO",
             "document": {
                 "document_type": "CC",
@@ -458,15 +462,15 @@ curl --request POST \
 ```
 ```json Response(JSON)
 {
-    "id": "4e0c2314-7e8b-45e7-8e9c-a81ac2bc7388",
-    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test DAVIPLATA",
+    "id": "f00af385-fd7b-4024-b750-ad557cad7fc5",
+    "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
+    "description": "Payment with Daviplata",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
-    "merchant_order_id": "2342",
-    "created_at": "2025-03-10T15:17:43.967602Z",
-    "updated_at": "2025-03-10T15:17:45.608775Z",
+    "merchant_order_id": "000022",
+    "created_at": "2025-06-20T17:40:31.671118Z",
+    "updated_at": "2025-06-20T17:40:33.873276Z",
     "amount": {
         "captured": 0.00,
         "currency": "COP",
@@ -475,7 +479,7 @@ curl --request POST \
         "value": 250.00
     },
     "checkout": {
-        "session": "fc35a4cf-953a-49eb-8793-754682af4d06",
+        "session": "1c00d1c2-18f5-4ea3-8b0a-057cdb5b97a5",
         "sdk_action_required": true
     },
     "payment_method": {
@@ -496,23 +500,24 @@ curl --request POST \
                 "beneficiary_document": null,
                 "reference": null,
                 "payment_instruction": null,
-                "redirect_url": "https://checkout.sandbox.y.uno/payment?session=95ad4b07-55db-4a2a-85f7-60171d8511a1",
+                "redirect_url": "https://checkout.sandbox.y.uno/payment?session=801e9260-4751-478e-ba41-2ad302f67d35",
                 "installments": 0,
                 "installments_plan_id": null,
                 "first_installment_deferral": 0,
                 "installments_type": "",
-                "installment_amount": null
+                "installment_amount": null,
+                "expires_at": null
             }
         }
     },
     "customer_payer": {
-        "id": "4a99dc32-396b-4bc6-a97c-9282c1e767e0",
-        "merchant_customer_id": "1740080217",
-        "first_name": "Daniel",
-        "last_name": "Vanegas",
-        "gender": null,
-        "date_of_birth": null,
-        "email": "Destiney_Botsford49@hotmail.com",
+        "id": "33a9e979-6558-4694-b00c-3d0844524681",
+        "merchant_customer_id": "1749820178",
+        "first_name": "John",
+        "last_name": "Doe",
+        "gender": "M",
+        "date_of_birth": "1990-02-28",
+        "email": "john.doe@example.com",
         "nationality": "CO",
         "ip_address": null,
         "device_fingerprint": null,
@@ -528,7 +533,8 @@ curl --request POST \
             "javascript_enabled": null,
             "java_enabled": null,
             "browser_time_difference": null,
-            "language": ""
+            "language": "",
+            "platform": null
         },
         "document": {
             "document_type": "CC",
@@ -539,24 +545,28 @@ curl --request POST \
             "country_code": "57"
         },
         "billing_address": {
-            "address_line_1": "line 1",
-            "address_line_2": "",
+            "address_line_1": "Calle 34 # 56 - 78",
+            "address_line_2": "Apartamento 502, Torre I",
             "country": "CO",
-            "city": "Bogota",
+            "state": "Cundinamarca",
+            "city": "Bogotá",
+            "zip_code": "111111",
             "neighborhood": null
         },
         "shipping_address": {
-            "address_line_1": "line 1",
-            "address_line_2": "",
+            "address_line_1": "Calle 34 # 56 - 78",
+            "address_line_2": "Apartamento 502, Torre I",
             "country": "CO",
-            "city": "Bogota",
+            "state": "Cundinamarca",
+            "city": "Bogotá",
+            "zip_code": "111111",
             "neighborhood": null
         },
         "merchant_customer_created_at": null
     },
     "additional_data": null,
     "transactions": {
-        "id": "16d5b42c-bc66-4020-9bc2-2e711e49109c",
+        "id": "1b31f4a3-4ee9-4d97-bb9a-25d929e34ab5",
         "type": "PURCHASE",
         "status": "CREATED",
         "category": "BANK_TRANSFER",
@@ -580,23 +590,24 @@ curl --request POST \
                     "beneficiary_document": null,
                     "reference": null,
                     "payment_instruction": null,
-                    "redirect_url": "https://checkout.sandbox.y.uno/payment?session=95ad4b07-55db-4a2a-85f7-60171d8511a1",
+                    "redirect_url": "https://checkout.sandbox.y.uno/payment?session=801e9260-4751-478e-ba41-2ad302f67d35",
                     "installments": 0,
                     "installments_plan_id": null,
                     "first_installment_deferral": 0,
                     "installments_type": "",
-                    "installment_amount": null
+                    "installment_amount": null,
+                    "expires_at": null
                 }
             }
         },
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test DAVIPLATA",
-        "merchant_reference": "2342",
+        "description": "Payment with Daviplata",
+        "merchant_reference": "000022",
         "provider_data": {
             "id": "DAVIPLATA",
-            "transaction_id": "82546960",
+            "transaction_id": "79552559",
             "account_id": "",
             "status": "",
             "sub_status": "",
@@ -604,8 +615,8 @@ curl --request POST \
             "response_message": null,
             "response_code": null,
             "raw_response": {
-                "fechaExpiracionToken": "2025-03-10T10:20:44.903-05:00",
-                "idSessionToken": "82546960"
+                "fechaExpiracionToken": "2025-06-20T12:43:33.293-05:00",
+                "idSessionToken": "79552559"
             },
             "third_party_transaction_id": "",
             "third_party_account_id": null,
@@ -613,15 +624,15 @@ curl --request POST \
             "iso8583_response_message": null
         },
         "connection_data": {
-            "id": "659b27db-02a6-421f-968c-6dd9e52fcb2d",
+            "id": "15f2d668-f786-476a-a860-96e88b5fd941",
             "name": null
         },
-        "created_at": "2025-03-10T15:17:44.161125Z",
-        "updated_at": "2025-03-10T15:17:45.449302Z"
+        "created_at": "2025-06-20T17:40:31.824501Z",
+        "updated_at": "2025-06-20T17:40:33.832398Z"
     },
     "transactions_history": [
         {
-            "id": "16d5b42c-bc66-4020-9bc2-2e711e49109c",
+            "id": "1b31f4a3-4ee9-4d97-bb9a-25d929e34ab5",
             "type": "PURCHASE",
             "status": "CREATED",
             "category": "BANK_TRANSFER",
@@ -645,23 +656,24 @@ curl --request POST \
                         "beneficiary_document": null,
                         "reference": null,
                         "payment_instruction": null,
-                        "redirect_url": "https://checkout.sandbox.y.uno/payment?session=95ad4b07-55db-4a2a-85f7-60171d8511a1",
+                        "redirect_url": "https://checkout.sandbox.y.uno/payment?session=801e9260-4751-478e-ba41-2ad302f67d35",
                         "installments": 0,
                         "installments_plan_id": null,
                         "first_installment_deferral": 0,
                         "installments_type": "",
-                        "installment_amount": null
+                        "installment_amount": null,
+                        "expires_at": null
                     }
                 }
             },
             "response_code": "SUCCEEDED",
             "response_message": "Transaction successful",
             "reason": null,
-            "description": "Test DAVIPLATA",
-            "merchant_reference": "2342",
+            "description": "Payment with Daviplata",
+            "merchant_reference": "000022",
             "provider_data": {
                 "id": "DAVIPLATA",
-                "transaction_id": "82546960",
+                "transaction_id": "79552559",
                 "account_id": "",
                 "status": "",
                 "sub_status": "",
@@ -669,8 +681,8 @@ curl --request POST \
                 "response_message": null,
                 "response_code": null,
                 "raw_response": {
-                    "fechaExpiracionToken": "2025-03-10T10:20:44.903-05:00",
-                    "idSessionToken": "82546960"
+                    "fechaExpiracionToken": "2025-06-20T12:43:33.293-05:00",
+                    "idSessionToken": "79552559"
                 },
                 "third_party_transaction_id": "",
                 "third_party_account_id": null,
@@ -678,11 +690,11 @@ curl --request POST \
                 "iso8583_response_message": null
             },
             "connection_data": {
-                "id": "659b27db-02a6-421f-968c-6dd9e52fcb2d",
+                "id": "15f2d668-f786-476a-a860-96e88b5fd941",
                 "name": null
             },
-            "created_at": "2025-03-10T15:17:44.161125Z",
-            "updated_at": "2025-03-10T15:17:45.449302Z"
+            "created_at": "2025-06-20T17:40:31.824501Z",
+            "updated_at": "2025-06-20T17:40:33.832398Z"
         }
     ],
     "callback_url": "https://www.y.uno",
@@ -695,7 +707,7 @@ curl --request POST \
         "smart_routing": false,
         "monitors": false,
         "condition": {
-            "id": 8030,
+            "id": 192114,
             "name": null,
             "description": null
         }
@@ -713,15 +725,15 @@ Example of a request for a Bank Transfer payment using PIX. Below you find the J
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
      {
-    "description": "Test PIX",
-    "account_id":"{{account-code}}",
+    "description": "Payment with PIX",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "BR",
     "amount": {
@@ -747,12 +759,12 @@ curl --request POST \
         }
     },
     "customer_payer": {
-        "merchant_customer_id": "{{$timestamp}}",
-        "first_name": "{{$randomFirstName}}",
-        "last_name": "CANO",
-        "email": "{{$randomEmail}}",
+        "merchant_customer_id": "1234556",
+        "first_name": "João",
+        "last_name": "Silva",
+        "email": "joao.silva@example.com",
         "phone": {
-                "number": "11992149494",
+                "number": "11999949494",
                 "country_code": "55"
         },
         "document": {
@@ -771,7 +783,7 @@ curl --request POST \
 {
     "id": "ddaf6fd2-8979-4dbd-9153-78943d4e5c54",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test PIX",
+    "description": "Payment with PIX",
     "country": "BR",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -811,11 +823,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1690156724",
-        "first_name": "Laura",
-        "last_name": "CANO",
+        "first_name": "João",
+        "last_name": "Silva",
         "gender": null,
         "date_of_birth": null,
-        "email": "Kathleen68@gmail.com",
+        "email": "joao.silva@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -837,7 +849,7 @@ curl --request POST \
             "document_number": "47033278802"
         },
         "phone": {
-            "number": "11992149494",
+            "number": "11999949494",
             "country_code": "55"
         },
         "billing_address": null,
@@ -894,7 +906,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test PIX",
+        "description": "Payment with PIX",
         "merchant_reference": null,
         "provider_data": {
             "id": "SPINPAY",
@@ -925,15 +937,15 @@ Example of a request for a Bank Transfer payment using PSE. Below you find the J
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test PSE",
-    "account_id":"{{account-code}}",
+    "description": "Payment with PSE",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CO",
     "amount": {
@@ -941,10 +953,10 @@ curl --request POST \
         "value": 52000
     },
      "customer_payer": {
-        "email": "pepitoperez@y.uno",
-        "first_name": "Pepito",
-        "last_name": "Perez",
-        "merchant_customer_id": "example00234",
+        "email": "john.smith@example.com",
+        "first_name": "John",
+        "last_name": "Smith",
+        "merchant_customer_id": "1234567",
         "document": {
             "document_type": "CC",
             "document_number": "38799999"
@@ -964,7 +976,7 @@ curl --request POST \
 {
     "id": "7453777e-019f-498d-9d3e-745788fb4392",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test PSE",
+    "description": "Payment with PSE",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -1003,12 +1015,12 @@ curl --request POST \
     },
     "customer_payer": {
         "id": null,
-        "merchant_customer_id": "example00234",
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "merchant_customer_id": "1234567",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@y.uno",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -1065,7 +1077,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test PSE",
+        "description": "Payment with PSE",
         "merchant_reference": null,
         "provider_data": {
             "id": "UNLIMINT",
@@ -1097,15 +1109,15 @@ Example of a request for a Bank Transfer payment using SafetyPay. Below are exam
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test Safetypay",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Safetypay",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CO",
     "amount": {
@@ -1113,10 +1125,10 @@ curl --request POST \
         "value": 52000
     },
     "customer_payer": {
-        "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
-        "email": "Tyreek27@yahoo.com"
+        "merchant_customer_id": "1234567",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com"
     },
     "workflow":"REDIRECT",
     "payment_method": {
@@ -1129,7 +1141,7 @@ curl --request POST \
 {
     "id": "ba669392-a6ec-43f6-851c-8bda35064883",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Safetypay",
+    "description": "Payment with Safetypay",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -1168,12 +1180,12 @@ curl --request POST \
     },
     "customer_payer": {
         "id": null,
-        "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
+        "merchant_customer_id": "1234567",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "Tyreek27@yahoo.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -1227,7 +1239,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test Safetypay",
+        "description": "Payment with Safetypay",
         "merchant_reference": null,
         "provider_data": {
             "id": "SAFETYPAY",
@@ -1264,15 +1276,15 @@ Example of a request for a Bank Transfer payment using SPEI Direct. Below are ex
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test SPEI",
-    "account_id":"{{account-code}}",
+    "description": "Payment with SPEI",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "MX",
     "amount": {
@@ -1280,10 +1292,10 @@ curl --request POST \
         "value": 500
     },
     "customer_payer": {
-        "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
-        "email": "Tyreek27@yahoo.com"
+        "merchant_customer_id": "1234567",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com"
         },
     "payment_method": {
         "type": "SPEI"
@@ -1297,7 +1309,7 @@ curl --request POST \
 {
     "id": "5053898d-7873-4326-8213-8eb6edb3e018",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test SPEI",
+    "description": "Payment with SPEI",
     "country": "MX",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -1336,12 +1348,12 @@ curl --request POST \
     },
     "customer_payer": {
         "id": null,
-        "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
+        "merchant_customer_id": "1234567",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "Tyreek27@yahoo.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -1395,7 +1407,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test SPEI",
+        "description": "Payment with SPEI",
         "merchant_reference": null,
         "provider_data": {
             "id": "UNLIMINT",
@@ -1427,15 +1439,15 @@ Example of a request for a Bank Transfer payment using Codi. Below are examples 
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test CODI",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Codi",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "MX",
     "amount": {
@@ -1444,9 +1456,9 @@ curl --request POST \
     },
     "customer_payer": {
         "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
-        "email": "Tyreek27@yahoo.com"
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com"
         },
     "payment_method": {
         "type": "CODI"
@@ -1460,7 +1472,7 @@ curl --request POST \
 {
     "id": "83742602-9b4a-4e22-8f53-a131bfb91451",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test CODI",
+    "description": "Payment with Codi",
     "country": "MX",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -1500,11 +1512,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1689888489",
-        "first_name": "Laila",
-        "last_name": "CANO",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "Tyreek27@yahoo.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -1558,7 +1570,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test CODI",
+        "description": "Payment with Codi",
         "merchant_reference": null,
         "provider_data": {
             "id": "UNLIMINT",
@@ -1590,15 +1602,15 @@ Example of a request for a Bank Transfer payment using Nupay. Below are examples
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test Nupay",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Nupay",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "BR",
     "amount": {
@@ -1624,10 +1636,10 @@ curl --request POST \
         }
     },
     "customer_payer": {
-        "merchant_customer_id": "{{$timestamp}}",
-        "first_name": "{{$randomFirstName}}",
-        "last_name": "CANO",
-        "email": "{{$randomEmail}}",
+        "merchant_customer_id": "1234567",
+        "first_name": "João",
+        "last_name": "Silva",
+        "email": "joao.silva@example.com",
         "phone": {
                 "number": "11992149494",
                 "country_code": "55"
@@ -1648,7 +1660,7 @@ curl --request POST \
 {
     "id": "eb0e74bd-ae06-43f0-87ae-d1ecb6287ecb",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Nupay",
+    "description": "Payment with Nupay",
     "country": "BR",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -1688,11 +1700,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1690157629",
-        "first_name": "Beryl",
-        "last_name": "CANO",
+        "first_name": "João",
+        "last_name": "Silva",
         "gender": null,
         "date_of_birth": null,
-        "email": "Brennon25@hotmail.com",
+        "email": "joao.silva@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -1771,7 +1783,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test Nupay",
+        "description": "Payment with Nupay",
         "merchant_reference": null,
         "provider_data": {
             "id": "SPINPAY",
@@ -1802,15 +1814,15 @@ Example of a request for a Bank Transfer payment using Yappy. Below are examples
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your X-Idempotency-Key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test YAPPY",
-    "account_id":"{{account-code}}",
+    "description": "Payment with YAPPY",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "PA",
     "amount": {
@@ -1819,9 +1831,9 @@ curl --request POST \
     },
     "customer_payer": {
         "merchant_customer_id": "1690158249",
-        "first_name": "Kennedy",
-        "last_name": "CANO",
-        "email": "test@gmail.com",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com",
         "phone": {
             "country_code": "507",
             "number": "67480618"
@@ -1839,7 +1851,7 @@ curl --request POST \
 {
     "id": "c32784da-09c4-4bdc-9ae5-bdd0e7259c6b",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test YAPPY",
+    "description": "Payment with YAPPY",
     "country": "PA",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -1879,11 +1891,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1690158249",
-        "first_name": "Kennedy",
-        "last_name": "CANO",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "test@gmail.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -1940,7 +1952,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test YAPPY",
+        "description": "Payment with YAPPY",
         "merchant_reference": null,
         "provider_data": {
             "id": "YAPPY",

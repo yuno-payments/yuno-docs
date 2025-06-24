@@ -16,6 +16,10 @@ This page presents examples of requests and responses for creating payments usin
 
 To test the creation of each payment, you can copy the content from the request code and use it on your machine or paste it on the [Create Payment](ref:create-payment) endpoint to test using Readme.
 
+> 🚧 Important
+>
+> Some payment methods and providers may only be available in specific countries and/or currencies. Make sure you choose the right provider for your needs.
+
 ## Payment Link available examples
 
 <HTMLBlock>{`
@@ -156,15 +160,15 @@ Example of a request for a Payment Link payment using Payvalida. Below are examp
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test Payvalida",
-    "account_id":"{{account-code}}",
+    "description": "Payment wiht Payvalida",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CO",
     "amount": {
@@ -172,9 +176,9 @@ curl --request POST \
         "value": 52000
     },
     "customer_payer": {
-        "email": "pepitoperez@y.uno",
-        "first_name": "Pepito",
-        "last_name": "Perez"
+        "email": "john.smith@example.com",
+        "first_name": "John",
+        "last_name": "Smith"
     },
     "payment_method": {
         "type": "PAYVALIDA"
@@ -194,7 +198,7 @@ curl --request POST \
 {
     "id": "c6c81ce5-acbe-480b-9bd4-1f401a3c2c96",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Payvalida",
+    "description": "Payment wiht Payvalida",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -234,11 +238,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": null,
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@y.uno",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -316,15 +320,15 @@ Example of a request for a Payment Link payment using Tarjeta Clave. Below are e
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test TARJETA CLAVE",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Tarjeta Clave",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "PA",
     "amount": {
@@ -332,9 +336,9 @@ curl --request POST \
         "value": 5200
     },
     "customer_payer": {
-        "email": "pepitoperez@y.uno",
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "email": "john.smith@example.com",
+        "first_name": "John",
+        "last_name": "Smith",
         "document":{
             "document_type": "CC",
             "document_number": "1032765432"
@@ -352,7 +356,7 @@ curl --request POST \
 {
     "id": "137d6ae2-5c26-4489-bfeb-cd5221d4d00e",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test TARJETA CLAVE",
+    "description": "Payment with Tarjeta Clave",
     "country": "PA",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -392,11 +396,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": null,
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@y.uno",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -440,7 +444,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test TARJETA CLAVE",
+        "description": "Payment with Tarjeta Clave",
         "merchant_reference": null,
         "provider_data": {
             "id": "DLOCAL",
@@ -472,15 +476,15 @@ Example of a request for a Payment Link payment using Webpay. Below are examples
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test Webpay",
-    "account_id":"{{account-code}}",
+    "description": "Payment with Webpay",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CL",
     "amount": {
@@ -488,9 +492,9 @@ curl --request POST \
         "value": 5000
     },
     "customer_payer": {
-        "email": "pepitoperez@y.uno",
-        "first_name": "Pepito",
-        "last_name": "Perez"
+        "email": "john.smith@example.com",
+        "first_name": "John",
+        "last_name": "Smith"
     },
     "payment_method": {
         "type": "WEBPAY"
@@ -504,7 +508,7 @@ curl --request POST \
 {
     "id": "9c1f6ba0-d483-42a9-8d06-d53a07c284e0",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Webpay",
+    "description": "Payment with Webpay",
     "country": "CL",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -544,11 +548,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": null,
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@y.uno",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -589,7 +593,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test Webpay",
+        "description": "Payment with Webpay",
         "merchant_reference": null,
         "provider_data": {
             "id": "TRANSBANK_2",
@@ -622,26 +626,26 @@ Example of a request for a Payment Link payment using Pago Efectivo. Below are e
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test Pago Efectivo",
-    "account_id": "{{account-code}}",
+    "description": "Payment with Pago Efectivo",
+    "account_id": "<account_id>",
     "merchant_order_id": "0000023",
     "country": "CO",
-    "merchant_reference": "reference-{{$randomUUID}}",
+    "merchant_reference": "reference-0001",
     "amount": {
         "currency": "COP",
         "value": 3000
     },
     "customer_payer": {
-        "email": "pepitoperez@y.uno",
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "email": "john.smith@example.com",
+        "first_name": "John",
+        "last_name": "Smith",
         "document": {
             "document_type": "CC",
             "document_number": "1032765432"
@@ -656,4 +660,119 @@ curl --request POST \
 '
 ```
 ```json Response (JSON)
+{
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "account_id": "<account_id>",
+    "description": "Payment with Pago Efectivo",
+    "country": "CO",
+    "status": "READY_TO_PAY",
+    "sub_status": "CREATED",
+    "merchant_order_id": "0000023",
+    "created_at": "2025-06-20T12:15:00.000000Z",
+    "updated_at": "2025-06-20T12:15:01.000000Z",
+    "amount": {
+        "captured": 0,
+        "currency": "COP",
+        "refunded": 0,
+        "value": 3000
+    },
+    "checkout": {
+        "session": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+        "sdk_action_required": true
+    },
+    "payment_method": {
+        "vaulted_token": "",
+        "type": "PAGO_EFECTIVO",
+        "vault_on_success": false,
+        "token": "",
+        "payment_method_detail": {
+            "payment_link": {
+                "verify": null,
+                "capture": null,
+                "installments": null,
+                "payment_method_id": null,
+                "payment_method_detail": null,
+                "date_of_expiration": "2025-06-23T23:59:59Z",
+                "money_release_date": null,
+                "sponsor_id": null,
+                "authorization_code": null,
+                "redirect_url": "https://checkout.sandbox.y.uno/payment?session=f9e8d7c6-b5a4-3210-fedc-ba9876543210"
+            }
+        }
+    },
+    "customer_payer": {
+        "id": null,
+        "merchant_customer_id": null,
+        "first_name": "John",
+        "last_name": "Smith",
+        "gender": null,
+        "date_of_birth": null,
+        "email": "john.smith@example.com",
+        "nationality": null,
+        "ip_address": null,
+        "device_fingerprint": null,
+        "browser_info": {
+            "user_agent": "",
+            "accept_header": "",
+            "accept_content": null,
+            "accept_browser": null,
+            "color_depth": "",
+            "screen_height": "",
+            "screen_width": "",
+            "javascript_enabled": null,
+            "java_enabled": null,
+            "browser_time_difference": null,
+            "language": ""
+        },
+        "document": {
+            "document_type": "CC",
+            "document_number": "1032765432"
+        },
+        "phone": null,
+        "billing_address": null,
+        "shipping_address": null
+    },
+    "additional_data": null,
+    "taxes": null,
+    "transactions": {
+        "id": "e0d9c8b7-a6f5-4321-0fed-cba987654321",
+        "type": "PURCHASE",
+        "status": "CREATED",
+        "category": "PAYMENT_LINK",
+        "amount": 3000.00,
+        "provider_id": "PAGO_EFECTIVO_CO",
+        "payment_method": {
+            "vaulted_token": "",
+            "type": "PAGO_EFECTIVO",
+            "vault_on_success": false,
+            "token": "",
+            "detail": {}
+        },
+        "response_code": "SUCCEEDED",
+        "response_message": "Transaction successful",
+        "reason": null,
+        "description": "Payment with Pago Efectivo",
+        "merchant_reference": "reference-0001",
+        "provider_data": {
+            "id": "PAGO_EFECTIVO_CO",
+            "transaction_id": "REF-ABC123XYZ",
+            "account_id": "",
+            "status": "",
+            "sub_status": "",
+            "status_detail": "",
+            "response_message": "",
+            "raw_response": {
+                "cie": "987654321098765",
+                "expiration_date": "2025-06-23"
+            },
+            "third_party_transaction_id": ""
+        },
+        "created_at": "2025-06-20T12:15:00.123456Z",
+        "updated_at": "2025-06-20T12:15:01.234567Z"
+    },
+    "split": [],
+    "callback_url": "www.y.uno",
+    "workflow": "REDIRECT",
+    "metadata": []
+}
 ```

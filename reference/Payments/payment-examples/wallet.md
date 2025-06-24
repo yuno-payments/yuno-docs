@@ -16,6 +16,10 @@ This page presents examples of requests and responses for creating payments usin
 
 To test the creation of each payment, you can copy the content from the request code and use it on your machine or paste it on the [Create Payment](ref:create-payment) endpoint to test using Readme.
 
+> 🚧 Important
+>
+> Some payment methods and providers may only be available in specific countries and/or currencies. Make sure you choose the right provider for your needs.
+
 ## Wallet available examples
 
 <HTMLBlock>{`
@@ -156,18 +160,18 @@ Example of a request for a payment using Mercado Pago Checkout Pro. Below are ex
 ```curl Request (cURL)
 curl --request POST \
      --url https://api-sandbox.y.uno/v1/payments \
-     --header 'X-Idempotency-Key: <Your idempotency-key>' \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
      --header 'accept: application/json' \
      --header 'content-type: application/json' \
-     --header 'private-secret-key: <Your private-secret-key>' \
-     --header 'public-api-key: <Your public-api-key>' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
      --data '
 {
-    "description": "Test MP Checkout pro",
-    "account_id": "{{account-code}}",
+    "description": "Payment with Mercado Pago Pro",
+    "account_id": "<account_id>",
     "merchant_order_id": "0000023",
     "country": "CO",
-    "merchant_reference": "reference-{{$randomUUID}}",
+    "merchant_reference": "reference-0001",
     "additional_data": {
         "order": {
             "items": [
@@ -185,9 +189,9 @@ curl --request POST \
         "value": 3000
     },
     "customer_payer": {
-        "email": "pepitoperez@y.uno",
-        "first_name": "Pepito",
-        "last_name": "Perez"
+        "email": "john.smith@example.com",
+        "first_name": "John",
+        "last_name": "Smith"
     },
     "payment_method": {
         "type": "MERCADO_PAGO_CHECKOUT_PRO"
@@ -200,8 +204,8 @@ curl --request POST \
 ```json Response (JSON)
 {
     "id": "d0ff19c2-cf55-4015-a613-e35f22da0233",
-    "account_id": "{{account-code}}",
-    "description": "Test MP Checkout pro",
+    "account_id": "<account_id>",
+    "description": "Payment with Mercado Pago Pro",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -243,11 +247,11 @@ curl --request POST \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": null,
-        "first_name": "Pepito",
-        "last_name": "Perez",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "pepitoperez@y.uno",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -322,7 +326,7 @@ curl --request POST \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test MP Checkout pro",
+        "description": "Payment with Mercado Pago Pro",
         "merchant_reference": "reference-d2b08e8e-c87a-4806-b1ea-b35a19a36a6d",
         "provider_data": {
             "id": "MERCADO_PAGO",
@@ -333,7 +337,7 @@ curl --request POST \
             "status_detail": "",
             "response_message": "",
             "raw_response": {
-                "value":"{\"additional_info\":\"\",\"auto_return\":\"approved\",\"back_urls\":{\"failure\":\"http://www.y.uno\",\"pending\":\"http://www.y.uno\",\"success\":\"http://www.y.uno\"},\"binary_mode\":true,\"client_id\":\"3615163740385056\",\"collector_id\":1131498549,\"coupon_code\":null,\"coupon_labels\":null,\"date_created\":\"2023-07-23T19:02:40.082-04:00\",\"date_of_expiration\":null,\"expiration_date_from\":null,\"expiration_date_to\":null,\"expires\":false,\"external_reference\":\"286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"id\":\"1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"init_point\":\"https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"internal_metadata\":null,\"items\":[{\"id\":\"123AD\",\"category_id\":\"others\",\"currency_id\":\"ARS\",\"description\":\"\",\"title\":\"Skirt\",\"quantity\":1,\"unit_price\":3000}],\"marketplace\":\"MP-MKT-3615163740385056\",\"marketplace_fee\":0,\"metadata\":{},\"notification_url\":\"https://sandbox.y.uno/mercadopago-webhook/v1/checkout-pro/events?source_news=webhooks\&transaction=286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"operation_type\":\"regular_payment\",\"payer\":{\"phone\":{\"area_code\":\"\",\"number\":\"\"},\"address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null},\"email\":\"pepitoperez@y.uno\",\"identification\":{\"number\":\"\",\"type\":\"\"},\"name\":\"Pepito\",\"surname\":\"Perez\",\"date_created\":null,\"last_purchase\":null},\"payment_methods\":{\"default_card_id\":null,\"default_payment_method_id\":null,\"excluded_payment_methods\":[{\"id\":\"\"}],\"excluded_payment_types\":[{\"id\":\"ticket\"},{\"id\":\"atm\"}],\"installments\":null,\"default_installments\":null},\"processing_modes\":null,\"product_id\":null,\"redirect_urls\":{\"failure\":\"\",\"pending\":\"\",\"success\":\"\"},\"sandbox_init_point\":\"https://sandbox.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"site_id\":\"MLA\",\"shipments\":{\"mode\":\"not_specified\",\"default_shipping_method\":null,\"cost\":0,\"receiver_address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null,\"floor\":\"\",\"apartment\":\"\",\"city_name\":null,\"state_name\":null,\"country_name\":null}},\"total_amount\":null,\"last_updated\":null}"
+                "value":"{\"additional_info\":\"\",\"auto_return\":\"approved\",\"back_urls\":{\"failure\":\"http://www.y.uno\",\"pending\":\"http://www.y.uno\",\"success\":\"http://www.y.uno\"},\"binary_mode\":true,\"client_id\":\"3615163740385056\",\"collector_id\":1131498549,\"coupon_code\":null,\"coupon_labels\":null,\"date_created\":\"2023-07-23T19:02:40.082-04:00\",\"date_of_expiration\":null,\"expiration_date_from\":null,\"expiration_date_to\":null,\"expires\":false,\"external_reference\":\"286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"id\":\"1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"init_point\":\"https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"internal_metadata\":null,\"items\":[{\"id\":\"123AD\",\"category_id\":\"others\",\"currency_id\":\"ARS\",\"description\":\"\",\"title\":\"Skirt\",\"quantity\":1,\"unit_price\":3000}],\"marketplace\":\"MP-MKT-3615163740385056\",\"marketplace_fee\":0,\"metadata\":{},\"notification_url\":\"https://sandbox.y.uno/mercadopago-webhook/v1/checkout-pro/events?source_news=webhooks\&transaction=286ad833-7cbc-4e66-92f9-01019eb7d7a3\",\"operation_type\":\"regular_payment\",\"payer\":{\"phone\":{\"area_code\":\"\",\"number\":\"\"},\"address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null},\"email\":\"john.smith@y.uno\",\"identification\":{\"number\":\"\",\"type\":\"\"},\"name\":\"John\",\"surname\":\"Smith\",\"date_created\":null,\"last_purchase\":null},\"payment_methods\":{\"default_card_id\":null,\"default_payment_method_id\":null,\"excluded_payment_methods\":[{\"id\":\"\"}],\"excluded_payment_types\":[{\"id\":\"ticket\"},{\"id\":\"atm\"}],\"installments\":null,\"default_installments\":null},\"processing_modes\":null,\"product_id\":null,\"redirect_urls\":{\"failure\":\"\",\"pending\":\"\",\"success\":\"\"},\"sandbox_init_point\":\"https://sandbox.mercadopago.com.ar/checkout/v1/redirect?pref_id=1131498549-ef2fc547-72b3-4e19-acce-83f94c70609a\",\"site_id\":\"MLA\",\"shipments\":{\"mode\":\"not_specified\",\"default_shipping_method\":null,\"cost\":0,\"receiver_address\":{\"zip_code\":\"\",\"street_name\":\"\",\"street_number\":null,\"floor\":\"\",\"apartment\":\"\",\"city_name\":null,\"state_name\":null,\"country_name\":null}},\"total_amount\":null,\"last_updated\":null}"
             },
             "third_party_transaction_id": ""
         },
@@ -353,47 +357,47 @@ Example of a request for a payment using Astropay. Below are examples of a reque
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
---header 'X-idempotency-key: ----' \
---header 'public-api-key:--- ' \
---header 'private-secret-key: ---' \
+--header 'X-idempotency-key: <your-X-idempotency-key>' \
+--header 'public-api-key: <your-public-api-key> ' \
+--header 'private-secret-key: <your-private-secret-key>' \
 --header 'Content-Type: application/json' \
 --data '{
-    "account_id": {{your_account_id}},
+    "description": "Payment with Astropay",
+    "account_id": "<account_id>",
+    "country": "US",
     "amount": {
-        "currency": "BRL",
-        "value": 283
+        "currency": "USD",
+        "value": 300
     },
     "checkout": {
-        "session": "ce855c45-f560-4a28-8258-d765777ba485"
+        "session": "<checkout_session>"
     },
     "payment_method": {
         "type": "ASTROPAY"
     },
     "customer_payer": {
-        "id": {{your_customer_payer_id}}
+        "id": "<customer_id>"
     },
-    "merchant_order_id": "test merchant order id",
-    "country": "BR",
-    "description": "test description",
+    "merchant_order_id": "000022",
     "workflow": "REDIRECT"
 }'
 ```
 ```json Response (JSON)
 {
     "id": "245e360c-3bd7-4a8d-9258-8a8839087f7e",
-    "account_id": "{{your_account_id}}",
-    "description": "test description",
-    "country": "BR",
+    "account_id": "<account_id>",
+    "description": "Payment with Astropay",
+    "country": "US",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
-    "merchant_order_id": "test merchant order id",
+    "merchant_order_id": "000022",
     "created_at": "2024-03-22T11:48:45.772202Z",
     "updated_at": "2024-03-22T11:48:46.402414Z",
     "amount": {
         "captured": 0.00,
-        "currency": "BRL",
+        "currency": "USD",
         "refunded": 0.00,
-        "value": 283.00
+        "value": 300.00
     },
     "checkout": {
         "session": "a5e36fa7-e635-417b-aa87-8cda1adbe24e",
@@ -433,14 +437,14 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
         }
     },
     "customer_payer": {
-        "id": "{{customer_payer_id}}",
-        "merchant_customer_id": "{{merchant_customer_id}}",
-        "first_name": "Aaron",
-        "last_name": "Heann",
-        "gender": "F",
+        "id": "<customer_id>",
+        "merchant_customer_id": "1234567",
+        "first_name": "John",
+        "last_name": "Doe",
+        "gender": "M",
         "date_of_birth": "1990-02-28",
-        "email": "test@test.com",
-        "nationality": "BR",
+        "email": "john.doe@example.com",
+        "nationality": "US",
         "ip_address": null,
         "device_fingerprint": null,
         "browser_info": {
@@ -457,31 +461,31 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
             "language": ""
         },
         "document": {
-            "document_type": "CPF",
-            "document_number": "{{document_number}}"
+            "document_type": "PASSPORT",
+            "document_number": "123456789"
         },
         "phone": {
-            "number": "{{phone_number}}",
-            "country_code": "55"
+        "number": "2125551234",
+        "country_code": "1"
         },
         "billing_address": {
-            "address_line_1": "Calle 34 # 56 - 78",
-            "address_line_2": "Apartamento 502, Torre I",
-            "country": "BR",
-            "state": "Cundinamarca",
-            "city": "Bogotá",
-            "zip_code": "68890000",
-            "neighborhood": null
+            "address_line_1": "123 Main Street",
+            "address_line_2": "Apt 4B",
+            "country": "US",
+            "state": "NY",
+            "city": "New York",
+            "zip_code": "10001",
+            "neighborhood": "Manhattan"
         },
         "shipping_address": {
-            "address_line_1": "Calle 34 # 56 - 78",
-            "address_line_2": "Apartamento 502, Torre I",
-            "country": "BR",
-            "state": "Cundinamarca",
-            "city": "Bogotá",
-            "zip_code": "68890000",
-            "neighborhood": null
-        },
+            "address_line_1": "456 Oak Avenue",
+            "address_line_2": null,
+            "country": "US",
+            "state": "CA",
+            "city": "Los Angeles",
+            "zip_code": "90210",
+            "neighborhood": "Beverly Hills"
+        }
         "merchant_customer_created_at": null
     },
     "additional_data": null,
@@ -491,7 +495,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
         "type": "PURCHASE",
         "status": "CREATED",
         "category": "WALLET",
-        "amount": 283.00,
+        "amount": 300.00,
         "provider_id": "ASTROPAY",
         "payment_method": {
             "vaulted_token": "",
@@ -529,8 +533,8 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "test description",
-        "merchant_reference": "test merchant order id",
+        "description": "Payment with Astropay",
+        "merchant_reference": "000022",
         "provider_data": {
             "id": "ASTROPAY",
             "transaction_id": "qW10WwSpwtTY8vLAqiTBY1D3FT4fTutdLCbFtiBy",
@@ -597,8 +601,8 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
             "response_code": "SUCCEEDED",
             "response_message": "Transaction successful",
             "reason": null,
-            "description": "test description",
-            "merchant_reference": "test merchant order id",
+            "description": "Payment with Astropay",
+            "merchant_reference": "000022",
             "provider_data": {
                 "id": "ASTROPAY",
                 "transaction_id": "qW10WwSpwtTY8vLAqiTBY1D3FT4fTutdLCbFtiBy",
@@ -637,29 +641,29 @@ Example of a request for creating a payment Nupay Enrollment. Below are examples
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
---header 'X-idempotency-key: <Your idempotency-key>' \
---header 'public-api-key: <Your public-api-key>' \
---header 'private-secret-key: <Your private-secret-key>' \
+--header 'X-idempotency-key: <your-X-idempotency-key>' \
+--header 'public-api-key: <your-public-api-key>' \
+--header 'private-secret-key: <your-private-secret-key>' \
 --header 'Content-Type: application/json' \
 --data '{
-    "description": "Test NuPay",
-    "account_id": "7ae52512-1234-1234-1234-db973de67640",
-    "merchant_order_id": "Order1234",
-    "country": "BR",
+    "description": "Payment with NuPay",
+    "account_id": "<account_id>",
+    "merchant_order_id": "000022",
+    "country": "US",
     "amount": {
-        "currency": "BRL",
+        "currency": "USD",
         "value": 20
     },
     "checkout": {
-        "session": "4351f6f4-1234-1234-1234-fd1388c3d55d"
+        "session": "<checkout_session>"
     },
     "customer_payer": {
-        "id": "45ad52b6-a094-41ab-933e-2e75a7ad4bf9"
+        "id": "<customer_id>"
     },
     "workflow": "DIRECT",
     "payment_method": {
         "type": "NU_PAY_ENROLLMENT",
-        "vaulted_token": "1f3d74a0-1234-1234-1234-f5ccd42b27dc",
+        "vaulted_token": "<your_vaulted_token>",
         "detail": {
             "wallet": {
                 "card_data": {
@@ -674,16 +678,16 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 {
     "id": "db24dc85-1ce3-48bc-a77b-b768c2b45c58",
     "account_id": "7ae52512-1234-1234-1234-db973de67640",
-    "description": "Test NuPay",
-    "country": "BR",
+    "description": "Payment with NuPay",
+    "country": "US",
     "status": "PENDING",
     "sub_status": "PENDING_PROVIDER_CONFIRMATION",
-    "merchant_order_id": "Order1234",
+    "merchant_order_id": "000022",
     "created_at": "2024-08-03T00:41:31.729501Z",
     "updated_at": "2024-08-03T00:41:36.469759Z",
     "amount": {
         "captured": 0,
-        "currency": "BRL",
+        "currency": "USD",
         "currency_conversion": null,
         "refunded": 0,
         "value": 20
@@ -751,7 +755,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
             "language": ""
         },
         "document": {
-            "document_type": "CPF",
+            "document_type": "PASSPORT",
             "document_number": "01234567891"
         },
         "phone": null,
@@ -804,8 +808,8 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
         "response_code": "PENDING_PROVIDER_CONFIRMATION",
         "response_message": "Transaction waiting confirmation",
         "reason": null,
-        "description": "Test NuPay",
-        "merchant_reference": "Order1234",
+        "description": "Payment with NuPay",
+        "merchant_reference": "000022",
         "provider_data": {
             "id": "SPINPAY",
             "transaction_id": "512b4695-cc8e-48c6-a72c-36db3ba2e47d",
@@ -869,8 +873,8 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
             "response_code": "PENDING_PROVIDER_CONFIRMATION",
             "response_message": "Transaction waiting confirmation",
             "reason": null,
-            "description": "Test NuPay",
-            "merchant_reference": "Order1234",
+            "description": "Payment with NuPay",
+            "merchant_reference": "000022",
             "provider_data": {
                 "id": "SPINPAY",
                 "transaction_id": "512b4695-cc8e-48c6-a72c-36db3ba2e47d",
@@ -914,12 +918,12 @@ Below is an example of a payment request using Nequi. This example demonstrates 
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
---header 'X-idempotency-key: XXXXXXXXXXX' \
---header 'public-api-key: ***********' \
+--header 'X-idempotency-key: <your-X-idempotency-key>' \
+--header 'public-api-key: <your-public-api-key>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "description": "Test Nequi",
-    "account_id":"493e9374-510a-4201-9e09-de669d75f256",
+    "description": "Payment with Nequi",
+    "account_id":"<account_id>",
     "merchant_order_id": "0000022",
     "country": "CO",
     "amount": {
@@ -928,9 +932,9 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     },
     "customer_payer": {
         "merchant_customer_id": "1737124506",
-        "first_name": "Reva",
-        "last_name": "CANO",
-        "email": "test@gmail.com",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com",
         "document":{
             "document_type": "CC",
             "document_number": "1032765432"
@@ -951,7 +955,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 {
     "id": "340c1be8-05b9-4e37-aabf-4e57f098bf03",
     "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-    "description": "Test Nequi",
+    "description": "Payment with Nequi",
     "country": "CO",
     "status": "READY_TO_PAY",
     "sub_status": "CREATED",
@@ -1014,11 +1018,11 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
     "customer_payer": {
         "id": null,
         "merchant_customer_id": "1737124506",
-        "first_name": "Reva",
-        "last_name": "CANO",
+        "first_name": "John",
+        "last_name": "Smith",
         "gender": null,
         "date_of_birth": null,
-        "email": "test@gmail.com",
+        "email": "john.smith@example.com",
         "nationality": null,
         "ip_address": null,
         "device_fingerprint": null,
@@ -1101,7 +1105,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
         "response_code": "SUCCEEDED",
         "response_message": "Transaction successful",
         "reason": null,
-        "description": "Test Nequi",
+        "description": "Payment with Nequi",
         "merchant_reference": "0000022",
         "provider_data": {
             "id": "DLOCAL",
@@ -1181,7 +1185,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
             "response_code": "SUCCEEDED",
             "response_message": "Transaction successful",
             "reason": null,
-            "description": "Test Nequi",
+            "description": "Payment with Nequi",
             "merchant_reference": "0000022",
             "provider_data": {
                 "id": "DLOCAL",
