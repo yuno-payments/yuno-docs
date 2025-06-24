@@ -20,6 +20,8 @@ When using the Seamless SDK, you can:
 
 Use the following guides to implement each process.
 
+<Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+
 ## Payment workflow
 
 The diagram below illustrates the complete payment workflow:
