@@ -10,6 +10,10 @@ metadata:
 next:
   description: ''
 ---
+> 🚧 Deprecated SDK
+>
+> Yuno’s Flutter SDK is no longer maintained. Refer to our [integration documentation](https://docs.y.uno/docs/choose-the-right-integration-for-you) to choose the best SDK for your project.
+
 Yuno's Flutter SDKs are crafted to simplify the integration of payment processing capabilities into your Flutter applications. By leveraging these SDKs, developers can more efficiently implement essential features, minimizing the need for in-depth knowledge of payment protocols and infrastructure.
 
 <Image align="center" src="https://files.readme.io/2e1d03a6eec5051a64763f36225454778d7125c344f1d741d0c01cfcdafe4186-flutter-image.png" />
