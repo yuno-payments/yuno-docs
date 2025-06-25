@@ -134,13 +134,12 @@ To present the checkout process based on the selected payment method, use the `y
 ```javascript
 yuno.mountSeamlessCheckout({
   /**
-   * Optional, only needed if you would like this method type selected by default
-   * Can be one of 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | CARD
+   // This parameter is optional and is used to pre-select a payment method type by default.
+   // Available options include: 'PAYPAL', 'PIX', 'APPLE_PAY', 'GOOGLE_PAY', 'CARD'.
    */
   paymentMethodType: PAYMENT_METHOD_TYPE,
   /**
-   * Optional
-   * Vaulted token related to payment method type
+   // Optional: This parameter is a vaulted token associated with the payment method type.
    */
   vaultedToken: VAULTED_TOKEN,
 })
