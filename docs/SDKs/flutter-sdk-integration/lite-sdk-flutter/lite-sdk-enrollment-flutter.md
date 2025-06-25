@@ -10,9 +10,9 @@ metadata:
 next:
   description: ''
 ---
-> 👍 Recommended SDK
+> 🚧 Deprecated SDK
 >
-> We recommend using the [Flutter Seamless SDK](seamless-flutter) for a smooth integration experience. This option offers a flexible payment solution with pre-built UI components and customization options.
+> Yuno’s Flutter SDK is no longer maintained. Refer to our [integration documentation](https://docs.y.uno/docs/choose-the-right-integration-for-you) to choose the best SDK for your project.
 
 This page provides a step-by-step guide to integrating the Lite Flutter SDK for enrollment functionalities into your application.
 
