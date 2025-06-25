@@ -129,10 +129,10 @@ Notice that when using the `startCheckout` you already have to specify the callb
 
 ## Step 4: Mount the SDK
 
-To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckoutLite()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
+To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckout()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
 
 ```javascript
-yuno.mountSeamlessCheckoutLite({
+yuno.mountSeamlessCheckout({
   paymentMethodType: PAYMENT_METHOD_TYPE,
   /**
    * Vaulted token related to payment method type.
