@@ -1,5 +1,5 @@
 ---
-title: Lite SDK v1.1 (Payment Web)
+title: Lite SDK v1.1 (Payment)
 excerpt: ''
 deprecated: false
 hidden: false
