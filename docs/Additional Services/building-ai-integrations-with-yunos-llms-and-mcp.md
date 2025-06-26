@@ -25,7 +25,7 @@ These files are publicly accessible and updated alongside our main documentation
 
 This package provides an MCP server that exposes the Yuno payment platform API as Model Context Protocol tools. It enables programmatic access for AI agents, automation systems, and other advanced workflows that rely on structured, machine-readable context.
 
-#### Features
+### Features
 
 * **Exposes Yuno API endpoints as MCP tools**: Each endpoint is modeled as a tool that agents can call programmatically, with clear input and output structures
 
@@ -35,7 +35,7 @@ This package provides an MCP server that exposes the Yuno payment platform API a
 
 * **Easy integration with Cursor and other MCP-compatible agents**: Works out of the box with tools like Cursor, Claude Desktop, and other environments that support the Model Context Protocol
 
-#### Available tools
+### Available tools
 
 The Yuno MCP server makes the following tools available to AI agents and automation:
 
@@ -47,7 +47,7 @@ The Yuno MCP server makes the following tools available to AI agents and automat
 | `payments.read`          | Retrieve payment information             |
 | `documentation.read`     | Access Yuno API documentation and guides |
 
-#### Payment workflows
+### Payment workflows
 
 The `payments.create` tool supports three workflow types:
 
@@ -55,15 +55,15 @@ The `payments.create` tool supports three workflow types:
 * `REDIRECT` – Redirect-based payment flow
 * `SDK_CHECKOUT` – Requires `checkout_session_id` and `ott` (for web, Android, and iOS payments)
 
-### Using the MCP with Cursor or Claude Desktop
+## Using the MCP with Cursor or Claude Desktop
 
 You can use this MCP server with Cursor or Claude Desktop to enable AI-driven payment flows, customer creation, and more.
 
-#### 1. Set up your Yuno API credentials
+### 1. Set up your Yuno API credentials
 
 Set your Yuno API credentials using environment variables (see config examples below).
 
-#### 2. Add the MCP server to Cursor
+### 2. Add the MCP server to Cursor
 
 * Open Cursor Settings (`Cmd+Shift+P` → "Cursor Settings")
 * Go to the **MCP** section and click **Add new global MCP server**
@@ -87,7 +87,7 @@ Set your Yuno API credentials using environment variables (see config examples b
 }
 ```
 
-#### 3. Add the MCP server to Claude Desktop
+### 3. Add the MCP server to Claude Desktop
 
 * Open Claude Desktop settings → "Developer" tab → Edit Config.
 * Add the following config:
@@ -112,12 +112,12 @@ Set your Yuno API credentials using environment variables (see config examples b
 }
 ```
 
-#### 4. Test the integration
+### 4. Test the integration
 
 * In Cursor or Claude, select a Markdown file or chat and ask the agent to create a payment, customer, or checkout session using the yuno-mcp tool
 * Make sure your environment variables are set correctly
 
-### Required environment variables
+## Required environment variables
 
 * `YUNO_ACCOUNT_CODE`
 * `YUNO_PUBLIC_API_KEY`
@@ -125,7 +125,7 @@ Set your Yuno API credentials using environment variables (see config examples b
 * `YUNO_COUNTRY_CODE` (optional)
 * `YUNO_CURRENCY` (optional)
 
-### Support
+## Support
 
 For issues, bugs, or feature requests, please [open an issue](https://github.com/yuno-payments/yuno-mcp/issues) in our GitHub repository.\
 For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno.com/).
