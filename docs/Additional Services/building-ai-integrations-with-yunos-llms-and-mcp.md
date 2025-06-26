@@ -119,11 +119,11 @@ Set your Yuno API credentials using environment variables (see config examples b
 
 ### Required environment variables
 
--`YUNO_ACCOUNT_CODE`\
--`YUNO_PUBLIC_API_KEY`
--`YUNO_PRIVATE_SECRET_KEY`
--`YUNO_COUNTRY_CODE` (optional)
--`YUNO_CURRENCY` (optional)
+* `YUNO_ACCOUNT_CODE`
+* `YUNO_PUBLIC_API_KEY`
+* `YUNO_PRIVATE_SECRET_KEY`
+* `YUNO_COUNTRY_CODE` (optional)
+* `YUNO_CURRENCY` (optional)
 
 ### Support
 
