@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-In this section, you can find all report types and related fields available when generating your reports. Take into account the description of the fields, where you can find the origin of the data and its availability.
+In this section, you can find all report types and related fields available when generating your reports. Consider the description of the fields, which outlines the origin of the data and its availability.
 
 Yuno provides several report types:
 
@@ -2450,98 +2450,117 @@ The settlement report has two types of reports:
 The communications report provides detailed information about all communications (calls, messages) between customers and the merchant through Yuno's communication channels. This report includes data about call durations, message content, communication status, and other relevant metrics.
 
 <HTMLBlock>{`
-<div class="table-div">
-  <table>
-    <thead>
-      <tr>
-        <th>Parameter</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Example</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>communication_id</code></td>
-        <td>string</td>
-        <td>Unique identifier for the communication.</td>
-        <td>64143128-dd12-11ec-9d64-0242ac120002</td>
-      </tr>
-      <tr>
-        <td><code>order_id</code></td>
-        <td>string</td>
-        <td>Identifier of the order associated with the communication.</td>
-        <td>64143128-dd12-11ec-9d64-0242ac120003</td>
-      </tr>
-      <tr>
-        <td><code>payment_id</code></td>
-        <td>string</td>
-        <td>Identifier of the payment associated with the communication.</td>
-        <td>64143128-dd12-11ec-9d64-0242ac120004</td>
-      </tr>
-      <tr>
-        <td><code>communication_status</code></td>
-        <td>enum</td>
-        <td>Current status of the communication.</td>
-        <td>COMPLETED</td>
-      </tr>
-      <tr>
-        <td><code>destination_phone</code></td>
-        <td>string</td>
-        <td>Phone number where the communication was sent.</td>
-        <td>+1234567890</td>
-      </tr>
-      <tr>
-        <td><code>created_at</code></td>
-        <td>datetime</td>
-        <td>Date and time when the communication was initiated.</td>
-        <td>2024-03-15 14:30:00</td>
-      </tr>
-      <tr>
-        <td><code>country</code></td>
-        <td>string</td>
-        <td>Country code where the communication was sent (ISO 3166-1 alpha-2).</td>
-        <td>US</td>
-      </tr>
-      <tr>
-        <td><code>transcription</code></td>
-        <td>string</td>
-        <td>Text transcription of the communication content.</td>
-        <td>Customer confirmed payment details...</td>
-      </tr>
-      <tr>
-        <td><code>call_duration</code></td>
-        <td>number</td>
-        <td>Duration of the call in seconds.</td>
-        <td>180</td>
-      </tr>
-      <tr>
-        <td><code>messages</code></td>
-        <td>array</td>
-        <td>Array of messages exchanged during the communication.</td>
-        <td>[{"content": "Hello", "timestamp": "2024-03-15 14:30:00"}]</td>
-      </tr>
-      <tr>
-        <td><code>summary</code></td>
-        <td>string</td>
-        <td>Summary of the communication content.</td>
-        <td>Payment verification call completed successfully</td>
-      </tr>
-      <tr>
-        <td><code>channel</code></td>
-        <td>enum</td>
-        <td>Communication channel used (e.g., VOICE, SMS, WHATSAPP).</td>
-        <td>VOICE</td>
-      </tr>
-      <tr>
-        <td><code>focus</code></td>
-        <td>string</td>
-        <td>Main topic or focus of the communication.</td>
-        <td>Payment Verification</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Communications report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>communication_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the communication (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>order_id</code></td>
+            <td>string</td>
+            <td>Identifier of the order associated with the communication (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120003</td>
+          </tr>
+          <tr>
+            <td><code>payment_id</code></td>
+            <td>string</td>
+            <td>Identifier of the payment associated with the communication (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120004</td>
+          </tr>
+          <tr>
+            <td><code>communication_status</code></td>
+            <td>enum</td>
+            <td>Current status of the communication (MAX 255; MIN 3).</td>
+            <td>COMPLETED</td>
+          </tr>
+          <tr>
+            <td><code>destination_phone</code></td>
+            <td>string</td>
+            <td>Phone number where the communication was sent (MAX 255; MIN 3).</td>
+            <td>+1234567890</td>
+          </tr>
+          <tr>
+            <td><code>created_at</code></td>
+            <td>datetime</td>
+            <td>Date and time when the communication was initiated (ISO 8601).</td>
+            <td>2024-03-15 14:30:00</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>string</td>
+            <td>Country code where the communication was sent (ISO 3166-1 alpha-2; MAX 2; MIN 2).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>transcription</code></td>
+            <td>string</td>
+            <td>Text transcription of the communication content (MAX 1000; MIN 3).</td>
+            <td>Customer confirmed payment details...</td>
+          </tr>
+          <tr>
+            <td><code>call_duration</code></td>
+            <td>number</td>
+            <td>Duration of the call in seconds (MAX 3600; MIN 0).</td>
+            <td>180</td>
+          </tr>
+          <tr>
+            <td><code>messages</code></td>
+            <td>array</td>
+            <td>Array of messages exchanged during the communication.</td>
+            <td>[{"content": "Hello", "timestamp": "2024-03-15 14:30:00"}]</td>
+          </tr>
+          <tr>
+            <td><code>summary</code></td>
+            <td>string</td>
+            <td>Summary of the communication content (MAX 500; MIN 3).</td>
+            <td>Payment verification call completed successfully</td>
+          </tr>
+          <tr>
+            <td><code>channel</code></td>
+            <td>enum</td>
+            <td>Communication channel used (e.g., VOICE, SMS, WHATSAPP; MAX 50; MIN 3).</td>
+            <td>VOICE</td>
+          </tr>
+          <tr>
+            <td><code>focus</code></td>
+            <td>string</td>
+            <td>Main topic or focus of the communication (MAX 255; MIN 3).</td>
+            <td>Payment Verification</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
 `}</HTMLBlock>
 
 ## Fraud Transactions report
@@ -3634,7 +3653,7 @@ The sales conciliation report provides detailed information about sales transact
 
 ## Advancements report
 
-The advancements report provides detailed information about advance payments and financing operations processed through Yuno. This report includes negotiation details, UR (Unique Reference) information, and settlement account details for tracking advance payment operations.
+The advancements report provides detailed information about all advancement operations processed through Yuno. This report includes negotiation details, UR operations, bank information, and financial data for tracking advancement transactions.
 
 <HTMLBlock>{`
 <body>
@@ -3681,12 +3700,12 @@ The advancements report provides detailed information about advance payments and
             <td><code>product_id</code></td>
             <td>string</td>
             <td>Unique identifier for the product (MAX 64; MIN 36).</td>
-            <td>prod_123456789</td>
+            <td>f4c53557-a832-44e9-94e4-0344f91e9d4f</td>
           </tr>
           <tr>
             <td><code>ur_key</code></td>
             <td>string</td>
-            <td>Unique reference key for the advancement operation.</td>
+            <td>Unique reference key for the advancement operation (MAX 255; MIN 3).</td>
             <td>UR123456789</td>
           </tr>
           <tr>
@@ -3764,19 +3783,19 @@ The advancements report provides detailed information about advance payments and
           <tr>
             <td><code>bank</code></td>
             <td>string</td>
-            <td>Bank details for the advancement operation.</td>
+            <td>Bank details for the advancement operation (MAX 255; MIN 3).</td>
             <td>123</td>
           </tr>
           <tr>
             <td><code>bank_agency</code></td>
             <td>string</td>
-            <td>Bank agency details for the advancement operation.</td>
+            <td>Bank agency details for the advancement operation (MAX 255; MIN 3).</td>
             <td>012</td>
           </tr>
           <tr>
             <td><code>bank_account</code></td>
             <td>string</td>
-            <td>Bank account details for the advancement operation.</td>
+            <td>Bank account details for the advancement operation (MAX 255; MIN 3).</td>
             <td>12345-6</td>
           </tr>
           <tr>
@@ -3788,7 +3807,7 @@ The advancements report provides detailed information about advance payments and
           <tr>
             <td><code>settlement_account</code></td>
             <td>string</td>
-            <td>Settlement account details for the advancement operation.</td>
+            <td>Settlement account details for the advancement operation (MAX 255; MIN 3).</td>
             <td>SETTLE123456</td>
           </tr>
           <tr>
