@@ -132,7 +132,9 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 After integrating the SDK using one of the methods described above, follow these steps to implement the Lite Checkout functionality:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Lite Web SDK v1.2" href="/docs/lite-checkout-sdk-v12" titleSize="h4" />
+  <YunoCard title="Lite Web SDK v1.2 (Payment)" href="/docs/lite-checkout-sdk-v12" titleSize="h4" />
 
-  <YunoCard title="Lite Web SDK v1.1" href="/docs/lite-checkout-sdk-v11" titleSize="h4" />
+  <YunoCard title="Lite Web SDK v1.1 (Payment)" href="/docs/lite-checkout-sdk-v11" titleSize="h4" />
+
+  <YunoCard title="Lite Web SDK (Enrollment)" href="/docs/lite-checkout-sdk-v11" titleSize="h4" />
 </Shelf>
