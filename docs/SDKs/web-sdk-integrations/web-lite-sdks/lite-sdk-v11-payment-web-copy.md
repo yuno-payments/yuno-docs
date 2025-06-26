@@ -1,5 +1,5 @@
 ---
-title: Lite SDK v1.1 (Payment Web) (COPY)
+title: Lite SDK v1.2 (Payment Web)
 deprecated: false
 hidden: false
 metadata:
@@ -9,6 +9,51 @@ metadata:
     Lite SDK functionalities within your system.
   robots: index
 ---
+## What's new in v1.2.0
+
+Starting from version 1.2.0, the `continuePayment` method now accepts additional properties that were previously only available in `startCheckout`. This allows you to override specific configurations when continuing a payment.
+
+### Enhanced `continuePayment` method
+
+The `continuePayment` method can now receive the following new properties:
+
+```typescript
+continuePayment({
+  checkoutSession?: string
+  showPaymentStatus?: boolean
+  yunoPaymentResult?: (status: string) => void
+  yunoError?: (message: string, data?: unknown) => void
+  countryCode?: string
+  language?: string
+})
+```
+
+| Parameter           | Description                                                                                                                                                                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `checkoutSession`   | The checkout session for the current payment. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                |
+| `showPaymentStatus` | Controls whether to show the Yuno Payment Status page. By default, it's `true`.                                                                                                                                                                                                |
+| `yunoPaymentResult` | Callback function that executes when the payment result is obtained. Receives the payment status as a parameter.                                                                                                                                                               |
+| `yunoError`         | Callback function that executes when an error occurs during the payment process. Receives the error message and optional additional data.                                                                                                                                      |
+| `countryCode`       | Specifies the country code for the payment process. Use an `ENUM` value representing the desired country code.                                                                                                                                                                 |
+| `language`          | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul> |
+
+### Example usage
+
+```javascript
+yuno.continuePayment({
+  checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638',
+  showPaymentStatus: true,
+  countryCode: 'FR',
+  language: 'fr',
+  yunoPaymentResult: (status) => {
+    console.log('Payment result:', status);
+  },
+  yunoError: (message, data) => {
+    console.error('Payment error:', message, data);
+  },
+})
+```
+
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK functionality in your application.
 
 ## Step 1: Include the library in your project
