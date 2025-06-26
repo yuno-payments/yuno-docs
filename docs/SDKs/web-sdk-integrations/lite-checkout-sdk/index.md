@@ -136,5 +136,5 @@ After integrating the SDK using one of the methods described above, follow these
 
   <YunoCard title="Lite Web SDK v1.1 (Payment)" href="/docs/lite-checkout-sdk-v11" titleSize="h4" />
 
-  <YunoCard title="Lite Web SDK (Enrollment)" href="/docs/lite-checkout-sdk-v11" titleSize="h4" />
+  <YunoCard title="Lite Web SDK (Enrollment)" href="/enrollment-lite-sdk" titleSize="h4" />
 </Shelf>
