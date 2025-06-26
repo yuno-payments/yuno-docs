@@ -9,7 +9,7 @@ metadata:
     If you are a developer, you can use our Direct Flow to keep using your
     checkout and connect to our services using only a server-to-server
     connection. Your company must be PCI-certified to use our server-to-server
-    card payments service.
+    card payments service. 
   robots: index
 next:
   description: ''
