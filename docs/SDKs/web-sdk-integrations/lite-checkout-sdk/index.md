@@ -124,3 +124,13 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 <link rel="preconnect" href="https://api.y.uno" />
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
 ```
+
+## Lite SDK implementation
+
+After integrating the SDK using one of the methods described above, follow these steps to implement the Lite Checkout functionality:
+
+<Shelf classname="link_cards_container">
+  <YunoCard title="Lite SDK v1.2" href="/docs/lite-checkout-sdk-v12" titleSize="h4" />
+
+  <YunoCard title="Lite SDK v1.1" href="/docs/lite-checkout-sdk-v11" titleSize="h4" />
+</Shelf>
