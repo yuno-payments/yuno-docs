@@ -1,5 +1,5 @@
 ---
-title: Full SDK v1.0
+title: Full Web SDK v1.0
 excerpt: ''
 deprecated: false
 hidden: false
