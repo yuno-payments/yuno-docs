@@ -117,13 +117,15 @@ Set your Yuno API credentials using environment variables (see config examples b
 * In Cursor or Claude, select a Markdown file or chat and ask the agent to create a payment, customer, or checkout session using the yuno-mcp tool
 * Make sure your environment variables are set correctly
 
-## Required environment variables
+## Environment variables
 
 * `YUNO_ACCOUNT_CODE`
 * `YUNO_PUBLIC_API_KEY`
 * `YUNO_PRIVATE_SECRET_KEY`
 * `YUNO_COUNTRY_CODE` (optional)
 * `YUNO_CURRENCY` (optional)
+
+/\* required.
 
 ## Support
 
