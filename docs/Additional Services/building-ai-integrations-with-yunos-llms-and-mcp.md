@@ -125,6 +125,8 @@ Set your Yuno API credentials using environment variables (see config examples b
 * `YUNO_COUNTRY_CODE` (optional)
 * `YUNO_CURRENCY` (optional)
 
+Asterisk marks required.
+
 ## Support
 
 For issues, bugs, or feature requests, please [open an issue](https://github.com/yuno-payments/yuno-mcp/issues) in our GitHub repository.\
