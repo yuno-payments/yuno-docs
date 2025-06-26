@@ -125,7 +125,7 @@ Set your Yuno API credentials using environment variables (see config examples b
 * `YUNO_COUNTRY_CODE` (optional)
 * `YUNO_CURRENCY` (optional)
 
-Asterisk marks required.
+Asterisk (\*) marks required.
 
 ## Support
 
