@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-In this section, you can find all report types and related fields available when generating your reports. Consider the description of the fields, which outlines the origin of the data and its availability.
+In this section, you can find all report types and related fields available when generating your reports. Take into account the description of the fields, where you can find the origin of the data and its availability.
 
 Yuno provides several report types:
 
@@ -872,7 +872,7 @@ Below, you will find details of each report type.
             <td><code>pnr</code></td>
             <td>string</td>
             <td>Passenger Name Record (PNR) reference.</td>
-            <td></td>
+            <td>1P-2UUGJW</td>
           </tr>
           <tr>
             <td><code>provider_number</code></td>
@@ -1833,6 +1833,12 @@ Below, you will find details of each report type.
             <td>Date by the acquirer in which the funds will be deposited in the merchant's bank account.</td>
             <td>2022-05-09 0:00</td>
           </tr>
+          <tr>
+            <td><code>reconciliation</code></td>
+            <td>struct</td>
+            <td>Reconciliation information structure containing status, date, and ID details.</td>
+            <td>{"status": "RECONCILED", "date": "2022-05-09"}</td>
+          </tr>
         </tbody>
       </table>
 
@@ -2312,8 +2318,8 @@ The settlement report has two types of reports:
           <tr>
             <td><code>reconciliation</code></td>
             <td>struct</td>
-            <td></td>
-            <td></td>
+            <td>Reconciliation information structure containing status, date, and ID details.</td>
+            <td>{"status": "RECONCILED", "date": "2022-05-09"}</td>
           </tr>
           <tr>
             <td><code>reconciliation_status</code></td>
