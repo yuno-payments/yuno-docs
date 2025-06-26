@@ -9,6 +9,8 @@ metadata:
     Lite SDK functionalities within your system.
   robots: index
 ---
+Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK functionality in your application.
+
 ## What's new in v1.2.0
 
 Starting from version 1.2.0, the `continuePayment` method now accepts additional properties that were previously only available in `startCheckout`. This allows you to override specific configurations when continuing a payment.
@@ -53,8 +55,6 @@ yuno.continuePayment({
   },
 })
 ```
-
-Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK functionality in your application.
 
 ## Step 1: Include the library in your project
 
