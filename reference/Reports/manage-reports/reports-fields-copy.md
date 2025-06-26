@@ -1,5 +1,5 @@
 ---
-title: Reports Fields (COPY)
+title: 'Reports Fields [docs: Add missing report types]'
 excerpt: ''
 deprecated: false
 hidden: true
