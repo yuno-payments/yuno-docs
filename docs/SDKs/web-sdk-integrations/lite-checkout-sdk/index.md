@@ -1,5 +1,5 @@
 ---
-title: Lite SDK (Web)
+title: Lite Web SDK
 excerpt: ''
 deprecated: false
 hidden: false
