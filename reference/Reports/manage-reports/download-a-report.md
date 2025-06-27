@@ -21,8 +21,7 @@ To retrieve the file content, use your API credentials to access the file specif
 >
 > The API response will provide a .zip file. However, for [settlement](introduction-reports#settlement-report) reports, the API will return a .csv file.
 
-
-Use the links below to have access to report examples:
+Explore the following links to access various report examples:
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Payments" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-payments.csv.zip" titleSize="h4" />
