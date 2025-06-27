@@ -15,7 +15,7 @@ metadata:
 next:
   description: ''
 ---
-To retrieve the file content, use your API credentials to access the file specified by the report object `id`. 
+To retrieve the file content, use your API credentials to access the file specified by the report object `id`.
 
 > 📘 Response File Type
 >
@@ -25,8 +25,12 @@ Explore the following links to access various report examples:
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Payments" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-payments.csv.zip" titleSize="h4" />
+
   <YunoCard title="Settlement Report" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-settlement-report.csv.zip" titleSize="h4" />
+
   <YunoCard title="Transaction Report" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-transaction-report.csv.zip" titleSize="h4" />
-  <YunoCard title="Transaction Reconciliation" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-transaction-reconciliation.csv.zip" titleSize="h4" />
+
+  <YunoCard title="Transaction   Reconciliation" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-transaction-reconciliation.csv.zip" titleSize="h4" />
+
   <YunoCard title="Communications" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-communications.csv.zip" titleSize="h4" />
 </Shelf>
