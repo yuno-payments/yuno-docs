@@ -17,21 +17,10 @@ next:
 ---
 To retrieve the file content, use your API credentials to access the file specified by the report object `id`. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Response file type</h3>
-      <div class="contentContainer">
-        <p>
-					The API response will provide a .zip file. However, for <a onclick="window.location='introduction-reports#settlement-report'">settlement</a> reports, the API will return a .csv file.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Response File Type
+>
+> The API response will provide a .zip file. However, for [settlement](introduction-reports#settlement-report) reports, the API will return a .csv file.
+
 
 Use the links below to have access to report examples:
 
