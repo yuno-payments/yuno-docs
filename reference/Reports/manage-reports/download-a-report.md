@@ -17,30 +17,16 @@ next:
 ---
 To retrieve the file content, use your API credentials to access the file specified by the report object `id`. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Response file type</h3>
-      <div class="contentContainer">
-        <p>
-					The API response will provide a .zip file. However, for <a onclick="window.location='introduction-reports#settlement-report'">settlement</a> reports, the API will return a .csv file.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Response File Type
+>
+> The API response will provide a .zip file. However, for [settlement](introduction-reports#settlement-report) reports, the API will return a .csv file.
 
-Use the links below to have access to report examples:
+Explore the following links to access various report examples:
 
-<HTMLBlock>{`
-<ul>
-  <li><a href="https://drive.google.com/file/d/1Sj1CBnJLQ3_1EaO-l_xWhZZdy7EDQQD7/view?usp=sharing" target=”_blank”>Payments</a></li>
-  <li><a href="https://drive.google.com/file/d/1QgcqPG_ow-VHiR0h-rSEYAfOgGUKGJb6/view?usp=sharing" target=”_blank”>Settlement Report</a></li>
-  <li><a href="https://drive.google.com/file/d/1MAPo20aDpgikGdEqdi4ySQCq6SdseMw3/view?usp=sharing" target=”_blank”>Transaction Report</a></li>
-  <li><a href="https://drive.google.com/file/d/1L0Y-hXkip-SMUKcDWVGGpNoq6CN3DyHb/view?usp=sharing" target=”_blank”>Transaction Reconciliation</a></li>
-  <li><a href="https://drive.google.com/file/d/1QzD5q5EkYOgCvOJpC78RVDD_huhNixmF/view?usp=sharing" target=”_blank”>Communications</a></li>
-</ul>
-`}</HTMLBlock>
+<Shelf classname="link_cards_container">
+  <YunoCard title="Payments" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-payments.csv.zip" titleSize="h4" />
+  <YunoCard title="Settlement Report" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-settlement-report.csv.zip" titleSize="h4" />
+  <YunoCard title="Transaction Report" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-transaction-report.csv.zip" titleSize="h4" />
+  <YunoCard title="Transaction Reconciliation" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-transaction-reconciliation.csv.zip" titleSize="h4" />
+  <YunoCard title="Communications" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-communications.csv.zip" titleSize="h4" />
+</Shelf>
