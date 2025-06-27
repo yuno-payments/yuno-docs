@@ -17,7 +17,7 @@ The .md files are part of [Yuno Docs](docs.y.uno). You can access them by adding
 
 This setup enables AI assistants, developer tools, and chat-based agents to answer questions, explain features, and guide integrations automatically. It’s a lightweight but powerful way to open up Yuno’s documentation to a wide range of intelligent applications.
 
-For example, a chatbot with access to these files could help a developer debug a payment integration, explain how vaulted tokens work, or walk through MCP setup — all based on real, structured content.
+For example, a chatbot with access to these files could help a developer debug a payment integration, explain how vaulted tokens work, or walk through MCP setup, all based on real, structured content.
 
 These files are publicly accessible and updated alongside our main documentation. They follow consistent formatting guidelines to ensure clarity, context, and AI compatibility.
 
