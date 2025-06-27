@@ -34,3 +34,17 @@ Explore the following links to access various report examples:
 
   <YunoCard title="Communications" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2/reference/Reports/manage-reports/report-examples/example-communications.csv.zip" titleSize="h4" />
 </Shelf>
+
+<br />
+
+<Shelf classname="link_cards_container">
+  <YunoCard title="Payments" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-payments.csv.zip" />
+
+  <YunoCard title="Settlement Report" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-settlement-report.csv.zip" />
+
+  <YunoCard title="Transaction Report" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-transaction-report.csv.zip" />
+
+  <YunoCard title="Transaction Reconciliation" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-transaction-reconciliation.csv.zip" />
+
+  <YunoCard title="Communications" href="https://raw.githubusercontent.com/yuno-payments/yuno-docs/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/example-communications.csv.zip" />
+</Shelf>
