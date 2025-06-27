@@ -19,6 +19,16 @@ next:
 ---
 This page explains the importance of choosing the right integration, the factors to consider, and the pros and cons of each option.
 
+> 👍 Recommended Integration
+>
+> We recommend using Seamless SDK options for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+>
+> **Available Seamless SDK options:**
+>
+> * [Web Seamless SDK](doc:seamless-sdk-payment-web)
+> * [iOS Seamless SDK](doc:seamless-sdk-payment-ios)
+> * [Android Seamless SDK](doc:seamless-sdk-payment-android)
+
 ## Why choosing the right integration matters
 
 The integration method you select affects multiple aspects of your business, including:
