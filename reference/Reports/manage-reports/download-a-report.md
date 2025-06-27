@@ -24,12 +24,10 @@ To retrieve the file content, use your API credentials to access the file specif
 
 Use the links below to have access to report examples:
 
-<HTMLBlock>{`
-<ul>
-  <li><a href="https://drive.google.com/file/d/1Sj1CBnJLQ3_1EaO-l_xWhZZdy7EDQQD7/view?usp=sharing" target=”_blank”>Payments</a></li>
-  <li><a href="https://drive.google.com/file/d/1QgcqPG_ow-VHiR0h-rSEYAfOgGUKGJb6/view?usp=sharing" target=”_blank”>Settlement Report</a></li>
-  <li><a href="https://drive.google.com/file/d/1MAPo20aDpgikGdEqdi4ySQCq6SdseMw3/view?usp=sharing" target=”_blank”>Transaction Report</a></li>
-  <li><a href="https://drive.google.com/file/d/1L0Y-hXkip-SMUKcDWVGGpNoq6CN3DyHb/view?usp=sharing" target=”_blank”>Transaction Reconciliation</a></li>
-  <li><a href="https://drive.google.com/file/d/1QzD5q5EkYOgCvOJpC78RVDD_huhNixmF/view?usp=sharing" target=”_blank”>Communications</a></li>
-</ul>
-`}</HTMLBlock>
+<Shelf classname="link_cards_container">
+  <YunoCard title="Payments" href="https://github.com/yuno-payments/yuno-docs/blob/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/Example%20payments.csv.zip" titleSize="h4" />
+  <YunoCard title="Settlement Report" href="https://github.com/yuno-payments/yuno-docs/blob/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/Example%20settlement_report.csv.zip" titleSize="h4" />
+  <YunoCard title="Transaction Report" href="https://github.com/yuno-payments/yuno-docs/blob/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/Example%20transaction_report.csv.zip" titleSize="h4" />
+  <YunoCard title="Transaction Reconciliation" href="https://github.com/yuno-payments/yuno-docs/blob/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/Example%20transaction_reconciliation.csv.zip" titleSize="h4" />
+  <YunoCard title="Communications" href="https://github.com/yuno-payments/yuno-docs/blob/v1.0.2-reports-fields-page-update/reference/Reports/manage-reports/report-examples/Example%20communications.csv" titleSize="h4" />
+</Shelf>
