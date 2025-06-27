@@ -427,6 +427,18 @@ Provides full control over the checkout frontend while relying on Yuno for backe
 * **Frontend control**: You decide which methods to display and control the user interface.
 * **Customization**: Ideal for businesses that want a customizable frontend while leveraging Yuno’s backend capabilities.
 
+### Understanding Payment and Enrollment in the Lite SDK
+
+In the Lite SDK, Payment and Enrollment are handled as separate processes, offering flexibility and control:
+
+**Payment Flow in Lite SDK**: The Lite SDK provides a tailored Payment flow, allowing you to customize the user interface and experience. This gives developers full control over how payments are presented to users, from UI elements to integration details.
+
+**Enrollment Flow in Lite SDK**: Similarly, the Lite SDK also offers an independent Enrollment flow, enabling you to manage customer data storage and other aspects of the enrollment process separately from payments. This flexibility is ideal for applications where Payment and Enrollment need distinct handling.
+
+By keeping these flows separate, the Lite SDK gives developers more granular control over both processes. This approach is best suited for developers who want to implement custom UI/UX and require more control over how each part of the process works.
+
+**Full SDK**: In contrast, the Full SDK combines both Payment and Enrollment into one seamless, automated flow, automatically handling payment methods, processing, and enrollment. This approach is more streamlined and suited for those seeking a comprehensive solution with minimal setup.
+
 ### Secure Fields SDK
 
 A secure and seamless checkout solution using prebuilt UI components for Web, Android, and iOS:
