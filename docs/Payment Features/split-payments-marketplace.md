@@ -41,9 +41,9 @@ This design ensures flexibility, transparency, and full traceability throughout 
 
 Yuno offers two onboarding flows for submerchants, providing flexibility based on the submerchant's current status with payment providers.
 
-1. **Pre-onboarded accounts**: If a submerchant has already completed the onboarding process with a specific provider (e.g., through an external dashboard or platform), the marketplace can supply the corresponding **recipient\_id** during creation. In this scenario, no further onboarding is required, and the status will be immediately set to **SUCCEEDED** (`onboardings.type`='PREVIOUSLY\_ONBOARDED').
+1. **Pre-onboarded accounts**: If a submerchant has already completed the onboarding process with a specific provider (e.g., through an external dashboard or platform), the marketplace can supply the corresponding **recipient\_id** during creation. In this scenario, no further onboarding is required, and the status will be immediately set to **SUCCEEDED** (`onboardings.type`=`PREVIOUSLY_ONBOARDED`).
 
-2. **Dynamic onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the chosen provider (`onboardings.type`='ONBOARD\_ONTO\_PROVIDER'). This process may include:
+2. **Dynamic onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the chosen provider (`onboardings.type`=`ONBOARD_ONTO_PROVIDER`). This process may include:
    1. Form submission or redirection to a hosted onboarding page.
    2. Uploading legal or financial documentation.
    3. Completing KYC/KYB validation steps.
@@ -99,7 +99,7 @@ In this section, we explore how the `split_marketplace` object is used to divide
 | :---------------------- | :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------- | :------------- |
 | `recipient_id`          | `string`  | The unique identifier for the recipient within the [Yuno system](ref:create-recipients).                                                                                                   | Conditional | `rec_test123`  |
 | `provider_recipient_id` | `string`  | The recipient's ID as provided by the payment provider, if applicable.                                                                                                                     | Conditional | `prov_rec_abc` |
-| **Note:**               |           | You must provide either `recipient_id` or `provider_recipient_id`. For marketplace owners (`type`='COMMISSION'), `provider_recipient_id` is optional if not required by the provider.      |             |                |
+| **Note:**               |           | You must provide either `recipient_id` or `provider_recipient_id`. For marketplace owners (`type`=`COMMISSION`), `provider_recipient_id` is optional if not required by the provider.      |             |                |
 | `type`\*                | `enum`    | The type of split. Options include `PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`, `SHIPPING`.                                                                               | Yes         | `PURCHASE`     |
 | `merchant_reference`    | `string`  | An identifier for the payment transaction. This is optional. If not specified, the main payment's merchant reference will be used for all split transactions. (MAX 255; MIN 3 characters). | No          | `AAB01-432245` |
 | `amount`\*              | `struct`  | Specifies the amount for the split.                                                                                                                                                        | Yes         |                |
