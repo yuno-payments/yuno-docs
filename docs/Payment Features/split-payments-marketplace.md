@@ -66,7 +66,25 @@ This flexibility allows marketplaces to adapt the onboarding process to their op
 
 ### Workflow
 
+The onboarding workflow is a structured process designed to ensure that submerchants are seamlessly integrated into the marketplace ecosystem. It involves several key steps that guide the marketplace owner from initial setup to successful payment processing and split execution.
+
 <Image align="center" src="https://files.readme.io/2e4dec348bf565b0c39fe638b9867d6283f70e1bd66830ceda354f59f01e14d9-onboardings-workflow.png" />
+
+The onboarding workflow follows these key steps:
+
+1. **Marketplace Setup**: The marketplace owner creates an organization in Yuno and sets up accounts with connections to payment providers.
+
+2. **Recipient Registration**: For each submerchant, the marketplace creates a recipient using the [Create Recipients API](ref:create-recipients) endpoint.
+
+3. **Onboarding Process**:
+   * **Pre-onboarded**: If the submerchant already has provider credentials, the marketplace provides the `provider_recipient_id` and the status is immediately set to `SUCCEEDED`.
+   * **Dynamic Onboarding**: If no credentials exist, Yuno initiates the provider-specific onboarding flow, which may include form submissions, document uploads, or KYC/KYB validations.
+
+4. **Status Tracking**: The recipient goes through various statuses (`CREATED` → `PENDING` → `SUCCEEDED`) as the onboarding progresses.
+
+5. **Payment Processing**: Once recipients are successfully onboarded, the marketplace can create payments with the `split_marketplace` object to distribute funds among the recipients.
+
+6. **Split Execution**: The payment provider processes the split according to the defined distribution, with each recipient receiving their designated share of the transaction.
 
 ***
 
