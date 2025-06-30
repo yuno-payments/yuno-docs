@@ -64,6 +64,10 @@ These statuses help the marketplace understand the onboarding lifecycle and impl
 
 This flexibility allows marketplaces to adapt the onboarding process to their operational needs, without sacrificing control or visibility.
 
+### Workflow
+
+<Image align="center" src="https://files.readme.io/2e4dec348bf565b0c39fe638b9867d6283f70e1bd66830ceda354f59f01e14d9-onboardings-workflow.png" />
+
 ***
 
 ## 2- Payment Split Integration
@@ -144,9 +148,9 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 
 ## API endpoints involved
 
-- **[Create Recipients](ref:create-recipients)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
-- **[Create Payment](ref:create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
-- **[Capture Authorization](ref:capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
-- **[Refund Payment](ref:refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
-- **[Cancel or Refund a Payment](https://docs.y.uno/reference/cancel-or-refund-a-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/cancel-or-refund`
-- **[Cancel or Refund a Payment with transaction](https://docs.y.uno/reference/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
+* **[Create Recipients](ref:create-recipients)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
+* **[Create Payment](ref:create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
+* **[Capture Authorization](ref:capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
+* **[Refund Payment](ref:refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
+* **[Cancel or Refund a Payment](https://docs.y.uno/reference/cancel-or-refund-a-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/cancel-or-refund`
+* **[Cancel or Refund a Payment with transaction](https://docs.y.uno/reference/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
