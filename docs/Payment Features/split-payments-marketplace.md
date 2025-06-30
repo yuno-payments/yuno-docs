@@ -22,7 +22,7 @@ The split payment functionality is contingent on the support of the selected pay
 
 ## 1- Onboardings
 
-Yuno’s onboarding model is designed to help marketplaces seamlessly connect and manage their **submerchants** across **multiple payment providers**. At the core of this system is the **Recipient object**, which represents each individual submerchant within the marketplace ecosystem.
+Yuno's onboarding model is designed to help marketplaces seamlessly connect and manage their **submerchants** across **multiple payment providers**. At the core of this system is the **Recipient object**, which represents each individual submerchant within the marketplace ecosystem.
 
 * Each **Marketplace Owner** is represented in **Yuno as an Organization**.
 * Within an organization, one or more Accounts can be created, each configured with its own set of **Connections** to payment providers (e.g., Stripe, Adyen, dLocal).
@@ -42,7 +42,7 @@ This design ensures flexibility, transparency, and full traceability throughout 
 Yuno supports two **onboarding flows** for submerchants:
 
 1. **Pre-onboarded Accounts**: If the submerchant has already completed the onboarding process with a given provider (e.g., via an external dashboard or platform), the marketplace can provide the corresponding **recipient\_id** at the time of creation. In this case, **no further onboarding is needed**, and the status will immediately be set to **SUCCEEDED**. (`onboardings.type`='PREVIOUSLY\_ONBOARDED')
-2. **Dynamic Onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the selected provider. (`onboardings.type`='ONBOARD\_ONTO\_PROVIDER'). Depending on the provider’s requirements, this may involve:
+2. **Dynamic Onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the selected provider. (`onboardings.type`='ONBOARD\_ONTO\_PROVIDER'). Depending on the provider's requirements, this may involve:
    1. Form submission or redirection to hosted onboarding.
    2. Upload of legal or financial documentation.
    3. KYC/KYB validation steps.
@@ -80,7 +80,7 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 | `amount`\*              | `struct`  | Defines the amount of the split.                                                                                                                                                                      | Yes         |                |
 |     `value`\*           | `number`  | Amount of the split (e.g., 7500 for 75.00).                                                                                                                                                           | Yes         | `7500`         |
 |     `currency`\*        | `enum`    | The currency used to make the payment (ISO 4217, 3 characters).                                                                                                                                       | Yes         | `COP`          |
-| `liability`             | `struct`  | Optional information regarding the recipient’s liability for fees and chargebacks.                                                                                                                    | No          |                |
+| `liability`             | `struct`  | Optional information regarding the recipient's liability for fees and chargebacks.                                                                                                                    | No          |                |
 |     `processing_fee`    | `enum`    | Indicates who will be charged the transaction fee: `MERCHANT`, `RECIPIENT`, `SHARED`.                                                                                                                 | No          | `MERCHANT`     |
 |     `chargebacks`       | `boolean` | If `true`, the recipient is responsible in case of a chargeback.                                                                                                                                      | No          | `false`        |
 
@@ -144,10 +144,9 @@ The `split_marketplace` object defines how a [payment](ref:create-payment) shoul
 
 ## API endpoints involved
 
-* *[Recipients](ref:create-recipients)*: POST /v1/recipients
-* [*Payment Creation*](ref:create-payment): POST /v1/payments
-* [*Full and Partial Capture*](ref:capture-authorization): POST /v1/payments/:id/transactions/:transaction\_id/capture
-* [*Full or Partial Refund*](ref:refund-payment):
-  * POST /v1/payments/:id/transactions/:transaction\_id/refund
-  * POST /v1/payments/:id/cancel-or-refund
-  * POST /v1/payments/:id/transactions/:transaction\_id/cancel-or-refund
+- **[Create Recipients](ref:create-recipients)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
+- **[Create Payment](ref:create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
+- **[Capture Authorization](ref:capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
+- **[Refund Payment](ref:refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
+- **[Cancel or Refund a Payment](https://docs.y.uno/reference/cancel-or-refund-a-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/cancel-or-refund`
+- **[Cancel or Refund a Payment with transaction](https://docs.y.uno/reference/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
