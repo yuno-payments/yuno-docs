@@ -171,7 +171,7 @@ In this section, we outline the necessary validations to ensure successful split
 
 This section lists the API endpoints involved in managing split payments.
 
-* **[Create recipients](ref:create-recipients)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
+* **[Create recipients](ref:create-recipient-1)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
 * **[Create payment](ref:create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
 * **[Capture authorization](ref:capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
 * **[Refund payment](ref:refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
