@@ -1,4 +1,4 @@
 ---
-title: /recipients/{recipient_id}/block
+title: /recipients/{recipient_id}/onboardings/{onboardings_id}/block
 hidden: true
 ---
