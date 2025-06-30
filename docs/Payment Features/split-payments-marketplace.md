@@ -75,7 +75,7 @@ The onboarding workflow follows a structured process that ensures submerchants a
 
 1. **Organization & Account Setup**: The marketplace owner creates an organization in Yuno and configures accounts with payment provider connections.
 
-2. **Recipient Creation**: For each submerchant, the marketplace creates a recipient using the [Create Recipients API](ref:create-recipients) endpoint, specifying either:
+2. **Recipient Creation**: For each submerchant, the marketplace creates a recipient using the [Create Recipients API](ref:create-recipient-1) endpoint, specifying either:
    * `provider_recipient_id` for pre-onboarded submerchants
    * Provider connection details for new onboarding
 
