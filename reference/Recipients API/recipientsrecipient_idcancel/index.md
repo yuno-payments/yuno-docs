@@ -1,4 +1,4 @@
 ---
-title: /recipients/{recipient_id}/onboardings/{onboardings_id}/cancel
+title: /recipients/{recipient_id}/cancel
 hidden: true
 ---
