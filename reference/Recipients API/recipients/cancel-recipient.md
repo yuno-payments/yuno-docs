@@ -1,5 +1,5 @@
 ---
-title: Cancel Recipient
+title: Cancel Onboarding
 excerpt: >-
   Blocks a recipient.
 api:
