@@ -67,8 +67,6 @@ This flexible approach allows marketplaces to tailor the onboarding process to t
 
 ### Workflow
 
-The onboarding workflow follows a structured process to ensure submerchants are properly integrated into the marketplace ecosystem. The diagram below illustrates the complete flow from initial setup to payment processing.
-
 The onboarding workflow follows a structured process that ensures submerchants are properly integrated into the marketplace ecosystem. The diagram below illustrates the complete flow from initial setup to payment processing.
 
 <Image align="center" src="https://files.readme.io/2e4dec348bf565b0c39fe638b9867d6283f70e1bd66830ceda354f59f01e14d9-onboardings-workflow.png" />
