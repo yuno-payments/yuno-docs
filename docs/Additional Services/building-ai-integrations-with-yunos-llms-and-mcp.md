@@ -1,7 +1,7 @@
 ---
 title: Building AI Integrations with Yuno's LLMs and MCP
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
@@ -129,5 +129,5 @@ Asterisk (\*) marks required.
 
 ## Support
 
-For issues, bugs, or feature requests, please [open an issue](https://github.com/yuno-payments/yuno-mcp/issues) in our GitHub repository.\
-For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno.com/).
+* For issues, bugs, or feature requests, please [open an issue](https://github.com/yuno-payments/yuno-mcp/issues) in our GitHub repository.
+* For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno.com/).
