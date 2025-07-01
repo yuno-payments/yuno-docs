@@ -18,26 +18,6 @@ Pix Automático allows you to automate recurring Pix charges after a one-time cu
 
 The steps below explain how to implement both models.
 
-### 1. Initial setup (subscription enrollment)
-
-The process begins with a standard Pix payment (via QR code or redirect). When the customer pays, a **recurrence contract** is created behind the scenes. The system returns the QR and, once paid, confirms the `subscription_id`.
-
-### 2. Recurring charges
-
-To charge a subscription:
-
-* You must send the payment **at most 2 days before** the billing date and **at least 10 days after** the subscription was created.
-* Failed payments can be retried up to **3 times** within **7 days** of the billing due date.
-
-## Flow disclaimers
-
-* You **cannot charge on the exact billing date**. Payments sent on the same day will be rejected.
-* If the subscription started on the 31st, and the month has no 31st, send the payment with a due date of the 1st of the next month.
-* The `subscription_id` is tied to the contract, not the customer. Treat it like a reusable payment method.
-* You can define a **maximum per installment** at subscription creation.
-
-<br />
-
 ### Step 1: First payment and subscription
 
 To initiate the flow, you must start with a standard Pix payment that also sets up the subscription. This generates a QR code or redirect screen for the customer to authorize the recurrence. Once paid, the subscription is created and a `subscription_id` is returned.
