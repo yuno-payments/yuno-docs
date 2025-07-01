@@ -1,5 +1,5 @@
 ---
-title: Pix Automático Overview
+title: Brazil - Pix Automático
 deprecated: false
 hidden: true
 metadata:
