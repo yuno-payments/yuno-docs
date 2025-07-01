@@ -11,6 +11,13 @@ This flow reduces friction for end users while helping merchants minimize late p
 
 ## How it works
 
+Pix Automático allows you to automate recurring Pix charges after a one-time customer authorization. You can choose between two orchestration models depending on how much control you want:
+
+* **Merchant managed (recommended):** You trigger each recurring payment using the `subscription_id`, including when to retry if a charge fails.
+* **Yuno managed:** Yuno automatically schedules and executes payments based on the subscription settings you define in the initial request.
+
+The steps below explain how to implement both models.
+
 ### 1. Initial setup (subscription enrollment)
 
 The process begins with a standard Pix payment (via QR code or redirect). When the customer pays, a **recurrence contract** is created behind the scenes. The system returns the QR and, once paid, confirms the `subscription_id`.
