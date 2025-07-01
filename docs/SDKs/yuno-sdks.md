@@ -38,7 +38,7 @@ Yuno's SDKs provide a range of benefits that can significantly enhance your paym
 
 ## Start using Yuno SDKs
 
-Yuno provides customized SDKs for Web, Android,  IOs, and Flutter applications. To check the available solutions available and how to use them, first choose the desired platform:
+Yuno provides customized SDKs for Web, Android,  iOS, and Flutter (deprecated) applications. To check the available solutions available and how to use them, first choose the desired platform:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/full-checkout-sdk" />
