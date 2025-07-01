@@ -1,5 +1,5 @@
 ---
-title: Vouchers Onboarding
+title: Meal Vouchers
 deprecated: false
 hidden: false
 metadata:
@@ -7,7 +7,7 @@ metadata:
 ---
 As mentioned before, this feature allows **merchants to split payments among multiple recipients**, which is particularly useful for marketplace models where transactions need to be divided among different sellers or stakeholders. Merchants can specify how the payment is split, including the amounts, recipients, and any applicable fees.
 
-Particularly for Brazil, merchants can accept **meal vouchers** as payment methods. “Voucher” is the name given to benefit cards that companies provide to their employees. They must be used to purchase specific products, such as groceries (meal allowance) and meals (restaurant allowance), in other words, the well-known meal and food vouchers.
+Particularly for Brazil and some regions, merchants can accept **meal vouchers** as payment methods. “Voucher” is the name given to benefit cards that companies provide to their employees. They must be used to purchase specific products, such as groceries (meal allowance) and meals (restaurant allowance), in other words, the well-known meal and food vouchers.
 
 In case you work as a marketplace and want your submerchants (recipients) to accept meal vouchers as well, you'll need to setup you provider connections in the Yuno dashboard and an onboarding needs to be made for each recipient and provider supported:
 
