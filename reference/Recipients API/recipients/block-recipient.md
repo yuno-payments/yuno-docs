@@ -1,5 +1,5 @@
 ---
-title: Block Recipient
+title: Block Onboarding
 excerpt: >-
   Blocks a recipient. This prevents the recipient from receiving payments until
   unblocked.

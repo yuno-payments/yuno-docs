@@ -1,6 +1,7 @@
 ---
 title: Cancel Onboarding
-excerpt: Cancels a recipient's onboarding.
+excerpt: >-
+  Blocks a recipient.
 api:
   file: openapi.json
   operationId: cancel-recipient

@@ -22,6 +22,12 @@ Yuno provides several report types:
 * [Transaction reconciliation](ref:reports-fields#transaction-reconciliation-report)
 * [Settlement](ref:reports-fields#settlement-report)
 * [Communications](ref:reports-fields#communications-report)
+* [Fraud Transactions](ref:reports-fields#fraud-transactions-report)
+* [Payouts](ref:reports-fields#payouts-report)
+* [Fees](ref:reports-fields#fees-report)
+* [Agenda](ref:reports-fields#agenda-report)
+* [Sales Conciliation](ref:reports-fields#sales-conciliation-report)
+* [Advancements](ref:reports-fields#advancements-report)
 
 Below, you will find details of each report type. 
 
@@ -869,7 +875,7 @@ Below, you will find details of each report type.
             <td><code>pnr</code></td>
             <td>string</td>
             <td>Passenger Name Record (PNR) reference.</td>
-            <td></td>
+            <td>1P-2UUGJW</td>
           </tr>
           <tr>
             <td><code>provider_number</code></td>
@@ -1504,6 +1510,12 @@ Below, you will find details of each report type.
       <td>Wallet associated with the transaction (MAX 255; MIN 3).</td>
       <td>Wallet ABC</td>
     </tr>
+    <tr>
+      <td><code>acquirer</code></td>
+      <td>string</td>
+      <td>Name of the acquirer that processed the transaction (MAX 255; MIN 3).</td>
+      <td>Acquirer ABC</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1823,6 +1835,12 @@ Below, you will find details of each report type.
             <td>timestamp</td>
             <td>Date by the acquirer in which the funds will be deposited in the merchant's bank account.</td>
             <td>2022-05-09 0:00</td>
+          </tr>
+          <tr>
+            <td><code>reconciliation</code></td>
+            <td>struct</td>
+            <td>Reconciliation information structure containing status, date, and ID details.</td>
+            <td>{"status": "RECONCILED", "date": "2022-05-09"}</td>
           </tr>
         </tbody>
       </table>
@@ -2303,8 +2321,8 @@ The settlement report has two types of reports:
           <tr>
             <td><code>reconciliation</code></td>
             <td>struct</td>
-            <td></td>
-            <td></td>
+            <td>Reconciliation information structure containing status, date, and ID details.</td>
+            <td>{"status": "RECONCILED", "date": "2022-05-09"}</td>
           </tr>
           <tr>
             <td><code>reconciliation_status</code></td>
@@ -2441,96 +2459,1381 @@ The settlement report has two types of reports:
 The communications report provides detailed information about all communications (calls, messages) between customers and the merchant through Yuno's communication channels. This report includes data about call durations, message content, communication status, and other relevant metrics.
 
 <HTMLBlock>{`
-<div class="table-div">
-  <table>
-    <thead>
-      <tr>
-        <th>Parameter</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Example</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>communication_id</code></td>
-        <td>string</td>
-        <td>Unique identifier for the communication.</td>
-        <td>64143128-dd12-11ec-9d64-0242ac120002</td>
-      </tr>
-      <tr>
-        <td><code>order_id</code></td>
-        <td>string</td>
-        <td>Identifier of the order associated with the communication.</td>
-        <td>64143128-dd12-11ec-9d64-0242ac120003</td>
-      </tr>
-      <tr>
-        <td><code>payment_id</code></td>
-        <td>string</td>
-        <td>Identifier of the payment associated with the communication.</td>
-        <td>64143128-dd12-11ec-9d64-0242ac120004</td>
-      </tr>
-      <tr>
-        <td><code>communication_status</code></td>
-        <td>enum</td>
-        <td>Current status of the communication.</td>
-        <td>COMPLETED</td>
-      </tr>
-      <tr>
-        <td><code>destination_phone</code></td>
-        <td>string</td>
-        <td>Phone number where the communication was sent.</td>
-        <td>+1234567890</td>
-      </tr>
-      <tr>
-        <td><code>created_at</code></td>
-        <td>datetime</td>
-        <td>Date and time when the communication was initiated.</td>
-        <td>2024-03-15 14:30:00</td>
-      </tr>
-      <tr>
-        <td><code>country</code></td>
-        <td>string</td>
-        <td>Country code where the communication was sent (ISO 3166-1 alpha-2).</td>
-        <td>US</td>
-      </tr>
-      <tr>
-        <td><code>transcription</code></td>
-        <td>string</td>
-        <td>Text transcription of the communication content.</td>
-        <td>Customer confirmed payment details...</td>
-      </tr>
-      <tr>
-        <td><code>call_duration</code></td>
-        <td>number</td>
-        <td>Duration of the call in seconds.</td>
-        <td>180</td>
-      </tr>
-      <tr>
-        <td><code>messages</code></td>
-        <td>array</td>
-        <td>Array of messages exchanged during the communication.</td>
-        <td>[{"content": "Hello", "timestamp": "2024-03-15 14:30:00"}]</td>
-      </tr>
-      <tr>
-        <td><code>summary</code></td>
-        <td>string</td>
-        <td>Summary of the communication content.</td>
-        <td>Payment verification call completed successfully</td>
-      </tr>
-      <tr>
-        <td><code>channel</code></td>
-        <td>enum</td>
-        <td>Communication channel used (e.g., VOICE, SMS, WHATSAPP).</td>
-        <td>VOICE</td>
-      </tr>
-      <tr>
-        <td><code>focus</code></td>
-        <td>string</td>
-        <td>Main topic or focus of the communication.</td>
-        <td>Payment Verification</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Communications report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>communication_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the communication (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>order_id</code></td>
+            <td>string</td>
+            <td>Identifier of the order associated with the communication (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120003</td>
+          </tr>
+          <tr>
+            <td><code>payment_id</code></td>
+            <td>string</td>
+            <td>Identifier of the payment associated with the communication (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120004</td>
+          </tr>
+          <tr>
+            <td><code>communication_status</code></td>
+            <td>enum</td>
+            <td>Current status of the communication (MAX 255; MIN 3).</td>
+            <td>COMPLETED</td>
+          </tr>
+          <tr>
+            <td><code>destination_phone</code></td>
+            <td>string</td>
+            <td>Phone number where the communication was sent (MAX 255; MIN 3).</td>
+            <td>+1234567890</td>
+          </tr>
+          <tr>
+            <td><code>created_at</code></td>
+            <td>datetime</td>
+            <td>Date and time when the communication was initiated (ISO 8601).</td>
+            <td>2024-03-15 14:30:00</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>string</td>
+            <td>Country code where the communication was sent (ISO 3166-1 alpha-2; MAX 2; MIN 2).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>transcription</code></td>
+            <td>string</td>
+            <td>Text transcription of the communication content (MAX 1000; MIN 3).</td>
+            <td>Customer confirmed payment details...</td>
+          </tr>
+          <tr>
+            <td><code>call_duration</code></td>
+            <td>number</td>
+            <td>Duration of the call in seconds (MAX 3600; MIN 0).</td>
+            <td>180</td>
+          </tr>
+          <tr>
+            <td><code>messages</code></td>
+            <td>array</td>
+            <td>Array of messages exchanged during the communication.</td>
+            <td>[{"content": "Hello", "timestamp": "2024-03-15 14:30:00"}]</td>
+          </tr>
+          <tr>
+            <td><code>summary</code></td>
+            <td>string</td>
+            <td>Summary of the communication content (MAX 500; MIN 3).</td>
+            <td>Payment verification call completed successfully</td>
+          </tr>
+          <tr>
+            <td><code>channel</code></td>
+            <td>enum</td>
+            <td>Communication channel used (e.g., VOICE, SMS, WHATSAPP; MAX 50; MIN 3).</td>
+            <td>VOICE</td>
+          </tr>
+          <tr>
+            <td><code>focus</code></td>
+            <td>string</td>
+            <td>Main topic or focus of the communication (MAX 255; MIN 3).</td>
+            <td>Payment Verification</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+## Fraud Transactions report
+
+The fraud transactions report provides detailed information about transactions that have been flagged for potential fraud by Yuno's fraud detection systems. This report includes fraud scores, provider responses, and transaction details for risk analysis.
+
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Fraud Transactions report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>account_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the account (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>enum</td>
+            <td>Country where the transaction occurred (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>payment_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the payment (MAX 64; MIN 36).</td>
+            <td>69ad0a39-b769-423c-b223-d7b8bf</td>
+          </tr>
+          <tr>
+            <td><code>transaction_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the transaction (MAX 64; MIN 36).</td>
+            <td>b04db1c6-b2c7-4765-a77e-953d284d080b</td>
+          </tr>
+          <tr>
+            <td><code>transaction_type</code></td>
+            <td>enum</td>
+            <td>Type of transaction (e.g., PURCHASE, REFUND).</td>
+            <td>PURCHASE</td>
+          </tr>
+          <tr>
+            <td><code>status</code></td>
+            <td>enum</td>
+            <td>Status of the transaction (MAX 255; MIN 3).</td>
+            <td>SUCCEEDED</td>
+          </tr>
+          <tr>
+            <td><code>provider_transaction_id</code></td>
+            <td>string</td>
+            <td>Transaction identifier from the provider (MAX 255; MIN 3).</td>
+            <td>T-51056-1e10f992-e5cf-40bf-9eb6-8edc881de30b</td>
+          </tr>
+          <tr>
+            <td><code>response_code</code></td>
+            <td>string</td>
+            <td>Response code from the system (MAX 255; MIN 3).</td>
+            <td>200</td>
+          </tr>
+          <tr>
+            <td><code>response_message</code></td>
+            <td>string</td>
+            <td>Response message from the system (MAX 255; MIN 3).</td>
+            <td>Payment successful</td>
+          </tr>
+          <tr>
+            <td><code>provider_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
+            <td>PROVIDER ID</td>
+          </tr>
+          <tr>
+            <td><code>provider_score</code></td>
+            <td>number</td>
+            <td>Fraud risk score provided by the fraud detection system (MAX 100; MIN 0).</td>
+            <td>85</td>
+          </tr>
+          <tr>
+            <td><code>provider_third_party_account_id</code></td>
+            <td>string</td>
+            <td>Third-party account ID associated with the provider (MAX 64; MIN 36).</td>
+            <td>ACC123456</td>
+          </tr>
+          <tr>
+            <td><code>provider_account_id</code></td>
+            <td>string</td>
+            <td>Provider's account identifier (MAX 64; MIN 36).</td>
+            <td>699ec8d444</td>
+          </tr>
+          <tr>
+            <td><code>provider_status</code></td>
+            <td>string</td>
+            <td>Status of the payment at the provider (MAX 255; MIN 3).</td>
+            <td>PAID</td>
+          </tr>
+          <tr>
+            <td><code>provider_status_detail</code></td>
+            <td>string</td>
+            <td>Detailed status from the provider (MAX 255; MIN 3).</td>
+            <td>Transaction completed successfully</td>
+          </tr>
+          <tr>
+            <td><code>provider_response_message</code></td>
+            <td>string</td>
+            <td>Response message from the provider (MAX 255; MIN 3).</td>
+            <td>The payment was paid</td>
+          </tr>
+          <tr>
+            <td><code>created_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the transaction was created (ISO 8601).</td>
+            <td>2024-09-11T23:16:06.602Z</td>
+          </tr>
+          <tr>
+            <td><code>updated_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the transaction was last updated (ISO 8601).</td>
+            <td>2024-09-11T23:17:07.602Z</td>
+          </tr>
+          <tr>
+            <td><code>account_integration_id</code></td>
+            <td>string</td>
+            <td>Unique identifier of the account integration (MAX 64; MIN 36).</td>
+            <td>6a0f939c-0cd1-4350-acbc-b0cbdbee9739</td>
+          </tr>
+          <tr>
+            <td><code>provider_response_code</code></td>
+            <td>string</td>
+            <td>Response code from the provider (MAX 255; MIN 3).</td>
+            <td>200</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+## Payouts report
+
+The payouts report provides detailed information about all payout transactions processed through Yuno. This report includes beneficiary details, withdrawal methods, payout status, and financial information for tracking and reconciliation purposes.
+
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Payouts report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>beneficiary_national_entity</code></td>
+            <td>string</td>
+            <td>National entity or organization of the beneficiary.</td>
+            <td>Bank ABC</td>
+          </tr>
+          <tr>
+            <td><code>payout_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the payout (MAX 64; MIN 36).</td>
+            <td>69ad0a39-b769-423c-b223-d7b8bf</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_legal_name</code></td>
+            <td>string</td>
+            <td>Legal name of the beneficiary (MAX 255; MIN 3).</td>
+            <td>John Doe Corporation</td>
+          </tr>
+          <tr>
+            <td><code>account_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the account (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>status</code></td>
+            <td>enum</td>
+            <td>Status of the payout (MAX 255; MIN 3).</td>
+            <td>SUCCEEDED</td>
+          </tr>
+          <tr>
+            <td><code>merchant_reference</code></td>
+            <td>string</td>
+            <td>Reference number assigned by the merchant (MAX 255; MIN 3).</td>
+            <td>REF123456</td>
+          </tr>
+          <tr>
+            <td><code>description</code></td>
+            <td>string</td>
+            <td>Description of the payout (MAX 255; MIN 3).</td>
+            <td>Commission payment</td>
+          </tr>
+          <tr>
+            <td><code>purpose</code></td>
+            <td>string</td>
+            <td>Purpose of the payout transaction.</td>
+            <td>Commission</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>enum</td>
+            <td>Country where the payout is processed (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>amount_value</code></td>
+            <td>number</td>
+            <td>The payout amount (multiple of 0.0001).</td>
+            <td>100000</td>
+          </tr>
+          <tr>
+            <td><code>currency</code></td>
+            <td>enum</td>
+            <td>The currency used for the payout (MAX 3; MIN 3; ISO 4217).</td>
+            <td>USD</td>
+          </tr>
+          <tr>
+            <td><code>merchant_beneficiary_id</code></td>
+            <td>string</td>
+            <td>Beneficiary identifier assigned by the merchant (MAX 255; MIN 3).</td>
+            <td>BEN123456</td>
+          </tr>
+          <tr>
+            <td><code>provider_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
+            <td>PROVIDER ID</td>
+          </tr>
+          <tr>
+            <td><code>created_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the payout was created (ISO 8601).</td>
+            <td>2024-09-11T23:16:06.602Z</td>
+          </tr>
+          <tr>
+            <td><code>updated_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the payout was last updated (ISO 8601).</td>
+            <td>2024-09-11T23:17:07.602Z</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_first_name</code></td>
+            <td>string</td>
+            <td>First name of the beneficiary (MAX 255; MIN 3).</td>
+            <td>John</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_last_name</code></td>
+            <td>string</td>
+            <td>Last name of the beneficiary (MAX 255; MIN 3).</td>
+            <td>Doe</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_email</code></td>
+            <td>string</td>
+            <td>Email address of the beneficiary (MAX 255; MIN 3).</td>
+            <td>john.doe@email.com</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_country</code></td>
+            <td>enum</td>
+            <td>Country of residence of the beneficiary (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_date_of_birth</code></td>
+            <td>date</td>
+            <td>Date of birth of the beneficiary.</td>
+            <td>1985-07-28</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_document_number</code></td>
+            <td>string</td>
+            <td>Document number of the beneficiary (MAX 20; MIN 5).</td>
+            <td>123456789</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_document_type</code></td>
+            <td>enum</td>
+            <td>Type of document for the beneficiary (MAX 10; MIN 3).</td>
+            <td>PASSPORT</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_phone_country_code</code></td>
+            <td>string</td>
+            <td>Country code for the beneficiary's phone number.</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_phone_number</code></td>
+            <td>string</td>
+            <td>Phone number of the beneficiary (MAX 255; MIN 3).</td>
+            <td>555-1234</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_address_line_1</code></td>
+            <td>string</td>
+            <td>First line of the beneficiary's address (MAX 255; MIN 3).</td>
+            <td>123 Main St</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_address_line_2</code></td>
+            <td>string</td>
+            <td>Second line of the beneficiary's address (MAX 255; MIN 3).</td>
+            <td>Apt 202</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_city</code></td>
+            <td>string</td>
+            <td>City of the beneficiary's address (MAX 255; MIN 3).</td>
+            <td>New York</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_state</code></td>
+            <td>string</td>
+            <td>State or province of the beneficiary's address (MAX 255; MIN 3).</td>
+            <td>NY</td>
+          </tr>
+          <tr>
+            <td><code>beneficiary_zip_code</code></td>
+            <td>string</td>
+            <td>Postal code of the beneficiary's address (MAX 255; MIN 3).</td>
+            <td>10001</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_branch</code></td>
+            <td>string</td>
+            <td>Bank branch for the withdrawal method.</td>
+            <td>Main Branch</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_branch_digit</code></td>
+            <td>string</td>
+            <td>Branch digit for the withdrawal method.</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_account_number</code></td>
+            <td>string</td>
+            <td>Account number for the withdrawal method (MAX 255; MIN 3).</td>
+            <td>123456789</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_account_digit</code></td>
+            <td>string</td>
+            <td>Account digit for the withdrawal method.</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_account_type</code></td>
+            <td>enum</td>
+            <td>Type of account for the withdrawal method (MAX 20; MIN 3).</td>
+            <td>CHECKING</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_address_line_1</code></td>
+            <td>string</td>
+            <td>First line of the withdrawal method address (MAX 255; MIN 3).</td>
+            <td>456 Bank St</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_address_line_2</code></td>
+            <td>string</td>
+            <td>Second line of the withdrawal method address (MAX 255; MIN 3).</td>
+            <td>Suite 100</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_address_city</code></td>
+            <td>string</td>
+            <td>City of the withdrawal method address (MAX 255; MIN 3).</td>
+            <td>Miami</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_state</code></td>
+            <td>string</td>
+            <td>State of the withdrawal method address (MAX 255; MIN 3).</td>
+            <td>FL</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_zip_code</code></td>
+            <td>string</td>
+            <td>Postal code of the withdrawal method address (MAX 255; MIN 3).</td>
+            <td>33101</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_email</code></td>
+            <td>string</td>
+            <td>Email address for the withdrawal method (MAX 255; MIN 3).</td>
+            <td>withdrawal@bank.com</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_document_number</code></td>
+            <td>string</td>
+            <td>Document number for the withdrawal method (MAX 20; MIN 5).</td>
+            <td>98765432</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_document_type</code></td>
+            <td>enum</td>
+            <td>Type of document for the withdrawal method (MAX 10; MIN 3).</td>
+            <td>ID</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_phone_country_code</code></td>
+            <td>string</td>
+            <td>Country code for the withdrawal method phone number.</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_phone_number</code></td>
+            <td>string</td>
+            <td>Phone number for the withdrawal method (MAX 255; MIN 3).</td>
+            <td>123-456-7890</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_type</code></td>
+            <td>enum</td>
+            <td>Type of withdrawal method (MAX 50; MIN 3).</td>
+            <td>BANK_TRANSFER</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_code</code></td>
+            <td>string</td>
+            <td>Code for the withdrawal method (MAX 50; MIN 3).</td>
+            <td>BANKABC_TRANSFER</td>
+          </tr>
+          <tr>
+            <td><code>withdrawal_method_country</code></td>
+            <td>enum</td>
+            <td>Country for the withdrawal method (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+## Fees report
+
+The fees report provides detailed information about all fees and charges applied to transactions processed through Yuno. This report includes acquirer fees, taxes, calculated costs, and fee status information for financial analysis and reconciliation.
+
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Fees report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>transaction_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the transaction (MAX 64; MIN 36).</td>
+            <td>b04db1c6-b2c7-4765-a77e-953d284d080b</td>
+          </tr>
+          <tr>
+            <td><code>provider_transaction_id</code></td>
+            <td>string</td>
+            <td>Transaction identifier from the provider (MAX 255; MIN 3).</td>
+            <td>T-51056-1e10f992-e5cf-40bf-9eb6-8edc881de30b</td>
+          </tr>
+          <tr>
+            <td><code>acquirer_type</code></td>
+            <td>enum</td>
+            <td>Type of acquirer that processed the transaction.</td>
+            <td>BANK</td>
+          </tr>
+          <tr>
+            <td><code>acquirer_gross_amount</code></td>
+            <td>decimal</td>
+            <td>Gross amount processed by the acquirer (multiple of 0.0001).</td>
+            <td>1000.00</td>
+          </tr>
+          <tr>
+            <td><code>acquirer_real_amount</code></td>
+            <td>decimal</td>
+            <td>Real amount processed by the acquirer (multiple of 0.0001).</td>
+            <td>1000.00</td>
+          </tr>
+          <tr>
+            <td><code>acquirer_fees</code></td>
+            <td>decimal</td>
+            <td>Fees charged by the acquirer (multiple of 0.0001).</td>
+            <td>15.00</td>
+          </tr>
+          <tr>
+            <td><code>acquirer_taxes</code></td>
+            <td>decimal</td>
+            <td>Taxes applied by the acquirer (multiple of 0.0001).</td>
+            <td>2.50</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>enum</td>
+            <td>Country where the transaction occurred (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>type</code></td>
+            <td>enum</td>
+            <td>Type of transaction (e.g., PURCHASE, REFUND).</td>
+            <td>PURCHASE</td>
+          </tr>
+          <tr>
+            <td><code>gross_field</code></td>
+            <td>decimal</td>
+            <td>Gross field amount (multiple of 0.0001).</td>
+            <td>1000.00</td>
+          </tr>
+          <tr>
+            <td><code>fix_cost</code></td>
+            <td>decimal</td>
+            <td>Fixed cost applied to the transaction (multiple of 0.0001).</td>
+            <td>5.00</td>
+          </tr>
+          <tr>
+            <td><code>percentage_cost</code></td>
+            <td>decimal</td>
+            <td>Percentage cost applied to the transaction (multiple of 0.0001).</td>
+            <td>10.00</td>
+          </tr>
+          <tr>
+            <td><code>calculated_fix_costed_fee</code></td>
+            <td>decimal</td>
+            <td>Calculated fixed fee amount (multiple of 0.0001).</td>
+            <td>5.00</td>
+          </tr>
+          <tr>
+            <td><code>calculated_percentage_cost</code></td>
+            <td>decimal</td>
+            <td>Calculated percentage cost amount (multiple of 0.0001).</td>
+            <td>10.00</td>
+          </tr>
+          <tr>
+            <td><code>acquirer_net_amount</code></td>
+            <td>decimal</td>
+            <td>Net amount after acquirer fees and taxes (multiple of 0.0001).</td>
+            <td>982.50</td>
+          </tr>
+          <tr>
+            <td><code>calculated_net_amount</code></td>
+            <td>decimal</td>
+            <td>Calculated net amount (multiple of 0.0001).</td>
+            <td>985.00</td>
+          </tr>
+          <tr>
+            <td><code>fee_taxes_diff</code></td>
+            <td>decimal</td>
+            <td>Difference between fee taxes (multiple of 0.0001).</td>
+            <td>2.50</td>
+          </tr>
+          <tr>
+            <td><code>fee_status</code></td>
+            <td>enum</td>
+            <td>Status of the fee (MAX 255; MIN 3).</td>
+            <td>APPLIED</td>
+          </tr>
+          <tr>
+            <td><code>fee_sub_status</code></td>
+            <td>enum</td>
+            <td>Sub-status of the fee (MAX 255; MIN 3).</td>
+            <td>PROCESSED</td>
+          </tr>
+          <tr>
+            <td><code>acquirer</code></td>
+            <td>string</td>
+            <td>Name of the acquirer that processed the transaction (MAX 255; MIN 3).</td>
+            <td>Acquirer ABC</td>
+          </tr>
+          <tr>
+            <td><code>settlement_date</code></td>
+            <td>date</td>
+            <td>Date when the transaction was settled.</td>
+            <td>2024-09-15</td>
+          </tr>
+          <tr>
+            <td><code>currency</code></td>
+            <td>enum</td>
+            <td>The currency used for the transaction (MAX 3; MIN 3; ISO 4217).</td>
+            <td>USD</td>
+          </tr>
+          <tr>
+            <td><code>card_iin</code></td>
+            <td>string</td>
+            <td>Issuer Identification Number (IIN) for the card (first 6 digits).</td>
+            <td>123456</td>
+          </tr>
+          <tr>
+            <td><code>card_lfd</code></td>
+            <td>number</td>
+            <td>Last four digits of the card number.</td>
+            <td>7890</td>
+          </tr>
+          <tr>
+            <td><code>authorization_code</code></td>
+            <td>string</td>
+            <td>Authorization code for the transaction (MAX 6; MIN 6).</td>
+            <td>161058</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+## Agenda report
+
+The agenda report provides detailed information about scheduled and planned transactions, including installment payments, advancement details, and reconciliation schedules. This report helps track transaction lifecycle and settlement planning.
+
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Agenda report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ur_key</code></td>
+            <td>string</td>
+            <td>Unique reference key for the agenda item.</td>
+            <td>UR123456789</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>enum</td>
+            <td>Country where the transaction occurred (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>type_transaction</code></td>
+            <td>enum</td>
+            <td>Type of transaction (e.g., PURCHASE, REFUND).</td>
+            <td>PURCHASE</td>
+          </tr>
+          <tr>
+            <td><code>payment_method_category</code></td>
+            <td>enum</td>
+            <td>Category of the payment method (CARD, BANK_TRANSFER, etc.).</td>
+            <td>CARD</td>
+          </tr>
+          <tr>
+            <td><code>payment_method_type</code></td>
+            <td>enum</td>
+            <td>Type of payment method (CARD, BANK_TRANSFER, etc.).</td>
+            <td>CARD</td>
+          </tr>
+          <tr>
+            <td><code>provider_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
+            <td>PROVIDER ID</td>
+          </tr>
+          <tr>
+            <td><code>customer_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the customer (MAX 64; MIN 36).</td>
+            <td>f4c53557-a832-44e9-94e4-0344f91e9d4f</td>
+          </tr>
+          <tr>
+            <td><code>payment_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the payment (MAX 64; MIN 36).</td>
+            <td>49b08cf9-c577-4451-a673-2dc1ae930200</td>
+          </tr>
+          <tr>
+            <td><code>merchant_order_id</code></td>
+            <td>string</td>
+            <td>Merchant's order identifier (MAX 64; MIN 36).</td>
+            <td>NC2-66e224a53fb722eaa0507579</td>
+          </tr>
+          <tr>
+            <td><code>merchant_transaction_id</code></td>
+            <td>string</td>
+            <td>Merchant's transaction identifier (MAX 64; MIN 36).</td>
+            <td>NC2-66e224a53fb722eaa0507579</td>
+          </tr>
+          <tr>
+            <td><code>transaction_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the transaction (MAX 64; MIN 36).</td>
+            <td>b04db1c6-b2c7-4765-a77e-953d284d080b</td>
+          </tr>
+          <tr>
+            <td><code>provider_transaction_id</code></td>
+            <td>string</td>
+            <td>Transaction identifier from the provider (MAX 255; MIN 3).</td>
+            <td>T-51056-1e10f992-e5cf-40bf-9eb6-8edc881de30b</td>
+          </tr>
+          <tr>
+            <td><code>third_party_transaction_id</code></td>
+            <td>string</td>
+            <td>Third-party transaction identifier (MAX 255; MIN 3).</td>
+            <td>TP123456789</td>
+          </tr>
+          <tr>
+            <td><code>status_payment</code></td>
+            <td>enum</td>
+            <td>Status of the payment (MAX 255; MIN 3).</td>
+            <td>SUCCEEDED</td>
+          </tr>
+          <tr>
+            <td><code>response_code</code></td>
+            <td>string</td>
+            <td>Response code from the system (MAX 255; MIN 3).</td>
+            <td>200</td>
+          </tr>
+          <tr>
+            <td><code>provider_status</code></td>
+            <td>string</td>
+            <td>Status of the payment at the provider (MAX 255; MIN 3).</td>
+            <td>PAID</td>
+          </tr>
+          <tr>
+            <td><code>transaction_amount</code></td>
+            <td>number</td>
+            <td>Amount of the transaction (MAX 10000; MIN 0).</td>
+            <td>887</td>
+          </tr>
+          <tr>
+            <td><code>currency</code></td>
+            <td>enum</td>
+            <td>Currency code for the transaction (MAX 3; MIN 3; ISO 4217).</td>
+            <td>USD</td>
+          </tr>
+          <tr>
+            <td><code>card_type</code></td>
+            <td>enum</td>
+            <td>Type of card used (CREDIT or DEBIT).</td>
+            <td>CREDIT</td>
+          </tr>
+          <tr>
+            <td><code>card_brand</code></td>
+            <td>string</td>
+            <td>Brand of the card used (MAX 50; MIN 2).</td>
+            <td>VISA</td>
+          </tr>
+          <tr>
+            <td><code>card_iin</code></td>
+            <td>string</td>
+            <td>Issuer Identification Number (IIN) of the card (MAX 8; MIN 6).</td>
+            <td>49296404</td>
+          </tr>
+          <tr>
+            <td><code>card_lfd</code></td>
+            <td>string</td>
+            <td>Last four digits of the card number (MAX 4; MIN 4).</td>
+            <td>1228</td>
+          </tr>
+          <tr>
+            <td><code>authorization_code</code></td>
+            <td>string</td>
+            <td>Authorization code for the transaction (MAX 6; MIN 6).</td>
+            <td>161058</td>
+          </tr>
+          <tr>
+            <td><code>installments</code></td>
+            <td>number</td>
+            <td>Number of installments for the transaction (MAX 24; MIN 1).</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td><code>installment_number</code></td>
+            <td>string</td>
+            <td>Current installment number (MAX 6; MIN 3).</td>
+            <td>1/6</td>
+          </tr>
+          <tr>
+            <td><code>installment_amount</code></td>
+            <td>number</td>
+            <td>Amount of the current installment (MAX 10000; MIN 0).</td>
+            <td>147.83</td>
+          </tr>
+          <tr>
+            <td><code>pnr</code></td>
+            <td>string</td>
+            <td>Passenger Name Record if applicable (MAX 64; MIN 36).</td>
+            <td>987654321</td>
+          </tr>
+          <tr>
+            <td><code>created_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the transaction was created (ISO 8601).</td>
+            <td>2024-09-11T23:16:06.602Z</td>
+          </tr>
+          <tr>
+            <td><code>updated_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the transaction was last updated (ISO 8601).</td>
+            <td>2024-09-11T23:17:07.602Z</td>
+          </tr>
+          <tr>
+            <td><code>agenda_status</code></td>
+            <td>enum</td>
+            <td>Status of the agenda item (MAX 255; MIN 3).</td>
+            <td>SCHEDULED</td>
+          </tr>
+          <tr>
+            <td><code>agenda_sub_status</code></td>
+            <td>enum</td>
+            <td>Sub-status of the agenda item (MAX 255; MIN 3).</td>
+            <td>PENDING</td>
+          </tr>
+          <tr>
+            <td><code>sales_reconciliation_date</code></td>
+            <td>date</td>
+            <td>Date when sales reconciliation is scheduled.</td>
+            <td>2024-09-15</td>
+          </tr>
+          <tr>
+            <td><code>provider_intended_settlement_date</code></td>
+            <td>date</td>
+            <td>Intended settlement date by the provider.</td>
+            <td>2024-09-16</td>
+          </tr>
+          <tr>
+            <td><code>provider_confirmation_date</code></td>
+            <td>date</td>
+            <td>Date when the provider confirmed the transaction.</td>
+            <td>2024-09-12</td>
+          </tr>
+          <tr>
+            <td><code>bank_account</code></td>
+            <td>string</td>
+            <td>Bank account details for the transaction.</td>
+            <td>12345-6</td>
+          </tr>
+          <tr>
+            <td><code>bank_agency</code></td>
+            <td>string</td>
+            <td>Bank agency details for the transaction.</td>
+            <td>012</td>
+          </tr>
+          <tr>
+            <td><code>bank</code></td>
+            <td>string</td>
+            <td>Bank details for the transaction.</td>
+            <td>123</td>
+          </tr>
+          <tr>
+            <td><code>advancement_amount</code></td>
+            <td>decimal</td>
+            <td>Amount advanced for the transaction (multiple of 0.0001).</td>
+            <td>800.00</td>
+          </tr>
+          <tr>
+            <td><code>provider_fees</code></td>
+            <td>decimal</td>
+            <td>Fees charged by the provider (multiple of 0.0001).</td>
+            <td>15.00</td>
+          </tr>
+          <tr>
+            <td><code>provider_taxes</code></td>
+            <td>decimal</td>
+            <td>Taxes applied by the provider (multiple of 0.0001).</td>
+            <td>2.50</td>
+          </tr>
+          <tr>
+            <td><code>pending_amount</code></td>
+            <td>decimal</td>
+            <td>Amount still pending for the transaction (multiple of 0.0001).</td>
+            <td>69.50</td>
+          </tr>
+          <tr>
+            <td><code>acquirer</code></td>
+            <td>string</td>
+            <td>Name of the acquirer that processed the transaction (MAX 255; MIN 3).</td>
+            <td>Acquirer ABC</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+## Sales Conciliation report
+
+The sales conciliation report provides detailed information about sales transactions and their reconciliation status. This report includes transaction details, confirmation status, and provider information for sales tracking and reconciliation purposes.
+
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Sales Conciliation report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>transaction_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the transaction (MAX 64; MIN 36).</td>
+            <td>b04db1c6-b2c7-4765-a77e-953d284d080b</td>
+          </tr>
+          <tr>
+            <td><code>payment_method_category</code></td>
+            <td>enum</td>
+            <td>Category of the payment method (CARD, BANK_TRANSFER, etc.).</td>
+            <td>CARD</td>
+          </tr>
+          <tr>
+            <td><code>type</code></td>
+            <td>enum</td>
+            <td>Type of transaction (e.g., PURCHASE, REFUND).</td>
+            <td>PURCHASE</td>
+          </tr>
+          <tr>
+            <td><code>payment_method_type</code></td>
+            <td>enum</td>
+            <td>Type of payment method (CARD, BANK_TRANSFER, etc.).</td>
+            <td>CARD</td>
+          </tr>
+          <tr>
+            <td><code>provider_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
+            <td>PROVIDER ID</td>
+          </tr>
+          <tr>
+            <td><code>status</code></td>
+            <td>enum</td>
+            <td>Status of the transaction (MAX 50; MIN 2).</td>
+            <td>PAID</td>
+          </tr>
+          <tr>
+            <td><code>response_code</code></td>
+            <td>string</td>
+            <td>Response code from the system (MAX 255; MIN 3).</td>
+            <td>200</td>
+          </tr>
+          <tr>
+            <td><code>amount</code></td>
+            <td>number</td>
+            <td>Amount of the transaction (MAX 10000; MIN 0).</td>
+            <td>887</td>
+          </tr>
+          <tr>
+            <td><code>created_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the transaction was created (ISO 8601).</td>
+            <td>2024-09-11T23:16:06.602Z</td>
+          </tr>
+          <tr>
+            <td><code>updated_at</code></td>
+            <td>timestamp</td>
+            <td>Timestamp when the transaction was last updated (ISO 8601).</td>
+            <td>2024-09-11T23:17:07.602Z</td>
+          </tr>
+          <tr>
+            <td><code>provider_status</code></td>
+            <td>string</td>
+            <td>Status of the payment at the provider (MAX 255; MIN 3).</td>
+            <td>PAID</td>
+          </tr>
+          <tr>
+            <td><code>merchant_transaction_id</code></td>
+            <td>string</td>
+            <td>Merchant's transaction identifier (MAX 64; MIN 36).</td>
+            <td>NC2-66e224a53fb722eaa0507579</td>
+          </tr>
+          <tr>
+            <td><code>provider_transaction_id</code></td>
+            <td>string</td>
+            <td>Transaction identifier from the provider (MAX 255; MIN 3).</td>
+            <td>T-51056-1e10f992-e5cf-40bf-9eb6-8edc881de30b</td>
+          </tr>
+          <tr>
+            <td><code>acquirer</code></td>
+            <td>string</td>
+            <td>Name of the acquirer that processed the transaction (MAX 255; MIN 3).</td>
+            <td>Acquirer ABC</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+## Advancements report
+
+The advancements report provides detailed information about all advancement operations processed through Yuno. This report includes negotiation details, UR operations, bank information, and financial data for tracking advancement transactions.
+
+<HTMLBlock>{`
+<body>
+  <details class="table-card">
+    <summary>
+      <span class="table-call">Advancements report field details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>operation_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the advancement operation (MAX 64; MIN 36).</td>
+            <td>69ad0a39-b769-423c-b223-d7b8bf</td>
+          </tr>
+          <tr>
+            <td><code>merchant_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the merchant (MAX 64; MIN 36).</td>
+            <td>64143128-dd12-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>product_id</code></td>
+            <td>string</td>
+            <td>Unique identifier for the product (MAX 64; MIN 36).</td>
+            <td>f4c53557-a832-44e9-94e4-0344f91e9d4f</td>
+          </tr>
+          <tr>
+            <td><code>ur_key</code></td>
+            <td>string</td>
+            <td>Unique reference key for the advancement operation (MAX 255; MIN 3).</td>
+            <td>UR123456789</td>
+          </tr>
+          <tr>
+            <td><code>operation_type</code></td>
+            <td>enum</td>
+            <td>Type of advancement operation (e.g., ADVANCE, REFUND).</td>
+            <td>ADVANCE</td>
+          </tr>
+          <tr>
+            <td><code>movement_type</code></td>
+            <td>enum</td>
+            <td>Type of movement for the advancement (e.g., CREDIT, DEBIT).</td>
+            <td>CREDIT</td>
+          </tr>
+          <tr>
+            <td><code>operation_date</code></td>
+            <td>date</td>
+            <td>Date when the advancement operation was processed.</td>
+            <td>2024-09-15</td>
+          </tr>
+          <tr>
+            <td><code>operation_settlement_date</code></td>
+            <td>date</td>
+            <td>Date when the advancement operation was settled.</td>
+            <td>2024-09-16</td>
+          </tr>
+          <tr>
+            <td><code>ur_operation_date</code></td>
+            <td>date</td>
+            <td>Date of the UR operation.</td>
+            <td>2024-09-15</td>
+          </tr>
+          <tr>
+            <td><code>ur_original_settlement_date</code></td>
+            <td>date</td>
+            <td>Original settlement date for the UR operation.</td>
+            <td>2024-09-20</td>
+          </tr>
+          <tr>
+            <td><code>negotiation_gross_amount</code></td>
+            <td>decimal</td>
+            <td>Gross amount negotiated for the advancement (multiple of 0.0001).</td>
+            <td>1000.00</td>
+          </tr>
+          <tr>
+            <td><code>negotiation_fees</code></td>
+            <td>decimal</td>
+            <td>Fees charged for the negotiation (multiple of 0.0001).</td>
+            <td>15.00</td>
+          </tr>
+          <tr>
+            <td><code>negotiation_net_amount</code></td>
+            <td>decimal</td>
+            <td>Net amount after negotiation fees (multiple of 0.0001).</td>
+            <td>985.00</td>
+          </tr>
+          <tr>
+            <td><code>ur_gross_amount</code></td>
+            <td>decimal</td>
+            <td>Gross amount for the UR operation (multiple of 0.0001).</td>
+            <td>1000.00</td>
+          </tr>
+          <tr>
+            <td><code>ur_fees</code></td>
+            <td>decimal</td>
+            <td>Fees charged for the UR operation (multiple of 0.0001).</td>
+            <td>10.00</td>
+          </tr>
+          <tr>
+            <td><code>ur_net_amount</code></td>
+            <td>decimal</td>
+            <td>Net amount for the UR operation (multiple of 0.0001).</td>
+            <td>990.00</td>
+          </tr>
+          <tr>
+            <td><code>bank</code></td>
+            <td>string</td>
+            <td>Bank details for the advancement operation (MAX 255; MIN 3).</td>
+            <td>123</td>
+          </tr>
+          <tr>
+            <td><code>bank_agency</code></td>
+            <td>string</td>
+            <td>Bank agency details for the advancement operation (MAX 255; MIN 3).</td>
+            <td>012</td>
+          </tr>
+          <tr>
+            <td><code>bank_account</code></td>
+            <td>string</td>
+            <td>Bank account details for the advancement operation (MAX 255; MIN 3).</td>
+            <td>12345-6</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>enum</td>
+            <td>Country where the advancement operation occurred (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>settlement_account</code></td>
+            <td>string</td>
+            <td>Settlement account details for the advancement operation (MAX 255; MIN 3).</td>
+            <td>SETTLE123456</td>
+          </tr>
+          <tr>
+            <td><code>ur_currency</code></td>
+            <td>enum</td>
+            <td>Currency used for the UR operation (MAX 3; MIN 3; ISO 4217).</td>
+            <td>USD</td>
+          </tr>
+          <tr>
+            <td><code>acquirer</code></td>
+            <td>string</td>
+            <td>Name of the acquirer that processed the advancement (MAX 255; MIN 3).</td>
+            <td>Acquirer ABC</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
 `}</HTMLBlock>
