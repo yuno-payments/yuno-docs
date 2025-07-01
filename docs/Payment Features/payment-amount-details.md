@@ -18,13 +18,13 @@ Our API offers flexibility in structuring payment amounts, accommodating various
 * [Taxes](doc:payment-amount-details#taxes)
 * [Discounts](doc:payment-amount-details#discounts)
 
-This feature enhances transparency and convenience for both merchants and customers, enabling seamless handling of payment details within the payment process.
+This feature improves transparency and convenience for both merchants and customers, allowing for seamless management of payment details during the payment process.
 
 ## Fee amount
 
-A dedicated field (`additiona_datal.order.fee_amount`) allows you to specify the fee amount for your services that is included in the transaction. 
+The `additional_data.order.fee_amount` field lets you specify the fee amount for your services included in the transaction. 
 
-In the following example you can see a request that clarifies that a 180 JPY fee amount is part of a 5000 JPY final transaction. This field is for informational purposes, the `fee_amount` is already included in the final transaction amount and is not added separately.
+In the example below, a request demonstrates that a 180 JPY fee amount is part of a 5000 JPY final transaction. This field is for informational purposes only; the `fee_amount` is already included in the final transaction amount and is not added separately.
 
 ```json
 curl --request POST \
@@ -72,9 +72,9 @@ curl --request POST \
 
 ## Shipping amount
 
-A dedicated field (`additional_data.order.shipping_amount`) allows you to specify the shipping amount that is included in the transaction. 
+The `additional_data.order.shipping_amount` field is used to specify the shipping amount included in the transaction. 
 
-In the following example you can see a request that clarifies that a 270 JPY shipping amount is part of a 5000 JPY final transaction. This field is for informational purposes, the `shipping_amount` is already included in the final transaction amount and is not added separately.
+In the example below, a request demonstrates that a 270 JPY shipping amount is part of a 5000 JPY final transaction. This field is for informational purposes only; the `shipping_amount` is already included in the final transaction amount and is not added separately.
 
 ```json
 curl --request POST \
