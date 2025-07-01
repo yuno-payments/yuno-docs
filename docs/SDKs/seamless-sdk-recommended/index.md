@@ -1,5 +1,5 @@
 ---
-title: Seamless SDK Integrations (Recommended)
+title: Seamless SDK (Recommended)
 deprecated: false
 hidden: false
 metadata:
