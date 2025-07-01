@@ -1,5 +1,5 @@
 ---
-title: Web Headless SDKs
+title: Headless Web SDKs
 excerpt: ''
 deprecated: false
 hidden: false
