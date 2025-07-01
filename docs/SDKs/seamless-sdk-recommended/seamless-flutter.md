@@ -1,5 +1,5 @@
 ---
-title: Seamless (Flutter)
+title: Seamless SDK (Flutter) - Deprecated
 excerpt: ''
 deprecated: false
 hidden: false
