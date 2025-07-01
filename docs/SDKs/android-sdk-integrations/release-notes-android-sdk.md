@@ -1,5 +1,5 @@
 ---
-title: Android SDK release notes
+title: Android SDK Release Notes
 excerpt: ''
 deprecated: false
 hidden: false

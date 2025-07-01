@@ -1,5 +1,5 @@
 ---
-title: Android SDK Integrations
+title: Android SDKs
 excerpt: ''
 deprecated: false
 hidden: false

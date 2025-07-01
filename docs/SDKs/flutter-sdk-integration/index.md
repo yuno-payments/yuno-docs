@@ -1,8 +1,8 @@
 ---
-title: Flutter SDK integration
+title: Flutter SDKs - Deprecated
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''

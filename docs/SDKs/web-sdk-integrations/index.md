@@ -1,5 +1,5 @@
 ---
-title: Web SDK Integrations
+title: Web SDKs
 excerpt: ''
 deprecated: false
 hidden: false

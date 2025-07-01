@@ -1,5 +1,5 @@
 ---
-title: iOS SDK Integrations
+title: iOS SDKs
 excerpt: ''
 deprecated: false
 hidden: false
