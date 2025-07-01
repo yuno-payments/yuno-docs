@@ -2,7 +2,7 @@
 title: Seamless (Flutter)
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
