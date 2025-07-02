@@ -1,5 +1,5 @@
 ---
-title: QR and Instant Pay
+title: QR code and Instant Payment
 deprecated: false
 hidden: false
 metadata:
