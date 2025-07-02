@@ -50,7 +50,7 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint:
 
-* First, create a customer or retrieve an existing customer ID using the [Create Customer](ref:create-customer) endpoint
+* First, [create a customer](ref:create-customer) or retrieve an existing customer ID
 * Include the customer ID when creating the `checkout_session`
 
 ## Step 4: Start the checkout process
