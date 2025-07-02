@@ -77,8 +77,4 @@ Once you understand how Pix Automático works, you can start integrating by usin
 * [Create a payment](https://docs.y.uno/reference/create-payment)
 * [Retrieve or cancel a subscription](https://docs.y.uno/reference/retrieve-subscription)
 
-You can also explore retry logic, test scenarios, and cancellation flows in the following reference guides.
-
-If you plan to handle recurring payments programmatically, we recommend starting with the merchant-managed flow and defining your own billing logic. Yuno orchestration is available for cases where you prefer to offload scheduling and retries.
-
 Pix Automático is currently available for merchants collecting from users with Brazilian bank accounts. Make sure to validate your customer's eligibility and always follow the correct charge timing windows for each subscription cycle.
