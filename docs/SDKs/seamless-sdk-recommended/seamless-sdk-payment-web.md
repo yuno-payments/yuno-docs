@@ -50,14 +50,13 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. Make sure to:
 
-* Include the customer ID obtained from the previous step
-* Store the returned `checkout_session` ID for use in Step 4 of the integration
+* First create a customer or retrieve an existing customer ID using the [Create Customer](ref:create-customer) endpoint
+* Include the customer ID when creating the checkout session
 
-> 🚧 Checkout Session Usage
->
-> The `checkout_session` is unique for each payment attempt and cannot be reused.
 
 ## Step 4: Start the checkout process
+
+By following the instructions below, you will be able to provide a seamless and user-friendly payment experience for your customers.
 
 ```javascript
 yuno.startSeamlessCheckout({
