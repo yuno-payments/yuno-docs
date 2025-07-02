@@ -5,6 +5,8 @@ hidden: true
 metadata:
   robots: index
 ---
+> 🚧 Under development
+
 ## Overview
 
 Pix Automático is the Central Bank of Brazil’s new merchant-initiated recurring-payment feature built on the ubiquitous Pix instant-payment network. Since its launch in late 2020, Pix has become Brazilians’ favorite way to pay—handling over **26 trillion BRL** in transactions last year—and is available 24/7 across all banking apps and digital wallets  [oai\_citation:0‡reuters.com](https://www.reuters.com/world/americas/brazils-pix-set-next-leap-with-launch-recurring-payments-2025-06-04/?utm_source=chatgpt.com). On **June 16, 2025**, Pix Automático went live, enabling businesses to collect **subscription-style** or **installment** payments with a single one-time customer authorization—no credit cards or manual debit mandates required. Early estimates project up to **$30 billion USD** in e-commerce volume over the next two years via this new feature.
