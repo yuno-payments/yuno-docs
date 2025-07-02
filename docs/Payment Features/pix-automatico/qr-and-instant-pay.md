@@ -15,13 +15,13 @@ To initiate the flow, you must start with a standard [Pix payment](https://docs.
 
 You can define the frequency, availability window, and the amount type (fixed or variable) as part of the subscription payload.
 
-| Fields for subscriptions |                                                                                                                                                                              |
-| :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Frequency                | Define the frequency at which subscription charges will occur, whether daily, weekly, or monthly, specifying the amount that needs to be charged for the next billing cycle. |
-| Availability             | The start and end dates of the subscription. If they are not defined, nor the billing cycles, charges will continue until it is stopped.                                     |
-| Amount                   | Define the value of the future payments of the subscription. Could be `FIXED` with a minimum value defined, or `VARIABLE` without an amount defined for future payments.     |
+| Fields for subscriptions | Description                                                                                                                                                                        |
+| :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frequency                | Define the frequency at which subscription charges will occur, whether daily, weekly, or monthly, specifying the amount that needs to be charged for the next billing cycle.       |
+| Availability             | The start and end dates of the subscription.                                                                                                                                       |
+| Amount                   | Define the value you will use for future payments of the subscription. Could be `FIXED` with a minimum value defined, or `VARIABLE` without an amount defined for future payments. |
 
-As mentioned before, have in mind that the information defined in the subscription creation will restrict the dates and values to be used for future payments.
+As [mentioned before](https://docs.y.uno/docs/pix-automatico#/key-features), have in mind that the information defined in the subscription creation will restrict the dates and values to be used for future payments.
 
 ```json Example
 {
@@ -30,7 +30,7 @@ As mentioned before, have in mind that the information defined in the subscripti
     "currency": "BRL"
   },
 	"payment_method": {
-        "type": "PIX"
+        "type": "PIX_AUTOMATIC"
 	},
 	"subscription": {
     "frequency": {
@@ -50,3 +50,30 @@ As mentioned before, have in mind that the information defined in the subscripti
 ```
 
 After the initial payment is confirmed, the customer has an active subscription, and you can begin scheduling future charges.
+
+## Step 2: Future payments
+
+As defined by the central bank, payments must be created at most **2 days before the scheduled billing date and at least 10 days** after the subscription was created. Use the subscription\_id to identify the recurrence in the [payment creation](https://docs.y.uno/reference/create-payment#/).
+
+| Fields for future payments |                                                                                                                                      |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| `subscription_id`          | ID of the subscription obtained in the first step.                                                                                   |
+| billing\_date              | By specifying the billing\_date object, the merchant can define the logic behind the exact date for the billing of the subscription. |
+
+```json Example
+"workflow": "DIRECT",
+"amount": {
+  "value": "100",
+  "currency": "BRL"
+},
+"payment_method": {
+  "type": "PIX_AUTOMATIC",
+},
+"subscription": {
+  "id": "cab9f0fe-2428-419b-8f9d-4b5efee8c1c8",
+  "billing_date": {
+    "type": "DAY",
+    "day": 14
+  }
+}
+```
