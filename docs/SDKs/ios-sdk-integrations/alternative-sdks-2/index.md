@@ -1,5 +1,5 @@
 ---
-title: iOS Alternative SDKs
+title: Headless SDKs (iOS)
 excerpt: ''
 deprecated: false
 hidden: false
