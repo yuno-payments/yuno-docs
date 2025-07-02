@@ -77,3 +77,5 @@ As defined by the central bank, payments must be created at most **2 days before
   }
 }
 ```
+
+If a recurring payment fails, it can be retried using a new payment request. **Retries** must occur **within 7 days** of the original billing date and are limited to **3 attempts per cycle**.
