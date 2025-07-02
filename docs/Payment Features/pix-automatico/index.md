@@ -15,6 +15,8 @@ Pix Automático is a Pix-based payment method designed for recurring charges. Un
 
 This flow reduces friction for end users while helping merchants minimize late payments and improve collection success rates.
 
+<Image align="center" src="https://files.readme.io/0244074dad7346fe21391d1f98939d094d142f3534d75348c474c74fbafafc7a-Screenshot_2025-07-02_at_10.42.49_AM.png" />
+
 ***
 
 ## Use Cases
