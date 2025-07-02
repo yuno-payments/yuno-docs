@@ -19,10 +19,10 @@ This flow reduces friction for end users while helping merchants minimize late p
 
 ## Use Cases
 
-| Journey                           | Description                                                                                                       |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **QR Code Journey**               | Present a QR code for authorization only—no immediate charge. Perfect for free trials or deferred first payments. |
-| **QR Code & Instant-Pay Journey** | Single QR that both charges the first installment and enrolls the customer for all future recurring payments.     |
+| Journey                           | Description                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **QR Code & Instant-Pay Journey** | Single QR that both charges the first installment and enrolls the customer for all future recurring payments.                   |
+| **QR Code Journey**               | Present a QR code for authorization only—no immediate charge. Perfect for free trials or deferred first payments. *Coming soon* |
 
 ***
 
