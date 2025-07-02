@@ -46,7 +46,18 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY)
 
 The `yuno` instance will be used in subsequent steps to configure and manage the payment process.
 
-## Step 3: Start the checkout process
+## Step 3: Create a checkout session
+
+To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. Make sure to:
+
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in Step 4 of the integration
+
+> 🚧 Checkout Session Usage
+>
+> The `checkout_session` is unique for each payment attempt and cannot be reused.
+
+## Step 4: Start the checkout process
 
 ```javascript
 yuno.startSeamlessCheckout({
@@ -127,7 +138,7 @@ Notice that when using the `startCheckout` you already have to specify the callb
 >
 > The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
-## Step 4: Mount the SDK
+## Step 5: Mount the SDK
 
 To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckout()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
 
