@@ -17,16 +17,12 @@ This flow reduces friction for end users while helping merchants minimize late p
 
 <Image align="center" src="https://files.readme.io/0244074dad7346fe21391d1f98939d094d142f3534d75348c474c74fbafafc7a-Screenshot_2025-07-02_at_10.42.49_AM.png" />
 
-***
-
 ## Use Cases
 
 | Journey                           | Description                                                                                                                     |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | **QR Code & Instant-Pay Journey** | Single QR that both charges the first installment and enrolls the customer for all future recurring payments.                   |
 | **QR Code Journey**               | Present a QR code for authorization only—no immediate charge. Perfect for free trials or deferred first payments. *Coming soon* |
-
-***
 
 ## Key Features
 
@@ -53,8 +49,6 @@ To ensure reliable processing, each recurring payment order must:
 
 Any violation of these rules results in an automatic failure of the payment request.
 
-***
-
 ## Flow
 
 1. **Subscription**\
@@ -68,3 +62,23 @@ Any violation of these rules results in an automatic failure of the payment requ
 
 4. **Cancellation & Reporting**\
    When an enrollment is canceled—by customer action or via Yuno’s API—no further orders are sent. Comprehensive reporting endpoints support reconciliation of successful charges, failures, and refunds.
+
+### Important notes
+
+* You cannot send the payment on the exact billing date. It will be rejected.
+* If the subscription starts on the 31st, and a month has no 31st, use the 1st of the next month as the billing date.
+* The `subscription_id` is linked to the contract, not to the customer. Treat it as a reusable payment method.
+* You can set a maximum value for each installment when the subscription is created.
+
+### Next steps
+
+Once you understand how Pix Automático works, you can start integrating by using our payment and subscription APIs.
+
+* [Create a payment](https://docs.y.uno/reference/create-payment)
+* [Retrieve or cancel a subscription](https://docs.y.uno/reference/retrieve-subscription)
+
+You can also explore retry logic, test scenarios, and cancellation flows in the following reference guides.
+
+If you plan to handle recurring payments programmatically, we recommend starting with the merchant-managed flow and defining your own billing logic. Yuno orchestration is available for cases where you prefer to offload scheduling and retries.
+
+Pix Automático is currently available for merchants collecting from users with Brazilian bank accounts. Make sure to validate your customer's eligibility and always follow the correct charge timing windows for each subscription cycle.
