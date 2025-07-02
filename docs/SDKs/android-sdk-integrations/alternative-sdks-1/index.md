@@ -1,5 +1,5 @@
 ---
-title: Android Alternative SDKs
+title: Headless SDKs (Android)
 excerpt: ''
 deprecated: false
 hidden: false
