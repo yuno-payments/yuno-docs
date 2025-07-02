@@ -40,6 +40,17 @@ This flow reduces friction for end users while helping merchants minimize late p
 | **Cancellation & Refund APIs**  | Cancel enrollments or process refunds at any time via simple REST calls.           |
 | **Service-Triggered Payments**  | Send ad-hoc or variable orders outside the regular schedule when needed.           |
 
+Due to Brazil's central bank regulations, all future subscription payment orders **must** comply with the parameters defined in the payment/subscription creation section—billing cycle, amount (fixed or variable), duration, retry rules, credit-line access, etc. If any payment request deviates from these rules (for example, an incorrect amount, an unauthorized billing cycle, or an expired enrollment), the customer’s bank will reject the transaction and the payment will fail .
+
+To ensure reliable processing, each recurring payment order must:
+
+* **Match the authorized amount** (or stay within the variable limits you’ve defined).
+* **Adhere to the agreed billing cycle** (weekly, monthly, quarterly, semi-annual, or annual).
+* **Respect the subscription duration** (fixed-term or open-ended) and not exceed the approved number of executions.
+* **Follow the retry policy** (up to 3 retries over a 7-day window after a failure).
+
+Any violation of these rules results in an automatic failure of the payment request.
+
 ***
 
 ## Flow
