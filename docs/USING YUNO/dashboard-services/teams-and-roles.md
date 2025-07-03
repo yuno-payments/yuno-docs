@@ -39,7 +39,7 @@ Use **Add filters** to sort between your [accounts](https://docs.y.uno/docs/acco
 
 ## The dynamics of roles
 
-Defining clear roles and permissions strengthens the security of your operations. Each team member works within a specific scope, reducing the risk of accidental errors or unauthorized access. With Yuno's Team and roles management, your team can stay focused and productive. Roles give individuals the access they need to do their jobs efficiently, while keeping workflows organized and secure.
+Defining clear roles and permissions strengthens the security of your operations. Each team member works within a specific scope, reducing the risk of accidental errors or unauthorized access. Roles give individuals the access they need to do their jobs efficiently, while keeping workflows organized and secure.
 
 There are two types of roles in Yuno:
 
@@ -60,3 +60,37 @@ There are 6 types of default roles:
 The **Roles management** tab shows the permissions assigned to each role. Select **Create role** to define custom roles tailored to your team's specific needs.
 
 <Image align="center" src="https://files.readme.io/9d84cbf80d0179fe25cf559b896b93061e2e3b99c4c71778f8e39421a8f3d509-teams_and_roles.png" />
+
+## Creating custom roles
+
+To create a custom role, navigate to the **Roles management** tab and select **Create role**. You can then define the role name, description, and assign specific permissions for each environment according to your team's needs.
+
+Yuno's **Create role** feature provides enhanced flexibility for role management by allowing you to create custom roles with environment-specific permissions. This feature enables you to define precise access controls for different environments, promoting better security and operational control.
+
+### Environment-specific configuration
+
+For each permission, you can independently configure access for:
+
+* **Sandbox environment**: Perfect for testing and development activities
+* **Production environment**: For live operations and sensitive data
+
+This granular control allows you to create roles where users might have full access in sandbox for testing purposes, but restricted access in production for security reasons.
+
+### Available permissions
+
+The custom role creation interface includes these permissions:
+
+* **Insights** - Access to actionable payment insights
+* **Payments** - View and operate payments, manage payment links
+* **Payouts** - View payouts and transaction details
+* **Reconciliation** - View settlement reports
+* **Connections** - View and manage payment connections
+* **Routing** - View and manage processing routes
+* **Checkout builder** - View and build checkout configurations
+* **Developers** - View and manage account keys
+* **Webhooks** - View and manage webhooks
+* **Accounts** - Manage account settings
+* **Team and roles** - View and manage team members and roles
+* **Risk conditions** - View and manage rules and lists
+* **Audit logs** - View dashboard, API, and monitor logs
+* **Security** - Manage 2FA and SSO configurations
