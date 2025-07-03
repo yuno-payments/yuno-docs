@@ -17,10 +17,6 @@ The .md files are part of [Yuno Docs](docs.y.uno). You can access them by adding
 
 This setup enables AI assistants, developer tools, and chat-based agents to answer questions, explain features, and guide integrations automatically. It’s a lightweight but powerful way to open up Yuno’s documentation to a wide range of intelligent applications.
 
-For example, a chatbot with access to these files could help a developer debug a payment integration, explain how vaulted tokens work, or walk through MCP setup, all based on real, structured content.
-
-These files are publicly accessible and updated alongside our main documentation. They follow consistent formatting guidelines to ensure clarity, context, and AI compatibility.
-
 ## Yuno's Model Context Protocol (MCP)
 
 This package provides an MCP server that exposes the Yuno payment platform API as Model Context Protocol tools. It enables programmatic access for AI agents, automation systems, and other advanced workflows that rely on structured, machine-readable context.
@@ -31,29 +27,53 @@ This package provides an MCP server that exposes the Yuno payment platform API a
 
 * **Enables AI and automation workflows with Yuno**: Integrate Yuno into local agents or custom workflows without complex, handcrafted logic
 
-* **TypeScript support**: Fully typed for reliable development and seamless use in modern TypeScript environments
-
 * **Easy integration with Cursor and other MCP-compatible agents**: Works out of the box with tools like Cursor, Claude Desktop, and other environments that support the Model Context Protocol
 
 ### Available tools
 
 The Yuno MCP server makes the following tools available to AI agents and automation:
 
-| Tool name                | Description                              |
-| ------------------------ | ---------------------------------------- |
-| `customer.create`        | Create a new customer                    |
-| `checkoutSession.create` | Create a checkout session                |
-| `payments.create`        | Create a payment with various workflows  |
-| `payments.read`          | Retrieve payment information             |
-| `documentation.read`     | Access Yuno API documentation and guides |
-
-### Payment workflows
-
-The `payments.create` tool supports three workflow types:
-
-* `DIRECT` – Direct payment processing
-* `REDIRECT` – Redirect-based payment flow
-* `SDK_CHECKOUT` – Requires `checkout_session_id` and `ott` (for web, Android, and iOS payments)
+| Tool name                                | Description                                                                    |
+| ---------------------------------------- | ------------------------------------------------------------------------------ |
+| `customer.create`                        | Create a new customer                                                          |
+| `customer.retrieve`                      | Retrieve a customer by ID                                                      |
+| `customer.retrieveByExternalId`          | Retrieve a customer by external id (`merchant_customer_id`)                    |
+| `customer.update`                        | Update an existing customer by ID                                              |
+| `paymentMethod.enroll`                   | Enroll or create payment method for a customer                                 |
+| `paymentMethod.retrieve`                 | Retrieve payment method                                                        |
+| `paymentMethod.retrieveEnrolled`         | Retrieve all enrolled payment methods for a customer                           |
+| `paymentMethod.unenroll`                 | Unenroll payment method                                                        |
+| `checkoutSession.create`                 | Create a checkout session                                                      |
+| `checkoutSession.retrievePaymentMethods` | Retrieve payment methods for checkout                                          |
+| `payments.create`                        | Create a payment with various workflows                                        |
+| `payments.retrieve`                      | Retrieve payment information                                                   |
+| `payments.retrieveByMerchantOrderId`     | Retrieve payment(s) by `merchant_order_id`                                     |
+| `payments.refund`                        | Refund a payment (full or partial) by payment and transaction ID               |
+| `payments.cancelOrRefund`                | Cancel or refund a payment by payment ID (auto-detects action)                 |
+| `payments.cancelOrRefundWithTransaction` | Cancel or refund a payment by payment and transaction ID (auto-detects action) |
+| `payments.cancel`                        | Cancel a pending payment by payment and transaction ID                         |
+| `payments.authorize`                     | Authorize a payment (`capture: false`)                                         |
+| `payments.captureAuthorization`          | Capture a previously authorized payment                                        |
+| `paymentLinks.create`                    | Create a new payment link                                                      |
+| `paymentLinks.retrieve`                  | Retrieve a payment link by ID                                                  |
+| `paymentLinks.cancel`                    | Cancel a payment link by ID                                                    |
+| `subscriptions.create`                   | Create a new subscription                                                      |
+| `subscriptions.retrieve`                 | Retrieve a subscription by ID                                                  |
+| `subscriptions.pause`                    | Pause a subscription by ID                                                     |
+| `subscriptions.resume`                   | Resume a subscription by ID                                                    |
+| `subscriptions.update`                   | Update a subscription by ID                                                    |
+| `subscriptions.cancel`                   | Cancel a subscription by ID                                                    |
+| `recipients.create`                      | Create a new recipient                                                         |
+| `recipients.retrieve`                    | Retrieve a recipient by ID                                                     |
+| `recipients.update`                      | Update a recipient by ID                                                       |
+| `recipients.delete`                      | Delete a recipient by ID                                                       |
+| `recipients.createOnboarding`            | Create onboarding for a recipient                                              |
+| `installmentPlans.create`                | Create a new installment plan                                                  |
+| `installmentPlans.retrieve`              | Retrieve an installment plan by ID                                             |
+| `installmentPlans.retrieveAll`           | Retrieve all installment plans for an account                                  |
+| `installmentPlans.update`                | Update an installment plan by ID                                               |
+| `installmentPlans.delete`                | Delete an installment plan by ID                                               |
+| `documentation.read`                     | Access Yuno API documentation and guides                                       |
 
 ## Using the MCP with Cursor or Claude Desktop
 
@@ -129,5 +149,4 @@ Asterisk (\*) marks required.
 
 ## Support
 
-* For issues, bugs, or feature requests, please [open an issue](https://github.com/yuno-payments/yuno-mcp/issues) in our GitHub repository.
-* For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno.com/).
+* For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno.com/)
