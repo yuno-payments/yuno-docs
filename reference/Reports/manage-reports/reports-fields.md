@@ -1651,48 +1651,7 @@ Below, you will find details of each report type.
             <td>The amount of the transaction.</td>
             <td>100</td>
           </tr>
-          <tr>
-            <td><code>local_amount</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The corresponding amount for all transactions in settlement currency minus local retention and local tax
-              (multiple of 0.0001).</td>
-            <td>140.1</td>
-          </tr>
-          <tr>
-            <td><code>local_retention</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The corresponding amount for all transactions in settlement currency minus local amount and local tax
-              (multiple of 0.0001).</td>
-            <td>7.37</td>
-          </tr>
-          <tr>
-            <td><code>local_tax</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The corresponding amount for all transactions in settlement currency minus local retention and local
-              amount (multiple of 0.0001).</td>
-            <td>11.73</td>
-          </tr>
-          <tr>
-            <td><code>provider_fees</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The commission fee that was withheld by the acquirer on transactions in settlement currency (multiple of
-              0.0001).</td>
-            <td>3.53</td>
-          </tr>
-          <tr>
-            <td><code>provider_fee_taxes</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The commission fee tax that was withheld by the acquirer in settlement currency (multiple of 0.0001).
-            </td>
-            <td>0.78</td>
-          </tr>
-          <tr>
-            <td><code>net_amount</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The amount submitted in the credit transaction requests minus acquirer fees in settlement currency
-              (multiple of 0.0001).</td>
-            <td>135.79</td>
-          </tr>
+
           <tr>
             <td><code>currency</code></td>
             <td>enum</td>
@@ -1799,12 +1758,7 @@ Below, you will find details of each report type.
             <td>The date and time from the last time the transaction was updated.</td>
             <td>2022-05-15T20:46:54.786342Z</td>
           </tr>
-          <tr>
-            <td><code>estimated_settlement_date</code><sup>(A)</sup></td>
-            <td>timestamp</td>
-            <td>Estimated date by the acquirer in which the funds will be deposited in the merchant's bank account.</td>
-            <td>2022-05-09</td>
-          </tr>
+
           <tr>
             <td><code>reconciliation_status</code></td>
             <td>enum</td>
@@ -2360,54 +2314,7 @@ The settlement report has two types of reports:
             <td>Name of the merchant account assigned by the payment provider.</td>
             <td>Merchant account ABC</td>
           </tr>
-          <tr>
-            <td><code>local_amount</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The corresponding gross amount for all transactions in settlement currency plus local taxes and
-              retention (multiple of 0.0001).</td>
-            <td>263.09</td>
-          </tr>
-          <tr>
-            <td><code>provider_fees</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The commission fee that was withheld by the acquirer on transactions in settlement currency. This should
-              be the difference between the gross and net amounts but with the opposite sign (multiple of 0.0001).</td>
-            <td>5.53</td>
-          </tr>
-          <tr>
-            <td><code>provider_fee_taxes</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The commission fee tax that was withheld by the acquirer in settlement currency. This should be the
-              difference between the gross and net amounts but with the opposite sign (multiple of 0.0001).</td>
-            <td>1.22</td>
-          </tr>
-          <tr>
-            <td><code>net_amount</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The amount submitted in the credit transaction requests minus acquirer fees in settlement currency
-              (multiple of 0.0001).</td>
-            <td>256.35</td>
-          </tr>
-          <tr>
-            <td><code>local_retention</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The local amount minus the corresponding gross amount for all transactions in settlement currency minus
-              the local tax (multiple of 0.0001).</td>
-            <td>13.84</td>
-          </tr>
-          <tr>
-            <td><code>local_tax</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>The local amount minus the corresponding gross amount for all transactions in settlement currency minus
-              the local retention (multiple of 0.0001).</td>
-            <td>22.04</td>
-          </tr>
-          <tr>
-            <td><code>estimated_settlement_date</code><sup>(A)</sup></td>
-            <td>date</td>
-            <td>Estimated date by the acquirer when the funds will be deposited in the merchant's bank account.</td>
-            <td>2022-05-09</td>
-          </tr>
+
           <tr>
             <td><code>description</code><sup>(A)</sup></td>
             <td>enum</td>
