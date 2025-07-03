@@ -116,7 +116,7 @@ These onboardings can be done by the marketplace owner outside Yuno, or Yuno can
 
 **B- Dynamic onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the chosen provider (onboardings.type=ONBOARD\_ONTO\_PROVIDER):
 
-```json Request
+```json Request recipient creation
 {
   "document": {
     "document_number": "1093333333",
