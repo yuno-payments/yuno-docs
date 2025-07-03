@@ -157,7 +157,7 @@ These onboardings can be done by the marketplace owner outside Yuno, or Yuno can
 ```
 ```json Response
 {
-  "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+  "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
   "document": {
     "document_number": "1093333333",
     "document_type": "CNPJ"
