@@ -143,196 +143,19 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
   </Tab>
 </Tabs>
 
-<br />
-
-<ObjCard title="Test" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
-
-<br />
-
-<HTMLBlock>{`
-<style>
-  /* Tabs container */
-  .tab-header {
-    display: flex;
-    border-bottom: 2px solid #ddd;
-    margin-bottom: 20px;
-  }
-
-  /* Hide radio buttons */
-  input[type="radio"] {
-    display: none;
-  }
-
-  /* Tab labels */
-  .tab-label {
-    text-decoration: none;
-    color: #333;
-    padding: 10px 20px;
-    transition: all 0.3s ease;
-    font-size: 16px;
-    margin-right: 10px;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-  }
-
-  .tab-label:hover,
-  .tab-label:focus {
-    color: #000;
-  }
-
-  /* Tab content hidden by default */
-  .tab-panel {
-    display: none;
-  }
-
-  /* Show active tab content */
-  #sandbox:checked~.tab-panel#sandbox,
-  #production:checked~.tab-panel#production {
-    display: block;
-  }
-
-  /* Style for active tab */
-  #sandbox:checked~.tab-header label[for="sandbox"],
-  #production:checked~.tab-header label[for="production"] {
-    color: #000;
-    border-bottom: 2px solid #513CE1;
-  }
-
-  /* Expandable card container */
-  .expandable-card {
-    border-radius: 10px;
-    border: 1px solid #614ad623;
-    display: flex;
-    transition: all 0.2s;
-  }
-
-  /* Hover effect for expandable card */
-  .expandable-card:hover {
-    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Expand/Collapse icon styling */
-  .icon {
-    fill: rebeccapurple;
-    transition: 0.3s ease;
-    pointer-events: none;
-  }
-
-  .icon-close {
-    display: none;
-  }
-
-  details[open] .icon-close {
-    display: inline;
-  }
-
-  details[open] .icon-expand {
-    display: none;
-  }
-
-  /* Summary styles */
-  .expandable-summary {
-    padding: 0.8rem 1rem;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  /* Title inside expandable summary */
-  .expandable-title {
-    font-size: 1rem;
-    margin: 0;
-  }
-
-  /* Summary icon alignment */
-  .expandable-icon-container {
-    margin-left: auto;
-    display: flex;
-  }
-
-  /* Content area inside expandable card */
-  .expandable-content {
-    padding: 0.5rem;
-  }
-
-  /* Animation for expandable content */
-  details[open] div {
-    animation: sweep 0.3s ease-in-out;
-  }
-
-  @keyframes sweep {
-    0% {
-      opacity: 0;
-      margin-left: -10px;
-    }
-
-    100% {
-      opacity: 1;
-      margin-left: 0px;
-    }
-  }
-</style>
-
-<body>
-  <!-- Radio buttons for tab control -->
-  <input type="radio" id="sandbox" name="tabs" checked>
-  <input type="radio" id="production" name="tabs">
-
-  <!-- Tab header -->
-  <div class="tab-header">
-    <label for="sandbox" class="tab-label">Sandbox</label>
-    <label for="production" class="tab-label">Production</label>
+<Shelf classname="cards_container">
+  <div class="first_row">
+    <YunoCard type="pgp-key" title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_sandbox.asc">
+      Download the public PGP key for encrypting sensitive data in the sandbox environment.
+    </YunoCard>
   </div>
+</Shelf>
 
-  <!-- Tab content -->
-  <div class="tab-panel" id="sandbox">
-    <p>Email: <a href="mailto:security-migrations@y.uno">security-migrations@y.uno</a></p>
-    <p>Comment: For encrypting sensitive data. Environment: sandbox</p>
-    <p>Created: 22 Nov 2024</p>
-    <p>Expires: 22 Nov 2026</p>
-    <p>Key ID: B342E3D3</p>
-    <p>Length: 4096</p>
-    <p>Algorithm: RSA</p>
-    <p>Fingerprint: 2B37 55FA 426A B1D0 2061 4C6C 919C 4D81 B342 E3D3</p>
-
-    <!-- Public PGP Key Download Section -->
-    <section class="link_cards_container">
-      <a class="card"
-        onclick="window.location='https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_sandbox.asc';">
-        <div class="svg_content">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path
-              d="M8 1.33334C8.36819 1.33334 8.66667 1.63181 8.66667 2.00001V9.12668L10.7933 6.99998C11.0512 6.74211 11.4487 6.74211 11.7067 6.99998C11.9646 7.25786 11.9646 7.65541 11.7067 7.91328L8.35334 11.2667C8.15842 11.4616 7.84159 11.4616 7.64667 11.2667L4.29334 7.91328C4.03546 7.65541 4.03546 7.25786 4.29334 6.99998C4.55121 6.74211 4.94876 6.74211 5.20667 6.99998L7.33334 9.12668V2.00001C7.33334 1.63181 7.63181 1.33334 8 1.33334ZM2.66667 13.3333C2.29847 13.3333 2 13.6318 2 14C2 14.3682 2.29847 14.6667 2.66667 14.6667H13.3333C13.7015 14.6667 14 14.3682 14 14C14 13.6318 13.7015 13.3333 13.3333 13.3333H2.66667Z"
-              fill="#513CE1" />
-          </svg>
-        </div>
-        <h4>Public PGP Key</h4>
-      </a>
-    </section>
-    
-    <br />
-
-    <details class="expandable-card">
-      <summary class="expandable-summary">
-        <span class="expandable-title">Sandbox Key</span>
-        <div class="expandable-icon-container">
-          <svg class="icon icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-              d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
-          </svg>
-          <svg class="icon icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-              d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
-          </svg>
-        </div>
-      </summary>
-      
-      <br />
-      
-      <div class="expandable-content">
-        <pre>-----BEGIN PGP PUBLIC KEY BLOCK-----
-
+<ObjCard
+  title="PGP Public Key Block"
+  type="string"
+  description="This is a PGP public key block for encrypting sensitive data"
+  data="-----BEGIN PGP PUBLIC KEY BLOCK-----
 xsFNBGdAg3ABEAC52pkHCiwyGZX+7zvEI7m2m3CmUohZ+uwNR3le/ozcbvPkTUln
 Ucf0ppl1ZTBRt6G7XMIQ6e1Y/RxQjWxKyvnabi0RlNOHSJmy07Mt5+U4ZG4Vnj95
 Pw3gGR/WhyJNLk01V5Ss/iRrx1NiDKTGNwLCTo1/tW1hBKq3j63ZhNhSY8s638LS
@@ -395,58 +218,22 @@ r7jjO9fOdoRKou/ivQ0lxEUg+EaZQXFD+MOZd57BfAy4YBrVgYA8YVRhEh7XBeql
 JGmwCqob1k0R3zmx6+EJdJcoW24MUEG6jeitvyy2d07sxKmSl/3vQ7mqpWtm3ZcC
 JiRYUpjGug==
 =LuK0
------END PGP PUBLIC KEY BLOCK-----</pre>
-      </div>
-    </details>
+-----END PGP PUBLIC KEY BLOCK-----"
+/>
+
+<Shelf classname="cards_container">
+  <div class="first_row">
+    <YunoCard type="sdk-integrations" title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_production.asc">
+      Download the public PGP key for encrypting sensitive data in the production environment.
+    </YunoCard>
   </div>
+</Shelf>
 
-  <div class="tab-panel" id="production">
-    <p>Email: <a href="mailto:security-migrations@y.uno">security-migrations@y.uno</a></p>
-    <p>Comment: For encrypting sensitive data. Environment: production</p>
-    <p>Created: 22 Nov 2024</p>
-    <p>Expires: 22 Nov 2026</p>
-    <p>Key ID: 73D3D88A</p>
-    <p>Length: 4096</p>
-    <p>Algorithm: RSA</p>
-    <p>Fingerprint: 5160 7134 4C00 D270 93FB C450 19ED AACD 73D3 D88A</p>
-
-    <!-- Public PGP Key Download Section -->
-    <section class="link_cards_container">
-      <a class="card"
-        onclick="window.location='https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_production.asc';">
-        <div class="svg_content">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path
-              d="M8 1.33334C8.36819 1.33334 8.66667 1.63181 8.66667 2.00001V9.12668L10.7933 6.99998C11.0512 6.74211 11.4487 6.74211 11.7067 6.99998C11.9646 7.25786 11.9646 7.65541 11.7067 7.91328L8.35334 11.2667C8.15842 11.4616 7.84159 11.4616 7.64667 11.2667L4.29334 7.91328C4.03546 7.65541 4.03546 7.25786 4.29334 6.99998C4.55121 6.74211 4.94876 6.74211 5.20667 6.99998L7.33334 9.12668V2.00001C7.33334 1.63181 7.63181 1.33334 8 1.33334ZM2.66667 13.3333C2.29847 13.3333 2 13.6318 2 14C2 14.3682 2.29847 14.6667 2.66667 14.6667H13.3333C13.7015 14.6667 14 14.3682 14 14C14 13.6318 13.7015 13.3333 13.3333 13.3333H2.66667Z"
-              fill="#513CE1" />
-          </svg>
-        </div>
-        <h4>Public PGP Key</h4>
-      </a>
-    </section>
-
-    <br />
-
-    <details class="expandable-card">
-      <summary class="expandable-summary">
-        <span class="expandable-title">Production Key</span>
-        <div class="expandable-icon-container">
-          <svg class="icon icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-              d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
-          </svg>
-          <svg class="icon icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-            <path fill-rule="evenodd"
-              d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
-          </svg>
-        </div>
-      </summary>
-      
-      <br />
-      
-      <div class="expandable-content">
-        <pre>-----BEGIN PGP PUBLIC KEY BLOCK-----
-
+<ObjCard
+  title="PGP Public Key Block"
+  type="string"
+  description="This is a PGP public key block for encrypting sensitive data"
+  data="-----BEGIN PGP PUBLIC KEY BLOCK-----
 xsFNBGdAg2sBEAC4NW7xG06SGZcNCFVXreQsW8l3YGdcNo4y2ks0MZw8B1k6BwMJ
 LqJjkiRouWAmRMCbP0Qauw4UPhhVlrIx9MsFrvJFgi/cnOGnwujVNIuhNw8S8cUZ
 1K1+5ZAsxuc/hKcSQRH0Hp94UNP76seJgC0U6d422fW2EKG7VN2l1BcM4NlBmOuD
@@ -509,10 +296,5 @@ V+EqUCVP6YPNq8PHD8ZOAy5T8GO+wNahsKiUaxAhn2kjCXhZRqwWDiJLCn3Wge6B
 n4nHVHtvlw/ptDFyrDP2fUkk1XwmN2StG5y74eVN6HlvrTkwL5HmxQKGlSwZC1gK
 sNugHSYrj1RUuA==
 =ik2s
------END PGP PUBLIC KEY BLOCK-----</pre>
-      </div>
-    </details>
-  </div>
-
-</body>
-`}</HTMLBlock>
+-----END PGP PUBLIC KEY BLOCK-----"
+/>
