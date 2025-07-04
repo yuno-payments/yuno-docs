@@ -12,7 +12,7 @@ next:
 ---
 **Single sign-on (SSO)** allows users to access Yuno with a single set of credentials through a trusted Identity Provider (IdP). This simplifies user management, strengthens security, and enables teams to work more efficiently across platforms.
 
-Yuno supports SSO using the **SAML 2.0** (Security Assertion Markup Language) standard. This ensures compatibility with any identity provider that follows the protocol, such as Google Workspace, Microsoft Azure, and others.
+Yuno supports SSO using the **SAML 2.0** (Security Assertion Markup Language) standard. This allows compatibility with identity providers that follow the protocol, such as Google and Okta.
 
 ## Benefits of SSO in Yuno
 
@@ -23,7 +23,12 @@ SSO streamlines access to Yuno while improving security and the user experience.
 
 ## Compatible providers
 
-Yuno works with any identity providers supporting the **SAML 2.0** standard.
+Yuno works with identity providers supporting the **SAML 2.0** standard:
+
+* Google
+* Okta
+
+For other providers, please contact support.
 
 ## How to set up SSO in Yuno
 
@@ -45,9 +50,8 @@ You can connect Yuno with your identity provider and give your team secure, cent
 **Step 2: Select the identity provider**
 
 1. Choose your identity provider from the list:
-   1. Google Workspace
-   2. Microsoft Azure
-   3. Other providers compatible with SAML 2.0
+   1. Google
+   2. Other providers compatible with SAML 2.0 (Okta enabled by default. Contact support for other providers).
 2. Copy the **Identifier (Entity ID)** and **Assertion Consumer Service URL** provided by Yuno.
 
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXd7Obd6lURxHjloLWCT2JSJB_mCS0N0g_53H8mhUkqTw7Nu3RNW_cAjekMBx0gAH1wDQbhJXzhmVJQqSnCoQkbkO37anutvQLOH1dNtgW_DJP-KoGUXk2Xn0YBq2v4V2Ciw9dSf7A?key=2dldRk3J4b42VwoUCEVS3Lpu)
