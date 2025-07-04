@@ -3680,6 +3680,79 @@ This object represents the payment created after generating the checkout session
     </p>
   </div> -->
 
+  <details class="yuno">
+    <summary>
+      <strong><code>split_marketplace</code></strong> <small>array of objects</small>
+      <br />
+      <p>Split marketplace array of objects</p>
+    </summary>
+    <div>
+      <p><strong><code>recipient_id</code></strong> <small>string</small>
+        <br />The unique identifier of the recipient in the Yuno system.
+        <br />You must provide the recipient_id (Yuno-generated) or the `provider_recipient_id (external provider's ID) when creating a payment.
+      </p>
+      <p><strong><code>provider_recipient_id</code></strong> <small>string</small>
+        <br />The recipient ID provided by the external payment provider, if applicable.
+        <br />You must provide the provider_recipient_id or the recipient_id (Yuno-generated) when creating a payment.
+      </p>
+      <p><strong><code>type</code></strong> <small>string</small>
+        <br />The type of split.
+        <br /><small> Example: PURCHASE </small>
+      </p>
+      <p><strong><code>merchant_reference</code></strong> <small>string</small>
+        <br />Optional unique identifier for the split transaction.
+      </p>
+      <details class="yuno">
+        <summary>
+          <strong><code>amount</code></strong> <small>object</small>
+          <br />
+          <p>Defines the amount of the split.</p>
+        </summary>
+        <div>
+          <details class="yuno">
+            <summary>
+              <strong><code>amount object</code></strong> <small>object</small>
+              <br />
+              <p>Specifies the amount object.</p>
+            </summary>
+            <div>
+              <p><strong><code>value</code></strong> <small>float</small>
+                <br />The split amount (multiple of 0.0001).
+              </p>
+              <p><strong><code>currency</code></strong> <small>string</small>
+                <br />The currency used to make the payment (MAX 3; MIN 3; ISO 4217).
+              </p>
+            </div>
+          </details>
+        </div>
+      </details>
+      <details class="yuno">
+        <summary>
+          <strong><code>liability</code></strong> <small>object</small>
+          <br />
+          <p>Optional information regarding the recipient's liability for fees and chargebacks.</p>
+        </summary>
+        <div>
+          <details class="yuno">
+            <summary>
+              <strong><code>liability object</code></strong> <small>object</small>
+              <br />
+              <p>Specifies the liability object.</p>
+            </summary>
+            <div>
+              <p><strong><code>processing_fee</code></strong> <small>string</small>
+                <br />Indicates who will be charged the transaction fee.
+              </p>
+              <p><strong><code>chargebacks</code></strong> <small>boolean</small>
+                <br />The recipient is responsible in case of a chargeback.
+              </p>
+            </div>
+          </details>
+        </div>
+      </details>
+    </div>
+  </details>
+
   <div class="yuno">
     <p><strong><code>transactions_history</code></strong> <small>array of objects</small>
       <br /> The list of the transactions that are part of a payment. It is going to depend on how many providers you have set up in your payment method route.
