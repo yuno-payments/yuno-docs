@@ -13,6 +13,14 @@ metadata:
 
 Use our public key to encrypt the PCI-sensitive files you send to Yuno.
 
+<br />
+
+<ExpandableCard title="Production Key">
+  <p>Use your production key only in live environments. Never expose it publicly.</p>
+</ExpandableCard>
+
+<br />
+
 <Tabs>
   <Tab title="Sandbox">
     Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
