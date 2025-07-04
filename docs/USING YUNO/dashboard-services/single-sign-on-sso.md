@@ -12,7 +12,7 @@ next:
 ---
 **Single sign-on (SSO)** allows users to access Yuno with a single set of credentials through a trusted Identity Provider (IdP). This simplifies user management, strengthens security, and enables teams to work more efficiently across platforms.
 
-Yuno supports SSO using the **SAML 2.0** (Security Assertion Markup Language) standard. This ensures compatibility with any identity provider that follows the protocol, such as Google and Okta.
+Yuno supports SSO using the **SAML 2.0** (Security Assertion Markup Language) standard. This ensures compatibility with identity providers that follow the protocol, such as Google and Okta.
 
 ## Benefits of SSO in Yuno
 
