@@ -143,6 +143,12 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
   </Tab>
 </Tabs>
 
+<br />
+
+<ObjCard title="Test" type="string" description="this is a test card" data="Example: faa89e18-5a11-11ed-9b6a-0242ac120002" />
+
+<br />
+
 <HTMLBlock>{`
 <style>
   /* Tabs container */
