@@ -23,7 +23,12 @@ SSO streamlines access to Yuno while improving security and the user experience.
 
 ## Compatible providers
 
-Yuno works with identity providers supporting the **SAML 2.0** standard.
+Yuno works with identity providers supporting the **SAML 2.0** standard:
+
+* Google
+* Okta
+
+For other providers, please contact support.
 
 ## How to set up SSO in Yuno
 
