@@ -1,7 +1,7 @@
 ---
-title: Token Migration Process (COPY)
+title: Token Migration Process [remove tabs copy]
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   description: >-
     Token migration is the process by which the card numbers stored in a
@@ -104,6 +104,20 @@ To proceed with the migration process, you will need to provide the following:
 ### PGP public key
 
 Use our public key to encrypt the PCI-sensitive files you send to Yuno.
+
+<Tabs>
+  <Tab title="First Tab">
+    Welcome to the content that you can only see inside the first Tab.
+  </Tab>
+
+  <Tab title="Second Tab">
+    Here's content that's only inside the second Tab.
+  </Tab>
+
+  <Tab title="Third Tab">
+    Here's content that's only inside the third Tab.
+  </Tab>
+</Tabs>
 
 <HTMLBlock>{`
 <style>
