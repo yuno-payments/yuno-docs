@@ -106,7 +106,7 @@ To proceed with the migration process, you will need to provide the following:
 Use our public key to encrypt the PCI-sensitive files you send to Yuno.
 
 <Tabs>
-  <Tab title="First Tab">
+  <Tab title="Sandbox">
     Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
 
     Comment: For encrypting sensitive data. Environment: sandbox
@@ -124,7 +124,7 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
     Fingerprint: 2B37 55FA 426A B1D0 2061 4C6C 919C 4D81 B342 E3D3
   </Tab>
 
-  <Tab title="Second Tab">
+  <Tab title="Production">
     Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
 
     Comment: For encrypting sensitive data. Environment: production
