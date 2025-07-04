@@ -1,5 +1,5 @@
 ---
-title: Token Migration Process [remove tabs copy]
+title: Token Migration Process [replace tabs copy]
 deprecated: false
 hidden: true
 metadata:
