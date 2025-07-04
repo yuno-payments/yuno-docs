@@ -39,10 +39,6 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
       </div>
     </Shelf>
 
-    <ExpandableCard title="Production Key">
-      <p>Use your production key only in live environments. Never expose it publicly.</p>
-    </ExpandableCard>
-
     <ExpandableCard title="Sandbox Key">
       <pre className="whitespace-pre-wrap text-sm bg-gray-100 dark:bg-gray-800 p-4 rounded-md overflow-auto">
         \-----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -137,6 +133,10 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
           Download the public PGP key for encrypting sensitive data in the production environment.
         </YunoCard>
       </div>
+    </Shelf>
+
+    <Shelf classname="link_cards_container">
+      <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_production.asc" titleSize="h4" />
     </Shelf>
 
     <ExpandableCard title="Production Key">
