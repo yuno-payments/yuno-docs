@@ -46,7 +46,7 @@ You can connect Yuno with your identity provider and give your team secure, cent
 
 1. Choose your identity provider from the list:
    1. Google Workspace
-   2. Other providers compatible with SAML 2.0 (Okta enabled by default. Contact support for other providers.)
+   2. Other providers compatible with SAML 2.0 (Okta enabled by default. Contact support for other providers).
 2. Copy the **Identifier (Entity ID)** and **Assertion Consumer Service URL** provided by Yuno.
 
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXd7Obd6lURxHjloLWCT2JSJB_mCS0N0g_53H8mhUkqTw7Nu3RNW_cAjekMBx0gAH1wDQbhJXzhmVJQqSnCoQkbkO37anutvQLOH1dNtgW_DJP-KoGUXk2Xn0YBq2v4V2Ciw9dSf7A?key=2dldRk3J4b42VwoUCEVS3Lpu)
