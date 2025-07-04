@@ -13,56 +13,56 @@ metadata:
 
 Use our public key to encrypt the PCI-sensitive files you send to Yuno.
 
-\<Tabs>
-&#x20; \<Tab title="Sandbox">
-&#x20;   Email: \[security-migrations\@y.uno]\(mailto:security-migrations\@y.uno)
+<Tabs>
+  <Tab title="Sandbox">
+    Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
 
-&#x20;   Comment: For encrypting sensitive data. Environment: sandbox
+    Comment: For encrypting sensitive data. Environment: sandbox
 
-&#x20;   Created: 22 Nov 2024
+    Created: 22 Nov 2024
 
-&#x20;   Expires: 22 Nov 2026
+    Expires: 22 Nov 2026
 
-&#x20;   Key ID: B342E3D3
+    Key ID: B342E3D3
 
-&#x20;   Length: 4096
+    Length: 4096
 
-&#x20;   Algorithm: RSA
+    Algorithm: RSA
 
-&#x20;   Fingerprint: 2B37 55FA 426A B1D0 2061 4C6C 919C 4D81 B342 E3D3
+    Fingerprint: 2B37 55FA 426A B1D0 2061 4C6C 919C 4D81 B342 E3D3
 
-&#x20;   \<Shelf classname="cards\_container">
-&#x20;     \<div class="first\_row">
-&#x20;       \<YunoCard type="pgp-key" title="Public PGP Key" href="https\://yuno-public-keys.prod.y.uno/generic-pgp-keys\_public\_key\_sandbox.asc">
-&#x20;         Download the public PGP key for encrypting sensitive data in the sandbox environment.
-&#x20;       \</YunoCard>
-&#x20;     \</div>
-&#x20;   \</Shelf>
+    <Shelf classname="cards_container">
+      <div class="first_row">
+        <YunoCard type="pgp-key" title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_sandbox.asc">
+          Download the public PGP key for encrypting sensitive data in the sandbox environment.
+        </YunoCard>
+      </div>
+    </Shelf>
+  </Tab>
 
-&#x20; \<Tab title="Production">
-&#x20;   Email: \[security-migrations\@y.uno]\(mailto:security-migrations\@y.uno)
+  <Tab title="Production">
+    Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
 
-&#x20;   Comment: For encrypting sensitive data. Environment: production
+    Comment: For encrypting sensitive data. Environment: production
 
-&#x20;   Created: 22 Nov 2024
+    Created: 22 Nov 2024
 
-&#x20;   Expires: 22 Nov 2026
+    Expires: 22 Nov 2026
 
-&#x20;   Key ID: 73D3D88A
+    Key ID: 73D3D88A
 
-&#x20;   Length: 4096
+    Length: 4096
 
-&#x20;   Algorithm: RSA
+    Algorithm: RSA
 
-&#x20;   Fingerprint: 5160 7134 4C00 D270 93FB C450 19ED AACD 73D3 D88A
+    Fingerprint: 5160 7134 4C00 D270 93FB C450 19ED AACD 73D3 D88A
 
-&#x20;   \<Shelf classname="cards\_container">
-&#x20;     \<div class="first\_row">
-&#x20;       \<YunoCard type="sdk-integrations" title="Public PGP Key" href="https\://yuno-public-keys.prod.y.uno/generic-pgp-keys\_public\_key\_production.asc">
-&#x20;         Download the public PGP key for encrypting sensitive data in the production environment.
-&#x20;       \</YunoCard>
-&#x20;     \</div>
-&#x20;   \</Shelf>
-
-&#x20; \</Tab>
-\</Tabs>
+    <Shelf classname="cards_container">
+      <div class="first_row">
+        <YunoCard type="sdk-integrations" title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_production.asc">
+          Download the public PGP key for encrypting sensitive data in the production environment.
+        </YunoCard>
+      </div>
+    </Shelf>
+  </Tab>
+</Tabs>
