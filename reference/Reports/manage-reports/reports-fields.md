@@ -2997,44 +2997,38 @@ The fees report provides detailed information about all fees and charges applied
           <tr>
             <td><code>transaction_id</code></td>
             <td>string</td>
-            <td>Unique identifier for the transaction (MAX 64; MIN 36).</td>
-            <td>b04db1c6-b2c7-4765-a77e-953d284d080b</td>
+            <td>The unique identifier of the transaction assigned by Yuno (MAX 64; MIN 36).</td>
+            <td>2c5fdb3a-15e5-4f7b-93a7-c229e1688d91</td>
           </tr>
           <tr>
             <td><code>provider_transaction_id</code></td>
             <td>string</td>
-            <td>Transaction identifier from the provider (MAX 255; MIN 3).</td>
-            <td>T-51056-1e10f992-e5cf-40bf-9eb6-8edc881de30b</td>
+            <td>The unique identifier of the transaction assigned by the gateway. This field is empty if the gateway doesn't provide transaction information (MAX 255; MIN 3).</td>
+            <td>EDR3848FF094TY</td>
           </tr>
           <tr>
             <td><code>acquirer_type</code></td>
-            <td>enum</td>
-            <td>Type of acquirer that processed the transaction.</td>
-            <td>BANK</td>
+            <td>string</td>
+            <td>Name of the acquirer that processed the original payment. In aggregator models, the provider is the same as the acquirer. In other models, they may be different entities (MAX 255; MIN 3).</td>
+            <td>Sale</td>
           </tr>
           <tr>
             <td><code>acquirer_gross_amount</code></td>
-            <td>decimal</td>
-            <td>Gross amount processed by the acquirer (multiple of 0.0001).</td>
-            <td>1000.00</td>
-          </tr>
-          <tr>
-            <td><code>acquirer_real_amount</code></td>
-            <td>decimal</td>
-            <td>Real amount processed by the acquirer (multiple of 0.0001).</td>
-            <td>1000.00</td>
+            <td>string</td>
+            <td>The corresponding gross amount for all transactions in settlement currency (multiple of 0.0001).</td>
+            <td>1000</td>
           </tr>
           <tr>
             <td><code>acquirer_fees</code></td>
-            <td>decimal</td>
-            <td>Fees charged by the acquirer (multiple of 0.0001).</td>
-            <td>15.00</td>
+            <td>string</td>
+            <td>The commission fee that was withheld by the acquirer on transactions in settlement currency. This should be the difference between the gross and net amounts (multiple of 0.0001).</td>
+            <td>15</td>
           </tr>
           <tr>
             <td><code>acquirer_taxes</code></td>
-            <td>decimal</td>
-            <td>Taxes applied by the acquirer (multiple of 0.0001).</td>
-            <td>2.50</td>
+            <td>string</td>
+            <td>The value of taxes applied to the transactions in settlement currency. This should be the difference between the gross and net amounts (multiple of 0.0001).</td>
+            <td>5</td>
           </tr>
           <tr>
             <td><code>country</code></td>
@@ -3044,105 +3038,105 @@ The fees report provides detailed information about all fees and charges applied
           </tr>
           <tr>
             <td><code>type</code></td>
-            <td>enum</td>
-            <td>Type of transaction (e.g., PURCHASE, REFUND).</td>
+            <td>string</td>
+            <td>The transaction type. We display the types sent by the provider (MAX 255; MIN 3).</td>
             <td>PURCHASE</td>
           </tr>
           <tr>
             <td><code>gross_field</code></td>
-            <td>decimal</td>
-            <td>Gross field amount (multiple of 0.0001).</td>
-            <td>1000.00</td>
+            <td>string</td>
+            <td>Settlement column taken as the gross amount</td>
+            <td>gross_amount</td>
           </tr>
           <tr>
             <td><code>fix_cost</code></td>
             <td>decimal</td>
-            <td>Fixed cost applied to the transaction (multiple of 0.0001).</td>
-            <td>5.00</td>
+            <td>Fixed cost on the gross amount of each transaction</td>
+            <td>0</td>
           </tr>
           <tr>
             <td><code>percentage_cost</code></td>
             <td>decimal</td>
-            <td>Percentage cost applied to the transaction (multiple of 0.0001).</td>
-            <td>10.00</td>
+            <td>Percentage cost of the gross amount of each transaction</td>
+            <td>0.02</td>
           </tr>
           <tr>
             <td><code>calculated_fix_costed_fee</code></td>
             <td>decimal</td>
-            <td>Calculated fixed fee amount (multiple of 0.0001).</td>
-            <td>5.00</td>
+            <td>Fixed cost on calculated from the gross amount of each transaction</td>
+            <td>15</td>
           </tr>
           <tr>
             <td><code>calculated_percentage_cost</code></td>
             <td>decimal</td>
-            <td>Calculated percentage cost amount (multiple of 0.0001).</td>
-            <td>10.00</td>
+            <td>Percentage cost calculated from the gross amount</td>
+            <td>5</td>
           </tr>
           <tr>
             <td><code>acquirer_net_amount</code></td>
             <td>decimal</td>
-            <td>Net amount after acquirer fees and taxes (multiple of 0.0001).</td>
-            <td>982.50</td>
+            <td>The amount submitted in the credit transaction requests minus acquirer fees in settlement currency (multiple of 0.0001).</td>
+            <td>980</td>
           </tr>
           <tr>
             <td><code>calculated_net_amount</code></td>
             <td>decimal</td>
-            <td>Calculated net amount (multiple of 0.0001).</td>
-            <td>985.00</td>
+            <td>Net amount calculated using the merchant's information</td>
+            <td>980</td>
           </tr>
           <tr>
             <td><code>fee_taxes_diff</code></td>
             <td>decimal</td>
-            <td>Difference between fee taxes (multiple of 0.0001).</td>
-            <td>2.50</td>
+            <td>Difference between the acquirer's net_amount and the calculated amount</td>
+            <td>-5</td>
           </tr>
           <tr>
             <td><code>fee_status</code></td>
             <td>enum</td>
-            <td>Status of the fee (MAX 255; MIN 3).</td>
-            <td>APPLIED</td>
+            <td>Fees validation status</td>
+            <td>OK, ERROR</td>
           </tr>
           <tr>
             <td><code>fee_sub_status</code></td>
             <td>enum</td>
-            <td>Sub-status of the fee (MAX 255; MIN 3).</td>
-            <td>PROCESSED</td>
+            <td>Expected validation, over error, or under error</td>
+            <td>EXPECTED, ABOVE_EXPECTED, BELOW_EXPECTED</td>
           </tr>
           <tr>
             <td><code>acquirer</code></td>
-            <td>string</td>
-            <td>Name of the acquirer that processed the transaction (MAX 255; MIN 3).</td>
-            <td>Acquirer ABC</td>
+            <td>enum</td>
+            <td>Name of the acquirer that processed the original payment. In aggregator models, the provider is the same as the acquirer. In other models, they may be different entities (MAX 255; MIN 3).</td>
+            <td>ACQUIRER</td>
           </tr>
           <tr>
             <td><code>settlement_date</code></td>
             <td>date</td>
-            <td>Date when the transaction was settled.</td>
-            <td>2024-09-15</td>
+            <td>Estimated date by the acquirer when the funds will be deposited into the merchant's bank account.</td>
+            <td>2025-06-01</td>
           </tr>
           <tr>
             <td><code>currency</code></td>
             <td>enum</td>
-            <td>The currency used for the transaction (MAX 3; MIN 3; ISO 4217).</td>
+            <td>Currency code in which the transaction was made (MAX 3; MIN 3; ISO 4217).</td>
             <td>USD</td>
           </tr>
           <tr>
             <td><code>card_iin</code></td>
-            <td>string</td>
-            <td>Issuer Identification Number (IIN) for the card (first 6 digits).</td>
+            <td>number</td>
+            <td>The issuer identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution (MAX 8; MIN 8).</td>
             <td>123456</td>
           </tr>
           <tr>
             <td><code>card_lfd</code></td>
             <td>number</td>
-            <td>Last four digits of the card number.</td>
-            <td>7890</td>
+            <td>Last four digits of the card (MAX 4; MIN 4).</td>
+            <td>1234</td>
           </tr>
           <tr>
             <td><code>authorization_code</code></td>
-            <td>string</td>
-            <td>Authorization code for the transaction (MAX 6; MIN 6).</td>
-            <td>161058</td>
+            <td>number</td>
+            <td>In case of a card transaction, the code assigned by the issuing bank to the transaction when it is authorized. This field is empty if the gateway doesn't provide transaction information (MAX 255; MIN 3).</td>
+            <td>123456</td>
           </tr>
         </tbody>
       </table>
@@ -3187,68 +3181,68 @@ The agenda report provides detailed information about scheduled and planned tran
           <tr>
             <td><code>ur_key</code></td>
             <td>string</td>
-            <td>Unique reference key for the agenda item.</td>
-            <td>UR123456789</td>
+            <td>A combination of fields that uniquely identifies each payment across all stages of the payment flow.</td>
+            <td>01027058000191128882410001062025-09-01001720022892819614128882410001060000000000000000000</td>
           </tr>
           <tr>
             <td><code>country</code></td>
             <td>enum</td>
-            <td>Country where the transaction occurred (MAX 2; MIN 2; ISO 3166-1).</td>
+            <td>Country of the merchant account (ISO 3166-1).</td>
             <td>US</td>
           </tr>
           <tr>
             <td><code>type_transaction</code></td>
             <td>enum</td>
-            <td>Type of transaction (e.g., PURCHASE, REFUND).</td>
+            <td>The type of transaction. Values could be: VENTA, DEVOLUCION, CONTRACARGO, DISPUTA, COMISION, IMPUESTO, LIQUIDACION.</td>
             <td>PURCHASE</td>
           </tr>
           <tr>
             <td><code>payment_method_category</code></td>
             <td>enum</td>
-            <td>Category of the payment method (CARD, BANK_TRANSFER, etc.).</td>
-            <td>CARD</td>
+            <td>Category of the transaction (MAX 255; MIN 3).</td>
+            <td>BANK_TRANSFER</td>
           </tr>
           <tr>
             <td><code>payment_method_type</code></td>
             <td>enum</td>
-            <td>Type of payment method (CARD, BANK_TRANSFER, etc.).</td>
-            <td>CARD</td>
+            <td>The type of payment method selected by the customer (MAX 255; MIN 3).</td>
+            <td>BANKABC_TRANSFER</td>
           </tr>
           <tr>
             <td><code>provider_id</code></td>
-            <td>string</td>
-            <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
+            <td>enum</td>
+            <td>Identification of the provider (MAX 255; MIN 3) - - Options: WOMPI, SPINPAY, ADDI, MERCADO_PAGO</td>
             <td>PROVIDER ID</td>
           </tr>
           <tr>
             <td><code>customer_id</code></td>
             <td>string</td>
-            <td>Unique identifier for the customer (MAX 64; MIN 36).</td>
-            <td>f4c53557-a832-44e9-94e4-0344f91e9d4f</td>
+            <td>The unique identifier of the customer (MAX 255; MIN 3).</td>
+            <td>23456</td>
           </tr>
           <tr>
             <td><code>payment_id</code></td>
             <td>string</td>
-            <td>Unique identifier for the payment (MAX 64; MIN 36).</td>
-            <td>49b08cf9-c577-4451-a673-2dc1ae930200</td>
+            <td>The unique identifier of the payment (MAX 64; MIN 36).</td>
+            <td>5104911d-5df9-229e-8468-bd41abea1</td>
           </tr>
           <tr>
             <td><code>merchant_order_id</code></td>
             <td>string</td>
-            <td>Merchant's order identifier (MAX 64; MIN 36).</td>
-            <td>NC2-66e224a53fb722eaa0507579</td>
+            <td>Identification of the Order (MAX 255; MIN 3).</td>
+            <td>123456789</td>
           </tr>
           <tr>
             <td><code>merchant_transaction_id</code></td>
             <td>string</td>
-            <td>Merchant's transaction identifier (MAX 64; MIN 36).</td>
-            <td>NC2-66e224a53fb722eaa0507579</td>
+            <td>Identification of the transaction assigned by your company (MAX 255; MIN 3).</td>
+            <td>987654321</td>
           </tr>
           <tr>
             <td><code>transaction_id</code></td>
             <td>string</td>
-            <td>Unique identifier for the transaction (MAX 64; MIN 36).</td>
-            <td>b04db1c6-b2c7-4765-a77e-953d284d080b</td>
+            <td>The unique identifier of the transaction assigned by Yuno (MAX 64; MIN 36).</td>
+            <td>9104911d-5df9-429e-8488-ad41abea1a4b</td>
           </tr>
           <tr>
             <td><code>provider_transaction_id</code></td>
@@ -3479,85 +3473,217 @@ The sales conciliation report provides detailed information about sales transact
           <tr>
             <td><code>transaction_id</code></td>
             <td>string</td>
-            <td>Unique identifier for the transaction (MAX 64; MIN 36).</td>
-            <td>b04db1c6-b2c7-4765-a77e-953d284d080b</td>
+            <td>The unique identifier of the transaction assigned by Yuno (MAX 64; MIN 36).</td>
+            <td>9104911d-5df9-429e-8488-ad41abea1a4b</td>
           </tr>
           <tr>
             <td><code>payment_method_category</code></td>
             <td>enum</td>
-            <td>Category of the payment method (CARD, BANK_TRANSFER, etc.).</td>
-            <td>CARD</td>
+            <td>Category of the transaction (MAX 255; MIN 3).</td>
+            <td>BANK_TRANSFER</td>
           </tr>
           <tr>
             <td><code>type</code></td>
             <td>enum</td>
-            <td>Type of transaction (e.g., PURCHASE, REFUND).</td>
+            <td>The type of transaction. Values could be: VENTA, DEVOLUCION, CONTRACARGO, DISPUTA, COMISION, IMPUESTO, LIQUIDACION.</td>
             <td>PURCHASE</td>
           </tr>
           <tr>
             <td><code>payment_method_type</code></td>
             <td>enum</td>
-            <td>Type of payment method (CARD, BANK_TRANSFER, etc.).</td>
-            <td>CARD</td>
+            <td>The type of payment method selected by the customer (MAX 255; MIN 3).</td>
+            <td>BANKABC_TRANSFER</td>
           </tr>
           <tr>
             <td><code>provider_id</code></td>
-            <td>string</td>
-            <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
+            <td>enum</td>
+            <td>Identification of the provider (MAX 255; MIN 3) - - Options: WOMPI, SPINPAY, ADDI, MERCADO_PAGO</td>
             <td>PROVIDER ID</td>
           </tr>
           <tr>
             <td><code>status</code></td>
-            <td>enum</td>
-            <td>Status of the transaction (MAX 50; MIN 2).</td>
-            <td>PAID</td>
+            <td>string</td>
+            <td>The status of the transaction (MAX 255; MIN 3).</td>
+            <td>SUCCEEDED</td>
           </tr>
           <tr>
             <td><code>response_code</code></td>
             <td>string</td>
-            <td>Response code from the system (MAX 255; MIN 3).</td>
-            <td>200</td>
+            <td>The code that represents the response to the outcome of the transaction.</td>
+            <td>SUCCEEDED</td>
           </tr>
           <tr>
             <td><code>amount</code></td>
             <td>number</td>
-            <td>Amount of the transaction (MAX 10000; MIN 0).</td>
-            <td>887</td>
+            <td>The amount of the transaction.</td>
+            <td>100</td>
           </tr>
           <tr>
             <td><code>created_at</code></td>
             <td>timestamp</td>
-            <td>Timestamp when the transaction was created (ISO 8601).</td>
-            <td>2024-09-11T23:16:06.602Z</td>
+            <td>Transaction creation date (MAX 27; MIN 27; ISO 8601).</td>
+            <td>2022-05-09T20:46:54.786342Z</td>
           </tr>
           <tr>
             <td><code>updated_at</code></td>
             <td>timestamp</td>
-            <td>Timestamp when the transaction was last updated (ISO 8601).</td>
-            <td>2024-09-11T23:17:07.602Z</td>
+            <td>The date and time from the last time the transaction was updated.</td>
+            <td>2022-05-15T20:46:54.786342Z</td>
           </tr>
           <tr>
             <td><code>provider_status</code></td>
             <td>string</td>
-            <td>Status of the payment at the provider (MAX 255; MIN 3).</td>
-            <td>PAID</td>
+            <td>The transaction status from the provider (MAX 255; MIN 3).</td>
+            <td>Authorised</td>
           </tr>
           <tr>
             <td><code>merchant_transaction_id</code></td>
             <td>string</td>
-            <td>Merchant's transaction identifier (MAX 64; MIN 36).</td>
-            <td>NC2-66e224a53fb722eaa0507579</td>
+            <td>Identification of the transaction assigned by your company (MAX 255; MIN 3).</td>
+            <td>987654321</td>
           </tr>
           <tr>
             <td><code>provider_transaction_id</code></td>
             <td>string</td>
-            <td>Transaction identifier from the provider (MAX 255; MIN 3).</td>
-            <td>T-51056-1e10f992-e5cf-40bf-9eb6-8edc881de30b</td>
+            <td>The unique identifier of the transaction assigned by the gateway, This field is empty if the gateway doesn't provide transaction information (MAX 255; MIN 3).</td>
+            <td>53443e9c-dd17-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>country</code></td>
+            <td>enum</td>
+            <td>Country of the merchant account (ISO 3166-1).</td>
+            <td>US</td>
+          </tr>
+          <tr>
+            <td><code>customer_id</code></td>
+            <td>string</td>
+            <td>The unique identifier of the customer (MAX 255; MIN 3).</td>
+            <td>23456</td>
+          </tr>
+          <tr>
+            <td><code>description</code></td>
+            <td>string</td>
+            <td>Description of the transaction (MAX 255; MIN 3).</td>
+            <td>Merchant Ecommerce</td>
+          </tr>
+          <tr>
+            <td><code>merchant_order_id</code></td>
+            <td>string</td>
+            <td>Identification of the Order (MAX 255; MIN 3).</td>
+            <td>123456789</td>
+          </tr>
+          <tr>
+            <td><code>payment_id</code></td>
+            <td>string</td>
+            <td>The unique identifier of the payment (MAX 64; MIN 36).</td>
+            <td>5104911d-5df9-229e-8468-bd41abea1</td>
+          </tr>
+          <tr>
+            <td><code>currency</code></td>
+            <td>enum</td>
+            <td>The currency used to make the payment (MAX 3; MIN 3; ISO 4217).</td>
+            <td>COP</td>
+          </tr>
+          <tr>
+            <td><code>card_issuer_name</code></td>
+            <td>enum</td>
+            <td>Bank to which the card corresponds.</td>
+            <td>Bank ABC</td>
+          </tr>
+          <tr>
+            <td><code>card_issuer_country</code></td>
+            <td>enum</td>
+            <td>Country in which settlement was made (MAX 2; MIN 2).</td>
+            <td>UY</td>
+          </tr>
+          <tr>
+            <td><code>card_category</code></td>
+            <td>enum</td>
+            <td>Category of the card used in the transaction (MAX 255; MIN 3).</td>
+            <td>CLASSIC</td>
+          </tr>
+          <tr>
+            <td><code>card_expiration_month</code></td>
+            <td>number</td>
+            <td>Card expiration month (MAX 2; MIN 1).</td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <td><code>card_expiration_year</code></td>
+            <td>number</td>
+            <td>Card expiration year (MAX 2; MIN 2).</td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <td><code>pnr</code></td>
+            <td>string</td>
+            <td>The passenger name record (MAX 255; MIN 3).</td>
+            <td>1P-2UUGJW</td>
+          </tr>
+          <tr>
+            <td><code>retrieval_reference_number</code></td>
+            <td>string</td>
+            <td>Unique reference number for transaction retrieval (MAX 255; MIN 3).</td>
+            <td>CAQMCAQRisS2iL</td>
+          </tr>
+          <tr>
+            <td><code>card_iin</code></td>
+            <td>number</td>
+            <td>The issuer identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution (MAX 8; MIN 8).</td>
+            <td>123456</td>
+          </tr>
+          <tr>
+            <td><code>card_lfd</code></td>
+            <td>number</td>
+            <td>Last four digits of the card (MAX 4; MIN 4).</td>
+            <td>7890</td>
+          </tr>
+          <tr>
+            <td><code>authorization_code</code></td>
+            <td>string</td>
+            <td>In case of a card transaction, code assigned by the issuing bank to the transaction when it is authorized.This field is empty if the gateway doesn't provide transaction information(MAX 255; MIN 3).</td>
+            <td>742A64</td>
+          </tr>
+          <tr>
+            <td><code>installments</code></td>
+            <td>number</td>
+            <td>In case of card transaction, the number of installments in which the payment was requested (MAX 2; MIN 1).</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td><code>card_type</code></td>
+            <td>string</td>
+            <td>Type of card used in the transaction (MAX 7; MIN 5).</td>
+            <td>CREDIT</td>
+          </tr>
+          <tr>
+            <td><code>card_brand</code></td>
+            <td>string</td>
+            <td>Brand of the card used in the transaction (MAX 255; MIN 3).</td>
+            <td>VISA</td>
+          </tr>
+          <tr>
+            <td><code>provider_card_brand</code></td>
+            <td>string</td>
+            <td>The payment method or card brand (MAX 255; MIN 3).</td>
+            <td>ABC</td>
+          </tr>
+          <tr>
+            <td><code>confirmation_status</code></td>
+            <td>enum</td>
+            <td>Flag that indicates whether the transaction is also registered in Yuno or not</td>
+            <td>CONFIRMED</td>
+          </tr>
+          <tr>
+            <td><code>provider_confirmation_date</code></td>
+            <td>string</td>
+            <td>Date on which we have confirmed the presence of the transaction in Yuno</td>
+            <td>2025-05-10</td>
           </tr>
           <tr>
             <td><code>acquirer</code></td>
             <td>string</td>
-            <td>Name of the acquirer that processed the transaction (MAX 255; MIN 3).</td>
+            <td>Name of the acquirer that processed the original payment. In aggregator models, the provider is the same as the acquirer, in other models they may be different entities (MAX 255; MIN 3).</td>
             <td>Acquirer ABC</td>
           </tr>
         </tbody>
@@ -3719,12 +3845,6 @@ The advancements report provides detailed information about all advancement oper
             <td>enum</td>
             <td>Country where the advancement operation occurred (MAX 2; MIN 2; ISO 3166-1).</td>
             <td>US</td>
-          </tr>
-          <tr>
-            <td><code>settlement_account</code></td>
-            <td>string</td>
-            <td>Settlement account details for the advancement operation (MAX 255; MIN 3).</td>
-            <td>SETTLE123456</td>
           </tr>
           <tr>
             <td><code>ur_currency</code></td>
