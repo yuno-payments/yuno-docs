@@ -31,6 +31,8 @@ metadata:
       <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_sandbox.asc" titleSize="h4" />
     </Shelf>
 
+    ***
+
     <Accordion title="Sandbox Key" icon="fa-info-circle">
       ```Bash
 
@@ -124,6 +126,8 @@ metadata:
     <Shelf classname="link_cards_container">
       <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_production.asc" titleSize="h4" />
     </Shelf>
+
+    ***
 
     <Accordion title="My Accordion Title" icon="fa-info-circle">
       ```Bash
