@@ -9,10 +9,6 @@ metadata:
     generation of a new token for each card.
   robots: index
 ---
-### PGP public key
-
-Use our public key to encrypt the PCI-sensitive files you send to Yuno.
-
 <Tabs>
   <Tab title="Sandbox">
     Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
@@ -131,6 +127,7 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
 
     <Accordion title="My Accordion Title" icon="fa-info-circle">
       ```Bash
+
          -----BEGIN PGP PUBLIC KEY BLOCK-----
 
          xsFNBGdAg2sBEAC4NW7xG06SGZcNCFVXreQsW8l3YGdcNo4y2ks0MZw8B1k6BwMJ
