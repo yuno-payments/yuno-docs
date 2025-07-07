@@ -245,6 +245,10 @@ The following table presents all the protocol requirements you have to provide a
 >
 > You can call `yunoCreatePayment` with or without the `information` parameter based on your needs. However, use only one version in your code, as calling both is not required and may cause issues.
 
+> 🚧 Swift 6 Concurrency Requirements
+>
+> If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoDelegate` with Swift 6 Concurrency](#implementing-yunodelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
+
 ## Step 4: Add the SDK view to the checkout
 
 After calling the `startCheckout()` function, your view needs to adopt the `YunoPaymentFullDelegate` protocol. This allows your app to respond to payment-related actions, such as when the user selects a payment method.
@@ -841,13 +845,19 @@ The primary benefit of using the new method is the detailed control it provides 
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
 
-## Swift 6 concurrency - YunoDelegate implementation
+## Implementing `YunoDelegate` with Swift 6 Concurrency
 
 Swift 6 introduces stricter concurrency requirements that affect how you implement the `YunoPaymentDelegate` protocol. This section explains the challenges and provides solutions for different implementation scenarios.
+
+> 📘 Understanding Concurrency in Swift 6
+>
+> Concurrency is the ability of your app to manage multiple tasks simultaneously. With Swift 6, concurrency rules have become more stringent to enhance app stability and prevent crashes. This means that your code must be more carefully structured to ensure thread safety and proper task management.
 
 ### The problem
 
 With Swift 6, protocols that inherit from `Sendable` require all their implementations to be thread-safe. This generates warnings when implementing the delegate in classes marked as `@MainActor`.
+
+Thread-safe means your code can be safely called from multiple threads without causing crashes or unexpected behavior. `@MainActor` ensures code runs on the main thread (UI thread).
 
 ### Our design decision
 
@@ -863,7 +873,7 @@ It's the merchant's responsibility to handle concurrency according to their impl
 
 #### Option 1: Immutable properties
 
-This approach uses immutable properties that are automatically thread-safe, making them ideal for simple configurations.
+This approach uses immutable properties that are automatically thread-safe, making them ideal for simple configurations. It is best suited for simple apps with fixed configuration values that don't change during runtime.
 
 ```swift
 @MainActor
@@ -887,7 +897,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 
 #### Option 2: Mutable properties with MainActor.assumeIsolated
 
-This approach allows for mutable properties while maintaining thread safety by using `MainActor.assumeIsolated`.
+This approach, best for apps where configuration values might change during runtime (like user preferences), allows for mutable properties while maintaining thread safety by using `MainActor.assumeIsolated`.
 
 ```swift
 @MainActor
@@ -909,7 +919,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 
 #### Option 3: For non-MainActor classes
 
-This approach is suitable for service classes that don't require MainActor isolation.
+This approach is suitable for service classes that don't require MainActor isolation, making it best for background services or utility classes that don't interact with the UI.
 
 ```swift
 class MyService: YunoPaymentDelegate {
@@ -937,6 +947,6 @@ class MyService: YunoPaymentDelegate {
 
 When implementing concurrency in your delegate, keep these key points in mind:
 
-* **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor
-* **nonisolated**: Means it can be accessed from any thread, must be thread-safe
-* **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread
+* **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
+* **nonisolated**: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
+* **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
