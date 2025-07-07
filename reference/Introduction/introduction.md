@@ -17,8 +17,6 @@ The Yuno API has been implemented around RESTful. Our API uses standard HTTP pro
 
 ## Environment
 
-<hr />
-
 You can interact with the Yuno API using the following environments: Sandbox and Production.
 
 ### Sandbox
@@ -39,42 +37,11 @@ This is the environment where real events occur, affecting accounting and metric
 https://api.y.uno
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Processing time</h3>
-      <div class="contentContainer">
-        <p>
-          The processing time for each request varies depending on the processor/acquirer executing the transaction.
-          <br>
-          The total processing time is the sum of Yuno's and the processor/acquirer's processing time.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Processing Time
+>
+> The processing time for each request varies depending on the processor/acquirer executing the transaction. The total processing time is the sum of Yuno's and the processor/acquirer's processing time.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Timeout</h3>
-      <div class="contentContainer">
-        <p>
-          Yuno uses a timeout value of 60 seconds for all endpoints. Therefore, the total time available for a request to be processed and answered by our APIs is 60 seconds.
-        </p>
-        <p>
-          The timeout value of 60 seconds is used to cover all cases from the processor/acquirer since their response time varies.
-        </p>
-        <p>
-          <b>Important</b>: The response time will usually be a fraction of the timeout.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+
+> 🚧 Timeout
+>
+> Yuno uses a timeout value of 60 seconds for all endpoints. Therefore, the total time available for a request to be processed and answered by our APIs is 60 seconds. The timeout value of 60 seconds is used to cover all cases from the processor/acquirer since their response time varies. **Important**: The response time will usually be a fraction of the timeout.

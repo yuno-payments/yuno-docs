@@ -31,21 +31,10 @@ curl --request <Method> \
      --header 'public-api-key: <Your public-api-key>'
 ```
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <h3>Keep your keys safe</h3>
-      <div class="contentContainer">
-        <p>
-					Do not share your secret API keys in public places like Github, Bitbucket, etc., because this opens space for malicious API calls.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Keep Your Keys Safe
+>
+> Do not share your secret API keys in public places like Github, Bitbucket, etc., because this opens space for malicious API calls.
+
 
 ## Idempotency
 
@@ -55,21 +44,10 @@ It is essential for idempotency to pass a nonce to the required API request. The
 
 The `X-Idempotency-Key` of a transaction and the status returned for making that order are both stored by Yuno's idempotency system. To ensure that requests made within 24 hours of establishing the first order are not created twice, we save this data regardless of the outcome of this transaction (caught, authorized, or failed). As a result, responses to requests received with the same key will consist of a single transaction.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <h3>Requests with the same key and different contents in the body</h3>
-      <div class="contentContainer">
-        <p>
-				It is crucial to stress that the API will only generate one request even if two requests are sent with the same key in the header and different contents in the body.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Requests with the Same Key
+>
+> It is crucial to stress that the API will only generate one request even if two requests are sent with the same key in the header and different contents in the body.
+
 
 In some circumstances, it's possible that some requests are sent at the same time. As a result, it is possible that the application receives a second request before it responds to the first one. When this happens, the second request will be met with the 409 code - Conflict, indicating that there is an open call for the same `X-Idempotency-Key`.
 
