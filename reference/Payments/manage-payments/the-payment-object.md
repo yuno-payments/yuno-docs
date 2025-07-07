@@ -3681,8 +3681,7 @@ This object represents the payment created after generating the checkout session
   </div> -->
 
   <details class="yuno">
-    <summary>
-      <strong><code>split_marketplace</code></strong> <small>array of objects</small>
+    <summary><strong><code>split_marketplace</code></strong> <small>array of objects</small>
       <br />
       <p>Split marketplace array of objects</p>
     </summary>
@@ -3703,51 +3702,31 @@ This object represents the payment created after generating the checkout session
         <br />Optional unique identifier for the split transaction.
       </p>
       <details class="yuno">
-        <summary>
-          <strong><code>amount</code></strong> <small>object</small>
+        <summary><strong><code>amount</code></strong> <small>object</small>
           <br />
           <p>Defines the amount of the split.</p>
         </summary>
         <div>
-          <details class="yuno">
-            <summary>
-              <strong><code>amount object</code></strong> <small>object</small>
-              <br />
-              <p>Specifies the amount object.</p>
-            </summary>
-            <div>
-              <p><strong><code>value</code></strong> <small>float</small>
-                <br />The split amount (multiple of 0.0001).
-              </p>
-              <p><strong><code>currency</code></strong> <small>string</small>
-                <br />The currency used to make the payment (MAX 3; MIN 3; ISO 4217).
-              </p>
-            </div>
-          </details>
+          <p><strong><code>value</code></strong> <small>float</small>
+            <br />The split amount (multiple of 0.0001).
+          </p>
+          <p><strong><code>currency</code></strong> <small>string</small>
+            <br />The currency used to make the payment (MAX 3; MIN 3; ISO 4217).
+          </p>
         </div>
       </details>
       <details class="yuno">
-        <summary>
-          <strong><code>liability</code></strong> <small>object</small>
+        <summary><strong><code>liability</code></strong> <small>object</small>
           <br />
           <p>Optional information regarding the recipient's liability for fees and chargebacks.</p>
         </summary>
         <div>
-          <details class="yuno">
-            <summary>
-              <strong><code>liability object</code></strong> <small>object</small>
-              <br />
-              <p>Specifies the liability object.</p>
-            </summary>
-            <div>
-              <p><strong><code>processing_fee</code></strong> <small>string</small>
-                <br />Indicates who will be charged the transaction fee.
-              </p>
-              <p><strong><code>chargebacks</code></strong> <small>boolean</small>
-                <br />The recipient is responsible in case of a chargeback.
-              </p>
-            </div>
-          </details>
+          <p><strong><code>processing_fee</code></strong> <small>string</small>
+            <br />Indicates who will be charged the transaction fee.
+          </p>
+          <p><strong><code>chargebacks</code></strong> <small>boolean</small>
+            <br />The recipient is responsible in case of a chargeback.
+          </p>
         </div>
       </details>
     </div>
