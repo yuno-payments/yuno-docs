@@ -11,21 +11,21 @@ metadata:
 ---
 <Tabs>
   <Tab title="Sandbox">
-    Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
+    **Email**: [security-migrations@y.uno](mailto:security-migrations@y.uno)
 
-    Comment: For encrypting sensitive data. Environment: sandbox
+    **Comment**: For encrypting sensitive data. Environment: sandbox
 
-    Created: 22 Nov 2024
+    **Created**: 22 Nov 2024
 
-    Expires: 22 Nov 2026
+    **Expires**: 22 Nov 2026
 
-    Key ID: B342E3D3
+    **Key ID**: B342E3D3
 
-    Length: 4096
+    **Length**: 4096
 
-    Algorithm: RSA
+    **Algorithm**: RSA
 
-    Fingerprint: 2B37 55FA 426A B1D0 2061 4C6C 919C 4D81 B342 E3D3
+    **Fingerprint**: 2B37 55FA 426A B1D0 2061 4C6C 919C 4D81 B342 E3D3
 
     <Shelf classname="link_cards_container">
       <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_sandbox.asc" titleSize="h4" />
@@ -100,26 +100,27 @@ metadata:
       JiRYUpjGug==
       =LuK0
       -----END PGP PUBLIC KEY BLOCK-----
+
       ```
     </Accordion>
   </Tab>
 
   <Tab title="Production">
-    Email: [security-migrations@y.uno](mailto:security-migrations@y.uno)
+    **Email**: [security-migrations@y.uno](mailto:security-migrations@y.uno)
 
-    Comment: For encrypting sensitive data. Environment: production
+    **Comment**: For encrypting sensitive data. Environment: production
 
-    Created: 22 Nov 2024
+    **Created**: 22 Nov 2024
 
-    Expires: 22 Nov 2026
+    **Expires**: 22 Nov 2026
 
-    Key ID: 73D3D88A
+    **Key ID**: 73D3D88A
 
-    Length: 4096
+    **Length**: 4096
 
-    Algorithm: RSA
+    **Algorithm**: RSA
 
-    Fingerprint: 5160 7134 4C00 D270 93FB C450 19ED AACD 73D3 D88A
+    **Fingerprint**: 5160 7134 4C00 D270 93FB C450 19ED AACD 73D3 D88A
 
     <Shelf classname="link_cards_container">
       <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_production.asc" titleSize="h4" />
@@ -194,7 +195,6 @@ metadata:
       sNugHSYrj1RUuA==
       =ik2s
       -----END PGP PUBLIC KEY BLOCK-----
-
 
       ```
     </Accordion>
