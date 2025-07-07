@@ -3681,7 +3681,7 @@ This object represents the payment created after generating the checkout session
     <div>
       <p><strong><code>recipient_id</code></strong> <small>string</small>
         <br />The unique identifier of the recipient in the Yuno system.
-        <br />You must provide the recipient_id (Yuno-generated) or the `provider_recipient_id (external provider's ID) when creating a payment.
+        <br />You must provide the recipient_id (Yuno-generated) or the 'provider_recipient_id' (external provider's ID) when creating a payment.
       </p>
       <p><strong><code>provider_recipient_id</code></strong> <small>string</small>
         <br />The recipient ID provided by the external payment provider, if applicable.
