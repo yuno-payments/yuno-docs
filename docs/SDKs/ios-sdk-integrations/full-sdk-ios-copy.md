@@ -1,7 +1,7 @@
 ---
-title: Full SDK (iOS) (COPY)
+title: Full SDK (iOS) [Add Swift 6 concurrency note]
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Full SDK
   description: >-
