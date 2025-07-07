@@ -23,24 +23,11 @@ Check the [Available payment methods in Yuno](ref:payment-type-list). You'll nee
 
 Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](ref:authentication#idempotency) page for more information.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Webhooks</h3>
-      <div class="contentContainer">
-        <p>
-					 We recommend listening to 
-          <a href="https://docs.y.uno/docs/configure-webhooks">Webhooks</a>
-          to stay up to date to the state of the enrolled payment methods of your customers.
-        </p>
-  </div>  
-</div>  
-</div>  
-</body>
-`}</HTMLBlock>
+> 📘 Webhooks
+>
+> We recommend listening to [Webhooks](https://docs.y.uno/docs/configure-webhooks) to stay up to date with the state of the enrolled payment methods of your customers.
 
+  
 In case a customer enrolls the same card twice but with new expiration date or cardholder info, we will unenroll the previously enrolled card and keep the new one.
 
 > 🚧 Only available for PCI certified merchants.
