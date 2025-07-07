@@ -845,7 +845,7 @@ The primary benefit of using the new method is the detailed control it provides 
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
 
-## Implementing `YunoDelegate` with Swift 6 Concurrency
+## Implementing `YunoPaymentDelegate` with Swift 6 Concurrency
 
 Swift 6 introduces stricter concurrency requirements that affect how you implement the `YunoPaymentDelegate` protocol. This section explains the challenges and provides solutions for different implementation scenarios.
 
