@@ -844,13 +844,16 @@ The primary benefit of using the new method is the detailed control it provides 
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
 
-## Swift 6 Concurrency - YunoDelegate Implementation
 
-### The Problem
+## Swift 6 concurrency - YunoDelegate implementation
 
-With Swift 6, protocols that inherit from Sendable require all their implementations to be thread-safe. This generates warnings when implementing the delegate in classes marked as `@MainActor`.
+Swift 6 introduces stricter concurrency requirements that affect how you implement the `YunoPaymentDelegate` protocol. This section explains the challenges and provides solutions for different implementation scenarios.
 
-### Our Design Decision
+### The problem
+
+With Swift 6, protocols that inherit from `Sendable` require all their implementations to be thread-safe. This generates warnings when implementing the delegate in classes marked as `@MainActor`.
+
+### Our design decision
 
 We do not mark protocols as `@MainActor` because:
 
@@ -858,11 +861,13 @@ We do not mark protocols as `@MainActor` because:
 * It would reduce flexibility for merchants who don't use MainActor
 * Each implementation has different concurrency needs
 
-### Merchant's Responsibility
+### Merchant's responsibility
 
-It's the merchant's responsibility to handle concurrency according to the implementation:
+It's the merchant's responsibility to handle concurrency according to their implementation. Below are three different approaches you can use depending on your specific needs.
 
-#### Option 1: Immutable Properties
+#### Option 1: Immutable properties
+
+This approach uses immutable properties that are automatically thread-safe, making them ideal for simple configurations.
 
 ```swift
 @MainActor
@@ -884,7 +889,9 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 }
 ```
 
-#### Option 2: Mutable Properties with MainActor.assumeIsolated
+#### Option 2: Mutable properties with MainActor.assumeIsolated
+
+This approach allows for mutable properties while maintaining thread safety by using `MainActor.assumeIsolated`.
 
 ```swift
 @MainActor
@@ -905,6 +912,8 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 ```
 
 #### Option 3: For non-MainActor classes
+
+This approach is suitable for service classes that don't require MainActor isolation.
 
 ```swift
 class MyService: YunoPaymentDelegate {
@@ -928,7 +937,9 @@ class MyService: YunoPaymentDelegate {
 }
 ```
 
-### ⚠️ Important Considerations
+### ⚠️ Important considerations
+
+When implementing concurrency in your delegate, keep these key points in mind:
 
 * **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor
 * **nonisolated**: Means it can be accessed from any thread, must be thread-safe
