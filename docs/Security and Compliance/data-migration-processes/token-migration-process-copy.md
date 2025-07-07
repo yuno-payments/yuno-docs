@@ -28,7 +28,7 @@ metadata:
     **Fingerprint**: 2B37 55FA 426A B1D0 2061 4C6C 919C 4D81 B342 E3D3
 
     <Shelf classname="link_cards_container">
-      <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_sandbox.asc" icon="download" titleSize="h4" />
+      <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_sandbox.asc" titleSize="h4" />
     </Shelf>
 
     ***
