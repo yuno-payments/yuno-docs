@@ -37,6 +37,7 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
 
     <Accordion title="Sandbox Key" icon="fa-info-circle">
       ```Bash
+
          -----BEGIN PGP PUBLIC KEY BLOCK-----
 
          xsFNBGdAg3ABEAC52pkHCiwyGZX+7zvEI7m2m3CmUohZ+uwNR3le/ozcbvPkTUln
@@ -102,6 +103,7 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
          JiRYUpjGug==
          =LuK0
          -----END PGP PUBLIC KEY BLOCK-----
+
       ```
     </Accordion>
   </Tab>
@@ -194,6 +196,7 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
          sNugHSYrj1RUuA==
          =ik2s
          -----END PGP PUBLIC KEY BLOCK-----
+
       ```
     </Accordion>
   </Tab>
