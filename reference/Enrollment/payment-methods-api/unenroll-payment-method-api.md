@@ -18,15 +18,6 @@ next:
 ---
 Unenroll a saved payment method for the user. Once you've done the POST to the unenrollment endpoint, the payment method status will be changed to UNENROLLED.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>      
-    <div class="contentContainer">
-      <p>
-        To unenroll the payment method, you need to provide the <code>payment_method_id</code>, which is the <code>vaulted_token</code> received when using the <a href="/reference/enroll-payment-method-api">Enroll Payment Method</a> endpoint.
-      </p>
-    </div>  
-  </div>  
-</div>  
-`}</HTMLBlock>
+> 📘 Unenrollment Information
+>
+> To unenroll the payment method, you need to provide the `payment_method_id`, which is the `vaulted_token` received when using the [Enroll Payment Method](#enroll-payment-method-api) endpoint.
