@@ -1458,7 +1458,6 @@ This object represents the payment created after generating the checkout session
               </p>
             </div>
           </details>
-
           <details class="yuno">
             <summary>
               <strong><code>tickets</code></strong> <small>array of objects</small>
