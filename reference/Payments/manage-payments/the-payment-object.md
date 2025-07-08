@@ -3744,88 +3744,72 @@ This object represents the payment created after generating the checkout session
       <p>Specifies the transportations array of objects.</p>
     </summary>
     <div>
+      <p><strong><code>id</code></strong> <small>string</small>
+        <br />The id of the transportation booking (MAX 255; MIN 1).
+      </p>
+      <p><strong><code>description</code></strong> <small>string</small>
+        <br />The description of the transportation booking (MAX 255; MIN 1).
+      </p>
+      <p><strong><code>type</code></strong> <small>string</small>
+        <br />The type of transportation booking.
+      </p>
       <details class="yuno">
-        <summary><strong><code>transportation object</code></strong> <small>object</small>
+        <summary><strong><code>legs</code></strong> <small>array of objects</small>
           <br />
-          <p>Details of a transportation booking.</p>
+          <p>Specifies the legs array of objects.</p>
         </summary>
         <div>
-          <p><strong><code>id</code></strong> <small>string</small>
-            <br />The id of the transportation booking (MAX 255; MIN 1).
+          <p><strong><code>order</code></strong> <small>integer</small>
+            <br />A running index (starts with 1), describing the order of legs in the same route.
           </p>
-          <p><strong><code>description</code></strong> <small>string</small>
-            <br />The description of the transportation booking (MAX 255; MIN 1).
+          <p><strong><code>route_order</code></strong> <small>integer</small>
+            <br />A running index (starts with 1), describing the order of routes by time.
           </p>
-          <p><strong><code>type</code></strong> <small>string</small>
-            <br />The type of transportation booking.
+          <p><strong><code>departure_country</code></strong> <small>string</small>
+            <br />Country of the departure (MAX 2; MIN 2; ISO 3166-1).
+          </p>
+          <p><strong><code>departure_city</code></strong> <small>string</small>
+            <br />The city of the departure (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>departure_timezone</code></strong> <small>string</small>
+            <br />Departure timezone (MAX 6; MIN 6).
+          </p>
+          <p><strong><code>departure_datetime</code></strong> <small>string</small>
+            <br />The departure date and time in local time at the departure.
+          </p>
+          <p><strong><code>departure_reference</code></strong> <small>string</small>
+            <br />The reference of the departure (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>arrival_country</code></strong> <small>string</small>
+            <br />Country of the arrival (MAX 2; MIN 2; ISO 3166-1).
+          </p>
+          <p><strong><code>arrival_city</code></strong> <small>string</small>
+            <br />The city of the arrival (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>arrival_timezone</code></strong> <small>string</small>
+            <br />Arrival timezone (MAX 6; MIN 6).
+          </p>
+          <p><strong><code>arrival_datetime</code></strong> <small>string</small>
+            <br />The arrival date and time in local time at the arrival.
+          </p>
+          <p><strong><code>arrival_reference</code></strong> <small>string</small>
+            <br />The reference of the arrival (MAX 255; MIN 1).
           </p>
           <details class="yuno">
-            <summary><strong><code>legs</code></strong> <small>array of objects</small>
+            <summary><strong><code>transport</code></strong> <small>object</small>
               <br />
-              <p>Specifies the legs array of objects.</p>
+              <p>Specifies the transport object.</p>
             </summary>
             <div>
-              <details class="yuno">
-                <summary><strong><code>leg object</code></strong> <small>object</small>
-                  <br />
-                  <p>Details of a leg in the transportation booking.</p>
-                </summary>
-                <div>
-                  <p><strong><code>order</code></strong> <small>integer</small>
-                    <br />A running index (starts with 1), describing the order of legs in the same route.
-                  </p>
-                  <p><strong><code>route_order</code></strong> <small>integer</small>
-                    <br />A running index (starts with 1), describing the order of routes by time.
-                  </p>
-                  <p><strong><code>departure_country</code></strong> <small>string</small>
-                    <br />Country of the departure (MAX 2; MIN 2; ISO 3166-1).
-                  </p>
-                  <p><strong><code>departure_city</code></strong> <small>string</small>
-                    <br />The city of the departure (MAX 255; MIN 1).
-                  </p>
-                  <p><strong><code>departure_timezone</code></strong> <small>string</small>
-                    <br />Departure timezone (MAX 6; MIN 6).
-                  </p>
-                  <p><strong><code>departure_datetime</code></strong> <small>string</small>
-                    <br />The departure date and time in local time at the departure.
-                  </p>
-                  <p><strong><code>departure_reference</code></strong> <small>string</small>
-                    <br />The reference of the departure (MAX 255; MIN 1).
-                  </p>
-                  <p><strong><code>arrival_country</code></strong> <small>string</small>
-                    <br />Country of the arrival (MAX 2; MIN 2; ISO 3166-1).
-                  </p>
-                  <p><strong><code>arrival_city</code></strong> <small>string</small>
-                    <br />The city of the arrival (MAX 255; MIN 1).
-                  </p>
-                  <p><strong><code>arrival_timezone</code></strong> <small>string</small>
-                    <br />Arrival timezone (MAX 6; MIN 6).
-                  </p>
-                  <p><strong><code>arrival_datetime</code></strong> <small>string</small>
-                    <br />The arrival date and time in local time at the arrival.
-                  </p>
-                  <p><strong><code>arrival_reference</code></strong> <small>string</small>
-                    <br />The reference of the arrival (MAX 255; MIN 1).
-                  </p>
-                  <details class="yuno">
-                    <summary><strong><code>transport</code></strong> <small>object</small>
-                      <br />
-                      <p>Specifies the transport object.</p>
-                    </summary>
-                    <div>
-                      <p><strong><code>id</code></strong> <small>string</small>
-                        <br />The id of the transportation vehicle (MAX 255; MIN 1).
-                      </p>
-                      <p><strong><code>type</code></strong> <small>string</small>
-                        <br />The type of transportation vehicle.
-                      </p>
-                      <p><strong><code>description</code></strong> <small>string</small>
-                        <br />The description of the transportation vehicle (MAX 255; MIN 1).
-                      </p>
-                    </div>
-                  </details>
-                </div>
-              </details>
+              <p><strong><code>id</code></strong> <small>string</small>
+                <br />The id of the transportation vehicle (MAX 255; MIN 1).
+              </p>
+              <p><strong><code>type</code></strong> <small>string</small>
+                <br />The type of transportation vehicle.
+              </p>
+              <p><strong><code>description</code></strong> <small>string</small>
+                <br />The description of the transportation vehicle (MAX 255; MIN 1).
+              </p>
             </div>
           </details>
         </div>
