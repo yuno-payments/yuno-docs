@@ -1269,6 +1269,12 @@ This object represents the payment created after generating the checkout session
             <br />Passenger name record (MAX 10; MIN 1).
             <br /><small> Example: 1P-2UUGJW </small>
           </p>
+          <p><strong><code>type</code></strong> <small>enum</small>
+            <br />Type of trip.
+            <br /><small>Possible values: <code>ONE_WAY</code>, <code>ROUNDTRIP</code>, <code>MULTIPLE_DESTINATIONS</code></small>
+          </p>
+        </div>
+      </details>
           <details class="yuno">
             <summary>
               <strong><code>legs</code></strong> <small>array of object</small>
