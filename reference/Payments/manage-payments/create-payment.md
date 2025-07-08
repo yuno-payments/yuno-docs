@@ -15,37 +15,15 @@ next:
 ---
 This request creates a payment after you created a checkout session.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer alert">
-    <div class="verticalLineAlert"></div>
-    <div>
-      <h3>Important</h3>
-      <div class="contentContainer">
-        <p>
-				There are certain objects that are not mandatory when creating a "Payment". However, if you provide this information, the user’s payment experience will be enhanced. Be aware of the mandatory fields if you wish to provide this information.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> ❗️ Important
+>
+> There are certain objects that are not mandatory when creating a "Payment". However, if you provide this information, the user’s payment experience will be enhanced. Be aware of the mandatory fields if you wish to provide this information.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>3DS Payments</h3>
-      <div class="contentContainer">
-        <p>
-          To understand how 3D Secure payments work, check the <a href="https://docs.y.uno/docs/3d-secure">3D Secure</a> page to learn how to create payments using 3DS on Yuno.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+
+> 📘 3DS Payments
+>
+> To understand how 3D Secure payments work, check the [3D Secure](https://docs.y.uno/docs/3d-secure) page to learn how to create payments using 3DS on Yuno.
+
 
 If you want to process payments in a Single Step (Authorization and Capture simultaneously), you need to send the `payment_method.detail.card.capture` attribute as `true`, so the payment is captured automatically.
 

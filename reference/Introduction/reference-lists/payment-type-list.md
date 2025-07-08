@@ -15,21 +15,10 @@ next:
 ---
 On this page, you will find the payment method types available on the Yuno API. In addition, you have access to their categories and descriptions. You will use the payment method type and category for payment creation and enrollment. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>New Payment Methods</h3>
-      <div class="contentContainer">
-        <p>
-					Yuno is committed to continuously expanding the range of payment methods and processors available. As a result, this page is regularly updated to ensure you stay up-to-date with the latest additions.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 New Payment Methods
+>
+> Yuno is committed to continuously expanding the range of payment methods and processors available. As a result, this page is regularly updated to ensure you stay up-to-date with the latest additions.
+
 
 |     Payment\_method\_type    |                    Description                   | Payment\_method\_category |
 | :--------------------------: | :----------------------------------------------: | ------------------------- |
@@ -93,10 +82,4 @@ On this page, you will find the payment method types available on the Yuno API. 
 |            DLOCAL            | Payment link Payments - Multiple payment methods | PAYMENT\_LINK             |
 |           SAFETYPAY          | Payment link Payments - Multiple payment methods | PAYMENT\_LINK             |
 
-<HTMLBlock>{`
-<style>
-  table thead th, 
-  table tbody td{
-    text-align: left !important;
-</style>
-`}</HTMLBlock>
+
