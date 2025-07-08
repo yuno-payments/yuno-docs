@@ -10,43 +10,45 @@ metadata:
     discrepancies that have been discovered.
   robots: index
 ---
-Reconciliation is a crucial process for comparing your transactions with the settlement documents issued by different providers. It helps identify and resolve discrepancies, ensuring that all processed transactions are accurately settled.
 
-Yuno facilitates this by consuming settlement files from each provider. Our system then compares these intakes with the transactions processed by Yuno. This operational process verifies account balances with your acquirers, ensuring your records are consistent, up-to-date, and accurate.
 
-<Image align="center" src="https://files.readme.io/3f66c409f3e0afed83ab7829398e5d88abb6696e587d3b1e32909f496400ba91-Reconciliations.png" />
+Reconciliation is a fundamental process that ensures financial accuracy across your entire payment ecosystem. By comparing transactions processed through Yuno with the official settlement files issued by each provider, you can identify discrepancies, validate payment flows, and maintain full control over your revenue.
+
+Yuno automates this process end-to-end. We ingest settlement reports from all your payment providers and systematically match them against your transaction records. This enables you to verify balances with acquirers, confirm that every settlement aligns with your commercial agreements, and ensure that your financial data remains complete, accurate, and audit-ready.
+
+<Image align="center" src="https://files.readme.io/3f66c409f3e0afed83ab7829398e5d88abb6696e587d3b1e32909f496400ba91-Reconciliations.
+png" />
 
 ## Why reconciliation matters
 
-Discrepancies in payment processing are not uncommon. Factors like payment timing, deposits, and pending transactions can affect bank account results. The reconciliation process is vital for:
+Reconciling your payment data is a critical process to ensure that every transaction processed is correctly settled and accounted for. Misalignments between provider settlements and your transaction records can result in revenue leakage, compliance issues, or even fraud exposure.
 
-* **Detecting and preventing errors:** Identify and correct balance errors promptly
-* **Identifying fraud:** Uncover potentially fraudulent activities
-* **Tracking failed payments:** Monitor and manage transactions that have not completed successfully
+At Yuno, we streamline and automate this process by ingesting settlement files directly from your payment providers. Our system matches each settlement entry against the corresponding transaction processed through Yuno—ensuring consistency between your operational records and financial outcomes.
 
-The primary goals of reconciliation within Yuno are to:
+### Core benefits of reconciliation
 
-* Ensure you receive all payments from successful transactions processed by Yuno
-* Maintain compliance with the payment terms agreed upon with acquirers
-* Control acquisition processing costs effectively
-* Guarantee transactional integrity and accurate status representation in the Yuno dashboard
+* **Error detection & resolution:** Catch and correct mismatches before they impact your accounting.
+* **Fraud prevention:** Identify suspicious or unauthorized payment behavior.
+* **Operational visibility:** Gain clarity on pending, failed, or partially settled transactions.
+* **Cost control:** Ensure fees and deductions align with your negotiated commercial terms.
+* **Compliance assurance:** Maintain alignment with acquirer agreements and financial reporting standards.
 
-It's best to perform reconciliation as frequently as possible (ideally daily), but weekly or monthly reconciliation is also beneficial.
+Daily reconciliation is ideal, but even weekly or monthly reviews provide substantial value.
 
-## How Yuno facilitates reconciliation
+## How Yuno powers best-in-class reconciliation
 
-Yuno offers a comprehensive transaction reconciliation process designed to ensure accurate accreditation, adherence to payment terms, and control over processing costs. We manage the orchestration of all relevant data from Yuno, our partners, and your merchant systems to execute these conciliation processes efficiently.
+Yuno provides an end-to-end reconciliation infrastructure built to meet the needs of modern merchants. Our system orchestrates data across multiple sources—Yuno's own transaction engine, payment providers, and your internal systems—to ensure accurate matching, issue detection, and reporting at scale.
 
 ### Reconciliation status
 
 Transactions within Yuno can have several statuses related to the reconciliation process:
 
-| Reconciliation Status | Description                                                                                                                                                            |
-| :-------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RECONCILED            | The transaction was identified in a provider's settlement file and is confirmed to be credited to your bank account                                                    |
-| NON RECONCILABLE      | The transaction does not meet the criteria for reconciliation. It will not be processed further, and no additional action will be taken                                |
-| NOT RECONCILED        | The transaction is still pending identification in a settlement file. The sub-status will indicate if it remains within the expected payment term                      |
-| CONFLICT              | A counterpart for the transaction was found in the settlement file, but there's a discrepancy (e.g., in amount or currency) with the original record processed by Yuno |
+| Reconciliation Status | Description |
+| :-------------------- | :---------- |
+| RECONCILED | The transaction was identified in a provider's settlement file and is confirmed to be credited to your bank account |
+| NON RECONCILABLE | The transaction does not meet the criteria for reconciliation. It will not be processed further, and no additional action will be taken |
+| NOT RECONCILED | The transaction is still pending identification in a settlement file. The sub-status will indicate if it remains within the expected payment term |
+| CONFLICT | A counterpart for the transaction was found in the settlement file, but there's a discrepancy (e.g., in amount or currency) with the original record processed by Yuno |
 
 ### State machine
 
@@ -54,85 +56,78 @@ The following diagram illustrates the lifecycle of a transaction through the rec
 
 <Image align="center" src="https://files.readme.io/97f552819f904bc8f051368a96b35d3736028a84fce9fc4be65e08ef3811df5a-report_reconciliation3_1.png" />
 
-### Deliveries
+## Navigating the Reconciliations dashboard
 
-Yuno provides two key report types to support your reconciliation efforts:
+The Reconciliations section within the Yuno Dashboard is your command center for tracking and managing transaction matching. It's structured into intuitive tabs, each offering a specific view of the reconciliation lifecycle.
 
-* **Transaction reconciliation report**: These reports detail the reconciliation status, sub-status, and reconciliation ID for every transaction processed by Yuno
-* **Settlement report**: These reports contain all transactions included in each bank transfer made to your merchant account by the acquirer, enriched with reconciliation information
+### Universal features across Tabs:
 
-## Navigating the reconciliations dashboard
+* **Dynamic filters:** Filter by provider, account, country, date range, and more to refine your analysis.
+* **Custom exports:** Download filtered data sets with flexible column selection for offline reporting, BI integration, or audit support.
 
-The Reconciliations section in your Yuno dashboard provides a suite of tools to monitor and manage your transaction reconciliation. It is organized into several tabs, each offering specific views and functionalities.
+### Dashboard tabs
 
-**Common features: filters and exports**
+#### Overview
 
-Across many tabs in the Reconciliations section, you'll find powerful tools to refine and utilize your data:
+A high-level snapshot of your reconciliation performance:
 
-* **Filters:** Tabs feature an **Add filters** option. Common filter criteria include accounts, acquirer, country, date range, and providers, though specific options vary slightly depending on the tab. This allows you to narrow down the displayed information to focus on what's most relevant to your current task.
-* **Exports:** Several tabs include an **Export** button. This functionality allows you to download the currently displayed data for reporting, offline analysis, or use in other systems. Export options often include naming the report and choosing between default or custom column selections. For instance, in the Settlements tab, you might find options for **Quick export** or **Downloads** and the ability to specify if you want a summary header or only the detailed data.
+* **Reconciliation Rate - Transactions:** Track success trends over time.
+* **By Provider:** Assess provider-specific reconciliation performance.
+* **By Account:** Compare success rates across your merchant accounts.
+* **By Currency:** Understand currency-based discrepancies and volumes.
 
-Exploring reconciliations:
+#### Sales
 
-### Overview
+Review every transaction processed by Yuno, enriched with reconciliation indicators that show whether the provider has correctly reported them.
 
-The Overview tab provides a high-level summary of your reconciliation activities and key metrics. It displays several key charts and data points to give you an instant understanding of your reconciliation status.
+🔁 Yuno vs. Provider
 
-* **Reconciliation rate transactions:** This report provides a view of the overall success of your transaction reconciliation, illustrating trends over time
-* **Reconciliation rate by provider:** This report shows reconciliation performance for each payment provider, highlighting their success rates and transaction volumes
-* **Reconciliation rate by accounts:** This report details reconciliation success across your different merchant accounts, showing rates and transaction counts for each
-* **Reconciliation rate by currency:** This report tracks reconciliation effectiveness for each transaction currency, displaying success rates and volumes\
-  This tab supports data filtering as described in the "Common Features" section.
+#### Your transactions
 
-### Your transactions
+Analyze all processed transactions alongside their corresponding reconciliation status.
 
-This tab allows you to view a detailed list of your transactions. The main view displays columns such as status, sub-status, type, order ID, settlement transaction delay, transaction ID, and creation date. You can search for specific transactions and utilize the filtering and export functionalities.
+🔁 Yuno vs. Provider Settlement
 
-Clicking on an individual transaction in the list opens a "Transaction detail" view. This detailed view displays comprehensive information about the transaction, including:
+Clicking a transaction opens the Transaction Detail view for granular insights.
 
-* Payment ID
-* Transaction ID
-* Order ID
-* Creation date
-* Type (e.g., Authorize)
-* Payment method
-* Provider
-* Reconciliation date
-* Status (e.g., Not reconciled)
-* Sub-status (e.g., Pending)
-* Transaction amount and currency
+#### Agenda
 
-### Sales
+Forecast upcoming settlements based on credit, debit, and installment cycles. Understand which transactions have been processed but not yet settled.
 
-The Sales tab focuses on sales-related data within the reconciliation process. It presents a list of transactions with columns such as payment ID, payment method type, payment method category, merchant order ID, merchant transaction ID, transaction ID, provider transaction ID, transaction type, authorization code, and acquirer.
+📅 Upcoming Provider Settlements
 
-### Advancements
+#### Advancements
 
-The Advancements tab is designed for tracking and managing reconciliation related to advancements or financial operations. It displays a list of these operations with columns like UR key, operation ID, country, merchant ID, product ID, operation type, movement type, operation date, and operation settlement date.
+Monitor early fund disbursements made by providers based on expected settlements.
 
-### Settlements
+💸 Advanced Liquidity
 
-The Settlements tab helps you track and manage your settlement batches. Select **Settlement Batch ID** to reveal a dropdown list of other specific criteria to search by, including options like authorization code, card brand, card IIN, card IFD, card type, cost of installment rate, customer ID, fee rate, FX rate, gross credit, or gross currency. After selecting your desired search field from this list and entering your search term, the system will display the relevant settlement information. This tab also supports data export.
+#### Settlements
 
-### Agenda
+Track confirmed settlements, standardized to Yuno's unified format for cross-provider consistency.
 
-The Agenda tab provides insights into your expected settlements. Key features include:
+🔁 Provider Settlement vs. Yuno
 
-* A graph displaying the amount to be settled over time
-* Information on top payment methods and top card brands
+#### Fees
 
-This tab supports exporting.
+Validate the fees charged by providers by comparing them with your commercial agreements. Configure expected fees in the Connections section to automate this check.
 
-### Alerts
+🔁 Charged Fees vs. Agreed Fees
 
-The Alerts tab enables you to configure and manage notifications for specific reconciliation events.
+#### Alerts
 
-* You can view a list of existing alerts, showing details like name, alert type, description, creation date, last update date, provider, and country
-* You can create new alerts by clicking the "Create new alert" button. You can define:
+Stay proactively informed with configurable alerts for reconciliation events.
+
+From the Alerts tab, you can:
+
+* View existing alerts with detailed metadata (type, provider, country, etc.)
+* Create new alerts by defining:
   * The name and description for the alert
   * The alert type (e.g., missing settlements)
   * Conditions such as the provider, country, and transaction type (debit/credit)
   * Email addresses to receive the alert notifications
   * Accounts to apply the alert
 
-These tools in the Reconciliations section are designed to help you manage your payment settlements effectively, identify any issues quickly, and maintain accurate financial records.
+At Yuno, we believe reconciliation should be seamless, automated, and deeply insightful. Our tools are designed to empower finance, operations, and product teams to maintain unmatched accuracy and control over payment flows—no matter how complex your setup.
+
+Get started with Yuno's reconciliation tools today and ensure every cent is exactly where it should be.
