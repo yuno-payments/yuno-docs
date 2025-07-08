@@ -80,13 +80,13 @@ A high-level snapshot of your reconciliation performance:
 
 Review every transaction processed by Yuno, enriched with reconciliation indicators that show whether the provider has correctly reported them.
 
-🔁 Yuno vs. Provider
+Compare transaction records between Yuno and your providers to identify discrepancies.
 
 #### Your transactions
 
 Analyze all processed transactions alongside their corresponding reconciliation status.
 
-🔁 Yuno vs. Provider Settlement
+Cross-reference your Yuno transactions with provider settlement data to ensure complete accuracy.
 
 Clicking a transaction opens the Transaction Detail view for granular insights.
 
@@ -94,25 +94,25 @@ Clicking a transaction opens the Transaction Detail view for granular insights.
 
 Forecast upcoming settlements based on credit, debit, and installment cycles. Understand which transactions have been processed but not yet settled.
 
-📅 Upcoming Provider Settlements
+View your settlement calendar to track when providers will process pending transactions.
 
 #### Advancements
 
 Monitor early fund disbursements made by providers based on expected settlements.
 
-💸 Advanced Liquidity
+Track early funding opportunities and liquidity advances from your payment providers.
 
 #### Settlements
 
 Track confirmed settlements, standardized to Yuno's unified format for cross-provider consistency.
 
-🔁 Provider Settlement vs. Yuno
+Reconcile actual settlement batches against your transaction records for complete financial clarity.
 
 #### Fees
 
 Validate the fees charged by providers by comparing them with your commercial agreements. Configure expected fees in the Connections section to automate this check.
 
-🔁 Charged Fees vs. Agreed Fees
+Monitor fee discrepancies by comparing charged amounts against your negotiated commercial terms.
 
 #### Alerts
 
