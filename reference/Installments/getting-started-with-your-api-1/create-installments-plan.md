@@ -20,40 +20,14 @@ Yuno allows you to create installment plans to offer to your customers. These pl
 * **Specific Currency:** Only plans that work with the currency you are using are considered.
 * **Plan Availability:** The system checks if the installment plan is active. Only plans that have not expired and are available are considered.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Defining the Plan ID</h3>
-      <div class="contentContainer">
-        <p>
-					The <code>plan_id</code> is only necessary when applying a fixed installment plan that doesn't change during the purchase. If the <code>installment.plan_id</code> is not provided, the SDK will automatically search through all available installment plans associated with that account and select the one it considers most suitable. 
-				</p>
-        <p>
-					You should include the <code>plan_id</code> to ensure that a specific plan is applied.
-        </p>
-  </div>  
-</div>  
-</div>  
-</body>
-`}</HTMLBlock>
+> 📘 Defining the Plan ID
+>
+> The `plan_id` is only necessary when applying a fixed installment plan that doesn't change during the purchase. If the `installment.plan_id` is not provided, the SDK will automatically search through all available installment plans associated with that account and select the one it considers most suitable. You should include the `plan_id` to ensure that a specific plan is applied.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Merchants Installments</h3>
-      <div class="contentContainer">
-        <p>
-					This endpoint is only required for
-          <a href="https://docs.y.uno/docs/installments">Merchant installments integration</a>. For Provider defined installments, we use the installment plan define by your payment provider.
-        </p>
-  </div>  
-</div>  
-</div>  
-</body>
-`}</HTMLBlock>
+
+> 📘 Merchants Installments
+>
+> This endpoint is only required for [Merchant installments integration](https://docs.y.uno/docs/installments). For Provider defined installments, we use the installment plan defined by your payment provider.
+
 
 For merchant-created installments, you also have the possibility of specifying the plan for every checkout session by using the `plan_id` while [creating the session](ref:create-checkout-session). If you do not send it, we will use the installment plan that matches the conditions set for the checkout session.

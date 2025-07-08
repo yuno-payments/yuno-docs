@@ -18,20 +18,9 @@ This service allows you to cancel or refund an existing payment. Our system will
 * **Cancels** the payment if it has not been captured.
 * **Refunds** the payment if it has been captured.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Refunds</h3>
-      <div class="contentContainer">
-        <p>
-					If you fill out the amount field, the refund will be partial. Otherwise, it will create a complete refund. The funds will be refunded to the payment method that was originally charged.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Refunds
+>
+> If you fill out the amount field, the refund will be partial. Otherwise, it will create a complete refund. The funds will be refunded to the payment method that was originally charged.
+
 
 Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](ref:authentication#idempotency) page for more information.

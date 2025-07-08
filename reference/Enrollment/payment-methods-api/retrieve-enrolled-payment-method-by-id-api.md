@@ -15,15 +15,6 @@ next:
 ---
 Retrieve a specific payment method that a user has enrolled in.
 
-<HTMLBlock>{`
-<div class="infoBlockContainer">
-  <div class="verticalLine"></div>
-  <div>      
-    <div class="contentContainer">
-      <p>
-        To recover the enrolled payment method information, you need to provide the <code>payment_method_id</code>, which is the <code>vaulted_token</code> received when using the <a href="/reference/enroll-payment-method-api">Enroll Payment Method</a> endpoint.
-      </p>
-    </div>  
-  </div>  
-</div>  
-`}</HTMLBlock>
+> 📘 Retrieve Enrolled Payment Method
+>
+> To recover the enrolled payment method information, you need to provide the `payment_method_id`, which is the `vaulted_token` received when using the [Enroll Payment Method](#enroll-payment-method-api) endpoint.

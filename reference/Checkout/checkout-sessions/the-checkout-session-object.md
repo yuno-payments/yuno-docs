@@ -15,23 +15,11 @@ next:
 ---
 This object represents a checkout session that can be created to make a payment. You can Create a Checkout Session using the id generated when the Customer resource was created.
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <h3>Notes</h3>
-      <div class="contentContainer">
-        <ul>
-          <li>Create a checkout session is only required for flow <b>SDK_CHECKOUT</b></li>
-          <li>Only one payment is supported per each checkout session</li>
-          <li>The checkout session expires 5 hours after its creation</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Notes
+>
+> Create a checkout session is only required for flow **SDK_CHECKOUT**.
+> Only one payment is supported per each checkout session.
+> The checkout session expires 5 hours after its creation.
 
 ## Attributes
 

@@ -31,20 +31,9 @@ Yuno provides several report types:
 
 Below, you will find details of each report type. 
 
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <h3 style="margin:0;">Updates</h3>
-        <p>The report fields are subject to modifications, and new fields can be added to the end of the current structure.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+> 📘 Updates
+>
+> The report fields are subject to modifications, and new fields can be added to the end of the current structure.
 
 ## Payment report
 
