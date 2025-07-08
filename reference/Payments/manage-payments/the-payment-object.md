@@ -3673,23 +3673,15 @@ This object represents the payment created after generating the checkout session
     </p>
   </details>
 
-  <!-- !! important: it will be add in the future -->
-  <!-- <div class="yuno">
-    <p><strong><code>split</code></strong> <small>array</small>
-      <br />Defines the split array.
-    </p>
-  </div> -->
-
   <details class="yuno">
-    <summary>
-      <strong><code>split_marketplace</code></strong> <small>array of objects</small>
+    <summary><strong><code>split_marketplace</code></strong> <small>array of objects</small>
       <br />
       <p>Split marketplace array of objects</p>
     </summary>
     <div>
       <p><strong><code>recipient_id</code></strong> <small>string</small>
         <br />The unique identifier of the recipient in the Yuno system.
-        <br />You must provide the recipient_id (Yuno-generated) or the `provider_recipient_id (external provider's ID) when creating a payment.
+        <br />You must provide the recipient_id (Yuno-generated) or the 'provider_recipient_id' (external provider's ID) when creating a payment.
       </p>
       <p><strong><code>provider_recipient_id</code></strong> <small>string</small>
         <br />The recipient ID provided by the external payment provider, if applicable.
@@ -3703,51 +3695,31 @@ This object represents the payment created after generating the checkout session
         <br />Optional unique identifier for the split transaction.
       </p>
       <details class="yuno">
-        <summary>
-          <strong><code>amount</code></strong> <small>object</small>
+        <summary><strong><code>amount</code></strong> <small>object</small>
           <br />
           <p>Defines the amount of the split.</p>
         </summary>
         <div>
-          <details class="yuno">
-            <summary>
-              <strong><code>amount object</code></strong> <small>object</small>
-              <br />
-              <p>Specifies the amount object.</p>
-            </summary>
-            <div>
-              <p><strong><code>value</code></strong> <small>float</small>
-                <br />The split amount (multiple of 0.0001).
-              </p>
-              <p><strong><code>currency</code></strong> <small>string</small>
-                <br />The currency used to make the payment (MAX 3; MIN 3; ISO 4217).
-              </p>
-            </div>
-          </details>
+          <p><strong><code>value</code></strong> <small>float</small>
+            <br />The split amount (multiple of 0.0001).
+          </p>
+          <p><strong><code>currency</code></strong> <small>string</small>
+            <br />The currency used to make the payment (MAX 3; MIN 3; ISO 4217).
+          </p>
         </div>
       </details>
       <details class="yuno">
-        <summary>
-          <strong><code>liability</code></strong> <small>object</small>
+        <summary><strong><code>liability</code></strong> <small>object</small>
           <br />
           <p>Optional information regarding the recipient's liability for fees and chargebacks.</p>
         </summary>
         <div>
-          <details class="yuno">
-            <summary>
-              <strong><code>liability object</code></strong> <small>object</small>
-              <br />
-              <p>Specifies the liability object.</p>
-            </summary>
-            <div>
-              <p><strong><code>processing_fee</code></strong> <small>string</small>
-                <br />Indicates who will be charged the transaction fee.
-              </p>
-              <p><strong><code>chargebacks</code></strong> <small>boolean</small>
-                <br />The recipient is responsible in case of a chargeback.
-              </p>
-            </div>
-          </details>
+          <p><strong><code>processing_fee</code></strong> <small>string</small>
+            <br />Indicates who will be charged the transaction fee.
+          </p>
+          <p><strong><code>chargebacks</code></strong> <small>boolean</small>
+            <br />The recipient is responsible in case of a chargeback.
+          </p>
         </div>
       </details>
     </div>
