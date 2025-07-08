@@ -1244,7 +1244,9 @@ This object represents the payment created after generating the checkout session
             <br /><small> Example: −58.5555 </small>
           </p>
         </div>
-      </details> 
+      </details>
+      
+ 
     </div>
   </details>
 
@@ -1280,13 +1282,22 @@ This object represents the payment created after generating the checkout session
               <p>Specifies the legs array of objects.</p>
             </summary>
             <div>
+              <p><strong><code>order</code></strong> <small>integer</small>
+                <br />A running index (starts with 1), describing the order of legs in the same route.
+                <br /><small> Example: 2 </small>
+              </p>
+              <p><strong><code>route_order</code></strong> <small>integer</small>
+                <br />A running index (starts with 1), describing the order of routes by time. E.g: If an order contains 2 Routes: New-York→London→Paris (connection in London) New-York→London should have route_order=1, order=1; London→Paris should have route_order=1, order=2; Paris→London→New-York: Paris→London should have route_order=2, order=1; London→New-York should have route_order=2, order=2.
+                <br /><small> Example: 1 </small>
+              </p>
               <p><strong><code>arrival_airport</code></strong> <small>string</small>
                 <br />IATA airport code (MAX 3; MIN 3). See <a href="http://www.iata.org">http://www.iata.org</a>.
                 <br /><small> Example: AMS </small>
               </p>
-               <p><strong><code>arrival_airport_country</code></strong> <small>string</small>
+              <p><strong><code>arrival_airport_country</code></strong> <small>string</small>
                 <br /> Country of the arrival airport (MAX 2; MIN 2; ISO 3166-1).
                 <br /><small> Example: AR </small>
+              </p>
               </p>
                <p><strong><code>arrival_airport_city</code></strong> <small>string</small>
                <br /> The city considered for the arrival airport (MAX 255; MIN 3).
