@@ -1244,9 +1244,7 @@ This object represents the payment created after generating the checkout session
             <br /><small> Example: −58.5555 </small>
           </p>
         </div>
-      </details>
-      
-      
+      </details> 
     </div>
   </details>
 
