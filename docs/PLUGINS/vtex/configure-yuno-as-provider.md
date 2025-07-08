@@ -67,7 +67,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
    2. Select the **Webhooks** tab.
    3. Click **add webhook**. The webhook  form will show up, where you should provide the following information:
       1. **Name**: Define a name for the VTEX webhook.
-      2. **Endpoint URL**: You should inform the following URL **https\://store\_name/\_v/yunopartnerbr.yuno/v4/webhook**.
+      2. **Endpoint URL**: You should inform the following URL **https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook**.
       3. **x-api-key** and **x-secret**: You can set any information here. For example, you can add **VTEX** for both fields. 
    4. For **Trigger on**, check all events that should notify you through the webhooks. Yuno recommends checking all options.
    5. Click **Add**.
