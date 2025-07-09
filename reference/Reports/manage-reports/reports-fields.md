@@ -1519,21 +1519,21 @@ Below, you will find details of each report type.
 >
 > The following columns are mapped upon request, you may request them when activating the reconciliations module. Contact support for more details.
 >
-> `description`\
-> `provider_card_brand`
-> `card_issuer_name`
-> `card_issuer_country`
-> `reconciliation_settlement_date`
-> `local_amount`
-> `local_retention`
-> `local_tax`
-> `provider_fees`
-> `provider_fee_taxes`
-> `net_amount`
-> `card_expiration_month`
-> `card_expiration_year`
-> `estimated_settlement_date`
-> `retrieval_reference_number`
+> * `description`
+> * `provider_card_brand`
+> * `card_issuer_name`
+> * `card_issuer_country`
+> * `reconciliation_settlement_date`
+> * `local_amount`
+> * `local_retention`
+> * `local_tax`
+> * `provider_fees`
+> * `provider_fee_taxes`
+> * `net_amount`
+> * `card_expiration_month`
+> * `card_expiration_year`
+> * `estimated_settlement_date`
+> * `retrieval_reference_number`
 
 <HTMLBlock>{`
 <body>
