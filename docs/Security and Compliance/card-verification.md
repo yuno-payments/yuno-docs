@@ -10,43 +10,45 @@ metadata:
 next:
   description: ''
 ---
-Yuno lets you verify if the customer's credit card is real and is working. Our Credit Card Verification API is designed to empower your applications with a robust mechanism for validating credit card transactions, ensuring a seamless and secure payment experience for your users. This operation does not create any charges for your client.
+Yuno allows you to verify whether a customer's credit card is valid and operational, helping you ensure a secure and seamless payment experience. The card verification process does not create any charges for your customer.
 
 ## Advantages
 
-With the Yuno card verification service, you can protect your business in real time:
+With Yuno's card verification service, you can protect your business in real time:
 
-* **Real-time Verification**: Instantly validate credit card details to ensure accuracy and authenticity.
-* **Fraud Prevention**: Mitigate the risk of fraudulent transactions by verifying the legitimacy of credit card information.
-* **Seamless Integration**: Easily integrate our API into your existing payment processing system, minimizing development time and effort.
+* **Real-time verification**: Instantly validate credit card details to ensure accuracy and authenticity.
+* **Fraud prevention**: Reduce the risk of fraudulent transactions by verifying the legitimacy of credit card information.
+* **Seamless integration**: Easily integrate our API into your existing payment processing system, minimizing development time and effort.
 
 ## Integration
 
-First, you need to define a route to use the card verification feature. When configuring the route, be sure to select:
+To use the card verification feature, you first need to define a route. When configuring the route, make sure to:
 
-* **Card** as payment method.
-* Define the **Transaction type** **Equal** to **VERIFY**.
+* Select **Card** as the payment method.
+* Set the **Transaction type** to **VERIFY**.
 
-With the above configurations, all card verifications will be processed following the configuration of the created route.
+With these configurations, all card verifications will be processed according to the settings of the created route.
 
 <Image align="center" src="https://files.readme.io/ace8dd6aa4d7fe71f02ae0600949b59d8d59bfb329d55e66134a858fc7ea4a33-Screenshot_2024-10-14_at_3.09.35_PM.png" />
 
-> 📘 Select the Correct Provider
+> 📘 Select the correct provider
 >
-> * The credit card verification process isn't provided by all providers. Always contact your technical account manager to verify which providers support card verification.
-> * Yuno uses a zero-dollar authorization for card validations. If the provider does not support this flow, we will internally:
+> * Not all providers support credit card verification. Always contact your technical account manager to confirm which providers are compatible.
+> * Yuno uses a zero-dollar authorization for card validations. If the provider does not support this flow, we will:
 >   * Authorize the minimum possible amount and then cancel the authorization for credit cards.
 >   * Perform a purchase for the minimum possible amount and then refund it for debit cards.
 
-In addition to creating the route, you need to choose when to use the validation. You can verify cards during the [enrollment process](https://docs.y.uno/reference/enroll-payment-method-checkout) or while making a credit [card payment](https://docs.y.uno/reference/create-payment). Depending on your chosen process, you should use different endpoints or SDK functions.
+After creating the route, decide when to perform the card validation. You can verify cards during the [enrollment process](https://docs.y.uno/reference/enroll-payment-method-checkout) or when making a [card payment](https://docs.y.uno/reference/create-payment). Depending on your chosen process, you should use different endpoints or SDK functions.
 
-### Verify the card at the enrollment
+### Verify the card during enrollment
 
-You can verify the card at the enrollment whether you are using the Direct or SDK integrations.
+You can verify a card during the enrollment process, whether you are using a direct integration or an SDK integration. This helps ensure the card is valid before it is added to your system.
 
 #### SDK integration
 
-If you are using an integration based on SDKs, you need to define the `verify` object, informing the `currency` and `vault_on_success = true` when performing the enrollment. The code block below presents an example of card verification requests and responses using the SDK.
+When using an SDK-based integration, include the `verify` object in your enrollment request. Specify the `currency` and set `vault_on_success` to `true` to vault the card upon successful verification. 
+
+The following example shows how to structure a card verification request and the corresponding response using the SDK:
 
 ```json Request
 {
@@ -102,11 +104,15 @@ If you are using an integration based on SDKs, you need to define the `verify` o
 }
 ```
 
-Access the [SDK integration](https://docs.y.uno/reference/enroll-payment-method-checkout) page for additional information related to the enrollment process.
+For more details about the enrollment process, see the [SDK integration](https://docs.y.uno/reference/enroll-payment-method-checkout) page.
 
 #### Direct integration
 
-To verify the card at the enrollment with the Direct integration, you will use the [Enroll Payment Method](ref:enroll-payment-method-api) endpoint. In addition to the `card_data` object, you need to provide the `verify`object. Inside of the `verify` object you define the `currency` and provide  `vault_on_success = true`. The code block below presents an example of card verification requests and responses using the [Enroll Payment Method](ref:enroll-payment-method-api).
+You can verify a card during enrollment using the direct integration. To do this, use the [Enroll payment method](ref:enroll-payment-method-api) endpoint.
+
+In your request, include both the `card_data` object and the `verify` object. Within the `verify` object, specify the `currency` and set `vault_on_success` to `true`. 
+
+The following example shows a typical card verification request and response using the [Enroll payment method](ref:enroll-payment-method-api) endpoint.
 
 ```json Request
 {
@@ -213,22 +219,24 @@ To verify the card at the enrollment with the Direct integration, you will use t
 }
 ```
 
-> 📘 Verification Feature Availability
+> 📘 Verification feature availability
 >
-> The verify feature at the enrollment is only available for PCI-compliant merchants when using the Direct integration.
+> The card verification feature during enrollment is available only for PCI-compliant merchants using the Direct integration.
 
-### Verify the card at the payment
+### Verify the card during payment
 
-If you want to verify the card using a payment operation, you need to fulfill two requirements:
+You can verify a card as part of a payment operation. This method allows you to confirm the validity of a card without charging your customer.
+
+To verify a card using a payment operation, make sure to:
 
 * Inform `amount.value=0`.
-* Add `verify = true` inside of the `payment_method.detail.card.` object.
+* Include `verify: true` inside the `payment_method.detail.card` object.
 
-Following the above instructions, the resulting operation won't result in any charges for your client.
+By following these steps, the verification process will not result in any charges to your customer.
 
 #### SDK integration
 
-The code block below presents an example of card verification using the payment operation for an SDK integration.
+The example below shows how to verify a card using the payment operation with the SDK integration.
 
 ```json Request
 {
@@ -437,9 +445,9 @@ The code block below presents an example of card verification using the payment 
 }
 ```
 
-#### Direct Integration
+#### Direct integration
 
-The code block below presents an example of card verification using the payment operation for a Direct integration.
+You can verify a card by using the payment operation with a direct integration. The following example demonstrates how to perform card verification in this scenario:
 
 ```json Request
 {
