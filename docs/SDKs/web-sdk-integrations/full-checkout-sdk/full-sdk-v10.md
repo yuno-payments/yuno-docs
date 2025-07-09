@@ -154,9 +154,9 @@ PayButton.addEventListener('click', () => {
 })
 ```
 
-## Step 6: Get the OTT (One Time Token)
+## Step 6: Get the OTT (one-time token)
 
-Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the OTT. The configuration function `yuno.CreatePayment(oneTimeToken)` is then triggered with the OTT (One Time Token).
+Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the OTT. The configuration function `yuno.CreatePayment(oneTimeToken)` is then triggered with the OTT (one-time token).
 
 ```javascript
  yunoCreatePayment(oneTimeToken)
@@ -175,7 +175,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation)
 
 ## Step 7: Create the Payment
 
-Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the OTT (One Time Token) and the checkout session.
+Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the OTT (one-time token) and the checkout session.
 
 > 📘 Complete the Integration
 >

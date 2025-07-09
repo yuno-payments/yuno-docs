@@ -1246,7 +1246,7 @@ This object represents the payment created after generating the checkout session
         </div>
       </details>
       
-      
+ 
     </div>
   </details>
 
@@ -1269,6 +1269,12 @@ This object represents the payment created after generating the checkout session
             <br />Passenger name record (MAX 10; MIN 1).
             <br /><small> Example: 1P-2UUGJW </small>
           </p>
+          <p><strong><code>type</code></strong> <small>enum</small>
+            <br />Type of trip.
+            <br /><small>Possible values: <code>ONE_WAY</code>, <code>ROUNDTRIP</code>, <code>MULTIPLE_DESTINATIONS</code></small>
+          </p>
+        </div>
+      </details>
           <details class="yuno">
             <summary>
               <strong><code>legs</code></strong> <small>array of object</small>
@@ -1276,13 +1282,22 @@ This object represents the payment created after generating the checkout session
               <p>Specifies the legs array of objects.</p>
             </summary>
             <div>
+              <p><strong><code>order</code></strong> <small>integer</small>
+                <br />A running index (starts with 1), describing the order of legs in the same route.
+                <br /><small> Example: 2 </small>
+              </p>
+              <p><strong><code>route_order</code></strong> <small>integer</small>
+                <br />A running index (starts with 1), describing the order of routes by time. E.g: If an order contains 2 Routes: New-York→London→Paris (connection in London) New-York→London should have route_order=1, order=1; London→Paris should have route_order=1, order=2; Paris→London→New-York: Paris→London should have route_order=2, order=1; London→New-York should have route_order=2, order=2.
+                <br /><small> Example: 1 </small>
+              </p>
               <p><strong><code>arrival_airport</code></strong> <small>string</small>
                 <br />IATA airport code (MAX 3; MIN 3). See <a href="http://www.iata.org">http://www.iata.org</a>.
                 <br /><small> Example: AMS </small>
               </p>
-               <p><strong><code>arrival_airport_country</code></strong> <small>string</small>
+              <p><strong><code>arrival_airport_country</code></strong> <small>string</small>
                 <br /> Country of the arrival airport (MAX 2; MIN 2; ISO 3166-1).
                 <br /><small> Example: AR </small>
+              </p>
               </p>
                <p><strong><code>arrival_airport_city</code></strong> <small>string</small>
                <br /> The city considered for the arrival airport (MAX 255; MIN 3).
@@ -1443,7 +1458,6 @@ This object represents the payment created after generating the checkout session
               </p>
             </div>
           </details>
-
           <details class="yuno">
             <summary>
               <strong><code>tickets</code></strong> <small>array of objects</small>
@@ -3673,23 +3687,15 @@ This object represents the payment created after generating the checkout session
     </p>
   </details>
 
-  <!-- !! important: it will be add in the future -->
-  <!-- <div class="yuno">
-    <p><strong><code>split</code></strong> <small>array</small>
-      <br />Defines the split array.
-    </p>
-  </div> -->
-
   <details class="yuno">
-    <summary>
-      <strong><code>split_marketplace</code></strong> <small>array of objects</small>
+    <summary><strong><code>split_marketplace</code></strong> <small>array of objects</small>
       <br />
       <p>Split marketplace array of objects</p>
     </summary>
     <div>
       <p><strong><code>recipient_id</code></strong> <small>string</small>
         <br />The unique identifier of the recipient in the Yuno system.
-        <br />You must provide the recipient_id (Yuno-generated) or the `provider_recipient_id (external provider's ID) when creating a payment.
+        <br />You must provide the recipient_id (Yuno-generated) or the 'provider_recipient_id' (external provider's ID) when creating a payment.
       </p>
       <p><strong><code>provider_recipient_id</code></strong> <small>string</small>
         <br />The recipient ID provided by the external payment provider, if applicable.
@@ -3703,48 +3709,106 @@ This object represents the payment created after generating the checkout session
         <br />Optional unique identifier for the split transaction.
       </p>
       <details class="yuno">
-        <summary>
-          <strong><code>amount</code></strong> <small>object</small>
+        <summary><strong><code>amount</code></strong> <small>object</small>
           <br />
           <p>Defines the amount of the split.</p>
         </summary>
         <div>
-          <details class="yuno">
-            <summary>
-              <strong><code>amount object</code></strong> <small>object</small>
-              <br />
-              <p>Specifies the amount object.</p>
-            </summary>
-            <div>
-              <p><strong><code>value</code></strong> <small>float</small>
-                <br />The split amount (multiple of 0.0001).
-              </p>
-              <p><strong><code>currency</code></strong> <small>string</small>
-                <br />The currency used to make the payment (MAX 3; MIN 3; ISO 4217).
-              </p>
-            </div>
-          </details>
+          <p><strong><code>value</code></strong> <small>float</small>
+            <br />The split amount (multiple of 0.0001).
+          </p>
+          <p><strong><code>currency</code></strong> <small>string</small>
+            <br />The currency used to make the payment (MAX 3; MIN 3; ISO 4217).
+          </p>
         </div>
       </details>
       <details class="yuno">
-        <summary>
-          <strong><code>liability</code></strong> <small>object</small>
+        <summary><strong><code>liability</code></strong> <small>object</small>
           <br />
           <p>Optional information regarding the recipient's liability for fees and chargebacks.</p>
         </summary>
         <div>
+          <p><strong><code>processing_fee</code></strong> <small>string</small>
+            <br />Indicates who will be charged the transaction fee.
+          </p>
+          <p><strong><code>chargebacks</code></strong> <small>boolean</small>
+            <br />The recipient is responsible in case of a chargeback.
+          </p>
+        </div>
+      </details>
+    </div>
+  </details>
+  <details class="yuno">
+    <summary><strong><code>transportations</code></strong> <small>array of objects</small>
+      <br />
+      <p>Specifies the transportations array of objects.</p>
+    </summary>
+    <div>
+      <p><strong><code>id</code></strong> <small>string</small>
+        <br />The id of the transportation booking (MAX 255; MIN 1).
+      </p>
+      <p><strong><code>description</code></strong> <small>string</small>
+        <br />The description of the transportation booking (MAX 255; MIN 1).
+      </p>
+      <p><strong><code>type</code></strong> <small>string</small>
+        <br />The type of transportation booking.
+      </p>
+      <details class="yuno">
+        <summary><strong><code>legs</code></strong> <small>array of objects</small>
+          <br />
+          <p>Specifies the legs array of objects.</p>
+        </summary>
+        <div>
+          <p><strong><code>order</code></strong> <small>integer</small>
+            <br />A running index (starts with 1), describing the order of legs in the same route.
+          </p>
+          <p><strong><code>route_order</code></strong> <small>integer</small>
+            <br />A running index (starts with 1), describing the order of routes by time.
+          </p>
+          <p><strong><code>departure_country</code></strong> <small>string</small>
+            <br />Country of the departure (MAX 2; MIN 2; ISO 3166-1).
+          </p>
+          <p><strong><code>departure_city</code></strong> <small>string</small>
+            <br />The city of the departure (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>departure_timezone</code></strong> <small>string</small>
+            <br />Departure timezone (MAX 6; MIN 6).
+          </p>
+          <p><strong><code>departure_datetime</code></strong> <small>string</small>
+            <br />The departure date and time in local time at the departure.
+          </p>
+          <p><strong><code>departure_reference</code></strong> <small>string</small>
+            <br />The reference of the departure (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>arrival_country</code></strong> <small>string</small>
+            <br />Country of the arrival (MAX 2; MIN 2; ISO 3166-1).
+          </p>
+          <p><strong><code>arrival_city</code></strong> <small>string</small>
+            <br />The city of the arrival (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>arrival_timezone</code></strong> <small>string</small>
+            <br />Arrival timezone (MAX 6; MIN 6).
+          </p>
+          <p><strong><code>arrival_datetime</code></strong> <small>string</small>
+            <br />The arrival date and time in local time at the arrival.
+          </p>
+          <p><strong><code>arrival_reference</code></strong> <small>string</small>
+            <br />The reference of the arrival (MAX 255; MIN 1).
+          </p>
           <details class="yuno">
-            <summary>
-              <strong><code>liability object</code></strong> <small>object</small>
+            <summary><strong><code>transport</code></strong> <small>object</small>
               <br />
-              <p>Specifies the liability object.</p>
+              <p>Specifies the transport object.</p>
             </summary>
             <div>
-              <p><strong><code>processing_fee</code></strong> <small>string</small>
-                <br />Indicates who will be charged the transaction fee.
+              <p><strong><code>id</code></strong> <small>string</small>
+                <br />The id of the transportation vehicle (MAX 255; MIN 1).
               </p>
-              <p><strong><code>chargebacks</code></strong> <small>boolean</small>
-                <br />The recipient is responsible in case of a chargeback.
+              <p><strong><code>type</code></strong> <small>string</small>
+                <br />The type of transportation vehicle.
+              </p>
+              <p><strong><code>description</code></strong> <small>string</small>
+                <br />The description of the transportation vehicle (MAX 255; MIN 1).
               </p>
             </div>
           </details>

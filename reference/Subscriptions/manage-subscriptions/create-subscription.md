@@ -13,19 +13,9 @@ metadata:
 next:
   description: ''
 ---
-<HTMLBlock>{`
-<body>
-  <div class="infoBlockContainer">
-    <div class="verticalLine"></div>
-    <div>
-      <div class="contentContainer">
-        <p>
-          The fields <code>billing_cycles</code> and <code>availability.finish_at</code> have an impact on each other. If both are completed during the subscription creation, it will transition to the <code>COMPLETED</code> state upon reaching the nearest event defined in these fields, whether it is the billing cycle or the corresponding <code>finish_at</code>.
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-`}</HTMLBlock>
+
+> 🚧 Subscription Completion
+>
+> The fields `billing_cycles` and `availability.finish_at` have an impact on each other. If both are completed during the subscription creation, it will transition to the `COMPLETED` state upon reaching the nearest event defined in these fields, whether it is the billing cycle or the corresponding `finish_at`.
 
 Refer to the [HTTP Response Codes](ref:response-codes) section for details on possible error outcomes.

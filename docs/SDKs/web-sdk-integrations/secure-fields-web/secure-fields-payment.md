@@ -534,7 +534,7 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 2. In case the transaction is rejected, you will need to:\
    i. Create a new checkout session.
    ii. Generate a new one-time token. In the one-time token generation, send the new checkout session in the `checkoutSession` parameter.
-3. Continue with the new checkout and One Time Token with the regular payment flow.
+3. Continue with the new checkout and one-time token with the regular payment flow.
 
 ### Clear the values entered in the card fields
 
