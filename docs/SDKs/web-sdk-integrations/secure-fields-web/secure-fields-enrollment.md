@@ -305,7 +305,7 @@ If you need the full response, you can use `secureFields.generateVaultedTokenWit
 
 ```javascript
 /**
- *  Create One Time Token
+ *  Create one-time token
  *  This will trigger an error if there are missing data
  *  You can catch it using a try/catch
  *  Returns an object with the full response

@@ -189,7 +189,7 @@ metadata:
       <td>1.5.14-HF</td>
 
       <td>
-        * **NEW**: Function to create One Time Token with card info in Enrollment and Payment<br />- **FIX**: Crash with location permissions
+        * **NEW**: Function to create one-time token with card info in Enrollment and Payment<br />- **FIX**: Crash with location permissions
       </td>
     </tr>
 
@@ -886,7 +886,7 @@ metadata:
       </td>
 
       <td>
-        * **NEW**: Function to create One Time Token with card info in Enrollment and Payment
+        * **NEW**: Function to create one-time token with card info in Enrollment and Payment
       </td>
     </tr>
 
