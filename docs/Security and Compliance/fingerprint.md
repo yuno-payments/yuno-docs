@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-We've added a new field to the Payment method object called `fingerprint`. It is a field that represents your customer's card throughout your organization. When a customer enrolls a credit card multiple times related to one or many Yuno accounts, multiple `vaulted_tokens` will be generated, but the fingerprint lets you identify when the same card is in different scenarios.
+The `fingerprint` field is a new addition to the payment method object. This field provides a unique, non-sensitive identifier for your customer's card across your organization. When a customer enrolls the same credit card multiple times—whether under one or several Yuno accounts—different `vaulted_tokens` are created for each enrollment. However, the `fingerprint` remains consistent, allowing you to recognize when the same card is present in different contexts.
 
 ```json
 "card_data": {
@@ -27,11 +27,11 @@ We've added a new field to the Payment method object called `fingerprint`. It is
                 },
 ```
 
-Fingerprinting involves creating an identifier for a specific payment method without disclosing any sensitive information. Unlike `vaulted_tokens`, fingerprints cannot be used to make payments, making them a secure representation of payment method details.  
+Card fingerprinting creates a unique identifier for a specific payment method, allowing you to recognize the same card across different contexts—without exposing any sensitive card information. Unlike `vaulted_tokens`, fingerprints cannot be used to process payments. Instead, they serve as a secure, non-sensitive reference to the underlying card details.
 
-Fingerprints are highly valuable for:
+Fingerprints are useful for:
 
-* Tracking if a user is using the same card for multiple customer-present payments, suggesting that a vault could greatly improve the user experience.
-* Checking if a particular card is being used by multiple customers, which could indicate fraud.
+* Identifying when a user presents the same card for multiple payments, which can help determine if enabling card vaulting would improve the user experience.
+* Detecting if a single card is being used by multiple customers, which may indicate potential fraud.
 
-You will also find the fingerprint in the payment response when a transaction is made using an enrolled credit card.
+The fingerprint is also included in the payment response whenever a transaction is made with an enrolled credit card.
