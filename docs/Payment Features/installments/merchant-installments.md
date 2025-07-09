@@ -10,37 +10,41 @@ metadata:
 next:
   description: ''
 ---
-You can use the Merchant Installments options when you, the merchant, have your own commercial agreements and installment capabilities defined within your payment processors. In this case, you are responsible for handling the logic behind the installment options available for each transaction. When creating the payment, you will inform Yuno of the available number of installments that customers can choose from.
+Merchant installments allow you, as the merchant, to offer installment payment options based on your own commercial agreements and configurations with your payment processors. In this setup, you are responsible for defining and managing the available installment options for each transaction. When creating a payment, you must inform Yuno of the number of installments that customers can select.
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/installments.mp4" />
 
-## How to Use Merchant Installments?
+## How to use merchant installments
 
-Depending on the way you are connected to Yuno, the process of configuring the installments may vary. Next, we present how you can inform Yuno of the installment option for the Direct workflow and the SDK integration.
+The way you configure merchant installments depends on your integration with Yuno. Below, you'll find guidance for both the Direct workflow and SDK integration.
 
 ### Direct workflow
 
-When using a [Direct integration](doc:direct-flow),  you manage the front-end checkout experience. In this case, you will inform Yuno about the number of installments when creating the payment using the [Create Payment](ref:create-payment) endpoint. The number of installments will be defined through the  `payment_method.detail.card.installments` parameter.
+If you are using a [Direct integration](doc:direct-flow), you control the front-end checkout experience. In this case, you specify the number of installments when creating a payment via the [Create payment](ref:create-payment) endpoint. Set the number of installments using the `payment_method.detail.card.installments` parameter.
 
-### SDK Integration
+### SDK integration
 
-When you use Yuno's SDK, Yuno is responsible for presenting to the customer the installment options available for each payment. As a result, you need to inform Yuno which installments will be available for your account. In this case, the installment configurations are performed through [Yuno's Dashboard](https://auth.y.uno/u/login?). To perform this configuration, execute the two steps described below.
+With Yuno's SDK integration, Yuno manages the presentation of available installment options to your customers during checkout. To ensure the correct installment plans are shown, you must configure which installment options are available for your account. This configuration is managed through the [Yuno Dashboard](https://auth.y.uno/u/login?).
 
-1. First, when configuring your provider [Connection](doc:connections) in Yuno Dashboard, you need to enable the installments option. Thus, Yuno will show the installment option when the customer chooses the Credit card option form of the SDK checkout.
+Follow these steps to set up merchant installments with the SDK:
 
-<Image align="center" src="https://files.readme.io/3874bb1-installments.png" />
+1. **Enable installments in your provider connection**:  
+   In the [Connections](doc:connections) section of the Yuno Dashboard, enable the installments option for your payment provider. This allows Yuno to display installment options when customers select the credit card payment method in the SDK checkout.
 
-2. After enabling the installments, you need to create an installment plan using the  [Create Installments Plan](ref:create-installments-plan) endpoint. When creating a plan, you will specify the accepted currency, amounts, card brands, dates, etc. After that, we will take care of the rest.
+   <Image align="center" src="https://files.readme.io/3874bb1-installments.png" />
 
-> 🚧 Secure Fields SDK Integration
+2. **Create an installment plan**:  
+   After enabling installments, create an installment plan using the [Create installments plan](ref:create-installments-plan) endpoint. When creating a plan, specify details such as accepted currencies, amounts, card brands, and validity dates. Once your plan is set up, Yuno will handle the rest.
+
+> 🚧 Secure Fields SDK integration
 >
-> When using Secure Fields SDK integration, you will need to [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) while starting the checkout process.
+> If you are using the Secure Fields SDK, you must [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) when starting the checkout process.
 
-For merchant-created installments, you also have the possibility of specifying the plan for every session by either using:
+For merchant-created installments, you can also specify the plan for each session by either:
 
-* the `plan_id` while [creating the session](ref:create-checkout-session).
-* a `plan structure` while [creating the checkout session](ref:create-checkout-session).
+* Providing a `plan_id` when [creating the session](ref:create-checkout-session).
+* Including a `plan structure` when [creating the checkout session](ref:create-checkout-session).
 
-> ❗️ Routing with Fallback Providers
+> ❗️ Routing with fallback providers
 >
-> When setting up your [route](routing) for the Card payment method, it's important to remember that if you have a fallback provider while using installments, we will try to make a fallback payment if the first transaction is rejected. Therefore, it's crucial to ensure that both providers support the amount of installments set for your account. If they do not, you can set up different routes for each scenario to avoid issues.
+> When configuring your [route](routing) for the card payment method, keep in mind that if you have a fallback provider and the first transaction is rejected, Yuno will attempt a fallback payment. Make sure that all providers in your route support the number of installments you have configured. If not, consider setting up different routes for each scenario to avoid issues.
