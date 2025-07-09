@@ -43,7 +43,7 @@ The Android SDK release notes offer a comprehensive overview of the updates, imp
 | 1.6.0     | **NEW**: Mercado Pago antifraud                                                                                                                                 |
 |           | **IMPROVE**: Click to pay flow                                                                                                                                  |
 |           | **FIX**: Minor bugs                                                                                                                                             |
-| 1.5.14-HF | **NEW**: Function to create One Time Token with card info in Enrollment and Payment                                                                             |
+| 1.5.14-HF | **NEW**: Function to create one-time token with card info in Enrollment and Payment                                                                             |
 |           | **FIX**: Crash with location permissions                                                                                                                        |
 | 1.5.14    | **IMPROVE**: Step-by-step and one-step card payments                                                                                                            |
 | 1.5.13    | **NEW**: Mercado Pago Wallet enrollment via deeplink and custom tab                                                                                             |

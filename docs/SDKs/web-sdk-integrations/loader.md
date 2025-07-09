@@ -6,7 +6,7 @@ hidden: false
 metadata:
   title: Loader
   description: >-
-    The loader is displayed from when the One Time Token is created until the
+    The loader is displayed from when the one-time token is created until the
     merchant calls `yuno.hideLoader()` or `yuno.continuePayment()`.  This way,
     the user experience is improved because they will see the loader while the
     merchant creates the payment.
