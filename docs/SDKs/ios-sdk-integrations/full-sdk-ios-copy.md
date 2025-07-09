@@ -249,7 +249,7 @@ The following table presents all the protocol requirements you have to provide a
 
 > 🚧 Swift 6 Concurrency Requirements
 >
-> If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoPaymentDelegate` with Swift 6 Concurrency](#implementing-yunoPaymentdelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
+> If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoPaymentDelegate` with Swift 6 Concurrency](#implementing-yunopaymentdelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
 
 ## Step 4: Add the SDK view to the checkout
 
