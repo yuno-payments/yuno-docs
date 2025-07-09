@@ -10,22 +10,22 @@ metadata:
 next:
   description: ''
 ---
-**Provider** installment is when the merchant does not have a commercial agreement for a defined set of installments, so they use the installments defined by the payment processor. Yuno consults the provider of your choosing in order to get the installments available to offer your customers for each transaction.
+Provider installments allow you to offer installment payment options defined by your payment processor, rather than by your own commercial agreements. This is useful when you do not have a predefined set of installment plans with a provider. In this scenario, Yuno consults your selected payment provider to retrieve the available installment options for each transaction, and presents them to your customers at checkout.
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/provider.mp4" />
 
-### How to Use Provider Installments?
+### How to use provider installments
 
-While configuring your provider [Connection](doc:connections) in Yuno Dashboard, you can enable the installments available for the provider so we can use them in the Credit card form of the SDK for the customer to select from. For this scenario, there is no need to create a plan, as Yuno will use the plan defined by your payment processor.
+To enable provider installments, configure your provider [connection](doc:connections) in the Yuno Dashboard. When setting up the connection, you can enable the available installment options for that provider. These options will then be shown in the credit card form of the SDK, allowing your customers to select from the plans offered by your payment processor. There is no need to create a custom installment plan—Yuno will automatically use the plans defined by your provider.
 
 > 🚧 Secure Fields SDK
 >
-> When using Secure Fields SDK integration, you will need to [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) while starting the checkout process.
+> If you are using the Secure Fields SDK integration, make sure to [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) when starting the checkout process.
 
-This option is not enabled for all providers, only the ones that have Installment services that Yuno can access to get the information from. If you consider that a provider should have this feature enabled, please reach out to your account manager.
+Note that provider installments are only available for certain providers—specifically, those that offer installment services which Yuno can access. If you believe a provider should support this feature but does not, please contact your account manager.
 
 <Image align="center" src="https://files.readme.io/04626a1-provider.png" />
 
-> ❗️ Routing Configuration Warning
+> ❗️ Routing configuration warning
 >
-> While setting your [route](routing) for the Card payment method, remember that having a fallback for a provider that has "Provider installments" is not supported, as different providers handle different types of installment plans. It can cause a processing error in the fallback.
+> When configuring your [route](routing) for the card payment method, keep in mind that fallback routing is not supported for provider installments. Different providers may handle installment plans differently, and using a fallback provider can result in processing errors.
