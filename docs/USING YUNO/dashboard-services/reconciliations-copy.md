@@ -10,14 +10,15 @@ metadata:
     discrepancies that have been discovered.
   robots: index
 ---
-
-
 Reconciliation is a fundamental process that ensures financial accuracy across your entire payment ecosystem. By comparing transactions processed through Yuno with the official settlement files issued by each provider, you can identify discrepancies, validate payment flows, and maintain full control over your revenue.
 
 Yuno automates this process end-to-end. We ingest settlement reports from all your payment providers and systematically match them against your transaction records. This enables you to verify balances with acquirers, confirm that every settlement aligns with your commercial agreements, and ensure that your financial data remains complete, accurate, and audit-ready.
 
-<Image align="center" src="https://files.readme.io/3f66c409f3e0afed83ab7829398e5d88abb6696e587d3b1e32909f496400ba91-Reconciliations.
-png" />
+<Image
+  align="center"
+  src="https://files.readme.io/3f66c409f3e0afed83ab7829398e5d88abb6696e587d3b1e32909f496400ba91-Reconciliations.
+png"
+/>
 
 ## Why reconciliation matters
 
@@ -43,12 +44,12 @@ Yuno provides an end-to-end reconciliation infrastructure built to meet the need
 
 Transactions within Yuno can have several statuses related to the reconciliation process:
 
-| Reconciliation Status | Description |
-| :-------------------- | :---------- |
-| RECONCILED | The transaction was identified in a provider's settlement file and is confirmed to be credited to your bank account |
-| NON RECONCILABLE | The transaction does not meet the criteria for reconciliation. It will not be processed further, and no additional action will be taken |
-| NOT RECONCILED | The transaction is still pending identification in a settlement file. The sub-status will indicate if it remains within the expected payment term |
-| CONFLICT | A counterpart for the transaction was found in the settlement file, but there's a discrepancy (e.g., in amount or currency) with the original record processed by Yuno |
+| Reconciliation Status | Description                                                                                                                                                            |
+| :-------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RECONCILED            | The transaction was identified in a provider's settlement file and is confirmed to be credited to your bank account                                                    |
+| NON RECONCILABLE      | The transaction does not meet the criteria for reconciliation. It will not be processed further, and no additional action will be taken                                |
+| NOT RECONCILED        | The transaction is still pending identification in a settlement file. The sub-status will indicate if it remains within the expected payment term                      |
+| CONFLICT              | A counterpart for the transaction was found in the settlement file, but there's a discrepancy (e.g., in amount or currency) with the original record processed by Yuno |
 
 ### State machine
 
