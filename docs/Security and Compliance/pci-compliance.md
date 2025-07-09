@@ -15,63 +15,65 @@ metadata:
 next:
   description: ''
 ---
-The user payment experience is related directly to how safe they feel when using your platform to make a payment. Clients are more likely to buy from merchants that keep their sensitive data safe, protecting users from cyber theft and fraud. Therefore, becoming PCI compliant makes you closer to a better user experience and gaining clients’ trust.
+A secure payment experience is essential for building user trust and increasing conversion rates. Customers are more likely to complete purchases when they know their sensitive data is protected from cyber threats and fraud. Achieving PCI compliance is a key step toward providing a safer user experience and earning your clients’ confidence.
 
-## Yuno Solution
+## Yuno solution
 
-With Yuno's PCI-DSS Level 1 solution, you can securely tokenize your customers' payment information, reducing your PCI scope and ensuring data protection.
+Yuno offers a PCI-DSS Level 1 certified solution that allows you to securely tokenize your customers' payment information. This reduces your PCI scope and ensures robust data protection.
 
-Tokenization involves collecting sensitive payment details and generating a short-term, single-use token representing this information. Yuno handles and secures sensitive payment data, thereby maintaining PCI compliance on your behalf.  Tokenization offers the following advantages:
+Tokenization is the process of collecting sensitive payment details and converting them into a short-term, single-use token that represents this information. Yuno manages and secures all sensitive payment data, maintaining PCI compliance on your behalf. The benefits of tokenization include:
 
-* **Enhanced checkout experience**: By storing payment methods as tokens, your customers can enjoy a smoother and faster checkout process.
-* **Support for subscription and recurring payments**: Tokenized payment methods can be easily utilized for recurring payment scenarios, enabling seamless subscription billing.
-* **User control over sensitive information**: Yuno enables users to manage their saved cards, giving them control and visibility over sensitive payment information.
+* **Improved checkout experience**: Storing payment methods as tokens enables a faster and smoother checkout for your customers.
+* **Support for subscriptions and recurring payments**: Tokenized payment methods can be reused for recurring billing, making subscription management seamless.
+* **User control over payment information**: Yuno empowers users to manage their saved cards, providing transparency and control over their sensitive data.
 
-Yuno simplifies the process of making payments across different providers by tokenizing users' payment information. This means you only need to store a single token, making future payment transactions easier.
+By tokenizing payment information, Yuno streamlines payments across different providers. You only need to store a single token, making future transactions easier and more secure.
 
 ![PCI Compliance](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/PCICompliance/pci_compliance1.png)
 
 ## What is PCI compliance?
 
-The Payment Card Industry Data Security Standard (PCI DSS) is a set of rules which merchants that store, process, or transmit cardholder data must follow. The PCI DSS aims to reduce payment card fraud by establishing the payment ecosystem's foundational security. Your business must meet the requirements and continually document and remediate processes handling cardholder data to be PCI compliant. Governments do not supervise PCI-compliant observance, but card brands can penalize merchants that are not in compliance.
+PCI compliance refers to meeting the requirements of the Payment Card Industry Data Security Standard (PCI DSS). This set of security standards is designed to protect cardholder data and reduce payment card fraud. Any business that stores, processes, or transmits cardholder data must follow these rules. While governments do not directly enforce PCI DSS, card brands can impose penalties on merchants who fail to comply.
 
 ## Who must be PCI compliant
 
-Any enterprise processing, transmitting, or storing individuals’ card data, no matter the size or number of transactions effectuated annually, must be PCI compliant. Therefore, if your business accepts cards as a payment method, it must follow the PCI rules. You still need to be certified even if your operation is based on a third-party solution to handle cardholder data. However, the compliant process is significantly simplified using third-party solutions like Yuno.
+Any business that processes, transmits, or stores cardholder data—regardless of size or transaction volume—must be PCI compliant. If your business accepts card payments, you are required to follow PCI DSS. Even if you use a third-party provider to handle cardholder data, you still need to be certified. However, using a third-party solution like Yuno can significantly simplify the compliance process.
 
 ## PCI compliance levels
 
-As a consequence of the company's variety and transaction volume, four PCI compliance levels were defined. Depending on the level of compliance the companies fit, a different amount of security validation is required. The four PCI compliance levels are:
+PCI compliance is divided into four levels, based on your company’s annual transaction volume. Each level has different security validation requirements:
 
-* Level 1: process more than 6M debit or credit card transactions annually
-* Level 2: process between 1M-6M transactions annually
-* Level 3: process between 20K-1M transactions annually
-* Level 4: process less than 20K transactions annually
+* Level 1: More than 6 million debit or credit card transactions per year
+* Level 2: Between 1 million and 6 million transactions per year
+* Level 3: Between 20,000 and 1 million transactions per year
+* Level 4: Fewer than 20,000 transactions per year
 
-While Level 1 merchants must undergo an internal audit performed by an authorized Qualified Security Assessor (QSA) once a year, other level merchants usually have to submit an Annual Self-Assessment Questionnaire (SAQ).
+Level 1 merchants must complete an annual internal audit by a Qualified Security Assessor (QSA). Merchants in other levels typically need to submit an annual Self-Assessment Questionnaire (SAQ).
 
-## How To Become PCI Compliant
+## How to become PCI compliant
 
-The PCI Security Standards Council developed the requirements to become PCI compliant. There are 12 essential requirements, but depending on the compliance level, you may be required to meet each of the 400+ security controls associated with base requirements, directives, and test procedures. The vast list of conditions involves components to ensure the safety regarding card data handling and storing, as well as annual validation cycles to control and provide the necessary security level.
+To become PCI compliant, your business must follow the requirements set by the PCI Security Standards Council. There are 12 core requirements, but depending on your compliance level, you may need to address over 400 individual security controls, directives, and test procedures. These requirements are designed to ensure the safe handling and storage of cardholder data, and include annual validation cycles to maintain the necessary security standards.
 
 ## How Yuno helps you remain PCI compliant
 
-At first sight, the list of PCI requirements might seem complex and time-consuming, but the process is very straightforward. You can count on Yuno's help to ensure your cybersecurity, reputation, and long-term sales. Become PCI compliant!
+Meeting PCI requirements can seem complex, but Yuno simplifies the process for you. By using Yuno, you can protect your business, reputation, and long-term sales with robust security and compliance.
 
-Using Yuno solutions, the transaction and cardholder data are tokenized. Therefore, merchants no more store or transmit card data through their system, dealing only with non-sensitive data. It is possible because cardholder data are replaced with a unique string of numbers, while Yuno safely stores and processes the sensitive data.
+Yuno tokenizes all transaction and cardholder data, so your systems never store or transmit sensitive card information. Instead, you only handle non-sensitive tokens, while Yuno securely stores and processes the actual card data.
 
-Since your business reduces the contact and exposure of cardholder data, the PCI compliance process is simplified. Instead of an internal audition, you have to complete a questionnaire. Thus, your business saves costs and offers customers a more secure payment experience.
+Because your business has minimal contact with cardholder data, your PCI compliance process is much simpler. In most cases, you only need to complete a self-assessment questionnaire (SAQ) instead of undergoing a full internal audit. This reduces your compliance costs and helps you offer a safer payment experience to your customers.
 
-Using a third-party service like Yuno, you will probably be required to fill out the SAQ A or SAQ D. If all cardholder data functions are outsourced, and your business systems or premises do not store, process, or transmit cardholder data, you would probably need to fill out the SAQ A, composed of 22 questions. On the other hand, if your business does not use outsourced systems and stores card data, you would probably need to fill out the SAQ D, composed of 329 questions.
+Depending on your integration, you will likely need to complete either SAQ A or SAQ D:
+- **SAQ A**: For businesses that fully outsource cardholder data functions and do not store, process, or transmit cardholder data. This questionnaire has 22 questions.
+- **SAQ D**: For businesses that store cardholder data or do not use outsourced systems. This questionnaire has 329 questions.
 
-In the case of your business integrating the Yuno [Direct Flow](doc:direct-flow), you must share an Attestation of Compliance (AOC) signed by your company and a certified auditor.
+If you integrate with Yuno using the [Direct Flow](doc:direct-flow), you must provide an Attestation of Compliance (AOC) signed by your company and a certified auditor.
 
 ## Take advantage of Yuno solutions
 
-To leverage the capabilities of Yuno's PCI-DSS Level 1 solution, you can utilize one of our integration options based on Yuno SDKs. Choose from Full Checkout, Lite Checkout, and Secure Fields, each offering unique features to suit your specific requirements. These SDKs are available for both mobile and JavaScript versions. For detailed information on Yuno's SDKs, please refer to the [SDK guide](doc:yuno-sdks).
+Yuno’s PCI-DSS Level 1 certified solution is available through several integration options. You can choose from Full Checkout, Lite Checkout, or Secure Fields SDKs—each designed to meet different business needs. These SDKs are available for both mobile and JavaScript environments. For more details, see the [SDK guide](doc:yuno-sdks).
 
 <Image align="center" src="https://files.readme.io/158b4066d79b53ccbaa13042a21a244745cc9dcd03ca9509d88c94ee93ab5283-PCI_complience.png" />
 
-## Where you can find more information
+## Where to find more information
 
 For further information, you can use the [PCI official page](https://www.pcisecuritystandards.org/), where you will find complete documentation regarding data security standards. In addition, you can go directly to the [PCI Document Library](https://www.pcisecuritystandards.org/document_library/?category=saqs#results) to download the SAQ Instructions and Guidelines and the last versions of the SAQ self-assessment questionnaires.
