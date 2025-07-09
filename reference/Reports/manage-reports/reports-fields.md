@@ -15,7 +15,7 @@ next:
 ---
 In this section, you can find all report types and related fields available when generating your reports. Take into account the description of the fields, where you can find the origin of the data and its availability.
 
-Yuno provides several report types: 
+Yuno provides several report types:
 
 * [Payment](ref:reports-fields#payment-report)
 * [Transaction ](ref:reports-fields#transaction-report)
@@ -29,7 +29,7 @@ Yuno provides several report types:
 * [Sales Conciliation](ref:reports-fields#sales-conciliation-report)
 * [Advancements](ref:reports-fields#advancements-report)
 
-Below, you will find details of each report type. 
+Below, you will find details of each report type.
 
 > 📘 Updates
 >
@@ -1515,6 +1515,26 @@ Below, you will find details of each report type.
 
 ## Transaction reconciliation report
 
+> 📘
+>
+> The following columns are mapped upon request, you may request them when activating the reconciliations module. Contact support for more details.
+>
+> `description`\
+> `provider_card_brand`
+> `card_issuer_name`
+> `card_issuer_country`
+> `reconciliation_settlement_date`
+> `local_amount`
+> `local_retention`
+> `local_tax`
+> `provider_fees`
+> `provider_fee_taxes`
+> `net_amount`
+> `card_expiration_month`
+> `card_expiration_year`
+> `estimated_settlement_date`
+> `retrieval_reference_number`
+
 <HTMLBlock>{`
 <body>
   <details class="table-card">
@@ -1796,7 +1816,7 @@ Below, you will find details of each report type.
 
 ## Settlement report
 
-The settlement report has two types of reports: 
+The settlement report has two types of reports:
 
 * **Header**: Shows the settlement summary.
 * **Body**: shows the data of each header.
