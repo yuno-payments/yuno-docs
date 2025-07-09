@@ -10,27 +10,27 @@ metadata:
 next:
   description: ''
 ---
-In this section, you'll discover how Yuno supports payments in installments, offering you and your customers the flexibility to make large purchases more affordable. Explore the benefits of this feature and understand the difference between "Merchant" and "Provider" installments for a tailored payment solution.
+Yuno enables you to offer payments in installments, giving your customers the flexibility to split large purchases into smaller, more manageable payments. This feature can help increase conversion rates and make higher-value purchases more accessible.
 
 ## Accept card payments in installments
 
-Yuno supports payments in installments, which allows you to spread out the cost of a purchase over a longer period of time. This is a great way to make a large purchase more affordable or to free up cash flow for other expenses.
+You can use Yuno to accept card payments in installments, allowing your customers to pay for their purchases over a set period of time. This approach can make higher-value items more affordable and help improve your cash flow.
 
 ![](https://files.readme.io/5e3dd70-image.png)
 
-### Benefits of Using Payments in Installments
+### Benefits of using payments in installments
 
-There are several benefits to using installment payments for your customers:
+Offering installment payments provides several advantages for both you and your customers:
 
-* **Affordability**: Paying in installments can make a large purchase more affordable by spreading out the cost over a longer period of time. This can be especially helpful if the customer doesn't have the full amount of money available upfront.
-* **Flexibility**: With payments in installments, you can offer your customer a payment plan that best suits their need. They can usually choose the number of months to pay off the purchase, as well as the amount of each payment.
-* **Convenience**: Payments in installments can be a convenient way to make a purchase. Customers can usually make payments online or by phone, and they don't have to worry about writing checks or carrying cash.
+* **Affordability**: Installments make large purchases more accessible by spreading the total cost over multiple payments, reducing the upfront financial burden.
+* **Flexibility**: Customers can select a payment plan that fits their needs, such as choosing the number of months or the amount of each payment.
+* **Convenience**: Installment payments are easy to manage and can be completed online, eliminating the need for checks or cash.
 
-### Merchant vs. Provider Installments
+### Merchant vs. provider installments
 
-Installment implementation varies depending on the origin and your commercial agreements. There are two options merchants can use, one defined by themselves and the other according to the providers' definition:
+There are two main ways to offer installment payments with Yuno: merchant-defined installments and provider-defined installments. The best approach depends on your commercial agreements and how you want to manage installment options.
 
-* **[Merchant](doc:merchant-installments)**: In this case, the merchant manages its own installment options through individual payment processors, determining the available installment choices for customers within Yuno.
-* **[Provider](doc:provider-installments)**: When the merchant lacks predefined installment agreements, they rely on the payment processor's installment options. We work with your chosen provider to access the available installments to offer your customers for each transaction.
+* **[Merchant installments](doc:merchant-installments)**: You define and manage your own installment plans through your payment processors. This gives you full control over the installment options available to your customers within Yuno.
+* **[Provider installments](doc:provider-installments)**: If you do not have predefined installment agreements, you can use the installment options offered by your payment provider. Yuno works with your selected provider to present the available installment plans to your customers for each transaction.
 
-To have additional information regarding how to configure each option, you can access the [Merchant Installments](doc:merchant-installments) or the [Provider Installments](doc:provider-installments) pages.
+For detailed setup instructions and configuration guidance, see the [Merchant installments](doc:merchant-installments) and [Provider installments](doc:provider-installments) pages.
