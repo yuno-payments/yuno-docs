@@ -12,35 +12,38 @@ next:
 ---
 ## Introduction
 
-**Account Funding Transactions (AFT)** are financial transactions that facilitate the transfer of funds between payment accounts. They are widely used to load or top up user accounts, digital wallets, perform internal fund transfers within a payment platform.
+Account funding transactions (AFTs) are financial operations that enable the transfer of funds between payment accounts. They are commonly used to load or top up user accounts, digital wallets, or to perform internal fund transfers within a payment platform.
 
-AFTs are a core component of payment orchestration systems, enabling efficient and secure movement of money across accounts.
+AFTs play a key role in payment orchestration systems, allowing for efficient and secure movement of money across different accounts.
 
 ## What is an AFT?
 
-An **AFT (Account Funding Transaction)** is a type of transaction designed for:
+An account funding transaction (AFT) is a specific type of transaction used for:
 
 * **Loading funds** into user accounts or digital wallets.
 * **Transferring funds** between accounts within the same platform.
-* **Depositing money** into commercial or personal accounts. Remittances included.
+* **Depositing money** into commercial or personal accounts, including remittances.
 
-AFTs leverage traditional payment networks (e.g., Visa, Mastercard, ACH) to process transactions quickly and securely while optimizing costs.
+AFTs use established payment networks (such as Visa, Mastercard, or ACH) to process transactions quickly, securely, and cost-effectively.
 
-### Types of AFT Transactions
+### Types of AFT transactions
 
-1. **Funding transactions**:
-   * Transfer funds into an account from a debit/credit card or bank account.
-   * Example: A user loads their digital wallet using their debit card.
+Account funding transactions (AFTs) can be categorized into two main types, depending on the direction of the fund movement:
 
-2. **Withdrawal transactions**:
-   * Move funds from a user account back to their bank account or card.
-   * Example: A user transfers money from their digital wallet to their bank account.
+1. **Funding transactions**  
+   Transfer funds into an account from a debit card, credit card, or bank account.  
+   *Example: A user loads their digital wallet using their debit card.*
+
+2. **Withdrawal transactions**  
+   Move funds from a user account back to their bank account or card.  
+   *Example: A user transfers money from their digital wallet to their bank account.*
 
 ## Integration
 
-To perform an AFT, you will need to send a request to our [Payments API](ref:create-payment) with the `additional_data.order.account_funding` object specifying the `sender` and`beneficiary` data.
+To perform an AFT, send a request to the [payments API](ref:create-payment) including the `additional_data.order.account_funding` object. This object must specify both the `sender` and `beneficiary` details.
 
-Each credit card scheme might require different information about the recipient and the sender, depending on the operating region and transaction category.
+> **Note:**  
+> The required information for the sender and beneficiary may vary depending on the card scheme, region, and transaction type.
 
 ```Text Example
 [...]
