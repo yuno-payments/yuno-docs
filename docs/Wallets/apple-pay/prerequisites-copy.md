@@ -128,9 +128,9 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 
 ## Step 9: Upload the merchant identity certificate and key
 
-1. Open the Yuno Dashboard.
-2. Copy the contents of `MerchantIdentityCertificatePrivateKey.pem` and paste it into the **Merchant Identity key** field.
-3. Copy the contents of `merchant_id.pem` and paste it into the **Merchant Identity certificate** field.
+1. Return to your Apple Pay connection in the <Anchor label="Yuno Dashboard" target="_blank" href="https://auth.y.uno/u/login">Yuno Dashboard</Anchor>.
+2. Copy the contents of `MerchantIdentityCertificatePrivateKey.pem` and paste them into the **Merchant Identity key** field.
+3. Paste the contents of `merchant_id.pem` into the **Merchant Identity certificate** field.
 
 <Image align="center" src="https://files.readme.io/abab730-image_3.png" />
 
