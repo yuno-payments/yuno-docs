@@ -21,6 +21,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
   * [Persist credit card form to retry payments](doc:complementary-features-full-sdk#persist-credit-card-form-to-retry-payments)
   * [Hide Pay button](doc:complementary-features-full-sdk#hide-pay-button)
 * [Mercado Pago Checkout Pro webview handling](doc:complementary-features-full-sdk#mercado-pago-checkout-pro-webview-handling)
+* [Optional initialization `options` parameter](optional-initialization-options-parameter)
 
 ## [Form loader](doc:loader)
 
@@ -203,6 +204,8 @@ yuno.startCheckout({
   },
 })
 ```
+
+<br />
 
 ## Card form configurations
 
@@ -455,3 +458,54 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
     </tr>
   </tbody>
 </Table>
+
+## Optional initialization `options` parameter
+
+Starting from **Yuno SDK v1.2**, the `Yuno.initialize` function supports a new optional parameter called `options`. This allows for advanced configuration such as customizing the cookie name used for device identification.
+
+### Initialization options
+
+The updated function signature is:
+
+```javascript
+const yuno = await Yuno.initialize(publicApiKey, applicationSession, options);
+```
+
+* `publicApiKey` (`string`): Your public API key.
+* `applicationSession` (`string | undefined`): Optional session ID.
+  > **Recommendation:** Leave this as `undefined` so the SDK can generate and manage its own session internally. Only set this if you require a custom session management strategy.
+* `options` (`object | undefined`): Optional object for advanced configuration.
+
+### Options structure
+
+The `options` object supports the following shape:
+
+```javascript
+const options = {
+  cookies: {
+    deviceId: {
+      name: "customCookieName" // Overrides the default cookie name used for device ID
+    }
+  }
+};
+```
+
+> **Note:** If `deviceId.name` is not specified, the SDK defaults to `"yuno"` as the cookie name.
+
+### Example Usage
+
+```javascript
+const publicApiKey = 'your-public-api-key';
+const options = {
+  cookies: {
+    deviceId: {
+      name: 'custom-device-id'
+    }
+  }
+};
+
+// Recommended: omit the second parameter or set it to undefined
+const yuno = await Yuno.initialize(publicApiKey, undefined, options);
+```
+
+This feature is **optional** and is intended for **advanced use cases** where you need to customize how device identification is handled via cookies.
