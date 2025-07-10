@@ -10,19 +10,23 @@ metadata:
 next:
   description: ''
 ---
-To offer more payment methods to your clients using Yuno as the provider, you need to follow the steps below to connect your VTEX account to Yuno and configure the payment methods you want to offer.
+To offer your customers more payment methods using Yuno as the provider, follow the steps below to connect your VTEX account to Yuno and configure the available payment methods.
 
-1. Log into your [VTEX store account](https://vtex.com/).
+### Connect Yuno as a provider in VTEX
 
-2. In the VTEX Admin dashboard, navigate to **Store Settings** > **Providers** and click **New Provider**.
+This section guides you through adding Yuno as a payment provider in your VTEX store.
+
+1. Log in to your [VTEX store account](https://vtex.com/).
+
+2. In the VTEX admin dashboard, go to **Store Settings** > **Providers** and click **New provider**.
 
 ![](https://files.readme.io/b5feefa-image.png)
 
-3. Search for **Yuno** on the dialog and select the **Yuno** option on the results.
+3. In the dialog, search for **Yuno** and select the **Yuno** option from the results.
 
 ![](https://files.readme.io/0277803-image.png)
 
-4. Fill out the form with the required information. Following, you will find a description for each field you need to fill:
+4. Complete the form with the required information. See the table below for a description of each field:
 
 | Field                    | Description                                                                                                                                                                                                                  |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -36,64 +40,76 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 | **Public API Key**       | The Yuno `public-api-key`. You can find this information in the Yuno dashboard. For additional information, see [Developers (Credentials)](doc:developers-credentials).                                                      |
 | **Private Secret Key**   | The Yuno `private-secret-key`. You can find this information in the Yuno dashboard. For additional information, see [Developers (Credentials)](doc:developers-credentials).                                                  |
 
-> 🚧 Test Mode Warning
+> 🚧 Test mode warning
 >
-> VTEX recommends you to not enable the test mode in production environments, since the test payment options will be available to customers in your store.
+> Do not enable test mode in your production environment. If test mode is enabled, test payment options will be visible to your customers at checkout.
 
-5. After filling in all fields, click **Save**.
-6. Navigate to **Store Settings** > **Settings** and click the **+** button (green button at the top right corner) to add a new payment option.
+### Add payment methods in VTEX
+
+After saving your provider configuration, you can add payment methods to your VTEX store. Follow these steps:
+
+5. After completing all required fields, click **Save**.
+
+6. Go to **Store Settings** > **Settings** and click the **+** button (green button at the top right) to add a new payment option.
 
 ![](https://files.readme.io/f053995-image.png)
 
-7. Select the payment method you want to provide for your customer. You need to configure the provider for each card brand you want to make available for your customer.
+7. Select the payment method you want to offer your customers. You must configure the provider for each card brand you want to make available.
 
 ![](https://files.readme.io/4ad7929-image.png)
 
-8. After you select the payment method, a new dialog is displayed where you need to configure the payment provider:
-   1. At the **Process with provider**, select **Yuno**.
-   2. Add special conditions if necessary. For additional information regarding configuring the special conditions, access [Configuring payment special conditions](https://help.vtex.com/tutorial/special-conditions--tutorials_456#). For further information on configuring payment conditions considering installments with or without interest, check the [VTEX page](https://help.vtex.com/en/tutorial/how-to-configure-payment-conditions--tutorials_455?\&utm_source=autocomplete#installments-without-interest).
+8. After selecting the payment method, a new dialog will appear for configuring the payment provider:
+   1. In **Process with provider**, select **Yuno**.
+   2. If needed, add special conditions. For more details, see [Configuring payment special conditions](https://help.vtex.com/tutorial/special-conditions--tutorials_456#). For information about configuring payment conditions for installments (with or without interest), refer to the [VTEX documentation](https://help.vtex.com/en/tutorial/how-to-configure-payment-conditions--tutorials_455?\&utm_source=autocomplete#installments-without-interest).
    3. Click **Save**.
-   4. Change the **Status**  to **Active**.
+   4. Set the **Status** to **Active**.
 
 ![](https://files.readme.io/cd7de3e-image.png)
 
-> 📘 Adding Multiple Payment Methods
+> 📘 Adding multiple payment methods
 >
-> If you want to add more than one payment method to offer to your clients, Visa and Mastercard for example, you need to repeat steps **7** and **8** two times, one for Visa and the other for Mastercard.
+> To offer more than one payment method (for example, Visa and Mastercard), repeat steps **7** and **8** for each card brand you want to enable.
 
+### Configure the webhook URL
 
-9. As the last step, you have to configure the Webhook URL to receive the updates from the payments. 
-   1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?) and select **Developers**. 
+To receive payment updates from Yuno, you need to set up a webhook in your Yuno dashboard:
+
+9. Configure the webhook as follows:
+   1. Log in to the [Yuno dashboard](https://auth.y.uno/u/login?) and go to **Developers**.
    2. Select the **Webhooks** tab.
-   3. Click **add webhook**. The webhook  form will show up, where you should provide the following information:
-      1. **Name**: Define a name for the VTEX webhook.
-      2. **Endpoint URL**: You should inform the following URL **https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook**.
-      3. **x-api-key** and **x-secret**: You can set any information here. For example, you can add **VTEX** for both fields. 
-   4. For **Trigger on**, check all events that should notify you through the webhooks. Yuno recommends checking all options.
-   5. Click **Add**.
+   3. Click **Add webhook**. In the form, provide the following:
+      1. **Name**: Enter a name for the VTEX webhook.
+      2. **Endpoint URL**: Enter `https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook` (replace `store_name` with your actual VTEX store name).
+      3. **x-api-key** and **x-secret**: You can use any value here, such as **VTEX** for both fields.
+   4. Under **Trigger on**, select all events you want to receive notifications for. Yuno recommends enabling all options.
+   5. Click **Add** to save the webhook.
 
 ![](https://files.readme.io/ccc5357-image.png)
 
-### PIX payment expiration management
+### Pix payment expiration management
 
-When configuring PIX payments with VTEX, Yuno provides automatic expiration handling to prevent order reconciliation issues:
+Yuno offers enhanced management of Pix payment expirations when integrated with VTEX. This feature helps prevent order reconciliation issues and keeps payment statuses consistent across VTEX, Yuno, and your payment provider.
 
-* **Custom expiration tracking**: Yuno internally monitors PIX payment expiration dates without relying solely on provider webhooks
-* **Proactive verification**: Before expiration, Yuno verifies with the provider if the payment was completed
-* **Automatic order cancellation**: When PIX payments expire unpaid, Yuno immediately notifies VTEX via webhook, allowing automatic order cancellation
-* **Reconciliation consistency**: This ensures payment statuses remain synchronized between VTEX, Yuno, and the payment provider
+When you enable Pix payments with VTEX, Yuno automatically handles expiration in the following ways:
 
-This feature is particularly valuable for merchants who set custom expiration dates on PIX payments, as it prevents orphaned orders and inventory discrepancies. It specifically addresses the common issue where VTEX continues attempting to authorize expired PIX payments for extended periods (up to 24 retries), creating status mismatches across systems.
+- **Custom expiration tracking**: Yuno tracks Pix payment expiration dates internally, without relying solely on provider webhooks.
+- **Proactive verification**: Before a Pix payment expires, Yuno checks with the provider to confirm whether the payment was completed.
+- **Automatic order cancellation**: If a Pix payment expires without being paid, Yuno immediately notifies VTEX via webhook, enabling automatic order cancellation.
+- **Consistent reconciliation**: This process ensures that payment statuses remain synchronized between VTEX, Yuno, and your payment provider.
 
-> **Important**: This enhanced expiration handling only works when you configure a custom `expiration_date` during PIX payment creation, not for default provider expiration times.
+This functionality is especially useful for merchants who set custom expiration dates for Pix payments. It prevents orphaned orders and inventory discrepancies by addressing a common issue: VTEX may continue trying to authorize expired Pix payments for an extended period (up to 24 retries), which can cause status mismatches between systems.
 
-After completing the steps above, your clients can access a new payment method at checkout. If you configure Visa, for example, when your customers arrive at the checkout phase and select credit card as the payment method, the Yuno checkout will gather all the information required for fraud screening and 3DS services in the background while using the VTEX credit card form.
+> **Important:** Enhanced expiration management only applies when you set a custom `expiration_date` during Pix payment creation. It does not apply to default provider expiration times.
+
+---
+
+After completing the configuration steps above, your customers will see the new payment methods at checkout. For example, if you enable Visa, customers selecting credit card at checkout will use the VTEX credit card form, while Yuno collects all necessary information for fraud screening and 3DS in the background.
 
 <Image align="center" src="https://files.readme.io/a17a02d-vtex.png" />
 
-Once you start receiving payments in VTEX with Yuno, you will be able to see all the information related to the transactions in your [Yuno dashboard](doc:payments-2) as a regular payment. 
+Once you start receiving payments in VTEX with Yuno, you can view all transaction details in your [Yuno dashboard](doc:payments-2) as with any other payment method.
 
-* As additional info in the payment detail, particularly inside the metadata struct, you will also be able to identify the VTEX account related to the payment creation.
+- As additional information, you can identify the VTEX account associated with each payment in the payment details, specifically within the `metadata` structure.
 
   ```json
   "metadata": [
@@ -106,7 +122,11 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
 
 ### Customizations
 
-If you want to add or change certain UX aspects of the checkout, VTEX lets the merchants modify a few things: 
+### Customizations
 
-* Checkout Page [customizations](https://developers.vtex.com/docs/guides/customization) 
-* [Change Payment Method names](https://developers.vtex.com/docs/guides/change-payment-method-names-in-checkout) in Checkout.
+You can tailor the checkout experience in VTEX to better match your brand and customer needs. VTEX allows merchants to customize several aspects of the checkout flow, including the appearance and naming of payment methods.
+
+- [Customize the checkout page](https://developers.vtex.com/docs/guides/customization): Adjust the layout, design, and user experience of your checkout.
+- [Change payment method names in checkout](https://developers.vtex.com/docs/guides/change-payment-method-names-in-checkout): Update how payment methods are displayed to your customers.
+
+For more details, refer to the official VTEX documentation linked above.
