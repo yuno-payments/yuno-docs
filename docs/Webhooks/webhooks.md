@@ -15,18 +15,20 @@ next:
 ---
 ## What is a webhook
 
-Webhooks enable apps to provide real-time information whenever an event happens without needing constant requests. They are a passive method to receive data between two systems through an HTTP POST. After configuring the Yuno webhooks, you will receive event notifications every time an activity or a function is generated within the Yuno flow.
+A webhook is a way for applications to receive real-time notifications about events as they happen, without the need for constant polling or manual requests. Webhooks work by sending data from one system to another through an HTTP POST request. 
 
-## Why do we recommend you use webhooks?
+After you configure Yuno webhooks, your system will automatically receive event notifications whenever an activity or function occurs within the Yuno platform. This allows you to react to important events as soon as they happen.
 
-Webhooks are the best way to ensure your system is up-to-date with payment progress and status. Since the event notifications trigger automatically, your system won't need to perform recurrent requests to Yuno. You will process the payment information on demand.
+## Why use webhooks?
 
-## What do you need to know before start using webhooks?
+Webhooks are the most efficient way to keep your system updated with the latest payment progress and status changes. Because event notifications are triggered automatically, your system does not need to repeatedly request updates from Yuno. Instead, you can process payment information on demand, improving both efficiency and reliability.
 
-To start using Yuno’s webhooks, you need to build a public REST API to receive event notifications (POST request). That means the REST API you will build should not require any authentication or access restriction through a header. Despite using a public API, the communication system is very safe since Yuno event notifications will not be available to the public and will use a unique URL to communicate only to your REST API.
+## What you need to know before using webhooks
 
-## Webhooks Delivery and Response Requirements
+Before you start using Yuno webhooks, you need to set up a public REST API endpoint to receive event notifications via HTTP POST requests. This endpoint should be accessible without authentication or header-based access restrictions. Although your API is public, security is maintained because Yuno sends event notifications only to your unique webhook URL, which is not exposed to the public.
 
-Yuno webhooks expects to receive an **HTTP 200 OK** status as a response to confirm the webhook was successfully received. The merchant system does not need to include any information in the response's body. Only the HTTP 200 status is required.
+## Webhook delivery and response requirements
 
-If no response is received within the specified time, Yuno will retry sending the event notification up to seven times to ensure no information is lost. Refer to the [Receipt Confirmation Process](https://docs.y.uno/docs/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.
+Yuno expects your endpoint to respond with an **HTTP 200 OK** status to confirm successful receipt of each webhook notification. No response body is required—only the status code.
+
+If Yuno does not receive a 200 OK response within the expected timeframe, it will automatically retry sending the notification up to seven times to ensure delivery. For more information about the retry schedule and confirmation process, see the [receipt confirmation process](https://docs.y.uno/docs/configure-webhooks#receipt-confirmation-process) section.
