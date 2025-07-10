@@ -546,8 +546,6 @@ const yuno = await Yuno.initialize(publicApiKey, undefined, options);
 
 This feature is **optional** and is intended for **advanced use cases** where you need to customize how device identification is handled via cookies.
 
-* [Optional initialization `options` parameter](doc:complementary-features-full-sdk#optional-initialization-options-parameter)
-
 ## What's next?
 
 Learn about the additional configurations from the Full SDK accessing [Complementary Features](doc:complementary-features-full-sdk). You can also access other functions available on the Yuno Web SDK:
