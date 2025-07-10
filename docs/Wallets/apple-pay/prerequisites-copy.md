@@ -11,7 +11,7 @@ To integrate Apple Pay into the Yuno solution, you must complete some steps cove
 
 In the Apple Developer dashboard:
 
-1. Log in to the [Apple Developer](https://idmsa.apple.com/IDMSWebAuth/signin?appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757\&path=%2Faccount%2F\&rv=1).
+1. Log in to [Apple Developer](https://idmsa.apple.com/IDMSWebAuth/signin?appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757\&path=%2Faccount%2F\&rv=1).
 2. Go to **Certificates, Identifiers & Profiles**, then select **Register a new identifier**.
 3. Choose **Merchant IDs** and click **Continue**.
 
