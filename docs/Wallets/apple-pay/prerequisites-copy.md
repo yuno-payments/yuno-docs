@@ -5,164 +5,146 @@ hidden: true
 metadata:
   robots: index
 ---
-To integrate Apple Pay into the Yuno solution, you must complete some steps covered on this page. Follow the steps described below before configuring Apple Pay in the[ Yuno dashboard](https://auth.y.uno/u/login?).
+To integrate Apple Pay into the Yuno solution, you must complete some steps covered on this page. Follow the steps described below before configuring Apple Pay in the [Yuno Dashboard](https://auth.y.uno/u/login?).
 
-## Step 1: Create a merchant identifier
+## Step 1: Register a merchant identifier
 
-In the Apple Developer dashboard, register a merchant identifier by following the steps:
+In the Apple Developer dashboard:
 
-1. Log in to the [Apple developer](https://idmsa.apple.com/IDMSWebAuth/signin?appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757\&path=%2Faccount%2F\&rv=1).
-2. In **Certificates, Identifiers & Profiles**, select **Register a new identifier**.
-3. Select **Merchant IDs** and click **Continue**.
+1. Log in to the [Apple Developer](https://idmsa.apple.com/IDMSWebAuth/signin?appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757\&path=%2Faccount%2F\&rv=1).
+2. Go to **Certificates, Identifiers & Profiles**, then select **Register a new identifier**.
+3. Choose **Merchant IDs** and click **Continue**.
 
 <Image align="center" src="https://files.readme.io/ab500a4-image-1.png" />
 
-4. Add a **Description** to describe the merchant you are registering, such as **Apple Pay Integration**. For the **Identifier**, enter the prefix `merchant.com.y.uno.SomeIdentifier`.
+4. Enter a **Description** (e.g., `Apple Pay Integration`) and an **Identifier** in the format `merchant.com.y.uno.YourBusinessName`.
 
 <Image align="center" src="https://files.readme.io/52f4ba5-image-2.png" />
 
-5. Click **Continue**
+5. Click **Continue** and follow the steps to register.
 
-## Step 2: Create a payment processing certificate
+## Step 2: Generate a payment processing certificate
 
-To start, create a new directory (e.g., `Downloads/ApplePayFiles`) to store the files required for generating certificates. You must save certificates and other files from Apple Pay through the process.
-
-To create a **PaymentProcessingCertificate** on your MacOS, follow the steps presented below:
-
-1. Open **Keychain Access** on your MacOS.
-2. In the Keychain Access application, navigate to **Keychain Access > Certificate Assistant > Request a Certificate from a Certificate Authority**.
+1. Create a new directory (e.g., `Downloads/ApplePayFiles`) to store the certificate files.
+2. Open **Keychain Access** on your Mac.
+3. Go to **Keychain Access > Certificate Assistant > Request a Certificate From a Certificate Authority**.
 
 <Image align="center" src="https://files.readme.io/e8dc051-image_1.png" />
 
-3. Fill in the certificate information according to the following instructions:
-   1. **Email Address**: Enter your email address.
-   2. **Name**: Enter a name for the private key (e.g., **John Doe ProcessingCertificate**).
-   3. **CA Email Address**: Leave this field empty.
-   4. Select **Saved to disk**.
-   5. Select **Let me specify key pair information.**
-4. Click **Continue**.
-5. Save the CSR with the name `CertificateSigningRequestPaymentProcessingCertificate.certSigningRequest` in the previously created directory.
-6. For the key pair, use the following configurations:
+4. Fill out the form:
+   * **Email Address**: your email address
+   * **Common Name**: a name for the certificate (e.g., `John Doe ProcessingCertificate`)
+   * **CA Email Address**: leave blank
+   * Select **Saved to disk**
+   * Check **Let me specify key pair information**
+
+5. Click **Continue**, then save the file as `CertificateSigningRequestPaymentProcessingCertificate.certSigningRequest` in your working directory.
+
+6. When prompted for key pair settings, use:
+
    * **Key Type**: Elliptic Curve (EC)
    * **Key Size**: 256-bit
    * **Algorithm**: ECDSA
-7. Click **Continue** to finish creating the CSR.
 
-## Step 3: Get the payment processing certificate
+7. Click **Continue** to generate the CSR.
 
-After creating the CSR, you need to get and convert the certificate. Follow the steps:
+## Step 3: Retrieve and convert the payment processing certificate
 
-1. Access the [Apple Developer](https://developer.apple.com/account/resources/identifiers/list/merchant) portal.
-2. Select your Merchant ID, and click **Create Certificate** under **Apple Pay Payment Processing Certificate**.
+1. Go to the [Apple Developer Merchant ID list](https://developer.apple.com/account/resources/identifiers/list/merchant).
+2. Select your Merchant ID and click **Create Certificate** under **Apple Pay Payment Processing Certificate**.
 
 <Image align="center" src="https://files.readme.io/f3dbeec-Picture1.png" />
 
-3. For **Will payments associated with this Merchant ID be processed exclusively in China mainland?**, select **No**.
-4. Click **Upload a Certificate Signing Request**, and select the previously created CSR named  `CertificateSigningRequestPaymentProcessingCertificate.certSigningRequest`, and click **Continue**.
-5. Download the signed certificate (`apple_pay.cer`) from Apple and save it in the previously created directory (ApplePayFiles).
+3. When prompted, answer **No** to "Will payments... be processed exclusively in China mainland?"
+4. Upload the file `CertificateSigningRequestPaymentProcessingCertificate.certSigningRequest`.
+5. Download the signed certificate as `apple_pay.cer` and save it to your directory.
 
 <Image align="center" src="https://files.readme.io/6a03caf-Picture2.png" />
 
-6. Convert the certificate using the following command. Remember to navigate to the previously created `ApplePayFiles` directory:
+6. Convert the certificate to PEM format:
 
-```shell
+```bash
 openssl x509 -inform DER -in apple_pay.cer -out apple_pay.pem
 ```
 
-## Step 4: Export the private key information
+## Step 4: Export the private key
 
-1. Access the **Keychain Access** on your computer.
-2. Find the entry previously created in Step 2 (e.g., **John Doe ProcessingCertificate**).
+1. In **Keychain Access**, find the key you created (e.g., `John Doe ProcessingCertificate`).
+2. Right-click and choose **Export**.
+3. Export the key as a `.p12` file (e.g., `JohnDoeProcessingCertificate.p12`) and save it to your working directory.
+4. Set a strong password (you’ll use it in the next step).
+5. Convert the `.p12` to a PEM-format private key:
 
-<Image align="center" src="https://files.readme.io/83a0096-Picture3.png" />
-
-3. Right-click and export the private key in `.p12` format (e.g., `JohnDoeProcessingCertificate.p12`).
-4. Set a password (e.g., Yuno2024) and save it in the previously created directory. You will have to provide your computer password to export the `.p12` file.
-5. After exporting, we need to convert the private key. Access the directory where you saved the private key, open the terminal, and run the following command:
-
-```
+```bash
 openssl pkcs12 -in JohnDoeProcessingCertificate.p12 -nocerts -nodes | sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' > ProcessingCertificatePrivateKey.pem
 ```
 
-The private key content will be available in the `ProcessingCertificatePrivateKey.pem` file.
+## Step 5: Upload the certificate and key to Yuno
 
-## Step 5: Register the certificate and private
-
-You can register the private key and the certificate into the Yuno Dashboard. Follow the steps below:
-
-1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?).
-2. Upload the contents of `ProcessingCertificatePrivateKey.pem` to the **Payment processing key** field.
-3. Upload the contents of `apple_pay.pem` to the **Payment processing certificate** field.
-
-The following image presents where to add the information to the Yuno Dashboard.
+1. Open the Yuno Dashboard: [https://auth.y.uno/u/login](https://auth.y.uno/u/login)
+2. Open `ProcessingCertificatePrivateKey.pem` in a text editor and copy its full contents, including header and footer.
+3. Paste it into the **Payment processing key** field.
+4. Open `apple_pay.pem` and copy its full contents.
+5. Paste it into the **Payment processing certificate** field.
 
 <Image align="center" src="https://files.readme.io/abab730-image_3.png" />
 
-## Step 6: Create a merchant identity certificate
+## Step 6: Generate a merchant identity certificate
 
-To create a **MerchantIdentityCertificate** on your MacOS, follow the steps presented below:
+1. Open **Keychain Access** and navigate to **Certificate Assistant > Request a Certificate From a Certificate Authority**.
 
-1. Open **Keychain Access** on your MacOS.
-2. In the Keychain Access application, navigate to **Keychain Access > Certificate Assistant > Request a Certificate from a Certificate Authority**.
-3. Fill in the certificate information according to the following instructions:
-   1. **Email Address**: Enter your email address.
-   2. **Common Name**: Enter a name for the private key (e.g., **John Doe MerchantIdentityCertificate**).
-   3. **CA Email Address**: Leave this field empty.
-   4. Select **Saved to disk**.
-4. Click **Continue**.
-5. Save the CSR with the name `CertificateSigningRequestMerchantIdentityCertificate.certSigningRequest` in the previously created directory.
-6. Click **Continue** to finish creating the CSR.
+2. Enter:
+   * **Email Address**: your email
+   * **Common Name**: e.g., `John Doe MerchantIdentityCertificate`
+   * Leave **CA Email Address** blank
+   * Select **Saved to disk**
 
-## Step 7: Get the merchant identity certificate
+3. Save as `CertificateSigningRequestMerchantIdentityCertificate.certSigningRequest`.
 
-After creating the CSR, you need to get and convert the certificate. Follow the steps:
+## Step 7: Retrieve and convert the merchant identity certificate
 
-1. Access the [Apple Developer](https://developer.apple.com/account/resources/identifiers/list/merchant) portal.
-2. Select your Merchant ID, and click **Create Certificate** under **Apple Pay Merchant Identity Certificate**.
-3. Click **Upload a Certificate Signing Request** and select the certificate created in Step 6 (`CertificateSigningRequestMerchantIdentityCertificate.certSigningRequest`).
-4. Click **Continue**.
-5. Download the signed certificate (`merchant_id.cer`) from Apple and save it in the previously created directory.
-6. Access the directory where you saved the certificate, open the terminal, and run the following command to convert it to the required format:
+1. Go to the [Apple Developer Merchant ID list](https://developer.apple.com/account/resources/identifiers/list/merchant).
+2. Select your Merchant ID and click **Create Certificate** under **Apple Pay Merchant Identity Certificate**.
+3. Upload the `CertificateSigningRequestMerchantIdentityCertificate.certSigningRequest` file.
+4. Download the signed certificate as `merchant_id.cer` and save it.
+5. Convert it to PEM:
 
-```shell
+```bash
 openssl x509 -inform DER -in merchant_id.cer -out merchant_id.pem
 ```
 
-## Step 8: Export the merchant private key
+## Step 8: Export the merchant identity private key
 
-1. Access the **Keychain Access** on your computer.
-2. Find the entry previously created in Step 6 (e.g., **John Doe MerchantIdentityCertificate**).
-3. Right-click and export the private key in `.p12` format (e.g., `JohnDoeMerchantIdentityCertificate.p12`).
-4. Set a password (e.g., Yuno2024) and save it in the previously created directory. You will have to provide your computer password to export the `.p12` file.
-5. After exporting, we need to convert the private key. Access the directory where you saved the private key, open the terminal, and run the following command:
+1. In **Keychain Access**, find `John Doe MerchantIdentityCertificate`.
+2. Right-click and export as `JohnDoeMerchantIdentityCertificate.p12`.
+3. Set a strong password.
+4. Convert the private key to PEM:
 
-```
+```bash
 openssl pkcs12 -in JohnDoeMerchantIdentityCertificate.p12 -nocerts -nodes | sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' > MerchantIdentityCertificatePrivateKey.pem
 ```
 
-The private key content will be available in the `MerchantIdentityCertificatePrivateKey.pem` file.
+## Step 9: Upload the merchant identity certificate and key
 
-## Step 9: Register the merchant identity certificates
-
-You can register the merchant's private key and certificate in the Yuno Dashboard. Follow the steps below:
-
-1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?).
-2. Upload the contents of `MerchantIdentityCertificatePrivateKey.pem` to the **Merchant Identity key** field.
-3. Upload the contents of `merchant_id.pem` to the **Merchant Identity Password** field.
-
-The following image presents where to add the information to the Yuno Dashboard.
+1. Open the Yuno Dashboard.
+2. Copy the contents of `MerchantIdentityCertificatePrivateKey.pem` and paste it into the **Merchant Identity key** field.
+3. Copy the contents of `merchant_id.pem` and paste it into the **Merchant Identity certificate** field.
 
 <Image align="center" src="https://files.readme.io/abab730-image_3.png" />
 
-## Step 10: Register merchant domains
+## Step 10: Register your merchant domains
 
-As the last step, you have to register the merchant domains into the Apple Dashboard. Follow the steps below to complete the process:
-
-1. Access the [Apple Developer](https://developer.apple.com/account/resources/identifiers/list/merchant).
-2. Select your **Merchant ID**, and click **Add Domain** under **Merchant Domains**.
+1. Go to [Apple Developer Merchant ID list](https://developer.apple.com/account/resources/identifiers/list/merchant).
+2. Select your **Merchant ID** and click **Add Domain** under **Merchant Domains**.
 3. Enter the domain (e.g., `demo.y.uno`) and click **Save**.
 
-After finishing this step, you can start the Yuno solution integration. You can choose between the following options to integrate Yuno into your system:
+> ⚠️ Note: You must also host Apple’s `apple-developer-merchantid-domain-association` file at:
+>
+> ```
+> https://yourdomain.com/.well-known/apple-developer-merchantid-domain-association
+> ```
+
+Once all steps are complete, your Apple Pay integration with Yuno is ready. You can now proceed with:
 
 * [SDK Integration](doc:sdk-integration-apple)
 * [Direct Integration](doc:direct-integration)
