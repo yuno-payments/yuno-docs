@@ -10,100 +10,108 @@ metadata:
 next:
   description: ''
 ---
-Yuno offers a unified and automated solution for handling disputes, allowing you to manage chargebacks across all providers from a single dashboard. Our platform helps you automate workflows, recover revenue, and stay audit-ready, all without the back and forth.
+Yuno provides a unified and automated solution for managing disputes, enabling you to handle chargebacks from all providers in a single dashboard. With Yuno, you can streamline your workflows, recover revenue, and maintain audit readiness—eliminating unnecessary back and forth.
 
-## What is a Chargeback?
+## What is a chargeback?
 
-A chargeback is a claim initiated by a customer through their issuing bank due to a transaction they find problematic, such as unauthorized payments, incorrect amounts, or merchant disputes.
+A chargeback is a claim initiated by a customer through their issuing bank when they identify a problem with a transaction. Common reasons include unauthorized payments, incorrect amounts, or disputes with the merchant.
 
-In Yuno, a **chargeback** and a **dispute** are technically the same—they both represent a contested transaction.\
-The conceptual difference lies in the merchant's response: when a merchant provides documentation to contest the chargeback, it becomes an **active dispute**. However, the transaction remains the same, and only its state evolves based on the actions taken.
+In Yuno, a **chargeback** and a **dispute** both refer to a contested transaction. The distinction is based on the merchant's response: when the merchant submits documentation to contest the chargeback, it becomes an **active dispute**. The transaction itself remains the same, but its state changes depending on the actions taken.
 
-## Chargeback Workflow
+## Chargeback workflow
+
+The chargeback workflow in Yuno helps you understand each step from the moment a customer initiates a claim to the final resolution. The following outlines the typical process:
 
 <Image align="center" src="https://files.readme.io/e0034ded51f79400bd4698b840ec6c77237938e13ea3db078ae959c94d05f375-Chargebacks_disputes.png" />
 
 1. **Chargeback creation**
    * The customer raises a claim with their issuing bank
-   * The bank notifies the payment provider
+   * The issuing bank notifies the payment provider
    * The provider informs Yuno about the claim
-   * Yuno logs the chargeback, and its initial transaction state is `CREATED`
+   * Yuno logs the chargeback, and the initial transaction state is `CREATED`
 
 2. **Merchant notification**
-   * Yuno notifies the merchant about the chargeback and updates the payment's status
+   * Yuno notifies the merchant about the chargeback and updates the payment status.
 
 3. **Merchant actions**
    * The merchant can:
-     * **Submit evidence**: Provide documentation supporting the validity of the transaction, turning the chargeback into an active dispute
-     * **Accept the chargeback**: Acknowledge the claim without disputing it and lose the funds (`LOST`)
+     * **Submit evidence**: Provide documentation supporting the validity of the transaction. This action turns the chargeback into an active dispute.
+     * **Accept the chargeback**: Acknowledge the claim without contesting it, resulting in a loss of funds (`LOST`).
 
 4. **Evidence review**
-   * If evidence is submitted, the issuing bank reviews the documentation and issues a final decision (`PENDING_REVIEW`)
+   * If evidence is submitted, the issuing bank reviews the documentation and issues a final decision (`PENDING_REVIEW`).
 
-5. **Chargeback/dispute resolution**
-   * **Dispute Won** (`WON`): The customer's claim is rejected, and the transaction remains valid
-   * **Dispute Lost** (`LOST`): The customer's claim is accepted, resulting in a refund to the customer
+5. **Chargeback or dispute resolution**
+   * **Dispute won** (`WON`): The customer's claim is rejected, and the transaction remains valid
+   * **Dispute lost** (`LOST`): The customer's claim is accepted, resulting in a refund to the customer
 
-## Chargeback States
+## Chargeback states
 
-The states of chargebacks in Yuno represent the various stages of the process:
+Chargebacks in Yuno move through several states, each representing a different stage in the dispute process. Understanding these states helps you track and manage chargebacks efficiently.
 
 <Image align="center" src="https://files.readme.io/5affb7a6f6868047baf67fda23adbe8f44f4dd142a81c64dd6c2f0a5b6e857bf-Chargebacks_2.png" />
 
-| **State**        | **Description**                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| `CREATED`        | A chargeback has been received; the merchant can take action or submit evidence if the provider supports it. |
-| `PENDING_REVIEW` | Evidence has been submitted and is under review by the issuing bank.                                         |
-| `WON`            | The dispute was resolved in favor of the merchant.                                                           |
-| `LOST`           | The claim was accepted, resulting in a refund to the customer.                                               |
+| **State**         | **Description**                                                                                                 |
+| ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| `CREATED`         | The chargeback has been received. The merchant can take action or submit evidence if supported by the provider. |
+| `PENDING_REVIEW`  | Evidence has been submitted and is under review by the issuing bank.                                            |
+| `WON`             | The dispute was resolved in favor of the merchant.                                                              |
+| `LOST`            | The claim was accepted, resulting in a refund to the customer.                                                  |
 
-<br />
 
-| **Payment Status** | **Payment Substatus** | **Transaction Type** | **Transaction Status** | **Description**                                                                                            |
-| ------------------ | --------------------- | -------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `SUCCEEDED`        | APPROVED              | Chargeback           | Won                    | Chargeback dispute won                                                                                     |
-| `IN_DISPUTE`       | RECEIVED              | Chargeback           | Created                | Chargeback or Inquiry received. Decision or documentation must be provided in order to initiate a dispute. |
-|                    | PENDING\_REVIEW       | Chargeback           | Pending\_review        | Dispute in review by the provider                                                                          |
-| `CHARGEBACK`       | LOST                  | Chargeback           | Lost                   | Expired/Closed/Review\_lost                                                                                |
+### Payment and transaction statuses
+
+The following table explains how chargeback states relate to payment and transaction statuses in Yuno:
+
+| **Payment status** | **Payment substatus** | **Transaction type** | **Transaction status** | **Description**                                                                                           |
+| ------------------ | --------------------- | -------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
+| `SUCCEEDED`        | APPROVED              | Chargeback           | Won                    | The chargeback dispute was won by the merchant.                                                           |
+| `IN_DISPUTE`       | RECEIVED              | Chargeback           | Created                | Chargeback or inquiry received. Decision or documentation is required to initiate a dispute.              |
+|                    | PENDING_REVIEW        | Chargeback           | Pending_review         | Dispute is under review by the provider.                                                                  |
+| `CHARGEBACK`       | LOST                  | Chargeback           | Lost                   | The dispute was lost (expired, closed, or review lost).                                                   |
 
 ## Key benefits of managing chargebacks with Yuno
 
-Yuno simplifies and optimizes your chargeback management through several key advantages:
+Yuno helps you simplify and optimize your chargeback management process. Here are some of the main benefits you gain by using Yuno for chargebacks:
 
 ### All your disputes in one integrated workflow
 
-Consolidate chargeback data from all your payment providers into one dashboard. Whether it's Visa, Mastercard, or a local acquirer, you can track, respond, and manage disputes centrally—no API stitching required.
+Easily consolidate chargeback data from all your payment providers into a single dashboard. Whether you work with Visa, Mastercard, or a local acquirer, you can track, respond to, and manage disputes centrally—no need for complex API integrations.
 
 ### Streamlined chargeback response
 
-Automate chargeback responses with the right supporting documentation to ensure every dispute is addressed quickly and efficiently.
+Automate your chargeback responses with the right supporting documentation, ensuring every dispute is addressed quickly and efficiently.
 
-### Ensure compliance
+### Simplified compliance
 
-Every chargeback, every response, every update—logged and accessible. With built-in audit trails and exportable records, compliance and internal reviews are faster and easier.
+Every chargeback, response, and update is logged and accessible. With built-in audit trails and exportable records, compliance and internal reviews become faster and easier.
 
-## Understand the reason code
+## Understanding the reason code
 
-Understanding the reason code behind each chargeback is crucial, as it explains why the customer initiated the dispute. Familiarity with these codes allows you to tailor your response more effectively and gather the necessary information for each case. In the [Chargeback Reason Codes section](doc:reason-codes), you can find a comprehensive list of all possible codes provided by acquirers. In each chargeback transaction you'll be able to find the reason code in the `response_code` field.
+Each chargeback includes a reason code that explains why the customer initiated the dispute. Understanding these codes helps you tailor your response and gather the right information for each case.
 
-## Evidence Management
+You can find a comprehensive list of all possible codes provided by acquirers in the [chargeback reason codes section](doc:reason-codes). For each chargeback transaction, the reason code appears in the `response_code` field.
 
-To dispute a chargeback, the merchant must submit evidence supporting their case. In the context of dispute resolution services, evidence refers to any information or documentation that substantiates your position in a disagreement or claim. Providing compelling evidence is crucial for achieving a favorable outcome. Examples of such evidence include:
+## Evidence management
 
-* *Proof of delivery*: Documents confirming that a product was shipped and received by the customer, such as tracking numbers or delivery confirmations
-* *Customer communications*: Records of emails, text messages, or any exchanges that demonstrate agreements or clarifications made with the customer
-* *Refund and return policies*: Copies of the policies that the customer agreed to at the time of purchase, outlining the conditions for returns or refunds
-* *Proof of authenticity*: Documentation verifying the legitimacy of a transaction, like signed receipts or authentication records
+To dispute a chargeback, you must submit evidence supporting your case. In the context of dispute resolution, evidence refers to any information or documentation that substantiates your position in a disagreement or claim. Providing clear and relevant evidence is essential for achieving a favorable outcome.
 
-It's essential that the evidence presented is clear, relevant, and directly pertains to the issue at hand. Additionally, organizing and presenting the evidence professionally and concisely will aid in its assessment by the parties involved in resolving the dispute.
+Common types of evidence include:
+
+* *Proof of delivery*: Documents confirming that a product was shipped and received by the customer, such as tracking numbers or delivery confirmations.
+* *Customer communications*: Records of emails, text messages, or any exchanges that demonstrate agreements or clarifications made with the customer.
+* *Refund and return policies*: Copies of the policies that the customer agreed to at the time of purchase, outlining the conditions for returns or refunds.
+* *Proof of authenticity*: Documentation verifying the legitimacy of a transaction, such as signed receipts or authentication records.
+
+Make sure your evidence is clear, relevant, and directly related to the issue at hand. Organizing and presenting your evidence professionally and concisely will help the parties involved assess your case more effectively.
 
 > 📘 Evidence requirements
 >
-> The uploaded files must meet the following criteria:
+> Uploaded files must meet the following criteria:
 >
-> * *Format*: File must be in PDF format, encoded as base64
-> * *Size*: File must be no larger than 1 MB in size
-> * *Language*: Dispute should be written in English or the country's local language
+> * *Format*: PDF file, encoded as base64
+> * *Size*: No larger than 1 MB
+> * *Language*: Dispute should be written in English or the local language
 
 ### Example Request to Submit Evidence
 
