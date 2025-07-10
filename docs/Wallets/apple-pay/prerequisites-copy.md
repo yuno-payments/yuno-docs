@@ -115,7 +115,7 @@ openssl x509 -inform DER -in merchant_id.cer -out merchant_id.pem
 
 ## Step 8: Export the merchant identity private key
 
-1. In **Keychain Access**, find `John Doe MerchantIdentityCertificate`.
+1. In **Keychain Access**, find the certificate created in step 6, e.g. `John Doe MerchantIdentityCertificate`.
 2. Right-click and export as `JohnDoeMerchantIdentityCertificate.p12`.
 3. Set a strong password.
 4. Convert the private key to PEM:
@@ -123,6 +123,8 @@ openssl x509 -inform DER -in merchant_id.cer -out merchant_id.pem
 ```bash
 openssl pkcs12 -in JohnDoeMerchantIdentityCertificate.p12 -nocerts -nodes | sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' > MerchantIdentityCertificatePrivateKey.pem
 ```
+
+The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`.
 
 ## Step 9: Upload the merchant identity certificate and key
 
