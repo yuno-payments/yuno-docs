@@ -79,6 +79,8 @@ openssl x509 -inform DER -in apple_pay.cer -out apple_pay.pem
 openssl pkcs12 -in JohnDoeProcessingCertificate.p12 -nocerts -nodes | sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' > ProcessingCertificatePrivateKey.pem
 ```
 
+The private key will be stored in `ProcessingCertificatePrivateKey.pem`.
+
 ## Step 5: Upload the certificate and key to Yuno
 
 1. Open the Yuno Dashboard: [https://auth.y.uno/u/login](https://auth.y.uno/u/login)
