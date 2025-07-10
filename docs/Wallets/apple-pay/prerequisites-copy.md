@@ -1,7 +1,7 @@
 ---
 title: Prerequisites (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
