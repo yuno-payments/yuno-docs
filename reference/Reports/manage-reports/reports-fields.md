@@ -1499,12 +1499,6 @@ Below, you will find details of each report type.
       <td>Wallet associated with the transaction (MAX 255; MIN 3).</td>
       <td>Wallet ABC</td>
     </tr>
-    <tr>
-      <td><code>acquirer</code></td>
-      <td>string</td>
-      <td>Name of the acquirer that processed the transaction (MAX 255; MIN 3).</td>
-      <td>Acquirer ABC</td>
-    </tr>
   </tbody>
 </table>
 
@@ -1798,12 +1792,6 @@ Below, you will find details of each report type.
             <td>timestamp</td>
             <td>Date by the acquirer in which the funds will be deposited in the merchant's bank account.</td>
             <td>2022-05-09 0:00</td>
-          </tr>
-          <tr>
-            <td><code>reconciliation</code></td>
-            <td>struct</td>
-            <td>Reconciliation information structure containing status, date, and ID details.</td>
-            <td>{"status": "RECONCILED", "date": "2022-05-09"}</td>
           </tr>
         </tbody>
       </table>
