@@ -1501,7 +1501,6 @@ Below, you will find details of each report type.
     </tr>
   </tbody>
 </table>
-
     </div>
   </details>
 </body>
