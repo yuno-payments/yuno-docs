@@ -10,88 +10,106 @@ metadata:
 next:
   description: ''
 ---
-This page provides instructions for connecting and offering Google Pay™ as a payment option to your customers using the Direct integration.
+This page explains how to connect and offer Google Pay™ as a payment option to your customers using the direct integration method.
 
 ## Requirements
 
-Before starting the Google Pay integration process, ensure that Google Pay is available in your country. Use the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en) to verify support for your operating countries.
+Before you begin integrating Google Pay with Yuno, make sure that Google Pay is supported in your country. You can verify this on the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en).
 
-Next, check which processors are available by reviewing the [participating processors](https://developers.google.com/pay/api/) on Google's site.
+Next, review the list of [participating processors](https://developers.google.com/pay/api/) on Google’s site to confirm which processors are available for your region.
 
-All merchants must comply with the Google Pay APIs [Acceptable Use Policy](https://payments.developers.google.com/terms/aup), accept the [Google Pay API Terms of Service](https://payments.developers.google.com/terms/sellertos), and register with the [Google Pay Business Console](https://pay.google.com/business/console) to obtain a Google merchant ID. Complete the Google Pay and Wallet Console configuration by following these steps:
+To use Google Pay, all merchants must:
 
-1. Complete the **Business Profile**
+- Comply with the Google Pay APIs [Acceptable Use Policy](https://payments.developers.google.com/terms/aup).
+- Accept the [Google Pay API Terms of Service](https://payments.developers.google.com/terms/sellertos).
+- Register with the [Google Pay Business Console](https://pay.google.com/business/console) to obtain a Google merchant ID.
 
-2. Review the information required in **Google Pay API** > **Integrate with your website**:
-   * Your website – This must exactly match the domain of your hosted checkout page (with or without "www")
-   * Integration type – **GATEWAY**
+After registering, complete the Google Pay and Wallet Console configuration:
 
-3. Screenshots:
+1. Complete your **Business profile** in the console.
+2. In **Google Pay API** > **Integrate with your website**, review and provide the following:
+   - **Your website**: The domain must exactly match your hosted checkout page (with or without "www").
+   - **Integration type**: Select **GATEWAY**.
+3. Prepare and submit the following screenshots:
+   - **Payment method screen**: Your hosted checkout page.
+   - **Google Pay API payment screen**: The Google Pay payment sheet (shown after clicking the GPay button).
+   - **Post-purchase screen**: The transaction confirmation page.
+   - Submit these screenshots, indicate that you have submitted the request, and share your merchant ID (BCR).
 
-* Payment method screen – Your hosted checkout page
-* Google Pay API payment screen – The Google Pay payment sheet (shown after clicking the GPay button)
-* Post-purchase screen – Transaction confirmation page
-* Submit the screenshots, indicate that you have submitted the request, and share the merchantId (BCR)
-
-Use the assigned Merchant ID to configure the Google Pay connection in the Yuno dashboard.
+After you receive your assigned merchant ID, use it to configure the Google Pay connection in the Yuno dashboard.
 
 ## Integration
 
-To integrate Google Pay with Yuno, follow these steps:
+Follow the steps below to integrate Google Pay with Yuno using the direct integration method.
 
-1. In the [Yuno dashboard](https://dashboard.y.uno/), go to the Connections tab. Find Google Pay and click Connect. Enter your credentials in the side panel. Choose a name for the connection and use the merchant ID obtained from the [Google Pay Business Console](https://pay.google.com/business/console) in the Merchant ID field.
+1. In the [Yuno dashboard](https://dashboard.y.uno/), go to the **Connections** tab. Find **Google Pay** and click **Connect**. In the side panel, enter your credentials, choose a name for the connection, and enter the merchant ID you obtained from the [Google Pay Business Console](https://pay.google.com/business/console) in the **Merchant ID** field.
 
 <Image align="center" src="https://files.readme.io/2fee3d1-google-pay1.png" />
 
-2. Create a route in Yuno's dashboard using the processor you want for Google Pay payments. See the [Configure dynamic routing](ref:configure-dynamic-routing) guide for more information.
-3. Integrate [Yuno's SDK](https://docs.y.uno/docs/android-sdk-integrations) into your app to ensure a smooth connection between your application and Yuno's platform. [Example](https://github.com/yuno-payments/yuno-sdk-android).
-   1. **Authorization methods available**: Yuno supports all authorization methods (purchase, authorization, capture), but availability depends on each provider.
-4. Enable Google Pay as a payment method in your [Yuno Checkout builder](https://docs.y.uno/docs/checkout-builder) so customers can use it during checkout.
+2. Create a route in the Yuno dashboard using the payment processor you want to use for Google Pay transactions. For more details, see the [configure dynamic routing](ref:configure-dynamic-routing) guide.
+3. Integrate [Yuno’s SDK](https://docs.y.uno/docs/android-sdk-integrations) into your app to connect your application with Yuno’s platform. For an example, see the [Yuno SDK for Android](https://github.com/yuno-payments/yuno-sdk-android).
+   - **Authorization methods**: Yuno supports all standard authorization methods (purchase, authorization, capture). The availability of each method depends on your selected provider.
+4. Enable Google Pay as a payment method in your [Yuno checkout builder](https://docs.y.uno/docs/checkout-builder) so customers can use it during checkout.
 
-Once these integration steps are complete, Google Pay will be seamlessly offered to your customers via the Yuno checkout. Customers will be able to select Google Pay and authorize payments using their familiar Google Pay interface. Yuno then securely handles the payment token received from Google, processing the transaction through your configured payment processor. All Google Pay transactions will be visible and manageable within your Yuno dashboard alongside your other payment methods, providing a unified view of your operations.
+Once you complete these steps, Google Pay will be available to your customers in the Yuno checkout. Shoppers can select Google Pay and authorize payments using the familiar Google Pay interface. Yuno securely handles the payment token received from Google and processes the transaction through your configured payment processor. All Google Pay transactions will appear in your Yuno dashboard alongside your other payment methods, giving you a unified view of your payment operations.
 
 ## Enable and test Google Pay with Yuno
 
-After integrating, you can enable and test Google Pay with Yuno as follows:
+Before making Google Pay available to your customers, you should enable and test your integration to ensure everything works as expected. Follow the steps below to set up a test environment and verify your Google Pay integration with Yuno.
 
-1. Create a Google Wallet Test Account:
-   1. Visit the [Google Wallet Test Account Sign-In](https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&followup=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&osid=1\&passive=1209600\&ifkv=AeDOFXjl_LLJZyuykU06uleha4p7uSXJNnLCv_n2jshX6QVJYCy9AKq3K28mIfpgyfS2NDHfimnAFg\&flowName=GlifWebSignIn\&flowEntry=ServiceLogin) page.
-   2. If you do not have a Google account, create one to proceed.
-   3. Once signed in, you will be redirected to the Google Wallet business console.
-2. Access the Google Wallet API Section:
-   1. In the Google Wallet business console, navigate to the API management or integration section (usually under developer or integration settings).
-3. Select **Create a Pass** to enable **Demo Mode**:
-   1. In the Google Wallet API section, find the option labeled **Create a Pass**.
-   2. Click this option to enable **Demo mode**. This allows you to simulate and test pass creation and interactions without real transactions.
+1. **Create a Google Wallet test account**
+   1. Go to the [Google Wallet Test Account Sign-In](https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&followup=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&osid=1\&passive=1209600\&ifkv=AeDOFXjl_LLJZyuykU06uleha4p7uSXJNnLCv_n2jshX6QVJYCy9AKq3K28mIfpgyfS2NDHfimnAFg\&flowName=GlifWebSignIn\&flowEntry=ServiceLogin) page.
+   2. If you do not have a Google account, create one to continue.
+   3. After signing in, you will be redirected to the Google Wallet Business Console.
+
+2. **Access the Google Wallet API section**
+   1. In the Google Wallet Business Console, navigate to the API management or integration section (typically found under developer or integration settings).
+
+3. **Enable demo mode**
+   1. In the API section, locate the option labeled **Create a Pass**.
+   2. Click this option to enable **Demo mode**. Demo mode allows you to simulate and test pass creation and interactions without processing real transactions.
 
 <Image align="center" width="600px" src="https://files.readme.io/fbc51b7-6847ef9-demo_mode.png" />
 
-4. Download the [Google Wallet App](https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel\&hl=en\&gl=US) from the Play Store.
-5. Go through the payment flow to test the integration.
+4. **Download the Google Wallet app**
+   - Install the [Google Wallet app](https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel\&hl=en\&gl=US) from the Google Play Store.
 
-By following these steps, you can ensure Google Pay is integrated and working as expected before making it available to your customers.
+5. **Test the payment flow**
+   - Go through the payment flow in your integration to verify that Google Pay is working as expected.
+
+By completing these steps, you can confirm that your Google Pay integration with Yuno is functioning correctly before launching it to your customers.
 
 ## Go live
 
-After completing all integration steps in the testing environment, request [Google Production Access](https://developers.google.com/pay/api/web/guides/test-and-deploy/request-prod-access) and contact your Technical Account Manager. The Yuno team will help verify your configuration and confirm you are ready to go live.
+Once you have successfully tested your integration, you are ready to move to production. Request [Google production access](https://developers.google.com/pay/api/web/guides/test-and-deploy/request-prod-access) and contact your Technical Account Manager. The Yuno team will help review your configuration and confirm you are ready to go live.
 
 ## Implementation details
 
-Key details for your Google Pay integration with Yuno:
+This section covers important considerations and best practices for integrating Google Pay with Yuno using the direct integration method.
 
-* **3D Secure (3DS) for`PAN_ONLY` credentials**: If Google Pay returns a `PAN_ONLY` credential (a card stored in the user's Google account), Yuno will automatically handle the 3D Secure authentication flow if 3DS is enabled. On the frontend, make sure your Google Pay API request includes `PAN_ONLY` in the `allowedAuthMethods` array.
-* **Gateway and GatewayMerchantID Configuration**: When registering with the [Google Pay Business Console](https://pay.google.com/business/console), ensure that under **Google Pay API** > **Integrate with your website**, the **Integration type** is set to **GATEWAY**. The `Merchant ID` from the Google Pay Business Console is used in the "Merchant ID" field when setting up the Google Pay connection in the Yuno dashboard. Set `gateway` to `yuno` and use your assigned Merchant ID as the `gatewayMerchantId` in your Google Pay API configuration.
-* **Authorization Methods**: Yuno supports standard authorization methods (purchase, authorization, capture). Availability depends on the payment processor and acquiring bank for each country and payment.
-* **Billing Address Requirements**: If your payment processing requires the customer's billing address (e.g., for AVS checks), configure this in your Google Pay API request. Google provides `BillingAddressParameters` to specify the required detail (e.g., MIN or FULL). See [Google's documentation](https://developers.google.com/pay/api/web/reference/request-objects#BillingAddressParameters). Only request billing address details if necessary, as this can increase checkout friction.
-* **Transaction Data and Payment Cryptography**: Merchants integrate Yuno's SDKs (Android, iOS, Web) into their applications. When a customer chooses Google Pay, Yuno's SDK interacts with the Google Pay API and securely receives the encrypted payment data (payment token) from Google. This token is passed from your app to your backend server, which then uses Yuno's server-side APIs to submit the token for payment processing. Yuno handles decryption and processing with the payment processor.
+- **3D Secure (3DS) for `PAN_ONLY` credentials**: If Google Pay returns a `PAN_ONLY` credential (a card stored in the user's Google account), Yuno will automatically manage the 3D Secure authentication flow if 3DS is enabled for your account. On your frontend, ensure that your Google Pay API request includes `PAN_ONLY` in the `allowedAuthMethods` array.
+
+- **Gateway and gatewayMerchantId configuration**: When registering in the [Google Pay Business Console](https://pay.google.com/business/console), go to **Google Pay API** > **Integrate with your website** and set the **Integration type** to **GATEWAY**. Use the `Merchant ID` from the Google Pay Business Console in the "Merchant ID" field when setting up the Google Pay connection in the Yuno dashboard. In your Google Pay API configuration, set `gateway` to `yuno` and use your assigned Merchant ID as the `gatewayMerchantId`.
+
+- **Authorization methods**: Yuno supports standard authorization methods, including purchase, authorization, and capture. The availability of each method depends on your selected payment processor and the acquiring bank for each country and payment.
+
+- **Billing address requirements**: If your payment processing requires the customer's billing address (for example, for AVS checks), configure this in your Google Pay API request. Google provides `BillingAddressParameters` to specify the required level of detail (such as `MIN` or `FULL`). See [Google's documentation](https://developers.google.com/pay/api/web/reference/request-objects#BillingAddressParameters) for more information. Only request billing address details if necessary, as this can increase checkout friction for your customers.
+
+- **Transaction data and payment cryptography**: Integrate Yuno's SDKs (Android, iOS, or Web) into your application. When a customer selects Google Pay, Yuno's SDK interacts with the Google Pay API and securely receives the encrypted payment data (payment token) from Google. Your app should pass this token to your backend server, which then uses Yuno's server-side APIs to submit the token for payment processing. Yuno handles decryption and processing with the payment processor.
+
 
 ## Additional information
 
-* For further questions about the integration process, contact Yuno support or consult:
-  * [Web documentation](https://developers.google.com/pay/api/web/guides/setup) and [integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist)
-  * [Android documentation](https://developers.google.com/pay/api/android/overview) and [integration checklist](https://developers.google.com/pay/api/android/guides/test-and-deploy/integration-checklist)
-* Google provides brand guides for including the Google Pay brand in your website or app:
-  * [Web](https://developers.google.com/pay/api/web/guides/brand-guidelines)
-  * [Android](https://developers.google.com/pay/api/android/guides/brand-guidelines)
-* **Card networks supported**:
-  * The card networks supported worldwide are AMEX, DISCOVER, JCB, MASTERCARD, and VISA. For Brazil, supported networks are VISA, ELECTRON, MASTERCARD, MAESTRO, ELO, and ELO\_DEBIT.
+This section provides helpful resources and details to support your Google Pay integration with Yuno.
+
+- If you have questions about the integration process, contact Yuno support or refer to the following official Google Pay documentation:
+  - [Web documentation](https://developers.google.com/pay/api/web/guides/setup) and [integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist)
+  - [Android documentation](https://developers.google.com/pay/api/android/overview) and [integration checklist](https://developers.google.com/pay/api/android/guides/test-and-deploy/integration-checklist)
+
+- To ensure correct use of the Google Pay brand in your website or app, review the official brand guidelines:
+  - [Web brand guidelines](https://developers.google.com/pay/api/web/guides/brand-guidelines)
+  - [Android brand guidelines](https://developers.google.com/pay/api/android/guides/brand-guidelines)
+
+- **Supported card networks**:
+  - Globally supported networks: Amex, Discover, JCB, Mastercard, and Visa.
+  - In Brazil: Visa, Electron, Mastercard, Maestro, Elo, and Elo_Debit.
