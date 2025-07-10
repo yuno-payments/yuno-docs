@@ -10,9 +10,9 @@ metadata:
 next:
   description: ''
 ---
-Yuno’s API gives you flexibility in structuring payment amounts, allowing you to clearly define all the components that make up the total transaction value. You can specify base charges, taxes, fees, tips, shipping, and discounts—ensuring transparency for both you and your customers.
+Yuno’s API allows you to structure payment amounts flexibly, so you can clearly define each component that makes up the total transaction value. You can specify base charges, taxes, fees, tips, shipping, and discounts. This ensures transparency for both you and your customers.
 
-The following sections describe how to include each component in your payment requests:
+Below, you will find how to include each component in your payment requests:
 
 * [Fee](doc:payment-amount-details#fee-amount)
 * [Shipping](doc:payment-amount-details#shipping-amount)
@@ -20,11 +20,11 @@ The following sections describe how to include each component in your payment re
 * [Taxes](doc:payment-amount-details#taxes)
 * [Discounts](doc:payment-amount-details#discounts)
 
-By itemizing these elements, you can provide a clear breakdown of the payment amount, making the payment process more transparent and convenient for everyone involved.
+By itemizing these elements, you provide a clear breakdown of the payment amount, making the payment process more transparent and convenient for everyone involved.
 
 ## Fee amount
 
-You can use the `additional_data.order.fee_amount` field to specify the fee amount included in the transaction. 
+You can use the `additional_data.order.fee_amount` field to specify the fee amount included in the transaction.
 
 In the example below, a request shows that a 180 JPY fee is part of a 5,000 JPY total transaction. This field is for informational purposes only—the `fee_amount` is already included in the final transaction amount and is not added separately.
 
@@ -74,9 +74,11 @@ curl --request POST \
 
 ## Shipping amount
 
-You can use the `additional_data.order.shipping_amount` field to indicate the shipping amount included in the transaction total.
+Use the `additional_data.order.shipping_amount` field to specify the shipping amount included in the total transaction value.
 
-In the example below, a request specifies that a 270 JPY shipping amount is part of a 5,000 JPY total transaction. This field is for informational purposes only—the `shipping_amount` is already included in the final transaction amount and is not added separately.
+This field is for informational purposes only. The `shipping_amount` is already included in the final transaction amount and is not added separately.
+
+In the example below, a request includes a shipping amount of 270 JPY as part of a 5,000 JPY total transaction.
 
 ```json
 curl --request POST \
@@ -120,15 +122,14 @@ curl --request POST \
     }
 }
 '
-```
 
 ## Tips
 
-You can use the `additional_data.order.tip_amount` field to indicate the tip amount included in the total transaction value. 
+You can use the `additional_data.order.tip_amount` field to specify the tip amount included in the total transaction value.
 
-This field is for informational purposes only—the `tip_amount` is already included in the final transaction amount and is not added separately. 
+This field is for informational purposes only. The `tip_amount` is already included in the final transaction amount and is not added separately.
 
-In the example below, a request specifies that a 50 JPY tip amount is part of a 5,000 JPY total transaction.
+In the example below, the request includes a tip amount of 50 JPY as part of a 5,000 JPY total transaction.
 
 ```json
 curl --request POST \
@@ -176,7 +177,7 @@ curl --request POST \
 
 ## Taxes
 
-A dedicated array of objects (`additional_data.order.taxes`) allows you to specify the taxes amounts for your services that are included in the transaction.
+You can use the `additional_data.order.taxes` array to specify the tax amounts included in your transaction. This field is for informational purposes only; the taxes listed here should already be included in the total transaction amount.
 
 | Field      | Type  | Description                        | Example  |
 | :--------- | :---- | :--------------------------------- | :------- |
@@ -253,9 +254,9 @@ curl --request POST \
 
 ## Discounts
 
-You can use the `additional_data.order.discounts` array to specify any discounts applied to the transaction. This field is intended for informational purposes only—the values listed in `discounts` should already be reflected in the final transaction amount and are not deducted separately.
+You can use the `additional_data.order.discounts` array to provide information about any discounts applied to a transaction. This field is for informational purposes only. The discounts listed in this array should already be included in the final transaction amount—they are not subtracted automatically by the system.
 
-For example, the following request shows how to indicate that a $500 discount is included as part of a $5,000 total transaction amount.
+The following example demonstrates how to indicate that a $500 discount has been applied to a total transaction amount of $5,000.
 
 ```json Example
 curl --request POST \
