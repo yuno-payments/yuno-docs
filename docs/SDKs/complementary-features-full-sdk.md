@@ -21,7 +21,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
   * [Persist credit card form to retry payments](doc:complementary-features-full-sdk#persist-credit-card-form-to-retry-payments)
   * [Hide Pay button](doc:complementary-features-full-sdk#hide-pay-button)
 * [Mercado Pago Checkout Pro webview handling](doc:complementary-features-full-sdk#mercado-pago-checkout-pro-webview-handling)
-* [Optional initialization `options` parameter](optional-initialization-options-parameter)
+* [Optional initialization `options` parameter](doc:complementary-features-full-sdk#optional-initialization-options-parameter)
 
 ## [Form loader](doc:loader)
 
