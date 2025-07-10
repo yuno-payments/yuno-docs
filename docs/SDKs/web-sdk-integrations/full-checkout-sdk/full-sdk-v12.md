@@ -14,7 +14,8 @@ Follow this step-by-step guide to implement and enable Yuno's Full Web SDK funct
 
 ## What's new in v1.2.0
 
-Starting from version 1.2.0, the `continuePayment` method now accepts additional properties that were previously only available in `startCheckout`. This allows you to override specific configurations when continuing a payment.
+* Support for an [optional `options` parameter](doc:full-sdk-v12-optional-initialization-options-parameter) in `Yuno.initialize`, giving you more control over SDK behavior. This addition is intended for teams with advanced use cases or custom session and tracking requirements.
+* Starting from version 1.2.0, the `continuePayment` method now accepts additional properties that were previously only available in `startCheckout`. This allows you to override specific configurations when continuing a payment.
 
 ### Enhanced `continuePayment` method
 
@@ -493,6 +494,59 @@ If you hide the Pay button, you will need to start the one-time token creation t
  */
 yuno.submitOneTimeTokenForm()
 ```
+
+### Optional initialization `options` parameter
+
+Starting from **Yuno SDK v1.2**, the `Yuno.initialize` function supports a new optional parameter called `options`. This allows for advanced configuration such as customizing the cookie name used for device identification.
+
+#### Initialization options
+
+The updated function signature is:
+
+```javascript
+const yuno = await Yuno.initialize(publicApiKey, applicationSession, options);
+```
+
+* `publicApiKey` (`string`): Your public API key.
+* `applicationSession` (`string | undefined`): Optional session ID.
+  > **Recommendation:** Leave this as `undefined` so the SDK can generate and manage its own session internally. Only set this if you require a custom session management strategy.
+* `options` (`object | undefined`): Optional object for advanced configuration.
+
+#### Options structure
+
+The `options` object supports the following shape:
+
+```javascript
+const options = {
+  cookies: {
+    deviceId: {
+      name: "customCookieName" // Overrides the default cookie name used for device ID
+    }
+  }
+};
+```
+
+> **Note:** If `deviceId.name` is not specified, the SDK defaults to `"yuno"` as the cookie name.
+
+#### Example Usage
+
+```javascript
+const publicApiKey = 'your-public-api-key';
+const options = {
+  cookies: {
+    deviceId: {
+      name: 'custom-device-id'
+    }
+  }
+};
+
+// Recommended: omit the second parameter or set it to undefined
+const yuno = await Yuno.initialize(publicApiKey, undefined, options);
+```
+
+This feature is **optional** and is intended for **advanced use cases** where you need to customize how device identification is handled via cookies.
+
+* [Optional initialization `options` parameter](doc:complementary-features-full-sdk#optional-initialization-options-parameter)
 
 ## What's next?
 
