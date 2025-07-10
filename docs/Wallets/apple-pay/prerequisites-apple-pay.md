@@ -22,7 +22,7 @@ In the Apple Developer dashboard, register a merchant identifier by following th
 
 <Image align="center" src="https://files.readme.io/ab500a4-image-1.png" />
 
-4. Add a **Description** to describe the merchant you are registering, such as **Apple Pay Integration**. For the **Identifier**, enter the prefix `merchant.com.y.uno.SomeIdentifier`. 
+4. Add a **Description** to describe the merchant you are registering, such as **Apple Pay Integration**. For the **Identifier**, enter the prefix `merchant.com.y.uno.SomeIdentifier`.
 
 <Image align="center" src="https://files.readme.io/52f4ba5-image-2.png" />
 
@@ -48,8 +48,9 @@ To create a **PaymentProcessingCertificate** on your MacOS, follow the steps pre
 4. Click **Continue**.
 5. Save the CSR with the name `CertificateSigningRequestPaymentProcessingCertificate.certSigningRequest` in the previously created directory.
 6. For the key pair, use the following configurations:
-   1. **Key Size**: RSA 2048 bits
-   2. **Algorithm**: EC
+   * **Key Type**: Elliptic Curve (EC)
+   * **Key Size**: 256-bit
+   * **Algorithm**: ECDSA
 7. Click **Continue** to finish creating the CSR.
 
 ## Step 3: Get the payment processing certificate
@@ -160,7 +161,7 @@ The following image presents where to add the information to the Yuno Dashboard.
 
 ## Step 10: Register merchant domains
 
-As the last step, you have to register the merchant domains into the Apple Dashboard. Follow the steps below to complete the process: 
+As the last step, you have to register the merchant domains into the Apple Dashboard. Follow the steps below to complete the process:
 
 1. Access the [Apple Developer](https://developer.apple.com/account/resources/identifiers/list/merchant).
 2. Select your **Merchant ID**, and click **Add Domain** under **Merchant Domains**.
