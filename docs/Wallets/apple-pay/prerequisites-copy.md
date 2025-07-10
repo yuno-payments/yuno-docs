@@ -83,11 +83,9 @@ The private key will be stored in `ProcessingCertificatePrivateKey.pem`.
 
 ## Step 5: Upload the certificate and key to Yuno
 
-1. Open the [Yuno Dashboard](https://auth.y.uno/u/login) ([https://auth.y.uno/u/login](https://auth.y.uno/u/login))
-2. Open `ProcessingCertificatePrivateKey.pem` in a text editor and copy its full contents, including header and footer.
-3. Paste it into the **Payment processing key** field.
-4. Open `apple_pay.pem` and copy its full contents.
-5. Paste it into the **Payment processing certificate** field.
+1. Open the [Yuno Dashboard](https://auth.y.uno/u/login) **> Connections > Apple Pay > Connect**
+2. Enter the contents of `ProcessingCertificatePrivateKey.pem` to the **Payment processing key** field.
+3. Enter the contents of `apple_pay.pem` into the **Payment processing certificate** field.
 
 <Image align="center" src="https://files.readme.io/abab730-image_3.png" />
 
