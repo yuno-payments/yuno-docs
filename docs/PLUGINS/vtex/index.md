@@ -14,34 +14,33 @@ metadata:
 next:
   description: ''
 ---
-Yuno and VTEX have joined forces to simplify payment processes for merchants worldwide. This partnership aims to streamline the payment experience and provide merchants with various payment methods catering to their customer's preferences.
+Yuno and VTEX have partnered to simplify payment processing for merchants around the world. This collaboration streamlines the payment experience and gives merchants access to a wide range of payment methods to suit their customers’ preferences.
 
 ![](https://files.readme.io/64caa7b-vtex1.png)
 
-By integrating Yuno's payment orchestration platform with VTEX's e-commerce solution, merchants can easily manage payments and offer diverse payment options. Yuno ensures customers can choose their preferred payment method from local cards to digital wallets. Yuno's plugin allows your store to accept payments seamlessly without redirecting customers to external pages, enhancing the shopping experience and increasing the conversion rate.
+By integrating Yuno’s payment orchestration platform with VTEX’s e-commerce solution, merchants can easily manage payments and offer a variety of payment options—from local cards to digital wallets. The Yuno plugin enables your store to accept payments directly within your checkout, without redirecting customers to external pages. This seamless experience helps increase conversion rates and improve customer satisfaction.
 
 > ❗️ Payments with two cards
 >
-> To enable your customers to pay using two cards in VTEX, you must contact the Yuno supporting team in advance.
+> If you want to allow your customers to pay with two cards in VTEX, please contact the Yuno support team in advance.
 
+Yuno’s plugin for VTEX is PCI compliant, ensuring that all card data is handled according to the highest security standards. Merchants can be confident that their customers’ payment information is processed securely and with full respect for privacy.
 
-Yuno's plugin for VTEX is PCI compliant, ensuring that Yuno meets rigorous security standards when handling card data. Merchants can have peace of mind knowing that their customers' payment information is handled with utmost security and privacy.
-
-The seamless integration between Yuno and VTEX makes it easy for merchants to incorporate Yuno's payment orchestration system into their existing setup. This enables them to focus on delivering exceptional products and services while providing a smooth payment experience for their customers.
+The integration between Yuno and VTEX is designed to be straightforward, allowing merchants to quickly add Yuno’s payment orchestration system to their existing setup. This lets you focus on delivering great products and services, while providing your customers with a smooth and secure payment experience.
 
 ## Payment methods available
 
-All the payment methods that Yuno offers are available in VTEX, including credit/debit cards and alternative payment methods. Our team is actively collaborating with VTEX to ensure that all Yuno connections are made available to you as soon as possible. We are committed to expanding the available payment options to enhance your experience, so please feel free to reach out to your key account manager to find out more about the available payment methods in VTEX. 
+Yuno offers a wide range of payment methods in VTEX, including credit and debit cards, as well as alternative payment options. Our team works closely with VTEX to ensure that all Yuno connections are available to you as soon as possible. We are committed to continuously expanding the list of supported payment methods. If you would like more information about the payment options currently available in VTEX, please contact your key account manager.
 
 ## Plugin integration
 
-To start using the Yuno plugin on your VTEX store, you will need two essential elements:
+To integrate the Yuno plugin with your VTEX store, you will need the following:
 
-1. A VTEX store.\
-   You will use the Application Key and the Application Token from your store account. Check the VTEX [Application Keys](https://help.vtex.com/tutorial/application-keys--2iffYzlvvz4BDMr6WGUtet#) tutorials to understand how to set and access this information.
-   1. Application Key: a private key generated when the Yuno account became productive. 
-   2. Application Token: a productive public key generated when the Conekta account became productive.
-2. A Yuno account.\
-   If you don't have a Yuno account, sign up at the [Yuno Merchant Dashboard](https://auth.y.uno/u/signup). You will use your Account ID, Public API Key, and Private API Key from your Yuno account. Access the [Developers](doc:developers) tab on the Yuno dashboard to access your credentials.
+1. **A VTEX store**  
+   You will need your Application Key and Application Token from your VTEX account. For details on how to generate and access these credentials, refer to the VTEX [Application Keys](https://help.vtex.com/tutorial/application-keys--2iffYzlvvz4BDMr6WGUtet#) documentation.
+   - **Application Key**: A private key generated when your Yuno account is activated.
+   - **Application Token**: A public key generated when your Conekta account is activated.
+2. **A Yuno account**  
+   If you do not have a Yuno account, sign up at the [Yuno Merchant Dashboard](https://auth.y.uno/u/signup). You will need your Account ID, Public API Key, and Private API Key, which can be found in the **Developers** section of the Yuno dashboard.
 
-Once you have this information, you can register the Yuno plugin affiliation. Follow the steps outlined in the [Configure Yuno as Provider](doc:configure-yuno-as-provider) page. After completing the configuration processes, you'll enable your clients on VTEX to access the Yuno checkout to make payments on their orders.
+Once you have gathered this information, you can register the Yuno plugin affiliation. Follow the steps in the [Configure Yuno as provider](doc:configure-yuno-as-provider) guide. After completing the configuration, your VTEX clients will be able to use the Yuno checkout to make payments on their orders.
