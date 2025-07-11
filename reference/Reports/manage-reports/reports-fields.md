@@ -2557,12 +2557,6 @@ The fraud transactions report provides detailed information about transactions t
             <td>200</td>
           </tr>
           <tr>
-            <td><code>response_message</code></td>
-            <td>string</td>
-            <td>Response message from the system (MAX 255; MIN 3).</td>
-            <td>Payment successful</td>
-          </tr>
-          <tr>
             <td><code>provider_id</code></td>
             <td>string</td>
             <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
