@@ -21,7 +21,7 @@ This request creates a payment after you created a checkout session.
 
 > 📘 3DS Payments
 >
-> To understand how 3D Secure payments work, check the [3D Secure](https://docs.y.uno/docs/3d-secure) page to learn how to create payments using 3DS on Yuno.
+> Check the [3D Secure](https://docs.y.uno/docs/3d-secure) page to learn how to create payments using 3DS on Yuno.
 
 If you want to process payments in a Single Step (Authorization and Capture simultaneously), you need to send the `payment_method.detail.card.capture` attribute as `true`, so the payment is captured automatically.
 
