@@ -188,10 +188,16 @@ yuno.startCheckout({
 >
 > The enhanced Lite SDK v2.0 provides advanced render mode capabilities that embed Yuno's checkout forms directly within your interface. This gives you complete control over the checkout journey, including loading, status, and payment input screens, with full visual customization and seamless UX integration.
 
-| Parameter         | Description                                                                                                                                                                                                                                                                                                                                                                               |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `renderMode`      | This optional parameter determines how payment forms are displayed:\<br>• `type`: Either 'modal' or 'element'\<br>• `elementSelector`: Required if `type` is 'element'. Specifies where to render the form.                                                                                                                                                                               |
-| `elementSelector` | Required when `type` is 'element'. Specifies where to mount the Yuno SDK:\<br>• **String** (Deprecated): ID or selector for mounting the SDK\<br>• **Object**: Specify elements for APM and action forms:\<br>  - `apmForm`: Element to display the APM\<br>  - `actionForm`: Element for the Continue Payment button, which opens a modal for completing provider-specific payment steps |
+| Parameter         | Description                                                                                                   |
+|-------------------|--------------------------------------------------------------------------------------------------------------|
+| `renderMode`      | This optional parameter determines how payment forms are displayed.                                           |
+|                   | - `type`: Either `'modal'` or `'element'`.                                                                   |
+|                   | - `elementSelector`: Required if `type` is `'element'`. Specifies where to render the form.                  |
+| `elementSelector` | Required when `type` is `'element'`. Specifies where to mount the Yuno SDK.                                  |
+|                   | - **String** (Deprecated): ID or selector for mounting the SDK.                                              |
+|                   | - **Object**: Specify elements for APM and action forms:                                                     |
+|                   |   - `apmForm`: Element to display the APM.                                                                   |
+|                   |   - `actionForm`: Element for the Continue Payment button, which opens a modal for provider-specific steps.  |
 
 ```javascript
 yuno.startCheckout({
@@ -202,9 +208,13 @@ yuno.startCheckout({
 
 ### Card form configurations
 
-| Parameter | Description                                                                                                                                                                                                                                                                                                                                                 |
-| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `card`    | Define specific settings for the credit card form:\<br>\<br>• `type`: `step` o `extends`\<br>• `styles`: You can edit card form styles. Only you should write css, then it will be injected into the iframe.\<br>• `cardSaveEnable`: Show checkbox for save/enroll card. The default value is false.\<br>• `texts`: Custom texts in the Card forms buttons. |
+| Parameter | Description                                                                                      |
+| :-------- | :----------------------------------------------------------------------------------------------- |
+| `card`    | Define specific settings for the credit card form:                                               |
+|           | - **`type`**: `step` or `extends`                                                                |
+|           | - **`styles`**: Edit card form styles using your own CSS, injected into the iframe               |
+|           | - **`cardSaveEnable`**: Show checkbox for save/enroll card (default: false)                      |
+|           | - **`texts`**: Custom texts for the Card form buttons                                            |
 
 ```javascript
 yuno.startCheckout({

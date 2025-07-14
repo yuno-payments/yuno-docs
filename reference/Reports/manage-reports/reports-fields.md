@@ -1915,13 +1915,6 @@ The settlement report has two types of reports:
             <td>1.0</td>
           </tr>
           <tr>
-            <td><code>settlement_cost_of_installments</code></td>
-            <td>decimal</td>
-            <td>Commission fee that the acquirer withheld for advance installments in settlement currency (multiple of
-              0.0001). This should be the difference between the gross and net amounts.</td>
-            <td>15.0</td>
-          </tr>
-          <tr>
             <td><code>settlement_net_credit</code></td>
             <td>decimal</td>
             <td>Amount submitted in the credit transaction requests minus acquirer fees in settlement currency (multiple
@@ -2548,12 +2541,6 @@ The fraud transactions report provides detailed information about transactions t
             <td>string</td>
             <td>Response code from the system (MAX 255; MIN 3).</td>
             <td>200</td>
-          </tr>
-          <tr>
-            <td><code>response_message</code></td>
-            <td>string</td>
-            <td>Response message from the system (MAX 255; MIN 3).</td>
-            <td>Payment successful</td>
           </tr>
           <tr>
             <td><code>provider_id</code></td>
