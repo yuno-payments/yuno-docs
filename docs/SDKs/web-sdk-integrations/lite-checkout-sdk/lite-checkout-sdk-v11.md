@@ -42,16 +42,16 @@ You will start the checkout process. To do it, use the `yuno.startCheckout` func
 
 The following table lists all required parameters and their descriptions. For optional parameters, go to [Complementary Features](doc:lite-checkout-sdk#complementary-features).
 
-| Parameter                         | Description                                                                                                                                                              |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                                         |
-| `country_code`                    | Determines the country for which the payment process is being configured. See [Country coverage](doc:country-coverage-yuno-sdk) for supported countries and their codes. |
-| `language`                        | Defines the language for payment forms. Options: 'es' (Spanish), 'en' (English), 'pt' (Portuguese), 'fil' (Filipino), 'id' (Indonesian), 'ms' (Malay), 'th' (Thai).      |
-| `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                              |
-| `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                |
-| `issuersFormEnable`               | Enables the issuer's form. Default: `true`.                                                                                                                              |
-| `showPaymentStatus`               | Shows Yuno Payment Status page. Can be used when continuing a payment. Default: `true`.                                                                                  |
-| `card.isCreditCardProcessingOnly` | Optional. When `true`, ensures all card transactions are processed as credit only. Useful in markets where cards can act as both credit and debit.                       |
+| Parameter                         | Description                                                                                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                                                                                   |
+| `country_code`                    | Determines the country for which the payment process is being configured. See [Country coverage](doc:country-coverage-yuno-sdk) for supported countries and their codes.                                           |
+| `language`                        | Defines the language for payment forms. Options: '<ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul>. |
+| `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                                                                        |
+| `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                                                          |
+| `issuersFormEnable`               | Enables the issuer's form. Default: `true`.                                                                                                                                                                        |
+| `showPaymentStatus`               | Shows Yuno Payment Status page. Can be used when continuing a payment. Default: `true`.                                                                                                                            |
+| `card.isCreditCardProcessingOnly` | Optional. When `true`, ensures all card transactions are processed as credit only. Useful in markets where cards can act as both credit and debit.                                                                 |
 
 ```javascript
 yuno.startCheckout({
