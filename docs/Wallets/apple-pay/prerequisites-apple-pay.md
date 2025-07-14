@@ -155,7 +155,7 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 
 > Since iOS 18, Apple Pay can be offered in third-party browsers such as Google Chrome.
 
-**Key requirements:**
+**Key requirements**
 
 * Users must have iOS 18 or higher on their iPhone
 * Apple Pay works in browsers like Google Chrome, not just Safari
@@ -167,7 +167,3 @@ Once all steps are complete, your Apple Pay integration with Yuno is ready. You 
 
 * [SDK Integration](doc:sdk-integration-apple)
 * [Direct Integration](doc:direct-integration)
-
-<br />
-
-*
