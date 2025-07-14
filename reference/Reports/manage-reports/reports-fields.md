@@ -1803,7 +1803,9 @@ Below, you will find details of each report type.
 
 ## Settlement report
 
-> The Settlements report now supports timezone selection for `transaction_date`, similar to the Transactions report. The date format is now ISO 8601 (e.g., 2023-12-11T01:14:38.000Z for UTC, 2023-02-23T17:39:36.065+01:00 for UTC+1). Update any automations that depend on this field format.
+> 📘
+>
+> The Settlements report now supports timezone selection for `transaction_date`, similar to the Transactions report. The date format is now **ISO 8601** (e.g., `2023-12-11T01:14:38.000Z` for UTC, `2023-02-23T17:39:36.065+01:00` for UTC+1). Update any automations that depend on this field format.
 
 The settlement report has two types of reports:
 
