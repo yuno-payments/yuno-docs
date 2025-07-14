@@ -2163,13 +2163,6 @@ The settlement report has two types of reports:
             <td>1.0</td>
           </tr>
           <tr>
-            <td><code>cost_of_installments_rate</code><sup>(A)</sup></td>
-            <td>decimal</td>
-            <td>In case of processing sales in installments, the percentage financing cost rate retained by the
-              acquirer. This field is empty if the acquirer doesn't provide transaction information.</td>
-            <td>15</td>
-          </tr>
-          <tr>
             <td><code>settlement_cost_of_installments</code></td>
             <td>decimal</td>
             <td>The commission fee that was withheld by the acquirer for advance installments in settlement currency
