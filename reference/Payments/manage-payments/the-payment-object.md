@@ -1371,6 +1371,19 @@ This object represents the payment created after generating the checkout session
           </details>
           <details class="yuno">
             <summary>
+              <strong><code>transport</code></strong> <small>object</small>
+              <br />
+              <p>Specifies the transport object.</p>
+            </summary>
+            <div>
+              <p><strong><code>id</code></strong> <small>string</small>
+                <br />The id of the transportation vehicle (MAX 255; MIN 1).
+                <br /><small> Example: ASONDAKS-1234 </small>
+              </p>
+            </div>
+          </details>
+          <details class="yuno">
+            <summary>
               <strong><code>passengers</code></strong> <small>array of objects</small>
               <br />
               <p>Specifies the array of objects that represents the passengers associated to the tickets.</p>
