@@ -1507,7 +1507,7 @@ curl --request POST \
 
 ### Card Direct with customer, billing, shipping and order items
 
-Example of a declined request for payment using Card Direct. Below are examples of a request and the received response for successful payment creation. The request is presented using the cURL format, and the response is a JSON object.
+Example of a request for payment using Card Direct. Below are examples of a request and the received response for successful payment creation. The request is presented using the cURL format, and the response is a JSON object.
 
 ```curl Request (cURL)
 curl --request POST \
