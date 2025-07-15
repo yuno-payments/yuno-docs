@@ -637,7 +637,7 @@ curl --location 'https://api-sandbox.y.uno/v1/payments' \
 
 ## Nupay Enrollment
 
-Example of a request for creating a payment Nupay Enrollment. Below are examples of a request and the received response for successful payment creation. The request is presented using the cURL format, and the response is a JSON object.
+Example of a request for creating a payment using Nupay Enrollment. Below are examples of a request and the received response for successful payment creation. The request is presented using the cURL format, and the response is a JSON object.
 
 ```curl Request (cURL)
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
