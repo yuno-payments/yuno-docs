@@ -32,7 +32,7 @@ For every implementation, we recommend taking the payment <code>status</code> an
 
 ### Step 1: Create a customer
 
-**[Optional]**: The first step of the payment flow is to create a customer. A customer will have payment methods associated. You can create a customer using the following [endpoint](ref:create-customer). As a result, you will receive the customer's ID that was created in the Yuno DB.
+**\[Optional]**: The first step of the payment flow is to create a customer. A customer will have payment methods associated. You can create a customer using the following [endpoint](ref:create-customer). As a result, you will receive the customer's ID that was created in the Yuno DB.
 
 You can skip this step if you have previously created the customer.
 
@@ -42,7 +42,7 @@ This step is optional because you can send the customer information directly in 
 
 As you handle the whole payment experience with this integration, you will need to display the payment methods enabled in your Yuno account. Once the user has selected the payment method, you can create a payment. A payment gathers all crucial details regarding the order, customer specifics, total amount, currency, products, shipping details, and more. You can create a Payment using the following [endpoint](ref:create-payment).
 
-You can use the [examples section](ref:payments-examples) in the API reference as a reference. If the user selects a previously enrolled payment method, you can use the **vaulted\_token** returned by the get payment methods service to create the payment.
+You can use the [examples section](ref:payments-examples) in the API reference as a reference. If the user selects a previously enrolled payment method, you can use the `vaulted_token` returned by the `get payment methods` service to create the payment.
 
 During the integration, we recommend taking the payment **status** and **sub\_status** as the main reference for the payment's state. A payment could have different transactions associated with it, so by focusing on the payment **status/sub\_status**, you can have the latest state regardless of how many transactions were made, giving you clear input for decision-making.
 
@@ -97,6 +97,5 @@ You can skip this step if you have previously created the customer.
 > 📘 Direct Flow Integration
 >
 > This feature is only available for enrolling Cards for PCI compliant merchants.
-
 
 Once you have your customer, you can enroll the payment method using the [Enroll Payment Method endpoint ](ref:enroll-payment-method-api). With the information provided by Yuno after the customer selects the payment method to enroll, you will be able to save that information for future purchases using the `vaulted_token` that represents the payment method object created.
