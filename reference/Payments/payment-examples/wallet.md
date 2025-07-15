@@ -12,7 +12,7 @@ metadata:
 next:
   description: ''
 ---
-This page presents examples of requests and responses for creating payments using the [Create Payment](https://docs.y.uno/reference/create-payment) endpoint and Payment Link as payment method.
+This page presents examples of requests and responses for creating payments using the [Create Payment](https://docs.y.uno/reference/create-payment) endpoint and Wallet as payment method.
 
 To test the creation of each payment, you can copy the content from the request code and use it on your machine or paste it on the [Create Payment](ref:create-payment) endpoint to test using Readme.
 
