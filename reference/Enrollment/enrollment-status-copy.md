@@ -1,7 +1,7 @@
 ---
 title: Enrollment Status (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   description: >-
     Yuno gives customers the possibility to enroll a payment method in order to
