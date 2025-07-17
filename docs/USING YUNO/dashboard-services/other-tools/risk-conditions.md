@@ -43,7 +43,7 @@ In addition to blocking fraudulent payments, Yuno's rules also help identify sec
 Within the **Rules** tab, select **Create rule** to configure your own rules. Set the following parameters based on your needs:
 
 * **Name**: Give your rule a memorable name and description.
-* **Rule type**: Track the number of payments or cards used by a user within a specific timeframe. Add conditions to track shipping changes, IP addresses, card brands, and more.
+* **Rule type**: Track the number of payments or cards used by a user within a specific timeframe. Add conditions to track shipping changes, IP addresses, card brands, metadata, and more.
 * **Settings**: Define the parameter used to count users, the types of payments to include (succeded, declined, etc.), and whether to count payments across the organization or the only current account.
 * **Outcome**: Choose to allow, block, review, or test payments when a rule is triggered.
 * **Apply this list to other accounts**: Choose whether to apply the rule to other accounts.
@@ -65,6 +65,7 @@ A payment will be blocked if it matches any of the following:
 * Card/bank account holder name
 * Device ID
 * Shipping address
+* Metadata
 
 From the **Blocklists** tab, click **Create blocklist** to configure these parameters:
 
@@ -93,6 +94,7 @@ Users can be allowlisted based on:
 * Card/bank account holder name
 * Device ID
 * Shipping address
+* Metadata
 
 From the **Allowlists** tab, click **Create allowlist** to configure these parameters:
 
