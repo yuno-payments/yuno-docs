@@ -18,14 +18,6 @@ This is a controlled development environment where you can conduct tests during 
 
 The base URL used for the Yuno API running in the Sandbox environment is formatted as shown below:
 
-```curl
-https://api-sandbox.y.uno
-```
-
 ## Production
 
 This is the environment where real events occur, affecting accounting and metrics. This environment is consumed once the integration tests have finished, and it is time to open it to the public.
-
-```curl
-https://api.y.uno
-```
