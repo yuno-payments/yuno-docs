@@ -15,6 +15,10 @@ metadata:
 next:
   description: ''
 ---
+> 🚧 Recent endpoint update
+>
+> This endpoint was recently updated to version 2 (see "V2" in the URL). Version 1 has been deprecated, we recommend switching to V2 as soon as possible.
+
 To retrieve the file content, use your API credentials to access the file specified by the report object `id`.
 
 > 📘 Response File Type
