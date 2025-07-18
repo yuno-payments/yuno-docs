@@ -12,7 +12,7 @@ next:
 ---
 ## Attributes
 
-This object represents a subscription that can be associated with a customer
+This object represents a subscription that can be associated with a customer.
 
 <HTMLBlock>{`
 <head>
