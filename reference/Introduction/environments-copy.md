@@ -5,17 +5,12 @@ hidden: false
 metadata:
   robots: index
 ---
-You can interact with the Yuno API using two environments: 
+You can interact with the Yuno API using two environments:
 
 * Sandbox
 * Production
 
-These environments are also available on the Dashboard, enabling you to connect and test different connections without requiring you to add the real account data. 
-
-> 🚧 Credentials
->
-> The credentials to use Yuno API in Sandbox are different from the Production credentials. Depending on the environment you select when accessing the Dashboard, you find different API keys and Account information.
-
+These environments are also available on the Dashboard, enabling you to connect and test different connections without requiring you to add the real account data.
 
 ## Sandbox
 
@@ -34,12 +29,3 @@ This is the environment where real events occur, affecting accounting and metric
 ```curl
 https://api.y.uno
 ```
-
-> 📘 Processing Time
->
-> The processing time for each request varies depending on the processor/acquirer executing the transaction. The total processing time is the sum of Yuno's and the processor/acquirer's processing time. [Learn more](#processing-time)
-
-
-> 🚧 Timeout
->
-> Yuno uses a timeout value of 60 seconds for all endpoints. Therefore, the total time available for a request to be processed and answered by our APIs is 60 seconds. The timeout value of 60 seconds is used to cover all cases from the processor/acquirer since their response time varies. **Important**: The response time will usually be a fraction of the timeout.
