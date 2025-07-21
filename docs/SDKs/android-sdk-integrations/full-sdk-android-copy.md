@@ -78,6 +78,19 @@ Yuno SDK includes, by default, the `INTERNET` permission, which is required to m
 <uses-permission android:name="android.permission.INTERNET" />
 ```
 
+> ℹ️ **Prevent dependency conflicts**
+>
+> If you encounter dependency conflicts related to AndroidX compatibility, especially when using other third-party libraries, consider enabling Jetifier support.
+>
+> Add the following lines to your `gradle.properties` file:
+>
+> ```properties
+> android.useAndroidX=true
+> android.enableJetifier=true
+> ```
+>
+> This ensures that legacy support libraries are automatically migrated to AndroidX, which helps prevent common integration issues.
+
 ## Step 2: Initialize SDK with the public key
 
 First, you must retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
