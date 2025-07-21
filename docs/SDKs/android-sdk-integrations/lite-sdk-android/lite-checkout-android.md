@@ -281,6 +281,28 @@ The following table provide additional information about the possible states:
 | `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the payment process.                                           | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
 | `CANCELED`       | The user voluntarily canceled the transaction or abandoned the payment process.                                                 | No.                                                                                                           |
 
+### Jetpack Compose integration
+
+To display the `PaymentMethodListView` using Jetpack Compose, you can wrap it inside an `AndroidView`. This is useful if your application is fully composed and you don’t use XML layouts.
+
+```kotlin
+@Composable
+fun PaymentMethodsView() {
+    AndroidView(
+        factory = { context ->
+            PaymentMethodListView(context).apply {
+                setOnSelectedEvent { selected ->
+                    // Enable or disable your pay button based on selection
+                }
+            }
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+```
+
+Use this Composable inside your screen to render the available payment methods just like you would with XML.
+
 ## Step 6: Initiate the payment process
 
 To start a payment process, you have to call the method `startPaymentLite`.
