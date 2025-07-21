@@ -288,11 +288,11 @@ The following table provide additional information about the possible states:
 
 ### Using the `OnActivityResult` method
 
-The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes.  To process the enrollment result, follow these steps:
-
 > ❗️ Deprecated Method
 >
 > The `onActivityResult` method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using the `initEnrollment()` contract, which follows Google's best practices.
+
+The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes.  To process the enrollment result, follow these steps:
 
 > 📘 Using Default Request Code
 >
