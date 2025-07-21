@@ -23,6 +23,10 @@ In order to implement the Yuno iOS SDK, first, you need to address the following
 * Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
 * Use iOS version 14.0 or above.
 
+> 📘 Enrollment with Yuno SDK
+>
+> If you want users to enroll payment methods to facilitate future purchases, check out our [iOS enrollment documentation](doc:enrollment-ios).
+
 ## Step 1: Include the library in your project
 
 You can add the library using CocoaPods or Swift Package Manager.
