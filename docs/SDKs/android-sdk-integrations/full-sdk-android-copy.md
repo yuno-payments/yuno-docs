@@ -28,23 +28,47 @@ Before starting the Yuno Android SDK, make sure your project meets the [technica
 
 ## Step 1: Include the library in your project
 
-Ensure the Yuno SDK file is included in your project through Gradle. Then, add the repository source:
+To integrate the Yuno SDK into your project, you must first add Yuno’s Maven repository and then include the SDK dependency.
+
+### Add Yuno repository
+
+If your project uses `settings.gradle` (recommended for new projects):
+
+Add the repository inside the `dependencyResolutionManagement` block:
 
 ```kotlin
-maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+dependencyResolutionManagement {
+    repositories {
+        maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+        // other repositories...
+    }
+}
 ```
 
-> 📘 SDK Version
->
-> Access the [Release notes](#docs/release-notes-android-sdk) or the [Yuno Android SDK repository](#https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
+If your project uses a top-level `build.gradle` (older structure), add the repository inside the `allprojects.repositories` block:
 
-After, include the code below in the file `build.gradle` to add the Yuno SDK dependency to the application.
+```kotlin
+allprojects {
+    repositories {
+        maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+        // other repositories...
+    }
+}
+```
+
+### Add SDK dependency
+
+In your app-level `build.gradle` file, add the SDK dependency:
 
 ```kotlin
 dependencies {
     implementation 'com.yuno.payments:android-sdk:{last_version}'
 }
 ```
+
+> 📘 **SDK Version**
+>
+> Access the [Release notes](doc:release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version.
 
 ### Permissions
 
@@ -196,7 +220,6 @@ startCheckout(
   // Replace with your target country's ISO code (e.g., "US" for USA, "FR" for France). The complete list of country_codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk.
   country_code: "country_code_iso",
   callbackPaymentState: ((String?) -> Unit)?,
-  merchantSessionId: String? = null //Optional - Default null
 )
 ```
 
