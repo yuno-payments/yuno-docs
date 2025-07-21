@@ -109,7 +109,7 @@ Below, you find a description of each configuration variable available.
 >
 > Retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
 
-## Step 3: Start the Checkout Flow
+## Step 3: Start the checkout flow
 
 Before displaying payment methods or collecting user data, you need to initialize the checkout session using:
 
