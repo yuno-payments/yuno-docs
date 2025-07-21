@@ -242,11 +242,11 @@ The following table presents all the protocol requirements you have to provide a
 
     <tr>
       <td>
-        `navigationController`
+        `viewController`
       </td>
 
       <td>
-        This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance.
+        This property is the current `UIViewController` responsible for presenting the SDK’s views. It's necessary to allow the SDK to display screens.
       </td>
     </tr>
 
@@ -256,7 +256,7 @@ The following table presents all the protocol requirements you have to provide a
       </td>
 
       <td>
-        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token.
+        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token.\`
       </td>
     </tr>
 
