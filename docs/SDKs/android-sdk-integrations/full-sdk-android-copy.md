@@ -346,7 +346,7 @@ Yuno requires integrating the SDK's `continuePayment` method after the payment i
 continuePayment(
     showPaymentStatus: Boolean = true, // Optional – Default true
     checkoutSession: String? = null,   // Optional – Default null
-    country_code: String? = null,       // Optional – Default null
+    countryCode: String? = null,       // Optional – Default null
     callbackPaymentState: ((String?) -> Unit)? = null // Optional – Default null
 )
 ```
