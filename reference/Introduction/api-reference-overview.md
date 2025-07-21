@@ -16,7 +16,6 @@ The Yuno API has been implemented around RESTful. Our API uses standard HTTP pro
 >
 > Before you start the integration, [choose the type of integration](https://docs.y.uno/docs/choose-the-right-integration-for-you) you want to use.
 
-
 ## Setup and integration
 
 The options below highlight essential information you will need to consider when building your integration with Yuno.
