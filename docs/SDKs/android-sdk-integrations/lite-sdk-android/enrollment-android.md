@@ -392,12 +392,6 @@ To use the `styles` customization option, you have to use the `YunoConfig` data 
 
 The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the use of the loader component.
 
-### Save card for future payments
-
-In addition, you can display a checkbox to save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders:
-
-<Image align="center" src="https://files.readme.io/1c3d62f0307923298b22f18a1e58f86f8b6068a582315a0991ff8d802c475dbc-Card___save_for_future_payments.png" />
-
 ### Render options
 
 You can choose between two card form render options. The following screenshots demonstrate the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
