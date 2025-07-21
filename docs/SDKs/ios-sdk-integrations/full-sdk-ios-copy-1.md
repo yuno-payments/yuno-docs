@@ -71,15 +71,19 @@ Yuno.initialize(
 >
 > In iOS SDK version `2.2.0` and later, the `callback` parameter for `Yuno.initialize(...)` does not return a success flag. It is simply a notification that initialization has completed, regardless of success or failure.
 
-You should call `Yuno.initialize(...)` as early as possible in your app's lifecycle, depending on your app architecture:
+You should call `Yuno.initialize()` as early as possible in your app's lifecycle, depending on your app architecture:
 
 * **If your app uses`AppDelegate` only**: call it inside `application(_:didFinishLaunchingWithOptions:)`
 * **If your app uses`SceneDelegate`**: place the call inside `scene(_:willConnectTo:options:)`
-* **If you're using SwiftUI with`@main` and `ContentView`**: you should call `Yuno.initialize(...)` in your app's main entry point (e.g., inside the `App` struct's `init()` method or `onAppear` of your initial view), but ensure it only runs once
+* **If you're using SwiftUI with`@main` and `ContentView`**: you should call `Yuno.initialize()` in your app's main entry point (e.g., inside the `App` struct's `init()` method or `onAppear` of your initial view), but ensure it only runs once
 
-> ⚠️
+> 📘
 >
-> Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout(...)`.
+> It's safe to call `Yuno.initialize()` in the `init()` of your SwiftUI `App` struct. Avoid calling it from the `init()` of a regular `View`, as views may re-initialize and cause unexpected behavior.
+
+> 🚧
+>
+> Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout()`.
 
 If you're using **UIKit**, place your `Yuno.initialize()` call in `SceneDelegate` or `AppDelegate`, depending on your project structure.
 
