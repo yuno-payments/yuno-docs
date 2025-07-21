@@ -66,7 +66,7 @@ The `checkout_session` is unique for each payment attempt and cannot be reused.
 
 ## Step 3: Include the library in your project
 
-The first step is to include Yuno SDK in your project through Gradle. Then, you can add the repository source, as shown in the following code block:
+Include the Yuno SDK in your project through Gradle. Then, you can add the repository source:
 
 ```kotlin
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
