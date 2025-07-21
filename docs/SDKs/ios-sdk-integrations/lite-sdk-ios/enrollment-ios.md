@@ -60,7 +60,7 @@ dependencies: [
 Yuno's iOS SDK provides an enrollment feature for payment methods integrated into Yuno. To display a view controller with the flow for integrating a new payment method, call the method presented in the following code snippet:
 
 ```swift
-protocol YunoPaymentDelegate: AnyObject {
+protocol YunoEnrollmentDelegate: AnyObject {
 
     var customerSession: String { get }
   	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
@@ -147,7 +147,6 @@ Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to 
 > 📘 Demo App
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
-
 
 ## Implementing `YunoPaymentDelegate` with Swift 6 Concurrency
 
