@@ -145,7 +145,7 @@ protocol YunoPaymentDelegate: AnyObject {
 
     var checkoutSession: String { get }
   	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-    var country_code: String { get }
+    var countryCode: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
 
