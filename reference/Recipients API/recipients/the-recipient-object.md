@@ -5,7 +5,7 @@ hidden: false
 metadata:
   robots: index
 ---
-This object represents a recipient who will receive part of a [split payment](doc:split-payments-marketplace). Represents a seller's account within your marketplace. The split allows you to disperse the money of a purchase in your marketplace directly to the seller's account and your commission in your marketplace account.
+This object represents a recipient who will receive part of a [split payment](doc:split-payments-marketplace). Represents a seller's account within your marketplace. The split allows you to disperse the money of a purchase in your marketplace directly to the seller's account while your commission goes to your marketplace account.
 
 ## Attributes
 
