@@ -31,7 +31,7 @@ Before starting the Yuno Android SDK, make sure your project meets the [technica
 
 ## Step 1: Include the library in your project
 
-Ensure the Yuno SDK file is included in your project through Gradle. Then, add the repository source using the following code line:
+Ensure the Yuno SDK file is included in your project through Gradle. Then, add the repository source:
 
 ```kotlin
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
