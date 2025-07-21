@@ -70,7 +70,7 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 
 ## Step 3: Include the library in your project
 
-Ensure the Yuno SDK file is included in your project through Gradle. Then, add the repository source using the following code line:
+Ensure the Yuno SDK file is included in your project through Gradle. Then, add the repository source:
 
 ```kotlin
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
