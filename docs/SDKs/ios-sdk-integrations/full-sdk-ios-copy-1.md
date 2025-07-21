@@ -1,5 +1,5 @@
 ---
-title: Full SDK (iOS) (COPY)
+title: Full SDK (iOS) (July 2025 Revision)
 deprecated: false
 hidden: true
 metadata:
