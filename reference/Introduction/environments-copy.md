@@ -3,6 +3,7 @@ title: Environments (COPY)
 deprecated: false
 hidden: true
 metadata:
+  description: test
   robots: index
 ---
 You can interact with the Yuno API using two environments: 
