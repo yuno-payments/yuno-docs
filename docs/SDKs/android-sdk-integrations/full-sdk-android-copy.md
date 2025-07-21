@@ -1,5 +1,5 @@
 ---
-title: Full SDK (Android) (COPY)
+title: Full SDK (Android) (July 2025 Revision)
 deprecated: false
 hidden: true
 metadata:
