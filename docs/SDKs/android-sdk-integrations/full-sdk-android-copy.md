@@ -280,25 +280,20 @@ When implementing the Full SDK, be sure to include the `PaymentMethodListView` i
 
 ### Jetpack Compose integration
 
-To display the `PaymentMethodListView` using Jetpack Compose, you can wrap it inside an `AndroidView`. This is useful if your application is fully composed and you don’t use XML layouts.
+Use `AndroidView` to render `PaymentMethodListView` in Compose:
 
 ```kotlin
-@Composable
-fun PaymentMethodsView() {
-    AndroidView(
-        factory = { context ->
-            PaymentMethodListView(context).apply {
-                setOnSelectedEvent { selected ->
-                    // Enable or disable your pay button based on selection
-                }
+AndroidView(
+    factory = { context ->
+        PaymentMethodListView(context).apply {
+            setOnSelectedEvent {
+                // Enable pay button
             }
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
-}
+        }
+    },
+    modifier = Modifier.fillMaxWidth()
+)
 ```
-
-Use this Composable inside your screen to render the available payment methods just like you would with XML.
 
 ## Step 6: Initiate the payment process
 
