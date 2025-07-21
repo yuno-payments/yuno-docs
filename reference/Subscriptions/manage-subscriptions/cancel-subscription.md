@@ -13,4 +13,4 @@ metadata:
 next:
   description: ''
 ---
-Calling this endpoint will cancel a subscription, changing it's `status` to CANCELED. This change cannot be reverted back, being a final point for the respective subscription.
+Calling this endpoint will cancel a subscription, changing its `status` to CANCELED. This change cannot be reverted back, being a final point for the respective subscription.
