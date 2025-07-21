@@ -318,6 +318,21 @@ Below is a description of the required parameters to start the payment.
 | `callbackOTT`                  | A required function that returns the updated one-time token (OTT) needed to complete the payment process. This token is required to complete the payment.              |
 | `callBackTokenWithInformation` | A function that supplies detailed information about the one-time token, wrapped in a `OneTimeTokenModel` object, allowing for comprehensive handling of token details. |
 
+### Understanding `startCompletePaymentFlow` vs `startPayment`
+
+The `startCompletePaymentFlow` method is designed to the `startPayment` + `continuePayment` sequence when using `keepLoader = true` in your `YunoConfig`.
+
+Here's a comparison:
+
+| Method                       | Role                                                                       | Requires OTT Callback | Loader Handling | Best Use Case                                               |
+| ---------------------------- | -------------------------------------------------------------------------- | --------------------- | --------------- | ----------------------------------------------------------- |
+| `startPayment()`             | Starts the payment flow, returns OTT, and ends.                            | ✅ Yes                 | ❌ Manual        | You handle OTT creation and continuePayment separately.     |
+| `startCompletePaymentFlow()` | Starts the full payment flow, handles OTT + continuePayment automatically. | ❌ Optional            | ✅ Built-in      | When using `keepLoader = true` for a simplified experience. |
+
+Use only one of these methods per flow, do **not** call `startPayment` and then `startCompletePaymentFlow`.
+
+If you're using `startCompletePaymentFlow`, the SDK handles OTT generation, status monitoring, and screen transitions internally.
+
 ## Step 7: Get the one-time token (OTT)
 
 Once the customer fills out the requested data in Yuno's payment forms, you will obtain the one-time token, a required parameter to create a payment using the Yuno API.
