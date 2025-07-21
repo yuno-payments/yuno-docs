@@ -217,7 +217,7 @@ You also need to update your manifest to use your application:
 
 > 🚧 Loader Handling
 >
-> If you need to maintain the Yuno Loader screen, set the `keepLoader` parameter to `TRUE` in the `Yuno.initialize()` function. Refer to the [Loader](doc:loader-android) documentation for more information.
+> To maintain the Yuno Loader screen, set the `keepLoader` parameter to `TRUE` in the `Yuno.initialize()` function. Refer to the [Loader](doc:loader-android) documentation for more information.
 
 ## Step 3: Create the checkout session
 
