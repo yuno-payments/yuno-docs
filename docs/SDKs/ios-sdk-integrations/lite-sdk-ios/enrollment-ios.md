@@ -57,6 +57,10 @@ dependencies: [
 
 ## Step 2: Enroll a new payment method
 
+> 📘
+>
+> Before calling `Yuno.enrollPayment()`, make sure you’ve initialized the SDK with `Yuno.initialize()`.
+
 Yuno's iOS SDK provides an enrollment feature for payment methods integrated into Yuno. To display a view controller with the flow for integrating a new payment method, call the method presented in the following code snippet:
 
 ```swift
@@ -122,6 +126,52 @@ func application(_ app: UIApplication, open url: URL, options: [UIApplication.Op
 > 🚧 Swift 6 Concurrency Requirements
 >
 > If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoPaymentDelegate` with Swift 6 Concurrency](#implementing-yunopaymentdelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
+
+## Understanding `Yuno.Result`
+
+When the enrollment process finishes, the SDK calls:
+
+```swift
+func yunoEnrollmentResult(_ result: Yuno.Result)
+```
+
+This result can reflect different final states for the enrollment. The Yuno.Result enum includes:
+
+```swift
+enum Result {
+    case success
+    case fail
+    case reject
+    case processing
+    case internalError
+    case userCancell
+}
+```
+
+You can use a switch to handle each result case:
+
+```swift
+`func yunoEnrollmentResult(_ result: Yuno.Result) {
+    switch result {
+    case .success:
+        print("Enrollment successful")
+    case .fail:
+        print("Enrollment failed")
+    case .processing:
+        print("Enrollment still processing")
+    case .reject:
+        print("Enrollment rejected")
+    case .userCancell:
+        print("User canceled")
+    case .internalError:
+        print("Internal error")
+    }
+}
+```
+
+> 📘
+>
+> `Yuno.Result` does not include tokens or error messages. You’ll only get a high-level status to help you guide the user experience.
 
 ## Complementary Features
 
