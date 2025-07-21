@@ -80,6 +80,8 @@ class ViewController: YunoEnrollmentDelegate {
 
 ```
 
+`Yuno.enrollPayment()` presents a full-screen `UIViewController` modally using the `viewController` provided in your `delegate`. This works only in UIKit. In SwiftUI, wrap a `UIViewController` and return it via the `viewController` property. The `delegate` must expose a visible controller to allow the SDK to present the UI.
+
 The following table presents all the protocol requirements you have to provide and their descriptions.
 
 | Parameter                                      | Description                                                                                                                                                                                                                           |
