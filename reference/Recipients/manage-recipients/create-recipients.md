@@ -5,7 +5,7 @@ api:
   file: recipients.json
   operationId: create-recipients
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
