@@ -4,7 +4,7 @@ api:
   file: recipients.json
   operationId: post_new-endpoint
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
