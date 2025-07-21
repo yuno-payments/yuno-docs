@@ -136,7 +136,7 @@ You **must** call this method before attempting to display the payment method UI
 >
 > You must call `Yuno.startCheckout(...)` **once per session**, typically in `viewDidLoad()` or right before you display payment UI elements.
 
-## Step 4: Start the checkout process
+## Step 4: Start the checkout process (old, see below for new version)
 
 The ViewController class is defined as a subclass of `UIViewController` and also adopts the `YunoPaymentDelegate` protocol. It overrides the `viewDidLoad()` method and calls `Yuno.startCheckout(with: self)`. The `Yuno.startCheckout(with:)` function is a function provided by the Yuno library, and it takes an instance of a class that conforms to the `YunoPaymentDelegate` protocol as an argument. By passing `self` (the current instance of `ViewController`) as the argument, the `ViewController` becomes the delegate.
 
@@ -290,6 +290,101 @@ The following table presents all the protocol requirements you have to provide a
 >
 > If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoPaymentDelegate` with Swift 6 Concurrency](#implementing-yunopaymentdelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
 
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+## Step 4: Start the checkout process (reworked section to explain yunopaymentdelegate)
+
+To begin the payment flow, you must call the `Yuno.startCheckout(with:)` method, which initializes the SDK’s internal flow using your delegate implementation.
+
+Your `ViewController` must conform to the `YunoPaymentDelegate` protocol. This protocol allows the SDK to interact with your app by requesting session information and notifying you of payment events.
+
+Here’s an example of how to implement it:
+
+```swift
+class ViewController: UIViewController, YunoPaymentDelegate {
+
+    var checkoutSession: String { "your_checkout_session" }
+    var countryCode: String { "CO" }
+    var language: String? { "es" }
+    var viewController: UIViewController? { self }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        Yuno.startCheckout(with: self)
+    }
+
+    func yunoCreatePayment(with token: String) {
+        // Send token to your backend to create the payment
+    }
+
+    func yunoCreatePayment(with token: String, information: [String : Any]) {
+        // Same as above, but also receives raw token metadata
+    }
+
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        // Handle final payment status
+    }
+}
+```
+
+### Protocol property overview
+
+| Parameter         | Description                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession` | The unique identifier for the checkout session.                                                                      |
+| `countryCode`     | The country code used for localization and coverage. See the [country coverage](doc:country-coverage-yuno-sdk) page. |
+| `language`        | Optional language override (`"es"`, `"en"`, `"pt"`). If omitted, uses device language.                               |
+| `viewController`  | The current `UIViewController` that will present the SDK’s UI.                                                       |
+
+### Protocol method overview
+
+| Method                                 | Description                                                                                    |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `yunoCreatePayment(with:)`             | Called when the SDK generates a one-time token. Send this to your backend to create a payment. |
+| `yunoCreatePayment(with:information:)` | Same as above but includes token metadata. Use only one of the two methods.                    |
+| `yunoPaymentResult(_:)`                | Called when the SDK finishes the payment process.                                              |
+
+> 🚧
+>
+> Only one version of `yunoCreatePayment` should be implemented in your class. Don’t implement both unless explicitly needed.
+
+### UIKit vs SwiftUI: Handling `getPaymentMethodView`
+
+The `getPaymentMethodView(delegate:)` method adapts based on your UI framework:
+
+* Returns a `UIView` in UIKit
+* Returns a `some View` in SwiftUI
+
+However, the shared method signature can confuse the compiler. If you encounter an “ambiguous use” error, disambiguate with a type annotation:
+
+#### UIKit example
+
+```swift
+let paymentView: UIView = Yuno.getPaymentMethodView(delegate: self)
+self.view.addSubview(paymentView)
+```
+
+#### SwiftUI example
+
+```swift
+var body: some View {
+    VStack {
+        Text("Payment")
+        Yuno.getPaymentMethodView(delegate: self)
+    }
+}
+```
+
+<br />
+
 ## Step 5: Add the SDK view to the checkout
 
 After calling the `startCheckout()` function, your view needs to adopt the `YunoPaymentFullDelegate` protocol. This allows your app to respond to payment-related actions, such as when the user selects a payment method.
@@ -316,6 +411,20 @@ To display the payment methods, call the following method and pass your view mod
 
 ```swift
 Yuno.getPaymentMethodView(delegate:)
+```
+
+Use an explicit cast to avoid ambiguous overload errors:
+
+**For UIKit**:
+
+```swift
+let paymentMethodsView: UIView = Yuno.getPaymentMethodView(delegate: self)
+```
+
+**For SwiftUI**:
+
+```swift
+let paymentMethodsView: some View = Yuno.getPaymentMethodView(delegate: self)
 ```
 
 This method will automatically return the correct type of view depending on the UI framework you are using:
