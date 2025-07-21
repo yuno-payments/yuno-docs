@@ -205,7 +205,9 @@ The following table includes descriptions for each customization available.
   </tbody>
 </Table>
 
-> 🚧 Loading Screen Persistence
+> 🚧 Loading Screen Handling
+>
+> To maintain the Yuno loader screen, set the `keepLoader` parameter to `TRUE` in the `Yuno.initialize()` function. Refer to the [loader](doc:loader-android) documentation for more information.
 >
 > To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the [startCompletePaymentFlow()](#loader-android) function.
 
@@ -214,10 +216,6 @@ You also need to update your manifest to use your application:
 ```xml
 <application android:name=".CustomApplication"></application>
 ```
-
-> 🚧 Loader Handling
->
-> To maintain the Yuno Loader screen, set the `keepLoader` parameter to `TRUE` in the `Yuno.initialize()` function. Refer to the [Loader](doc:loader-android) documentation for more information.
 
 ## Step 3: Create the checkout session
 
