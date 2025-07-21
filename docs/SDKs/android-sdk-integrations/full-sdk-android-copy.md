@@ -1,7 +1,7 @@
 ---
 title: Full SDK (Android) (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Full SDK
   description: >-
