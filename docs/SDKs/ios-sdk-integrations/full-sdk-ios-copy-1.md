@@ -54,22 +54,32 @@ dependencies: [
 
 ## Step 2: Initialize SDK with the public key
 
-To start running the Yuno iOS Full checkout, you first need to get your Yuno app ID and Public API Key. Then, import and initialize Yuno as presented in the following code snippet:
+To start running the Yuno iOS Full checkout, you first need to get your Yuno app ID and Public API Key. Then, import and initialize Yuno:
 
 ```swift
-import YunoSDK
-
 Yuno.initialize(
     apiKey: "<Public API Key>",
-    config: YunoConfig() // This is optional, by default it configures .oneStep card form and disables save card checkbox.,
-    callback: { (value: Bool) in }  // Optional callback to be notified when the SDK has completed initialization
+    config: YunoConfig(), // Optional
+    callback: { 
+        // This callback is triggered once the SDK has finished initializing.
+        // It does not return any values.
+    }
 )
-
 ```
 
-> 🚧 UISceneDelegate Usage
+You should call `Yuno.initialize(...)` as early as possible in your app's lifecycle, depending on your app architecture:
+
+* **If your app uses`AppDelegate` only**: call it inside `application(_:didFinishLaunchingWithOptions:)`
+* **If your app uses`SceneDelegate`**: place the call inside `scene(_:willConnectTo:options:)`
+* **If you're using SwiftUI with`@main` and `ContentView`**: you should call `Yuno.initialize(...)` in your app's main entry point (e.g., inside the `App` struct's `init()` method or `onAppear` of your initial view), but ensure it only runs once
+
+> ⚠️
 >
-> If your app is using a UISceneDelegate, ensure to place your Yuno initialization code within your SceneDelegate.
+> Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout(...)`.
+
+> 🚧 `UISceneDelegate` Usage
+>
+> If your app is using a `UISceneDelegate`, ensure to place your Yuno initialization code within your SceneDelegate.
 
 The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
 
