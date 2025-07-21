@@ -81,9 +81,24 @@ You should call `Yuno.initialize(...)` as early as possible in your app's lifecy
 >
 > Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout(...)`.
 
-> 🚧 `UISceneDelegate` Usage
->
-> If your app is using a `UISceneDelegate`, ensure to place your Yuno initialization code within your SceneDelegate.
+If you're using **UIKit**, place your `Yuno.initialize()` call in `SceneDelegate` or `AppDelegate`, depending on your project structure.
+
+If you're using **SwiftUI** with a `WindowGroup`, you should initialize the SDK inside the `App` struct, typically in the `init()` method:
+
+```swift
+@main
+struct MyApp: App {
+    init() {
+        Yuno.initialize(apiKey: "your_api_key")
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+```
 
 The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
 
