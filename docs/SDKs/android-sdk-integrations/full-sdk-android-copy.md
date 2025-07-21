@@ -215,6 +215,10 @@ You also need to update your manifest to use your application:
 <application android:name=".CustomApplication"></application>
 ```
 
+> 🚧 Loader Handling
+>
+> If you need to maintain the Yuno Loader screen, set the `keepLoader` parameter to `TRUE` in the `Yuno.initialize()` function. Refer to the [Loader](doc:loader-android) documentation for more information.
+
 ## Step 3: Create the checkout session
 
 Each payment requires a new `checkout_session`, which provides access to all available payment methods for a specific customer. To obtain a new `checkout_session`, use the [Create checkout session](ref:create-checkout-session) endpoint. This session is then used to initiate the payment.
