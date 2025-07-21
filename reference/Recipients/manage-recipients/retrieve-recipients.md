@@ -5,7 +5,7 @@ api:
   file: recipients.json
   operationId: retrieve-recipients
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
