@@ -67,6 +67,10 @@ Yuno.initialize(
 )
 ```
 
+> ℹ️ Initialization Callback
+>
+> In iOS SDK version `2.2.0` and later, the `callback` parameter for `Yuno.initialize(...)` does not return a success flag. It is simply a notification that initialization has completed, regardless of success or failure.
+
 You should call `Yuno.initialize(...)` as early as possible in your app's lifecycle, depending on your app architecture:
 
 * **If your app uses`AppDelegate` only**: call it inside `application(_:didFinishLaunchingWithOptions:)`
@@ -105,7 +109,34 @@ Below, you find a description of each configuration variable available.
 >
 > Retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
 
-## Step 3: Start the checkout process
+## Step 3: Start the Checkout Flow
+
+Before displaying payment methods or collecting user data, you need to initialize the checkout session using:
+
+```swift
+Yuno.startCheckout(with: self)
+```
+
+This function triggers the SDK to prepare the UI components and internal state for the current checkout session.
+
+| Parameter | Type                  | Description                                                                                                                                                    |
+| --------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `self`    | `YunoPaymentDelegate` | Your ViewController or class implementing the required delegate methods. This lets the SDK access the necessary information (e.g. session ID, language, etc.). |
+
+You **must** call this method before attempting to display the payment method UI or performing any render operations. Otherwise, the SDK won’t be fully initialized for the current checkout session.
+
+### `startCheckout()` vs `getPaymentMethodView()`
+
+| Function                      | Purpose                                                | When to Use                                                             |
+| ----------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `Yuno.startCheckout(with:)`   | Initializes the checkout context and prepares the SDK. | **Always call this first** before any UI display or payment logic.      |
+| `Yuno.getPaymentMethodView()` | Returns a UI view of the available payment methods.    | Use **after** `startCheckout(...)`, and only when building a custom UI. |
+
+> ⚠️
+>
+> You must call `Yuno.startCheckout(...)` **once per session**, typically in `viewDidLoad()` or right before you display payment UI elements.
+
+## Step 4: Start the checkout process
 
 The ViewController class is defined as a subclass of `UIViewController` and also adopts the `YunoPaymentDelegate` protocol. It overrides the `viewDidLoad()` method and calls `Yuno.startCheckout(with: self)`. The `Yuno.startCheckout(with:)` function is a function provided by the Yuno library, and it takes an instance of a class that conforms to the `YunoPaymentDelegate` protocol as an argument. By passing `self` (the current instance of `ViewController`) as the argument, the `ViewController` becomes the delegate.
 
@@ -259,7 +290,7 @@ The following table presents all the protocol requirements you have to provide a
 >
 > If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoPaymentDelegate` with Swift 6 Concurrency](#implementing-yunopaymentdelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
 
-## Step 4: Add the SDK view to the checkout
+## Step 5: Add the SDK view to the checkout
 
 After calling the `startCheckout()` function, your view needs to adopt the `YunoPaymentFullDelegate` protocol. This allows your app to respond to payment-related actions, such as when the user selects a payment method.
 
@@ -294,7 +325,7 @@ This method will automatically return the correct type of view depending on the 
 
 This makes it easy to integrate the SDK into any iOS project, no matter which UI framework you use.
 
-## Step 5: Initiate the payment process
+## Step 6: Initiate the payment process
 
 To effectively start a payment after displaying the payment methods, you have to call the method `startPayment`, as presented in the code snippet below:
 
@@ -302,7 +333,7 @@ To effectively start a payment after displaying the payment methods, you have to
 Yuno.startPayment(showPaymentStatus:Bool)
 ```
 
-## Step 6: Get the OTT (one-time token)
+## Step 7: Get the OTT (one-time token)
 
 You can obtain the one-time token to create the payment back-to-back at the end of this process. You will get the one-time token in the function `yunoCreatePayment()` that you get when implementing the `YunoPaymentDelegate`. An example of retrieving the one-time token is presented below:
 
@@ -310,7 +341,7 @@ You can obtain the one-time token to create the payment back-to-back at the end 
 func yunoCreatePayment(with token: String) { ... }
 ```
 
-## Step 7: Create the Payment
+## Step 8: Create the Payment
 
 Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
@@ -332,7 +363,7 @@ The `showPaymentStatus` parameter is used to determine whether the payment statu
 >
 > In Yuno's iOS Full SDK, the default value for `showPaymentStatus` is `true`.
 
-## Step 8: Handle Payment Status (Optional)
+## Step 9: Handle Payment Status (Optional)
 
 > 🚧 Deep Links and Mercado Pago Checkout Pro
 >
