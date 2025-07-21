@@ -56,7 +56,7 @@ next:
   
   <div class="yuno">
     <p><strong><code>updated_at</code></strong> <small>timestamp</small>
-      <br/>Report the last updated date and time (MAX 27; MIN 27; <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>).
+      <br/>Date an time of the report's last update (MAX 27; MIN 27; <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>).
       <br/><small> Example: 2022-05-09T20:46:54.786342Z.  </small>
 </p>	
   </div>
