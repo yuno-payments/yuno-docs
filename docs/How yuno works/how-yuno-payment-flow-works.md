@@ -14,7 +14,7 @@ While Yuno provides diverse payment options, the basic payment process always fo
 
 ## The Yuno payment process
 
-The payment process consists of four steps:
+The payment process consists of four main steps:
 
 1. [Create a customer](#step-1-create-a-customer)
 2. [Create a checkout session](#step-2-create-a-checkout-session)

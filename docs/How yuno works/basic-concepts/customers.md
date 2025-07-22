@@ -15,7 +15,7 @@ metadata:
 next:
   description: ''
 ---
-The term **customer** refers to an individual who is part of a merchant's payment network in Yuno, with the ability to make payments and store payment methods. This term is closely related to phrases used in the banking and payment sectors, such as **cardholder** and **account holder**. Each customer has associated information, which is used to process payments using different payment methods and processors.
+The term **customer** refers to an individual who is part of a merchant's payment network in Yuno. Customers can make payments and store payment methods. The term is similar to "cardholder" or "account holder" in the banking and payments sector. Each customer has associated information used to process payments across various methods and processors.
 
 ## Customer functionalities
 
