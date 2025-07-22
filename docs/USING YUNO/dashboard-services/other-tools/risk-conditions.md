@@ -44,7 +44,7 @@ Within the **Rules** tab, select **Create rule** to configure your own rules. Se
 
 * **Name**: Give your rule a memorable name and description.
 * **Rule type**: Track the number of payments or cards used by a user within a specific timeframe. Add conditions to track shipping changes, IP addresses, card brands, metadata, and more.
-* **Settings**: Define the parameter used to count users, the types of payments to include (succeded, declined, etc.), and whether to count payments across the organization or the only current account.
+* **Settings**: Define the parameter used to count users, the types of payments to include (succeeded, declined, etc.), and whether to count payments across the organization or the only current account.
 * **Outcome**: Choose to allow, block, review, or test payments when a rule is triggered.
 * **Apply this list to other accounts**: Choose whether to apply the rule to other accounts.
 
@@ -88,7 +88,7 @@ Users can be allowlisted based on:
 * Card BIN
 * IP address
 * Merchant customer ID
-* Card BIN + Last 4 digits
+* Card BIN + last 4 digits
 * Document number
 * Customer ID
 * Card/bank account holder name
@@ -108,7 +108,7 @@ From the **Allowlists** tab, click **Create allowlist** to configure these param
 5. **Auto-remove**: Optionally enable automatic removal after a defined period of time.
 6. **Apply to accounts**: Choose which accounts the list should apply to. By default, it's limited to the current account, but you can apply it to others as needed.
 
-## Adding the Risk conditions connection
+## Adding the risk conditions connection
 
 You must configure the **Risk conditions** connection to enable rules and lists. Follow these steps to set it up once you have created your rules and lists:
 
