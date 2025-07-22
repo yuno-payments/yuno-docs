@@ -16,6 +16,10 @@ metadata:
 next:
   description: ''
 ---
+> ⚠️
+>
+> Do not execute a refund while another is in progress. Wait for the current operation to complete before starting a new one.
+
 This endpoint allows you to issue a refund for an existing payment.
 
 If you specify an `amount`, a **partial refund** will be created. If the `amount` is omitted, a **full refund** of the original payment will be processed.
