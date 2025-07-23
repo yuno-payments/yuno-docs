@@ -1,7 +1,7 @@
 ---
 title: PagBank - PIX
 fullscreen: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
