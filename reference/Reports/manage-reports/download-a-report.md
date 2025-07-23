@@ -21,9 +21,9 @@ next:
 
 To retrieve the file content, use your API credentials to access the file specified by the report object `id`.
 
-> 📘 Response File Type
+> 📘 Downloading reports
 >
-> The API response will provide a .zip file. However, for [settlement](introduction-reports#settlement-report) reports, the API will return a .csv file.
+> The API response will include a link with to download the report. Open the link through your browser to access the data.
 
 Explore the following links to access various report examples:
 
