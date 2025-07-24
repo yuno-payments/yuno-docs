@@ -40,6 +40,12 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 >
 > VTEX recommends you to not enable the test mode in production environments, since the test payment options will be available to customers in your store.
 
+> ❗️ Automatic Settlement Warning
+>
+> There is a known issue affecting the option **Scheduled: Schedules the Automatic Capture**. You can find more details [here](https://developers.vtex.com/docs/guides/custom-auto-capture-feature).
+>
+> Before performing the update (`PUT`), the affiliation first makes a `GET` request to retrieve the current configuration.
+
 5. After filling in all fields, click **Save**.
 6. Navigate to **Store Settings** > **Settings** and click the **+** button (green button at the top right corner) to add a new payment option.
 
@@ -61,14 +67,13 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 >
 > If you want to add more than one payment method to offer to your clients, Visa and Mastercard for example, you need to repeat steps **7** and **8** two times, one for Visa and the other for Mastercard.
 
-
-9. As the last step, you have to configure the Webhook URL to receive the updates from the payments. 
-   1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?) and select **Developers**. 
+9. As the last step, you have to configure the Webhook URL to receive the updates from the payments.
+   1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?) and select **Developers**.
    2. Select the **Webhooks** tab.
    3. Click **add webhook**. The webhook  form will show up, where you should provide the following information:
       1. **Name**: Define a name for the VTEX webhook.
-      2. **Endpoint URL**: You should inform the following URL **https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook**.
-      3. **x-api-key** and **x-secret**: You can set any information here. For example, you can add **VTEX** for both fields. 
+      2. **Endpoint URL**: You should inform the following URL **[https://store\_name.myvtex.com/\_v/yunopartnerbr.yuno/v4/webhook](https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook)**.
+      3. **x-api-key** and **x-secret**: You can set any information here. For example, you can add **VTEX** for both fields.
    4. For **Trigger on**, check all events that should notify you through the webhooks. Yuno recommends checking all options.
    5. Click **Add**.
 
@@ -91,7 +96,7 @@ After completing the steps above, your clients can access a new payment method a
 
 <Image align="center" src="https://files.readme.io/a17a02d-vtex.png" />
 
-Once you start receiving payments in VTEX with Yuno, you will be able to see all the information related to the transactions in your [Yuno dashboard](doc:payments-2) as a regular payment. 
+Once you start receiving payments in VTEX with Yuno, you will be able to see all the information related to the transactions in your [Yuno dashboard](doc:payments-2) as a regular payment.
 
 * As additional info in the payment detail, particularly inside the metadata struct, you will also be able to identify the VTEX account related to the payment creation.
 
@@ -106,7 +111,7 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
 
 ### Customizations
 
-If you want to add or change certain UX aspects of the checkout, VTEX lets the merchants modify a few things: 
+If you want to add or change certain UX aspects of the checkout, VTEX lets the merchants modify a few things:
 
-* Checkout Page [customizations](https://developers.vtex.com/docs/guides/customization) 
+* Checkout Page [customizations](https://developers.vtex.com/docs/guides/customization)
 * [Change Payment Method names](https://developers.vtex.com/docs/guides/change-payment-method-names-in-checkout) in Checkout.
