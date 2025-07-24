@@ -1,7 +1,7 @@
 ---
 title: Create onboarding
 api:
-  file: recipients.json
+  file: openapi.json
   operationId: post_{id}onboardings
 deprecated: false
 hidden: true
