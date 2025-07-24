@@ -149,4 +149,4 @@ Asterisk (\*) marks required.
 
 ## Support
 
-* For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno.com/)
+* For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno/)
