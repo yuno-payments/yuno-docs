@@ -13,7 +13,7 @@ This guide introduces how to work with both components. You’ll learn how the L
 
 To help large language models understand and support Yuno integrations, we provide a dedicated set of Markdown (.md) files designed specifically for machine readability. These files describe Yuno’s APIs, product behavior, and implementation details in a format that’s easy for LLMs to parse and analyze.
 
-The .md files are part of [Yuno Docs](docs.y.uno). You can access them by adding .md to the end of any Yuno Docs URL (this works for both Guides and API Reference pages). The content is served in plain text, making it easier for machines to extract and process the underlying knowledge without requiring human interpretation.
+The .md files are part of [Yuno Docs](https://docs.y.uno/). You can access them by adding .md to the end of any Yuno Docs URL (this works for both Guides and API Reference pages). The content is served in plain text, making it easier for machines to extract and process the underlying knowledge without requiring human interpretation.
 
 This setup enables AI assistants, developer tools, and chat-based agents to answer questions, explain features, and guide integrations automatically. It’s a lightweight but powerful way to open up Yuno’s documentation to a wide range of intelligent applications.
 
