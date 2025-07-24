@@ -115,3 +115,7 @@ If you want to add or change certain UX aspects of the checkout, VTEX lets the m
 
 * Checkout Page [customizations](https://developers.vtex.com/docs/guides/customization)
 * [Change Payment Method names](https://developers.vtex.com/docs/guides/change-payment-method-names-in-checkout) in Checkout.
+
+### Available options
+
+For more information on the custom auto capture feature, [refer to the VTEX documentation](https://developers.vtex.com/docs/guides/custom-auto-capture-feature).
