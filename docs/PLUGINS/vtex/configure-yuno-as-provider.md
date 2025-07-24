@@ -42,7 +42,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 > ❗️ Automatic Settlement Warning
 >
-> There is a known issue affecting the option **Scheduled: Schedules the Automatic Capture**. You can find more details [here](https://developers.vtex.com/docs/guides/custom-auto-capture-feature).
+> There is a known issue affecting the option **Scheduled: Schedules the Automatic Capture**. You can find more details [here](https://help.vtex.com/en/known-issues/scheduled-automatic-capture-does-not-appear--1cuvGbgUvd1ATeHEG6Il98).
 >
 > Before performing the update (`PUT`), the affiliation first makes a `GET` request to retrieve the current configuration.
 
