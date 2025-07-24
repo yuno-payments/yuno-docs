@@ -104,7 +104,7 @@ apiClientEnroll = Yuno.apiClientEnroll(
   /**
      * country can be one of the following: https://docs.y.uno/docs/country-coverage-yuno-sdk
      */
-    country_code: "CO",
+    countryCode: "CO",
      /**
      * The customer_session created in https://docs.y.uno/reference/create-customer-session
      */
