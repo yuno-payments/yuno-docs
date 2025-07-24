@@ -107,7 +107,7 @@ protocol YunoPaymentDelegate: AnyObject {
 
     var checkoutSession: String { get }
   	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-    var country_code: String { get }
+    var countryCode: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
 
@@ -819,7 +819,6 @@ The primary benefit of using the new method is the detailed control it provides 
 > 📘 Demo app
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
-
 
 ## Implementing `YunoPaymentDelegate` with Swift 6 Concurrency
 
