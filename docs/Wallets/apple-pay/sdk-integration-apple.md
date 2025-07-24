@@ -49,7 +49,7 @@ To make Apple Pay available to your end users, follow these steps:
 2. Locate the available **Payment methods** and enable **Apple Pay**.
 3. Press **Publish** to make **Apple Pay** available as a payment option for all transactions that meet the defined routing criteria.
 
-<Image align="center" src="https://files.readme.io/4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png" />
+<Image align="center" width="700px" src="https://files.readme.io/4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png" />
 
 ## Step 4: Start Using Your Yuno Integration
 
@@ -75,11 +75,11 @@ To enable Apple Pay in your app, you need to configure the Apple Pay capability 
 
 1. **Add Apple Pay Capability**: In Xcode, add the Apple Pay capability to your project.
 
-![](https://files.readme.io/757a4706d90b183020c05910648ed12822233bb14b0436a0d67f6eb18e03f77e-image.png)
+<Image align="center" width="700px" src="https://files.readme.io/757a4706d90b183020c05910648ed12822233bb14b0436a0d67f6eb18e03f77e-image.png" />
 
 2. **Select Merchant ID**: Select the merchant ID created in the previous step. It will appear if you are logged in to your developer account.
 
-![](https://files.readme.io/4bc6e2bb6d6317b3cf3b39c3b9483b082b5d97e0f046222c862cef28edae90dd-image.png)
+<Image align="center" width="700px" src="https://files.readme.io/4bc6e2bb6d6317b3cf3b39c3b9483b082b5d97e0f046222c862cef28edae90dd-image.png" />
 
 <br />
 
