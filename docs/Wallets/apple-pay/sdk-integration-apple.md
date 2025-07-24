@@ -1,16 +1,15 @@
 ---
 title: SDK integration
-excerpt: ""
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
-
 This guide provides a step-by-step process to integrate the Yuno SDK with Apple Pay. Following this guide will enable seamless payment processing through Apple Pay.
 
 ## Step 1: Add the Connection
@@ -76,9 +75,17 @@ To enable Apple Pay in your app, you need to configure the Apple Pay capability 
 
 1. **Add Apple Pay Capability**: In Xcode, add the Apple Pay capability to your project.
 
+![](https://files.readme.io/757a4706d90b183020c05910648ed12822233bb14b0436a0d67f6eb18e03f77e-image.png)
+
 2. **Select Merchant ID**: Select the merchant ID created in the previous step. It will appear if you are logged in to your developer account.
 
-> ⚠️ **Important**: Make sure the Merchant ID is correctly linked to the Apple Pay capability in your app's App Identifier in the Apple Developer portal. This is configured under: **Certificates, Identifiers & Profiles** → **Identifiers** → select your app → **Capabilities** tab.
+![](https://files.readme.io/4bc6e2bb6d6317b3cf3b39c3b9483b082b5d97e0f046222c862cef28edae90dd-image.png)
+
+<br />
+
+> ⚠️
+>
+> Make sure the Merchant ID is correctly linked to the Apple Pay capability in your app's App Identifier in the Apple Developer portal. This is configured under: **Certificates, Identifiers & Profiles** → **Identifiers** → **select your app** → **Capabilities** tab.
 
 ## Step 6: Prepare for Testing with Apple Pay
 
@@ -96,6 +103,12 @@ Before you start making test payments with Apple Pay, follow these steps to ensu
 
 2. **Set Up iCloud**: Log in to iCloud using the email provided in the previous step.
 
-3. **Add Test Cards**: In the Wallet app, add one of the cards available on the [sandbox testing cards page](https://developer.apple.com/apple-pay/sandbox-testing/) on the Apple Developer website.
+3. **Add Test Cards**: In the Wallet app, add one of the cards available on the [sandbox testing cards page on the Apple Developer website](https://developer.apple.com/apple-pay/sandbox-testing/).
+
+<Image align="center" width="350px" src="https://files.readme.io/a1e4444a95a84d8f16910480f7fd1adc5144afc68164d7bb9d0b62c058d177f6-image.png" />
 
 4. **Follow Payment Flow**: Follow the flow you use for any other payment method.
+
+<Image align="center" width="350px" src="https://files.readme.io/6b449c2330349d52c6a74645abfb29fd11e09298437ed6bbf94f19fd5de0d357-image.png" />
+
+<Image align="center" width="350px" src="https://files.readme.io/7c8ba2456ec3db7abe13324298a7228facccb8db21acf65078c95cdd32e02551-image.png" />
