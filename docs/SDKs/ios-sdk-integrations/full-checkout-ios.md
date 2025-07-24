@@ -154,7 +154,7 @@ The following table presents all the protocol requirements you have to provide a
 
     <tr>
       <td>
-        `country_code`
+        `countryCode`
       </td>
 
       <td>
