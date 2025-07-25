@@ -401,6 +401,12 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
             <td>N/A</td>
             <td>-</td>
           </tr>
+          <tr>
+            <td><code>RECEIVED</code></td>
+            <td>Transaction received and being processed</td>
+            <td>N/A</td>
+            <td>-</td>
+          </tr>
           
         </tbody>
       </table>
