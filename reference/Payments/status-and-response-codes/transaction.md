@@ -403,7 +403,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
           </tr>
           <tr>
             <td><code>RECEIVED</code></td>
-            <td>Transaction received and being processed</td>
+            <td>Transaction received</td>
             <td>N/A</td>
             <td>-</td>
           </tr>
