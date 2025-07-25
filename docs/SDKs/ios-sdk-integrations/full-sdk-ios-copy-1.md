@@ -71,15 +71,19 @@ Yuno.initialize(
 )
 ```
 
-> ℹ️ Initialization Callback
+> 📘 Access Your API Key
+>
+> Retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
+
+> 📘 Initialization Callback
 >
 > In iOS SDK version `2.2.0` and later, the `callback` parameter for `Yuno.initialize(...)` does not return a success flag. It is simply a notification that initialization has completed, regardless of success or failure.
 
 You should call `Yuno.initialize()` as early as possible in your app's lifecycle, depending on your app architecture:
 
-* **If your app uses`AppDelegate` only**: call it inside `application(_:didFinishLaunchingWithOptions:)`
-* **If your app uses`SceneDelegate`**: place the call inside `scene(_:willConnectTo:options:)`
-* **If you're using SwiftUI with`@main` and `ContentView`**: you should call `Yuno.initialize()` in your app's main entry point (e.g., inside the `App` struct's `init()` method or `onAppear` of your initial view), but ensure it only runs once
+* If your app uses`AppDelegate` only, call it inside `application(_:didFinishLaunchingWithOptions:)`
+* If your app uses`SceneDelegate`, place the `Yuno.initialize()` call inside `scene(_:willConnectTo:options:)`
+* If you're using SwiftUI with`@main` and `ContentView`, you should call `Yuno.initialize()` in your app's main entry point (e.g., inside the `App` struct's `init()` method or `onAppear` of your initial view), but ensure it only runs once
 
 > 📘
 >
@@ -89,9 +93,9 @@ You should call `Yuno.initialize()` as early as possible in your app's lifecycle
 >
 > Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout()`.
 
-If you're using **UIKit**, place your `Yuno.initialize()` call in `SceneDelegate` or `AppDelegate`, depending on your project structure.
+If you're using UIKit, place your `Yuno.initialize()` call in `SceneDelegate` or `AppDelegate`, depending on your project structure.
 
-If you're using **SwiftUI** with a `WindowGroup`, you should initialize the SDK inside the `App` struct, typically in the `init()` method:
+If you're using SwiftUI with a `WindowGroup`, you should initialize the SDK inside the `App` struct, typically in the `init()` method:
 
 ```swift
 @main
@@ -107,6 +111,8 @@ struct MyApp: App {
     }
 }
 ```
+
+### Configuring the appearance (optional)
 
 The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
 
@@ -128,13 +134,9 @@ Below, you find a description of each configuration variable available.
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
 | `keepLoadere`     | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
 
-> 📘 Access Your API Key
->
-> Retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
-
 ## Step 3: Start the checkout flow
 
-Before displaying payment methods or collecting user data, you need to initialize the checkout session using:
+Before displaying payment methods or collecting user data, you need to initialize the checkout session using the function `startCheckout()`:
 
 ```swift
 Yuno.startCheckout(with: self)
@@ -327,6 +329,12 @@ The following table presents all the protocol requirements you have to provide a
 > If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoPaymentDelegate` with Swift 6 Concurrency](#implementing-yunopaymentdelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
 
 ## Step 4: Start the checkout process (reworked section to explain yunopaymentdelegate)
+
+> ❗️ REVIEW HEITOR TO BE REMOVED
+>
+> Here, you say that the user must call the `Yuno.startCheckout(with:)`.\
+> However, the code block below, does not show how to do it.
+> Even checking the Step 3 some times, it still not clear for me.
 
 To begin the payment flow, you must call the `Yuno.startCheckout(with:)` method, which initializes the SDK’s internal flow using your delegate implementation.
 
