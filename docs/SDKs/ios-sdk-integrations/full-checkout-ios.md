@@ -121,7 +121,8 @@ class ViewController: YunoPaymentDelegate {
 
     func viewDidLoad() {
         super.viewDidLoad()
-        Yuno.startCheckout(with: self)
+        Task { @MainActor in
+        	await Yuno.startCheckout(with: self)
     }
 }
 ```
