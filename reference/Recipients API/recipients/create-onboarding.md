@@ -4,7 +4,7 @@ api:
   file: openapi.json
   operationId: post_{id}onboardings
 deprecated: false
-hidden: true
+hidden: false
 link:
   new_tab: false
 metadata:
