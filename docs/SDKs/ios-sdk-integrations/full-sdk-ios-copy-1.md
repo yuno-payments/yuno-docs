@@ -369,7 +369,7 @@ class ViewController: UIViewController, YunoPaymentDelegate {
 }
 ```
 
-### Protocol property overview
+The following table presents all the protocol properties and their descriptions:
 
 | Parameter         | Description                                                                                                          |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -378,37 +378,76 @@ class ViewController: UIViewController, YunoPaymentDelegate {
 | `language`        | Optional language override (`"es"`, `"en"`, `"pt"`). If omitted, uses device language.                               |
 | `viewController`  | The current `UIViewController` that will present the SDK’s UI.                                                       |
 
-### Protocol method overview
+The following table presents all the protocol methods and their descriptions:
 
-| Method                                 | Description                                                                                    |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `yunoCreatePayment(with:)`             | Called when the SDK generates a one-time token. Send this to your backend to create a payment. |
-| `yunoCreatePayment(with:information:)` | Same as above but includes token metadata. Use only one of the two methods.                    |
-| `yunoPaymentResult(_:)`                | Called when the SDK finishes the payment process.                                              |
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Method
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `yunoCreatePayment(with:)`
+      </td>
+
+      <td>
+        Called when the SDK generates a one-time token. Send this to your backend to create a payment.
+
+        If you use this method, you should not use `yunoCreatePayment(with:information:)`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoCreatePayment(with:information:)`
+      </td>
+
+      <td>
+        Called when the SDK generates a one-time token. Send this to your backend to create a payment including token metadata.
+
+        If you use this method, you should not use `yunoCreatePayment(with:)`.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoPaymentResult(_:)`
+      </td>
+
+      <td>
+        Called when the SDK finishes the payment process.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 > 🚧
 >
-> Only one version of `yunoCreatePayment` should be implemented in your class. Don’t implement both unless explicitly needed.
+> Only one version of `yunoCreatePayment` (`yunoCreatePayment(with:)` or  `yunoCreatePayment(with:information:)`) should be implemented in your class. Do not implement both unless explicitly needed.
 
 ### UIKit vs SwiftUI: Handling `getPaymentMethodView`
 
 The `getPaymentMethodView(delegate:)` method adapts based on your UI framework:
 
-* Returns a `UIView` in UIKit
-* Returns a `some View` in SwiftUI
+* Returns a `UIView` in UIKit.
+* Returns a `some View` in SwiftUI.
 
 However, the shared method signature can confuse the compiler. If you encounter an “ambiguous use” error, disambiguate with a type annotation:
 
-#### UIKit example
-
-```swift
+```swift UIKit example
 let paymentView: UIView = Yuno.getPaymentMethodView(delegate: self)
 self.view.addSubview(paymentView)
 ```
-
-#### SwiftUI example
-
-```swift
+```swift SwiftUI example
 var body: some View {
     VStack {
         Text("Payment")
@@ -447,15 +486,10 @@ Yuno.getPaymentMethodView(delegate:)
 
 Use an explicit cast to avoid ambiguous overload errors:
 
-**For UIKit**:
-
-```swift
+```swift For UIKit
 let paymentMethodsView: UIView = Yuno.getPaymentMethodView(delegate: self)
 ```
-
-**For SwiftUI**:
-
-```swift
+```swift For SwiftUI
 let paymentMethodsView: some View = Yuno.getPaymentMethodView(delegate: self)
 ```
 
