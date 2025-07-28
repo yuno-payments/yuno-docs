@@ -1480,3 +1480,37 @@ The next JSON object presents an example of a data structure related to a paymen
   }
 }
 ```
+
+## Onboardings
+
+```json Example
+{
+  "type": "onboarding",
+  "type_event": "onboarding.succeeded",
+  "account_id": "f7c5fe77-721b-49c2-84d3-957748df3c2c",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "id": "d989ec0f-c205-4d06-9838-b510ef934d6f",
+    "type": "PREVIOUSLY_ONBOARDED",
+    "workflow": "DIRECT",
+    "status": "SUCCEEDED",
+    "callback_url": null,
+    "provider": {
+      "id": "ALELO",
+      "connection_id": "273daaad-6e82-4314-819f-a6e8ebf73611",
+      "redirect_url": null,
+      "recipient_id": "60537188000133",
+    },
+    "documentation": [],
+    "legal_representatives": [],
+    "withdrawal_methods": null,
+    "requirements": [],
+    "terms_of_service": null,
+    "created_at": "2025-07-28T21:52:19.637883Z",
+    "updated_at": "2025-07-28T21:52:19.637892Z",
+    "expires_at": null
+  }
+}
+
+```
