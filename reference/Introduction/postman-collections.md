@@ -63,11 +63,11 @@ After selecting the environment and defining the variable values, you can start 
 
 3. Provide the necessary values to the parameters available on the **Headers** and **Body** tabs.
 
-![How to Create a Customer in Postman - Step 11](https://github.com/writechoiceorg/yuno-images/blob/main/doc/postmanCollection/How%20to%20Create%20a%20Customer%20in%20Postman%20-%20Step%2011.png?raw=true)
+<Image align="center" src="https://files.readme.io/a2e91e295bcce5f9e3427a2c833bbbd9c8fd6aa277ae921def3b88fe1c59943a-provide_the_necessary_values.png" />
 
 4. Use the **Send** button to perform the request to Yuno's server.
 
-![How to Create a Customer in Postman - Step 12](https://github.com/writechoiceorg/yuno-images/blob/main/doc/postmanCollection/How%20to%20Create%20a%20Customer%20in%20Postman%20-%20Step%2012.png?raw=true)
+<Image align="center" src="https://files.readme.io/f144aae5675c88d220468a0e3c076deb44fbd33cb17da3cda247895f537d32be-use_the_send_button.png" />
 
 > 📘 Postman Variables
 >
