@@ -242,7 +242,7 @@ To initiate a new payment process with the Lite SDK, call the `startCheckout` me
 startCheckout(
   checkoutSession: "checkout_session",
   // Replace with your target country's ISO code (e.g., "US" for USA, "FR" for France). The complete list of country_codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk.
-  country_code: "US",
+  countryCode: "US",
   callbackPaymentState: ((String?) -> Unit)?,
   merchantSessionId: String? = null //Optional - Default null 
 )
