@@ -196,8 +196,8 @@ To start a new payment process with the Full SDK, call the `startCheckout` metho
 ```kotlin
 startCheckout(
   checkoutSession: "checkout_session",
-  // Replace with your target country's ISO code (e.g., "US" for USA, "FR" for France). The complete list of country_codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk.
-  country_code: "country_code_iso",
+  // Replace with your target country's ISO code (e.g., "US" for USA, "FR" for France). The complete list of countryCodes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk.
+  countryCode: "country_code_iso",
   callbackPaymentState: ((String?) -> Unit)?,
   merchantSessionId: String? = null //Optional - Default null
 )
@@ -208,7 +208,7 @@ Below is a description of the required parameters to start the checkout.
 | Parameter              | Description                                                                                                                                                                               |
 | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | A unique identifier for the checkout session associated with the payment. It is required to initialize the payment process and grants access to the customer's available payment methods. |
-| `country_code`         | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                            |
+| `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                            |
 | `callbackPaymentState` | It's a function that returns the current payment process. You don't need to send this function if you don't need the result.                                                              |
 | `merchantSessionId`    | An identifier used by the merchant to track the payment.                                                                                                                                  |
 
@@ -294,7 +294,7 @@ Yuno requires integrating the SDK's `continuePayment` method after the payment i
 continuePayment(
     showPaymentStatus: Boolean = true, // Optional – Default true
     checkoutSession: String? = null,   // Optional – Default null
-    country_code: String? = null,       // Optional – Default null
+    countryCode: String? = null,       // Optional – Default null
     callbackPaymentState: ((String?) -> Unit)? = null // Optional – Default null
 )
 ```
