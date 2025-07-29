@@ -250,7 +250,7 @@ To check the current enrollment state at any time, use the `AppCompatActivity.en
 ```kotlin
 fun AppCompatActivity.enrollmentStatus(
     customerSession: String,
-    country_code: String,
+    countryCode: String,
     showEnrollmentStatus: Boolean = false, //Optional - Default false
     callbackEnrollmentState: ((String?) -> Unit)? = null, //Optional - You can send again another callback that is gonna override the one you sent on initEnrollment function.
 )
