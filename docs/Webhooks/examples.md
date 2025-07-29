@@ -1413,7 +1413,7 @@ The next JSON object presents an example of a data structure related to a paymen
 
 ## Subscriptions
 
-```Text JSON
+```json JSON
 {
   "type": "subscription",
   "type_event": "subscription.create",
