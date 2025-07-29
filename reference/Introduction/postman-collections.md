@@ -18,21 +18,19 @@ Here, you find how to import the Yuno Collection and Environment. All endpoints 
 >
 > If you know how to use Postman, you can access the Yuno API collection [here](https://documenter.getpostman.com/view/21179596/2s9XxyRt9S#dba8efb6-f39d-430c-8e89-bf2000f3e28e).
 
-
 ## Step 1: Fork the Yuno Postman collection
 
 Before testing the endpoints, you need to fork the Yuno collection to your Postman account.
 
 1. Access the [Yuno Postman collection](https://documenter.getpostman.com/view/21179596/2s9XxyRt9S#dba8efb6-f39d-430c-8e89-bf2000f3e28e).
 2. Select the following **Run in Postman** button.
-3. Select if you want to run Postman on your Browser or using the Postman app. 
+3. Select if you want to run Postman on your Browser or using the Postman app.
 4. Sign up or log in to a Postman account.
-5. Select a workspace to import the collection and environment into. 
+5. Select a workspace to import the collection and environment into.
 
 > 📘 Collections and Environment
 >
 > The collections provided configured endpoint requests. The environments provide a list of variables used by the endpoints. Instead of defining values for each parameter each time you perform a request, you can use the environment variables.
-
 
 ## Step 2: Configure the environment variables
 
@@ -40,19 +38,19 @@ Before start testing the endpoint, you need to configure the environment variabl
 
 1. Access **Environments** on the left panel.
 
-![How to Create a Customer in Postman - Step 2](https://github.com/writechoiceorg/yuno-images/blob/main/doc/postmanCollection/How%20to%20Create%20a%20Customer%20in%20Postman%20-%20Step%202.png?raw=true)
+<Image align="center" src="https://files.readme.io/123a391405b6f4e8be27e073693fa5e74efb6a0d766e31dd47f97a1bde9bb260-acces_environments_on_the_left_panel.png" />
 
 2. Select the **Yuno Sbx - Postman** environment provided by yuno.
 
-![How to Create a Customer in Postman - Step 3](https://github.com/writechoiceorg/yuno-images/blob/main/doc/postmanCollection/How%20to%20Create%20a%20Customer%20in%20Postman%20-%20Step%203.png?raw=true)
+<Image align="center" src="https://files.readme.io/77813dfe7c2b5fd8088b6ca2711239cb3c5b8cd9ca06e766cd1ad0388961958c-select_the_yuno_sbx_-_postman.png" />
 
 3. Update the variable's values. To start testing, you need to update at least the `api-key`, `secret-key`, and `account-code`.
 
 4. Define **Yuno Sbx - Postman** as the environment using the **No Environment** selector at the top right corner.
 
-![How to Create a Customer in Postman - Step 6](https://github.com/writechoiceorg/yuno-images/blob/main/doc/postmanCollection/How%20to%20Create%20a%20Customer%20in%20Postman%20-%20Step%206.png?raw=true)
+<Image align="center" src="https://files.readme.io/8cbf447d1376344b2462c394ce63b54649aaa043a6e004233d9eeeeb9b8e2630-define_yuno_sbx_as_the_environment.png" />
 
-The **Yuno Sbx - Postman** environment has an extensive list of variables used on all requests inside the collection. You can define their values as you try new endpoints. 
+The **Yuno Sbx - Postman** environment has an extensive list of variables used on all requests inside the collection. You can define their values as you try new endpoints.
 
 ## Step 3: Run in Postman
 
@@ -61,7 +59,7 @@ After selecting the environment and defining the variable values, you can start 
 1. Select the **Yuno - Collection** on the Collections tab.
 2. Choose an endpoint.
 
-![How to Create a Customer in Postman - Step 10](https://github.com/writechoiceorg/yuno-images/blob/main/doc/postmanCollection/How%20to%20Create%20a%20Customer%20in%20Postman%20-%20Step%2010.png?raw=true)
+<Image align="center" src="https://files.readme.io/5f4e5e1566a607e73c06d01bea321a86093a2239f8f2fd3dff9f92b45e93676b-choose_an_endpoint.png" />
 
 3. Provide the necessary values to the parameters available on the **Headers** and **Body** tabs.
 
@@ -70,7 +68,6 @@ After selecting the environment and defining the variable values, you can start 
 4. Use the **Send** button to perform the request to Yuno's server.
 
 ![How to Create a Customer in Postman - Step 12](https://github.com/writechoiceorg/yuno-images/blob/main/doc/postmanCollection/How%20to%20Create%20a%20Customer%20in%20Postman%20-%20Step%2012.png?raw=true)
-
 
 > 📘 Postman Variables
 >
