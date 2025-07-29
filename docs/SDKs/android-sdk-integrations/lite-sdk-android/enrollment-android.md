@@ -224,7 +224,7 @@ To start the enrollment of a new payment method, you need to use the `startEnrol
 fun Activity.startEnrollment(
     customerSession: String,
   	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-    country_code: String,
+    countryCode: String,
     showEnrollmentStatus: Boolean = true, //Optional - Default true
     callbackEnrollmentState: ((String?) -> Unit)? = null, // Default null | To register this callback is a must to call ```initEnrollment``` method on the onCreate method of activity.
   	requestCode: Int, // Optional. Use this option to capture the status when using the onActivityResult
