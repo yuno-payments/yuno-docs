@@ -1,5 +1,5 @@
 ---
-title: Notify Fulfillments
+title: Notify Fulfillment
 excerpt: ""
 api:
   file: payments.json
