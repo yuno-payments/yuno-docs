@@ -15,11 +15,13 @@ next:
 ---
 This object represents a checkout session that can be created to make a payment. You can Create a Checkout Session using the id generated when the Customer resource was created.
 
-> 📘 Notes
->
-> Create a checkout session is only required for flow **SDK\_CHECKOUT**.\
-> Only one payment is supported per each checkout session.
-> The checkout session expires 5 hours after its creation.
+<Callout icon="📘" theme="info">
+
+
+  Create a checkout session is only required for flow **SDK\_CHECKOUT**.\
+  Only one payment is supported per each checkout session.
+  The checkout session expires 5 hours after its creation.
+</Callout>
 
 ## Attributes
 
