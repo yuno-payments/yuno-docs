@@ -1,18 +1,17 @@
 ---
 title: Retrieve Checkout Session
-excerpt: ""
+excerpt: ''
 api:
   file: checkout-api.json
   operationId: get-checkout-session
 deprecated: false
-hidden: true
+hidden: false
 metadata:
-  title: ""
-  description: >-
-    A request to retrieve a checkout session
+  title: ''
+  description: A request to retrieve a checkout session
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 This request retrieves a checkout session using its unique identifier.
