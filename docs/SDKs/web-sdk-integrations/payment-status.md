@@ -41,7 +41,7 @@ Once you create the instance, choose between using the Status o Status Lite solu
 
 ## Step 3: Use Status
 
-To use the Status, you need to mount it. Use the `mountStatusPayment` function to define the `checkoutSession` related to the payment, the `country_code`, the `language`, and the callback `yunoPaymentResult`.
+To use the Status, you need to mount it. Use the `mountStatusPayment` function to define the `checkoutSession` related to the payment, the `countryCode`, the `language`, and the callback `yunoPaymentResult`.
 
 The callback will be executed when the status is received, informing the user. Defining the element to mount the Status is unnecessary since it will cover the entire screen. The next code block presents an example of the parameter configuration.
 
@@ -51,7 +51,7 @@ yuno.mountStatusPayment({
   /**
    * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
    */
-  country_code: 'FR',
+  countryCode: 'FR',
   /**
   * Language can be one of en, fr, jp
   */
