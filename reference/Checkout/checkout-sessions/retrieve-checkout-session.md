@@ -15,4 +15,4 @@ next:
   description: ""
 ---
 
-This request retrieves a checkout session using the its unique identifier.
+This request retrieves a checkout session using its unique identifier.
