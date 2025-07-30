@@ -46,13 +46,13 @@ Before continuing with the process, you will need to create a [customer session]
 
 ### Step 4: Start the enrollment process
 
-Next, you have to create a configuration object. The essential parameters are the `country_code`, which determines the country for which the enrollment process is configured, and `customerSession`, which refers to the current enrollment's customer session.  The next code block presents an example of the parameter configuration.
+Next, you have to create a configuration object. The essential parameters are the `countryCode`, which determines the country for which the enrollment process is configured, and `customerSession`, which refers to the current enrollment's customer session.  The next code block presents an example of the parameter configuration.
 
 The following table lists all required parameters and their descriptions.
 
 | Parameter         | Description                                                                                                                                                                                                                                                                                   |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `country_code`    | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `countryCode`     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
 | `customerSession` | Refers to the current enrollment's customer session. `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                        |
 
 ```javascript
@@ -60,7 +60,7 @@ const secureFields = yuno.secureFields({
     /**
      * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
     */
-    country_code: "CO",
+    countryCode: "CO",
      /**
 		 * The customer session created using the following endpoint https://docs.y.uno/reference/create-customer-session
      */
