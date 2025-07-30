@@ -17,7 +17,7 @@ This object represents a checkout session that can be created to make a payment.
 
 > 📘 Notes
 >
-> Create a checkout session is only required for flow **SDK_CHECKOUT**.
+> Create a checkout session is only required for flow **SDK\_CHECKOUT**.\
 > Only one payment is supported per each checkout session.
 > The checkout session expires 5 hours after its creation.
 
@@ -27,14 +27,14 @@ This object represents a checkout session that can be created to make a payment.
 <div>
   <div class="yuno">
     <p><strong><code>checkout_session</code></strong> <small>string</small>
-      <br/>The unique identifier of the checkout session (MAX 64 ; MIN 36).
+      <br/>The unique identifier of the checkout session (MAX 64; MIN 36).
       <br/><small> Example: 9104911d-5df9-429e-8488-ad41abea1a4b </small>
     </p>	
   </div>
   
   <div class="yuno">
     <p><strong><code>customer_id</code></strong> <small>string</small>
-      <br/>The unique identifier of the customer (MAX 64 ; MIN 36).
+      <br/>The unique identifier of the customer (MAX 64; MIN 36).
       <br/><small> Example: 9104911d-5df9-429e-8488-ad41abea1a4b </small>
     </p>	
   </div>
