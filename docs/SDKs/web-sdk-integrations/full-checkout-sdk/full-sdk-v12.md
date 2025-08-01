@@ -101,7 +101,7 @@ yuno.startCheckout({
    * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
    */
 	elementSelector: '#root',
-  country_code: "FR",
+  countryCode: "FR",
   language: 'fr',
   showLoading: true,
   issuersFormEnable: true,
