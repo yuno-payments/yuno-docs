@@ -51,11 +51,11 @@ The following table lists all required parameters and their descriptions. For op
 ```javascript
 yuno.startCheckout({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638',
+	elementSelector: "#root",
   /**
    * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
   */
   country_code: "FR",
-	elementSelector: "#root",
   language: 'fr',
   showLoading: true,
   issuersFormEnable: true,
