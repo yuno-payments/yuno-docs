@@ -15,10 +15,10 @@ next:
 ---
 ## Setup
 
-To configure your Webhooks, you need to provide Yuno's  with: 
+To configure your Webhooks, you need to provide Yuno's  with:
 
 1. URL to receive notifications
-2. `API_key` (x-api-key) and `API_secret` (x-secret) from your side (with no format restrictions) for us to send in the notification header so your dev team can identify Yuno Webhooks. 
+2. `API_key` (x-api-key) and `API_secret` (x-secret) from your side (with no format restrictions) for us to send in the notification header so your dev team can identify Yuno Webhooks.
 3. A name to identify each endpoint in the dashboard.
 
 Once configured, you'll need to define which events you want to list for the enabled webhook. The webhook will be sent whenever one or more registered events occur, avoiding constant searches for answers.
@@ -29,17 +29,17 @@ You can configure different webhooks using the [Yuno Merchant Dashboard](https:/
 
 In the [Yuno Merchant Dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button.
 
- Access the [Webhooks Examples](ref:examples) page to check examples for payment and enrollment notification events.
+Access the [Webhooks Examples](ref:examples) page to check examples for payment and enrollment notification events.
 
 ### oAuth2
 
-In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wiki/OAuth) for your webhook reception, Yuno also offers the possibility to define the required parameters in the same dashboard section. You will need to configure the following fields so we can obtain the authorization token that will be sent in the headers of the webhooks. 
+In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wiki/OAuth) for your webhook reception, Yuno also offers the possibility to define the required parameters in the same dashboard section. You will need to configure the following fields so we can obtain the authorization token that will be sent in the headers of the webhooks.
 
 * `Authentication_url`: url to use for authentication
 * `Credentials`: Necessary credentials to communicate with the authentication\_url.
   * Client Secret\_key
   * Cliente Client\_ID
-* `Grant type`: Type of grant for the authentication. 
+* `Grant type`: Type of grant for the authentication.
 
 <Image align="center" src="https://files.readme.io/3075c93d6bfd9bc1a786206a165768229231928441c12c919717ab38d89df995-Screenshot_2025-02-07_at_10.49.53_AM.png" />
 
@@ -47,15 +47,123 @@ In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wi
 
 Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate that the webhook was received. The merchant system response does not need to provide any information on the body request, only the HTTP 200 status. In case of not receiving a response at the specified time, Yuno webhooks will send the event notification up to seven times to avoid information loss. The table below presents the webhooks notification schedule and the confirmation waiting time.
 
-| Event       | Deadline after the first try | Confirmation waiting time |
-| :---------- | :--------------------------- | :------------------------ |
-| First try   | -                            | 23 seconds                |
-| Second try  | 5 minutes                    | 7 seconds                 |
-| Third try   | 50 minutes                   | 7 seconds                 |
-| Fourth try  | 6 hours                      | 7 seconds                 |
-| Fifth try   | 24 hours                     | 7 seconds                 |
-| Sixth try   | 48 hours                     | 7 seconds                 |
-| Seventh try | 96 hours                     | 7 seconds                 |
+<Table align={["left","left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Event
+      </th>
+
+      <th>
+        Deadline after the first try
+      </th>
+
+      <th>
+        Confirmation waiting time
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        First try
+      </td>
+
+      <td>
+        *
+      </td>
+
+      <td>
+        23 seconds
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Second try
+      </td>
+
+      <td>
+        5 minutes
+      </td>
+
+      <td>
+        7 seconds
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Third try
+      </td>
+
+      <td>
+        50 minutes
+      </td>
+
+      <td>
+        7 seconds
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Fourth try
+      </td>
+
+      <td>
+        6 hours
+      </td>
+
+      <td>
+        7 seconds
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Fifth try
+      </td>
+
+      <td>
+        24 hours
+      </td>
+
+      <td>
+        7 seconds
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Sixth try
+      </td>
+
+      <td>
+        48 hours
+      </td>
+
+      <td>
+        7 seconds
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Seventh try
+      </td>
+
+      <td>
+        96 hours
+      </td>
+
+      <td>
+        7 seconds
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ## Webhooks event types
 
@@ -79,20 +187,3 @@ Depending on the type of event, you will receive a different type of webhook and
 | subscription | resume      |
 | subscription | cancel      |
 | subscription | complete    |
-
-## PIX payment expiration handling
-
-For PIX payments, Yuno provides enhanced expiration management to prevent reconciliation issues with integrated platforms like VTEX.
-
-When a custom `expiration_date` is configured during PIX payment creation, Yuno:
-
-* **Internally tracks the expiration** without depending solely on the provider's webhook notifications
-* **Actively verifies payment status** by making requests to the provider before expiration
-* **Automatically marks expired payments** when QR codes remain unpaid past the expiration time
-* **Sends expiration webhooks** to notify integrated platforms (like VTEX) so orders can be cancelled automatically
-
-This proactive approach ensures payment statuses remain aligned between your platform, Yuno, and the payment provider, avoiding inconsistencies in pending or orphaned orders.
-
-> **VTEX Integration Benefit**
-> 
-> For VTEX merchants, this feature automatically notifies VTEX when PIX payments expire, allowing orders to be cancelled immediately and preventing inventory/reconciliation issues. This solves the common problem where VTEX continues retrying expired PIX payments, leading to status mismatches between systems.
