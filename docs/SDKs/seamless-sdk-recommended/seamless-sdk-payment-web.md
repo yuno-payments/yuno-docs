@@ -61,7 +61,7 @@ By following the instructions below, you will be able to provide a seamless and 
 yuno.startSeamlessCheckout({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638', // Current payment session
   elementSelector: '#root', // HTML element for rendering
-  country_code: 'US', // Country code for the payment process
+  countryCode: 'US', // Country code for the payment process
   language: 'en', // Language for the payment forms
   showLoading: true, // Show loading spinner
   issuersFormEnable: true, // Enable issuer's form
@@ -105,7 +105,7 @@ Notice that when using the `startCheckout` you already have to specify the callb
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`           | Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`.                                                                                                                                    |
 | `elementSelector`           | The HTML element where the checkout will be rendered.                                                                                                                                                                                                                                         |
-| `country_code`              | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `countryCode`               | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
 | `language`                  | Defines the language to be used in the payment forms. Supported options include:                                                                                                                                                                                                              |
 |                             | ▪️ `es` (Spanish)                                                                                                                                                                                                                                                                             |
 |                             | ▪️ `en` (English)                                                                                                                                                                                                                                                                             |
