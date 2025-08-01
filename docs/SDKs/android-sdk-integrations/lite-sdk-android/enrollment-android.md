@@ -210,26 +210,31 @@ You also need to update your manifest to use your application:
 
 ## Step 4: Enroll a new payment method
 
-To create the enrollment flow, you need to call the `initEnrollment `method on the `onCreate ` method of your activity. This process is required because Yuno's Lite SDK uses it to register the contract to give you the final enrollment state.
+The enrollment process is a two-step flow. First, you initialize the process to set up the necessary components. Then, you start the UI flow to allow the user to enroll a payment method.
 
-````kotlin
+### 4.1 Initialize the enrollment process
+
+To prepare your app to handle the enrollment flow, you must call the `initEnrollment` method within your activity's `onCreate` method. This is a mandatory setup step required by the Android operating system to register the contract that allows the SDK to send the final enrollment status back to your app.
+
+```kotlin
 fun ComponentActivity.initEnrollment(
-    callbackEnrollmentState: ((String?) -> Unit)? = null, //Default null | To register this callback is a must to call ```initEnrollment``` method on the onCreate method of activity.
+    callbackEnrollmentState: ((String?) -> Unit)? = null // Optional – To get the enrollment state, you must register this callback here.
 )
-````
+```
 
-To start the enrollment of a new payment method, you need to use the `startEnrollment` method. When you call the `startEnrollment` method, the enrollment flow of a new payment method will start.
+### 4.2 Start the enrollment flow
 
-````kotlin
+To launch the user interface and begin the enrollment of a new payment method, you call the `startEnrollment` method. You can call this method at any point after `initEnrollment` has been executed, such as when a user taps an "Enroll New Payment Method" button.
+
+```kotlin
 fun Activity.startEnrollment(
     customerSession: String,
-  	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
     countryCode: String,
-    showEnrollmentStatus: Boolean = true, //Optional - Default true
-    callbackEnrollmentState: ((String?) -> Unit)? = null, // Default null | To register this callback is a must to call ```initEnrollment``` method on the onCreate method of activity.
-  	requestCode: Int, // Optional. Use this option to capture the status when using the onActivityResult
+    showEnrollmentStatus: Boolean = true, // Optional – Default true
+    callbackEnrollmentState: ((String?) -> Unit)? = null, // Default null – You must register this callback in `initEnrollment` to get the enrollment state.
+    requestCode: Int // Optional. Use this to capture the status when using `onActivityResult`.
 )
-````
+```
 
 Below is a description of the `startEnrollment` parameters.
 
