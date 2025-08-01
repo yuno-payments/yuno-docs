@@ -85,6 +85,7 @@ The following table lists all required parameters and their descriptions. For op
 | Parameter                         | Description                                                                                                                                                                                                                                                                                                            |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                     |
+| `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                                                                                                                             |
 | `countryCode`                     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.                          |
 | `language`                        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul>                                         |
 | `onLoading`                       | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                     |
@@ -98,7 +99,8 @@ yuno.startCheckout({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638',
   /**
    * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-  */
+   */
+	elementSelector: '#root',
   country_code: "FR",
   language: 'fr',
   showLoading: true,
