@@ -45,7 +45,7 @@ The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your
 <script>
   window.addEventListener('yuno-sdk-ready', () => {
     console.log('SDK loaded'); // The SDK is ready to use
-    await yuno.initialize('publicKey');
+    const yuno = await Yuno.initialize(PUBLIC_API_KEY);
   });
 </script>
 
@@ -96,7 +96,7 @@ export const injectScript = async (): Promise<boolean> => {
 // Using the function to inject the SDK
 await injectScript();
 // SDK is ready to use
-await yuno.initialize('publicKey');
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
 ### 3. Use the NPM module
@@ -117,7 +117,7 @@ import { loadScript } from '@yuno-payments/sdk-web';
 const yuno = await loadScript();
 
 // Initialize the SDK with the public key
-await yuno.initialize('publicKey');
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
 ## Improve performance using `preconnect`
