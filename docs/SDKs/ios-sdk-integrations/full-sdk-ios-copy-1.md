@@ -85,13 +85,13 @@ You should call `Yuno.initialize()` as early as possible in your app's lifecycle
 * If your app uses`SceneDelegate`, place the `Yuno.initialize()` call inside `scene(_:willConnectTo:options:)`
 * If you're using SwiftUI with`@main` and `ContentView`, you should call `Yuno.initialize()` in your app's main entry point (e.g., inside the `App` struct's `init()` method or `onAppear` of your initial view), but ensure it only runs once
 
-> 📘
->
-> It's safe to call `Yuno.initialize()` in the `init()` of your SwiftUI `App` struct. Avoid calling it from the `init()` of a regular `View`, as views may re-initialize and cause unexpected behavior.
+<Callout icon="📘" theme="info">
+  It's safe to call `Yuno.initialize()` in the `init()` of your SwiftUI `App` struct. Avoid calling it from the `init()` of a regular `View`, as views may re-initialize and cause unexpected behavior.
+</Callout>
 
-> 🚧
->
-> Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout()`.
+<Callout icon="🚧" theme="warn">
+  Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout()`.
+</Callout>
 
 If you're using UIKit, place your `Yuno.initialize()` call in `SceneDelegate` or `AppDelegate`, depending on your project structure.
 
@@ -157,9 +157,9 @@ You **must** call this method before attempting to display the payment method UI
 | `Yuno.startCheckout(with:)`   | Initializes the checkout context and prepares the SDK. | **Always call this first** before any UI display or payment logic.      |
 | `Yuno.getPaymentMethodView()` | Returns a UI view of the available payment methods.    | Use **after** `startCheckout(...)`, and only when building a custom UI. |
 
-> 🚧
->
-> You must call `Yuno.startCheckout()` **once per session**, typically in `viewDidLoad()` or right before you display payment UI elements.
+<Callout icon="🚧" theme="warn">
+  You must call `Yuno.startCheckout()` **once per session**, typically in `viewDidLoad()` or right before you display payment UI elements.
+</Callout>
 
 ### `startCheckout()` vs `getPaymentMethodView()`
 
@@ -170,9 +170,9 @@ These two methods are commonly used together but serve distinct purposes:
 | `Yuno.startCheckout(with:)`   | Initializes the SDK with the required session and configuration data. | **Always call this first** before using any SDK UI elements. |
 | `Yuno.getPaymentMethodView()` | Returns the payment method UI component (UIKit or SwiftUI).           | Call this **after** `startCheckout()` to display the UI.     |
 
-> 🚧
->
-> You must **call`startCheckout()` before** calling `getPaymentMethodView()`. Otherwise, the SDK will not be correctly initialized, and the payment UI won’t render properly.
+<Callout icon="🚧" theme="warn">
+  You must **call`startCheckout()` before** calling `getPaymentMethodView()`. Otherwise, the SDK will not be correctly initialized, and the payment UI won’t render properly.
+</Callout>
 
 ## Step 4: Start the checkout process (old, see below for new version)
 
@@ -230,7 +230,7 @@ The following table presents all the protocol requirements you have to provide a
 
     <tr>
       <td>
-        `country_code`
+        `countryCode`
       </td>
 
       <td>
@@ -430,9 +430,9 @@ The following table presents all the protocol methods and their descriptions:
   </tbody>
 </Table>
 
-> 🚧
->
-> Only one version of `yunoCreatePayment` (`yunoCreatePayment(with:)` or  `yunoCreatePayment(with:information:)`) should be implemented in your class. Do not implement both unless explicitly needed.
+<Callout icon="🚧" theme="warn">
+  Only one version of `yunoCreatePayment` (`yunoCreatePayment(with:)` or  `yunoCreatePayment(with:information:)`) should be implemented in your class. Do not implement both unless explicitly needed.
+</Callout>
 
 ### UIKit vs SwiftUI: Handling `getPaymentMethodView`
 
