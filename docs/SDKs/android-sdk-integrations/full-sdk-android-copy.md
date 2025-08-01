@@ -368,6 +368,15 @@ continuePayment(
 
 To show your payment status screens, you should send `FALSE` in the `showPaymentStatus` parameter. Then, get the payment state by callback.
 
+<Callout icon="📘" theme="info">
+
+
+  The `checkoutSession` parameter is optional. If you have previously called `startPayment` in the current user flow, the SDK will automatically reuse the `checkoutSession` from that session. You must provide the `checkoutSession` parameter in the following cases:
+
+  * To resume a payment that was initiated in a previous session.
+  * To simply check the status of a payment (using the `callbackPaymentState` parameter) without displaying a payment UI.
+</Callout>
+
 ## Render Mode integration
 
 The Yuno SDK render mode provides advanced UI flexibility, allowing developers to integrate payment flows with complete control over the user interface while maintaining full SDK functionality. This mode returns fragments that can be used with both Jetpack Compose and traditional XML views.
