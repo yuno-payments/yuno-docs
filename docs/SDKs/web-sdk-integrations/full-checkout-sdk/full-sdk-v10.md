@@ -24,7 +24,6 @@ Ensure the Yuno SDK file is included in your webpage before closing the `<body>`
 >
 > If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) to see all methods available in the Yuno Web SDK.
 
-
 ## Step 2: Initialize SDK with the public key
 
 In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
@@ -40,21 +39,23 @@ const yuno = Yuno.initialize(PUBLIC_API_KEY)
 To start the checkout, you'll use the function `yuno.startCheckout`, providing the necessary parameters.
 
 The following table lists all required parameters and their descriptions. For optional parameters, go to [Complementary Features](https://docs.y.uno/docs/full-checkout-sdk#complementary-features).
-| Parameter                        | Description                                                                                                                                                                                                 |
-|----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `checkoutSession`                | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                       |
-| `countryCode`                    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
-| `language`                       | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul> |
-| `onLoading`                      | Required to receive notifications about server calls or loading events during the payment process.                                                                                                          |
-| `showLoading`                    | Control the visibility of the Yuno loading/spinner page during the payment process. By default, it's `true`.                                                                                                 |
-| `issuersFormEnable`              | Enables the issuer's form. By default, it's `true`.                                                                                                                                                          |
-| `showPaymentStatus`              | Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it's `true`.                                                                                      |
-| `card.isCreditCardProcessingOnly`| Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required. |
 
+| Parameter                         | Description                                                                                                                                                                                                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                     |
+| `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                                                                                                                             |
+| `countryCode`                     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.                                                                                   |
+| `language`                        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul>                                         |
+| `onLoading`                       | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                     |
+| `showLoading`                     | Control the visibility of the Yuno loading/spinner page during the payment process. By default, it's `true`.                                                                                                                                                                                                           |
+| `issuersFormEnable`               | Enables the issuer's form. By default, it's `true`.                                                                                                                                                                                                                                                                    |
+| `showPaymentStatus`               | Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it's `true`.                                                                                                                                                                                                |
+| `card.isCreditCardProcessingOnly` | Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required. |
 
 ```javascript
 yuno.startCheckout({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638',
+	elementSelector: '#root',
   /**
    * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
   */
@@ -108,7 +109,6 @@ yuno.startCheckout({
 > 📘 Rendering Mode
 >
 > By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the [Render mode](#mode-of-form-rendering) under the complementary features page.
-
 
 ## Step 4: Mount the SDK
 
@@ -171,7 +171,6 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation)
 > ❗️ Important
 >
 > The merchant is responsible for handling the loader. Yuno offers an option to use our loader; however, the merchant can use their own loader and must make the corresponding configurations.
-
 
 ## Step 7: Create the Payment
 
