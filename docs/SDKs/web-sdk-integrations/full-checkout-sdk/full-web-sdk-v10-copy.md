@@ -1,5 +1,5 @@
 ---
-title: Full Web SDK v1.0 (COPY)
+title: Copied content from Full Web SDK Button
 deprecated: false
 hidden: true
 metadata:
