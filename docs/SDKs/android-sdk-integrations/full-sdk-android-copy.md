@@ -243,7 +243,7 @@ Below is a description of the required parameters to start the checkout.
 | Parameter              | Description                                                                                                                                                                               |
 | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | A unique identifier for the checkout session associated with the payment. It is required to initialize the payment process and grants access to the customer's available payment methods. |
-| `country_code`         | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                            |
+| `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                            |
 | `callbackPaymentState` | It's a function that returns the current payment process. You don't need to send this function if you don't need the result.                                                              |
 | `merchantSessionId`    | An identifier used by the merchant to track the payment.                                                                                                                                  |
 
