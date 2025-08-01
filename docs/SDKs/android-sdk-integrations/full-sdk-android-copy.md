@@ -233,7 +233,7 @@ To start a new payment process with the Full SDK, call the `startCheckout` metho
 startCheckout(
   checkoutSession: "checkout_session",
   // Replace with your target country's ISO code (e.g., "US" for USA, "FR" for France). The complete list of country_codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk.
-  country_code: "country_code_iso",
+  countryCode: "country_code_iso",
   callbackPaymentState: ((String?) -> Unit)?,
 )
 ```
