@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-## What is 3D Secure 2?
+## What is 3D Secure?
 
 3D Secure, or 3DS, is a security protocol for online payments designed to prevent the fraudulent use of credit cards in card-not-present (CNP) transactions. The protocol, developed in 1999, requires additional verification steps for customers during the purchase process to authenticate themselves and reduce the risk of fraud. The flow below presents a payment process using 3DS:
 
