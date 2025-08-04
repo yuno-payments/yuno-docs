@@ -98,7 +98,7 @@ To create payments with the 3DS DIRECT workflow, you need to fulfill some requir
 
 ### Requirements
 
-Before using 3DS DIRECT, you need to enable 3DS in your Yuno Dashboard and specify the scenarios in which you want your customers to be able to use it. This can be configured in the Yuno Dashboard under: **Routing > Card Routes > 3DS Step**. These scenarios must be indicated on your CARD route. Additionally, you will require the following 3DS setup data in the payment provider connection:
+Before using 3DS DIRECT, you need to enable 3DS in your [Yuno Dashboard](https://dashboard.y.uno/) and specify the scenarios in which you want your customers to be able to use it. This can be configured in the Yuno Dashboard under: **Routing > Card Routes > 3DS Step**. These scenarios must be indicated on your CARD route. Additionally, you will require the following 3DS setup data in the payment provider connection:
 
 * **Acquirer BIN**: This is the Bank Identification Number (BIN) used to clear and settle the transaction, along with the country in which it is licensed for use.
 * **Merchant ID**: This is the affiliation number provided by the acquirer.
