@@ -7,7 +7,7 @@ metadata:
 ---
 > ❗️ Deprecated
 >
-> This service was deprecated and will be removed in the future.
+> This service was deprecated and will be removed in the future. With SDK v1.1, 3DS logic is handled automatically using the `continuePayment()` method - no separate 3DS setup is required. For more information, see the [Yuno Web SDK v1.1 documentation](doc:yuno-web-sdk-v11).
 
 The 3DS Setup SDK enables you to collect the user's device information. This information determines whether a transaction is high-risk and whether a challenge is necessary for additional verification. After collecting the information, you can continue with the payment. This page explains how to integrate and use the SDK to collect user information.
 

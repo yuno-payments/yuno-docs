@@ -88,13 +88,17 @@ Adding the 3DS2 verification step to the checkout process changes the normal wor
 
 ## Configuring 3D Secure for your payments
 
+> 📘 SDK v1.1 Enhancement
+>
+> With SDK v1.1, 3DS logic is handled automatically using the `continuePayment()` method - no separate 3DS setup is required. For more information, see the [Yuno Web SDK v1.1 documentation](doc:yuno-web-sdk-v11).
+
 You decide if your system will implement the 3DS2 or not. The 3DS2 verification step is added while defining your cards [dynamic routing](doc:routing#configuring-the-dynamic-routing). When starting your card routes, you can add the 3DS2 step before defining the payment provider. When adding the 3DS2 verification step, when a payment using a card is initialized, the Yuno system will analyze if the card needs an extra challenge. If an extra challenge is necessary, the user will be redirected to the bank environment to complete the authorization. On the other hand, the payment process will proceed normally.
 
 To create payments with the 3DS DIRECT workflow, you need to fulfill some requirements.
 
 ### Requirements
 
-Before using 3DS DIRECT, you need to enable 3DS in your [Yuno Dashboard](https://dashboard.y.uno/) and specify the scenarios in which you want your customers to be able to use it. These scenarios must be indicated on your CARD route. Additionally, you will require the following 3DS setup data in the payment provider connection:
+Before using 3DS DIRECT, you need to enable 3DS in your Yuno Dashboard and specify the scenarios in which you want your customers to be able to use it. This can be configured in the Yuno Dashboard under: **Routing > Card Routes > 3DS Step**. These scenarios must be indicated on your CARD route. Additionally, you will require the following 3DS setup data in the payment provider connection:
 
 * **Acquirer BIN**: This is the Bank Identification Number (BIN) used to clear and settle the transaction, along with the country in which it is licensed for use.
 * **Merchant ID**: This is the affiliation number provided by the acquirer.
