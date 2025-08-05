@@ -1,20 +1,21 @@
 ---
 title: Integration Via Provider
-excerpt: ''
+excerpt: ""
 deprecated: false
 hidden: false
 metadata:
-  title: ''
-  description: ''
+  title: ""
+  description: ""
   robots: index
 next:
-  description: ''
+  description: ""
 ---
+
 This page presents the procedures to connect and provide Google Pay™ as a payment option for your customers using the integration via a provider. Yuno uses Google integration for each provider without accessing card data in this integration. Each integration can only be used with the selected provider with this option.
 
 ## Requirements
 
-Before starting the Google Pay integration process, you need to ensure it's in your country. Use the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en\&visit_id=638246798082960127-380022514\&rd=1#zippy=) to check if it supports the countries where you operate.
+Before starting the Google Pay integration process, you need to ensure it's in your country. Use the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en&visit_id=638246798082960127-380022514&rd=1#zippy=) to check if it supports the countries where you operate.
 
 Afterward, you must check the available processors using the [participating processors](https://developers.google.com/pay/api/) on Google's page.
 
@@ -53,13 +54,13 @@ After performing the integration on Yuno, you can enable Google Pay with Yuno an
 
 1. First, integrate [Yuno's SDK](doc:android-sdk-integration) into your app to ensure a smooth connection between your application and Yuno's platform.
 2. Create a Google Wallet Test Account:
-   1. Visit the [Google Wallet Test Account Sign-In](https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&followup=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F\&osid=1\&passive=1209600\&ifkv=AeDOFXjl_LLJZyuykU06uleha4p7uSXJNnLCv_n2jshX6QVJYCy9AKq3K28mIfpgyfS2NDHfimnAFg\&flowName=GlifWebSignIn\&flowEntry=ServiceLogin) page.
+   1. Visit the [Google Wallet Test Account Sign-In](https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F&followup=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F&osid=1&passive=1209600&ifkv=AeDOFXjl_LLJZyuykU06uleha4p7uSXJNnLCv_n2jshX6QVJYCy9AKq3K28mIfpgyfS2NDHfimnAFg&flowName=GlifWebSignIn&flowEntry=ServiceLogin) page.
    2. If you don't have a Google account, you'll need to create one to proceed.
    3. Once signed in, you'll be redirected to the Google Wallet business console.
 3. Access the Google Wallet API Section:
    1. In the Google Wallet business console, navigate to the section related to API management or integration. It is found in the developer or integration settings.
 4. Select **Create a Pass** to Enable **Demo Mode**:
-   1. Within the Google Wallet API section, locate the option labeled  **Create a Pass**.
+   1. Within the Google Wallet API section, locate the option labeled **Create a Pass**.
    2. Click on this option to enable **Demo mode**. This mode allows you to simulate and test pass creation and interactions without making real transactions.
 
 <Image align="center" width="600px" src="https://files.readme.io/fbc51b7-6847ef9-demo_mode.png" />
@@ -68,3 +69,14 @@ After performing the integration on Yuno, you can enable Google Pay with Yuno an
 6. Navigate through the payment flow to test the integration.
 
 Following these steps, you can ensure that Google Pay is integrated into your app and works as expected before making it available for your customers.
+
+## Implementation details
+
+Yuno supports both Google Pay API authorization methods:
+
+- **`PAN_ONLY`**: Card credentials stored in the user's Google account. When used, the selected provider handles authentication as configured.
+- **`CRYPTOGRAM_3DS`**: Device-based card credentials with built-in authentication. These credentials include cryptographic authentication.
+
+Both methods are supported globally across all countries where Yuno operates. On the frontend, include both `PAN_ONLY` and `CRYPTOGRAM_3DS` in your `allowedAuthMethods` array for maximum payment success rates.
+
+- **Provider-specific configuration**: The handling of Google Pay authorization methods may vary depending on your selected provider. Consult your provider's documentation for specific requirements and capabilities regarding `PAN_ONLY` and `CRYPTOGRAM_3DS` processing.
