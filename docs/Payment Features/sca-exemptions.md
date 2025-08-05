@@ -79,8 +79,7 @@ In this example, the `strong_customer_authentication_exemptions` is set to LOW\_
 ### Considerations
 
 * *Issuer's Final Decision*: While merchants can request an exemption using the `strong_customer_authentication_exemptions` field, the card issuer has the final authority to accept or decline the exemption based on their risk assessment and compliance policies.
-* *Liability Implications*: Requesting an exemption may impact liability in cases of fraudulent transactions. It's essential to understand that if an exemption is granted, the liability shift associated with SCA may not apply.\
-  PRIMER
+* *Liability Implications*: Requesting an exemption may impact liability in cases of fraudulent transactions. It's essential to understand that if an exemption is granted, the liability shift associated with SCA may not apply.
 * *Regulatory Compliance*: Ensure that the use of this field aligns with regional regulations, such as PSD2 in Europe, and that your implementation adheres to the specific requirements and thresholds defined for each exemption type.
 
 By effectively utilizing the `strong_customer_authentication_exemptions` field, merchants can optimize their payment processes, reduce friction for customers, and maintain compliance with regulatory standards.
