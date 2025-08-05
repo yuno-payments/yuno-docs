@@ -128,11 +128,6 @@ The following table includes descriptions for each customization available.
       </td>
     </tr>
 
-      <td>
-        Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.
-      </td>
-    </tr>
-
     <tr>
       <td>
         **cardFormDeployed**
