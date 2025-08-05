@@ -5,7 +5,7 @@ api:
   file: payment-api-refundcancel-payment.json
   operationId: disputes
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
