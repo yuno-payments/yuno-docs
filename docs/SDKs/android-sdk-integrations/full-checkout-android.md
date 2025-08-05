@@ -128,11 +128,6 @@ The following table includes descriptions for each customization available.
       </td>
     </tr>
 
-      <td>
-        Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.
-      </td>
-    </tr>
-
     <tr>
       <td>
         **cardFormDeployed**
@@ -169,10 +164,6 @@ The following table includes descriptions for each customization available.
 
   </tbody>
 </Table>
-
-> 🚧 Loading Screen Persistence
->
-> To ensure that the Yuno loading screen persists until you create and proceed with the payment, you need to use the [startCompletePaymentFlow()](#loader-android) function.
 
 You also need to update your manifest to use your application:
 
