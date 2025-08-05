@@ -1,6 +1,6 @@
 ---
 title: Loader
-excerpt: ''
+excerpt: ""
 deprecated: false
 hidden: false
 metadata:
@@ -11,9 +11,10 @@ metadata:
     you decide to start the payment, you have to use the following function.
   robots: index
 next:
-  description: ''
+  description: ""
 ---
-If you need to maintain the Yuno Loader screen, set the `keepLoader` parameter to `TRUE` in the `Yuno.initialize()` function. Additionally, you need to use the following function when initiating the payment:
+
+Use the following function when initiating the payment:
 
 ```kotlin
 startCompletePaymentFlow(

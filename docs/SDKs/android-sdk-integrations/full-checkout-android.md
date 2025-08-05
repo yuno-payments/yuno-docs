@@ -1,6 +1,6 @@
 ---
 title: Full SDK (Android)
-excerpt: ''
+excerpt: ""
 deprecated: false
 hidden: false
 metadata:
@@ -11,8 +11,9 @@ metadata:
     your mobile platform.
   robots: index
 next:
-  description: ''
+  description: ""
 ---
+
 > 👍 Recommended SDK
 >
 > We recommend using the [Android Seamless SDK](seamless-sdk-payment-android) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
@@ -23,11 +24,13 @@ The Yuno Full SDK for Android provides a complete payment solution with a custom
 
 Before starting the Yuno Android SDK, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-* You must have an active Yuno account
-* To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
-  * Create a `checkout_session`, which initializes the payment flow
-  * Create the payment associated with the session
-* Before creating a payment, you must first create a customer using the [Create customer endpoint](ref:create-customer)
+1. You must have an active Yuno account
+2. To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
+
+- Create a `checkout_session`, which initializes the payment flow
+- Create the payment associated with the session
+
+3. Before creating a payment, you must first create a customer using the [Create customer endpoint](ref:create-customer)
 
 ## Step 1: Include the library in your project
 
@@ -82,7 +85,6 @@ Use the data class `YunoConfig` to customize the SDK's behavior. You can include
 data class YunoConfig(
     val cardFlow: CardFormType = CardFormType.ONE_STEP, // Optional: Defines the card form flow type. ONE_STEP shows a single screen for card details, TWO_STEP splits it across multiple screens.
     val saveCardEnabled: Boolean = false, // Determines whether to display the "Save card" checkbox on card flows.
-    val keepLoader: Boolean = false, // If true, keeps the Yuno loading screen visible until payment creation and continuation. Requires an additional step described later.
     val cardFormDeployed: Boolean = false, // Full SDK only: If true, displays the card form within the payment methods list. If false, shows the card form on a separate screen.
     val language: YunoLanguage? = null, // Sets the SDK language. If null or not provided, defaults to the device language.
     val styles: YunoStyles? = null // Enables SDK-wide UI customization.
@@ -102,6 +104,7 @@ The following table includes descriptions for each customization available.
         Description
       </th>
     </tr>
+
   </thead>
 
   <tbody>
@@ -124,11 +127,6 @@ The following table includes descriptions for each customization available.
         Enables the **Save card checkbox** on card flows. Check the [Save card](/docs/full-checkout-android#save-card-for-future-payments)  section for more information.
       </td>
     </tr>
-
-    <tr>
-      <td>
-        **keepLoader**
-      </td>
 
       <td>
         Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.
@@ -168,6 +166,7 @@ The following table includes descriptions for each customization available.
         Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)  section.
       </td>
     </tr>
+
   </tbody>
 </Table>
 
@@ -187,7 +186,7 @@ Each payment requires a new `checkout_session`, which provides access to all ava
 
 > 📘 External Browser Return Handling
 >
-> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback\_url)](/docs/external-browser-callback-android).
+> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](/docs/external-browser-callback-android).
 
 ## Step 4: Start the checkout process
 
@@ -240,7 +239,7 @@ When implementing the Full SDK, be sure to include the `PaymentMethodListView` i
 
 ```xml
 <com.yuno.payments.features.payment.ui.views.PaymentMethodListView
-  android:id="@+id/list_payment_methods" 
+  android:id="@+id/list_payment_methods"
   android:layout_width="match_parent"
 	android:layout_height="wrap_content" />
 ```
@@ -251,9 +250,9 @@ To start a payment process, you have to call the method `startPayment()`.
 
 ```kotlin
 startPayment(
-    showStatusYuno: Boolean,  
-    callbackOTT: (String?) -> Unit = this::onTokenUpdated,  
-    callBackTokenWithInformation: (OneTimeTokenModel?) -> Unit = this::onTokenComplete  
+    showStatusYuno: Boolean,
+    callbackOTT: (String?) -> Unit = this::onTokenUpdated,
+    callBackTokenWithInformation: (OneTimeTokenModel?) -> Unit = this::onTokenComplete
 )
 
 ```
@@ -333,9 +332,9 @@ fun Activity.startPaymentRender(
 
 ```kotlin
 class PaymentActivity : Activity() {
-    
+
     private lateinit var fragmentController: YunoPaymentFragmentController
-    
+
     private fun initializePayment() {
         fragmentController = startPaymentRender(
             checkoutSession = "your_checkout_session_id",
@@ -354,14 +353,14 @@ Implement this interface to receive all events and views from the SDK during the
 
 ```kotlin
 class PaymentRenderListener : YunoPaymentRenderListener {
-    
+
     override fun showView(fragment: Fragment) {
         // Display fragment in your UI container
         supportFragmentManager.beginTransaction()
             .replace(R.id.payment_container, fragment)
             .commit()
     }
-    
+
     override fun returnStatus(resultCode: Int, paymentStatus: String) {
         // Handle final payment status
         when (paymentStatus) {
@@ -370,7 +369,7 @@ class PaymentRenderListener : YunoPaymentRenderListener {
             // Handle other states
         }
     }
-    
+
     override fun returnOneTimeToken(oneTimeToken: String, additionalData: OneTimeTokenModel?) {
         // Process OTT in your backend, then continue the flow
         createPaymentInBackend(oneTimeToken) { result ->
@@ -380,7 +379,7 @@ class PaymentRenderListener : YunoPaymentRenderListener {
             }
         }
     }
-    
+
     override fun loadingListener(isLoading: Boolean) {
         // Show/hide loading indicators
         progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
@@ -394,8 +393,8 @@ Control the payment flow using the returned controller instance.
 
 #### Methods
 
-* **`submitForm()`**: Submits the current form when available
-* **`continuePayment()`**: Continues the payment flow after backend OTT processing
+- **`submitForm()`**: Submits the current form when available
+- **`continuePayment()`**: Continues the payment flow after backend OTT processing
 
 ```kotlin
 // Submit form when ready
@@ -409,28 +408,28 @@ fragmentController.continuePayment()
 
 #### UI flexibility
 
-* **Compose and XML compatible**: Works with both Jetpack Compose and traditional XML views
-* **Complete control**: You decide where and how to display each view
-* **Custom integration**: Easy integration with existing app design
+- **Compose and XML compatible**: Works with both Jetpack Compose and traditional XML views
+- **Complete control**: You decide where and how to display each view
+- **Custom integration**: Easy integration with existing app design
 
 #### Flow control
 
-* **Custom submit logic**: Control when to submit forms
-* **Backend integration**: Process OTT on your backend before continuing
+- **Custom submit logic**: Control when to submit forms
+- **Backend integration**: Process OTT on your backend before continuing
 
 ### Complete integration example
 
 ```kotlin
 class PaymentActivity : ComponentActivity() {
-    
+
     private lateinit var fragmentController: YunoPaymentFragmentController
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         fragmentController = startPaymentRender(
             checkoutSession = checkoutSessionId,
-            countryCode = "US", 
+            countryCode = "US",
             coroutineScope = lifecycleScope,
             paymentSelected = PaymentSelected.CARD,
             listener = object : YunoPaymentRenderListener {
@@ -439,18 +438,18 @@ class PaymentActivity : ComponentActivity() {
                         .replace(R.id.payment_fragment_container, fragment)
                         .commit()
                 }
-                
+
                 override fun returnOneTimeToken(oneTimeToken: String, additionalData: OneTimeTokenModel?) {
                     // Process in backend and continue
                     processPaymentToken(oneTimeToken) {
                         fragmentController.continuePayment()
                     }
                 }
-                
+
                 override fun returnStatus(resultCode: Int, paymentStatus: String) {
                     handlePaymentResult(paymentStatus)
                 }
-                
+
                 override fun loadingListener(isLoading: Boolean) {
                     updateLoadingState(isLoading)
                 }

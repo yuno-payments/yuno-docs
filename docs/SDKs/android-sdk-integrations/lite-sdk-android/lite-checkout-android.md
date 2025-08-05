@@ -1,6 +1,6 @@
 ---
 title: Lite SDK (Payment Android)
-excerpt: ''
+excerpt: ""
 deprecated: false
 hidden: false
 metadata:
@@ -11,24 +11,25 @@ metadata:
     for your mobile platform.
   robots: index
 next:
-  description: ''
+  description: ""
 ---
+
 > 👍 Recommended SDK
 >
 > We recommend using the [Android Seamless SDK](seamless-sdk-payment-android) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
 The Yuno Lite SDK for Android provides a pre-built UI solution focused on card payment processing. This SDK offers a streamlined integration process with essential payment functionality, making it ideal for merchants who:
 
-* Need a quick implementation with minimal customization requirements
-* Want to focus primarily on card payment processing
-* Prefer a ready-to-use UI that handles the payment flow
+- Need a quick implementation with minimal customization requirements
+- Want to focus primarily on card payment processing
+- Prefer a ready-to-use UI that handles the payment flow
 
 The Lite SDK includes core features like:
 
-* Pre-built payment UI components
-* Card payment processing
-* Basic payment status handling
-* Essential error management
+- Pre-built payment UI components
+- Card payment processing
+- Basic payment status handling
+- Essential error management
 
 For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-sdk-android) instead.
 
@@ -36,11 +37,11 @@ For merchants requiring more advanced features like multiple payment methods, cu
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-* You must have an active Yuno account.
-* To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers credentials section](https://docs.y.uno/docs/developers-credentials) of the Yuno dashboard. These credentials are required to authenticate requests to the Yuno API. The API is used to:
-  * Create a `customer`, which is required before initiating payments
-  * Create a `checkout_session`, which initializes the payment flow
-  * Create the payment associated with the session
+- You must have an active Yuno account.
+- To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers credentials section](https://docs.y.uno/docs/developers-credentials) of the Yuno dashboard. These credentials are required to authenticate requests to the Yuno API. The API is used to:
+  - Create a `customer`, which is required before initiating payments
+  - Create a `checkout_session`, which initializes the payment flow
+  - Create the payment associated with the session
 
 > 📘 SDK Version
 >
@@ -50,9 +51,9 @@ Before starting the Yuno Android SDK integration, make sure your project meets t
 
 Before initiating payments, you need to create a customer using the [Create customer endpoint](ref:create-customer). This step is required to:
 
-* Identify the person making the payment
-* Enable saved card functionality (if enabled)
-* Track payment history
+- Identify the person making the payment
+- Enable saved card functionality (if enabled)
+- Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -60,13 +61,13 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. Make sure to:
 
-* Include the customer ID obtained from the previous step
-* Store the returned `checkout_session` ID for use in Step 5 of the integration
-* The `checkout_session` is unique for each payment attempt and cannot be reused
+- Include the customer ID obtained from the previous step
+- Store the returned `checkout_session` ID for use in Step 5 of the integration
+- The `checkout_session` is unique for each payment attempt and cannot be reused
 
 > 🚧 External Browser Return Handling
 >
-> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback\_url)](/docs/external-browser-callback-android).
+> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](/docs/external-browser-callback-android).
 
 ## Step 3: Include the library in your project
 
@@ -119,7 +120,6 @@ Use the data class `YunoConfig` to customize the SDK's behavior. You can include
 data class YunoConfig(
     val cardFlow: CardFormType = CardFormType.ONE_STEP, // Optional: Defines the card form flow type. ONE_STEP shows a single screen for card details, TWO_STEP splits it across multiple screens.
     val saveCardEnabled: Boolean = false, // Determines whether to display the "Save card" checkbox on card flows.
-    val keepLoader: Boolean = false, // If true, keeps the Yuno loading screen visible until payment creation and continuation. Requires an additional step described later.
     val cardFormDeployed: Boolean = false, // Full SDK only: If true, displays the card form within the payment methods list. If false, shows the card form on a separate screen.
     val language: YunoLanguage? = null, // Sets the SDK language. If null or not provided, defaults to the device language.
     val styles: YunoStyles? = null // Enables SDK-wide UI customization.
@@ -139,6 +139,7 @@ The following table includes descriptions for each customization available.
         Description
       </th>
     </tr>
+
   </thead>
 
   <tbody>
@@ -161,11 +162,6 @@ The following table includes descriptions for each customization available.
         Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments) section for more information.
       </td>
     </tr>
-
-    <tr>
-      <td>
-        **keepLoader**
-      </td>
 
       <td>
         Keep Yuno's loading screen until you create and continue with payment. To use this feature you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.
@@ -221,6 +217,7 @@ The following table includes descriptions for each customization available.
         Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.
       </td>
     </tr>
+
   </tbody>
 </Table>
 
@@ -244,7 +241,7 @@ startCheckout(
   // Replace with your target country's ISO code (e.g., "US" for USA, "FR" for France). The complete list of country_codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk.
   countryCode: "US",
   callbackPaymentState: ((String?) -> Unit)?,
-  merchantSessionId: String? = null //Optional - Default null 
+  merchantSessionId: String? = null //Optional - Default null
 )
 ```
 
@@ -291,7 +288,7 @@ startPaymentLite(
     callbackOTT:(String?) -> Unit, //Optional - Default null,
     callBackTokenWithInformation:(OneTimeTokenModel?) -> Unit, //Optional - Default null
     showPaymentStatus: Boolean, //Optional - Default true
-) 
+)
 ```
 
 Below is a description of the required parameters to start the payment.
@@ -332,8 +329,8 @@ The one-time token callback returns the following parameters:
 
 After completing the previous steps, create a payment by calling the [Create Payment endpoint](https://docs.y.uno/reference/create-payment) from your backend. This endpoint requires:
 
-* The one-time token obtained in Step 7
-* The `checkout_session` obtained in Step 2
+- The one-time token obtained in Step 7
+- The `checkout_session` obtained in Step 2
 
 > 🚧 Continue Payment Method Integration
 >
@@ -341,8 +338,8 @@ After completing the previous steps, create a payment by calling the [Create Pay
 
 For payment methods that require additional customer actions (such as 3DS authentication challenges) or asynchronous processing (like bank transfers), you'll need to integrate the SDK's `continuePayment` method after creating the payment. The Create Payment API response includes a `sdk_action_required` field that indicates whether this step is needed:
 
-* If `TRUE`: Call `yuno.continuePayment()` to display additional screens for customer actions (e.g., 3DS authentication, bank redirect pages)
-* If `FALSE`: Skip this step as no additional customer interaction is required
+- If `TRUE`: Call `yuno.continuePayment()` to display additional screens for customer actions (e.g., 3DS authentication, bank redirect pages)
+- If `FALSE`: Skip this step as no additional customer interaction is required
 
 Here's how to implement the payment continuation flow:
 
@@ -379,9 +376,9 @@ fun Activity.startPaymentRender(
 
 ```kotlin
 class PaymentActivity : Activity() {
-    
+
     private lateinit var fragmentController: YunoPaymentFragmentController
-    
+
     private fun initializeRenderMode() {
         fragmentController = startPaymentRender(
             checkoutSession = checkoutSessionId,
@@ -395,18 +392,18 @@ class PaymentActivity : Activity() {
                         .replace(R.id.payment_container, fragment)
                         .commit()
                 }
-                
+
                 override fun returnOneTimeToken(oneTimeToken: String, additionalData: OneTimeTokenModel?) {
                     // Process token and continue payment
                     processPayment(oneTimeToken) {
                         fragmentController.continuePayment()
                     }
                 }
-                
+
                 override fun returnStatus(resultCode: Int, paymentStatus: String) {
                     handlePaymentResult(paymentStatus)
                 }
-                
+
                 override fun loadingListener(isLoading: Boolean) {
                     // Handle loading state
                     updateLoadingUI(isLoading)
@@ -419,9 +416,9 @@ class PaymentActivity : Activity() {
 
 ### Key benefits
 
-* **Custom UI Integration**: Embed payment components in your existing layouts
-* **Fragment Compatibility**: Works with both XML and Jetpack Compose
-* **Flow Control**: Manage form submission and payment continuation manually
+- **Custom UI Integration**: Embed payment components in your existing layouts
+- **Fragment Compatibility**: Works with both XML and Jetpack Compose
+- **Flow Control**: Manage form submission and payment continuation manually
 
 > 🚧 Advanced Feature
 >
