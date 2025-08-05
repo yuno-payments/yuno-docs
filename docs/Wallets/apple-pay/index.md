@@ -30,3 +30,9 @@ To integrate Apple Pay using Yuno, you must first complete the [Prerequisites ](
 
 * [SDK Integration](doc:sdk-integration-apple)
 * [Direct Integration](doc:direct-integration)
+
+<Callout icon="📘" theme="info">
+  **Setting up Merchant ID for Apple Pay**
+
+  If you're using VTEX as your e-commerce platform, you'll need to configure your Apple Pay Merchant ID. For detailed instructions, check out the official VTEX documentation: [Setting up Merchant ID in Apple Pay - VTEX Documentation](https://developers.vtex.com/docs/guides/setting-up-merchant-id-in-apple-pay)
+</Callout>
