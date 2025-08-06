@@ -63,11 +63,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        AI
+        `AI`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -89,11 +89,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        AG
+        `AG`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -115,11 +115,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        AR
+        `AR`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        ARS
+        `ARS`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -147,11 +147,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        AW
+        `AW`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        AWG
+        `AWG`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -174,11 +174,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BS
+        `BS`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BSD
+        `BSD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -200,11 +200,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BB
+        `BB`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BBD
+        `BBD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -227,11 +227,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BZ
+        `BZ`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BZD
+        `BZD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -255,11 +255,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BM
+        `BM`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BMD
+        `BMD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -281,12 +281,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BO
+        `BO`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BOB\
-        BOV
+        `BOB`\
+        `BOV`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -310,11 +310,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BR
+        `BR`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        BRL
+        `BRL`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -340,11 +340,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CA
+        `CA`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CAD
+        `CAD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -368,11 +368,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        KY
+        `KY`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        KYD
+        `KYD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -395,12 +395,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CL
+        `CL`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CLP\
-        CLF
+        `CLP`\
+        `CLF`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -426,12 +426,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CO
+        `CO`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        COP\
-        COU
+        `COP`\
+        `COU`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -457,11 +457,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CR
+        `CR`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CRC
+        `CRC`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -484,12 +484,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CU
+        `CU`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CUP\
-        CUC
+        `CUP`\
+        `CUC`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -512,11 +512,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        CW
+        `CW`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        ANG
+        `ANG`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -540,11 +540,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        DM
+        `DM`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -567,11 +567,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        DO
+        `DO`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        DOP
+        `DOP`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -594,11 +594,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        EC
+        `EC`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -621,11 +621,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        SV
+        `SV`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -649,11 +649,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        FK
+        `FK`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        FKP
+        `FKP`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -676,11 +676,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        GF
+        `GF`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        EUR
+        `EUR`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -703,11 +703,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        GD
+        `GD`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -730,11 +730,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        GP
+        `GP`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        EUR
+        `EUR`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -757,11 +757,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        GT
+        `GT`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        GTQ
+        `GTQ`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -785,11 +785,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        GY
+        `GY`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        GYD
+        `GYD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -811,12 +811,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        HT
+        `HT`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        HTG\
-        USD
+        `HTG`\
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -839,11 +839,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        HN
+        `HN`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        HNL
+        `HNL`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -866,11 +866,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        JM
+        `JM`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        JMD
+        `JMD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -892,11 +892,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        MQ
+        `MQ`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        EUR
+        `EUR`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -918,12 +918,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        MX
+        `MX`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        MXN\
-        MXV
+        `MXN`\
+        `MXV`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -951,11 +951,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        MS
+        `MS`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -977,11 +977,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        NI
+        `NI`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        NIO
+        `NIO`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1004,12 +1004,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PA
+        `PA`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PAB\
-        USD
+        `PAB`\
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1033,11 +1033,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PY
+        `PY`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PYG
+        `PYG`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1059,11 +1059,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PE
+        `PE`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PEN
+        `PEN`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1087,11 +1087,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PR
+        `PR`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1114,11 +1114,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        KN
+        `KN`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1140,11 +1140,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        LC
+        `LC`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1166,11 +1166,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        MF
+        `MF`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        EUR
+        `EUR`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1193,11 +1193,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        PM
+        `PM`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        EUR
+        `EUR`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1219,11 +1219,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        VC
+        `VC`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        XCD
+        `XCD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1245,11 +1245,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        SR
+        `SR`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        SRD
+        `SRD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1271,11 +1271,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        TT
+        `TT`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        TTD
+        `TTD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1297,11 +1297,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        TC
+        `TC`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1323,11 +1323,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        US
+        `US`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1349,11 +1349,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        UM
+        `UM`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1375,12 +1375,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        UY
+        `UY`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        UYU\
-        UYI
+        `UYU`\
+        `UYI`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1404,11 +1404,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        VE
+        `VE`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        VEF
+        `VEF`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1430,11 +1430,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        VG
+        `VG`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1456,11 +1456,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        VI
+        `VI`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        USD
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1522,11 +1522,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        DZ
+        `DZ`
       </td>
 
       <td>
-        DZD
+        `DZD`
       </td>
 
       <td>
@@ -1548,11 +1548,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AO
+        `AO`
       </td>
 
       <td>
-        AOA
+        `AOA`
       </td>
 
       <td>
@@ -1574,11 +1574,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BJ
+        `BJ`
       </td>
 
       <td>
-        XOF
+        `XOF`
       </td>
 
       <td>
@@ -1600,11 +1600,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BW
+        `BW`
       </td>
 
       <td>
-        BWP
+        `BWP`
       </td>
 
       <td>
@@ -1626,11 +1626,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BF
+        `BF`
       </td>
 
       <td>
-        XOF
+        `XOF`
       </td>
 
       <td>
@@ -1652,11 +1652,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BI
+        `BI`
       </td>
 
       <td>
-        BIF
+        `BIF`
       </td>
 
       <td>
@@ -1678,11 +1678,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CM
+        `CM`
       </td>
 
       <td>
-        XAF
+        `XAF`
       </td>
 
       <td>
@@ -1704,11 +1704,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CV
+        `CV`
       </td>
 
       <td>
-        CVE
+        `CVE`
       </td>
 
       <td>
@@ -1730,11 +1730,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CF
+        `CF`
       </td>
 
       <td>
-        XAF
+        `XAF`
       </td>
 
       <td>
@@ -1756,11 +1756,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TD
+        `TD`
       </td>
 
       <td>
-        XAF
+        `XAF`
       </td>
 
       <td>
@@ -1782,11 +1782,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KM
+        `KM`
       </td>
 
       <td>
-        KMF
+        `KMF`
       </td>
 
       <td>
@@ -1808,11 +1808,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CD
+        `CD`
       </td>
 
       <td>
-        CDF
+        `CDF`
       </td>
 
       <td>
@@ -1835,11 +1835,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        DJ
+        `DJ`
       </td>
 
       <td>
-        DJF
+        `DJF`
       </td>
 
       <td>
@@ -1861,11 +1861,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        EG
+        `EG`
       </td>
 
       <td>
-        EGP
+        `EGP`
       </td>
 
       <td>
@@ -1888,11 +1888,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GQ
+        `GQ`
       </td>
 
       <td>
-        XAF
+        `XAF`
       </td>
 
       <td>
@@ -1914,11 +1914,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ER
+        `ER`
       </td>
 
       <td>
-        ERN
+        `ERN`
       </td>
 
       <td>
@@ -1940,11 +1940,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ET
+        `ET`
       </td>
 
       <td>
-        ETB
+        `ETB`
       </td>
 
       <td>
@@ -1967,11 +1967,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TF
+        `TF`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -1993,11 +1993,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GA
+        `GA`
       </td>
 
       <td>
-        XAF
+        `XAF`
       </td>
 
       <td>
@@ -2019,11 +2019,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GM
+        `GM`
       </td>
 
       <td>
-        GMD
+        `GMD`
       </td>
 
       <td>
@@ -2045,11 +2045,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GH
+        `GH`
       </td>
 
       <td>
-        GHS
+        `GHS`
       </td>
 
       <td>
@@ -2072,11 +2072,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GW
+        `GW`
       </td>
 
       <td>
-        XOF
+        `XOF`
       </td>
 
       <td>
@@ -2098,11 +2098,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GN
+        `GN`
       </td>
 
       <td>
-        GNF
+        `GNF`
       </td>
 
       <td>
@@ -2124,11 +2124,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KE
+        `KE`
       </td>
 
       <td>
-        KES
+        `KES`
       </td>
 
       <td>
@@ -2150,12 +2150,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LS
+        `LS`
       </td>
 
       <td>
-        LSL\
-        ZAR
+        `LSL`\
+        `ZAR`
       </td>
 
       <td>
@@ -2178,11 +2178,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LR
+        `LR`
       </td>
 
       <td>
-        LRD
+        `LRD`
       </td>
 
       <td>
@@ -2204,11 +2204,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LY
+        `LY`
       </td>
 
       <td>
-        LYD
+        `LYD`
       </td>
 
       <td>
@@ -2230,11 +2230,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MG
+        `MG`
       </td>
 
       <td>
-        MGA
+        `MGA`
       </td>
 
       <td>
@@ -2256,11 +2256,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MW
+        `MW`
       </td>
 
       <td>
-        MWK
+        `MWK`
       </td>
 
       <td>
@@ -2282,11 +2282,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ML
+        `ML`
       </td>
 
       <td>
-        XOF
+        `XOF`
       </td>
 
       <td>
@@ -2308,11 +2308,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MR
+        `MR`
       </td>
 
       <td>
-        MRO
+        `MRO`
       </td>
 
       <td>
@@ -2334,11 +2334,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MU
+        `MU`
       </td>
 
       <td>
-        MUR
+        `MUR`
       </td>
 
       <td>
@@ -2360,11 +2360,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        YT
+        `YT`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -2386,11 +2386,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MA
+        `MA`
       </td>
 
       <td>
-        MAD
+        `MAD`
       </td>
 
       <td>
@@ -2412,11 +2412,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MZ
+        `MZ`
       </td>
 
       <td>
-        MZN
+        `MZN`
       </td>
 
       <td>
@@ -2438,12 +2438,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NA
+        `NA`
       </td>
 
       <td>
-        NAD\
-        ZAR
+        `NAD`\
+        `ZAR`
       </td>
 
       <td>
@@ -2466,11 +2466,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NE
+        `NE`
       </td>
 
       <td>
-        XOF
+        `XOF`
       </td>
 
       <td>
@@ -2492,11 +2492,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NG
+        `NG`
       </td>
 
       <td>
-        NGN
+        `NGN`
       </td>
 
       <td>
@@ -2518,11 +2518,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CG
+        `CG`
       </td>
 
       <td>
-        XAF
+        `XAF`
       </td>
 
       <td>
@@ -2545,11 +2545,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        RE
+        `RE`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -2571,11 +2571,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        RW
+        `RW`
       </td>
 
       <td>
-        RWF
+        `RWF`
       </td>
 
       <td>
@@ -2597,11 +2597,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SH
+        `SH`
       </td>
 
       <td>
-        SHP
+        `SHP`
       </td>
 
       <td>
@@ -2623,11 +2623,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ST
+        `ST`
       </td>
 
       <td>
-        STD
+        `STD`
       </td>
 
       <td>
@@ -2649,11 +2649,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SN
+        `SN`
       </td>
 
       <td>
-        XOF
+        `XOF`
       </td>
 
       <td>
@@ -2675,11 +2675,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SC
+        `SC`
       </td>
 
       <td>
-        SCR
+        `SCR`
       </td>
 
       <td>
@@ -2701,11 +2701,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SL
+        `SL`
       </td>
 
       <td>
-        SLL
+        `SLL`
       </td>
 
       <td>
@@ -2727,11 +2727,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SO
+        `SO`
       </td>
 
       <td>
-        SOS
+        `SOS`
       </td>
 
       <td>
@@ -2753,11 +2753,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ZA
+        `ZA`
       </td>
 
       <td>
-        ZAR
+        `ZAR`
       </td>
 
       <td>
@@ -2779,11 +2779,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SS
+        `SS`
       </td>
 
       <td>
-        SSP
+        `SSP`
       </td>
 
       <td>
@@ -2805,11 +2805,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SD
+        `SD`
       </td>
 
       <td>
-        SDG
+        `SDG`
       </td>
 
       <td>
@@ -2831,11 +2831,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SZ
+        `SZ`
       </td>
 
       <td>
-        SZL
+        `SZL`
       </td>
 
       <td>
@@ -2857,11 +2857,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TZ
+        `TZ`
       </td>
 
       <td>
-        TZS
+        `TZS`
       </td>
 
       <td>
@@ -2883,11 +2883,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TG
+        `TG`
       </td>
 
       <td>
-        XOF
+        `XOF`
       </td>
 
       <td>
@@ -2909,11 +2909,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TN
+        `TN`
       </td>
 
       <td>
-        TND
+        `TND`
       </td>
 
       <td>
@@ -2935,11 +2935,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        UG
+        `UG`
       </td>
 
       <td>
-        UGX
+        `UGX`
       </td>
 
       <td>
@@ -2961,11 +2961,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        EH
+        `EH`
       </td>
 
       <td>
-        MAD
+        `MAD`
       </td>
 
       <td>
@@ -2987,11 +2987,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ZM
+        `ZM`
       </td>
 
       <td>
-        ZMW
+        `ZMW`
       </td>
 
       <td>
@@ -3053,11 +3053,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AF
+        `AF`
       </td>
 
       <td>
-        AFN
+        `AFN`
       </td>
 
       <td>
@@ -3079,11 +3079,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AM
+        `AM`
       </td>
 
       <td>
-        AMD
+        `AMD`
       </td>
 
       <td>
@@ -3105,11 +3105,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AU
+        `AU`
       </td>
 
       <td>
-        AUD
+        `AUD`
       </td>
 
       <td>
@@ -3132,11 +3132,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AZ
+        `AZ`
       </td>
 
       <td>
-        AZN
+        `AZN`
       </td>
 
       <td>
@@ -3158,11 +3158,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BD
+        `BD`
       </td>
 
       <td>
-        BDT
+        `BDT`
       </td>
 
       <td>
@@ -3184,12 +3184,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BT
+        `BT`
       </td>
 
       <td>
-        INR\
-        BTN
+        `INR`\
+        `BTN`
       </td>
 
       <td>
@@ -3212,11 +3212,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BN
+        `BN`
       </td>
 
       <td>
-        BND
+        `BND`
       </td>
 
       <td>
@@ -3238,11 +3238,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KH
+        `KH`
       </td>
 
       <td>
-        KHR
+        `KHR`
       </td>
 
       <td>
@@ -3264,11 +3264,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CN
+        `CN`
       </td>
 
       <td>
-        CNY
+        `CNY`
       </td>
 
       <td>
@@ -3290,11 +3290,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CX
+        `CX`
       </td>
 
       <td>
-        AUD
+        `AUD`
       </td>
 
       <td>
@@ -3317,11 +3317,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CC
+        `CC`
       </td>
 
       <td>
-        AUD
+        `AUD`
       </td>
 
       <td>
@@ -3344,11 +3344,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CK
+        `CK`
       </td>
 
       <td>
-        NZD
+        `NZD`
       </td>
 
       <td>
@@ -3373,11 +3373,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        FJ
+        `FJ`
       </td>
 
       <td>
-        FJD
+        `FJD`
       </td>
 
       <td>
@@ -3399,11 +3399,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PF
+        `PF`
       </td>
 
       <td>
-        XPF
+        `XPF`
       </td>
 
       <td>
@@ -3425,11 +3425,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GU
+        `GU`
       </td>
 
       <td>
-        USD
+        `USD`
       </td>
 
       <td>
@@ -3451,11 +3451,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        HK
+        `HK`
       </td>
 
       <td>
-        HKD
+        `HKD`
       </td>
 
       <td>
@@ -3477,11 +3477,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IN
+        `IN`
       </td>
 
       <td>
-        INR
+        `INR`
       </td>
 
       <td>
@@ -3503,11 +3503,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ID
+        `ID`
       </td>
 
       <td>
-        IDR
+        `IDR`
       </td>
 
       <td>
@@ -3529,11 +3529,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        JP
+        `JP`
       </td>
 
       <td>
-        JPY
+        `JPY`
       </td>
 
       <td>
@@ -3555,11 +3555,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KZ
+        `KZ`
       </td>
 
       <td>
-        KZT
+        `KZT`
       </td>
 
       <td>
@@ -3581,11 +3581,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KI
+        `KI`
       </td>
 
       <td>
-        AUD
+        `AUD`
       </td>
 
       <td>
@@ -3607,11 +3607,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KG
+        `KG`
       </td>
 
       <td>
-        KGS
+        `KGS`
       </td>
 
       <td>
@@ -3633,11 +3633,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MO
+        `MO`
       </td>
 
       <td>
-        MOP
+        `MOP`
       </td>
 
       <td>
@@ -3659,11 +3659,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MY
+        `MY`
       </td>
 
       <td>
-        MYR
+        `MYR`
       </td>
 
       <td>
@@ -3685,11 +3685,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MV
+        `MV`
       </td>
 
       <td>
-        MVR
+        `MVR`
       </td>
 
       <td>
@@ -3711,11 +3711,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MH
+        `MH`
       </td>
 
       <td>
-        USD
+        `USD`
       </td>
 
       <td>
@@ -3737,11 +3737,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        FM
+        `FM`
       </td>
 
       <td>
-        USD
+        `USD`
       </td>
 
       <td>
@@ -3764,11 +3764,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MN
+        `MN`
       </td>
 
       <td>
-        MNT
+        `MNT`
       </td>
 
       <td>
@@ -3790,11 +3790,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MM
+        `MM`
       </td>
 
       <td>
-        MMK
+        `MMK`
       </td>
 
       <td>
@@ -3816,11 +3816,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NR
+        `NR`
       </td>
 
       <td>
-        AUD
+        `AUD`
       </td>
 
       <td>
@@ -3842,11 +3842,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NP
+        `NP`
       </td>
 
       <td>
-        NPR
+        `NPR`
       </td>
 
       <td>
@@ -3868,11 +3868,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NC
+        `NC`
       </td>
 
       <td>
-        XPF
+        `XPF`
       </td>
 
       <td>
@@ -3894,11 +3894,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NZ
+        `NZ`
       </td>
 
       <td>
-        NZD
+        `NZD`
       </td>
 
       <td>
@@ -3921,11 +3921,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NU
+        `NU`
       </td>
 
       <td>
-        NZD
+        `NZD`
       </td>
 
       <td>
@@ -3947,11 +3947,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NF
+        `NF`
       </td>
 
       <td>
-        AUD
+        `AUD`
       </td>
 
       <td>
@@ -3973,11 +3973,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MP
+        `MP`
       </td>
 
       <td>
-        USD
+        `USD`
       </td>
 
       <td>
@@ -3999,11 +3999,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PK
+        `PK`
       </td>
 
       <td>
-        PKR
+        `PKR`
       </td>
 
       <td>
@@ -4025,11 +4025,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PW
+        `PW`
       </td>
 
       <td>
-        USD
+        `USD`
       </td>
 
       <td>
@@ -4051,11 +4051,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PG
+        `PG`
       </td>
 
       <td>
-        PGK
+        `PGK`
       </td>
 
       <td>
@@ -4077,11 +4077,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PH
+        `PH`
       </td>
 
       <td>
-        PHP
+        `PHP`
       </td>
 
       <td>
@@ -4103,11 +4103,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PN
+        `PN`
       </td>
 
       <td>
-        NZD
+        `NZD`
       </td>
 
       <td>
@@ -4129,11 +4129,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        WS
+        `WS`
       </td>
 
       <td>
-        WST
+        `WST`
       </td>
 
       <td>
@@ -4155,11 +4155,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SG
+        `SG`
       </td>
 
       <td>
-        SGD
+        `SGD`
       </td>
 
       <td>
@@ -4181,11 +4181,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SB
+        `SB`
       </td>
 
       <td>
-        SBD
+        `SBD`
       </td>
 
       <td>
@@ -4207,11 +4207,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KR
+        `KR`
       </td>
 
       <td>
-        KRW
+        `KRW`
       </td>
 
       <td>
@@ -4233,11 +4233,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LK
+        `LK`
       </td>
 
       <td>
-        LKR
+        `LKR`
       </td>
 
       <td>
@@ -4261,11 +4261,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TW
+        `TW`
       </td>
 
       <td>
-        TWD
+        `TWD`
       </td>
 
       <td>
@@ -4287,11 +4287,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TJ
+        `TJ`
       </td>
 
       <td>
-        TJS
+        `TJS`
       </td>
 
       <td>
@@ -4313,11 +4313,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TH
+        `TH`
       </td>
 
       <td>
-        THB
+        `THB`
       </td>
 
       <td>
@@ -4339,11 +4339,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TK
+        `TK`
       </td>
 
       <td>
-        NZD
+        `NZD`
       </td>
 
       <td>
@@ -4365,11 +4365,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TO
+        `TO`
       </td>
 
       <td>
-        TOP
+        `TOP`
       </td>
 
       <td>
@@ -4391,11 +4391,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TM
+        `TM`
       </td>
 
       <td>
-        TMT
+        `TMT`
       </td>
 
       <td>
@@ -4417,11 +4417,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TV
+        `TV`
       </td>
 
       <td>
-        AUD
+        `AUD`
       </td>
 
       <td>
@@ -4443,11 +4443,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        UZ
+        `UZ`
       </td>
 
       <td>
-        UZS
+        `UZS`
       </td>
 
       <td>
@@ -4469,11 +4469,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        VU
+        `VU`
       </td>
 
       <td>
-        VUV
+        `VUV`
       </td>
 
       <td>
@@ -4495,11 +4495,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        VN
+        `VN`
       </td>
 
       <td>
-        VND
+        `VND`
       </td>
 
       <td>
@@ -4521,11 +4521,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        WF
+        `WF`
       </td>
 
       <td>
-        XPF
+        `XPF`
       </td>
 
       <td>
@@ -4587,11 +4587,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AX
+        `AX`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -4614,11 +4614,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AL
+        `AL`
       </td>
 
       <td>
-        ALL
+        `ALL`
       </td>
 
       <td>
@@ -4640,11 +4640,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AD
+        `AD`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -4666,11 +4666,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AT
+        `AT`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -4692,11 +4692,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BY
+        `BY`
       </td>
 
       <td>
-        BYR
+        `BYR`
       </td>
 
       <td>
@@ -4719,11 +4719,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BE
+        `BE`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -4746,11 +4746,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BA
+        `BA`
       </td>
 
       <td>
-        BAM
+        `BAM`
       </td>
 
       <td>
@@ -4773,11 +4773,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BG
+        `BG`
       </td>
 
       <td>
-        BGN
+        `BGN`
       </td>
 
       <td>
@@ -4799,11 +4799,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        HR
+        `HR`
       </td>
 
       <td>
-        HRK
+        `HRK`
       </td>
 
       <td>
@@ -4825,11 +4825,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CY
+        `CY`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -4852,11 +4852,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CZ
+        `CZ`
       </td>
 
       <td>
-        VZK
+        `VZK`
       </td>
 
       <td>
@@ -4880,11 +4880,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        DK
+        `DK`
       </td>
 
       <td>
-        DKK
+        `DKK`
       </td>
 
       <td>
@@ -4908,11 +4908,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        EE
+        `EE`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -4935,11 +4935,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        FO
+        `FO`
       </td>
 
       <td>
-        DKK
+        `DKK`
       </td>
 
       <td>
@@ -4963,11 +4963,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        FI
+        `FI`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -4991,11 +4991,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        FR
+        `FR`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5019,11 +5019,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GE
+        `GE`
       </td>
 
       <td>
-        GEL
+        `GEL`
       </td>
 
       <td>
@@ -5046,11 +5046,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        DE
+        `DE`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5074,11 +5074,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GI
+        `GI`
       </td>
 
       <td>
-        GIP
+        `GIP`
       </td>
 
       <td>
@@ -5101,11 +5101,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GR
+        `GR`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5128,11 +5128,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GL
+        `GL`
       </td>
 
       <td>
-        DKK
+        `DKK`
       </td>
 
       <td>
@@ -5155,11 +5155,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GG
+        `GG`
       </td>
 
       <td>
-        GBP
+        `GBP`
       </td>
 
       <td>
@@ -5182,11 +5182,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        HU
+        `HU`
       </td>
 
       <td>
-        HUF
+        `HUF`
       </td>
 
       <td>
@@ -5208,11 +5208,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IS
+        `IS`
       </td>
 
       <td>
-        ISK
+        `ISK`
       </td>
 
       <td>
@@ -5234,11 +5234,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IE
+        `IE`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5260,11 +5260,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IM
+        `IM`
       </td>
 
       <td>
-        GBP
+        `GBP`
       </td>
 
       <td>
@@ -5287,11 +5287,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IT
+        `IT`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5313,11 +5313,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        JE
+        `JE`
       </td>
 
       <td>
-        GBP
+        `GBP`
       </td>
 
       <td>
@@ -5340,11 +5340,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LV
+        `LV`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5367,11 +5367,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LI
+        `LI`
       </td>
 
       <td>
-        CHF
+        `CHF`
       </td>
 
       <td>
@@ -5395,11 +5395,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LT
+        `LT`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5422,11 +5422,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LU
+        `LU`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5449,11 +5449,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MT
+        `MT`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5475,11 +5475,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MD
+        `MD`
       </td>
 
       <td>
-        MDL
+        `MDL`
       </td>
 
       <td>
@@ -5502,11 +5502,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MC
+        `MC`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5529,11 +5529,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ME
+        `ME`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5556,11 +5556,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NL
+        `NL`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5582,11 +5582,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        MK
+        `MK`
       </td>
 
       <td>
-        MKD
+        `MKD`
       </td>
 
       <td>
@@ -5608,11 +5608,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        NO
+        `NO`
       </td>
 
       <td>
-        NOK
+        `NOK`
       </td>
 
       <td>
@@ -5634,11 +5634,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PL
+        `PL`
       </td>
 
       <td>
-        PLN
+        `PLN`
       </td>
 
       <td>
@@ -5660,11 +5660,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        PT
+        `PT`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5686,11 +5686,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        RO
+        `RO`
       </td>
 
       <td>
-        RON
+        `RON`
       </td>
 
       <td>
@@ -5712,11 +5712,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        RU
+        `RU`
       </td>
 
       <td>
-        RUB
+        `RUB`
       </td>
 
       <td>
@@ -5738,11 +5738,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SM
+        `SM`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5764,11 +5764,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        RS
+        `RS`
       </td>
 
       <td>
-        RSD
+        `RSD`
       </td>
 
       <td>
@@ -5790,11 +5790,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SK
+        `SK`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5816,11 +5816,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SI
+        `SI`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5842,11 +5842,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        ES
+        `ES`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -5870,11 +5870,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SJ
+        `SJ`
       </td>
 
       <td>
-        NOK
+        `NOK`
       </td>
 
       <td>
@@ -5896,11 +5896,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SE
+        `SE`
       </td>
 
       <td>
-        SEK
+        `SEK`
       </td>
 
       <td>
@@ -5922,13 +5922,13 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        CH
+        `CH`
       </td>
 
       <td>
-        CHF\
-        CHE
-        CHW
+        `CHF`\
+        `CHE`
+        `CHW`
       </td>
 
       <td>
@@ -5954,11 +5954,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        TR
+        `TR`
       </td>
 
       <td>
-        TRY
+        `TRY`
       </td>
 
       <td>
@@ -5980,11 +5980,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        UA
+        `UA`
       </td>
 
       <td>
-        UAH
+        `UAH`
       </td>
 
       <td>
@@ -6006,11 +6006,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        GB
+        `GB`
       </td>
 
       <td>
-        GBP
+        `GBP`
       </td>
 
       <td>
@@ -6034,11 +6034,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        VA
+        `VA`
       </td>
 
       <td>
-        EUR
+        `EUR`
       </td>
 
       <td>
@@ -6100,11 +6100,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        BH
+        `BH`
       </td>
 
       <td>
-        BHD
+        `BHD`
       </td>
 
       <td>
@@ -6126,11 +6126,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IR
+        `IR`
       </td>
 
       <td>
-        IRR
+        `IRR`
       </td>
 
       <td>
@@ -6152,11 +6152,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IQ
+        `IQ`
       </td>
 
       <td>
-        IQD
+        `IQD`
       </td>
 
       <td>
@@ -6178,11 +6178,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        IL
+        `IL`
       </td>
 
       <td>
-        ILS
+        `ILS`
       </td>
 
       <td>
@@ -6204,11 +6204,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        JO
+        `JO`
       </td>
 
       <td>
-        JOD
+        `JOD`
       </td>
 
       <td>
@@ -6230,11 +6230,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        KW
+        `KW`
       </td>
 
       <td>
-        KWD
+        `KWD`
       </td>
 
       <td>
@@ -6256,11 +6256,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        LB
+        `LB`
       </td>
 
       <td>
-        LBP
+        `LBP`
       </td>
 
       <td>
@@ -6282,11 +6282,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        OM
+        `OM`
       </td>
 
       <td>
-        OMR
+        `OMR`
       </td>
 
       <td>
@@ -6308,11 +6308,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        QA
+        `QA`
       </td>
 
       <td>
-        QAR
+        `QAR`
       </td>
 
       <td>
@@ -6334,11 +6334,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SA
+        `SA`
       </td>
 
       <td>
-        SAR
+        `SAR`
       </td>
 
       <td>
@@ -6360,11 +6360,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        SY
+        `SY`
       </td>
 
       <td>
-        SYP
+        `SYP`
       </td>
 
       <td>
@@ -6386,11 +6386,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        AE
+        `AE`
       </td>
 
       <td>
-        AED
+        `AED`
       </td>
 
       <td>
@@ -6412,11 +6412,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        YE
+        `YE`
       </td>
 
       <td>
-        YER
+        `YER`
       </td>
 
       <td>
