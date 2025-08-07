@@ -71,7 +71,7 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
       </td>
 
       <td>
-        *
+        * <br />
       </td>
 
       <td>
@@ -187,3 +187,10 @@ Depending on the type of event, you will receive a different type of webhook and
 | subscription | resume      |
 | subscription | cancel      |
 | subscription | complete    |
+| onboarding   | create      |
+| onboarding   | pending     |
+| onboarding   | succeeded   |
+| onboarding   | canceled    |
+| onboarding   | declined    |
+| onboarding   | blocked     |
+| onboarding   | unblocked   |
