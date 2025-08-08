@@ -17,7 +17,7 @@ Our API offers flexibility in structuring payment amounts, accommodating various
 * [Tips](doc:payment-amount-details#tips)
 * [Taxes](doc:payment-amount-details#taxes)
 * [Discounts](doc:payment-amount-details#discounts)
-* Customer validations
+* [Customer validations](doc:payment-amount-details#customer-validations)
 
 This feature enhances transparency and convenience for both merchants and customers, enabling seamless handling of payment details within the payment process.
 
@@ -339,7 +339,7 @@ In the following example you can see a request that clarifies that customer has 
                 "document_type": "CPF",
                 "document_number": "96050176876"
         },
-        "merchant_customer_validation":{
+        "merchant_customer_validations":{
           "phone_is_verified":true,
           "account_is_verified":true,
 					"email_is_verified:":true
