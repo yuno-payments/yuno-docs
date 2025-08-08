@@ -1275,7 +1275,7 @@ This object represents the payment created after generating the checkout session
           </p>
           <details class="yuno">
             <summary>
-              <strong><code>legs</code></strong> <small>array of object</small>
+              <strong><code>legs</code></strong> <small>array of objects</small>
               <br />
               <p>Specifies the legs array of objects.</p>
             </summary>
