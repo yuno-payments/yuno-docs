@@ -1273,8 +1273,6 @@ This object represents the payment created after generating the checkout session
             <br />Type of trip.
             <br /><small>Possible values: <code>ONE_WAY</code>, <code>ROUNDTRIP</code>, <code>MULTIPLE_DESTINATIONS</code></small>
           </p>
-        </div>
-      </details>
           <details class="yuno">
             <summary>
               <strong><code>legs</code></strong> <small>array of object</small>
@@ -1366,19 +1364,6 @@ This object represents the payment created after generating the checkout session
                 not
                 allowed).
                 <br /><small> Example: O </small>
-              </p>
-            </div>
-          </details>
-          <details class="yuno">
-            <summary>
-              <strong><code>transport</code></strong> <small>object</small>
-              <br />
-              <p>Specifies the transport object.</p>
-            </summary>
-            <div>
-              <p><strong><code>id</code></strong> <small>string</small>
-                <br />The id of the transportation vehicle (MAX 255; MIN 1).
-                <br /><small> Example: ASONDAKS-1234 </small>
               </p>
             </div>
           </details>
@@ -1561,6 +1546,20 @@ This object represents the payment created after generating the checkout session
           </details>
         </div>
       </details>
+      <details class="yuno">
+        <summary>
+          <strong><code>transport</code></strong> <small>object</small>
+          <br />
+          <p>Specifies the transport object.</p>
+        </summary>
+        <div>
+          <p><strong><code>id</code></strong> <small>string</small>
+            <br />The id of the transportation vehicle (MAX 255; MIN 1).
+            <br /><small> Example: ASONDAKS-1234 </small>
+          </p>
+        </div>
+      </details>
+
       <details class="yuno">
         <summary>
           <strong><code>order</code></strong> <small>object</small>
