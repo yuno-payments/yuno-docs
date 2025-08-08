@@ -342,7 +342,7 @@ In the following example you can see a request that clarifies that customer has 
         "merchant_customer_validations":{
           "phone_is_verified":true,
           "account_is_verified":true,
-"email_is_verified:":true
+          "email_is_verified:":true
         }
     },
 [...]
