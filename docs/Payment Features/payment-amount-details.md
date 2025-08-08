@@ -1,5 +1,5 @@
 ---
-title: Payment Amount Details
+title: Payment Details
 excerpt: ''
 deprecated: false
 hidden: false
@@ -17,12 +17,13 @@ Our API offers flexibility in structuring payment amounts, accommodating various
 * [Tips](doc:payment-amount-details#tips)
 * [Taxes](doc:payment-amount-details#taxes)
 * [Discounts](doc:payment-amount-details#discounts)
+* Customer validations
 
 This feature enhances transparency and convenience for both merchants and customers, enabling seamless handling of payment details within the payment process.
 
 ## Fee amount
 
-A dedicated field (`additiona_datal.order.fee_amount`) allows you to specify the fee amount for your services that is included in the transaction. 
+A dedicated field (`additiona_datal.order.fee_amount`) allows you to specify the fee amount for your services that is included in the transaction.
 
 In the following example you can see a request that clarifies that a 180 JPY fee amount is part of a 5000 JPY final transaction. This field is for informational purposes, the `fee_amount` is already included in the final transaction amount and is not added separately.
 
@@ -72,7 +73,7 @@ curl --request POST \
 
 ## Shipping amount
 
-A dedicated field (`additional_data.order.shipping_amount`) allows you to specify the shipping amount that is included in the transaction. 
+A dedicated field (`additional_data.order.shipping_amount`) allows you to specify the shipping amount that is included in the transaction.
 
 In the following example you can see a request that clarifies that a 270 JPY shipping amount is part of a 5000 JPY final transaction. This field is for informational purposes, the `shipping_amount` is already included in the final transaction amount and is not added separately.
 
@@ -122,7 +123,7 @@ curl --request POST \
 
 ## Tips
 
-A dedicated field (`additiona_datal.order.tip_amount`) allows you to specify the tips amount that is included in the transaction. 
+A dedicated field (`additiona_datal.order.tip_amount`) allows you to specify the tips amount that is included in the transaction.
 
 In the following example you can see a request that clarifies that a 50 JPY tip amount is part of a 5000 JPY final transaction. This field is for informational purposes, the `tip_amount` is already included in the final transaction amount and is not added separately.
 
@@ -249,7 +250,7 @@ curl --request POST \
 
 ## Discounts
 
-A dedicated array of object (`additional_data.order.discounts`) allows you to specify the discounts that are included in the transaction. 
+A dedicated array of object (`additional_data.order.discounts`) allows you to specify the discounts that are included in the transaction.
 
 In the following example you can see a request that clarifies that a 500 USD tip amount is part of a 5000 USD final transaction. This field is for informational purposes, the `discounts` is already included in the final transaction amount and is not added separately.
 
@@ -301,4 +302,48 @@ curl --request POST \
     }
 }
 '
+```
+
+## Customer validations
+
+A dedicated object (`customer_payer.merchant_customer_validations`) allows you to specify certain customer validations rules for fraud prevention inquiries.
+
+| field                 | type | description                                                                                 |
+| :-------------------- | :--- | :------------------------------------------------------------------------------------------ |
+| account\_is\_verified | bool | If the customer's account has been validated before on the merchant's side. True by default |
+| email\_is\_verified   | bool | If the customer's email has been validated before on the merchant's side. True by default   |
+| phone\_is\_verified   | bool | If the customer's phone has been validated before on the merchant's side. True by default   |
+
+In the following example you can see a request that clarifies that customer has been previously verified outside Yuno.
+
+```json
+[...]
+  "description": "Test PIX",
+    "account_id":"{{account-code}}",
+    "merchant_order_id": "0000022",
+    "country": "BR",
+    "amount": {
+        "currency": "BRL",
+        "value": 50
+    },
+   "customer_payer": {
+        "merchant_customer_id": "AA001",
+        "first_name": "VALERIO",
+        "last_name": "DE AGUIAR ZORZATO",
+        "email": "test_user_1431202421@testuser.com",
+        "phone": {
+                "number": "11992149494",
+                "country_code": "55"
+        },
+        "document": {
+                "document_type": "CPF",
+                "document_number": "96050176876"
+        },
+        "merchant_customer_validation":{
+          "phone_is_verified":true,
+          "account_is_verified":true,
+					"email_is_verified:":true
+        }
+    },
+[...]
 ```
