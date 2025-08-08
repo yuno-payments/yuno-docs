@@ -1472,7 +1472,7 @@ This object represents the payment created after generating the checkout session
                 <br /><small> Possible values: <code>True</code> or <code>False</code></small>
               </p>
               <p><strong><code>restricted</code></strong> <small>boolean</small>
-                <br />Indicates if the ticket is refunfable or not.
+                <br />Indicates if the ticket is refundable or not.
                 <br /><small> Possible values: <code>True</code> or <code>False</code></small>
               </p>
               <p><strong><code>total_fare_amount</code></strong> <small>float</small>
