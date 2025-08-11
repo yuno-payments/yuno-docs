@@ -112,14 +112,14 @@ Yuno provides two options for payment capture:
 
 Yuno also lets you use some additional features that are supported in the basic payment creation process:
 
-* `vault_on_success`: If your customer uses a credit card to make the payment, we let you enroll that payment method for the customer for future purchase in the same step.
+* `vault_on_success`: If your customer uses a credit card to make the payment, we let you enroll that payment method for the customer for future purchases in the same step.
 * `installments`: In case you offer your clients installments for their payments and your chosen processor accepts them, you can send us the amount of installments to create the payment with.
 
 Both fields can be found in the payment\_method detail section of the payment.
 
 ### Step 5: Check the payment status
 
-After performing the request to the [Create Payment](ref:create-payment), you can check the payment status by analyzing the `status` and `sub_status` from the response. Check the page [Payment Status](ref:payment) to see all options you can receive in response to the payment creation request.
+After performing the request to the [Create Payment](ref:create-payment) endpoint, you can check the payment status by analyzing the `status` and `sub_status` from the response. Check the page [Payment Status](ref:payment) to see all options you can receive in response to the payment creation request.
 
 Depending on the processor and payment method, the status may take some time to update. Therefore, you may need to use endpoints to recover the payment status. To perform this task, you can use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant_order_id). Another option is to use webhooks to receive notifications after each event. Yuno recommends you use webhooks to monitor asynchronous payments better. Check the [Webhooks](doc:configure-webhooks) guide to learn how to configure the webhooks solution provided by Yuno.
 
