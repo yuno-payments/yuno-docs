@@ -986,6 +986,28 @@ This object represents the payment created after generating the checkout session
          <br />Customer´s registration date on the merchants platform (ISO 8601 MAX 27; MIN 27).
          <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
    	  </p>
+      
+      <details class="yuno">
+        <summary>
+          <strong><code>merchant_customer_validations</code></strong> <small>object</small>
+          <br />
+          <p>Fraud validations for the customer payer.</p>
+        </summary>
+        <div>
+          <p><strong><code>account_is_verified</code></strong> <small>boolean</small>
+            <br />If the customer's account has been validated before on the merchant's side. Defaults to true.
+            <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
+          </p>
+          <p><strong><code>email_is_verified</code></strong> <small>boolean</small>
+            <br />If the customer's email has been validated before on the merchant's side. Defaults to true.
+            <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
+          </p>
+          <p><strong><code>phone_is_verified</code></strong> <small>boolean</small>
+            <br />If the customer's phone has been validated before on the merchant's side. Defaults to true.
+            <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
+          </p>
+        </div>
+      </details>
 
 
       <p><strong><code>first_name</code></strong> <small>string</small>
