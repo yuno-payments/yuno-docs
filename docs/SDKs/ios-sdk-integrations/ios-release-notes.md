@@ -9,6 +9,10 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                            |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.0   | **REMOVE**: Deprecated `startCheckout(with: self)` method - remove from all payment implementations (Lite, Full, and Render).                        |
+|         | **CHANGE**: Replaced `Yuno.getPaymentMethodView(delegate: YunoPaymentDelegate)` with `async getPaymentMethodViewAsync(delegate: YunoPaymentFullDelegate)` in Payment Full. |
+|         | **CHANGE**: Replaced `startPaymentRender` with `let paymentFlow = await Yuno.startPaymentRenderFlow(paymentMethodSelected: selectedPaymentMethod, with: YunoPaymentDelegate)` in Payment Render. |
+|         | **CHANGE**: Replaced `Yuno.startPaymentLite(showPaymentStatus: Bool)` with `startPaymentLite(with: YunoPaymentDelegate, paymentSelected: PaymentMethodSelected, showPaymentStatus: Bool = true)` in Payment Lite. |
 | 2.0.0   | **IMPROVE**: Enhanced NuPay enrollment to filter passport information.                                                                             |
 |         | **NEW**: Added support for NuPay installments.                                                                                                     |
 |         | **IMPROVE**: Migrated old Alternative Payment Methods (APMs) to flexible actions, simplifying the code and removing unnecessary UI elements.       |
