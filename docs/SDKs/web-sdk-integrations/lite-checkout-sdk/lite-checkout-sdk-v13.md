@@ -13,12 +13,10 @@ Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK funct
 
 ## What's new in v1.3
 
-1. Fraud checks now use a timeout managed by Yuno, read during SDK initialization. You don’t need to change anything in your integration.
-
-* New `max_fraud_timeout_ms` in Yuno settings
-* **If missing**: default to 3,000 ms
-* **If between 0 and 30,000 ms**: used as provided
-* **If greater than 30,000 ms**: ignored and apply default (3,000 ms)
+1. Optimizations to the Lite SDK's weight and performance
+2. Added support for multiple Asian and European languages: German, Dutch, Swedish, French, Italian, Japanese, Korean.
+3. General bug fixes
+4. Enhancements to styling and branding
 
 ## Step 1: Include the library in your project
 
