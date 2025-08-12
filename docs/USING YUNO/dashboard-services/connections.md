@@ -49,3 +49,42 @@ The **Your connections** tab within Connections allows you to manage existing co
 * **Pausing and unpausing connections**: To temporarily halt the interaction with a specific provider, you can choose to **Pause** a connection. When ready to resume, simply **Unpause** it. This flexibility allows you to adapt to changing circumstances without having to redo your connections.
 * **Deleting connections**: If a connection is no longer needed, you can delete it. Exercise caution when deleting connections, as this action is irreversible.
 * **Managing multiple connections**: Check the box next to two or more connections to pause, unpause and delete connections in bulk.
+
+## Dynamic Metadata Configuration
+
+The Dynamic Metadata feature allows you to control which metadata fields are sent to each connected provider, giving you granular control over your payment data flow.
+
+### Dynamic Metadata explained
+
+Previously, when you sent metadata via the public API, all metadata fields were automatically sent to every connected provider. With Dynamic Metadata, you can now configure exactly which metadata keys should be sent to each specific provider directly from your connection settings.
+
+### When to use Dynamic Metadata
+
+Use Dynamic Metadata when you need to:
+
+* **Control data flow**: Send different metadata to different providers based on their requirements
+* **Comply with regulations**: Ensure only necessary data is transmitted to comply with data protection laws
+* **Optimize performance**: Reduce unnecessary data transmission between systems
+* **Maintain flexibility**: Configure metadata mapping without requiring integration changes
+
+### How it works
+
+1. **Enable the feature**: Turn on the "Dynamic Metadata Configuration" flag in your connection settings
+2. **Configure mapping**: Set up key mappings from your public API metadata to provider-specific metadata
+3. **Automatic filtering**: Only the configured metadata keys will be sent to the provider during transactions
+
+### Supported providers
+
+* **Stripe**: Available now. The current metadata logic will be removed on **August 29**. You must update your connection to use dynamic mapping.
+* **Adyen**: Available now. Existing clients retain the old logic, but new connections must use the new configuration.
+
+### Migration notes
+
+* **New integrations**: All new integrations with metadata will automatically follow this logic
+* **Existing integrations**: Prioritize migrating older integrations to ensure compliance
+* **No integration changes required**: You can configure metadata mapping entirely from the dashboard
+
+> ⚠️ **Important for Stripe users**
+>
+> The current metadata logic in Stripe will be removed on **August 29**. Make sure to update your connection to use dynamic mapping before this date to avoid any disruption to your payment processing.
+
