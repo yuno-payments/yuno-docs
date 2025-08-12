@@ -2,7 +2,7 @@
 title: Full Web SDK v1.3
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
