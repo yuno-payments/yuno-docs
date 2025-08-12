@@ -115,9 +115,9 @@ yuno.startCheckout({
 >
 > By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the [Render mode](#mode-of-form-rendering) under the complementary features page.
 
-> 📘 `onPaymentMethodSelect` Event
+> 📘 `onPaymentMethodSelected` Event
 >
-> For PayPal, Google Pay, and Apple Pay, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
+> For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
 
 ## Step 4: Mount the SDK
 
