@@ -89,8 +89,8 @@ You should call `Yuno.initialize()` as early as possible in your app's lifecycle
   It's safe to call `Yuno.initialize()` in the `init()` of your SwiftUI `App` struct. Avoid calling it from the `init()` of a regular `View`, as views may re-initialize and cause unexpected behavior.
 </Callout>
 
-<Callout icon="🚧" theme="warn">
-  Make sure the SDK is initialized before you present any Yuno payment views or invoke `startCheckout()`.
+<Callout icon="❗️" theme="warn">
+  The `startCheckout` method has been deprecated since iOS SDK version 2.4.
 </Callout>
 
 If you're using UIKit, place your `Yuno.initialize()` call in `SceneDelegate` or `AppDelegate`, depending on your project structure.
@@ -136,43 +136,7 @@ Below, you find a description of each configuration variable available.
 
 ## Step 3: Start the checkout flow
 
-Before displaying payment methods or collecting user data, you need to initialize the checkout session using the function `startCheckout()`:
-
-```swift
-Yuno.startCheckout(with: self)
-```
-
-This function triggers the SDK to prepare the UI components and internal state for the current checkout session.
-
-| Parameter | Type                  | Description                                                                                                                                                    |
-| --------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `self`    | `YunoPaymentDelegate` | Your ViewController or class implementing the required delegate methods. This lets the SDK access the necessary information (e.g. session ID, language, etc.). |
-
-You **must** call this method before attempting to display the payment method UI or performing any render operations. Otherwise, the SDK won’t be fully initialized for the current checkout session.
-
-### `startCheckout()` vs `getPaymentMethodView()`
-
-| Function                      | Purpose                                                | When to Use                                                             |
-| ----------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `Yuno.startCheckout(with:)`   | Initializes the checkout context and prepares the SDK. | **Always call this first** before any UI display or payment logic.      |
-| `Yuno.getPaymentMethodView()` | Returns a UI view of the available payment methods.    | Use **after** `startCheckout(...)`, and only when building a custom UI. |
-
-<Callout icon="🚧" theme="warn">
-  You must call `Yuno.startCheckout()` **once per session**, typically in `viewDidLoad()` or right before you display payment UI elements.
-</Callout>
-
-### `startCheckout()` vs `getPaymentMethodView()`
-
-These two methods are commonly used together but serve distinct purposes:
-
-| Method                        | Purpose                                                               | When to Use                                                  |
-| ----------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `Yuno.startCheckout(with:)`   | Initializes the SDK with the required session and configuration data. | **Always call this first** before using any SDK UI elements. |
-| `Yuno.getPaymentMethodView()` | Returns the payment method UI component (UIKit or SwiftUI).           | Call this **after** `startCheckout()` to display the UI.     |
-
-<Callout icon="🚧" theme="warn">
-  You must **call`startCheckout()` before** calling `getPaymentMethodView()`. Otherwise, the SDK will not be correctly initialized, and the payment UI won’t render properly.
-</Callout>
+Implement the `YunoPaymentDelegate` in your view controller or hosting class. Ensure the SDK is initialized (Step 2) and provide the required properties and callbacks.
 
 ## Step 4: Start the checkout process (old, see below for new version)
 
@@ -434,26 +398,12 @@ The following table presents all the protocol methods and their descriptions:
   Only one version of `yunoCreatePayment` (`yunoCreatePayment(with:)` or  `yunoCreatePayment(with:information:)`) should be implemented in your class. Do not implement both unless explicitly needed.
 </Callout>
 
-### UIKit vs SwiftUI: Handling `getPaymentMethodView`
+### UIKit vs SwiftUI: Handling `getPaymentMethodViewAsync`
 
-The `getPaymentMethodView(delegate:)` method adapts based on your UI framework:
+Use the async method to obtain the payment methods view:
 
-* Returns a `UIView` in UIKit.
-* Returns a `some View` in SwiftUI.
-
-However, the shared method signature can confuse the compiler. If you encounter an “ambiguous use” error, disambiguate with a type annotation:
-
-```swift UIKit example
-let paymentView: UIView = Yuno.getPaymentMethodView(delegate: self)
-self.view.addSubview(paymentView)
-```
-```swift SwiftUI example
-var body: some View {
-    VStack {
-        Text("Payment")
-        Yuno.getPaymentMethodView(delegate: self)
-    }
-}
+```swift
+let paymentView = await Yuno.getPaymentMethodViewAsync(delegate: self) // UIView (UIKit) or some View (SwiftUI)
 ```
 
 ## Step 5: Add the SDK view to the checkout
@@ -708,7 +658,7 @@ Create a payment flow instance to manage and render the payment process using th
 
 ```swift
 // Create the render flow instance
-let paymentFlow = Yuno.startPaymentRender(
+let paymentFlow = await Yuno.startPaymentRenderFlow(
     paymentMethodSelected: selectedPaymentMethod,
     with: self // YunoPaymentDelegate
 )
@@ -870,11 +820,11 @@ struct PaymentRenderView: View {
     }
 
     private func setupPaymentFlow() {
-        // Create the payment flow
-        paymentFlow = Yuno.startPaymentRender(
-            paymentMethodSelected: selectedPaymentMethod,
-            with: delegate
-        )
+// Create the payment flow
+paymentFlow = await Yuno.startPaymentRenderFlow(
+    paymentMethodSelected: selectedPaymentMethod,
+    with: delegate
+)
 
         // Get the form view
         Task {
