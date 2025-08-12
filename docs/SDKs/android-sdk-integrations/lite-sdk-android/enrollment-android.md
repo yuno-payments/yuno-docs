@@ -1,6 +1,6 @@
 ---
 title: Lite SDK (Enrollment Android)
-excerpt: ''
+excerpt: ""
 deprecated: false
 hidden: false
 metadata:
@@ -11,20 +11,21 @@ metadata:
     processing for your mobile platform.
   robots: index
 next:
-  description: ''
+  description: ""
 ---
+
 The Yuno Lite SDK for Android provides a pre-built UI solution focused on payment method enrollment. This SDK offers a streamlined integration process with essential enrollment functionality, making it ideal for merchants who:
 
-* Need a quick implementation with minimal customization requirements
-* Want to focus primarily on payment method enrollment
-* Prefer a ready-to-use UI that handles the enrollment flow
+- Need a quick implementation with minimal customization requirements
+- Want to focus primarily on payment method enrollment
+- Prefer a ready-to-use UI that handles the enrollment flow
 
 The Lite SDK includes core features like:
 
-* Pre-built enrollment UI components
-* Card enrollment processing
-* Basic enrollment status handling
-* Essential error management
+- Pre-built enrollment UI components
+- Card enrollment processing
+- Basic enrollment status handling
+- Essential error management
 
 For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-sdk-android) instead.
 
@@ -32,9 +33,9 @@ For merchants requiring more advanced features like multiple payment methods, cu
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-* You must have an active Yuno account
-* To perform the integration, you'll need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
-* Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
+- You must have an active Yuno account
+- To perform the integration, you'll need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
+- Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
 
 ## Step 1: Create a customer
 
@@ -117,6 +118,7 @@ The following table includes descriptions for each customization available.
         Description
       </th>
     </tr>
+
   </thead>
 
   <tbody>
@@ -199,6 +201,7 @@ The following table includes descriptions for each customization available.
         Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.
       </td>
     </tr>
+
   </tbody>
 </Table>
 
@@ -238,13 +241,13 @@ fun Activity.startEnrollment(
 
 Below is a description of the `startEnrollment` parameters.
 
-| Parameter                 | Description                                                                                                                                                                                                                                                                                                       |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `customerSession`         | The session customer associated with the current enrollment process.                                                                                                                                                                                                                                              |
-| `countryCode`             | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                                                                                                                                                    |
-| `showEnrollmentStatus`    | Indicates whether the enrollment status should be shown. This parameter is optional and defaults to `true`.                                                                                                                                                                                                       |
-| `callbackEnrollmentState` | A function that returns the current state of the enrollment process. This parameter is optional and defaults to `null`. To register this callback, you must call `initEnrollment` method in the `onCreate` method of the activity. Check the [possible states](#callback-enrollment-state)  that can be returned. |
-| `requestCode`             | It is an optional parameter you must inform if you are going to use the `onActivityResult` method to capture the enrollment states.                                                                                                                                                                               |
+| Parameter                 | Description                                                                                                                                                                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`         | The session customer associated with the current enrollment process.                                                                                                                                                                                                                                             |
+| `countryCode`             | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                                                                                                                                                   |
+| `showEnrollmentStatus`    | Indicates whether the enrollment status should be shown. This parameter is optional and defaults to `true`.                                                                                                                                                                                                      |
+| `callbackEnrollmentState` | A function that returns the current state of the enrollment process. This parameter is optional and defaults to `null`. To register this callback, you must call `initEnrollment` method in the `onCreate` method of the activity. Check the [possible states](#callback-enrollment-state) that can be returned. |
+| `requestCode`             | It is an optional parameter you must inform if you are going to use the `onActivityResult` method to capture the enrollment states.                                                                                                                                                                              |
 
 ### Callback Enrollment State
 
@@ -297,7 +300,7 @@ The following table provide additional information about the possible states:
 >
 > The `onActivityResult` method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using the `initEnrollment()` contract, which follows Google's best practices.
 
-The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes.  To process the enrollment result, follow these steps:
+The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes. To process the enrollment result, follow these steps:
 
 > 📘 Using Default Request Code
 >
@@ -306,16 +309,16 @@ The **onActivityResult** method is automatically invoked when an activity return
 1. First, override the `onActivityResult` method. It ensures that the hierarchy calls are respected.
 
 ```kotlin kotl
-override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {  
-    super.onActivityResult(requestCode, resultCode, data)  
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
 }
 ```
 
 2. After, check if the `requestCode` to verify if it corresponds to `YUNO_ENROLLMENT_REQUEST_CODE`. Since you are running `Yuno` in your app, you can import the `YUNO_ENROLLMENT_REQUEST_CODE` to use it.
 
 ```kotlin
-if (requestCode == YUNO_ENROLLMENT_REQUEST_CODE) {  
-    // Specific enrollment processing  
+if (requestCode == YUNO_ENROLLMENT_REQUEST_CODE) {
+    // Specific enrollment processing
 }
 ```
 
@@ -330,7 +333,7 @@ The following code block presents an example of code to use the `OnActivityResul
 ```kotlin
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
-    
+
     if (requestCode == YUNO_ENROLLMENT_REQUEST_CODE) {
         // Handle the enrollment result
         val enrollmentState = data?.getStringExtra(YUNO_ENROLLMENT_RESULT)
@@ -410,3 +413,167 @@ You can change the SDK appearance to match your brand. For more information, acc
 > 📘 Demo App
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
+
+## Render mode (enrollment)
+
+The Yuno SDK render mode lets you integrate the enrollment flow with full UI control while keeping SDK validation and logic. The SDK returns Android `Fragment` instances that you can display in both Jetpack Compose (via AndroidView) and traditional XML layouts.
+
+### Main function: `startEnrollmentRender`
+
+```kotlin
+fun Activity.startEnrollmentRender(
+    customerSession: String,
+    countryCode: String,
+    submitButton: Boolean = false,
+    coroutineScope: CoroutineScope,
+    listener: YunoEnrollmentRenderListener
+): YunoEnrollmentFragmentController
+```
+
+#### Parameters
+
+| Parameter         | Type                           | Required | Description                                                                 |
+| ----------------- | ------------------------------ | -------- | --------------------------------------------------------------------------- |
+| `customerSession` | `String`                       | Yes      | The customer session for the current enrollment process                     |
+| `countryCode`     | `String`                       | Yes      | Country code for regional configuration                                     |
+| `submitButton`    | `Boolean`                      | No       | If `true`, the SDK renders submit actions internally; otherwise use your UI |
+| `coroutineScope`  | `CoroutineScope`               | Yes      | Scope used for running async operations tied to the Activity lifecycle      |
+| `listener`        | `YunoEnrollmentRenderListener` | Yes      | Listener that receives fragments, loading, and final status events          |
+
+#### Return value
+
+Returns a `YunoEnrollmentFragmentController` to control the enrollment flow (e.g., submit forms).
+
+#### Usage example
+
+```kotlin
+class EnrollmentActivity : Activity() {
+
+    private lateinit var fragmentController: YunoEnrollmentFragmentController
+
+    private fun initializeEnrollment() {
+        fragmentController = startEnrollmentRender(
+            customerSession = "your_customer_session_id",
+            countryCode = "US",
+            submitButton = false,
+            coroutineScope = lifecycleScope,
+            listener = enrollmentRenderListener
+        )
+    }
+}
+```
+
+---
+
+### Interface: `YunoEnrollmentRenderListener`
+
+Implement this interface to receive enrollment fragments and events.
+
+```kotlin
+interface YunoEnrollmentRenderListener {
+    fun showView(fragment: Fragment, needSubmit: Boolean)
+    fun returnStatus(resultCode: Int, paymentStatus: String)
+    fun loadingListener(isLoading: Boolean)
+}
+```
+
+#### showView(fragment: Fragment, needSubmit: Boolean)
+
+- Receives the fragment to display in your UI container
+- `needSubmit` indicates whether you should display your own submit button (when `submitButton = false`)
+
+Example (XML):
+
+```kotlin
+override fun showView(fragment: Fragment, needSubmit: Boolean) {
+    supportFragmentManager.beginTransaction()
+        .replace(R.id.enrollment_container, fragment)
+        .commit()
+
+    clientSubmitButton.isVisible = needSubmit
+    if (needSubmit) {
+        clientSubmitButton.setOnClickListener { fragmentController.submitForm() }
+    }
+}
+```
+
+#### returnStatus(resultCode: Int, paymentStatus: String)
+
+- Final enrollment status event. Use it to notify the user of success or failure
+
+#### loadingListener(isLoading: Boolean)
+
+- Loading state callback for showing/hiding spinners and disabling/enabling UI
+
+```kotlin
+override fun loadingListener(isLoading: Boolean) {
+    progressBar.isVisible = isLoading
+    clientSubmitButton.isEnabled = !isLoading
+}
+```
+
+---
+
+### Interface: `YunoEnrollmentFragmentController`
+
+Returned by `startEnrollmentRender` to control the enrollment flow.
+
+```kotlin
+interface YunoEnrollmentFragmentController {
+    fun submitForm()
+}
+```
+
+---
+
+## Complete integration flow (Render Mode)
+
+1. Implement `YunoEnrollmentRenderListener` (with `needSubmit`):
+
+```kotlin
+class EnrollmentRenderListener : YunoEnrollmentRenderListener {
+    override fun showView(fragment: Fragment, needSubmit: Boolean) { /* ... */ }
+    override fun returnStatus(resultCode: Int, paymentStatus: String) { /* ... */ }
+    override fun loadingListener(isLoading: Boolean) { /* ... */ }
+}
+```
+
+2. Initialize the flow:
+
+```kotlin
+val fragmentController = startEnrollmentRender(
+    customerSession = "your_customer_session_id",
+    countryCode = "US",
+    submitButton = false, // use your own submit UI when false
+    coroutineScope = lifecycleScope,
+    listener = enrollmentRenderListener
+)
+```
+
+3. Control the flow (submit when needed):
+
+```kotlin
+fragmentController.submitForm()
+```
+
+---
+
+## Advantages of Render Mode
+
+### UI flexibility
+
+- Compatible with both Compose (via AndroidView) and XML
+- Full control over where and how views are displayed
+- Easy to match your app’s design system
+
+### Flow control
+
+- Custom submit timing using `submitForm()`
+
+---
+
+## Important considerations
+
+- Tie `coroutineScope` to your Activity/Fragment lifecycle (e.g., `lifecycleScope`)
+- When `needSubmit = true`, render your own submit button and call `submitForm()`
+- In Compose, place the fragment in an `AndroidView` container
