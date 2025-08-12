@@ -218,7 +218,7 @@ When the method returns an object, it allows you to handle your application's pa
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
 * [Form loader](#form-loader)
-* [Render mode ](#mode-of-form-rendering)
+* [Render mode ](#render-mode)
 * [Card form configurations ](#card-form-configurations)
   * [Save Card for future payments](#save-card-for-future-payments)
   * [Rendering modes](#rendering-modes)
@@ -252,7 +252,7 @@ yuno.startCheckout({
 });
 ```
 
-### Mode of form rendering
+### Render mode
 
 <Table>
   <thead>
