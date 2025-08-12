@@ -1,6 +1,6 @@
 ---
 title: Lite Web SDK (Enrollment)
-excerpt: ''
+excerpt: ""
 deprecated: false
 hidden: false
 metadata:
@@ -10,8 +10,9 @@ metadata:
     include the Yuno SDK file in your webpage before closing the `<body>`.
   robots: index
 next:
-  description: ''
+  description: ""
 ---
+
 > 👍 Recommended SDK
 >
 > We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
@@ -36,10 +37,10 @@ Choose the integration method that best suits your development workflow and tech
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide if you do not have your credentials. In the example below, the initialized class is attributed to the `yuno`constant.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide if you do not have your credentials. In the example below, the initialized class is attributed to the `yuno`constant.
 
 ```javascript
-const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
 ## Step 3: Create a customer session and an enrollment payment method object
@@ -65,6 +66,7 @@ The configuration and mounting are done in the same step for the Enrollment Lite
         Description
       </th>
     </tr>
+
   </thead>
 
   <tbody>
@@ -287,6 +289,7 @@ The configuration and mounting are done in the same step for the Enrollment Lite
         Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required.
       </td>
     </tr>
+
   </tbody>
 </Table>
 
@@ -331,23 +334,23 @@ yuno.mountEnrollmentLite({
     /**
      * You can edit card form styles
      * Only you should write css, then it will be injected into the iframe
-     * Example 
+     * Example
      * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-     *  .Yuno-front-side-card__name-label { 
+     *  .Yuno-front-side-card__name-label {
      *    color: red !important;
      *    font-family: 'Luckiest Guy' !important;
      *   }`
      */
     styles: '',
-    /** 
-     * Show checkbox for save/enroll card 
+    /**
+     * Show checkbox for save/enroll card
      * Default is false
      */
     cardSaveEnable: false,
     /**
      * Custom texts in Card forms buttons
      * Example:
-     * 
+     *
      *  texts: {
      *    cardForm?: {
      *      enrollmentSubmitButton?: string;
@@ -382,7 +385,7 @@ yuno.mountEnrollmentLite({
   },
   /**
    * Call back is called with the following object
-   * @param {{ 
+   * @param {{
    *  status: 'CREATED'
    *    | 'EXPIRED',
    *    | 'REJECTED',
@@ -393,7 +396,7 @@ yuno.mountEnrollmentLite({
    *    | 'DECLINED',
    *    | 'CANCELED',
    *    | 'ERROR',
-   *    | 'UNENROLLED', 
+   *    | 'UNENROLLED',
    *  vaultedToken: string,
    * }}
    */
@@ -437,11 +440,11 @@ When the method returns an object, it allows you to handle your application's pa
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Loader](#loader)
-* [Mode of form rendering](#mode-of-form-rendering)
-* [Card form configuration](#card-form-configuration)
-  * [Text payment form button](#text-payment-form-button)
-* [SDK Customization](#sdk-customization)
+- [Loader](#loader)
+- [Mode of form rendering](#mode-of-form-rendering)
+- [Card form configuration](#card-form-configuration)
+  - [Text payment form button](#text-payment-form-button)
+- [SDK Customization](#sdk-customization)
 
 ### Loader
 
@@ -454,7 +457,7 @@ Control the use of the [loader](doc:loader).
 ```javascript
 yuno.startCheckout({
   showLoading: true,
-})
+});
 ```
 
 ### Mode of form rendering
@@ -470,6 +473,7 @@ yuno.startCheckout({
         Description
       </th>
     </tr>
+
   </thead>
 
   <tbody>
@@ -532,6 +536,7 @@ yuno.startCheckout({
         * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
       </td>
     </tr>
+
   </tbody>
 </Table>
 
@@ -543,7 +548,7 @@ yuno.startCheckout({
      * By default the system uses 'modal'
      * It is optional
      */
-    type: 'modal',
+    type: "modal",
     /**
      * Element where the form will be rendered.
      * It is optional
@@ -555,10 +560,10 @@ yuno.startCheckout({
      */
     elementSelector: {
       apmForm: "#form-element",
-      actionForm: "#action-form-element"
-    } 
+      actionForm: "#action-form-element",
+    },
   },
-})
+});
 ```
 
 Below, you will find screenshots presenting the difference between the render modes `modal` and `elements` for the payment method list.
@@ -582,6 +587,7 @@ You also can choose one of the render options for the card form, `step` and `ext
         Description
       </th>
     </tr>
+
   </thead>
 
   <tbody>
@@ -624,6 +630,7 @@ You also can choose one of the render options for the card form, `step` and `ext
         * `texts`: Custom texts in the Card forms buttons.
       </td>
     </tr>
+
   </tbody>
 </Table>
 
@@ -631,10 +638,10 @@ You also can choose one of the render options for the card form, `step` and `ext
 yuno.startCheckout({
   card: {
     type: "extends",
-    styles: '',
-    texts: {}
+    styles: "",
+    texts: {},
   },
-})
+});
 ```
 
 #### Text payment form buttons

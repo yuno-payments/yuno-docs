@@ -1,15 +1,16 @@
 ---
 title: Seamless SDK (Payment Web)
-excerpt: ''
+excerpt: ""
 deprecated: false
 hidden: false
 metadata:
-  title: ''
-  description: ''
+  title: ""
+  description: ""
   robots: index
 next:
-  description: ''
+  description: ""
 ---
+
 Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK payment functionality in your application.
 
 > 👍 Recommended SDK
@@ -41,7 +42,7 @@ Choose the integration method that best suits your development workflow and tech
 Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`. You can find your API credentials in the [Get your API credentials](https://docs.y.uno/reference/authentication) guide.
 
 ```javascript java
-const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
 The `yuno` instance will be used in subsequent steps to configure and manage the payment process.
@@ -50,8 +51,12 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint:
 
-* First, [create a customer](ref:create-customer) or retrieve an existing customer ID
-* Include the customer ID when creating the `checkout_session`
+- First, [create a customer](ref:create-customer) or retrieve an existing customer ID
+- Include the customer ID when creating the `checkout_session`
+
+> 📘 `onPaymentMethodSelect` Event
+>
+> For PayPal, Google Pay, and Apple Pay, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the wallet flow begins). Define `onPaymentMethodSelected` in `startSeamlessCheckout` before `mountSeamlessCheckout`.
 
 ## Step 4: Start the checkout process
 
@@ -59,24 +64,24 @@ By following the instructions below, you will be able to provide a seamless and 
 
 ```javascript
 yuno.startSeamlessCheckout({
-  checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638', // Current payment session
-  elementSelector: '#root', // HTML element for rendering
-  countryCode: 'US', // Country code for the payment process
-  language: 'en', // Language for the payment forms
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638", // Current payment session
+  elementSelector: "#root", // HTML element for rendering
+  countryCode: "US", // Country code for the payment process
+  language: "en", // Language for the payment forms
   showLoading: true, // Show loading spinner
   issuersFormEnable: true, // Enable issuer's form
   showPaymentStatus: true, // Show payment status page
   onLoading: (args) => console.log(args), // Callback for loading events
   renderMode: {
-    type: 'modal', // Render as a modal
+    type: "modal", // Render as a modal
     elementSelector: {
-      apmForm: '#form-element',
-      actionForm: '#action-form-element',
+      apmForm: "#form-element",
+      actionForm: "#action-form-element",
     },
   },
   card: {
-    type: 'extends', // Card render mode
-    styles: '', // Custom card styles
+    type: "extends", // Card render mode
+    styles: "", // Custom card styles
     cardSaveEnable: false, // Enable save card checkbox
     texts: {}, // Custom texts for card forms
   },
@@ -86,14 +91,14 @@ yuno.startSeamlessCheckout({
     yuno.continuePayment({ showPaymentStatus: true });
   },
   yunoPaymentMethodSelected(data) {
-    console.log('Payment method selected:', data);
+    console.log("Payment method selected:", data);
   },
   yunoPaymentResult(data) {
-    console.log('Payment result:', data);
+    console.log("Payment result:", data);
     yuno.hideLoader();
   },
   yunoError(error, data) {
-    console.error('An error occurred:', error);
+    console.error("An error occurred:", error);
     yuno.hideLoader();
   },
 });
@@ -151,7 +156,7 @@ yuno.mountSeamlessCheckout({
    // Optional: This parameter is a vaulted token associated with the payment method type.
    */
   vaultedToken: VAULTED_TOKEN,
-})
+});
 ```
 
 Access the [Payment type](ref:payment-type-list) page to see the complete list of payment method types you can use when mounting the SDK.
