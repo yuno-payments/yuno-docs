@@ -1,26 +1,25 @@
 ---
 title: Full Web SDK v1.3
-excerpt: ""
+excerpt: ''
 deprecated: false
 hidden: true
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
-
 Follow this step-by-step guide to implement and enable Yuno's Full Web SDK functionality in your application.
 
 ## What's new in v1.3
 
 1. Fraud checks now use a timeout managed by Yuno, read during SDK initialization. You don’t need to change anything in your integration.
 
-- New `max_fraud_timeout_ms` in Yuno settings
-- **If missing**: default to 3,000 ms
-- **If between 0 and 30,000 ms**: used as provided
-- **If greater than 30,000 ms**: ignored and apply default (3,000 ms)
+* New `max_fraud_timeout_ms` in Yuno settings
+* **If missing**: default to 3,000 ms
+* **If between 0 and 30,000 ms**: used as provided
+* **If greater than 30,000 ms**: ignored and apply default (3,000 ms)
 
 ## Step 1: Include the library in your project
 
@@ -32,7 +31,7 @@ After completing the SDK integration, you can proceed with the following steps t
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -118,7 +117,7 @@ yuno.startCheckout({
 
 > 📘 `onPaymentMethodSelect` Event
 >
-> For PayPal, Google Pay, and Apple Pay, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the wallet flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
+> For PayPal, Google Pay, and Apple Pay, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
 
 ## Step 4: Mount the SDK
 
@@ -220,14 +219,14 @@ When the method returns an object, it allows you to handle your application's pa
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-- [Form loader](#form-loader)
-- [Render mode ](#mode-of-form-rendering)
-- [Card form configurations ](#card-form-configurations)
-  - [Save Card for future payments](#save-card-for-future-payments)
-  - [Rendering modes](#rendering-modes)
-  - [Text payment form buttons](#text-payment-form-buttons)
-  - [Persist credit card form to retry payments](#persist-credit-card-form-to-retry-payments)
-  - [Hide Pay button](#hide-pay-button)
+* [Form loader](#form-loader)
+* [Render mode ](#mode-of-form-rendering)
+* [Card form configurations ](#card-form-configurations)
+  * [Save Card for future payments](#save-card-for-future-payments)
+  * [Rendering modes](#rendering-modes)
+  * [Text payment form buttons](#text-payment-form-buttons)
+  * [Persist credit card form to retry payments](#persist-credit-card-form-to-retry-payments)
+  * [Hide Pay button](#hide-pay-button)
 
 ### Form loader
 
@@ -268,7 +267,6 @@ yuno.startCheckout({
         Description
       </th>
     </tr>
-
   </thead>
 
   <tbody>
@@ -331,7 +329,6 @@ yuno.startCheckout({
         * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
       </td>
     </tr>
-
   </tbody>
 </Table>
 
@@ -392,8 +389,8 @@ In addition, you can display a checkbox for saving or enrolling cards using the 
 
 Below you find screenshots presenting the difference between the following:
 
-- Render modes `modal` and `elements` for the payment method list
-- Render modes `step` and `extends` for the credit card form
+* Render modes `modal` and `elements` for the payment method list
+* Render modes `step` and `extends` for the credit card form
 
 ![](https://files.readme.io/b56fe6dfdebaee158495dea86d5269d865fae2dfcb81eb8b34879f9e5e737f0e-caracteristicas_Complemetarias_web_1.png)
 
@@ -479,10 +476,10 @@ The updated function signature is:
 const yuno = await Yuno.initialize(publicApiKey, applicationSession, options);
 ```
 
-- `publicApiKey` (`string`): Your public API key.
-- `applicationSession` (`string | undefined`): Optional session ID.
+* `publicApiKey` (`string`): Your public API key.
+* `applicationSession` (`string | undefined`): Optional session ID.
   > **Recommendation:** Leave this as `undefined` so the SDK can generate and manage its own session internally. Only set this if you require a custom session management strategy.
-- `options` (`object | undefined`): Optional object for advanced configuration.
+* `options` (`object | undefined`): Optional object for advanced configuration.
 
 #### Options structure
 
@@ -522,6 +519,6 @@ This feature is **optional** and is intended for **advanced use cases** where yo
 
 Learn about the additional configurations from the Full SDK accessing [Complementary Features](doc:complementary-features-full-sdk). You can also access other functions available on the Yuno Web SDK:
 
-- [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
-- [Payment Status](doc:payment-status): Update the user about the payment process
-- [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
+* [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
+* [Payment Status](doc:payment-status): Update the user about the payment process
+* [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
