@@ -55,7 +55,7 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 
 > 📘 `onPaymentMethodSelect` Event
 >
-> For PayPal, Google Pay, and Apple Pay, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startSeamlessCheckout` before `mountSeamlessCheckout`.
+> For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startSeamlessCheckout` before `mountSeamlessCheckout`.
 
 ## Step 4: Start the checkout process
 
