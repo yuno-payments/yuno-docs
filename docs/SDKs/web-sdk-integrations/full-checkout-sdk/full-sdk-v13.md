@@ -14,12 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Full Web SDK funct
 
 ## What's new in v1.3
 
-1. Fraud checks now use a timeout managed by Yuno, read during SDK initialization. You don’t need to change anything in your integration.
-
-* New `max_fraud_timeout_ms` in Yuno settings
-* **If missing**: default to 3,000 ms
-* **If between 0 and 30,000 ms**: used as provided
-* **If greater than 30,000 ms**: ignored and apply default (3,000 ms)
+1. When a customer has an enrolled payment method, other available payment methods are grouped under a “More options” dropdown. The enrolled method is shown prominently by default, and customers can expand the dropdown to choose a different method.
 
 ## Step 1: Include the library in your project
 
