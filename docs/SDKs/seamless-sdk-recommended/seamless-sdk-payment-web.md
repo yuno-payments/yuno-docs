@@ -1,16 +1,15 @@
 ---
 title: Seamless SDK (Payment Web)
-excerpt: ""
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
-
 Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK payment functionality in your application.
 
 > 👍 Recommended SDK
@@ -51,12 +50,12 @@ The `yuno` instance will be used in subsequent steps to configure and manage the
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint:
 
-- First, [create a customer](ref:create-customer) or retrieve an existing customer ID
-- Include the customer ID when creating the `checkout_session`
+* First, [create a customer](ref:create-customer) or retrieve an existing customer ID
+* Include the customer ID when creating the `checkout_session`
 
 > 📘 `onPaymentMethodSelect` Event
 >
-> For PayPal, Google Pay, and Apple Pay, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the wallet flow begins). Define `onPaymentMethodSelected` in `startSeamlessCheckout` before `mountSeamlessCheckout`.
+> For PayPal, Google Pay, and Apple Pay, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startSeamlessCheckout` before `mountSeamlessCheckout`
 
 ## Step 4: Start the checkout process
 
