@@ -66,5 +66,4 @@ To use Dynamic Metadata:
 
 > ⚠️ **Important for Stripe users**
 >
-> The current metadata logic in Stripe will be removed on **August 29**. Make sure to update your connection to use dynamic mapping before this date to avoid any disruption to your payment processing.
-
+> The current metadata logic in Stripe will be removed on **August 29, 2025**. Make sure to update your connection to use dynamic mapping before this date to avoid any disruption to your payment processing.
