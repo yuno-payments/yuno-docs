@@ -9,19 +9,16 @@ metadata:
     Lite SDK functionalities within your system.
   robots: index
 ---
-
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK functionality in your application.
 
 ## What's new in v1.3
 
-1. When a customer has an enrolled payment method, other available payment methods are grouped under a “More options” dropdown. The enrolled method is shown prominently by default, and customers can expand the dropdown to choose a different method.
+1. Fraud checks now use a timeout managed by Yuno, read during SDK initialization. You don’t need to change anything in your integration.
 
-2. Fraud checks now use a timeout managed by Yuno, read during SDK initialization. You don’t need to change anything in your integration.
-
-- New `max_fraud_timeout_ms` in Yuno settings
-- **If missing**: default to 3,000 ms
-- **If between 0 and 30,000 ms**: used as provided
-- **If greater than 30,000 ms**: ignored and apply default (3,000 ms)
+* New `max_fraud_timeout_ms` in Yuno settings
+* **If missing**: default to 3,000 ms
+* **If between 0 and 30,000 ms**: used as provided
+* **If greater than 30,000 ms**: ignored and apply default (3,000 ms)
 
 ## Step 1: Include the library in your project
 
@@ -37,7 +34,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `</body>
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -157,15 +154,15 @@ Once you have completed the steps described before, you will be able to create a
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-- [Form loader](doc:lite-checkout-sdk#loader)
-- [Bank Issuer List](doc:lite-checkout-sdk#form-of-the-issuer)
-- [Render mode ](doc:lite-checkout-sdk#mode-of-form-rendering)
-- [Card form configurations ](doc:lite-checkout-sdk#card-form-configurations)
-  - [Save Card for future payments](doc:lite-checkout-sdk#save-card-for-future-payments)
-  - [Render mode](doc:lite-checkout-sdk#rendering-modes)
-  - [Text payment form buttons](doc:lite-checkout-sdk#text-payment-form-buttons)
-  - [Persist credit card form to retry payments](doc:lite-checkout-sdk#persist-credit-card-form-to-retry-payments)
-  - [Hide Pay button](doc:lite-checkout-sdk#hide-pay-button)
+* [Form loader](doc:lite-checkout-sdk#loader)
+* [Bank Issuer List](doc:lite-checkout-sdk#form-of-the-issuer)
+* [Render mode ](doc:lite-checkout-sdk#mode-of-form-rendering)
+* [Card form configurations ](doc:lite-checkout-sdk#card-form-configurations)
+  * [Save Card for future payments](doc:lite-checkout-sdk#save-card-for-future-payments)
+  * [Render mode](doc:lite-checkout-sdk#rendering-modes)
+  * [Text payment form buttons](doc:lite-checkout-sdk#text-payment-form-buttons)
+  * [Persist credit card form to retry payments](doc:lite-checkout-sdk#persist-credit-card-form-to-retry-payments)
+  * [Hide Pay button](doc:lite-checkout-sdk#hide-pay-button)
 
 ### Loader
 
@@ -210,7 +207,6 @@ yuno.startCheckout({
         Description
       </th>
     </tr>
-
   </thead>
 
   <tbody>
@@ -293,7 +289,6 @@ yuno.startCheckout({
         * `actionForm`: Element for the Continue Payment button, which opens a modal for completing provider-specific payment steps.
       </td>
     </tr>
-
   </tbody>
 </Table>
 
@@ -317,7 +312,6 @@ yuno.startCheckout({
         Description
       </th>
     </tr>
-
   </thead>
 
   <tbody>
@@ -370,7 +364,6 @@ yuno.startCheckout({
         * `texts`: Custom texts for the Card form buttons
       </td>
     </tr>
-
   </tbody>
 </Table>
 
@@ -384,8 +377,8 @@ In addition, you can display a checkbox for saving or enrolling cards using the 
 
 Below you find screenshots presenting the difference between the following:
 
-- Render modes `modal` and `elements` for the payment method list
-- Render modes `step` and `extends` for the credit card form
+* Render modes `modal` and `elements` for the payment method list
+* Render modes `step` and `extends` for the credit card form
 
 ![](https://files.readme.io/6af3c546704cb7a9474fecdf1dc9a139b611ae585ae72074faeb2a6ea3c620b0-caracteristicas_Complemetarias_web_1.png)
 
@@ -463,6 +456,6 @@ yuno.submitOneTimeTokenForm();
 
 Learn about the additional configurations from the Lite SDK accessing [Complementary Features](doc:lite-checkout-sdk#complementary-features). You can also access other functions available on the Yuno Web SDK:
 
-- [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
+* [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
 
-- [Payment Status](doc:payment-status): Update the user about the payment process
+* [Payment Status](doc:payment-status): Update the user about the payment process
