@@ -54,35 +54,15 @@ The **Your connections** tab within Connections allows you to manage existing co
 
 The Dynamic Metadata feature allows you to control which metadata fields are sent to each connected provider, giving you granular control over your payment data flow.
 
-### Dynamic Metadata explained
+With this feature, you can configure exactly which metadata keys should be sent to each specific provider directly from your connection settings.
 
-Previously, when you sent metadata via the public API, all metadata fields were automatically sent to every connected provider. With Dynamic Metadata, you can now configure exactly which metadata keys should be sent to each specific provider directly from your connection settings.
+Use Dynamic Metadata when you need to send different metadata to different providers based on their requirements.
 
-### When to use Dynamic Metadata
+To use Dynamic Metadata:
 
-Use Dynamic Metadata when you need to:
-
-* **Control data flow**: Send different metadata to different providers based on their requirements
-* **Comply with regulations**: Ensure only necessary data is transmitted to comply with data protection laws
-* **Optimize performance**: Reduce unnecessary data transmission between systems
-* **Maintain flexibility**: Configure metadata mapping without requiring integration changes
-
-### How it works
-
-1. **Enable the feature**: Turn on the "Dynamic Metadata Configuration" flag in your connection settings
-2. **Configure mapping**: Set up key mappings from your public API metadata to provider-specific metadata
-3. **Automatic filtering**: Only the configured metadata keys will be sent to the provider during transactions
-
-### Supported providers
-
-* **Stripe**: Available now. The current metadata logic will be removed on **August 29**. You must update your connection to use dynamic mapping.
-* **Adyen**: Available now. Existing clients retain the old logic, but new connections must use the new configuration.
-
-### Migration notes
-
-* **New integrations**: All new integrations with metadata will automatically follow this logic
-* **Existing integrations**: Prioritize migrating older integrations to ensure compliance
-* **No integration changes required**: You can configure metadata mapping entirely from the dashboard
+1. Turn on the "Dynamic Metadata Configuration" flag in your connection settings.
+2. Set up key mappings from your public API metadata to provider-specific metadata.
+3. Only the configured metadata keys will be sent to the provider during transactions.
 
 > ⚠️ **Important for Stripe users**
 >
