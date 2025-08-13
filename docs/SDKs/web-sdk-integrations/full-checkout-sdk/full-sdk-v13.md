@@ -111,7 +111,7 @@ yuno.startCheckout({
 
 > 📘 Rendering Mode
 >
-> By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the [Render mode](#mode-of-form-rendering) under the complementary features page.
+> By default, Yuno SDK renders as a modal. However, you can specify the element where the SDK will render. For additional information, access the [Render mode](#render-mode) under the complementary features page.
 
 > 📘 `onPaymentMethodSelected` Event
 >
