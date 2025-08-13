@@ -19,8 +19,8 @@ Apple Pay is a cutting-edge mobile payment solution designed exclusively for iOS
 
 Yuno presents an effortless way to incorporate Apple Pay as a payment method in your app. You have two integration options:
 
-* Utilize our user-friendly SDK;
-* Directly integrate with our API.
+* Utilize our user-friendly SDK
+* Directly integrate with our API
 
 Yuno streamlines the process of accepting Apple Pay payments and provides the flexibility to route payments to any payment service provider. By incorporating Apple Pay, you can elevate the customer experience and boost conversions within your app.
 
@@ -34,5 +34,5 @@ To integrate Apple Pay using Yuno, you must first complete the [Prerequisites ](
 <Callout icon="📘" theme="info">
   **Setting up Merchant ID for Apple Pay**
 
-  If you're using VTEX as your e-commerce platform, you'll need to configure your Apple Pay Merchant ID. For detailed instructions, check out the official VTEX documentation: [Setting up Merchant ID in Apple Pay - VTEX Documentation](https://developers.vtex.com/docs/guides/setting-up-merchant-id-in-apple-pay)
+  If you're using VTEX as your e-commerce platform, you'll need to configure your Apple Pay Merchant ID. For detailed instructions, check out the official VTEX documentation: [Setting up Merchant ID in Apple Pay - VTEX Documentation](https://developers.vtex.com/docs/guides/setting-up-merchant-id-in-apple-pay).
 </Callout>
