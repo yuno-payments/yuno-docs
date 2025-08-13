@@ -1,6 +1,6 @@
 ---
 title: Lite SDK (Enrollment Android)
-excerpt: ""
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
@@ -11,21 +11,20 @@ metadata:
     processing for your mobile platform.
   robots: index
 next:
-  description: ""
+  description: ''
 ---
-
 The Yuno Lite SDK for Android provides a pre-built UI solution focused on payment method enrollment. This SDK offers a streamlined integration process with essential enrollment functionality, making it ideal for merchants who:
 
-- Need a quick implementation with minimal customization requirements
-- Want to focus primarily on payment method enrollment
-- Prefer a ready-to-use UI that handles the enrollment flow
+* Need a quick implementation with minimal customization requirements
+* Want to focus primarily on payment method enrollment
+* Prefer a ready-to-use UI that handles the enrollment flow
 
 The Lite SDK includes core features like:
 
-- Pre-built enrollment UI components
-- Card enrollment processing
-- Basic enrollment status handling
-- Essential error management
+* Pre-built enrollment UI components
+* Card enrollment processing
+* Basic enrollment status handling
+* Essential error management
 
 For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-sdk-android) instead.
 
@@ -33,9 +32,9 @@ For merchants requiring more advanced features like multiple payment methods, cu
 
 Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
 
-- You must have an active Yuno account
-- To perform the integration, you'll need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
-- Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
+* You must have an active Yuno account
+* To perform the integration, you'll need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
+* Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
 
 ## Step 1: Create a customer
 
@@ -118,7 +117,6 @@ The following table includes descriptions for each customization available.
         Description
       </th>
     </tr>
-
   </thead>
 
   <tbody>
@@ -201,7 +199,6 @@ The following table includes descriptions for each customization available.
         Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.
       </td>
     </tr>
-
   </tbody>
 </Table>
 
@@ -463,7 +460,7 @@ class EnrollmentActivity : Activity() {
 }
 ```
 
----
+***
 
 ### Interface: `YunoEnrollmentRenderListener`
 
@@ -479,8 +476,8 @@ interface YunoEnrollmentRenderListener {
 
 #### showView(fragment: Fragment, needSubmit: Boolean)
 
-- Receives the fragment to display in your UI container
-- `needSubmit` indicates whether you should display your own submit button (when `submitButton = false`)
+* Receives the fragment to display in your UI container
+* `needSubmit` indicates whether you should display your own submit button (when `submitButton = false`)
 
 Example (XML):
 
@@ -499,11 +496,11 @@ override fun showView(fragment: Fragment, needSubmit: Boolean) {
 
 #### returnStatus(resultCode: Int, paymentStatus: String)
 
-- Final enrollment status event. Use it to notify the user of success or failure
+* Final enrollment status event. Use it to notify the user of success or failure
 
 #### loadingListener(isLoading: Boolean)
 
-- Loading state callback for showing/hiding spinners and disabling/enabling UI
+* Loading state callback for showing/hiding spinners and disabling/enabling UI
 
 ```kotlin
 override fun loadingListener(isLoading: Boolean) {
@@ -511,8 +508,6 @@ override fun loadingListener(isLoading: Boolean) {
     clientSubmitButton.isEnabled = !isLoading
 }
 ```
-
----
 
 ### Interface: `YunoEnrollmentFragmentController`
 
@@ -523,22 +518,6 @@ interface YunoEnrollmentFragmentController {
     fun submitForm()
 }
 ```
-
----
-
-## Complete integration flow (Render Mode)
-
-1. Implement `YunoEnrollmentRenderListener` (with `needSubmit`):
-
-```kotlin
-class EnrollmentRenderListener : YunoEnrollmentRenderListener {
-    override fun showView(fragment: Fragment, needSubmit: Boolean) { /* ... */ }
-    override fun returnStatus(resultCode: Int, paymentStatus: String) { /* ... */ }
-    override fun loadingListener(isLoading: Boolean) { /* ... */ }
-}
-```
-
-2. Initialize the flow:
 
 ```kotlin
 val fragmentController = startEnrollmentRender(
@@ -556,24 +535,20 @@ val fragmentController = startEnrollmentRender(
 fragmentController.submitForm()
 ```
 
----
-
 ## Advantages of Render Mode
 
 ### UI flexibility
 
-- Compatible with both Compose (via AndroidView) and XML
-- Full control over where and how views are displayed
-- Easy to match your app’s design system
+* Compatible with both Compose (via AndroidView) and XML
+* Full control over where and how views are displayed
+* Easy to match your app’s design system
 
 ### Flow control
 
-- Custom submit timing using `submitForm()`
-
----
+* Custom submit timing using `submitForm()`
 
 ## Important considerations
 
-- Tie `coroutineScope` to your Activity/Fragment lifecycle (e.g., `lifecycleScope`)
-- When `needSubmit = true`, render your own submit button and call `submitForm()`
-- In Compose, place the fragment in an `AndroidView` container
+* Tie `coroutineScope` to your Activity/Fragment lifecycle (e.g., `lifecycleScope`)
+* When `needSubmit = true`, render your own submit button and call `submitForm()`
+* In Compose, place the fragment in an `AndroidView` container
