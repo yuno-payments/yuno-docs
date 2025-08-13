@@ -47,4 +47,4 @@ All possible statuses for each transaction type are presented below.
 
 Refer to the [Transactions API reference](https://docs.y.uno/reference/transaction) for more detailed information on transaction status codes and messages.
 
-In the [Payments](doc:payments-2) section of your Yuno dashboard, you will be able to view and export all the information regarding your payments and transactions with Yuno.
+In the [Payments](doc:payments) section of your Yuno dashboard, you will be able to view and export all the information regarding your payments and transactions with Yuno.
