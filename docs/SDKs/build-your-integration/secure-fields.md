@@ -1,5 +1,5 @@
 ---
-title: Secure Fields Integration Overview
+title: Secure Fields
 excerpt: ''
 deprecated: false
 hidden: false
