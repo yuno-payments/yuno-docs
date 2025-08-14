@@ -9,9 +9,7 @@ metadata:
     Lite SDK functionalities within your system.
   robots: index
 ---
-
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK functionality in your application.
-
 
 ## What's new in v1.3
 
