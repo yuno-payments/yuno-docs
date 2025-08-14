@@ -1,5 +1,5 @@
 ---
-title: Instalacion
+title: Installation
 deprecated: false
 hidden: false
 metadata:
