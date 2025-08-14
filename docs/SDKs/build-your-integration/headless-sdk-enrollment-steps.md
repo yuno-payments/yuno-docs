@@ -1,5 +1,5 @@
 ---
-title: Headless SDK (Enrollment)
+title: Headless SDK (Enrollment) Integration Overview
 excerpt: ''
 deprecated: false
 hidden: false
