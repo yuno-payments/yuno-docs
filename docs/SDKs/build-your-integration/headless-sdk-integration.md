@@ -1,5 +1,5 @@
 ---
-title: Headless SDK (Payment)
+title: 'Headless SDK (Payment) Integration Overview '
 excerpt: ''
 deprecated: false
 hidden: false
