@@ -11,4 +11,4 @@ metadata:
   robots: index
 ---
 
-You can delete a customer with the `DELETE/customers` API request. The only required field is the customer `id`.
+You can delete a customer via this API request. The only required field is the customer `id`.
