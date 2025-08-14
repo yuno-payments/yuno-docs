@@ -1,5 +1,5 @@
 ---
-title: Lite SDK (Enrollment)
+title: Lite SDK (Enrollment) Integration Overview
 excerpt: ''
 deprecated: false
 hidden: false
