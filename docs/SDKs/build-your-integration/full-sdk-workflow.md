@@ -1,5 +1,5 @@
 ---
-title: Full SDK
+title: Full SDK Integration Overview
 excerpt: ''
 deprecated: false
 hidden: false
