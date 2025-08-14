@@ -1,5 +1,5 @@
 ---
-title: Lite SDK (Payment)
+title: Lite SDK (Payment) Integration Overview
 excerpt: ''
 deprecated: false
 hidden: false
