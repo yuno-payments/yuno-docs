@@ -1,5 +1,5 @@
 ---
-title: Lite Web SDK v1.3 (Payment) v2
+title: Lite Web SDK v1.3 (Payment)
 deprecated: false
 hidden: false
 metadata:
