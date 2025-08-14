@@ -1,7 +1,7 @@
 ---
 title: test file
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Lite SDK (Payment)
   description: >-
