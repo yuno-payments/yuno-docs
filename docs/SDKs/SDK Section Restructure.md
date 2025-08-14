@@ -1,6 +1,7 @@
 # SDK Section Restructure - New Structure Implementation
 
 ## Overview
+
 We're restructuring the SDKs section to create a more intuitive, version-based organization that puts the latest versions first. This restructuring includes merging the "BUILD YOUR INTEGRATION" section into the "SDKs" section to consolidate all SDK-related documentation in one place.
 
 ## Current Progress
