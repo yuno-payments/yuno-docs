@@ -1,16 +1,15 @@
 ---
 title: Headless SDK (Payment Web)
-excerpt: ""
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
-
 > 👍 Recommended SDK
 >
 > We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
@@ -19,8 +18,8 @@ Yuno's Headless SDK lets you create payments. Note that when using the Headless 
 
 Yuno's Headless SDK enables you to create payments in two different scenarios:
 
-- Create a [One-Time Use Token](doc:tokens) using credit card information, then create a payment.
-- Create a [One-Time Use Token](doc:tokens) using a `vaulted_token` from a previously enrolled credit card, then create a payment.
+* Create a [One-Time Use Token](doc:tokens) using credit card information, then create a payment.
+* Create a [One-Time Use Token](doc:tokens) using a `vaulted_token` from a previously enrolled credit card, then create a payment.
 
 The following steps describe creating a payment using Yuno's Headless SDK.
 
@@ -80,10 +79,6 @@ After collecting all user information, you can start the payment. First, you nee
 
 1. **Example 1**: Create a one-time token utilizing a card as the payment method and including all requisite card information.
 2. **Example 2**: Create a one-time token using the `vaulted_token` information.
-
-> 📘 Benefits of Using a Vaulted Token
->
-> When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. In addition, you can add installment information and a security code if the provider requires it.
 
 > 📘 Benefits of Using a Vaulted Token
 >
@@ -328,16 +323,16 @@ After receiving the one-time token, you can create the payment using the [Create
 
 The endpoint response provides the `sdk_action_required` parameter that defines if additional actions are necessary to conclude the payment:
 
-- If your customer selects a synchronous payment method, the payment is completed instantly. In this scenario, the field `sdk_action_required` in the API response will be `false`, and the payment process concludes at this step.
-- When an additional interaction of the SDK is needed to complete the payment flow, `sdk_action_required` will be `true`. If this is the case, you need to follow the instructions from [Step 6](doc:headless-sdk-payment#step-6-get-the-3ds-challenge-url).
+* If your customer selects a synchronous payment method, the payment is completed instantly. In this scenario, the field `sdk_action_required` in the API response will be `false`, and the payment process concludes at this step.
+* When an additional interaction of the SDK is needed to complete the payment flow, `sdk_action_required` will be `true`. If this is the case, you need to follow the instructions from [Step 6](doc:headless-sdk-payment#step-6-get-the-3ds-challenge-url).
 
 ## Step 6: Get the 3DS challenge URL
 
 As described on the [3DS Card Verification](doc:3d-secure) page, a payment with 3DS may require an additional challenge to check the customer's identity. If an additional verification step is necessary related to a 3DS verification challenge, the response to the [Create Payment](ref:create-payment) endpoint will have the following information:
 
-- A `THREE_D_SECURE `transaction type.
-- Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`.
-- The `sdk_action_required` set as `true`.
+* A `THREE_D_SECURE `transaction type.
+* Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`.
+* The `sdk_action_required` set as `true`.
 
 To get the 3DS challenge URL, you should call the `getThreeDSecureChallenge` function, providing the `checkoutSession` used to create the payment.
 
@@ -594,11 +589,11 @@ if (data.action === "REDIRECT_URL") {
 
 Each action type requires specific handling based on the data provided:
 
-- **PAYMENT_CODE**: Display the payment code and reference to the user
-- **IMAGE**: Show a QR code or other image to the user
-- **OTP**: Present an OTP input form to the user
-- **SDK_PROVIDER**: Initialize the specific provider's SDK
-- **RENDER_IFRAME**: Display an iframe with the provider's interface
+* **PAYMENT\_CODE**: Display the payment code and reference to the user
+* **IMAGE**: Show a QR code or other image to the user
+* **OTP**: Present an OTP input form to the user
+* **SDK\_PROVIDER**: Initialize the specific provider's SDK
+* **RENDER\_IFRAME**: Display an iframe with the provider's interface
 
 > 📘 Payment Action Handling
 >
