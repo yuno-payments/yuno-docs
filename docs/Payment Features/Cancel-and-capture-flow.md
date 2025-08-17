@@ -5,6 +5,7 @@ hidden: true
 metadata:
   robots: index
 ---
+
 This guide explains how Yuno handles card payment flows using the `payment_method.detail.card.capture` field and optional delayed actions. It covers immediate capture, manual operations, and delayed automatic flows.
 
 ## Capture behavior
@@ -18,8 +19,8 @@ This guide explains how Yuno handles card payment flows using the `payment_metho
 
 If `capture = false`, you can take manual control of the authorization:
 
-* Use **`/capture`** to complete the payment.
-* Use **`/cancel`** to void the authorization.
+- Use **`/capture`** to complete the payment.
+- Use **`/cancel`** to void the authorization.
 
 Calling either of these endpoints overrides any delayed action configured.
 
@@ -32,7 +33,7 @@ If `capture = false`, Yuno also supports delayed execution of capture or cancel 
 ```json
 {
   "delay": "P30D",
-  "simple_mode": true
+  "simplified_mode": true
 }
 ```
 
@@ -41,7 +42,7 @@ If `capture = false`, Yuno also supports delayed execution of capture or cancel 
 ```json
 {
   "delay": "P5D",
-  "simple_mode": false
+  "simplified_mode": false
 }
 ```
 
@@ -49,9 +50,9 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
 
 ## Constraints and behavior
 
-* Only valid when `capture = false`. If `capture = true`, these objects must be omitted or set to `null`.
-* Only full captures are supported with `delayed_capture_settings`.
-* If the merchant calls `/capture` or `/cancel` manually before the delay is reached, Yuno will cancel the scheduled automatic action.
+- Only valid when `capture = false`. If `capture = true`, these objects must be omitted or set to `null`.
+- Only full captures are supported with `delayed_capture_settings`.
+- If the merchant calls `/capture` or `/cancel` manually before the delay is reached, Yuno will cancel the scheduled automatic action.
 
 ## Example request
 
@@ -78,13 +79,13 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
     "detail": {
       "card": {
         "capture": false,
-	    "delayed_capture_settings": {
-            "delay": "P20D",
-            "simple_mode": true
+        "delayed_capture_settings": {
+          "delay": "P20D",
+          "simplified_mode": true
         },
         "delayed_cancel_settings": {
-            "delay": "P40D",
-            "simple_mode": true
+          "delay": "P40D",
+          "simplified_mode": true
         },
         "card_data": {
           "number": "4111111111111111",
@@ -108,21 +109,21 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
 
 Use `delayed_capture_settings` or `delayed_cancel_settings` if:
 
-* You want Yuno to automatically finalize or void an authorized transaction.
-* You don’t want to rely on manually calling `/capture` or `/cancel`.
-* You need retry behavior in case of failure (`simple_mode = true`).
+- You want Yuno to automatically finalize or void an authorized transaction.
+- You don’t want to rely on manually calling `/capture` or `/cancel`.
+- You need retry behavior in case of failure (`simplified_mode = true`).
 
 Avoid them if:
 
-* You need to support **partial capture** (not supported via delay).
-* You plan to control the capture/cancel process manually in real time.
+- You need to support **partial capture** (not supported via delay).
+- You plan to control the capture/cancel process manually in real time.
 
 ## Field reference
 
-| field                                  | type      | description                                                                                                                              |
-| -------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `capture`                              | `boolean` | Determines whether the card payment is captured immediately (`true`, purchase) or only authorized (`false`, requires capture or cancel). |
-| `delayed_capture_settings.delay`       | `string`  | Delay before Yuno captures the payment. Must follow ISO 8601 duration format.                                                            |
-| `delayed_capture_settings.simple_mode` | `boolean` | If `true`, Yuno retries the capture if it fails.                                                                                         |
-| `delayed_cancel_settings.delay`        | `string`  | Delay before Yuno cancels the authorization. Must follow ISO 8601 duration format.                                                       |
-| `delayed_cancel_settings.simple_mode`  | `boolean` | If `true`, Yuno retries the cancel if it fails.                                                                                          |
+| field                                      | type      | description                                                                                                                              |
+| ------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `capture`                                  | `boolean` | Determines whether the card payment is captured immediately (`true`, purchase) or only authorized (`false`, requires capture or cancel). |
+| `delayed_capture_settings.delay`           | `string`  | Delay before Yuno captures the payment. Must follow ISO 8601 duration format.                                                            |
+| `delayed_capture_settings.simplified_mode` | `boolean` | If `true`, Yuno retries the capture if it fails.                                                                                         |
+| `delayed_cancel_settings.delay`            | `string`  | Delay before Yuno cancels the authorization. Must follow ISO 8601 duration format.                                                       |
+| `delayed_cancel_settings.simplified_mode`  | `boolean` | If `true`, Yuno retries the cancel if it fails.                                                                                          |
