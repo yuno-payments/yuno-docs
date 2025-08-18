@@ -44,8 +44,7 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
 ## Additional information
 
 * Only valid when `capture = false`. If `capture = true`, these objects must be omitted or set to `null`.
-* Only full captures are supported with `delayed_capture_settings`.
-* If the merchant calls `/capture` or `/cancel` manually before the delay is reached, Yuno will cancel the scheduled automatic action.
+* If you call the `capture` or `cancel` endpoints manually before the delay is reached, Yuno will cancel the scheduled automatic action.
 
 ## Example request
 
@@ -100,7 +99,7 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
 
 ## When to use delayed actions
 
-Use `delayed_capture_settings` or `delayed_cancel_settings` if:
+Use `delayed_capture_settings` or `delayed_cancel_settings` when:
 
 * You want Yuno to automatically finalize or void an authorized transaction.
 * You don’t want to rely on manually calling the `capture` or `cancel` endpoints.
