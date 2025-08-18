@@ -5,48 +5,141 @@ hidden: false
 metadata:
   robots: index
 ---
-This guide explains how Yuno handles card payment flows using the `payment_method.detail.card.capture` field and optional delayed actions. It covers immediate capture, manual operations, and delayed automatic flows.
+When integrating with Yuno, you have multiple options for implementing capture and cancel operations. This guide outlines all available approaches and explains how to interact with our APIs for each scenario.
 
-## Capture behavior
+We provide simple instant capture for immediate transactions, as well as highly customizable delayed capture and cancel configurations to meet your business needs.
 
-| `capture` value | Behavior                                                                                                               |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `true`          | Payment is captured immediately as a purchase.                                                                         |
-| `false`         | Payment is only authorized. You can either manually finalize it or configure delayed automatic capture or cancelation. |
+## Capture modes
 
-## Manual flow
+Yuno provides three options for capturing payments, determined by the `capture` field and optional `delayed_capture_settings` configuration found in the [create payment API](https://docs.y.uno/reference/create-payment).
 
-If `capture = false`, Yuno also supports delayed execution of capture or cancel using two configuration objects:
+### Instant capture (`capture: true`)
 
-### `delayed_capture_settings`
+This mode captures the payment immediately after authorization. It's the simplest option, processing the payment and transferring the funds without any delay.
 
 ```json
 {
-  "delay": "P30D",
-  "simplified_mode": true
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": true,
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
 }
 ```
 
-### `delayed_cancel_settings`
+### Manual capture (`capture: false`)
+
+With this configuration, Yuno won't capture the payment until you call the [capture API](https://docs.y.uno/reference/capture-authorization) or manually capture it in your [Yuno dashboard](https://dashboard.y.uno/).
+
+Manual captures are highly convenient since they give you full control of when the capture is performed. However, it's important to capture as soon as possible since providers can have time limits in place.
 
 ```json
 {
-  "delay": "P5D",
-  "simplified_mode": false
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
 }
 ```
 
-Use these objects to instruct Yuno to handle the capture or cancel action automatically after a delay.
+> 🚧 **Capturing Different Amounts**
+>
+> If you need to capture a different amount than originally authorized, you must use manual capture. The instant and delayed capture modes will always capture the initially authorized amount.
 
-* Use **`[capture](https://docs.y.uno/reference/capture-authorization)`** to complete the payment.
-* Use **`[cancel](https://docs.y.uno/reference/cancel-or-refund-a-payment)`** to void the authorization.
+### Delayed capture (`capture: false` + `delayed_capture_settings`)
 
-## Additional information
+The delayed capture option allows you to schedule the capture of the payment for a later time, specified in the `delayed_capture_settings.delay` field.
 
-* Only valid when `capture = false`. If `capture = true`, these objects must be omitted or set to `null`.
-* If you call the `capture` or `cancel` endpoints manually before the delay is reached, Yuno will cancel the scheduled automatic action.
+> 📘 `simplified_mode`
+>
+> Setting `simplified_mode` to `true` will make Yuno retry the operation in case an error occurs. This applies to both capture and cancel modes.
 
-## Example request
+```json
+{
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_capture_settings": {
+          "delay": "P7D",
+          "simplified_mode": true
+        },
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
+}
+```
+
+The format for the `delay` field follows the ISO 8601 standard. For example:
+
+* `"PT3H"` for 3 hours
+* `"P7D"` for 7 days
+* `"P1M"` for 1 month
+
+If you call the [capture API](https://docs.y.uno/reference/capture-authorization) before the scheduled time, your call will override the delay and execute the capture immediately. You can also capture the payment manually in your [Yuno dashboard](https://dashboard.y.uno/).
+
+## Cancel modes
+
+When you authorize a payment without immediately capturing it, those funds are temporarily held on the customer's payment method. If you decide not to capture the payment, it's important to cancel the authorization to release those held funds and provide a better customer experience. Cancel modes give you control over when and how these authorizations are voided.
+
+### Manual cancel
+
+With manual cancel mode, authorized payments stay active until you explicitly cancel them. Yuno will not automatically void these authorizations, giving you full control over when to release the funds. You can cancel authorizations using the [cancel API](https://docs.y.uno/reference/cancel-or-refund-a-payment) or through your Yuno Dashboard interface.
+
+Cancel authorizations you won't capture as soon as possible to release the funds. This will provide the best customer experience.
+
+### Delayed cancel (`delayed_cancel_settings`)
+
+This option lets you set a delay when canceling uncaptured authorizations, just like with delayed captures. Delayed cancels allow you to automate the release of funds if you don't need to capture them before a set time period.
+
+```json
+{
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_cancel_settings": {
+          "delay": "P30D",
+          "simplified_mode": false
+        },
+        "card_data": {
+          // card details
+        }
+      }
+    }
+  }
+}
+```
+
+Calling the [capture API](https://docs.y.uno/reference/capture-authorization) or [cancel API](https://docs.y.uno/reference/cancel-or-refund-a-payment) before the set time will override the delay and perform the action instantly.
+
+> ⚠️ **Delayed Capture and Cancel Settings**
+>
+> We recommend not using **both** `delayed_capture_settings` and `delayed_cancel_settings` simultaneously to avoid unexpected behaviors. Use only one at a time based on your needs.
+
+## Configuration requirements
+
+* `delayed_capture_settings` and `delayed_cancel_settings` are only valid when `capture = false`
+* If `capture = true`, these objects must be omitted or set to `null`
+* Manual operations can be performed via API endpoints or through your Yuno Dashboard
+
+## Example requests
+
+### Example 1: Instant capture
 
 ```json
 {
@@ -56,11 +149,80 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
     "value": "20000"
   },
   "customer_payer": {
-    "merchant_customer_validations": {
-      "account_is_verified": true,
-      "email_is_verified": true,
-      "phone_is_verified": true
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": true,
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        }
+      }
     },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Instant capture payment",
+  "merchant_order_id": "000023"
+}
+```
+
+### Example 2: Manual capture only
+
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Authorization only - manual capture",
+  "merchant_order_id": "000024"
+}
+```
+
+### Example 3: Delayed capture
+
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
     "id": "<customer_id>",
     "first_name": "John",
     "last_name": "Doe",
@@ -72,11 +234,7 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
       "card": {
         "capture": false,
         "delayed_capture_settings": {
-          "delay": "P20D",
-          "simplified_mode": true
-        },
-        "delayed_cancel_settings": {
-          "delay": "P40D",
+          "delay": "P7D",
           "simplified_mode": true
         },
         "card_data": {
@@ -85,32 +243,91 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
           "expiration_year": 28,
           "security_code": "123",
           "holder_name": "John Doe"
-        },
-        "verify": false
+        }
       }
     },
     "type": "CARD"
   },
   "account_id": "<account_id>",
-  "description": "Payment with card details",
-  "merchant_order_id": "000023"
+  "description": "Authorization with delayed capture",
+  "merchant_order_id": "000025"
 }
 ```
 
-## When to use delayed actions
+### Example 4: Delayed cancel
 
-Use `delayed_capture_settings` or `delayed_cancel_settings` when:
+```json
+{
+  "country": "US",
+  "amount": {
+    "currency": "USD",
+    "value": "20000"
+  },
+  "customer_payer": {
+    "id": "<customer_id>",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "johndoe@example.com"
+  },
+  "workflow": "DIRECT",
+  "payment_method": {
+    "detail": {
+      "card": {
+        "capture": false,
+        "delayed_cancel_settings": {
+          "delay": "P30D",
+          "simplified_mode": false
+        },
+        "card_data": {
+          "number": "4111111111111111",
+          "expiration_month": 11,
+          "expiration_year": 28,
+          "security_code": "123",
+          "holder_name": "John Doe"
+        }
+      }
+    },
+    "type": "CARD"
+  },
+  "account_id": "<account_id>",
+  "description": "Authorization with delayed cancel",
+  "merchant_order_id": "000026"
+}
+```
 
-* You want Yuno to automatically finalize or void an authorized transaction.
-* You don’t want to rely on manually calling the `capture` or `cancel` endpoints.
-* You need retry behavior in case of failure (`simplified_mode = true`).
+## When to use each mode
+
+### Use instant capture when:
+
+* You provide goods or services immediately
+* You don't need to validate inventory or fraud checks after authorization
+* You want the simplest payment flow
+
+### Use manual capture when:
+
+* You need to verify inventory before finalizing the payment
+* You want to capture a different amount than authorized
+* You have complex business logic that determines whether to capture or cancel
+* You need maximum control over the capture timing
+
+### Use delayed capture when:
+
+* You want automatic capture after a specific time period
+* You have a predictable fulfillment process
+* You want to reduce manual intervention while maintaining control
+
+### Use delayed cancel when:
+
+* You want to automatically release customer funds if you don't capture within a timeframe
+* You want to improve customer experience by not holding funds indefinitely
+* You have a maximum time limit for your fulfillment process
 
 ## Field reference
 
-| field                                      | type      | description                                                                                                                              |
+| Field                                      | Type      | Description                                                                                                                              |
 | ------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `capture`                                  | `boolean` | Determines whether the card payment is captured immediately (`true`, purchase) or only authorized (`false`, requires capture or cancel). |
-| `delayed_capture_settings.delay`           | `string`  | Delay before Yuno captures the payment. Must follow ISO 8601 duration format.                                                            |
+| `delayed_capture_settings.delay`           | `string`  | Delay before Yuno captures the payment. Must follow ISO 8601 duration format (e.g., "P7D" for 7 days, "PT3H" for 3 hours).               |
 | `delayed_capture_settings.simplified_mode` | `boolean` | If `true`, Yuno retries the capture if it fails.                                                                                         |
-| `delayed_cancel_settings.delay`            | `string`  | Delay before Yuno cancels the authorization. Must follow ISO 8601 duration format.                                                       |
+| `delayed_cancel_settings.delay`            | `string`  | Delay before Yuno cancels the authorization. Must follow ISO 8601 duration format (e.g., "P30D" for 30 days).                            |
 | `delayed_cancel_settings.simplified_mode`  | `boolean` | If `true`, Yuno retries the cancel if it fails.                                                                                          |
