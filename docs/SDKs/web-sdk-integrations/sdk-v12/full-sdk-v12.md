@@ -493,7 +493,7 @@ const options = {
 const yuno = await Yuno.initialize(publicApiKey, undefined, options);
 ```
 
-This feature is **optional** and is intended for **advanced use cases** where you need to customise how device identification is handled via cookies.
+This feature is **optional** and is intended for **advanced use cases** where you need to customize how device identification is handled via cookies.
 
 ## What's next?
 
