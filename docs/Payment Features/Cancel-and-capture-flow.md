@@ -11,11 +11,19 @@ We provide simple real-time capture for fast transactions, as well as highly cus
 
 ## Overview
 
-* [**Real-time capture**](#real-time-capture) - Immediate payment processing
-* [**Manual capture**](#manual-capture) - Authorization only, capture when ready
-* [**Delayed capture**](#delayed-capture) - Scheduled automatic capture
-* [**Manual cancel**](#manual-cancel) - Cancel authorizations manually
-* [**Delayed cancel**](#delayed-cancel) - Scheduled automatic cancellation
+* [**Real-time capture**](#real-time-capture)
+* [**Manual capture**](#manual-capture)
+* [**Delayed capture**](#delayed-capture)
+* [**Manual cancel**](#manual-cancel)
+* [**Delayed cancel**](#delayed-cancel)
+* [**Configuration requirements**](#configuration-requirements)
+* [**Example requests**](#example-requests)
+  * [Example 1: Real-time capture](#example-1-real-time-capture)
+  * [Example 2: Manual capture only](#example-2-manual-capture-only)
+  * [Example 3: Delayed capture](#example-3-delayed-capture)
+  * [Example 4: Delayed cancel](#example-4-delayed-cancel)
+* [**When to use each mode**](#when-to-use-each-mode)
+* [**Field reference**](#field-reference)
 
 ## Capture modes
 
