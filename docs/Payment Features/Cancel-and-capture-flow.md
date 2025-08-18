@@ -1,7 +1,7 @@
 ---
 title: Cancel and Capture Flow
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
