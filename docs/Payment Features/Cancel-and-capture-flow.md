@@ -9,6 +9,14 @@ When integrating with Yuno, you have multiple options for implementing capture a
 
 We provide simple real-time capture for fast transactions, as well as highly customizable delayed capture and cancel configurations to meet your business needs.
 
+## Overview
+
+* [**Real-time capture**](#real-time-capture) - Immediate payment processing (`capture: true`)
+* [**Manual capture**](#manual-capture) - Authorization only, capture when ready (`capture: false`)
+* [**Delayed capture**](#delayed-capture) - Scheduled automatic capture (`delayed_capture_settings`)
+* [**Manual cancel**](#manual-cancel) - Cancel authorizations manually (default behavior)
+* [**Delayed cancel**](#delayed-cancel) - Scheduled automatic cancellation (`delayed_cancel_settings`)
+
 ## Capture modes
 
 Yuno provides three options for capturing payments, determined by the `capture` field and optional `delayed_capture_settings` configuration found in the [create payment API](https://docs.y.uno/reference/create-payment). The actual feature availability or specific implementation details may vary depending on which payment provider you're routing your payments through.
@@ -86,7 +94,7 @@ Configure `capture: false` along with `delayed_capture_settings` to schedule the
 }
 ```
 
-The format for the `delay` field follows the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). For example:
+The `delay` field is required when using delayed capture operations and must follow the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). For example:
 
 * `"PT3H"` for 3 hours
 * `"P7D"` for 7 days
@@ -108,7 +116,7 @@ It's crucial to cancel authorizations you won't capture as soon as possible to r
 
 Configure `delayed_cancel_settings` to set a delay when canceling uncaptured authorizations, similar to delayed captures. This feature automates the release of customer funds if you decide not to capture them within a specified timeframe, significantly improving the customer experience by preventing indefinite holds on their payment methods.
 
-The format for the `delay` field follows the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). For example:
+The `delay` field is required when using delayed cancel operations and must follow the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). For example:
 
 * `"PT3H"` for 3 hours
 * `"P7D"` for 7 days
