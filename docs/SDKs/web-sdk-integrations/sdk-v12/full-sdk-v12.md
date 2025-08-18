@@ -71,7 +71,7 @@ After completing the SDK integration, you can proceed with the following steps t
 
 In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
 
-Like the example below, use the initialized class that is attributed to the `yuno`constant.
+Use the initialized class that is attributed to the `yuno` constant:
 
 ```javascript
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
@@ -94,55 +94,36 @@ The following table lists all required parameters and their descriptions. For op
 | `issuersFormEnable`               | Enables the issuer's form. By default, it's `true`.                                                                                                                                                                                                                                                                    |
 | `showPaymentStatus`               | Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it's `true`.                                                                                                                                                                                                |
 | `card.isCreditCardProcessingOnly` | Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required. |
+| `yunoPaymentMethodSelected`       | Callback function that executes when a payment method is selected by the customer.                                                                                                                                                                                                                                     |
+| `yunoPaymentResult`               | Callback function that executes when the payment result is obtained. Receives the payment status as a parameter.                                                                                                                                                                                                       |
+| `yunoError`                       | Callback function that executes when an error occurs during the payment process. Receives the error message and optional additional data.                                                                                                                                                                              |
+| `yunoCreatePayment`               | Callback function that handles the creation of a payment. Receives the one-time token and optionally additional token information.                                                                                                                                                                                      |
 
 ```javascript
 yuno.startCheckout({
   checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
   elementSelector: "#root",
-  /**
-   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-   */
   countryCode: "FR",
   language: "fr",
   showLoading: true,
   issuersFormEnable: true,
   showPaymentStatus: true,
-  /**
-   * Set isCreditCardProcessingOnly as true to process all card transactions are credit
-   * isCreditCardProcessingOnly: true | false | undefined
-   */
   card: {
-    isCreditCardProcessingOnly: true,
+    isCreditCardProcessingOnly: true, // true | false | undefined
   },
   onLoading: (args) => {
     console.log(args);
   },
-  /**
-   * Notifies when a payment method is selected
-   */
   yunoPaymentMethodSelected: () => {
     console.log("Payment method selected");
   },
-  /**
-   * Returns the payment result after continuePayment
-   * @param {string} status - The payment status
-   */
   yunoPaymentResult: (status) => {
     console.log("Payment result:", status);
   },
-  /**
-   * Executes when there are errors
-   * @param {string} message - Error message
-   * @param {any} data - Additional error data
-   */
   yunoError: (message, data) => {
     console.error("Payment error:", message, data);
   },
   async yunoCreatePayment(oneTimeToken) {
-    /**
-     * The createPayment function calls the backend to create a payment in Yuno.
-     * It uses the following endpoint https://docs.y.uno/reference/create-payment
-     */
     await createPayment({ oneTimeToken, checkoutSession });
     yuno.continuePayment({ showPaymentStatus: true });
   },
@@ -155,39 +136,24 @@ yuno.startCheckout({
 
 ## Step 4: Mount the SDK
 
-Display the payment methods by using the function `yuno.mountCheckout()` by selecting an HTML element and using a valid CSS selector (`#`, `.`, `[data-*]`)
+Display the payment methods by using the function `yuno.mountCheckout()`:
 
 ```javascript
-/**
- * Mount checkout in browser DOM
- */
 yuno.mountCheckout();
 ```
 
-If you want to set a default payment method, use the following code to mount it:
+To mount with a default payment method selected:
 
 ```javascript
-/**
- * Mount checkout in browser DOM with a payment method selected by default
- * @optional
- */
 yuno.mountCheckout({
-  /**
-   * Optional, only needed if you would like this method type selected by default
-   * Can be one of 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | CARD
-   */
-  paymentMethodType: PAYMENT_METHOD_TYPE,
-  /**
-   * Optional
-   * Vaulted token related to payment method type
-   */
+  paymentMethodType: PAYMENT_METHOD_TYPE, // 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | 'CARD'
   vaultedToken: VAULTED_TOKEN,
 });
 ```
 
 ## Step 5: Initiate the payment process
 
-After the user has selected a payment method remember to call `yuno.startPayment()` to initiate the payment flow. Below you will find an example where `yuno.startPayment()` is called when the user clicks on `button-pay`:
+After the user has selected a payment method, call `yuno.startPayment()` to initiate the payment flow:
 
 ```javascript
 const PayButton = document.querySelector("#button-pay");
@@ -205,7 +171,7 @@ Once the customer fills out the requested data in Yuno's payment forms, the SDK 
 yunoCreatePayment(oneTimeToken);
 ```
 
-You can also use tokenWithInformation to receive any additional info given by the customer in the checkout such as installments or document type/number.
+You can also use `tokenWithInformation` to receive any additional info given by the customer in the checkout such as installments or document type/number:
 
 ```javascript
 yunoCreatePayment(oneTimeToken, tokenWithInformation);
@@ -371,21 +337,7 @@ yuno.startCheckout({
 ```javascript
 yuno.startCheckout({
   renderMode: {
-    /**
-     * Type can be one of `modal` or `element`
-     * By default the system uses 'modal'
-     * It is optional
-     */
-    type: "modal",
-    /**
-     * Element where the form will be rendered.
-     * It is optional
-     * Can be a string (deprecated) or an object with the following structure:
-     * {
-     *   apmForm: "#form-element",
-     *   actionForm: "#action-form-element"
-     * }
-     */
+    type: "modal", // 'modal' | 'element' (default: 'modal')
     elementSelector: {
       apmForm: "#form-element",
       actionForm: "#action-form-element",
@@ -470,16 +422,11 @@ If a transaction is rejected, you can use the credit card form to retry a paymen
 
 #### Hide Pay button
 
-You can hide the Pay button when presenting the card or customer data form. To control this feature, you'll set `showPayButton` to `false` when starting the checkout with the `startCheckout` function. The code block below presents an example of how to hide the payment button:
+You can hide the Pay button when presenting the card or customer data form. To control this feature, you'll set `showPayButton` to `false` when starting the checkout with the `startCheckout` function:
 
 ```javascript
 yuno.startCheckout({
-  /**
-   * Hide (false) or show (true) the customer or card form pay button
-   * @default true
-   * @optional
-   */
-  showPayButton: false,
+  showPayButton: false, // Hide (false) or show (true) the customer or card form pay button
 });
 ```
 
@@ -489,15 +436,12 @@ The following images present examples of the Customer Data Form with and without
 
 The following images present examples of the Card Form with and without the Pay button:
 
-![](https://files.readme.io/b8b5e51ab3f5907786b802cb782a71e043f4ec18475b6e5b6d4dd052c6dc4e37-Card_boton_1.png)
+![](https://files.readme.io/b56fe6dfdebaee158495dea86d5269d865fae2dfcb81eb8b34879f9e5e737f0e-caracteristicas_Complemetarias_web_1.png)
 
-If you hide the Pay button, you will need to start the one-time token creation through your code. To create the one-time token and continue the payment in your backend, call the `submitOneTimeTokenForm` function. The code block below presents how to use the `submitOneTimeTokenForm` function.
+If you hide the Pay button, you will need to start the one-time token creation through your code. To create the one-time token and continue the payment in your backend, call the `submitOneTimeTokenForm` function:
 
 ```javascript
-/**
- * This function triggers the same functionality that is called when the customer clicks on the pay form button.  This doesn't work on the step Card form
- */
-yuno.submitOneTimeTokenForm();
+yuno.submitOneTimeTokenForm(); // This function triggers the same functionality that is called when the customer clicks on the pay form button. This doesn't work on the step Card form.
 ```
 
 ### Optional initialization `options` parameter
@@ -549,7 +493,7 @@ const options = {
 const yuno = await Yuno.initialize(publicApiKey, undefined, options);
 ```
 
-This feature is **optional** and is intended for **advanced use cases** where you need to customize how device identification is handled via cookies.
+This feature is **optional** and is intended for **advanced use cases** where you need to customise how device identification is handled via cookies.
 
 ## What's next?
 
