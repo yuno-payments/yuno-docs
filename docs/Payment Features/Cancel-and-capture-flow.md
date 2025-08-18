@@ -11,11 +11,13 @@ We provide simple real-time capture for fast transactions, as well as highly cus
 
 ## Overview
 
-* [**Real-time capture**](#real-time-capture)
-* [**Manual capture**](#manual-capture)
-* [**Delayed capture**](#delayed-capture)
-* [**Manual cancel**](#manual-cancel)
-* [**Delayed cancel**](#delayed-cancel)
+* [**Capture modes**](#capture-modes)
+  * [Real-time capture](#real-time-capture)
+  * [Manual capture](#manual-capture)
+  * [Delayed capture](#delayed-capture)
+* [**Cancel modes**](#cancel-modes)
+  * [Manual cancel](#manual-cancel)
+  * [Delayed cancel](#delayed-cancel)
 * [**Configuration requirements**](#configuration-requirements)
 * [**Example requests**](#example-requests)
   * [Example 1: Real-time capture](#example-1-real-time-capture)
