@@ -5,7 +5,6 @@ hidden: true
 metadata:
   robots: index
 ---
-
 This guide explains how Yuno handles card payment flows using the `payment_method.detail.card.capture` field and optional delayed actions. It covers immediate capture, manual operations, and delayed automatic flows.
 
 ## Capture behavior
@@ -16,15 +15,6 @@ This guide explains how Yuno handles card payment flows using the `payment_metho
 | `false`         | Payment is only authorized. You can either manually finalize it or configure delayed automatic capture or cancelation. |
 
 ## Manual flow
-
-If `capture = false`, you can take manual control of the authorization:
-
-- Use **`/capture`** to complete the payment.
-- Use **`/cancel`** to void the authorization.
-
-Calling either of these endpoints overrides any delayed action configured.
-
-## Delayed auto-actions
 
 If `capture = false`, Yuno also supports delayed execution of capture or cancel using two configuration objects:
 
@@ -48,11 +38,14 @@ If `capture = false`, Yuno also supports delayed execution of capture or cancel 
 
 Use these objects to instruct Yuno to handle the capture or cancel action automatically after a delay.
 
-## Constraints and behavior
+* Use **`[capture](https://docs.y.uno/reference/capture-authorization)`** to complete the payment.
+* Use **`[cancel](https://docs.y.uno/reference/cancel-or-refund-a-payment)`** to void the authorization.
 
-- Only valid when `capture = false`. If `capture = true`, these objects must be omitted or set to `null`.
-- Only full captures are supported with `delayed_capture_settings`.
-- If the merchant calls `/capture` or `/cancel` manually before the delay is reached, Yuno will cancel the scheduled automatic action.
+## Additional information
+
+* Only valid when `capture = false`. If `capture = true`, these objects must be omitted or set to `null`.
+* Only full captures are supported with `delayed_capture_settings`.
+* If the merchant calls `/capture` or `/cancel` manually before the delay is reached, Yuno will cancel the scheduled automatic action.
 
 ## Example request
 
@@ -109,14 +102,9 @@ Use these objects to instruct Yuno to handle the capture or cancel action automa
 
 Use `delayed_capture_settings` or `delayed_cancel_settings` if:
 
-- You want Yuno to automatically finalize or void an authorized transaction.
-- You don’t want to rely on manually calling `/capture` or `/cancel`.
-- You need retry behavior in case of failure (`simplified_mode = true`).
-
-Avoid them if:
-
-- You need to support **partial capture** (not supported via delay).
-- You plan to control the capture/cancel process manually in real time.
+* You want Yuno to automatically finalize or void an authorized transaction.
+* You don’t want to rely on manually calling the `capture` or `cancel` endpoints.
+* You need retry behavior in case of failure (`simplified_mode = true`).
 
 ## Field reference
 
