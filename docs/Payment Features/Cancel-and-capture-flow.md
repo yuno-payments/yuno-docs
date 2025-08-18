@@ -23,7 +23,7 @@ Yuno provides three options for capturing payments, determined by the `capture` 
 
 ### Real-time capture
 
-Set `capture: true` to capture the payment immediately after authorization. This mode processes the payment and transfers the funds without any delay, effectively combining authorization and capture into a single purchase operation.
+This mode processes the payment and transfers the funds without any delay, effectively combining authorization and capture into a single purchase operation. Set `capture: true` to capture the payment immediately after authorization.
 
 Depending on the payment provider's API, Yuno may execute this as one direct purchase transaction or as an authorization immediately followed by a capture call.
 
@@ -44,7 +44,7 @@ Depending on the payment provider's API, Yuno may execute this as one direct pur
 
 ### Manual capture
 
-Set `capture: false` to authorize the payment without capturing it. With this configuration, Yuno won't capture the payment until you call the [capture API](https://docs.y.uno/reference/capture-authorization) or manually capture it in your [Yuno dashboard](https://dashboard.y.uno/).
+With this configuration, Yuno won't capture the payment until you call the [capture API](https://docs.y.uno/reference/capture-authorization) or manually capture it in your [Yuno dashboard](https://dashboard.y.uno/). Set `capture: false` to authorize the payment without capturing it.
 
 Manual captures provide maximum flexibility since they give you full control of when the capture is performed. However, it's important to capture as soon as possible since payment providers enforce time limits on how long authorizations can remain uncaptured, and these limits vary by provider and region.
 
@@ -94,7 +94,7 @@ Configure `capture: false` along with `delayed_capture_settings` to schedule the
 }
 ```
 
-The `delay` field is required when using delayed capture operations and must follow the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). For example:
+The `delay` field is required when using delayed capture operations and must follow the <Anchor label="ISO 8601 standard" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 standard</Anchor>. For example:
 
 * `"PT3H"` for 3 hours
 * `"P7D"` for 7 days
@@ -108,7 +108,7 @@ When you authorize a payment without immediately capturing it, those funds are t
 
 ### Manual cancel
 
-With manual cancel mode, authorized payments stay active until you explicitly cancel them. Yuno will not automatically void these authorizations, giving you full control over when to release the funds. You can cancel authorizations using the [cancel API](https://docs.y.uno/reference/cancel-or-refund-a-payment) or through your Yuno Dashboard interface.
+With manual cancel mode, authorized payments stay active until you explicitly cancel them. Yuno will not automatically void these authorizations, giving you full control over when to release the funds. You can cancel authorizations using the [cancel API](https://docs.y.uno/reference/cancel-or-refund-a-payment) or through your Yuno dashboard interface.
 
 It's crucial to cancel authorizations you won't capture as soon as possible to release the held funds. Customer experience is significantly impacted when authorizations aren't canceled, as funds may remain reserved for varying periods depending on the customer's region and card network.
 
@@ -116,7 +116,7 @@ It's crucial to cancel authorizations you won't capture as soon as possible to r
 
 Configure `delayed_cancel_settings` to set a delay when canceling uncaptured authorizations, similar to delayed captures. This feature automates the release of customer funds if you decide not to capture them within a specified timeframe, significantly improving the customer experience by preventing indefinite holds on their payment methods.
 
-The `delay` field is required when using delayed cancel operations and must follow the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). For example:
+The `delay` field is required when using delayed cancel operations and must follow the <Anchor label="ISO 8601 standard" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 standard</Anchor>. For example:
 
 * `"PT3H"` for 3 hours
 * `"P7D"` for 7 days
@@ -155,7 +155,7 @@ If you call the [capture API](https://docs.y.uno/reference/capture-authorization
 
 * `delayed_capture_settings` and `delayed_cancel_settings` are only valid when `capture = false`
 * If `capture = true`, these objects must be omitted or set to `null`
-* Manual operations can be performed via API endpoints or through your Yuno Dashboard
+* Manual operations can be performed via API endpoints or through your Yuno dashboard
 
 ## Example requests
 
@@ -344,10 +344,10 @@ If you call the [capture API](https://docs.y.uno/reference/capture-authorization
 
 ## Field reference
 
-| Field                                      | Type      | Description                                                                                                                                                                    |
-| ------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `capture`                                  | `boolean` | Determines whether the card payment is captured immediately (`true`, purchase) or only authorized (`false`, requires capture or cancel).                                       |
-| `delayed_capture_settings.delay`           | `string`  | Delay before Yuno captures the payment. Must follow [ISO 8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g., "P7D" for 7 days, "PT3H" for 3 hours). |
-| `delayed_capture_settings.simplified_mode` | `boolean` | If `true`, Yuno retries the capture if it fails.                                                                                                                               |
-| `delayed_cancel_settings.delay`            | `string`  | Delay before Yuno cancels the authorization. Must follow [ISO 8601 duration format](https://en.wikipedia.org/wiki/ISO_8601#Durations) (e.g., "P30D" for 30 days).              |
-| `delayed_cancel_settings.simplified_mode`  | `boolean` | If `true`, Yuno retries the cancel if it fails.                                                                                                                                |
+| Field                                      | Type      | Description                                                                                                                                                                                                                                          |
+| ------------------------------------------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `capture`                                  | `boolean` | Determines whether the card payment is captured immediately (`true`, purchase) or only authorized (`false`, requires capture or cancel).                                                                                                             |
+| `delayed_capture_settings.delay`           | `string`  | Delay before Yuno captures the payment. Must follow <Anchor label="ISO 8601 duration format" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 duration format</Anchor> (e.g., "P7D" for 7 days, "PT3H" for 3 hours). |
+| `delayed_capture_settings.simplified_mode` | `boolean` | If `true`, Yuno retries the capture if it fails.                                                                                                                                                                                                     |
+| `delayed_cancel_settings.delay`            | `string`  | Delay before Yuno cancels the authorization. Must follow <Anchor label="ISO 8601 duration format" target="_blank" href="https://en.wikipedia.org/wiki/ISO_8601#Durations">ISO 8601 duration format</Anchor> (e.g., "P30D" for 30 days).              |
+| `delayed_cancel_settings.simplified_mode`  | `boolean` | If `true`, Yuno retries the cancel if it fails.                                                                                                                                                                                                      |
