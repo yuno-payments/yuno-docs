@@ -1,5 +1,5 @@
 ---
-title: Code Documentation Cleanup Test
+title: Full Web SDK v1.2 (code documentation cleanup)
 deprecated: false
 hidden: false
 metadata:
