@@ -547,7 +547,7 @@ The following sections detail the elements that make up the Card and APM forms, 
     <div class="infoBlockContainer ">
       <div class="verticalLine"></div>
       <div>
-        <h3>Modal contomization requirements</h3>
+        <h3>Modal customization requirements</h3>
         <div class="contentContainer">
           <p>
             To customize the modal component style, you must define the custom style directly within your web page.
@@ -1173,7 +1173,7 @@ The following sections detail the elements that make up the Card and APM forms, 
     <div class="infoBlockContainer ">
       <div class="verticalLine"></div>
       <div>
-        <h3>Modal contomization requirements</h3>
+        <h3>Modal customization requirements</h3>
         <div class="contentContainer">
           <p>
             To customize the modal component style, you must define the custom style directly within your web page.
