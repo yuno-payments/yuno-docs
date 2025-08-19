@@ -490,12 +490,12 @@ const options = {
 
 // Recommended: omit the second parameter or set it to undefined
 const yuno = await Yuno.initialize(publicApiKey, undefined, options);
+```
 
 ## What's next?
 
 Learn about the additional configurations from the Full SDK accessing [Complementary Features](doc:complementary-features-full-sdk). You can also access other functions available on the Yuno Web SDK:
 
-- [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
-- [Payment Status](doc:payment-status): Update the user about the payment process
-- [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
-```
+* [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
+* [Payment Status](doc:payment-status): Update the user about the payment process
+* [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
