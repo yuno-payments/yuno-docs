@@ -29,6 +29,8 @@ continuePayment({
 
 ### Parameters
 
+Below you'll find a list of all the available parameters for the `continuePayment` method, along with a brief description of what each one does.
+
 | Parameter                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`                 | The checkout session for the current payment. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -96,7 +98,9 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 To start the checkout, you'll use the function `yuno.startCheckout`, providing the necessary parameters.
 
-Refer to the parameters table above to see all the options you can use with both `continuePayment` and `startCheckout`. If you want to customize your integration further or use advanced/optional settings, check out the [Complementary Features](#complementary-features) section for more details.
+Refer to the [Parameters table above](#parameters) to see all the options you can use with both `continuePayment` and `startCheckout`.
+
+If you want to customize your integration further or use advanced/optional settings, check out the [Complementary Features](#complementary-features) section for more details.
 
 ```javascript
 yuno.startCheckout({
