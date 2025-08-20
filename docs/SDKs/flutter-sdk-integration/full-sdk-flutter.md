@@ -12,7 +12,13 @@ next:
 ---
 > 🚧 Deprecated SDK
 >
-> Yuno’s Flutter SDK is no longer maintained. Refer to our [integration documentation](https://docs.y.uno/docs/choose-the-right-integration-for-you) to choose the best SDK for your project.
+> The Flutter SDK is deprecated and not actively maintained.
+>
+> We recommend using our [Seamless/Full/Lite](doc:yuno-sdks)  SDKs for iOS, Android, or Web as appropriate.
+
+> 🚧 Open-source reference (Flutter)
+>
+> The implementation code of Yuno's Flutter SDK is now **public**. Merchants can review and reuse it as a reference for their integrations accessing the GitHub [Repository](https://github.com/yuno-payments/yuno-sdk-flutter)
 
 This page provides a step-by-step guide to integrating the Full Flutter SDK functionalities into your application.
 
