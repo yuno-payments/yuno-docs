@@ -1,5 +1,5 @@
 ---
-title: Dashboard Setup and Configuration
+title: Apple Pay Dashboard Setup and Configuration
 excerpt: ""
 deprecated: false
 hidden: true
