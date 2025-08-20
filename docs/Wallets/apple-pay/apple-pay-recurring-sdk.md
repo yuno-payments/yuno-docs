@@ -15,7 +15,7 @@ This guide covers how to implement recurring Apple Pay payments using Yuno's SDK
 
 > 📘 Setup Required
 >
-> Before following this guide, ensure you have completed the [Dashboard Setup and Configuration](doc:apple-pay-setup-configuration) process.
+> Before following this guide, ensure you have completed the [dashboard setup and configuration](doc:apple-pay-setup-configuration) process.
 
 ## Recurring Payments with SDK Overview
 
