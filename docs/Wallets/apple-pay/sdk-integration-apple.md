@@ -1,14 +1,14 @@
 ---
 title: Apple Pay SDK Integration (One-Time Payments)
-excerpt: ""
+excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 This guide provides a step-by-step process to integrate the Yuno SDK with Apple Pay for one-time payments. One-time Apple Pay payments using the Yuno SDK provide a streamlined integration experience.
