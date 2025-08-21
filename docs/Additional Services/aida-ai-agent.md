@@ -234,6 +234,19 @@ Here are the webhook details for the payment with ID `68245f98-5049-4b88-9861-81
 If you need more detailed information or further assistance, feel free to ask!
 ```
 
+### Additional webhook capabilities
+
+Aida can also:
+
+* Re-notify webhooks for a payment or transaction
+* Retrieve the original provider webhook sent to Yuno to analyze states and resolve inconsistencies between the provider, Yuno, and the merchant
+
+Simply provide Aida with the following information:
+
+* Payment code or ID
+* Transaction code or ID
+* Environment (PROD or SANDBOX)
+
 ## From integration to features, Aida has you covered
 
 Instead of digging through pages to find what you need, you can just ask Aida using natural language. Aida is your conversational agent, designed to help support, operations, and technical teams get clear, immediate answers about Yuno's platform and features.
