@@ -11,7 +11,7 @@ next:
   description: ""
 ---
 
-This guide provides a step-by-step process to integrate the Yuno SDK with Apple Pay for one-time payments. One-time Apple Pay payments using the Yuno SDK provide a streamlined integration experience. The SDK handles the complexity of Apple Pay integration while providing simplified payment token handling, built-in fraud screening support, automatic 3DS authentication when required, and a seamless user experience.
+This guide provides a step-by-step process to integrate the Yuno SDK with Apple Pay for one-time payments. One-time Apple Pay payments using the Yuno SDK provide a streamlined integration experience.
 
 > 📘 Setup Required
 >
@@ -37,7 +37,7 @@ Create a checkout session with the customer information. Use the [create checkou
 
 ### Step 3: Generate one-time token (OTT)
 
-An [OTT](doc:how-yuno-payment-flow-works#step-3-create-a-one-time-token) is a unique identifier Yuno generates to protect your customer's privacy and security. You will obtain the OTT from the Yuno SDK, which handles various payment method scenarios, supports fraud screening, and 3DS authentication. Use `payment_method_type = APPLE_PAY`. For a list of all available options, see the [Payment types](ref:payment-type-list) page.
+An [OTT](doc:how-yuno-payment-flow-works#step-3-create-a-one-time-token) is a unique identifier Yuno generates to protect your customer's privacy and security. You will obtain the OTT from the Yuno SDK, which handles various payment method scenarios. Use `payment_method_type = APPLE_PAY`. For a list of all available options, see the [Payment types](ref:payment-type-list) page.
 
 ### Step 4: Create the payment
 

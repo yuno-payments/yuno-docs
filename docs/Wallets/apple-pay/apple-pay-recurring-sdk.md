@@ -11,9 +11,7 @@ next:
   description: ""
 ---
 
-This guide covers how to implement recurring Apple Pay payments using Yuno's SDK. The SDK simplifies the implementation of recurring payments while handling the complexity of Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT) flows.
-
-Using the Yuno SDK for recurring Apple Pay payments provides simplified implementation by automatically handling the complexity of Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT) flows. The SDK manages payment tokens securely and provides built-in subscription support with enhanced fraud screening and 3DS authentication.
+This guide explains how to implement recurring Apple Pay payments using Yuno's SDK. The SDK simplifies recurring payment flows by handling both Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT). It also manages payment tokens securely and provides built-in subscription support.
 
 ## Recurring payments overview
 
@@ -62,16 +60,23 @@ Use the [create payment](ref:create-payment) endpoint with the subscription conf
     "vault_on_success": true,
     "detail": {
       "wallet": {
-        "payment_token": "{Apple Pay token from SDK}",
-        "stored_credentials": {
-          "reason": "SUBSCRIPTION",
-          "usage": "FIRST",
-          "subscription_agreement_id": "",
-          "network_transaction_id": ""
-        }
+        "payment_token": "{Apple Pay token from SDK}"
       }
     },
-    "type": "APPLE_PAY"
+    "type": "APPLE_PAY",
+    "stored_credentials": {
+      "reason": "SUBSCRIPTION",
+      "usage": "FIRST",
+      "subscription_agreement_id": "",
+      "network_transaction_id": ""
+    }
+  },
+  "subscription": {
+    "id": "d67a4295-7bb3-4183-99ce-9f5d26d92709",
+    "billing_date": {
+      "type": "fixed_day",
+      "day": 18
+    }
   },
   "account_id": "2d77ea44-9a01-4ffc-a465-7db5c2ced44d",
   "description": "Apple Pay recurring setup",
@@ -81,9 +86,10 @@ Use the [create payment](ref:create-payment) endpoint with the subscription conf
 
 **Key CIT parameters:**
 
-- `vault_on_success: true` - Enables token generation for recurring payments
+- `vault_on_success: true` - This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
 - `stored_credentials.usage: "FIRST"` - Indicates initial transaction in recurring series
 - `stored_credentials.reason: "SUBSCRIPTION"` - Specifies the recurring payment type
+- `subscription` - This object is essential for creating the Apple Pay recurrence. It contains the subscription details that will be displayed to the user during the Apple Pay authorization flow, including billing frequency and schedule information
 
 ## Step 5: Subsequent payments (MIT)
 
@@ -129,49 +135,27 @@ For subsequent recurring payments, the SDK manages token retrieval and usage, MI
 - `stored_credentials.usage: "USED"` - Indicates subsequent transaction in recurring series
 - `network_transaction_id` - Optional; if not provided, Yuno uses the one from the original CIT
 
-## Apple Pay payment token structure
-
-The Apple Pay SDK returns a payment token that must be passed in the `payment_method.detail.wallet.payment_token` field. The token contains encrypted payment data from Apple Pay:
-
-```json
-{
-  "paymentMethod": {
-    "type": "credit",
-    "displayName": "Visa 1234",
-    "network": "Visa"
-  },
-  "paymentData": {
-    "data": "encrypted_payment_data...",
-    "signature": "payment_signature...",
-    "header": {
-      "publicKeyHash": "public_key_hash...",
-      "ephemeralPublicKey": "ephemeral_key...",
-      "transactionId": "transaction_id..."
-    },
-    "version": "EC_v1"
-  },
-  "transactionIdentifier": "transaction_identifier..."
-}
-```
-
-Pass this complete object as a JSON string in your payment requests.
-
-## Important considerations
-
-- **Token management**: Store the token securely after the CIT for subsequent MIT transactions
-- **Customer consent**: Ensure customers understand they're authorizing recurring payments
-- **Network transaction ID**: While optional, providing this helps with transaction tracking
-- **Error handling**: Implement retry logic for failed MIT transactions with appropriate delays
-
 ## SDK configuration for iOS app
 
 In addition to the standard Apple Pay configuration, ensure your iOS app is properly configured:
 
 ### Apple Pay capability
 
-Ensure Apple Pay capability is added in Xcode with the correct Merchant ID:
+To enable Apple Pay in your app, you need to configure the Apple Pay capability in Xcode:
+
+1. **Add Apple Pay capability**: In Xcode, add the Apple Pay capability to your project.
 
 <Image align="center" width="700px" src="https://files.readme.io/757a4706d90b183020c05910648ed12822233bb14b0436a0d67f6eb18e03f77e-image.png" />
+
+2. **Select merchant ID**: Select the merchant ID you created during the [prerequisites](doc:prerequisites-apple-pay) process. It will appear if you are logged into your developer account.
+
+<Image align="center" width="700px" src="https://files.readme.io/4bc6e2bb6d6317b3cf3b39c3b9483b082b5d97e0f046222c862cef28edae90dd-image.png" />
+
+<br />
+
+> ⚠️
+>
+> Make sure the Merchant ID is correctly linked to the Apple Pay capability in your app's App Identifier in the Apple Developer portal. This is configured under: **Certificates, Identifiers & Profiles** → **Identifiers** → **select your app** → **Capabilities** tab.
 
 ### Testing recurring payments
 

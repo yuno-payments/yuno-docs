@@ -29,10 +29,6 @@ Use the [create customer](ref:create-customer) endpoint to register the customer
 
 Use the [create payment](ref:create-payment) endpoint to create a payment sending the Apple Pay `payment_token` returned by Apple Pay SDK. If you haven't integrated Apple's SDK, we recommend using [our SDKs](doc:sdk-integration-apple) so you don't have to worry about the integration.
 
-### Step 3: Retrieve payment details
-
-To check the payment status, you can analyze the `status` and `sub_status` in the response from the [create payment](ref:create-payment) endpoint or use [webhooks](doc:webhooks). Refer to the [Payment Status](ref:payment) page to see all possible statuses.
-
 > 📘 Pass Apple Pay payment token in request
 >
 > When you initiate a transaction with Apple Pay, a payment token containing a JSON-formatted `paymentData` string is sent. Pass the complete token received from Apple Pay in the `payment_method.detail.wallet.payment_token` field as a JSON string in your payment request.
@@ -92,6 +88,10 @@ The Apple Pay SDK returns the following object structure, which must be passed a
   "merchant_order_id": "MER01"
 }
 ```
+
+### Step 3: Retrieve payment details
+
+To check the payment status, you can analyze the `status` and `sub_status` in the response from the [create payment](ref:create-payment) endpoint or use [webhooks](doc:webhooks). Refer to the [Payment Status](ref:payment) page to see all possible statuses.
 
 ## Related documentation
 

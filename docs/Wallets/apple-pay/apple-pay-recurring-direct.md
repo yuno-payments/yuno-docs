@@ -60,6 +60,13 @@ The **CIT** is the first transaction where the customer actively participates an
       "network_transaction_id": ""
     }
   },
+  "subscription": {
+    "id": "d67a4295-7bb3-4183-99ce-9f5d26d92709",
+    "billing_date": {
+      "type": "fixed_day",
+      "day": 18
+    }
+  },
   "account_id": "2d77ea44-9a01-4ffc-a465-7db5c2ced44d",
   "description": "Apple Pay recurring setup",
   "merchant_order_id": "MER01"
@@ -68,9 +75,10 @@ The **CIT** is the first transaction where the customer actively participates an
 
 ### Key parameters for CIT
 
-- **`vault_on_success: true`**: Essential parameter that indicates this is a recurring payment setup and generates the token for future MIT transactions
+- **`vault_on_success: true`**: This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
 - **`stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
 - **`stored_credentials.reason: "SUBSCRIPTION"`**: Specifies this is for subscription/recurring purposes
+- **`subscription`**: This object is essential for creating the Apple Pay recurrence. It contains the subscription details that will be displayed to the user during the Apple Pay authorization flow, including billing frequency and schedule information
 
 ## Merchant initiated transaction (MIT)
 
@@ -141,13 +149,6 @@ Use the [Create Customer](ref:create-customer) endpoint to register customer inf
 ### Step 4: Monitor payment status
 
 Use [Webhooks](doc:webhooks) or the [Retrieve Payment](ref:retrieve-payment) endpoint to monitor payment status for both CIT and MIT transactions.
-
-## Important considerations
-
-- **Token Management**: Securely store the token generated during the CIT for future MIT transactions
-- **Customer Consent**: Ensure you have proper customer consent for recurring payments before processing MIT transactions
-- **Network Transaction ID**: This field is optional in MIT requests. If not provided, Yuno will automatically use the network_transaction_id from the original CIT
-- **Error Handling**: Implement proper error handling for both CIT and MIT scenarios, as they may have different failure modes
 
 ## Related documentation
 
