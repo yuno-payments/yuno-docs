@@ -1,4 +1,4 @@
 ---
 title: /payment-links
-hidden: false
+hidden: true
 ---
