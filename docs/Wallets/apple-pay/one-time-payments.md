@@ -174,6 +174,6 @@ Process the payment response and handle various status codes. Use [webhooks](doc
 
 * [Dashboard setup and configuration](doc:apple-pay-setup-configuration) - Required setup steps before integration
 * [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements and account setup
-* [Apple Pay recurring payments](doc:apple-pay-recurring-payments) - Subscription and automated billing setup
+* [Apple Pay recurring payments](doc:recurring-payments) - Subscription and automated billing setup
 * [Create payment API](ref:create-payment) - Direct integration payment endpoint
 * [Create checkout session API](ref:create-checkout-session) - SDK integration session endpoint
