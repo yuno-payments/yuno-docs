@@ -1,5 +1,5 @@
 ---
-title: Apple Pay - Direct Integration
+title: Direct Integration
 deprecated: false
 hidden: false
 metadata:
