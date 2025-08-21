@@ -1,16 +1,17 @@
 ---
 title: Cancel Payment Link
-excerpt: ''
+excerpt: ""
 api:
-  file: payments.json
+  file: payouts.json
   operationId: cancel-payment-link
 deprecated: false
 hidden: false
 metadata:
-  title: ''
+  title: ""
   description: This request cancels a payment link with a status equal to CREATED or USED.
   robots: index
 next:
-  description: ''
+  description: ""
 ---
+
 This request cancels a payment link with a status equal to CREATED or USED.
