@@ -359,8 +359,6 @@ Monitor payment status through [webhooks](doc:webhooks) for real-time updates an
 
 * [Dashboard setup and configuration](doc:apple-pay-setup-configuration) - Required setup steps before integration
 * [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements and account setup
-* [Apple Pay one-time payments](doc:apple-pay-one-time-payments) - Immediate transaction implementation
+* [Apple Pay one-time payments](doc:one-time-payments) - Immediate transaction implementation
 * [Create payment API](ref:create-payment) - Direct integration payment endpoint
 * [Create checkout session API](ref:create-checkout-session) - SDK integration session endpoint
-* [Subscription management](doc:subscriptions) - General subscription documentation
-* [Webhooks](doc:webhooks) - Payment monitoring and status updates
