@@ -1,5 +1,5 @@
 ---
-title: Apple Pay - SDK Integration
+title: SDK Integration
 deprecated: false
 hidden: true
 metadata:
