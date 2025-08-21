@@ -1,7 +1,7 @@
 ---
 title: One-Time Payments
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
