@@ -62,16 +62,16 @@ Use the [create payment](ref:create-payment) endpoint with the subscription conf
     "vault_on_success": true,
     "detail": {
       "wallet": {
-        "payment_token": "{Apple Pay token from SDK}",
-        "stored_credentials": {
-          "reason": "SUBSCRIPTION",
-          "usage": "FIRST",
-          "subscription_agreement_id": "",
-          "network_transaction_id": ""
-        }
+        "payment_token": "{Apple Pay token from SDK}"
       }
     },
-    "type": "APPLE_PAY"
+    "type": "APPLE_PAY",
+    "stored_credentials": {
+      "reason": "SUBSCRIPTION",
+      "usage": "FIRST",
+      "subscription_agreement_id": "",
+      "network_transaction_id": ""
+    }
   },
   "account_id": "your-account-id",
   "description": "Apple Pay recurring setup",
@@ -89,6 +89,10 @@ Use the [create payment](ref:create-payment) endpoint with the subscription conf
 
 For subsequent recurring payments, the SDK manages token retrieval and usage, MIT transaction processing, stored credentials handling, and error recovery with retry logic.
 
+> 📘 Automatic Call Management
+>
+> The SDK manages MIT (Merchant Initiated Transaction) calls automatically when subscriptions are configured. As a merchant, you typically only need to track subscription status and handle webhooks for monitoring.
+
 ### MIT request example
 
 ```json
@@ -102,17 +106,15 @@ For subsequent recurring payments, the SDK manages token retrieval and usage, MI
   "payment_method": {
     "token": "token-from-CIT",
     "detail": {
-      "wallet": {
-        "payment_token": "{Apple Pay token from SDK}",
-        "stored_credentials": {
-          "reason": "SUBSCRIPTION",
-          "usage": "USED",
-          "subscription_agreement_id": "",
-          "network_transaction_id": ""
-        }
-      }
+      "wallet": {}
     },
-    "type": "APPLE_PAY"
+    "type": "APPLE_PAY",
+    "stored_credentials": {
+      "reason": "SUBSCRIPTION",
+      "usage": "USED",
+      "subscription_agreement_id": "",
+      "network_transaction_id": ""
+    }
   },
   "account_id": "your-account-id",
   "description": "Apple Pay recurring payment",
