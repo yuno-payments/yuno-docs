@@ -13,36 +13,26 @@ This guide provides a comprehensive process to integrate Apple Pay with Yuno SDK
 
 ## SDK integration overview
 
-The direct API integration method provides complete control over Apple Pay payment flows for both immediate and subscription-based transactions:
+The Yuno SDK integration method provides a streamlined approach for both immediate and subscription-based Apple Pay payments:
 
-* [**One-time payments**](#one-time-payments-with-sdk) - Implement immediate Apple Pay transactions with full control over payment timing, custom validation logic, and direct API communication
+* [**One-time payments**](#one-time-payments-with-sdk) - Implement immediate Apple Pay transactions with simplified SDK integration, automated token handling, and built-in security
 
-  * [Complete dashboard setup](#step-1-complete-dashboard-setup) - Configure provider connections, routing, and Checkout Builder settings
-  * [Create the payment](#step-2-create-the-payment) - Use create payment endpoint with Apple Pay payment token
-  * [Apple Pay wallet response object](#apple-pay-wallet-response-object) - Understanding the token structure from Apple Pay SDK
-  * [One-time payment request example](#one-time-payment-request-example) - Complete JSON request structure for immediate payments
-  * [Handle payment response](#step-3-handle-payment-response) - Process responses and implement webhook monitoring
+  * [Add Apple Pay capability](#step-1-add-apple-pay-capability) - Set up Xcode capabilities and Merchant ID configuration
+  * [Generate one-time token](#step-2-generate-one-time-token-ott) - Create OTT for privacy and security using Yuno SDK
+  * [Create the payment](#step-3-create-the-payment) - Use checkout session endpoint for immediate transactions
+  * [Process the payment](#step-4-process-the-payment) - Handle automatic Apple Pay flow completion
 
-* [**Recurring payments**](#recurring-payments-with-direct-api) - Build subscription-based payments with manual CIT/MIT implementation, custom token management, and flexible subscription logic tailored to your business needs
-  * [Understanding CIT and MIT](#understanding-cit-and-mit) - Learn the difference between customer and merchant initiated transactions
-  * [Customer Initiated Transaction](#customer-initiated-transaction-cit---first-payment) - Initial payment setup with token generation and storage
-  * [Merchant Initiated Transaction](#merchant-initiated-transaction-mit---subsequent-payments) - Automated payments using stored tokens
-  * [Token management](#token-management) - Secure storage, lifecycle management, and retry logic implementation
-  * [Custom subscription flow](#custom-subscription-flow-implementation) - Build scheduling, billing cycles, and customer notifications
+* [**Recurring payments**](#recurring-payments-with-sdk) - Set up subscription-based payments with automatic CIT/MIT flow management, built-in scheduling, and subscription management capabilities
+  * [Customer Initiated Transaction](#customer-initiated-transaction-cit---first-payment) - Initial payment setup with customer authorization and token generation
+  * [Merchant Initiated Transaction](#merchant-initiated-transaction-mit---subsequent-payments) - Automated subsequent payments using stored tokens
+  * [Subscription management URL](#subscription-management-url) - Customer portal for subscription management and updates
+  * [Error handling](#error-handling) - Built-in retry logic and automatic error management
 
 ## One-time payments with SDK
 
 One-time Apple Pay payments using the Yuno SDK provide a streamlined integration experience for immediate transactions.
 
-### Step 1: Complete dashboard setup
-
-Ensure you have completed all the setup steps in the [dashboard setup and configuration](doc:apple-pay-setup-configuration) guide, including:
-
-* Provider connections configuration
-* Routing setup
-* Checkout Builder enablement
-
-### Step 2: Add Apple Pay capability
+### Step 1: Add Apple Pay capability
 
 Add the Apple Pay capability to your iOS app:
 
@@ -57,11 +47,11 @@ Add the Apple Pay capability to your iOS app:
 >
 > Ensure your Apple Pay Merchant ID matches the one configured in your Yuno Dashboard provider connections.
 
-### Step 3: Generate one-time token (OTT)
+### Step 2: Generate one-time token (OTT)
 
 An [OTT](doc:how-yuno-payment-flow-works#step-3-create-a-one-time-token) is a unique identifier Yuno generates to protect your customer's privacy and security. You will obtain the OTT from the Yuno SDK, which handles various payment method scenarios. Use `payment_method_type = APPLE_PAY`. For a list of all available options, see the [Payment types](ref:payment-type-list) page.
 
-### Step 4: Create the payment
+### Step 3: Create the payment
 
 Use the [create checkout session](ref:create-checkout-session) endpoint to create a payment session for one-time Apple Pay transactions:
 
@@ -78,7 +68,7 @@ Use the [create checkout session](ref:create-checkout-session) endpoint to creat
 }
 ```
 
-### Step 5: Process the payment
+### Step 4: Process the payment
 
 The SDK handles the Apple Pay flow automatically. When the customer completes the Apple Pay authorization, the payment is processed immediately.
 
@@ -214,7 +204,6 @@ The SDK provides built-in error handling for common scenarios:
 
 * **Token expiration**: Automatic retry with fresh token generation
 * **Payment failures**: Built-in retry logic for temporary issues
-* **3DS authentication**: Automatic handling when required
 * **Network issues**: Connection retry mechanisms
 
 Monitor payment status through [webhooks](doc:webhooks) to handle edge cases and provide customer notifications.
@@ -231,6 +220,6 @@ Monitor payment status through [webhooks](doc:webhooks) to handle edge cases and
 
 * [Dashboard setup and configuration](doc:apple-pay-setup-configuration) - Required setup steps
 * [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements
-* [Apple Pay direct integration](doc:apple-pay-recurring-direct-implementation) - API-only integration
+* [Apple Pay direct integration](doc:apple-pay-direct-integration) - API-only integration
 * [Subscription management](doc:subscriptions) - General subscription documentation
 * [Webhooks](doc:webhooks) - Payment monitoring and status updates
