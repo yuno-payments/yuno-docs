@@ -62,18 +62,18 @@ Use the [create payment](ref:create-payment) endpoint with the subscription conf
     "vault_on_success": true,
     "detail": {
       "wallet": {
-        "payment_token": "{Apple Pay token from SDK}"
+        "payment_token": "{Apple Pay token from SDK}",
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "FIRST",
+          "subscription_agreement_id": "",
+          "network_transaction_id": ""
+        }
       }
     },
-    "type": "APPLE_PAY",
-    "stored_credentials": {
-      "reason": "SUBSCRIPTION",
-      "usage": "FIRST",
-      "subscription_agreement_id": "",
-      "network_transaction_id": ""
-    }
+    "type": "APPLE_PAY"
   },
-  "account_id": "your-account-id",
+  "account_id": "2d77ea44-9a01-4ffc-a465-7db5c2ced44d",
   "description": "Apple Pay recurring setup",
   "merchant_order_id": "subscription-order-001"
 }
@@ -106,17 +106,18 @@ For subsequent recurring payments, the SDK manages token retrieval and usage, MI
   "payment_method": {
     "token": "token-from-CIT",
     "detail": {
-      "wallet": {}
+      "wallet": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED",
+          "subscription_agreement_id": "",
+          "network_transaction_id": ""
+        }
+      }
     },
-    "type": "APPLE_PAY",
-    "stored_credentials": {
-      "reason": "SUBSCRIPTION",
-      "usage": "USED",
-      "subscription_agreement_id": "",
-      "network_transaction_id": ""
-    }
+    "type": "APPLE_PAY"
   },
-  "account_id": "your-account-id",
+  "account_id": "2d77ea44-9a01-4ffc-a465-7db5c2ced44d",
   "description": "Apple Pay recurring payment",
   "merchant_order_id": "subscription-order-002"
 }
