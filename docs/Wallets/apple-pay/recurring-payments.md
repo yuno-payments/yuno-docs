@@ -17,22 +17,9 @@ Apple Pay recurring payments enable automated billing for subscriptions, members
 
 * [**What are CIT and MIT?**](#what-are-cit-and-mit) - Understanding the two-step recurring payment process
 
-  * [Customer Initiated Transaction (CIT)](#customer-initiated-transaction-cit) - First transaction with customer authorization
-  * [Merchant Initiated Transaction (MIT)](#merchant-initiated-transaction-mit) - Subsequent automated transactions
-
 * [**SDK integration**](#sdk-integration) - Simplified recurring payment implementation with automatic CIT/MIT flow management, built-in scheduling, and subscription management capabilities
 
-  * [Customer Initiated Transaction (CIT)](#customer-initiated-transaction-cit---first-payment) - Initial payment setup with customer authorization and token generation
-  * [Merchant Initiated Transaction (MIT)](#merchant-initiated-transaction-mit---subsequent-payments) - Automated subsequent payments using stored tokens
-  * [Subscription management URL](#subscription-management-url) - Customer portal for subscription management and updates
-  * [Error handling](#error-handling) - Built-in retry logic and automatic error management
-
 * [**Direct API integration**](#direct-api-integration) - Manual CIT/MIT implementation with custom token management and flexible subscription logic tailored to your business needs
-  * [Understanding CIT and MIT](#understanding-cit-and-mit) - Learn the difference between customer and merchant initiated transactions
-  * [Customer Initiated Transaction (CIT)](#customer-initiated-transaction-cit---first-payment-1) - Initial payment setup with token generation and storage
-  * [Merchant Initiated Transaction (MIT)](#merchant-initiated-transaction-mit---subsequent-payments-1) - Automated payments using stored tokens
-  * [Token management](#token-management) - Secure storage, lifecycle management, and retry logic implementation
-  * [Custom subscription flow implementation](#custom-subscription-flow-implementation) - Build scheduling, billing cycles, and customer notifications
 
 ## What are CIT and MIT?
 
