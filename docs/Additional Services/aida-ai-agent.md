@@ -14,15 +14,13 @@ next:
 
 Yuno is introducing **Aida**, an AI-powered agent designed to simplify data retrieval for support and operations teams. Aida allows you to instantly access detailed information about payments, payouts, subscriptions, and payment links, making it easier to troubleshoot incidents efficiently. It can also provide webhook data and surface the status of each actor involved in the payment flow: the provider, Yuno, and the merchant. Beyond transactional insights, Aida can answer technical questions about SDK integration, API usage, and how Yuno’s platform works. It also offers details about Yuno’s technical integrations and features with supported payment providers.
 
-To use **Aida**, simply include “Aida” in your first message and follow up with your question. If at any point the agent is unable to resolve your request, you just need to send a message that includes **“human”** and we’ll automatically notify your key account manager and technical account manager to support you directly. If you do not include "Aida" in your messages you will be directly communicated to your Technical Account Manager. 
+To use **Aida**, simply include “Aida” in your first message and follow up with your question. If at any point the agent is unable to resolve your request, you just need to send a message that includes **“human”** and we’ll automatically notify your key account manager and technical account manager to support you directly. If you do not include "Aida" in your messages you will be directly communicated to your Technical Account Manager.
 
 Aida is available across multiple channels:
 
-* Slack  
-* Email  
+* Slack
+* Email
 * Yuno dashboard
-
-***
 
 ## Retrieve information about payments, payouts, subscriptions, and payment links
 
@@ -32,10 +30,10 @@ Use Aida to look up and retrieve complete payment details. This tool is especial
 
 You can search by any of these IDs:
 
-* `payment_code`  
-* `transaction_code`  
-* `order_id`  
-* `trace_id`  
+* `payment_code`
+* `transaction_code`
+* `order_id`
+* `trace_id`
 
 ### How to search
 
@@ -48,8 +46,6 @@ To search, send an ID and mention "Aida".
 Aida will return all relevant payment information, including the transaction summary and full payment details.
 
 **Note:** You can also send an ID without specifying its category. Aida will automatically check across all possible types and return the relevant information once it identifies the ID.
-
-***
 
 ### Payment answer example
 
@@ -76,8 +72,6 @@ No information is available in the sandbox environment for this ID.
 
 Is there anything else I can help you with?
 ```
-
-***
 
 ### Payouts answer example
 
@@ -107,8 +101,6 @@ Here’s the full information for the payout with ID `1a0e03d8-73eb-465b-b40f-f6
   - **Issuing Bank**: BANK OF AMERICA  
   - **Issuing Country Code**: US
 ```
-
-***
 
 ### Subscription answer example
 
@@ -147,8 +139,6 @@ Here’s the full information for the payout with ID `1a0e03d8-73eb-465b-b40f-f6
 If you need further details or have any other questions, feel free to ask!
 ```
 
-***
-
 ### Payment answer link example
 
 ```
@@ -175,8 +165,6 @@ No information was found for the sandbox environment.
 If there's anything else you'd like to know or need further assistance, feel free to ask!
 ```
 
-***
-
 ## Webhook & system information
 
 Aida makes it easy to monitor and validate webhook activity by showing whether webhooks were **configured** in Yuno, **received** by Yuno from the provider, and **successfully sent** to the merchant, along with key transaction and delivery details.
@@ -187,11 +175,11 @@ Aida makes it easy to monitor and validate webhook activity by showing whether w
 
 Choose the appropriate search criteria for your query. The options include:
 
-* `tx_code`  
-* `payment_code`  
-* `order_id`  
-* `trace_id`  
-* `unknown`  
+* `tx_code`
+* `payment_code`
+* `order_id`
+* `trace_id`
+* `unknown`
 
 ### 2. Provide the search value
 
@@ -204,13 +192,11 @@ Decide whether to perform your query in the **Sandbox** (testing) or **PROD** (l
 **Example Message:**
 
 > “Hi Aida, I need to verify webhook information.\
-> **Search criteria:** tx\_code\
-> **Search value:** 123456789\
+> **Search criteria:** tx\_code
+> **Search value:** 123456789
 > **Environment:** PROD”
 
 If the information is incomplete, Aida will ask follow-up questions, to be able to assist the user.
-
-***
 
 ### Webhooks answer example
 
@@ -247,8 +233,6 @@ Here are the webhook details for the payment with ID `68245f98-5049-4b88-9861-81
 
 If you need more detailed information or further assistance, feel free to ask!
 ```
-
-***
 
 ## From integration to features, Aida has you covered
 
