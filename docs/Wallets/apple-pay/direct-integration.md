@@ -33,9 +33,9 @@ Use the [create payment](ref:create-payment) endpoint to create a payment sendin
 
 To check the payment status, you can analyze the `status` and `sub_status` in the response from the [create payment](ref:create-payment) endpoint or use [webhooks](doc:webhooks). Refer to the [Payment Status](ref:payment) page to see all possible statuses.
 
-## Pass Apple Pay payment token in request
-
-When you initiate a transaction with Apple Pay, a payment token containing a JSON-formatted paymentData string is sent. Pass the complete token received from Apple Pay in the `payment_method.detail.wallet.payment_token` field as a JSON string in your payment request.
+> 📘 Pass Apple Pay payment token in request
+>
+> When you initiate a transaction with Apple Pay, a payment token containing a JSON-formatted `paymentData` string is sent. Pass the complete token received from Apple Pay in the `payment_method.detail.wallet.payment_token` field as a JSON string in your payment request.
 
 ### Apple Pay wallet response object
 

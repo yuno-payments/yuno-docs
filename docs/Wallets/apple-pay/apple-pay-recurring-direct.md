@@ -1,5 +1,5 @@
 ---
-title: Recurring Apple Pay (Direct Integration)
+title: Recurring Apple Pay Payments (Direct Integration)
 excerpt: ""
 deprecated: false
 hidden: true
