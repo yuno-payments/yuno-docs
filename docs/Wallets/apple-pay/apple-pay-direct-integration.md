@@ -13,15 +13,22 @@ This guide provides a comprehensive process to integrate Apple Pay directly with
 
 ## Direct integration overview
 
-The direct API integration method offers:
+The direct API integration method provides complete control over Apple Pay payment flows for both immediate and subscription-based transactions:
 
-* **Complete control** over payment timing and logic
-* **Custom implementation** tailored to your specific needs
-* **One-time payments** for immediate transactions
-* **Recurring payments** with manual CIT/MIT flow management
-* **Direct API communication** without SDK dependencies
-* **Flexible integration** with existing systems
-* **Advanced customization** capabilities
+* [**One-time payments**](#one-time-payments-with-direct-api) - Implement immediate Apple Pay transactions with full control over payment timing, custom validation logic, and direct API communication
+
+  * [Complete dashboard setup](#step-1-complete-dashboard-setup) - Configure provider connections, routing, and Checkout Builder settings
+  * [Create the payment](#step-2-create-the-payment) - Use create payment endpoint with Apple Pay payment token
+  * [Apple Pay wallet response object](#apple-pay-wallet-response-object) - Understanding the token structure from Apple Pay SDK
+  * [One-time payment request example](#one-time-payment-request-example) - Complete JSON request structure for immediate payments
+  * [Handle payment response](#step-3-handle-payment-response) - Process responses and implement webhook monitoring
+
+* [**Recurring payments**](#recurring-payments-with-direct-api) - Build subscription-based payments with manual CIT/MIT implementation, custom token management, and flexible subscription logic tailored to your business needs
+  * [Understanding CIT and MIT](#understanding-cit-and-mit) - Learn the difference between customer and merchant initiated transactions
+  * [Customer Initiated Transaction](#customer-initiated-transaction-cit---first-payment) - Initial payment setup with token generation and storage
+  * [Merchant Initiated Transaction](#merchant-initiated-transaction-mit---subsequent-payments) - Automated payments using stored tokens
+  * [Token management](#token-management) - Secure storage, lifecycle management, and retry logic implementation
+  * [Custom subscription flow](#custom-subscription-flow-implementation) - Build scheduling, billing cycles, and customer notifications
 
 ## One-time payments with direct API
 
