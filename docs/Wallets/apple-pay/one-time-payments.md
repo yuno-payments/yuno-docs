@@ -15,7 +15,7 @@ This guide provides comprehensive integration options for Apple Pay one-time pay
 
 Apple Pay one-time payments are immediate transactions processed once without future automated billing. Yuno offers two integration approaches:
 
-* [**SDK integration**](#sdk-integratio) - Simplified implementation with automated payment flow handling, built-in security, and streamlined user experience
+* [**SDK integration**](#sdk-integration) - Simplified implementation with automated payment flow handling, built-in security, and streamlined user experience
 
   * [Complete dashboard setup](#step-1-complete-dashboard-setup) - Configure provider connections, routing, and Checkout Builder enablement
   * [Add Apple Pay capability](#step-2-add-apple-pay-capability) - Set up Xcode capabilities and Merchant ID configuration
