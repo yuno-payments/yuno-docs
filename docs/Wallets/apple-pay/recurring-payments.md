@@ -1,7 +1,7 @@
 ---
 title: Recurring Payments
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
