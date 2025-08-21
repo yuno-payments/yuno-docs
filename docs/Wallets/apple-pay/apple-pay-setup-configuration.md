@@ -1,14 +1,14 @@
 ---
 title: Apple Pay Setup and Configuration
-excerpt: ""
+excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 This guide covers the common setup and configuration steps required for all Apple Pay integrations with Yuno.
