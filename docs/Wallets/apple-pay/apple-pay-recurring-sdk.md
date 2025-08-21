@@ -17,25 +17,15 @@ This guide covers how to implement recurring Apple Pay payments using Yuno's SDK
 >
 > Before following this guide, ensure you have completed the [dashboard setup and configuration](doc:apple-pay-setup-configuration) process.
 
-## Recurring Payments with SDK Overview
+## Recurring payments with SDK overview
 
-Using the Yuno SDK for recurring Apple Pay payments provides several advantages:
+Using the Yuno SDK for recurring Apple Pay payments provides simplified implementation by automatically handling the complexity of Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT) flows. The SDK manages payment tokens securely and provides built-in subscription support with enhanced fraud screening and 3DS authentication.
 
-- **Simplified Implementation**: The SDK handles the complexity of CIT/MIT flows
-- **Automatic Token Management**: SDK manages payment tokens securely
-- **Built-in Subscription Support**: Native support for subscription workflows
-- **Enhanced Security**: Automatic fraud screening and 3DS when required
+## Prerequisites for recurring payments
 
-## Prerequisites for Recurring Payments
+### Subscription management URL configuration
 
-### Subscription Management URL Configuration
-
-For recurring payments, you must configure a **Subscription Management URL** in your Apple Pay connection. This URL allows customers to:
-
-- View their active subscriptions
-- Cancel subscriptions
-- Modify subscription details
-- Access billing history
+For recurring payments, you must configure a **Subscription Management URL** in your Apple Pay connection. This URL allows customers to view, cancel, and modify their active subscriptions, as well as access billing history.
 
 > ⚠️ **Important**: This URL must be created and hosted by your merchant platform. It should provide a complete subscription management interface for your customers.
 
@@ -46,13 +36,13 @@ To configure the Subscription Management URL:
 3. Add your subscription management URL in the connection configuration
 4. Ensure the URL is accessible and provides subscription management functionality
 
-## Implementation Steps
+## Implementation steps
 
-### Step 1: Create Customer
+### Step 1: Create customer
 
 Use the [Create Customer](ref:create-customer) endpoint to register customer information. This is recommended for recurring payments to maintain customer relationships.
 
-### Step 2: Create Checkout Session with Subscription Object
+### Step 2: Create checkout session with subscription object
 
 When creating a checkout session for recurring payments, include the `subscriptions` object in your request:
 
@@ -79,28 +69,19 @@ When creating a checkout session for recurring payments, include the `subscripti
 }
 ```
 
-### Step 3: Generate One-Time Token (OTT)
+### Step 3: Generate one-time token (OTT)
 
 Generate an OTT using the Yuno SDK with `payment_method_type = APPLE_PAY`. The SDK will handle the CIT setup automatically when subscriptions are configured.
 
-### Step 4: Create Initial Payment (CIT)
+### Step 4: Create initial payment (CIT)
 
-Use the [Create Payment](ref:create-payment) endpoint with the subscription configuration. The SDK automatically:
+Use the [Create Payment](ref:create-payment) endpoint with the subscription configuration. The SDK automatically sets `vault_on_success: true`, configures stored credentials appropriately, and handles the initial customer authorization.
 
-- Sets `vault_on_success: true`
-- Configures stored credentials appropriately
-- Handles the initial customer authorization
+### Step 5: Subsequent payments (MIT)
 
-### Step 5: Subsequent Payments (MIT)
+For subsequent recurring payments, the SDK manages token retrieval and usage, MIT transaction processing, stored credentials handling, and error recovery with retry logic.
 
-For subsequent recurring payments, the SDK manages:
-
-- Token retrieval and usage
-- MIT transaction processing
-- Stored credentials handling
-- Error recovery and retry logic
-
-## Subscription Object Structure
+## Subscription object structure
 
 When implementing recurring payments with the SDK, include the following subscription configuration:
 
@@ -129,7 +110,7 @@ When implementing recurring payments with the SDK, include the following subscri
 }
 ```
 
-### Subscription Parameters
+### Subscription parameters
 
 - **`frequency`**: Defines how often the recurring payment occurs
   - `type`: DAY, WEEK, or MONTH
@@ -139,53 +120,40 @@ When implementing recurring payments with the SDK, include the following subscri
 - **`trial_period`**: Optional trial period configuration
 - **`metadata`**: Additional subscription metadata
 
-## SDK Configuration for iOS App
+## SDK configuration for iOS app
 
 In addition to the standard Apple Pay configuration, ensure your iOS app is properly configured:
 
-### Apple Pay Capability
+### Apple Pay capability
 
 Ensure Apple Pay capability is added in Xcode with the correct Merchant ID:
 
 <Image align="center" width="700px" src="https://files.readme.io/757a4706d90b183020c05910648ed12822233bb14b0436a0d67f6eb18e03f77e-image.png" />
 
-### Testing Recurring Payments
+### Testing recurring payments
 
 For testing recurring Apple Pay payments:
 
-1. **Browser Testing**: Use Safari with test domains configured in your Apple Pay connection
-2. **App Testing**:
+1. **Browser testing**: Use Safari with test domains configured in your Apple Pay connection
+2. **App testing**:
    - Use test Apple IDs without associated payment methods
    - Add sandbox test cards from Apple's documentation
    - Test the complete subscription flow including management URL
 
-## Error Handling and Monitoring
+## Error handling and monitoring
 
-### Common Scenarios
+### Common scenarios
 
-- **Initial Payment Failure**: Handle CIT failures gracefully with user feedback
-- **Recurring Payment Failure**: Implement retry logic for failed MIT transactions
-- **Subscription Management**: Provide clear subscription status updates
+Handle initial payment failures gracefully with user feedback, implement retry logic for failed MIT transactions, and provide clear subscription status updates.
 
-### Monitoring Tools
+### Monitoring tools
 
-- Use [Webhooks](doc:webhooks) to monitor payment status changes
-- Implement proper logging for subscription lifecycle events
-- Monitor subscription health through the Yuno Dashboard
+Use [Webhooks](doc:webhooks) to monitor payment status changes, implement proper logging for subscription lifecycle events, and monitor subscription health through the Yuno Dashboard.
 
-## Benefits of SDK Implementation
+## Related documentation
 
-Using the Yuno SDK for recurring Apple Pay payments provides:
-
-- **Reduced Development Time**: Pre-built subscription handling
-- **Compliance**: Automatic adherence to Apple Pay recurring payment requirements
-- **Security**: Built-in tokenization and secure credential storage
-- **Support**: Enhanced fraud detection and 3DS authentication
-- **Flexibility**: Easy integration with existing subscription management systems
-
-## Related Documentation
-
-- [Dashboard Setup and Configuration](doc:apple-pay-setup-configuration) - Required setup steps
-- [Direct Integration for Recurring Payments](doc:apple-pay-recurring-direct) - API-based recurring implementation
-- [SDK Integration for One-time Payments](doc:sdk-integration-apple) - Non-recurring SDK integration
-- [Subscription Management](doc:subscriptions) - General subscription documentation
+- [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements before integration
+- [Dashboard setup and configuration](doc:apple-pay-setup-configuration) - Required setup steps
+- [Direct integration for recurring payments](doc:apple-pay-recurring-direct) - API-based recurring implementation
+- [SDK integration for one-time payments](doc:sdk-integration-apple) - Non-recurring SDK integration
+- [Subscription management](doc:subscriptions) - General subscription documentation

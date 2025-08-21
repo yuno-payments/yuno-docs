@@ -1,5 +1,5 @@
 ---
-title: Apple Pay Dashboard Setup and Configuration
+title: Apple Pay Setup and Configuration
 excerpt: ""
 deprecated: false
 hidden: true
@@ -17,7 +17,7 @@ This guide covers the common setup and configuration steps required for all Appl
 
 Before starting the dashboard configuration, ensure you have completed the [Prerequisites](doc:prerequisites-apple-pay) process to obtain the necessary Apple Pay certificates and merchant credentials.
 
-## Step 1: Add the Apple Pay Connection
+## Step 1: Add the Apple Pay connection
 
 To add the Apple Pay connection to the Yuno Dashboard, follow these steps:
 
@@ -30,7 +30,7 @@ To add the Apple Pay connection to the Yuno Dashboard, follow these steps:
 
 <Image align="center" width="700px" src="https://files.readme.io/6d674dd-Screenshot_2024-07-02_at_2.27.47_PM.png" />
 
-## Step 2: Configure Routing
+## Step 2: Configure routing
 
 Set up a new route to control how payments are processed through Apple Pay. Follow the steps below:
 
@@ -65,19 +65,19 @@ To make Apple Pay available to your end users, you have to enable it on the Chec
 
 <Image align="center" src="https://files.readme.io/52781326ea260052f9a62e98d5cd6a1bbfdaa39f50062912f15f3bdb310aa019-4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png" />
 
-## Next Steps
+## Next steps
 
 After completing the dashboard setup, you can proceed with your preferred integration method:
 
-### One-time Payments
+### One-time payments
 
-- [Direct Integration](doc:direct-integration) - Integrate directly with Yuno's API
-- [SDK Integration](doc:sdk-integration-apple) - Use Yuno's SDK for easier implementation
+- [Direct integration](doc:direct-integration) - Integrate directly with Yuno's API
+- [SDK integration](doc:sdk-integration-apple) - Use Yuno's SDK for easier implementation
 
-### Recurring Payments
+### Recurring payments
 
-- [Recurring Direct Integration](doc:apple-pay-recurring-direct) - Handle recurring payments with direct API calls
-- [Recurring SDK Integration](doc:apple-pay-recurring-sdk) - Implement recurring payments using Yuno's SDK
+- [Recurring direct integration](doc:apple-pay-recurring-direct) - Handle recurring payments with direct API calls
+- [Recurring SDK integration](doc:apple-pay-recurring-sdk) - Implement recurring payments using Yuno's SDK
 
 > 📘 Additional Configuration for Recurring Payments
 >
