@@ -20,7 +20,7 @@ Apple Pay one-time payments are immediate transactions processed once without fu
   * [Complete dashboard setup](#step-1-complete-dashboard-setup) - Configure provider connections, routing, and Checkout Builder enablement
   * [Add Apple Pay capability](#step-2-add-apple-pay-capability) - Set up Xcode capabilities and Merchant ID configuration
   * [Generate one-time token](#step-3-generate-one-time-token-ott) - Create OTT for privacy and security using Yuno SDK
-  * [Create the payment](#step-4-create-the-payment) - Use checkout session endpoint for immediate transactions
+  * [Create the payment](#step--create-the-payment) - Use checkout session endpoint for immediate transactions
   * [Process the payment](#step-5-process-the-payment) - Handle automatic Apple Pay flow completion
 
 * [**Direct API integration**](#direct-api-integration) - Complete control over payment timing, custom validation logic, and direct API communication
