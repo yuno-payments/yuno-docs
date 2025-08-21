@@ -24,11 +24,11 @@ Apple Pay one-time payments are immediate transactions processed once without fu
   * [Process the payment](#step-5-process-the-payment) - Handle automatic Apple Pay flow completion
 
 * [**Direct API integration**](#direct-api-integration) - Complete control over payment timing, custom validation logic, and direct API communication
-  * [Complete dashboard setup](#step--complete-dashboard-setup-1) - Configure provider connections, routing, and Checkout Builder settings
-  * [Create the payment](#step--create-the-payment-1) - Use create payment endpoint with Apple Pay payment token
-  * [Apple Pay wallet response object](#pple-pay-wallet-response-object) - Understanding the token structure from Apple Pay SDK
-  * [One-time payment request example](#ne-time-payment-request-example) - Complete JSON request structure for immediate payments
-  * [Handle payment response](#step--handle-payment-response) - Process responses and implement webhook monitoring
+  * [Complete dashboard setup](#step-1-complete-dashboard-setup-1) - Configure provider connections, routing, and Checkout Builder settings
+  * [Create the payment](#step-2-create-the-payment-1) - Use create payment endpoint with Apple Pay payment token
+  * [Apple Pay wallet response object](#apple-pay-wallet-response-object) - Understanding the token structure from Apple Pay SDK
+  * [One-time payment request example](#one-time-payment-request-example) - Complete JSON request structure for immediate payments
+  * [Handle payment response](#step-3-handle-payment-response) - Process responses and implement webhook monitoring
 
 ## SDK integration
 
