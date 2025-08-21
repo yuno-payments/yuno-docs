@@ -53,13 +53,9 @@ Add the Apple Pay capability to your iOS app:
 5. Add the **Apple Pay** capability
 6. Configure your Merchant IDs in the Apple Pay section
 
-![Apple Pay capability in Xcode](https://files.readme.io/46617c6-apple-pay-capability.png)
-
 > ⚠️ Apple Pay Merchant ID Required
 >
 > Ensure your Apple Pay Merchant ID matches the one configured in your Yuno Dashboard provider connections.
-
-![Apple Pay merchant configuration](https://files.readme.io/a86db82-apple-pay-merchant-config.png)
 
 ### Step 3: Generate one-time token (OTT)
 
