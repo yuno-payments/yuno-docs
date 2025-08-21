@@ -177,4 +177,3 @@ Process the payment response and handle various status codes. Use [webhooks](doc
 * [Apple Pay recurring payments](doc:apple-pay-recurring-payments) - Subscription and automated billing setup
 * [Create payment API](ref:create-payment) - Direct integration payment endpoint
 * [Create checkout session API](ref:create-checkout-session) - SDK integration session endpoint
-* [Webhooks](doc:webhooks) - Payment monitoring and status updates
