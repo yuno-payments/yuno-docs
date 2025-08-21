@@ -15,7 +15,7 @@ This guide provides a comprehensive process to integrate Apple Pay with Yuno SDK
 
 The direct API integration method provides complete control over Apple Pay payment flows for both immediate and subscription-based transactions:
 
-* [**One-time payments**](#one-time-payments-with-direct-api) - Implement immediate Apple Pay transactions with full control over payment timing, custom validation logic, and direct API communication
+* [**One-time payments**](#one-time-payments-with-sdk) - Implement immediate Apple Pay transactions with full control over payment timing, custom validation logic, and direct API communication
 
   * [Complete dashboard setup](#step-1-complete-dashboard-setup) - Configure provider connections, routing, and Checkout Builder settings
   * [Create the payment](#step-2-create-the-payment) - Use create payment endpoint with Apple Pay payment token
