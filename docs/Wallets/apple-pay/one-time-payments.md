@@ -23,15 +23,7 @@ Apple Pay one-time payments are immediate transactions processed once without fu
 
 The Yuno SDK integration method provides a streamlined integration experience for one-time Apple Pay payments.
 
-### Step 1: Complete dashboard setup
-
-Ensure you have completed all the setup steps in the [dashboard setup and configuration](doc:apple-pay-setup-configuration) guide, including:
-
-* Provider connections configuration
-* Routing setup
-* Checkout Builder enablement
-
-### Step 2: Add Apple Pay capability
+### Step 1: Add Apple Pay capability
 
 Add the Apple Pay capability to your iOS app:
 
@@ -46,11 +38,11 @@ Add the Apple Pay capability to your iOS app:
 >
 > Ensure your Apple Pay Merchant ID matches the one configured in your Yuno Dashboard provider connections.
 
-### Step 3: Generate one-time token (OTT)
+### Step 2: Generate one-time token (OTT)
 
 An [OTT](doc:how-yuno-payment-flow-works#step-3-create-a-one-time-token) is a unique identifier Yuno generates to protect your customer's privacy and security. You will obtain the OTT from the Yuno SDK, which handles various payment method scenarios. Use `payment_method_type = APPLE_PAY`. For a list of all available options, see the [Payment types](ref:payment-type-list) page.
 
-### Step 4: Create the payment
+### Step 3: Create the payment
 
 Use the [create checkout session](ref:create-checkout-session) endpoint to create a payment session for one-time Apple Pay transactions:
 
@@ -67,7 +59,7 @@ Use the [create checkout session](ref:create-checkout-session) endpoint to creat
 }
 ```
 
-### Step 5: Process the payment
+### Step 4: Process the payment
 
 The SDK handles the Apple Pay flow automatically. When the customer completes the Apple Pay authorization, the payment is processed immediately.
 
@@ -75,15 +67,7 @@ The SDK handles the Apple Pay flow automatically. When the customer completes th
 
 Direct API integration provides full control over the Apple Pay one-time payment process using Yuno's payment API.
 
-### Step 1: Complete dashboard setup
-
-Ensure you have completed all the setup steps in the [dashboard setup and configuration](doc:apple-pay-setup-configuration) guide, including:
-
-* Provider connections configuration
-* Routing setup
-* Checkout Builder enablement
-
-### Step 2: Create the payment
+### Step 1: Create the payment
 
 Use the [create payment](ref:create-payment) endpoint to create a payment sending the Apple Pay `payment_token` returned by Apple Pay SDK. If you haven't integrated Apple's SDK, we recommend using [our SDKs](doc:sdk-integration-apple) so you don't have to worry about the integration.
 
@@ -147,7 +131,7 @@ The Apple Pay SDK returns the following object structure, which must be passed a
 }
 ```
 
-### Step 3: Handle payment response
+### Step 2: Handle payment response
 
 Process the payment response and handle various status codes. Use [webhooks](doc:webhooks) to receive real-time payment status updates.
 
