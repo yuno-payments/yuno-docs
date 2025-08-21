@@ -1,14 +1,14 @@
 ---
 title: Direct Integration (One-Time Payments)
-excerpt: ""
+excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 This guide covers how to process one-time Apple Pay payments using Yuno's direct integration. You'll integrate directly with our API without using the Yuno SDK. One-time Apple Pay payments are single transactions where the customer initiates and authorizes each payment individually. These payments do not store payment information for future use and are ideal for single purchases, one-off transactions, and customers who prefer not to save payment methods.
