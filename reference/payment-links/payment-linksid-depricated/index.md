@@ -1,4 +1,4 @@
 ---
 title: /payment-links/{id}-depricated
-hidden: false
+hidden: true
 ---
