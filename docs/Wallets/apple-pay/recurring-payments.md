@@ -15,32 +15,9 @@ This guide provides comprehensive integration options for Apple Pay recurring pa
 
 Apple Pay recurring payments enable automated billing for subscriptions, memberships, and regular services using a two-step process: Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT). Yuno offers two integration approaches:
 
-* [**What are CIT and MIT?**](#what-are-cit-and-mit) - Understanding the two-step recurring payment process
-
 * [**SDK integration**](#sdk-integration) - Simplified recurring payment implementation with automatic CIT/MIT flow management, built-in scheduling, and subscription management capabilities
 
 * [**Direct API integration**](#direct-api-integration) - Manual CIT/MIT implementation with custom token management and flexible subscription logic tailored to your business needs
-
-## What are CIT and MIT?
-
-### Customer Initiated Transaction (CIT)
-
-The **first transaction** where the customer actively participates and authorizes the recurring payment setup. This transaction:
-
-* Requires customer interaction and Apple Pay authorization
-* Generates a payment token for future automated transactions
-* Sets up the recurring payment agreement
-* Uses `vault_on_success: true` to enable token storage
-* Includes `stored_credentials.usage: "FIRST"`
-
-### Merchant Initiated Transaction (MIT)
-
-**Subsequent transactions** processed automatically by the merchant without customer interaction. These transactions:
-
-* Use the stored token from the CIT
-* Process automatically according to the subscription schedule
-* Do not require customer re-authorization
-* Include `stored_credentials.usage: "USED"`
 
 ## SDK integration
 
