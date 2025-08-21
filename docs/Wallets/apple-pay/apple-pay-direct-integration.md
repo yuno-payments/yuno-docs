@@ -17,11 +17,10 @@ The direct API integration method provides complete control over Apple Pay payme
 
 * [**One-time payments**](#one-time-payments-with-direct-api) - Implement immediate Apple Pay transactions with full control over payment timing, custom validation logic, and direct API communication
 
-  * [Complete dashboard setup](#step-1-complete-dashboard-setup) - Configure provider connections, routing, and Checkout Builder settings
-  * [Create the payment](#step-2-create-the-payment) - Use create payment endpoint with Apple Pay payment token
+  * [Create the payment](#step-1-create-the-payment) - Use create payment endpoint with Apple Pay payment token
   * [Apple Pay wallet response object](#apple-pay-wallet-response-object) - Understanding the token structure from Apple Pay SDK
   * [One-time payment request example](#one-time-payment-request-example) - Complete JSON request structure for immediate payments
-  * [Handle payment response](#step-3-handle-payment-response) - Process responses and implement webhook monitoring
+  * [Handle payment response](#step-2-handle-payment-response) - Process responses and implement webhook monitoring
 
 * [**Recurring payments**](#recurring-payments-with-direct-api) - Build subscription-based payments with manual CIT/MIT implementation, custom token management, and flexible subscription logic tailored to your business needs
   * [Understanding CIT and MIT](#understanding-cit-and-mit) - Learn the difference between customer and merchant initiated transactions
@@ -34,15 +33,7 @@ The direct API integration method provides complete control over Apple Pay payme
 
 One-time Apple Pay payments using direct API integration provide full control over the payment process.
 
-### Step 1: Complete dashboard setup
-
-Ensure you have completed all the setup steps in the [dashboard setup and configuration](doc:apple-pay-setup-configuration) guide, including:
-
-* Provider connections configuration
-* Routing setup
-* Checkout Builder enablement
-
-### Step 2: Create the payment
+### Step 1: Create the payment
 
 Use the [create payment](ref:create-payment) endpoint to create a payment sending the Apple Pay `payment_token` returned by Apple Pay SDK. If you haven't integrated Apple's SDK, we recommend using [our SDKs](doc:sdk-integration-apple) so you don't have to worry about the integration.
 
@@ -106,7 +97,7 @@ The Apple Pay SDK returns the following object structure, which must be passed a
 }
 ```
 
-### Step 3: Handle payment response
+### Step 2: Handle payment response
 
 Process the payment response and handle various status codes. Use [webhooks](doc:webhooks) to receive real-time payment status updates.
 
@@ -277,7 +268,7 @@ Monitor payment status through [webhooks](doc:webhooks) for real-time updates an
 
 * [Dashboard setup and configuration](doc:apple-pay-setup-configuration) - Required setup steps
 * [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements
-* [Apple Pay SDK integration](doc:apple-pay-recurring-sdk-implementation) - SDK-based integration
+* [Apple Pay SDK integration](doc:apple-pay-sdk-integration) - SDK-based integration
 * [Create payment API](ref:create-payment) - Payment creation endpoint
 * [Subscription management](doc:subscriptions) - General subscription documentation
 * [Webhooks](doc:webhooks) - Payment monitoring and status updates
