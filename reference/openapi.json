@@ -1,8 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "3ds-setup",
-    "version": "1.0.2"
+    "title": "Recipients API",
+    "version": "1.0.0",
+    "description": "API for managing recipients in split payment scenarios. This feature enables merchants to split payments among multiple recipients, which is particularly beneficial for marketplace models where transactions need to be divided among different sellers or stakeholders."
   },
   "servers": [
     {
@@ -23,6 +24,1185 @@
         "name": "private-secret-key",
         "x-default": "<Your private-secret-key>"
       }
+    },
+    "schemas": {
+      "Recipient": {
+        "type": "object",
+        "required": ["account_id", "merchant_recipient_id", "national_entity"],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "description": "Unique id of the account in Yuno (MAX 64; MIN 36).",
+            "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          "merchant_recipient_id": {
+            "type": "string",
+            "description": "Unique identifier of the recipient defined by the merchant (MAX 255; MIN 1).",
+            "example": "AAAA01"
+          },
+          "national_entity": {
+            "type": "string",
+            "enum": ["INDIVIDUAL", "ENTITY"],
+            "description": "Beneficiary's national entity type. Could be INDIVIDUAL or ENTITY.",
+            "example": "INDIVIDUAL"
+          },
+          "entity_type": {
+            "type": "string",
+            "enum": ["GOVERNMENTAL", "PUBLIC", "NON_PROFIT", "PRIVATE"],
+            "description": "The Beneficiary's type of organization. GOVERNMENTAL, PUBLIC, NON_PROFIT, PRIVATE",
+            "example": "PRIVATE"
+          },
+          "first_name": {
+            "type": "string",
+            "description": "Beneficiary's name. (MAX 80; MIN 1).",
+            "example": "John"
+          },
+          "last_name": {
+            "type": "string",
+            "description": "Beneficiary's last name. (MAX 80; MIN 1).",
+            "example": "Doe"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "description": "The Beneficiary's date of birth in the YYYY-MM-DD format (MAX 10; MIN 10).",
+            "example": "1990-02-28",
+            "minLength": 10,
+            "maxLength": 10
+          },
+          "legal_name": {
+            "type": "string",
+            "description": "Beneficiary's name. (MAX 80; MIN 1) Only necessary when national entity is ENTITY.",
+            "example": "Arcos dorados S.A."
+          },
+          "email": {
+            "type": "string",
+            "description": "The Beneficiary's email (MAX 255; MIN 3).",
+            "example": "john.doe@email.com"
+          },
+          "country": {
+            "type": "string",
+            "description": "The Beneficiary's country (ISO 3166-1 MAX 2; MIN 2).",
+            "example": "CO"
+          },
+          "website": {
+            "type": "string",
+            "description": "The seller's website URL (MAX 255; MIN 3).",
+            "example": "https://y.uno",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "industry": {
+            "type": "string",
+            "description": "The seller's industry (MAX 235; MIN 1). For more information access the Industry category reference page.",
+            "example": "VIRTUAL_GOODS",
+            "minLength": 1,
+            "maxLength": 235
+          },
+          "merchant_category_code": {
+            "type": "string",
+            "description": "MCC - The merchant category code (MAX 235; MIN 1)."
+          },
+          "document": {
+            "type": "object",
+            "description": "Beneficiary's document information",
+            "required": ["document_number", "document_type"],
+            "properties": {
+              "document_number": {
+                "type": "string",
+                "description": "Beneficiary's national document id (MAX 40; MIN 3).",
+                "example": "1093333333"
+              },
+              "document_type": {
+                "type": "string",
+                "description": "Beneficiary's document type (MAX 6; MIN 2).",
+                "example": "CC"
+              }
+            }
+          },
+          "phone": {
+            "type": "object",
+            "description": "Specifies the customer's phone number object.",
+            "required": ["country_code", "number"],
+            "properties": {
+              "country_code": {
+                "type": "string",
+                "description": "The country calling code of the customer's phone (MAX 3; MIN 1). Check the Country reference to see the phone codes. This field is required if the 'phone' object is included in the request.",
+                "example": "1"
+              },
+              "number": {
+                "type": "string",
+                "description": "The customer's phone number, without the country code (MAX 32; MIN 1). This field is required if the 'phone' object is included in the request.",
+                "example": "5551234567"
+              }
+            }
+          },
+          "address": {
+            "type": "object",
+            "description": "Address of the event",
+            "properties": {
+              "address_line_1": {
+                "type": "string",
+                "description": "The primary billing address line (MAX 255; MIN 3).",
+                "example": "Calle 34 # 56 - 78"
+              },
+              "address_line_2": {
+                "type": "string",
+                "description": "The secondary billing address line (MAX 255; MIN 3).",
+                "example": "Apartamento 502, Torre I"
+              },
+              "city": {
+                "type": "string",
+                "description": "The city considered for the address (MAX 255; MIN 3).",
+                "example": "Bogota"
+              },
+              "country": {
+                "type": "string",
+                "description": "The country considered for the address (ISO 3166-1 MAX 2; MIN 2).",
+                "example": "CO"
+              },
+              "state": {
+                "type": "string",
+                "description": "The state / province considered for the address (MAX 255; MIN 3).",
+                "example": "Cundinamarca"
+              },
+              "zip_code": {
+                "type": "string",
+                "description": "The zipcode considered for the address (MAX 11; MIN 4).",
+                "example": "111111"
+              },
+              "neighborhood": {
+                "type": "string",
+                "description": "The neighborhood address line (MAX 255; MIN 3).",
+                "example": "Downtown"
+              }
+            }
+          },
+          "withdrawal_methods": {
+            "type": "array",
+            "description": "Withdrawal methods for the merchant",
+            "items": {
+              "type": "object",
+              "properties": {
+                "bank": {
+                  "type": "object",
+                  "description": "Bank's account information",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Bank's code (MAX 3; MIN 3).",
+                      "example": "246"
+                    },
+                    "branch": {
+                      "type": "string",
+                      "description": "Bank's branch (MAX 3; MIN 3).",
+                      "example": "XXXX"
+                    },
+                    "branch_digit": {
+                      "type": "string",
+                      "description": "Bank's branch digit (MAX 3; MIN 3)."
+                    },
+                    "account": {
+                      "type": "string",
+                      "description": "Beneficiary's bank account number (MAX 250; MIN 3).",
+                      "example": "1093333333"
+                    },
+                    "account_digit": {
+                      "type": "string",
+                      "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                    },
+                    "account_type": {
+                      "type": "string",
+                      "enum": [
+                        "CHECKINGS",
+                        "SAVINGS",
+                        "VISTA",
+                        "PIX_EMAIL",
+                        "PIX_PHONE",
+                        "PIX_DOCUMENT_ID",
+                        "PIX_BANK_ACCOUNT"
+                      ],
+                      "description": "Beneficiary's bank account type (MAX 3; MIN 1). Could be: CHECKINGS, SAVINGS, VISTA, PIX_EMAIL, PIX_PHONE, PIX_DOCUMENT_ID, PIX_BANK_ACCOUNT.",
+                      "example": "SAVINGS"
+                    },
+                    "routing": {
+                      "type": "string",
+                      "description": "Beneficiary's bank account routing number.",
+                      "example": "XXXXYYYYC"
+                    },
+                    "country": {
+                      "type": "string",
+                      "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2).",
+                      "example": "CO"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3).",
+                      "example": "COP"
+                    }
+                  }
+                }
+              }
+            },
+            "documentation": {
+              "type": "array",
+              "description": "Array of documentation objects",
+              "items": {
+                "type": "object",
+                "required": [
+                  "file_name",
+                  "content_type",
+                  "content_category",
+                  "content"
+                ],
+                "properties": {
+                  "file_name": {
+                    "type": "string",
+                    "description": "The name of the documentation sent (MAX 255; MIN 3).",
+                    "example": "PDF"
+                  },
+                  "content_type": {
+                    "type": "string",
+                    "enum": ["application/pdf", "image/jpeg", "image/png"],
+                    "description": "The type of the documentation sent by the merchant.",
+                    "example": "application/pdf"
+                  },
+                  "content_category": {
+                    "type": "string",
+                    "enum": [
+                      "ACCOUNT_REQUIREMENT",
+                      "BANK_STATEMENT",
+                      "BUSINESS_ICON",
+                      "BUSINESS_LOGO",
+                      "CANCEL_POLICY",
+                      "CUSTOMER_INTERACTION",
+                      "DRIVERS_LICENCE",
+                      "IDENTIFICATION_DOCUMENT",
+                      "IDENTIFICATION_DOCUMENT_BACK",
+                      "IDENTIFICATION_DOCUMENT_FRONT",
+                      "LEGAL_AGREEMENT",
+                      "OTHERS",
+                      "PASSPORT",
+                      "PAYMENT_DETAIL",
+                      "PROOF_OF_ADDRESS",
+                      "PROOF_OF_AUTHENTICITY",
+                      "PROOF_OF_DELIVERY",
+                      "PROOF_OF_DIRECTOR",
+                      "PROOF_OF_INDUSTRY",
+                      "PROOF_OF_NATIONAL_ID_NUMBER",
+                      "PROOF_OF_OWNERSHIP",
+                      "PROOF_OF_REGISTRATION",
+                      "PROOF_OF_RELATIONSHIP",
+                      "PROOF_OF_SERVICE",
+                      "PROOF_OF_SOURCE_OF_FUNDS",
+                      "PROOF_OF_SOURCE_OF_WEALTH",
+                      "PROOF_OF_TAX",
+                      "PROVIDER_IDENTITY_DOCUMENT",
+                      "RECEIPT",
+                      "REFUND_POLICY",
+                      "SELFIE",
+                      "SERVICE_AGREEMENT",
+                      "SIGNATURE",
+                      "TERMS_AND_CONDITIONS",
+                      "VAT_DOCUMENT"
+                    ],
+                    "description": "The category of the documentation sent by the merchant."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB.",
+                    "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                  }
+                }
+              }
+            },
+            "onboardings": {
+              "type": "array",
+              "description": "Array of onboarding objects for different payment providers",
+              "items": {
+                "type": "object",
+                "required": ["type", "workflow", "provider"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "PREVIOUSLY_ONBOARDED",
+                      "ONBOARD_ONTO_THE_PROVIDER"
+                    ],
+                    "description": "Type of onboarding. If its done by Yuno.",
+                    "example": "PREVIOUSLY_ONBOARDED"
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "enum": ["HOSTED_BY_PROVIDER", "DIRECT"],
+                    "description": "Workflow of the onboarding.",
+                    "example": "HOSTED_BY_PROVIDER"
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed.",
+                    "example": "https://www.google.com"
+                  },
+                  "provider": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "PAGARME",
+                          "ALELO",
+                          "EDENRED",
+                          "PLUXEE",
+                          "VR",
+                          "STRIPE",
+                          "ADYEN"
+                        ],
+                        "description": "Provider id.",
+                        "example": "PAGARME"
+                      },
+                      "recipient_id": {
+                        "type": "string",
+                        "description": "The unique identifier of the provider's recipient.",
+                        "example": "AAAAA01"
+                      }
+                    }
+                  },
+                  "documentation": {
+                    "type": "array",
+                    "description": "Array of documentation objects for this onboarding",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "file_name",
+                        "content_type",
+                        "content_category",
+                        "content"
+                      ],
+                      "properties": {
+                        "file_name": {
+                          "type": "string",
+                          "description": "The name of the documentation sent (MAX 255; MIN 3).",
+                          "example": "PDF"
+                        },
+                        "content_type": {
+                          "type": "string",
+                          "enum": [
+                            "application/pdf",
+                            "image/jpeg",
+                            "image/png"
+                          ],
+                          "description": "The type of the documentation sent by the merchant.",
+                          "example": "application/pdf"
+                        },
+                        "content_category": {
+                          "type": "string",
+                          "enum": [
+                            "ACCOUNT_REQUIREMENT",
+                            "BANK_STATEMENT",
+                            "BUSINESS_ICON",
+                            "BUSINESS_LOGO",
+                            "CANCEL_POLICY",
+                            "CUSTOMER_INTERACTION",
+                            "DRIVERS_LICENCE",
+                            "IDENTIFICATION_DOCUMENT",
+                            "IDENTIFICATION_DOCUMENT_BACK",
+                            "IDENTIFICATION_DOCUMENT_FRONT",
+                            "LEGAL_AGREEMENT",
+                            "OTHERS",
+                            "PASSPORT",
+                            "PAYMENT_DETAIL",
+                            "PROOF_OF_ADDRESS",
+                            "PROOF_OF_AUTHENTICITY",
+                            "PROOF_OF_DELIVERY",
+                            "PROOF_OF_DIRECTOR",
+                            "PROOF_OF_INDUSTRY",
+                            "PROOF_OF_NATIONAL_ID_NUMBER",
+                            "PROOF_OF_OWNERSHIP",
+                            "PROOF_OF_REGISTRATION",
+                            "PROOF_OF_RELATIONSHIP",
+                            "PROOF_OF_SERVICE",
+                            "PROOF_OF_SOURCE_OF_FUNDS",
+                            "PROOF_OF_SOURCE_OF_WEALTH",
+                            "PROOF_OF_TAX",
+                            "PROVIDER_IDENTITY_DOCUMENT",
+                            "RECEIPT",
+                            "REFUND_POLICY",
+                            "SELFIE",
+                            "SERVICE_AGREEMENT",
+                            "SIGNATURE",
+                            "TERMS_AND_CONDITIONS",
+                            "VAT_DOCUMENT"
+                          ],
+                          "description": "The category of the documentation sent by the merchant."
+                        },
+                        "content": {
+                          "type": "string",
+                          "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB.",
+                          "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                        }
+                      }
+                    }
+                  },
+                  "withdrawal_methods": {
+                    "type": "array",
+                    "description": "Withdrawal methods for this onboarding",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "bank": {
+                          "type": "object",
+                          "description": "Bank's account information",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "description": "Bank's code (MAX 3; MIN 3).",
+                              "example": "246"
+                            },
+                            "branch": {
+                              "type": "string",
+                              "description": "Bank's branch (MAX 3; MIN 3).",
+                              "example": "XXXX"
+                            },
+                            "branch_digit": {
+                              "type": "string",
+                              "description": "Bank's branch digit (MAX 3; MIN 3)."
+                            },
+                            "account": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account number (MAX 250; MIN 3).",
+                              "example": "1093333333"
+                            },
+                            "account_digit": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                            },
+                            "account_type": {
+                              "type": "string",
+                              "enum": [
+                                "CHECKINGS",
+                                "SAVINGS",
+                                "VISTA",
+                                "PIX_EMAIL",
+                                "PIX_PHONE",
+                                "PIX_DOCUMENT_ID",
+                                "PIX_BANK_ACCOUNT"
+                              ],
+                              "description": "Beneficiary's bank account type (MAX 3; MIN 1). Could be: CHECKINGS, SAVINGS, VISTA, PIX_EMAIL, PIX_PHONE, PIX_DOCUMENT_ID, PIX_BANK_ACCOUNT.",
+                              "example": "SAVINGS"
+                            },
+                            "routing": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account routing number.",
+                              "example": "XXXXYYYYC"
+                            },
+                            "country": {
+                              "type": "string",
+                              "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2).",
+                              "example": "CO"
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3).",
+                              "example": "COP"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "documentation": {
+            "type": "array",
+            "description": "Array of documentation objects",
+            "items": {
+              "type": "object",
+              "properties": {
+                "file_name": {
+                  "type": "string",
+                  "description": "The name of the documentation sent (MAX 255; MIN 3)."
+                },
+                "content_type": {
+                  "type": "string",
+                  "enum": ["application/pdf", "image/jpeg", "image/png"],
+                  "description": "The type of the documentation sent by the merchant."
+                },
+                "content_category": {
+                  "type": "string",
+                  "enum": [
+                    "ACCOUNT_REQUIREMENT",
+                    "BANK_STATEMENT",
+                    "BUSINESS_ICON",
+                    "BUSINESS_LOGO",
+                    "CANCEL_POLICY",
+                    "CUSTOMER_INTERACTION",
+                    "DRIVERS_LICENCE",
+                    "IDENTIFICATION_DOCUMENT",
+                    "IDENTIFICATION_DOCUMENT_BACK",
+                    "IDENTIFICATION_DOCUMENT_FRONT",
+                    "LEGAL_AGREEMENT",
+                    "OTHERS",
+                    "PASSPORT",
+                    "PAYMENT_DETAIL",
+                    "PROOF_OF_ADDRESS",
+                    "PROOF_OF_AUTHENTICITY",
+                    "PROOF_OF_DELIVERY",
+                    "PROOF_OF_DIRECTOR",
+                    "PROOF_OF_INDUSTRY",
+                    "PROOF_OF_NATIONAL_ID_NUMBER",
+                    "PROOF_OF_OWNERSHIP",
+                    "PROOF_OF_REGISTRATION",
+                    "PROOF_OF_RELATIONSHIP",
+                    "PROOF_OF_SERVICE",
+                    "PROOF_OF_SOURCE_OF_FUNDS",
+                    "PROOF_OF_SOURCE_OF_WEALTH",
+                    "PROOF_OF_TAX",
+                    "PROVIDER_IDENTITY_DOCUMENT",
+                    "RECEIPT",
+                    "REFUND_POLICY",
+                    "SELFIE",
+                    "SERVICE_AGREEMENT",
+                    "SIGNATURE",
+                    "TERMS_AND_CONDITIONS",
+                    "VAT_DOCUMENT"
+                  ],
+                  "description": "The category of the documentation sent by the merchant."
+                },
+                "content": {
+                  "type": "string",
+                  "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB."
+                }
+              }
+            }
+          },
+          "onboardings": {
+            "type": "array",
+            "description": "Array of onboarding objects for different payment providers",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["PREVIOUSLY_ONBOARDED", "ONBOARD_ONTO_THE_PROVIDER"],
+                  "description": "Type of onboarding. If its done by Yuno."
+                },
+                "workflow": {
+                  "type": "string",
+                  "enum": ["HOSTED_BY_PROVIDER", "DIRECT"],
+                  "description": "Workflow of the onboarding."
+                },
+                "callback_url": {
+                  "type": "string",
+                  "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed."
+                },
+                "provider": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "enum": [
+                        "PAGARME",
+                        "ALELO",
+                        "EDENRED",
+                        "PLUXEE",
+                        "VR",
+                        "STRIPE",
+                        "ADYEN"
+                      ],
+                      "description": "Provider id.",
+                      "example": "PAGARME"
+                    },
+                    "connection_id": {
+                      "type": "string",
+                      "description": "Id of the connection in Yuno"
+                    },
+                    "recipient_id": {
+                      "type": "string",
+                      "description": "The unique identifier of the provider's recipient."
+                    }
+                  }
+                },
+                "documentation": {
+                  "type": "array",
+                  "description": "Array of documentation objects for this onboarding",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "file_name": {
+                        "type": "string",
+                        "description": "The name of the documentation sent (MAX 255; MIN 3)."
+                      },
+                      "content_type": {
+                        "type": "string",
+                        "enum": ["application/pdf", "image/jpeg", "image/png"],
+                        "description": "The type of the documentation sent by the merchant."
+                      },
+                      "content_category": {
+                        "type": "string",
+                        "enum": [
+                          "ACCOUNT_REQUIREMENT",
+                          "BANK_STATEMENT",
+                          "BUSINESS_ICON",
+                          "BUSINESS_LOGO",
+                          "CANCEL_POLICY",
+                          "CUSTOMER_INTERACTION",
+                          "DRIVERS_LICENCE",
+                          "IDENTIFICATION_DOCUMENT",
+                          "IDENTIFICATION_DOCUMENT_BACK",
+                          "IDENTIFICATION_DOCUMENT_FRONT",
+                          "LEGAL_AGREEMENT",
+                          "OTHERS",
+                          "PASSPORT",
+                          "PAYMENT_DETAIL",
+                          "PROOF_OF_ADDRESS",
+                          "PROOF_OF_AUTHENTICITY",
+                          "PROOF_OF_DELIVERY",
+                          "PROOF_OF_DIRECTOR",
+                          "PROOF_OF_INDUSTRY",
+                          "PROOF_OF_NATIONAL_ID_NUMBER",
+                          "PROOF_OF_OWNERSHIP",
+                          "PROOF_OF_REGISTRATION",
+                          "PROOF_OF_RELATIONSHIP",
+                          "PROOF_OF_SERVICE",
+                          "PROOF_OF_SOURCE_OF_FUNDS",
+                          "PROOF_OF_SOURCE_OF_WEALTH",
+                          "PROOF_OF_TAX",
+                          "PROVIDER_IDENTITY_DOCUMENT",
+                          "RECEIPT",
+                          "REFUND_POLICY",
+                          "SELFIE",
+                          "SERVICE_AGREEMENT",
+                          "SIGNATURE",
+                          "TERMS_AND_CONDITIONS",
+                          "VAT_DOCUMENT"
+                        ],
+                        "description": "The category of the documentation sent by the merchant."
+                      },
+                      "content": {
+                        "type": "string",
+                        "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB."
+                      }
+                    }
+                  }
+                },
+                "withdrawal_methods": {
+                  "type": "array",
+                  "description": "Withdrawal methods for this onboarding",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "bank": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "description": "Bank's code (MAX 3; MIN 3)."
+                          },
+                          "branch": {
+                            "type": "string",
+                            "description": "Bank's branch (MAX 3; MIN 3)."
+                          },
+                          "branch_digit": {
+                            "type": "string",
+                            "description": "Bank's branch digit (MAX 3; MIN 3)."
+                          },
+                          "account": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account number (MAX 250; MIN 3)."
+                          },
+                          "account_digit": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                          },
+                          "account_type": {
+                            "type": "string",
+                            "enum": ["CHECKINGS", "SAVINGS"],
+                            "description": "Beneficiary's bank account type (MAX 3; MIN 1)."
+                          },
+                          "routing": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account routing number."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2)."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3)."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "legal_representatives": {
+                  "type": "array",
+                  "description": "Object to indicate the owners of the organization. Adyen, Stripe and dlocal have fields related to that.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "merchant_reference": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 255,
+                        "description": "Legal representative's identification id (MAX 255; MIN 3)."
+                      },
+                      "first_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "description": "Legal representative's name. (MAX 255; MIN 1).",
+                        "example": "John"
+                      },
+                      "last_name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "description": "Legal representative's last name. (MAX 255; MIN 1).",
+                        "example": "Doe"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email",
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "description": "The Legal representative's email (MAX 255; MIN 1).",
+                        "example": "john.doe@email.com"
+                      },
+                      "date_of_birth": {
+                        "type": "string",
+                        "format": "date",
+                        "minLength": 10,
+                        "maxLength": 10,
+                        "description": "The Legal representative's date of birth in the YYYY-MM-DD format (MAX 10; MIN 10).",
+                        "example": "1990-02-28"
+                      },
+                      "country": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2,
+                        "description": "The Legal representative's country (ISO 3166-1 MAX 2; MIN 2)",
+                        "example": "CO"
+                      },
+                      "nationality": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2,
+                        "description": "The Legal representative's nationality (MAX 2; MIN 2; ISO 3166-1).",
+                        "example": "CO"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "description": "The title of the legal representative (MAX 255; MIN 1).",
+                        "example": "CTO"
+                      },
+                      "publicly_exposed_person": {
+                        "type": "boolean",
+                        "description": "Indicates if the legal representative is a publicly exposed person",
+                        "example": false
+                      },
+                      "ultimate_beneficial_owner": {
+                        "type": "boolean",
+                        "description": "Indicates if the legal representative is an ultimate beneficiary owner of the company",
+                        "example": false
+                      }
+                    }
+                  }
+                },
+                "terms_of_service": {
+                  "type": "object",
+                  "description": "Object describing terms of service.",
+                  "required": ["acceptance", "date"],
+                  "properties": {
+                    "acceptance": {
+                      "type": "boolean",
+                      "description": "If the terms of service were accepted by the recipient",
+                      "example": true
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Date of the terms of service acceptance",
+                      "example": "2022-07-09T20:43:54.786342Z"
+                    },
+                    "ip": {
+                      "type": "string",
+                      "format": "ipv4",
+                      "description": "IP of the terms of service acceptance",
+                      "example": "192.168.1.100"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "RecipientResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the recipient.",
+            "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "The account identifier associated with this recipient.",
+            "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+          },
+          "merchant_recipient_id": {
+            "type": "string",
+            "description": "Unique identifier of the recipient defined by the merchant.",
+            "example": "AAAA01"
+          },
+          "national_entity": {
+            "type": "string",
+            "description": "Beneficiary's national entity type.",
+            "example": "INDIVIDUAL"
+          },
+          "entity_type": {
+            "type": "string",
+            "description": "Beneficiary's type of organization.",
+            "example": "PRIVATE"
+          },
+          "first_name": {
+            "type": "string",
+            "description": "Beneficiary's name.",
+            "example": "John"
+          },
+          "last_name": {
+            "type": "string",
+            "description": "Beneficiary's last name.",
+            "example": "Doe"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "description": "Beneficiary's date of birth.",
+            "example": "1990-02-28"
+          },
+          "legal_name": {
+            "type": "string",
+            "description": "Beneficiary's legal name.",
+            "example": "Arcos dorados S.A."
+          },
+          "email": {
+            "type": "string",
+            "description": "The Beneficiary's email.",
+            "example": "john.doe@email.com"
+          },
+          "country": {
+            "type": "string",
+            "description": "The Beneficiary's country.",
+            "example": "CO"
+          },
+          "website": {
+            "type": "string",
+            "description": "The seller's website URL.",
+            "example": "https://www.y.uno"
+          },
+          "industry": {
+            "type": "string",
+            "description": "The seller's industry.",
+            "example": "VIRTUAL_GOODS"
+          },
+          "merchant_category_code": {
+            "type": "string",
+            "description": "The merchant category code (MCC) (MAX 235; MIN 1)."
+          },
+          "document": {
+            "type": "object",
+            "properties": {
+              "document_number": {
+                "type": "string",
+                "example": "1093333333"
+              },
+              "document_type": {
+                "type": "string",
+                "example": "CC"
+              }
+            }
+          },
+          "phone": {
+            "type": "object",
+            "properties": {
+              "country_code": {
+                "type": "string",
+                "example": "57"
+              },
+              "number": {
+                "type": "string",
+                "example": "3132450765"
+              }
+            }
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "address_line_1": {
+                "type": "string",
+                "example": "Calle 34 # 56 - 78"
+              },
+              "address_line_2": {
+                "type": "string",
+                "example": "Apartamento 502, Torre I"
+              },
+              "city": {
+                "type": "string",
+                "example": "Bogota"
+              },
+              "country": {
+                "type": "string",
+                "example": "CO"
+              },
+              "state": {
+                "type": "string",
+                "example": "Cundinamarca"
+              },
+              "zip_code": {
+                "type": "string",
+                "example": "111111"
+              }
+            }
+          },
+          "withdrawal_methods": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "bank": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "246"
+                    },
+                    "branch": {
+                      "type": "string",
+                      "example": "XXXX"
+                    },
+                    "branch_digit": {
+                      "type": "string"
+                    },
+                    "account": {
+                      "type": "string",
+                      "example": "1093333333"
+                    },
+                    "account_digit": {
+                      "type": "string"
+                    },
+                    "account_type": {
+                      "type": "string",
+                      "example": "SAVINGS"
+                    },
+                    "routing": {
+                      "type": "string",
+                      "example": "XXXXYYYYC"
+                    },
+                    "country": {
+                      "type": "string",
+                      "example": "CO"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "example": "COP"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "documentation": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "file_name": {
+                  "type": "string",
+                  "example": "PDF"
+                },
+                "content_type": {
+                  "type": "string",
+                  "example": "RECEIPT"
+                },
+                "content_category": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string",
+                  "example": "sdadsadasdsad"
+                }
+              }
+            }
+          },
+          "onboardings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "PREVIOUSLY_ONBOARDED"
+                },
+                "workflow": {
+                  "type": "string",
+                  "example": "HOSTED_BY_PROVIDER"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "PENDING"
+                },
+                "callback_url": {
+                  "type": "string",
+                  "example": "https://www.google.com"
+                },
+                "provider": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": [
+                        "PAGARME",
+                        "ALELO",
+                        "EDENRED",
+                        "PLUXEE",
+                        "VR",
+                        "STRIPE",
+                        "ADYEN"
+                      ]
+                    },
+                    "redirect_url": {
+                      "type": "string",
+                      "example": "https://www.stripe.com"
+                    },
+                    "recipient_id": {
+                      "type": "string",
+                      "example": "AAAAA01"
+                    }
+                  }
+                },
+                "documentation": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "file_name": {
+                        "type": "string",
+                        "example": "PDF"
+                      },
+                      "content_type": {
+                        "type": "string",
+                        "example": "RECEIPT"
+                      },
+                      "content_category": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string",
+                        "example": "sdadsadasdsad"
+                      }
+                    }
+                  }
+                },
+                "withdrawal_methods": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "bank": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "example": "246"
+                          },
+                          "branch": {
+                            "type": "string",
+                            "example": "XXXX"
+                          },
+                          "branch_digit": {
+                            "type": "string"
+                          },
+                          "account": {
+                            "type": "string",
+                            "example": "1093333333"
+                          },
+                          "account_digit": {
+                            "type": "string"
+                          },
+                          "account_type": {
+                            "type": "string",
+                            "example": "SAVINGS"
+                          },
+                          "routing": {
+                            "type": "string",
+                            "example": "XXXXYYYYC"
+                          },
+                          "country": {
+                            "type": "string",
+                            "example": "CO"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "example": "COP"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "example": "2022-05-09T20:46:54.786342Z"
+                },
+                "updated_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "example": "2022-07-09T20:43:54.786342Z"
+                }
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Recipient creation date (ISO 8601 MAX 27; MIN 27).",
+            "example": "2022-05-09T20:46:54.786342Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last Recipient updated date (ISO 8601 MAX 27; MIN 27).",
+            "example": "2022-07-09T20:43:54.786342Z"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "INVALID_REQUEST"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "Invalid request"
+            }
+          }
+        }
+      }
     }
   },
   "security": [
@@ -32,72 +1212,219 @@
     }
   ],
   "paths": {
-    "/three-d-secure/setups": {
+    "/recipients": {
       "post": {
-        "summary": "Setup",
-        "description": "",
-        "operationId": "3ds-setup",
+        "summary": "Create Recipient",
+        "description": "Creates  a new recipient for split payment scenarios. This endpoint allows merchants to define recipients that can receive portions of payments in marketplace or split payment models.",
+        "operationId": "create-recipient",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": [
-                  "account_id"
-                ],
-                "properties": {
-                  "account_id": {
-                    "type": "string",
-                    "description": "The unique identifier of the account. You find this information on [Yuno's Dashboard](https://dashboard.y.uno/) (MAX 64; MIN 36)."
-                  },
-                  "card": {
-                    "type": "object",
-                    "description": "Specifies the card data object.",
-                    "required": [
-                      "holder_name",
-                      "number",
-                      "expiration_month",
-                      "expiration_year",
-                      "security_code"
-                    ],
-                    "properties": {
-                      "holder_name": {
-                        "type": "string",
-                        "description": "Cardholder’s full name as it appears on the card (MAX 26; MIN 3) - only available for PCI certified merchants."
-                      },
-                      "number": {
-                        "type": "string",
-                        "description": "Card’s number without any separators. (MAX 19; MIN 8) - only available for PCI certified merchants."
-                      },
-                      "expiration_month": {
-                        "type": "integer",
-                        "description": "Card’s expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants.",
-                        "format": "int32"
-                      },
-                      "expiration_year": {
-                        "type": "integer",
-                        "description": "Card’s expiration year - YYYY (MAX 4; MIN 2) - only available for PCI certified merchants.",
-                        "format": "int32"
-                      },
-                      "security_code": {
-                        "type": "string",
-                        "description": "Card’s security code (MAX 4; MIN 3) - only available for PCI certified merchants."
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/components/schemas/Recipient"
               },
               "examples": {
-                "Request Example": {
+                "Individual Recipient": {
                   "value": {
-                    "account_id": "<Your account_id>",
-                    "card": {
-                      "holder_name": "John Doe",
-                      "number": "4456530000000007",
-                      "expiration_month": 1,
-                      "expiration_year": 26,
-                      "security_code": "123"
-                    }
+                    "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                    "merchant_recipient_id": "AAAA01",
+                    "national_entity": "INDIVIDUAL",
+                    "first_name": "John",
+                    "last_name": "Doe",
+                    "email": "john.doe@email.com",
+                    "country": "CO",
+                    "document": {
+                      "document_number": "1093333333",
+                      "document_type": "CC"
+                    },
+                    "phone": {
+                      "country_code": "57",
+                      "number": "3132450765"
+                    },
+                    "address": {
+                      "address_line_1": "Calle 34 # 56 - 78",
+                      "address_line_2": "Apartamento 502, Torre I",
+                      "city": "Bogota",
+                      "country": "CO",
+                      "state": "Cundinamarca",
+                      "zip_code": "111111"
+                    },
+                    "withdrawal_methods": [
+                      {
+                        "bank": {
+                          "code": "246",
+                          "branch": "XXXX",
+                          "account": "1093333333",
+                          "account_type": "SAVINGS"
+                        }
+                      }
+                    ],
+                    "onboardings": [
+                      {
+                        "type": "PREVIOUSLY_ONBOARDED",
+                        "workflow": "HOSTED_BY_PROVIDER",
+                        "callback_url": "https://www.google.com",
+
+                        "provider": {
+                          "id": "PAGARME"
+                        }
+                      }
+                    ],
+                    "created_at": "2024-01-15T10:30:00Z",
+                    "updated_at": "2024-01-15T10:30:00Z"
+                  }
+                },
+                "Create Recipient - US": {
+                  "value": {
+                    "account_id": "{{account-code}}",
+                    "merchant_recipient_id": "MERCHANT_usa_example_800",
+                    "national_entity": "INDIVIDUAL",
+                    "entity_type": "PRIVATE",
+                    "first_name": "NACHOSOS",
+                    "last_name": "UNCAPO",
+                    "legal_name": null,
+                    "email": "nach.dos@example.com",
+                    "date_of_birth": "1990-01-15",
+                    "country": "US",
+                    "website": "https://johndoe.com",
+                    "industry": "Software",
+                    "merchant_category_code": "5734",
+                    "document": {
+                      "document_number": "123-45-6789",
+                      "document_type": "SSN"
+                    },
+                    "phone": {
+                      "country_code": "1",
+                      "number": "4151234567"
+                    },
+                    "address": {
+                      "address_line_1": "1234 Market Street",
+                      "address_line_2": "Suite 100",
+                      "city": "San Francisco",
+                      "country": "US",
+                      "state": "California",
+                      "zip_code": "94103",
+                      "neighborhood": "SoMa"
+                    },
+                    "legal_representatives": [
+                      {
+                        "merchant_reference": "REP_US_001",
+                        "first_name": "Jane",
+                        "last_name": "Smith",
+                        "email": "jane.smith@example.com",
+                        "date_of_birth": "1985-05-20",
+                        "country": "US",
+                        "nationality": "US",
+                        "title": "CEO",
+                        "publicly_exposed_person": false,
+                        "ultimate_beneficial_owner": true,
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "987-65-4321"
+                        },
+                        "phone": {
+                          "number": "6469876543",
+                          "country_code": "1"
+                        },
+                        "address": {
+                          "address_line_1": "1600 Amphitheatre Parkway",
+                          "address_line_2": null,
+                          "country": "US",
+                          "state": "CA",
+                          "city": "Mountain View",
+                          "zip_code": "94043"
+                        }
+                      }
+                    ],
+                    "withdrawal_methods": {
+                      "bank": {
+                        "code": "001",
+                        "branch": "001",
+                        "branch_digit": "001",
+                        "account": "000123456789",
+                        "account_digit": "001",
+                        "account_type": "CHECKINGS",
+                        "routing": "021000021",
+                        "country": "US",
+                        "currency": "USD"
+                      }
+                    },
+                    "documentation": [
+                      {
+                        "file_name": "document",
+                        "content_type": "application/pdf",
+                        "content_category": "SELFIE",
+                        "content": "iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAIAAAACUFjqAAAAEklEQVR4nGP8z4APMOGVHbHSAEEsAROxCnMTAAAAAElFTkSuQmCC"
+                      }
+                    ],
+                    "onboardings": [
+                      {
+                        "type": "ONBOARD_ONTO_THE_PROVIDER",
+                        "workflow": "DIRECT",
+                        "callback_url": "https://merchant.example.com/webhook/onboarding",
+                        "provider": {
+                          "id": "STRIPE",
+                          "connection_id": "02ea2568-d99e-4fb9-9bd3-7bb13a822d33",
+                          "recipient_id": null
+                        },
+                        "documentation": null,
+                        "legal_representatives": null,
+                        "withdrawal_methods": {
+                          "bank": {
+                            "code": "001",
+                            "branch": "001",
+                            "branch_digit": null,
+                            "account": "000123456789",
+                            "account_digit": null,
+                            "account_type": "CHECKINGS",
+                            "routing": "021000021",
+                            "country": "US",
+                            "currency": "USD"
+                          }
+                        },
+                        "terms_of_service": {
+                          "acceptance": true,
+                          "date": "2025-06-18T00:00:00Z",
+                          "ip": "192.168.1.100"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "Entity Recipient": {
+                  "value": {
+                    "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                    "merchant_recipient_id": "AAAA02",
+                    "national_entity": "ENTITY",
+                    "first_name": "Business",
+                    "last_name": "Corp",
+                    "legal_name": "Arcos dorados S.A.",
+                    "email": "business@corp.com",
+                    "country": "CO",
+                    "document": {
+                      "document_number": "900123456",
+                      "document_type": "NIT"
+                    },
+                    "phone": {
+                      "country_code": "57",
+                      "number": "1234567890"
+                    },
+                    "address": {
+                      "address_line_1": "Calle 123 # 45 - 67",
+                      "city": "Medellin",
+                      "country": "CO",
+                      "state": "Antioquia",
+                      "zip_code": "050001"
+                    },
+                    "onboardings": [
+                      {
+                        "type": "ONBOARD_ONTO_THE_PROVIDER",
+                        "callback_url": "https://myapp.com/callback",
+                        "provider": {
+                          "id": "STRIPE"
+                        }
+                      }
+                    ]
                   }
                 }
               }
@@ -105,33 +1432,243 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "200",
+          "201": {
+            "description": "Recipient created successfully",
             "content": {
               "application/json": {
-                "examples": {
-                  "Result": {
-                    "value": "{\n    \"three_d_secure_setup_id\": \"005219f5-babf-4598-bc52-5dd49c19ba7a\",\n    \"collect_url\": \"https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect\",\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyNzA3MjQyZi1iM2Y5LTQ5ODktYjQ5NC01MzY5ODA5Yjc3YmYiLCJpYXQiOjE3MTc3NjU5NDksImlzcyI6IjVkZDgzYmYwMGU0MjNkMTQ5OGRjYmFjYSIsImV4cCI6MTcxNzc2OTU0OSwiT3JnVW5pdElkIjoiNjQwYTM1NjlkODdhMjUwYTQyNTEwOWRjIiwiUmVmZXJlbmNlSWQiOiI0NDhjM2ZmZS01NjZhLTRmYWUtOTE0Zi0wNmVjOGNmZDljMjAifQ.fl0MIgejhhsnbg1E_CcuAQsXU2jcv8lG3-7Td0FIj9k\",\n    \"provider_id\": \"CYBERSOURCE_3DS\"\n}"
-                  }
-                },
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "three_d_secure_setup_id": {
-                      "type": "string",
-                      "example": "005219f5-babf-4598-bc52-5dd49c19ba7a"
-                    },
-                    "collect_url": {
-                      "type": "string",
-                      "example": "https://centinelapistag.cardinalcommerce.com/V1/Cruise/Collect"
-                    },
-                    "token": {
-                      "type": "string",
-                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyNzA3MjQyZi1iM2Y5LTQ5ODktYjQ5NC01MzY5ODA5Yjc3YmYiLCJpYXQiOjE3MTc3NjU5NDksImlzcyI6IjVkZDgzYmYwMGU0MjNkMTQ5OGRjYmFjYSIsImV4cCI6MTcxNzc2OTU0OSwiT3JnVW5pdElkIjoiNjQwYTM1NjlkODdhMjUwYTQyNTEwOWRjIiwiUmVmZXJlbmNlSWQiOiI0NDhjM2ZmZS01NjZhLTRmYWUtOTE0Zi0wNmVjOGNmZDljMjAifQ.fl0MIgejhhsnbg1E_CcuAQsXU2jcv8lG3-7Td0FIj9k"
-                    },
-                    "provider_id": {
-                      "type": "string",
-                      "example": "CYBERSOURCE_3DS"
+                  "$ref": "#/components/schemas/RecipientResponse"
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_recipient_id": "AAAA01",
+                      "national_entity": "ENTITY",
+                      "entity_type": "PRIVATE",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "legal_name": "Arcos dorados S.A.",
+                      "email": "john.doe@email.com",
+                      "country": "CO",
+                      "website": "https://www.your-site.com",
+                      "industry": "VIRTUAL_GOODS",
+                      "merchant_category_code": "5234",
+                      "document": {
+                        "document_number": "1093333333",
+                        "document_type": "CC"
+                      },
+                      "phone": {
+                        "country_code": "57",
+                        "number": "3132450765"
+                      },
+                      "address": {
+                        "address_line_1": "Calle 34 # 56 - 78",
+                        "address_line_2": "Apartamento 502, Torre I",
+                        "city": "Bogota",
+                        "country": "CO",
+                        "state": "Cundinamarca",
+                        "zip_code": "111111"
+                      },
+                      "withdrawal_methods": [
+                        {
+                          "bank": {
+                            "code": "246",
+                            "branch": "XXXX",
+                            "account": "1093333333",
+                            "account_type": "SAVINGS"
+                          }
+                        }
+                      ],
+                      "onboardings": [
+                        {
+                          "id": "c17dad44-01a1-41a9-8106-65a9700e4a8e",
+                          "type": "ONBOARD_ONTO_THE_PROVIDER",
+                          "workflow": "DIRECT",
+                          "status": "SUCCEEDED",
+                          "provider": {
+                            "id": "ALELO"
+                          },
+                          "created_at": "2024-01-15T10:30:00Z",
+                          "updated_at": "2024-01-15T10:30:00Z",
+                          "history": {
+                            "id": "c17dad44-01a1-41a9-8106-65a9700e4a8e",
+                            "type": "ONBOARD_ONTO_THE_PROVIDER",
+                            "workflow": "DIRECT",
+                            "status": "SUCCEEDED",
+                            "provider": {
+                              "id": "ALELO"
+                            },
+                            "created_at": "2024-01-15T10:30:00Z",
+                            "updated_at": "2024-01-15T10:30:00Z"
+                          }
+                        }
+                      ],
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T10:30:00Z"
+                    }
+                  },
+                  "Create Recipient - US": {
+                    "value": {
+                      "id": "cda3df93-2bfb-41f7-87ff-87239bf89771",
+                      "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                      "merchant_recipient_id": "MERCHANT_usa_example_800",
+                      "national_entity": "INDIVIDUAL",
+                      "entity_type": "PRIVATE",
+                      "first_name": "NACHOSOS",
+                      "last_name": "UNCAPO",
+                      "legal_name": null,
+                      "email": "nach.dos@example.com",
+                      "date_of_birth": "1990-01-15",
+                      "country": "US",
+                      "website": "https://johndoe.com",
+                      "industry": "Software",
+                      "merchant_category_code": "5734",
+                      "document": {
+                        "document_number": "123-45-6789",
+                        "document_type": "SSN"
+                      },
+                      "phone": {
+                        "country_code": "1",
+                        "number": "4151234567"
+                      },
+                      "address": {
+                        "address_line_1": "1234 Market Street",
+                        "address_line_2": "Suite 100",
+                        "city": "San Francisco",
+                        "country": "US",
+                        "state": "California",
+                        "zip_code": "94103",
+                        "neighborhood": "SoMa"
+                      },
+                      "legal_representatives": [
+                        {
+                          "merchant_reference": "REP_US_001",
+                          "first_name": "Jane",
+                          "last_name": "Smith",
+                          "email": "jane.smith@example.com",
+                          "date_of_birth": "1985-05-20",
+                          "country": "US",
+                          "nationality": "US",
+                          "title": "CEO",
+                          "publicly_exposed_person": false,
+                          "ultimate_beneficial_owner": true,
+                          "document": {
+                            "document_type": "SSN",
+                            "document_number": "987-65-4321"
+                          },
+                          "phone": {
+                            "number": "6469876543",
+                            "country_code": "1"
+                          },
+                          "address": {
+                            "address_line_1": "1600 Amphitheatre Parkway",
+                            "address_line_2": null,
+                            "country": "US",
+                            "state": "CA",
+                            "city": "Mountain View",
+                            "zip_code": "94043"
+                          }
+                        }
+                      ],
+                      "withdrawal_methods": {
+                        "bank": {
+                          "code": "001",
+                          "branch": "001",
+                          "branch_digit": "001",
+                          "account": "000123456789",
+                          "account_digit": "001",
+                          "account_type": "CHECKINGS",
+                          "routing": "021000021",
+                          "country": "US",
+                          "currency": "USD"
+                        }
+                      },
+                      "documentation": [
+                        {
+                          "file_name": "document",
+                          "content_type": "application/pdf",
+                          "content_category": "SELFIE",
+                          "content": "document-bbea3a8d-5ca1-450b-bef2-787b43efafd9"
+                        }
+                      ],
+                      "onboardings": [
+                        {
+                          "id": "4eb9497b-19c3-45aa-bec9-160735042a51",
+                          "type": "ONBOARD_ONTO_THE_PROVIDER",
+                          "workflow": "DIRECT",
+                          "status": "PENDING",
+                          "callback_url": "https://merchant.example.com/webhook/onboarding",
+                          "provider": {
+                            "id": "STRIPE",
+                            "connection_id": "02ea2568-d99e-4fb9-9bd3-7bb13a822d33",
+                            "recipient_id": null,
+                            "redirect_url": null
+                          },
+                          "documentation": [],
+                          "legal_representatives": [],
+                          "requirements": [],
+                          "withdrawal_methods": {
+                            "bank": {
+                              "code": "001",
+                              "branch": "001",
+                              "branch_digit": null,
+                              "account": "000123456789",
+                              "account_digit": null,
+                              "account_type": "CHECKINGS",
+                              "routing": "021000021",
+                              "country": "US",
+                              "currency": "USD"
+                            }
+                          },
+                          "terms_of_service": {
+                            "acceptance": true,
+                            "date": "2025-06-18T00:00:00Z",
+                            "ip": "192.168.1.100"
+                          },
+                          "created_at": "2025-07-29T20:31:37.976788Z",
+                          "updated_at": "2025-07-29T20:31:37.976797Z",
+                          "history": {
+                            "id": "4eb9497b-19c3-45aa-bec9-160735042a51",
+                            "type": "ONBOARD_ONTO_THE_PROVIDER",
+                            "workflow": "DIRECT",
+                            "status": "PENDING",
+                            "callback_url": "https://merchant.example.com/webhook/onboarding",
+                            "provider": {
+                              "id": "STRIPE",
+                              "connection_id": "02ea2568-d99e-4fb9-9bd3-7bb13a822d33",
+                              "recipient_id": null,
+                              "redirect_url": null
+                            },
+                            "documentation": [],
+                            "legal_representatives": [],
+                            "requirements": [],
+                            "withdrawal_methods": {
+                              "bank": {
+                                "code": "001",
+                                "branch": "001",
+                                "branch_digit": null,
+                                "account": "000123456789",
+                                "account_digit": null,
+                                "account_type": "CHECKINGS",
+                                "routing": "021000021",
+                                "country": "US",
+                                "currency": "USD"
+                              }
+                            },
+                            "terms_of_service": {
+                              "acceptance": true,
+                              "date": "2025-06-18T00:00:00Z",
+                              "ip": "192.168.1.100"
+                            },
+                            "created_at": "2025-07-29T20:31:37.976788Z",
+                            "updated_at": "2025-07-29T20:31:37.976797Z"
+                          }
+                        }
+                      ],
+                      "created_at": "2025-07-29T20:31:37.795447Z",
+                      "updated_at": "2025-07-29T20:31:37.795458Z"
                     }
                   }
                 }
@@ -139,26 +1676,174 @@
             }
           },
           "400": {
-            "description": "400",
+            "description": "Bad Request",
             "content": {
               "application/json": {
-                "examples": {
-                  "Result": {
-                    "value": "{\n  \"code\": \"INVALID_REQUEST\",\n  \"messages\": [\n    \"Invalid request\"\n  ]\n}"
-                  }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 },
+                "examples": {
+                  "Invalid Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "account_id is required",
+                        "national_entity must be INDIVIDUAL or ENTITY",
+                        "first_name is required"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": ["Invalid credentials"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Forbidden": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Recipients",
+        "description": "Retrieves a list of recipients for the authenticated account. Supports pagination and filtering.",
+        "operationId": "list-recipients",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of recipients to return",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Number of recipients to skip for pagination",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "minimum": 0
+            }
+          },
+          {
+            "name": "national_entity",
+            "in": "query",
+            "description": "Filter recipients by national entity type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["INDIVIDUAL", "ENTITY"]
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "description": "Filter recipients by country",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of recipients retrieved successfully",
+            "content": {
+              "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "INVALID_REQUEST"
-                    },
-                    "messages": {
+                    "data": {
                       "type": "array",
                       "items": {
-                        "type": "string",
-                        "example": "Invalid request"
+                        "$ref": "#/components/schemas/RecipientResponse"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "total": {
+                          "type": "integer",
+                          "description": "Total number of recipients"
+                        },
+                        "limit": {
+                          "type": "integer",
+                          "description": "Number of recipients per page"
+                        },
+                        "offset": {
+                          "type": "integer",
+                          "description": "Current offset"
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                          "description": "Whether there are more recipients to fetch"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "data": [
+                        {
+                          "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                          "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                          "merchant_recipient_id": "AAAA01",
+                          "national_entity": "INDIVIDUAL",
+                          "first_name": "John",
+                          "last_name": "Doe",
+                          "email": "john.doe@email.com",
+                          "country": "CO",
+                          "created_at": "2024-01-15T10:30:00Z",
+                          "updated_at": "2024-01-15T10:30:00Z"
+                        }
+                      ],
+                      "pagination": {
+                        "total": 1,
+                        "limit": 20,
+                        "offset": 0,
+                        "has_more": false
                       }
                     }
                   }
@@ -167,54 +1852,1271 @@
             }
           },
           "401": {
-            "description": "401",
+            "description": "Unauthorized",
             "content": {
               "application/json": {
-                "examples": {
-                  "Unauthorized": {
-                    "value": "{\n  \"code\": \"INVALID_CREDENTIALS\",\n  \"messages\": [\n    \"Invalid credentials\"\n  ]\n}"
-                  }
-                },
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "INVALID_CREDENTIALS"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "example": "Invalid credentials"
-                      }
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recipients/{recipient_id}": {
+      "parameters": [
+        {
+          "name": "recipient_id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier of the recipient",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "summary": "Get Recipient",
+        "description": "Retrieves detailed information about a specific recipient.",
+        "operationId": "get-recipient",
+        "responses": {
+          "200": {
+            "description": "Recipient details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientResponse"
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_recipient_id": "AAAA01",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "legal_name": "Arcos dorados S.A.",
+                      "email": "john.doe@email.com",
+                      "country": "CO",
+                      "document": {
+                        "document_number": "1093333333",
+                        "document_type": "CC"
+                      },
+                      "phone": {
+                        "country_code": "57",
+                        "number": "3132450765"
+                      },
+                      "address": {
+                        "address_line_1": "Calle 34 # 56 - 78",
+                        "address_line_2": "Apartamento 502, Torre I",
+                        "city": "Bogota",
+                        "country": "CO",
+                        "state": "Cundinamarca",
+                        "zip_code": "111111"
+                      },
+                      "withdrawal_methods": [
+                        {
+                          "bank": {
+                            "code": "246",
+                            "branch": "XXXX",
+                            "account": "1093333333",
+                            "account_type": "SAVINGS"
+                          }
+                        }
+                      ],
+                      "onboardings": [
+                        {
+                          "type": "PREVIOUSLY_ONBOARDED",
+                          "workflow": "HOSTED_BY_PROVIDER",
+                          "callback_url": "https://www.google.com",
+                          "provider": {
+                            "id": "PAGARME"
+                          }
+                        }
+                      ],
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T10:30:00Z"
                     }
                   }
                 }
               }
             }
           },
-          "403": {
-            "description": "403",
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
                 "examples": {
-                  "Forbidden": {
-                    "value": "{\n  \"code\": \"AUTHORIZATION_REQUIRED\",\n  \"messages\": [\n    \"The merchant has no authorization to use this API.\"\n  ]\n}"
+                  "Not Found": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_FOUND",
+                      "messages": ["Recipient not found"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Recipient",
+        "description": "Updates an existing recipient. Only specified fields will be updated.",
+        "operationId": "update-recipient",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "merchant_recipient_id": {
+                    "type": "string",
+                    "description": "Unique identifier of the recipient defined by the merchant (MAX 255; MIN 1)."
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "description": "Beneficiary's name. (MAX 80; MIN 1)."
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "description": "Beneficiary's last name. (MAX 80; MIN 1)."
+                  },
+                  "date_of_birth": {
+                    "type": "string",
+                    "description": "The Beneficiary's date of birth in the YYYY-MM-DD format (MAX 10; MIN 10)."
+                  },
+                  "entity_type": {
+                    "type": "string",
+                    "enum": ["GOVERNMENTAL", "PUBLIC", "NON_PROFIT", "PRIVATE"],
+                    "description": "The Beneficiary's type of organization. GOVERNMENTAL, PUBLIC, NON_PROFIT, PRIVATE"
+                  },
+                  "website": {
+                    "type": "string",
+                    "description": "The seller's website URL (MAX 255; MIN 3)."
+                  },
+                  "industry": {
+                    "type": "string",
+                    "description": "The seller's industry (MAX 235; MIN 1). For more information access the Industry category reference page."
+                  },
+                  "merchant_category_code": {
+                    "type": "string",
+                    "description": "MCC - The merchant category code (MAX 235; MIN 1)."
+                  },
+                  "email": {
+                    "type": "string",
+                    "description": "The Beneficiary's email (MAX 255; MIN 3)."
+                  },
+                  "phone": {
+                    "type": "object",
+                    "properties": {
+                      "country_code": {
+                        "type": "string",
+                        "description": "Beneficiary's cell phone area code. (MAX 3; MIN 2)."
+                      },
+                      "number": {
+                        "type": "string",
+                        "description": "Beneficiary's cell phone number. (MAX 32; MIN 1)."
+                      }
+                    }
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "address_line_1": {
+                        "type": "string",
+                        "description": "The primary billing address line of the customer (MAX 255; MIN 3)."
+                      },
+                      "address_line_2": {
+                        "type": "string",
+                        "description": "The secondary billing address line of the customer (MAX 255; MIN 3)."
+                      },
+                      "city": {
+                        "type": "string",
+                        "description": "The city considered for the billing address (MAX 255; MIN 3)."
+                      },
+                      "state": {
+                        "type": "string",
+                        "description": "The state / province considered for the billing address (MAX 255; MIN 3)."
+                      },
+                      "zip_code": {
+                        "type": "string",
+                        "description": "The zipcode considered for the billing address (MAX 11; MIN 4)."
+                      }
+                    }
+                  },
+                  "withdrawal_methods": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "bank": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "description": "Bank's code (MAX 3; MIN 3)."
+                            },
+                            "branch": {
+                              "type": "string",
+                              "description": "Bank's branch (MAX 3; MIN 3)."
+                            },
+                            "branch_digit": {
+                              "type": "string",
+                              "description": "Bank's branch digit (MAX 3; MIN 3)."
+                            },
+                            "account": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account number (MAX 250; MIN 3)."
+                            },
+                            "account_digit": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                            },
+                            "account_type": {
+                              "type": "string",
+                              "enum": ["CHECKINGS", "SAVINGS"],
+                              "description": "Beneficiary's bank account type (MAX 3; MIN 1)."
+                            },
+                            "routing": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account routing number."
+                            },
+                            "country": {
+                              "type": "string",
+                              "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2)."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3)."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "documentation": {
+                    "type": "array",
+                    "description": "Array of documentation objects",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "file_name": {
+                          "type": "string",
+                          "description": "The name of the documentation sent (MAX 255; MIN 3)."
+                        },
+                        "content_type": {
+                          "type": "string",
+                          "description": "The type of the documentation sent by the merchant."
+                        },
+                        "content_category": {
+                          "type": "string",
+                          "description": "The category of the documentation sent by the merchant."
+                        },
+                        "content": {
+                          "type": "string",
+                          "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB."
+                        }
+                      }
+                    }
+                  },
+                  "onboardings": {
+                    "type": "array",
+                    "description": "Array of onboarding objects for different payment providers",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "PREVIOUSLY_ONBOARDED",
+                            "ONBOARD_ONTO_THE_PROVIDER"
+                          ],
+                          "description": "Type of onboarding. If its done by Yuno."
+                        },
+                        "workflow": {
+                          "type": "string",
+                          "enum": ["HOSTED_BY_PROVIDER", "DIRECT"],
+                          "description": "Workflow of the onboarding."
+                        },
+                        "callback_url": {
+                          "type": "string",
+                          "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed."
+                        },
+                        "provider": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "enum": [
+                                "PAGARME",
+                                "ALELO",
+                                "EDENRED",
+                                "PLUXEE",
+                                "VR",
+                                "STRIPE",
+                                "ADYEN"
+                              ],
+                              "description": "Provider id.",
+                              "example": "PAGARME"
+                            },
+                            "recipient_id": {
+                              "type": "string",
+                              "description": "The unique identifier of the provider's recipient."
+                            }
+                          }
+                        },
+                        "documentation": {
+                          "type": "array",
+                          "description": "Array of documentation objects for this onboarding",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "file_name": {
+                                "type": "string",
+                                "description": "The name of the documentation sent (MAX 255; MIN 3)."
+                              },
+                              "content_type": {
+                                "type": "string",
+                                "description": "The type of the documentation sent by the merchant."
+                              },
+                              "content_category": {
+                                "type": "string",
+                                "description": "The category of the documentation sent by the merchant."
+                              },
+                              "content": {
+                                "type": "string",
+                                "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB."
+                              }
+                            }
+                          }
+                        },
+                        "withdrawal_methods": {
+                          "type": "array",
+                          "description": "Withdrawal methods for this onboarding",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "bank": {
+                                "type": "object",
+                                "properties": {
+                                  "code": {
+                                    "type": "string",
+                                    "description": "Bank's code (MAX 3; MIN 3)."
+                                  },
+                                  "branch": {
+                                    "type": "string",
+                                    "description": "Bank's branch (MAX 3; MIN 3)."
+                                  },
+                                  "branch_digit": {
+                                    "type": "string",
+                                    "description": "Bank's branch digit (MAX 3; MIN 3)."
+                                  },
+                                  "account": {
+                                    "type": "string",
+                                    "description": "Beneficiary's bank account number (MAX 250; MIN 3)."
+                                  },
+                                  "account_digit": {
+                                    "type": "string",
+                                    "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                                  },
+                                  "account_type": {
+                                    "type": "string",
+                                    "enum": ["CHECKINGS", "SAVINGS"],
+                                    "description": "Beneficiary's bank account type (MAX 3; MIN 1)."
+                                  },
+                                  "routing": {
+                                    "type": "string",
+                                    "description": "Beneficiary's bank account routing number."
+                                  },
+                                  "country": {
+                                    "type": "string",
+                                    "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2)."
+                                  },
+                                  "currency": {
+                                    "type": "string",
+                                    "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3)."
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Update Contact Info": {
+                  "value": {
+                    "email": "newemail@example.com",
+                    "phone": {
+                      "country_code": "57",
+                      "number": "9876543210"
+                    }
                   }
                 },
+                "Update Address": {
+                  "value": {
+                    "address": {
+                      "address_line_1": "New Street 123",
+                      "city": "New City",
+                      "state": "New State",
+                      "zip_code": "12345"
+                    }
+                  }
+                },
+                "Update Banking Info": {
+                  "value": {
+                    "withdrawal_methods": [
+                      {
+                        "bank": {
+                          "code": "123",
+                          "branch": "YYY",
+                          "account": "987654321",
+                          "account_type": "CHECKINGS"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "Update Onboarding": {
+                  "value": {
+                    "onboardings": [
+                      {
+                        "type": "ONBOARD_ONTO_THE_PROVIDER",
+                        "workflow": "DIRECT",
+                        "callback_url": "https://myapp.com/new-callback",
+                        "provider": {
+                          "id": "ADYEN"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recipient updated successfully",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "AUTHORIZATION_REQUIRED"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
+                  "$ref": "#/components/schemas/RecipientResponse"
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_recipient_id": "AAAA01",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "newemail@example.com",
+                      "country": "CO",
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T11:45:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Recipient",
+        "description": "Deletes a recipient. This action cannot be undone.",
+        "operationId": "delete-recipient",
+        "responses": {
+          "204": {
+            "description": "Recipient deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Not Found": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_FOUND",
+                      "messages": ["Recipient not found"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Recipient cannot be deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Conflict": {
+                    "value": {
+                      "code": "RECIPIENT_IN_USE",
+                      "messages": [
+                        "Recipient cannot be deleted as it is currently being used in active payments"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recipients/{recipient_id}/onboardings/{onboardings_id}/cancel": {
+      "parameters": [
+        {
+          "name": "recipient_id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier of the recipient",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "onboarding_id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier of the onboarding associated with this action.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Cancel Onboarding",
+        "description": "Cancels a recipient. This action can be undone by unblocking the recipient.",
+        "operationId": "cancel-recipient",
+        "responses": {
+          "200": {
+            "description": "Recipient cancelled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientResponse"
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_recipient_id": "AAAA01",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "john.doe@email.com",
+                      "country": "CO",
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Not Found": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_FOUND",
+                      "messages": ["Recipient not found"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Recipient cannot be cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Conflict": {
+                    "value": {
+                      "code": "RECIPIENT_ALREADY_CANCELLED",
+                      "messages": ["Recipient is already cancelled"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recipients/{recipient_id}/onboardings/{onboardings_id}/block": {
+      "parameters": [
+        {
+          "name": "recipient_id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier of the recipient",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "onboarding_id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier of the onboarding associated with this action.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Block Recipient",
+        "description": "Blocks a recipient. This prevents the recipient from receiving payments until unblocked.",
+        "operationId": "block-recipient",
+        "responses": {
+          "200": {
+            "description": "Recipient blocked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientResponse"
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_recipient_id": "AAAA01",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "john.doe@email.com",
+                      "country": "CO",
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Not Found": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_FOUND",
+                      "messages": ["Recipient not found"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Recipient cannot be blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Conflict": {
+                    "value": {
+                      "code": "RECIPIENT_ALREADY_BLOCKED",
+                      "messages": ["Recipient is already blocked"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recipients/{recipient_id}/onboardings/{onboardings_id}/unblock": {
+      "parameters": [
+        {
+          "name": "recipient_id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier of the recipient",
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "onboarding_id",
+          "in": "path",
+          "required": true,
+          "description": "The unique identifier of the onboarding associated with this action.",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "post": {
+        "summary": "Unblock Recipient",
+        "description": "Unblocks a recipient. This allows the recipient to receive payments again.",
+        "operationId": "unblock-recipient",
+        "responses": {
+          "200": {
+            "description": "Recipient unblocked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientResponse"
+                },
+                "examples": {
+                  "Success Response": {
+                    "value": {
+                      "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+                      "merchant_recipient_id": "AAAA01",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "john.doe@email.com",
+                      "country": "CO",
+                      "created_at": "2024-01-15T10:30:00Z",
+                      "updated_at": "2024-01-15T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Not Found": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_FOUND",
+                      "messages": ["Recipient not found"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Recipient cannot be unblocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "Conflict": {
+                    "value": {
+                      "code": "RECIPIENT_NOT_BLOCKED",
+                      "messages": ["Recipient is not blocked"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recipients/{recipient_id}/onboardings": {
+      "post": {
+        "summary": "Create Onboarding",
+        "description": "Creates an onboarding for a recipient.",
+        "operationId": "post_{id}onboardings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_id", "type", "workflow"],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "Unique id of the account in Yuno",
+                    "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "PREVIOUSLY_ONBOARDED",
+                      "ONBOARD_ONTO_THE_PROVIDER"
+                    ],
+                    "description": "Type of onboarding, if it's done by Yuno",
+                    "example": "PREVIOUSLY_ONBOARDED"
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "enum": ["HOSTED_BY_PROVIDER", "HOSTED_BY_YUNO", "DIRECT"],
+                    "description": "Workflow of the onboarding",
+                    "example": "HOSTED_BY_PROVIDER"
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed.",
+                    "example": "https://www.google.com"
+                  },
+                  "provider": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
                         "type": "string",
-                        "example": "The merchant has no authorization to use this API."
+                        "description": "Provider id",
+                        "example": "PAGARME"
+                      },
+                      "connection_id": {
+                        "type": "string",
+                        "description": "Id of the connection in Yuno",
+                        "example": "104911d-5df9-429e-8488-ad41abea1a4b"
+                      },
+                      "recipient_id": {
+                        "type": "string",
+                        "description": "The unique identifier of the provider's recipient.",
+                        "example": "AAAAA01"
+                      }
+                    }
+                  },
+                  "documentation": {
+                    "type": "array",
+                    "description": "Specifies the documentation object.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "file_name",
+                        "content_type",
+                        "content_category",
+                        "content"
+                      ],
+                      "properties": {
+                        "file_name": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 255,
+                          "description": "The name of the documentation sent (MAX 255; MIN 3).",
+                          "example": "PDF"
+                        },
+                        "content_type": {
+                          "type": "string",
+                          "enum": [
+                            "application/pdf",
+                            "image/jpeg",
+                            "image/png"
+                          ],
+                          "description": "The type of the documentation sent by the merchant",
+                          "example": "application/pdf"
+                        },
+                        "content_category": {
+                          "type": "string",
+                          "enum": [
+                            "ACCOUNT_REQUIREMENT",
+                            "BANK_STATEMENT",
+                            "BUSINESS_ICON",
+                            "BUSINESS_LOGO",
+                            "CANCEL_POLICY",
+                            "CUSTOMER_INTERACTION",
+                            "DRIVERS_LICENCE",
+                            "IDENTIFICATION_DOCUMENT",
+                            "IDENTIFICATION_DOCUMENT_BACK",
+                            "IDENTIFICATION_DOCUMENT_FRONT",
+                            "LEGAL_AGREEMENT",
+                            "OTHERS",
+                            "PASSPORT",
+                            "PAYMENT_DETAIL",
+                            "PROOF_OF_ADDRESS",
+                            "PROOF_OF_AUTHENTICITY",
+                            "PROOF_OF_DELIVERY",
+                            "PROOF_OF_DIRECTOR",
+                            "PROOF_OF_INDUSTRY",
+                            "PROOF_OF_NATIONAL_ID_NUMBER",
+                            "PROOF_OF_OWNERSHIP",
+                            "PROOF_OF_REGISTRATION",
+                            "PROOF_OF_RELATIONSHIP",
+                            "PROOF_OF_SERVICE",
+                            "PROOF_OF_SOURCE_OF_FUNDS",
+                            "PROOF_OF_SOURCE_OF_WEALTH",
+                            "PROOF_OF_TAX",
+                            "PROVIDER_IDENTITY_DOCUMENT",
+                            "RECEIPT",
+                            "REFUND_POLICY",
+                            "SELFIE",
+                            "SERVICE_AGREEMENT",
+                            "SIGNATURE",
+                            "TERMS_AND_CONDITIONS",
+                            "VAT_DOCUMENT"
+                          ],
+                          "description": "The category of the documentation sent by the merchant"
+                        },
+                        "content": {
+                          "type": "string",
+                          "format": "byte",
+                          "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB.",
+                          "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                        }
+                      }
+                    }
+                  },
+                  "withdrawal_methods": {
+                    "type": "object",
+                    "description": "Specifies the withdrawal methods object.",
+                    "properties": {
+                      "bank": {
+                        "type": "object",
+                        "description": "struct",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "Bank´s code (MAX 3; MIN 3)",
+                            "example": "246"
+                          },
+                          "branch": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "Bank´s branch (MAX 3; MIN 3)",
+                            "example": "XXXX"
+                          },
+                          "branch_digit": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "Bank´s branch digit (MAX 3; MIN 3)"
+                          },
+                          "account": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 250,
+                            "description": "Beneficiary's bank account number (MAX 3; MIN 250)",
+                            "example": "1093333333"
+                          },
+                          "account_digit": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 250,
+                            "description": "Beneficiary's bank account digit (MAX 3; MIN 250)"
+                          },
+                          "account_type": {
+                            "type": "string",
+                            "enum": [
+                              "CHECKINGS",
+                              "SAVINGS",
+                              "VISTA",
+                              "PIX_EMAIL",
+                              "PIX_PHONE",
+                              "PIX_DOCUMENT_ID",
+                              "PIX_BANK_ACCOUNT"
+                            ],
+                            "description": "Beneficiary's bank account type (MAX 1; MIN 3). Could be: CHECKINGS, SAVINGS, VISTA, PIX_EMAIL, PIX_PHONE, PIX_DOCUMENT_ID, PIX_BANK_ACCOUNT",
+                            "example": "SAVINGS"
+                          },
+                          "routing": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account routing number",
+                            "example": "XXXXYYYYC"
+                          },
+                          "country": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 2,
+                            "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2)",
+                            "example": "CO"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "The bank account's currency (ISO 3166-1 MAX 3; MIN 3)",
+                            "example": "COP"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "legal_representatives": {
+                    "type": "array",
+                    "description": "Object to indicate the owners of the organization. Adyen, Stripe and dlocal have fields related to that.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "merchant_reference": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 255,
+                          "description": "Legal representative's identification id (MAX 255; MIN 3)."
+                        },
+                        "first_name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "Legal representative's name. (MAX 255; MIN 1).",
+                          "example": "John"
+                        },
+                        "last_name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "Legal representative's last name. (MAX 255; MIN 1).",
+                          "example": "Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "The Legal representative's email (MAX 255; MIN 1).",
+                          "example": "john.doe@email.com"
+                        },
+                        "date_of_birth": {
+                          "type": "string",
+                          "format": "date",
+                          "minLength": 10,
+                          "maxLength": 10,
+                          "description": "The Legal representative's date of birth in the YYYY-MM-DD format (MAX 10; MIN 10).",
+                          "example": "1990-02-28"
+                        },
+                        "country": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 2,
+                          "description": "The Legal representative's country (ISO 3166-1 MAX 2; MIN 2)",
+                          "example": "CO"
+                        },
+                        "nationality": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 2,
+                          "description": "The Legal representative's nationality (MAX 2; MIN 2; ISO 3166-1).",
+                          "example": "CO"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "The title of the legal representative (MAX 255; MIN 1).",
+                          "example": "CTO"
+                        },
+                        "publicly_exposed_person": {
+                          "type": "boolean",
+                          "description": "Indicates if the legal representative is a publicly exposed person",
+                          "example": false
+                        },
+                        "ultimate_beneficial_owner": {
+                          "type": "boolean",
+                          "description": "Indicates if the legal representative is an ultimate beneficiary owner of the company",
+                          "example": false
+                        }
+                      }
+                    }
+                  },
+                  "terms_of_service": {
+                    "type": "object",
+                    "description": "Object describing terms of service.",
+                    "required": ["acceptance", "date"],
+                    "properties": {
+                      "acceptance": {
+                        "type": "boolean",
+                        "description": "If the terms of service were accepted by the recipient",
+                        "example": true
+                      },
+                      "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Date of the terms of service acceptance",
+                        "example": "2022-07-09T20:43:54.786342Z"
+                      },
+                      "ip": {
+                        "type": "string",
+                        "format": "ipv4",
+                        "description": "IP of the terms of service acceptance",
+                        "example": "192.168.1.100"
                       }
                     }
                   }
@@ -223,19 +3125,21 @@
             }
           }
         },
-        "deprecated": false
-      }
-    },
-    "/new-endpoint": {
-      "get": {
-        "description": "",
-        "operationId": "",
         "responses": {
           "200": {
-            "description": ""
+            "description": "Onboarding created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found"
           }
-        },
-        "parameters": []
+        }
       }
     }
   },
