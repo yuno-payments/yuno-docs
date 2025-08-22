@@ -5,11 +5,13 @@ hidden: false
 metadata:
   robots: index
 ---
-This object represents a recipient who will receive part of a [split payment](doc:split-payments-marketplace). Represents a seller's account within your marketplace. The split allows you to disperse the money of a purchase in your marketplace directly to the seller's account while your commission goes to your marketplace account.
+
+This object represents a recipient who will receive part of a [split payment](doc:split-payments-marketplace). It represents a seller's account within your marketplace. The split allows you to disperse the money of a purchase in your marketplace directly to the seller's account while your commission goes to your marketplace account.
 
 ## Attributes
 
 <HTMLBlock>{`
+
 <div>
   <div class="yuno">
     <p><strong><code>id</code></strong> <small>string</small>
@@ -177,7 +179,6 @@ This object represents a recipient who will receive part of a [split payment](do
     <br/><p>A list of withdrawal method objects; each item contains a bank object </p>
     </summary>
 
-    
     <details class="yuno" style="margin-left:1em;">
       <summary><strong><code>bank</code></strong> <small>struct</small>
         <br/><p>Bank details for this withdrawal method.</p>
@@ -248,6 +249,7 @@ This object represents a recipient who will receive part of a [split payment](do
       </div>
 
     </details>
+
   </details>
 </div>
 
@@ -478,7 +480,6 @@ This object represents a recipient who will receive part of a [split payment](do
   </details>
 </div>
 
-  
   <div class="yuno">
     <p><strong><code>created_at</code></strong> <small>timestamp</small>
       <br/>Recipient creation date and time (MAX 27; MIN 27; <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>).
@@ -516,4 +517,5 @@ This object represents a recipient who will receive part of a [split payment](do
       padding: 0.25em;
     }
 </style>
+
 `}</HTMLBlock>
