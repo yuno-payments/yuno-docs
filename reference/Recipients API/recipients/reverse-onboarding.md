@@ -1,5 +1,5 @@
 ---
-title: Reverse Onboarding
+title: Reverse Transfer Onboarding
 api:
   file: openapi.json
   operationId: post_recipients{:id}onboardings{:onboarding}reverse-transfer
