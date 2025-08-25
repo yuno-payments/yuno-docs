@@ -38,7 +38,7 @@ pod install
 
 ### Swift Package Manager
 
-If you are using the Swift Package Manager, to add the Yuno SDK to your iOS project, you need to install the [Swift Package Manager](https://www.swift.org/package-manager/). With the Swift package set up, add Yuno SDK as a dependency, as presented in the following code block:
+If you are using the [Swift Package Manager](https://www.swift.org/package-manager/), add Yuno SDK as a dependency, as presented in the following code block:
 
 ```swift
 dependencies: [
@@ -210,7 +210,6 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 ![Render Options](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcf2gb-FB3sHbyzXYhwBcio9JJ7i0Vh-WBwHQC1dLul3k5XKGExvmYCApNNdx7DfwZcNgK-ARnQgncc3lE-3ln0chmnKstQL7NBKXXjgM8OHk4JpAeCneddETCFUAIF6xpCGMSDrrsBy7N4lHPcgYncIu7J?key=-31QL7MEbUE8QLWSURQp1jZt)
 
 * [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
-
 
 ## Implementing `YunoPaymentDelegate` with Swift 6 Concurrency
 
