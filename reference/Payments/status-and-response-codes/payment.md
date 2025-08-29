@@ -24,6 +24,8 @@ In the following workflow, you can find the different payment statuses and how t
 
 For every implementation, we recommend taking the payment <code>status</code> and <code>sub_status</code> as the main reference for the payment's state. A payment could have different [transactions](https://docs.y.uno/reference/transaction) associated with it. By focusing on the payment <code>status</code> / <code>sub_status</code>, you can have the latest state regardless of how many transactions were made, giving you clear inputs for decision-making.
 
+For every implementation, we recommend taking the payment <code class="no-translate">status</code> and <code class="no-translate">sub_status</code> as the main reference for the payment's state. A payment could have different [transactions](https://docs.y.uno/reference/transaction) associated with it. By focusing on the payment <code class="no-translate">status</code> / <code class="no-translate">sub_status</code>, you can have the latest state regardless of how many transactions were made, giving you clear inputs for decision-making.
+
 ## Payments status
 
 The payments can have the following status and sub status.
