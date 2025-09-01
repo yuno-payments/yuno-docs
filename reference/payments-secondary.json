@@ -1,40 +1,295 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
-    "version": "1.0.0",
-    "title": "payments-secondary"
+    "title": "payments-secondary",
+    "version": "1.0.2"
   },
   "servers": [
     {
-      "url": "https://api-sandbox.y.uno/v1/"
+      "url": "https://api-sandbox.y.uno/v1"
     }
   ],
-  "tags": [],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
   "paths": {
-    "/new-endpoint": {
-      "get": {
-        "summary": "New Endpoint",
-        "description": "This is your first endpoint! Edit this page to start documenting your API.",
-        "operationId": "get_new-endpoint",
+    "/payments": {
+      "post": {
+        "summary": "Authorize Payment",
+        "description": "Creates a payment. To authorize (without capture), set payment_method.detail.card.capture = false.",
+        "operationId": "authorize-payments",
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "OK"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "description",
+                  "country",
+                  "merchant_order_id",
+                  "amount",
+                  "payment_method"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The unique identifier of the account. You find this information on [the Yuno dashboard](https://dashboard.y.uno/) (UUID, 36 chars)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The description of the payment (MAX 255; MIN 3)."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "Country where the transaction must be processed (MAX 2; MIN 2; ISO 3166-1).",
+                    "enum": [
+                      "AR",
+                      "BO",
+                      "BR",
+                      "CL",
+                      "CO",
+                      "CR",
+                      "EC",
+                      "SV",
+                      "GT",
+                      "HN",
+                      "MX",
+                      "NI",
+                      "PA",
+                      "PY",
+                      "PE",
+                      "US",
+                      "UY"
+                    ]
+                  },
+                  "merchant_order_id": {
+                    "type": "string",
+                    "description": "The unique identifier of the customer's order (MAX 255; MIN 3)."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Specifies the payment amount object, with the value and currency.",
+                    "required": ["currency", "value"],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "The currency used to make the payment (MAX 3; MIN 3; ISO 4217).",
+                        "enum": [
+                          "ARS",
+                          "BOB",
+                          "BRL",
+                          "CLP",
+                          "COP",
+                          "CRC",
+                          "USD",
+                          "SVC",
+                          "GTQ",
+                          "HNL",
+                          "MXN",
+                          "NIO",
+                          "PAB",
+                          "PYG",
+                          "PEN",
+                          "UYU"
+                        ]
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "The payment amount (multiple of 0.0001).",
+                        "format": "float"
+                      }
+                    }
+                  },
+                  "customer_payer": {
+                    "type": "object",
+                    "description": "Specifies customer object for payments.",
+                    "properties": {
+                      "phone": {
+                        "type": "object",
+                        "properties": {
+                          "country_code": {
+                            "type": "string",
+                            "description": "The country calling code of the customer's phone (MAX 3; MIN 1)."
+                          },
+                          "number": {
+                            "type": "string",
+                            "description": "The customer's phone number, without the country code (MAX 32; MIN 1)."
+                          }
+                        }
+                      },
+                      "billing_address": {
+                        "type": "object",
+                        "properties": {
+                          "zip_code": {
+                            "type": "string",
+                            "description": "The zip code considered for the billing address (MAX 10; MIN 5)."
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "The state considered for the billing address (MAX 255; MIN 3)."
+                          }
+                        }
+                      },
+                      "shipping_address": {
+                        "type": "object",
+                        "properties": {
+                          "zip_code": {
+                            "type": "string",
+                            "description": "The zip code considered for the shipping address (MAX 10; MIN 5)."
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "The state considered for the shipping address (MAX 255; MIN 3)."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "checkout": {
+                    "type": "object",
+                    "description": "Specifies the checkout object. Required when workflow is defined as SDK_CHECKOUT or is not sent. Not required for DIRECT or REDIRECT payments.",
+                    "properties": {
+                      "session": {
+                        "type": "string",
+                        "description": "The checkout session created using the Create Checkout Session endpoint (UUID, 36 chars)."
+                      }
+                    }
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "description": "The payment workflow. Indicates whether the integration will use Yuno´s SDK or will be a back to back connection.",
+                    "default": "SDK_CHECKOUT",
+                    "enum": [
+                      "SDK_CHECKOUT",
+                      "CHECKOUT",
+                      "REDIRECT",
+                      "DIRECT",
+                      "SDK_SEAMLESS"
+                    ]
+                  },
+                  "payment_method": {
+                    "type": "object",
+                    "description": "The payment method object. Provide token, vaulted_token, or detail.card.card_data (PCI merchants). For authorization, card.capture must be false.",
+                    "properties": {
+                      "token": {
+                        "type": "string",
+                        "description": "The one time use payment method token provided by Yuno SDK (UUID, 36 chars)."
+                      },
+                      "vaulted_token": {
+                        "type": "string",
+                        "description": "The vaulted token for a previously stored payment_method (UUID, 36 chars)."
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Type of the payment method. Only required for DIRECT or REDIRECT workflow. If you are using one of our SDKs, this field is not necessary.",
+                        "enum": [
+                          "CARD",
+                          "PIX",
+                          "PSE",
+                          "NEQUI",
+                          "PAYPAL",
+                          "GOOGLE_PAY",
+                          "APPLE_PAY",
+                          "SPEI",
+                          "WEBPAY",
+                          "CASH"
+                        ]
+                      },
+                      "detail": {
+                        "type": "object",
+                        "properties": {
+                          "card": {
+                            "type": "object",
+                            "properties": {
+                              "capture": {
+                                "type": "boolean",
+                                "description": "Determines whether the card payment is captured immediately (TRUE = purchase) or only authorized (FALSE = requires capture or cancel). For authorization send false."
+                              },
+                              "card_data": {
+                                "type": "object",
+                                "description": "Specifies the card_data object (PCI merchants only).",
+                                "required": ["number", "holder_name"],
+                                "properties": {
+                                  "number": {
+                                    "type": "string",
+                                    "description": "Card number without separators (MAX 19; MIN 8)."
+                                  },
+                                  "expiration_month": {
+                                    "type": "integer",
+                                    "description": "Card expiration month - MM.",
+                                    "format": "int32"
+                                  },
+                                  "expiration_year": {
+                                    "type": "integer",
+                                    "description": "Card expiration year - YY.",
+                                    "format": "int32"
+                                  },
+                                  "security_code": {
+                                    "type": "string",
+                                    "description": "Card security code (MAX 4; MIN 3)."
+                                  },
+                                  "holder_name": {
+                                    "type": "string",
+                                    "description": "Cardholder full name as it appears on the card (MAX 26; MIN 3)."
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "response_additional_data": {
+                    "type": "object",
+                    "properties": {
+                      "raw_response": { "type": "boolean" },
+                      "transactions_history": { "type": "boolean" }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
     }
   },
-  "components": {
-    "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "public-api-key"
-      }
-    }
-  },
   "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
     "explorer-enabled": true,
     "proxy-enabled": true
-  }
+  },
+  "x-readme-fauxas": true
 }
