@@ -489,6 +489,10 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ### Declined status
 
+<Callout icon="📘" theme="info">
+  Some declines include a `merchant_advice_code` (MAC) that indicates whether and when to retry. See [Merchant Advice Codes (MAC)](#merchant-advice-codes-mac).
+</Callout>
+
 <HTMLBlock>{`
 <body>
   <details open class="table-card">
@@ -583,6 +587,28 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
   </details>
 </body>
 `}</HTMLBlock>
+
+### Merchant Advice Codes (MAC)
+
+Merchant Advice Codes provide guidance from issuers/providers about retry behavior and policy. When present on a decline, use the MAC to determine whether to retry and the recommended timing.
+
+| `merchant_advice_code`       | Description                           | Provider MAC code                              |
+| :--------------------------- | :------------------------------------ | :--------------------------------------------- |
+| `UPDATE_INFORMATION`         | Updated/additional information needed | 01 – Updated account information available     |
+| `TRY_AGAIN_LATER`            | Retry after 10 days                   | 02 – Try again later                           |
+| `DO_NOT_TRY_AGAIN`           | Do not try again                      | 03 – Do not try again                          |
+| `REQUIREMENTS_NOT_FULFILLED` | Token requirements not fulfilled      | 04 – Token requirements not fulfilled          |
+| `NO_RETRY_LIFE_CYCLE`        | No retry life cycle                   | 21 – Recurring plan cancelled                  |
+| `RETRY_AFTER_1_H`            | Retry after 1 hour                    | 24 – Retry after 1 hour (insufficient funds)   |
+| `RETRY_AFTER_24_H`           | Retry after 24 hours                  | 25 – Retry after 24 hours (insufficient funds) |
+| `RETRY_AFTER_2_D`            | Retry after 2 days                    | 26 – Retry after 2 days (insufficient funds)   |
+| `RETRY_AFTER_4_D`            | Retry after 4 days                    | 27 – Retry after 4 days (insufficient funds)   |
+| `RETRY_AFTER_6_D`            | Retry after 6 days                    | 28 – Retry after 6 days (insufficient funds)   |
+| `RETRY_AFTER_8_D`            | Retry after 8 days                    | 29 – Retry after 8 days (insufficient funds)   |
+| `RETRY_AFTER_10_D`           | Retry after 10 days                   | 30 – Retry after 10 days (insufficient funds)  |
+| `NO_RETRY_POLICY`            | No retry policy                       | 40 – Non‑rechargeable prepaid card             |
+| `NO_RETRY_SECURITY`          | No retry security                     | 42 – Sanction score exceeded                   |
+| `MULTIPLE_USE_CARD`          | Multiple‑use virtual card             | 43 – Multiple‑use virtual card                 |
 
 ### Rejected status
 
@@ -876,7 +902,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ***
 
-### Chargebacks specific response\_codes
+### Chargebacks specific response_codes
 
 For more details, please refer to the [reason codes page](https://docs.y.uno/docs/reason-codes) in the [Chargeback guides](https://docs.y.uno/docs/chargeback-management) section.
 
