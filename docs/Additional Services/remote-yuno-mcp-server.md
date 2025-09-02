@@ -5,28 +5,27 @@ hidden: false
 metadata:
   robots: index
 ---
-
 The Remote Yuno MCP Server implements the Model Context Protocol (MCP) to provide secure, remote access to Yuno services. It acts as a hardened proxy so AI agents and automation clients can call Yuno APIs over MCP with enterprise‑grade security and session controls.
 
 ## Key capabilities
 
-- **Security**
+### Security
 
-  - API key auth: Requires `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE`
-  - IP validation: Sessions are bound to client IPs
-  - Rate limiting: 15 requests per minute per session
-  - Session timeouts: 30 minutes idle; 6 hours absolute
+* API key auth: Requires `YUNO_PUBLIC_API_KEY`, `YUNO_PRIVATE_SECRET_KEY`, and `YUNO_ACCOUNT_CODE`
+* IP validation: Sessions are bound to client IPs
+* Rate limiting: 15 requests per minute per session
+* Session timeouts: 30 minutes idle; 6 hours absolute
 
-- **Protocols**
+### Protocols
 
-  - Streamable HTTP transport for bidirectional communication
-  - JSON‑RPC 2.0 for standardized request/response
+* Streamable HTTP transport for bidirectional communication
+* JSON‑RPC 2.0 for standardized request/response
 
-- **Session management**
+### Session management
 
-  - Automatic creation, refresh, and cleanup
-  - Scheduled cleanup every 5 minutes
-  - Redis backend for persistent session and rate‑limit storage
+* Automatic creation, refresh, and cleanup
+* Scheduled cleanup every 5 minutes
+* Redis backend for persistent session and rate‑limit storage
 
 ## When to use the remote server
 
@@ -60,4 +59,4 @@ Sample configuration (HTTP transport):
 
 ## Related information
 
-- For local development and how MCP maps Yuno API endpoints into tools, see [Building AI Integrations with Yuno's LLMs and MCP](doc:building-ai-integrations-with-yunos-llms-and-mcp).
+* For local development and how MCP maps Yuno API endpoints into tools, see [Building AI Integrations with Yuno's LLMs and MCP](doc:building-ai-integrations-with-yunos-llms-and-mcp).
