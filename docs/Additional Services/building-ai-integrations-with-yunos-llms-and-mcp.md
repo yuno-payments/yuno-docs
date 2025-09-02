@@ -5,6 +5,7 @@ hidden: false
 metadata:
   robots: index
 ---
+
 Yuno offers tools to help you build AI-aware and merchant-friendly payment experiences. Our machine-ready documentation makes it easier for large language models (LLMs) to understand Yuno’s APIs and documentation, while our Model Context Protocol (MCP) provides a seamless way to integrate Yuno's capabilities into your product.
 
 This guide introduces how to work with both components. You’ll learn how the LLM layer empowers AI tools to deliver more accurate and contextual integration support, and how the MCP can embed key payment and merchant functionality directly into your environment, enabling faster builds with less friction.
@@ -17,17 +18,21 @@ The .md files are part of [Yuno Docs](https://docs.y.uno/). You can access them 
 
 This setup enables AI assistants, developer tools, and chat-based agents to answer questions, explain features, and guide integrations automatically. It’s a lightweight but powerful way to open up Yuno’s documentation to a wide range of intelligent applications.
 
+<Callout icon="📘" theme="info">
+  Looking for a managed, network-accessible MCP endpoint with IP binding, rate limits, and session TTLs? See the [remote Yuno MCP server](doc:remote-yuno-mcp-server).
+</Callout>
+
 ## Yuno's Model Context Protocol (MCP)
 
 This package provides an MCP server that exposes the Yuno payment platform API as Model Context Protocol tools. It enables programmatic access for AI agents, automation systems, and other advanced workflows that rely on structured, machine-readable context.
 
 ### Features
 
-* **Exposes Yuno API endpoints as MCP tools**: Each endpoint is modeled as a tool that agents can call programmatically, with clear input and output structures
+- **Exposes Yuno API endpoints as MCP tools**: Each endpoint is modeled as a tool that agents can call programmatically, with clear input and output structures
 
-* **Enables AI and automation workflows with Yuno**: Integrate Yuno into local agents or custom workflows without complex, handcrafted logic
+- **Enables AI and automation workflows with Yuno**: Integrate Yuno into local agents or custom workflows without complex, handcrafted logic
 
-* **Easy integration with Cursor and other MCP-compatible agents**: Works out of the box with tools like Cursor, Claude Desktop, and other environments that support the Model Context Protocol
+- **Easy integration with Cursor and other MCP-compatible agents**: Works out of the box with tools like Cursor, Claude Desktop, and other environments that support the Model Context Protocol
 
 ### Available tools
 
@@ -85,9 +90,9 @@ Set your Yuno API credentials using environment variables (see config examples b
 
 ### 2. Add the MCP server to Cursor
 
-* Open Cursor Settings (`Cmd+Shift+P` → "Cursor Settings")
-* Go to the **MCP** section and click **Add new global MCP server**
-* Add the following config (replace the path with your actual build output):
+- Open Cursor Settings (`Cmd+Shift+P` → "Cursor Settings")
+- Go to the **MCP** section and click **Add new global MCP server**
+- Add the following config (replace the path with your actual build output):
 
 ```json
 {
@@ -109,17 +114,15 @@ Set your Yuno API credentials using environment variables (see config examples b
 
 ### 3. Add the MCP server to Claude Desktop
 
-* Open Claude Desktop settings → "Developer" tab → Edit Config.
-* Add the following config:
+- Open Claude Desktop settings → "Developer" tab → Edit Config.
+- Add the following config:
 
 ```json
 {
   "mcpServers": {
     "yuno-mcp": {
       "command": "npx",
-      "args": [
-        "@yuno-payments/yuno-mcp@latest"
-      ],
+      "args": ["@yuno-payments/yuno-mcp@latest"],
       "env": {
         "YUNO_ACCOUNT_CODE": "your_account_code",
         "YUNO_PUBLIC_API_KEY": "your_public_api_key",
@@ -134,19 +137,19 @@ Set your Yuno API credentials using environment variables (see config examples b
 
 ### 4. Test the integration
 
-* In Cursor or Claude, select a Markdown file or chat and ask the agent to create a payment, customer, or checkout session using the yuno-mcp tool
-* Make sure your environment variables are set correctly
+- In Cursor or Claude, select a Markdown file or chat and ask the agent to create a payment, customer, or checkout session using the yuno-mcp tool
+- Make sure your environment variables are set correctly
 
 ## Environment variables
 
-* `YUNO_ACCOUNT_CODE`\*
-* `YUNO_PUBLIC_API_KEY`\*
-* `YUNO_PRIVATE_SECRET_KEY`\*
-* `YUNO_COUNTRY_CODE` (optional)
-* `YUNO_CURRENCY` (optional)
+- `YUNO_ACCOUNT_CODE`\*
+- `YUNO_PUBLIC_API_KEY`\*
+- `YUNO_PRIVATE_SECRET_KEY`\*
+- `YUNO_COUNTRY_CODE` (optional)
+- `YUNO_CURRENCY` (optional)
 
 Asterisk (\*) marks required.
 
 ## Support
 
-* For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno/)
+- For official Yuno support, please visit [Yuno's official documentation](https://docs.y.uno/)
