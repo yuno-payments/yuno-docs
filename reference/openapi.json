@@ -28,17 +28,11 @@
     "schemas": {
       "Recipient": {
         "type": "object",
-        "required": [
-          "account_id",
-          "merchant_recipient_id",
-          "national_entity",
-          "first_name",
-          "last_name"
-        ],
+        "required": ["account_id", "merchant_recipient_id", "national_entity"],
         "properties": {
           "account_id": {
             "type": "string",
-            "description": "Unique id of the account in Yuno (UUID, 36 chars).",
+            "description": "Unique id of the account in Yuno (MAX 64; MIN 36).",
             "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
           },
           "merchant_recipient_id": {
@@ -77,13 +71,12 @@
           },
           "legal_name": {
             "type": "string",
-            "description": "Beneficiary's legal name. (MAX 80; MIN 1). Required when national_entity is ENTITY.",
+            "description": "Beneficiary's name. (MAX 80; MIN 1) Only necessary when national entity is ENTITY.",
             "example": "Arcos dorados S.A."
           },
           "email": {
             "type": "string",
             "description": "The Beneficiary's email (MAX 255; MIN 3).",
-            "format": "email",
             "example": "john.doe@email.com"
           },
           "country": {
@@ -133,7 +126,7 @@
             "properties": {
               "country_code": {
                 "type": "string",
-                "description": "The country calling code of the customer's phone (MAX 5; MIN 1). Check the [Country reference](ref:country-reference) for a list of phone codes. This field is required if the 'phone' object is included in the request.",
+                "description": "The country calling code of the customer's phone (MAX 3; MIN 1). Check the Country reference to see the phone codes. This field is required if the 'phone' object is included in the request.",
                 "example": "1"
               },
               "number": {
@@ -145,7 +138,7 @@
           },
           "address": {
             "type": "object",
-            "description": "Recipient address",
+            "description": "Address of the event",
             "properties": {
               "address_line_1": {
                 "type": "string",
@@ -174,7 +167,7 @@
               },
               "zip_code": {
                 "type": "string",
-                "description": "The zipcode considered for the address (MAX 10; MIN 5).",
+                "description": "The zipcode considered for the address (MAX 11; MIN 4).",
                 "example": "111111"
               },
               "neighborhood": {
@@ -185,56 +178,337 @@
             }
           },
           "withdrawal_methods": {
-            "type": "object",
+            "type": "array",
             "description": "Withdrawal methods for the merchant",
-            "properties": {
-              "bank": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "bank": {
+                  "type": "object",
+                  "description": "Bank's account information",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "description": "Bank's code (MAX 3; MIN 3).",
+                      "example": "246"
+                    },
+                    "branch": {
+                      "type": "string",
+                      "description": "Bank's branch (MAX 3; MIN 3).",
+                      "example": "XXXX"
+                    },
+                    "branch_digit": {
+                      "type": "string",
+                      "description": "Bank's branch digit (MAX 3; MIN 3)."
+                    },
+                    "account": {
+                      "type": "string",
+                      "description": "Beneficiary's bank account number (MAX 250; MIN 3).",
+                      "example": "1093333333"
+                    },
+                    "account_digit": {
+                      "type": "string",
+                      "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                    },
+                    "account_type": {
+                      "type": "string",
+                      "enum": [
+                        "CHECKINGS",
+                        "SAVINGS",
+                        "VISTA",
+                        "PIX_EMAIL",
+                        "PIX_PHONE",
+                        "PIX_DOCUMENT_ID",
+                        "PIX_BANK_ACCOUNT"
+                      ],
+                      "description": "Beneficiary's bank account type (MAX 3; MIN 1). Could be: CHECKINGS, SAVINGS, VISTA, PIX_EMAIL, PIX_PHONE, PIX_DOCUMENT_ID, PIX_BANK_ACCOUNT.",
+                      "example": "SAVINGS"
+                    },
+                    "routing": {
+                      "type": "string",
+                      "description": "Beneficiary's bank account routing number.",
+                      "example": "XXXXYYYYC"
+                    },
+                    "country": {
+                      "type": "string",
+                      "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2).",
+                      "example": "CO"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3).",
+                      "example": "COP"
+                    }
+                  }
+                }
+              }
+            },
+            "documentation": {
+              "type": "array",
+              "description": "Array of documentation objects",
+              "items": {
                 "type": "object",
-                "description": "Bank's account information",
+                "required": [
+                  "file_name",
+                  "content_type",
+                  "content_category",
+                  "content"
+                ],
                 "properties": {
-                  "code": {
+                  "file_name": {
                     "type": "string",
-                    "description": "Bank's code (MAX 3; MIN 3).",
-                    "example": "246"
+                    "description": "The name of the documentation sent (MAX 255; MIN 3).",
+                    "example": "PDF"
                   },
-                  "branch": {
+                  "content_type": {
                     "type": "string",
-                    "description": "Bank's branch (MAX 3; MIN 3).",
-                    "example": "XXXX"
+                    "enum": ["application/pdf", "image/jpeg", "image/png"],
+                    "description": "The type of the documentation sent by the merchant.",
+                    "example": "application/pdf"
                   },
-                  "branch_digit": {
+                  "content_category": {
                     "type": "string",
-                    "description": "Bank's branch digit (MAX 3; MIN 3)."
+                    "enum": [
+                      "ACCOUNT_REQUIREMENT",
+                      "BANK_STATEMENT",
+                      "BUSINESS_ICON",
+                      "BUSINESS_LOGO",
+                      "CANCEL_POLICY",
+                      "CUSTOMER_INTERACTION",
+                      "DRIVERS_LICENCE",
+                      "IDENTIFICATION_DOCUMENT",
+                      "IDENTIFICATION_DOCUMENT_BACK",
+                      "IDENTIFICATION_DOCUMENT_FRONT",
+                      "LEGAL_AGREEMENT",
+                      "OTHERS",
+                      "PASSPORT",
+                      "PAYMENT_DETAIL",
+                      "PROOF_OF_ADDRESS",
+                      "PROOF_OF_AUTHENTICITY",
+                      "PROOF_OF_DELIVERY",
+                      "PROOF_OF_DIRECTOR",
+                      "PROOF_OF_INDUSTRY",
+                      "PROOF_OF_NATIONAL_ID_NUMBER",
+                      "PROOF_OF_OWNERSHIP",
+                      "PROOF_OF_REGISTRATION",
+                      "PROOF_OF_RELATIONSHIP",
+                      "PROOF_OF_SERVICE",
+                      "PROOF_OF_SOURCE_OF_FUNDS",
+                      "PROOF_OF_SOURCE_OF_WEALTH",
+                      "PROOF_OF_TAX",
+                      "PROVIDER_IDENTITY_DOCUMENT",
+                      "RECEIPT",
+                      "REFUND_POLICY",
+                      "SELFIE",
+                      "SERVICE_AGREEMENT",
+                      "SIGNATURE",
+                      "TERMS_AND_CONDITIONS",
+                      "VAT_DOCUMENT"
+                    ],
+                    "description": "The category of the documentation sent by the merchant."
                   },
-                  "account": {
+                  "content": {
                     "type": "string",
-                    "description": "Beneficiary's bank account number (MAX 250; MIN 3).",
-                    "example": "1093333333"
+                    "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB.",
+                    "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                  }
+                }
+              }
+            },
+            "onboardings": {
+              "type": "array",
+              "description": "Array of onboarding objects for different payment providers",
+              "items": {
+                "type": "object",
+                "required": ["type", "workflow", "provider"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "PREVIOUSLY_ONBOARDED",
+                      "ONBOARD_ONTO_THE_PROVIDER"
+                    ],
+                    "description": "Type of onboarding. If its done by Yuno.",
+                    "example": "PREVIOUSLY_ONBOARDED"
                   },
-                  "account_digit": {
+                  "workflow": {
                     "type": "string",
-                    "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                    "enum": ["HOSTED_BY_PROVIDER", "DIRECT"],
+                    "description": "Workflow of the onboarding.",
+                    "example": "HOSTED_BY_PROVIDER"
                   },
-                  "account_type": {
+                  "callback_url": {
                     "type": "string",
-                    "enum": ["CHECKINGS", "SAVINGS"],
-                    "description": "Beneficiary's bank account type (CHECKINGS or SAVINGS).",
-                    "example": "SAVINGS"
+                    "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed.",
+                    "example": "https://www.google.com"
                   },
-                  "routing": {
-                    "type": "string",
-                    "description": "Beneficiary's bank account routing number.",
-                    "example": "XXXXYYYYC"
+                  "provider": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "enum": [
+                          "PAGARME",
+                          "ALELO",
+                          "EDENRED",
+                          "PLUXEE",
+                          "VR",
+                          "STRIPE",
+                          "ADYEN"
+                        ],
+                        "description": "Provider id.",
+                        "example": "PAGARME"
+                      },
+                      "recipient_id": {
+                        "type": "string",
+                        "description": "The unique identifier of the provider's recipient.",
+                        "example": "AAAAA01"
+                      }
+                    }
                   },
-                  "country": {
-                    "type": "string",
-                    "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2).",
-                    "example": "CO"
+                  "documentation": {
+                    "type": "array",
+                    "description": "Array of documentation objects for this onboarding",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "file_name",
+                        "content_type",
+                        "content_category",
+                        "content"
+                      ],
+                      "properties": {
+                        "file_name": {
+                          "type": "string",
+                          "description": "The name of the documentation sent (MAX 255; MIN 3).",
+                          "example": "PDF"
+                        },
+                        "content_type": {
+                          "type": "string",
+                          "enum": [
+                            "application/pdf",
+                            "image/jpeg",
+                            "image/png"
+                          ],
+                          "description": "The type of the documentation sent by the merchant.",
+                          "example": "application/pdf"
+                        },
+                        "content_category": {
+                          "type": "string",
+                          "enum": [
+                            "ACCOUNT_REQUIREMENT",
+                            "BANK_STATEMENT",
+                            "BUSINESS_ICON",
+                            "BUSINESS_LOGO",
+                            "CANCEL_POLICY",
+                            "CUSTOMER_INTERACTION",
+                            "DRIVERS_LICENCE",
+                            "IDENTIFICATION_DOCUMENT",
+                            "IDENTIFICATION_DOCUMENT_BACK",
+                            "IDENTIFICATION_DOCUMENT_FRONT",
+                            "LEGAL_AGREEMENT",
+                            "OTHERS",
+                            "PASSPORT",
+                            "PAYMENT_DETAIL",
+                            "PROOF_OF_ADDRESS",
+                            "PROOF_OF_AUTHENTICITY",
+                            "PROOF_OF_DELIVERY",
+                            "PROOF_OF_DIRECTOR",
+                            "PROOF_OF_INDUSTRY",
+                            "PROOF_OF_NATIONAL_ID_NUMBER",
+                            "PROOF_OF_OWNERSHIP",
+                            "PROOF_OF_REGISTRATION",
+                            "PROOF_OF_RELATIONSHIP",
+                            "PROOF_OF_SERVICE",
+                            "PROOF_OF_SOURCE_OF_FUNDS",
+                            "PROOF_OF_SOURCE_OF_WEALTH",
+                            "PROOF_OF_TAX",
+                            "PROVIDER_IDENTITY_DOCUMENT",
+                            "RECEIPT",
+                            "REFUND_POLICY",
+                            "SELFIE",
+                            "SERVICE_AGREEMENT",
+                            "SIGNATURE",
+                            "TERMS_AND_CONDITIONS",
+                            "VAT_DOCUMENT"
+                          ],
+                          "description": "The category of the documentation sent by the merchant."
+                        },
+                        "content": {
+                          "type": "string",
+                          "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB.",
+                          "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                        }
+                      }
+                    }
                   },
-                  "currency": {
-                    "type": "string",
-                    "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3).",
-                    "example": "COP"
+                  "withdrawal_methods": {
+                    "type": "array",
+                    "description": "Withdrawal methods for this onboarding",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "bank": {
+                          "type": "object",
+                          "description": "Bank's account information",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "description": "Bank's code (MAX 3; MIN 3).",
+                              "example": "246"
+                            },
+                            "branch": {
+                              "type": "string",
+                              "description": "Bank's branch (MAX 3; MIN 3).",
+                              "example": "XXXX"
+                            },
+                            "branch_digit": {
+                              "type": "string",
+                              "description": "Bank's branch digit (MAX 3; MIN 3)."
+                            },
+                            "account": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account number (MAX 250; MIN 3).",
+                              "example": "1093333333"
+                            },
+                            "account_digit": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                            },
+                            "account_type": {
+                              "type": "string",
+                              "enum": [
+                                "CHECKINGS",
+                                "SAVINGS",
+                                "VISTA",
+                                "PIX_EMAIL",
+                                "PIX_PHONE",
+                                "PIX_DOCUMENT_ID",
+                                "PIX_BANK_ACCOUNT"
+                              ],
+                              "description": "Beneficiary's bank account type (MAX 3; MIN 1). Could be: CHECKINGS, SAVINGS, VISTA, PIX_EMAIL, PIX_PHONE, PIX_DOCUMENT_ID, PIX_BANK_ACCOUNT.",
+                              "example": "SAVINGS"
+                            },
+                            "routing": {
+                              "type": "string",
+                              "description": "Beneficiary's bank account routing number.",
+                              "example": "XXXXYYYYC"
+                            },
+                            "country": {
+                              "type": "string",
+                              "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2).",
+                              "example": "CO"
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3).",
+                              "example": "COP"
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -305,32 +579,26 @@
           },
           "onboardings": {
             "type": "array",
-            "description": "Array of onboarding objects for different payment providers (MAX 5).",
-            "maxItems": 5,
+            "description": "Array of onboarding objects for different payment providers",
             "items": {
               "type": "object",
-              "required": ["type", "workflow", "provider"],
               "properties": {
                 "type": {
                   "type": "string",
                   "enum": ["PREVIOUSLY_ONBOARDED", "ONBOARD_ONTO_THE_PROVIDER"],
-                  "description": "Type of onboarding. If its done by Yuno.",
-                  "example": "PREVIOUSLY_ONBOARDED"
+                  "description": "Type of onboarding. If its done by Yuno."
                 },
                 "workflow": {
                   "type": "string",
-                  "enum": ["DIRECT"],
-                  "description": "Workflow of the onboarding (DIRECT).",
-                  "example": "HOSTED_BY_PROVIDER"
+                  "enum": ["HOSTED_BY_PROVIDER", "DIRECT"],
+                  "description": "Workflow of the onboarding."
                 },
                 "callback_url": {
                   "type": "string",
-                  "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed.",
-                  "example": "https://www.google.com"
+                  "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed."
                 },
                 "provider": {
                   "type": "object",
-                  "required": ["id", "connection_id"],
                   "properties": {
                     "id": {
                       "type": "string",
@@ -348,13 +616,11 @@
                     },
                     "connection_id": {
                       "type": "string",
-                      "description": "Id of the connection in Yuno (UUID, 36 chars).",
-                      "example": "02ea2568-d99e-4fb9-9bd3-7bb13a822d33"
+                      "description": "Id of the connection in Yuno"
                     },
                     "recipient_id": {
                       "type": "string",
-                      "description": "The unique identifier of the provider's recipient.",
-                      "example": "AAAAA01"
+                      "description": "The unique identifier of the provider's recipient."
                     }
                   }
                 },
@@ -363,23 +629,15 @@
                   "description": "Array of documentation objects for this onboarding",
                   "items": {
                     "type": "object",
-                    "required": [
-                      "file_name",
-                      "content_type",
-                      "content_category",
-                      "content"
-                    ],
                     "properties": {
                       "file_name": {
                         "type": "string",
-                        "description": "The name of the documentation sent (MAX 255; MIN 3).",
-                        "example": "PDF"
+                        "description": "The name of the documentation sent (MAX 255; MIN 3)."
                       },
                       "content_type": {
                         "type": "string",
                         "enum": ["application/pdf", "image/jpeg", "image/png"],
-                        "description": "The type of the documentation sent by the merchant.",
-                        "example": "application/pdf"
+                        "description": "The type of the documentation sent by the merchant."
                       },
                       "content_category": {
                         "type": "string",
@@ -424,18 +682,65 @@
                       },
                       "content": {
                         "type": "string",
-                        "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 2MB.",
-                        "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                        "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB."
                       }
                     }
                   }
                 },
                 "withdrawal_methods": {
-                  "$ref": "#/components/schemas/Recipient/properties/withdrawal_methods"
+                  "type": "array",
+                  "description": "Withdrawal methods for this onboarding",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "bank": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "description": "Bank's code (MAX 3; MIN 3)."
+                          },
+                          "branch": {
+                            "type": "string",
+                            "description": "Bank's branch (MAX 3; MIN 3)."
+                          },
+                          "branch_digit": {
+                            "type": "string",
+                            "description": "Bank's branch digit (MAX 3; MIN 3)."
+                          },
+                          "account": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account number (MAX 250; MIN 3)."
+                          },
+                          "account_digit": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account digit (MAX 250; MIN 3)."
+                          },
+                          "account_type": {
+                            "type": "string",
+                            "enum": ["CHECKINGS", "SAVINGS"],
+                            "description": "Beneficiary's bank account type (MAX 3; MIN 1)."
+                          },
+                          "routing": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account routing number."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2)."
+                          },
+                          "currency": {
+                            "type": "string",
+                            "description": "The bank account's currency (ISO 4217 MAX 3; MIN 3)."
+                          }
+                        }
+                      }
+                    }
+                  }
                 },
                 "legal_representatives": {
                   "type": "array",
-                  "description": "Object to indicate the owners of the organization. Adyen, Stripe and dlocal have related fields. Required when national_entity is ENTITY.",
+                  "description": "Object to indicate the owners of the organization. Adyen, Stripe and dlocal have fields related to that.",
                   "items": {
                     "type": "object",
                     "properties": {
