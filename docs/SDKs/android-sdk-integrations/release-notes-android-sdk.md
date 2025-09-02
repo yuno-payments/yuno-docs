@@ -14,6 +14,13 @@ The Android SDK release notes offer a comprehensive overview of the updates, imp
 
 | Version   | Changes                                                                                                                                                         |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.1.0     | **IMPROVE**: Enhanced enrolled cards with instant "unfolded" fields and improved UX                                                                             |
+|           | **IMPROVE**: Added specific error messages for expiration date validation                                                                                      |
+|           | **NEW**: Implemented proactive logging for document validation failures                                                                                        |
+|           | **IMPROVE**: Enhanced Tarjeta Naranja (AR) with flexible Luhn validation and monitoring                                                                        |
+|           | **NEW**: Integrated PagBank payment method via Chrome Custom Tab                                                                                               |
+|           | **NEW**: Added mandatory `expirationDate` validation for Sodexo BR (card-iin detection)                                                                        |
+|           | **NEW**: Added support for 13 new languages (Indonesian, Malaysian, Thai, Filipino, Traditional Chinese, French, Polish, Italian, German, Russian, Turkish, Dutch, Swedish) |
 | 1.20.2    | **FIX**: NuPay redirect issue                                                                                                                                   |
 |           | **FIX**: CVV validation in enrollment                                                                                                                           |
 |           | **NEW**: Callback `tokenWithInformation`                                                                                                                        |

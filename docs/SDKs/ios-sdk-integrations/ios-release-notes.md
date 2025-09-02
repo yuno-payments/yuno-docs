@@ -9,10 +9,31 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                            |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.2   | **FIX**: Various bug fixes and improvements.                                                                                                       |
+|         | **NEW**: Call settings service in enrollment and support credit only in enrollment.                                                               |
 | 2.4.0   | **REMOVE**: Deprecated `startCheckout(with: self)` method - remove from all payment implementations (Lite, Full, and Render).                        |
 |         | **CHANGE**: Replaced `Yuno.getPaymentMethodView(delegate: YunoPaymentDelegate)` with `async getPaymentMethodViewAsync(delegate: YunoPaymentFullDelegate)` in Payment Full. |
 |         | **CHANGE**: Replaced `startPaymentRender` with `let paymentFlow = await Yuno.startPaymentRenderFlow(paymentMethodSelected: selectedPaymentMethod, with: YunoPaymentDelegate)` in Payment Render. |
 |         | **CHANGE**: Replaced `Yuno.startPaymentLite(showPaymentStatus: Bool)` with `startPaymentLite(with: YunoPaymentDelegate, paymentSelected: PaymentMethodSelected, showPaymentStatus: Bool = true)` in Payment Lite. |
+|         | **NEW**: Add missing values for Apple Pay in the /payment/complete service.                                                                      |
+|         | **FIX**: Address Nuvei 3DS challenge.                                                                                                             |
+|         | **CHANGE**: Change styling object.                                                                                                                |
+|         | **NEW**: Added banner view payment action view.                                                                                                   |
+|         | **FIX**: Various bug fixes and improvements.                                                                                                      |
+| 2.3.0   | **IMPROVE**: Separate identifiers from view blocks into a specific text component.                                                                |
+|         | **NEW**: Add script to measure the size of the SDK.                                                                                               |
+|         | **CHANGE**: Change messages to bold in NuPay banner.                                                                                             |
+|         | **CHANGE**: Change CVV and expiration date fields' proportions.                                                                                  |
+|         | **NEW**: Open redirect in external browser based on a backend flag.                                                                              |
+| 2.2.2   | **NEW**: Added Luhn validation.                                                                                                                   |
+|         | **FIX**: Various bug fixes and improvements.                                                                                                     |
+| 2.2.1   | **FIX**: Various bug fixes and improvements.                                                                                                     |
+| 2.2.0   | **NEW**: PayPal enrollment feature added.                                                                                                        |
+|         | **FIX**: Various bug fixes and improvements.                                                                                                     |
+| 2.1.0   | **FIX**: Various bug fixes and improvements.                                                                                                     |
+|         | **IMPROVE**: Hide Color Codable initializers from the public API.                                                                                |
+|         | **NEW**: Add expiration date validation to Sodexo brands.                                                                                        |
+|         | **NEW**: Support redirect type in payment action.                                                                                               |
 | 2.0.0   | **IMPROVE**: Enhanced NuPay enrollment to filter passport information.                                                                             |
 |         | **NEW**: Added support for NuPay installments.                                                                                                     |
 |         | **IMPROVE**: Migrated old Alternative Payment Methods (APMs) to flexible actions, simplifying the code and removing unnecessary UI elements.       |
