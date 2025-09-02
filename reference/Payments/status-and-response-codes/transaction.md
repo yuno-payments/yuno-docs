@@ -590,25 +590,52 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ### Merchant Advice Codes (MAC)
 
-Merchant Advice Codes provide guidance from issuers/providers about retry behavior and policy. When present on a decline, use the MAC to determine whether to retry and the recommended timing.
-
-| `merchant_advice_code`       | Description                           | Provider MAC code                              |
-| :--------------------------- | :------------------------------------ | :--------------------------------------------- |
-| `UPDATE_INFORMATION`         | Updated/additional information needed | 01 – Updated account information available     |
-| `TRY_AGAIN_LATER`            | Retry after 10 days                   | 02 – Try again later                           |
-| `DO_NOT_TRY_AGAIN`           | Do not try again                      | 03 – Do not try again                          |
-| `REQUIREMENTS_NOT_FULFILLED` | Token requirements not fulfilled      | 04 – Token requirements not fulfilled          |
-| `NO_RETRY_LIFE_CYCLE`        | No retry life cycle                   | 21 – Recurring plan cancelled                  |
-| `RETRY_AFTER_1_H`            | Retry after 1 hour                    | 24 – Retry after 1 hour (insufficient funds)   |
-| `RETRY_AFTER_24_H`           | Retry after 24 hours                  | 25 – Retry after 24 hours (insufficient funds) |
-| `RETRY_AFTER_2_D`            | Retry after 2 days                    | 26 – Retry after 2 days (insufficient funds)   |
-| `RETRY_AFTER_4_D`            | Retry after 4 days                    | 27 – Retry after 4 days (insufficient funds)   |
-| `RETRY_AFTER_6_D`            | Retry after 6 days                    | 28 – Retry after 6 days (insufficient funds)   |
-| `RETRY_AFTER_8_D`            | Retry after 8 days                    | 29 – Retry after 8 days (insufficient funds)   |
-| `RETRY_AFTER_10_D`           | Retry after 10 days                   | 30 – Retry after 10 days (insufficient funds)  |
-| `NO_RETRY_POLICY`            | No retry policy                       | 40 – Non‑rechargeable prepaid card             |
-| `NO_RETRY_SECURITY`          | No retry security                     | 42 – Sanction score exceeded                   |
-| `MULTIPLE_USE_CARD`          | Multiple‑use virtual card             | 43 – Multiple‑use virtual card                 |
+<HTMLBlock>{`
+<body>
+  <details open class="table-card">
+    <summary>
+      <span class="table-call">Merchant Advice Codes (MAC)</span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <p>Merchant Advice Codes provide guidance from issuers/providers about retry behavior and policy. When present on a decline, use the MAC to determine whether to retry and the recommended timing.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>merchant_advice_code</th>
+            <th>Description</th>
+            <th>Provider MAC code</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>UPDATE_INFORMATION</code></td><td>Updated/additional information needed</td><td>01 – Updated account information available</td></tr>
+          <tr><td><code>TRY_AGAIN_LATER</code></td><td>Retry after 10 days</td><td>02 – Try again later</td></tr>
+          <tr><td><code>DO_NOT_TRY_AGAIN</code></td><td>Do not try again</td><td>03 – Do not try again</td></tr>
+          <tr><td><code>REQUIREMENTS_NOT_FULFILLED</code></td><td>Token requirements not fulfilled</td><td>04 – Token requirements not fulfilled</td></tr>
+          <tr><td><code>NO_RETRY_LIFE_CYCLE</code></td><td>No retry life cycle</td><td>21 – Recurring plan cancelled</td></tr>
+          <tr><td><code>RETRY_AFTER_1_H</code></td><td>Retry after 1 hour</td><td>24 – Retry after 1 hour (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_24_H</code></td><td>Retry after 24 hours</td><td>25 – Retry after 24 hours (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_2_D</code></td><td>Retry after 2 days</td><td>26 – Retry after 2 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_4_D</code></td><td>Retry after 4 days</td><td>27 – Retry after 4 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_6_D</code></td><td>Retry after 6 days</td><td>28 – Retry after 6 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_8_D</code></td><td>Retry after 8 days</td><td>29 – Retry after 8 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_10_D</code></td><td>Retry after 10 days</td><td>30 – Retry after 10 days (insufficient funds)</td></tr>
+          <tr><td><code>NO_RETRY_POLICY</code></td><td>No retry policy</td><td>40 – Non‑rechargeable prepaid card</td></tr>
+          <tr><td><code>NO_RETRY_SECURITY</code></td><td>No retry security</td><td>42 – Sanction score exceeded</td></tr>
+          <tr><td><code>MULTIPLE_USE_CARD</code></td><td>Multiple‑use virtual card</td><td>43 – Multiple‑use virtual card</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
 
 ### Rejected status
 
