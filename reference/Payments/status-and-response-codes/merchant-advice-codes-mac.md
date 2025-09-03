@@ -190,4 +190,14 @@ Elo classifies reversible and irreversible codes into three separate groups:
 
 * **Irreversible Codes**: Authorizations for the same card or establishment will not be allowed after receiving the first refusal response from the issuer.
 
+## Routing with MAC
+
+Retry behavior should be implemented via [routing](doc:routing) conditions. Update routes to include the new MAC conditions.
+
+When creating a decline group in the [Yuno dashboard](https://dashboard.y.uno/), you can choose to add conditions by Response Code or by MAC Code.
+
+> 🚧 Transition Period
+>
+> Until all integrations emit MAC separately, some MAC values will appear under both Response Codes and MAC Codes. This is expected while the feature's rollout completes.
+
 <br />
