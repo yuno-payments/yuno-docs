@@ -4,7 +4,7 @@ api:
   file: accounts.json
   operationId: get-connection-by-id
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
