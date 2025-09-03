@@ -200,4 +200,6 @@ When creating a decline group in the [Yuno dashboard](https://dashboard.y.uno/),
 >
 > Until all integrations emit MAC separately, some MAC values will appear under both Response Codes and MAC Codes. This is expected while the feature's rollout completes.
 
+![](https://files.readme.io/6edf0af703e5b18774fd6e5b59a9432b734346233edf38d1050fe363255af3e8-image.png)
+
 <br />
