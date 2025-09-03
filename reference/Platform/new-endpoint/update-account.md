@@ -4,7 +4,7 @@ api:
   file: accounts.json
   operationId: update-account
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
