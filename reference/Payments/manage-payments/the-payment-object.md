@@ -90,14 +90,6 @@ This object represents the payment created after generating the checkout session
   </div>
   
   <div class="yuno">
-    <p><strong><code>merchant_advice_code</code></strong> <small>enum</small>
-      <br />Advisory code provided on certain declines to guide retry behavior and policy.
-      <br /><small> Possible values include: <code>UPDATE_INFORMATION</code>, <code>TRY_AGAIN_LATER</code>, <code>DO_NOT_TRY_AGAIN</code>, <code>REQUIREMENTS_NOT_FULFILLED</code>, <code>NO_RETRY_LIFE_CYCLE</code>, <code>RETRY_AFTER_1_H</code>, <code>RETRY_AFTER_24_H</code>, <code>RETRY_AFTER_2_D</code>, <code>RETRY_AFTER_4_D</code>, <code>RETRY_AFTER_6_D</code>, <code>RETRY_AFTER_8_D</code>, <code>RETRY_AFTER_10_D</code>, <code>NO_RETRY_POLICY</code>, <code>NO_RETRY_SECURITY</code>, <code>MULTIPLE_USE_CARD</code>.</small>
-      <br /><small> See <a href="ref:transaction#merchant-advice-codes-mac">Merchant Advice Codes (MAC)</a> for descriptions and provider mappings.</small>
-    </p>
-  </div>
-
-  <div class="yuno">
     <p><strong><code>merchant_order_id</code></strong> <small>string</small>
       <br />The unique identifier of the customer's order (MAX 255; MIN 3).
       <br /><small> Example: 2022-05-09T20:20:54.786342Z </small>
