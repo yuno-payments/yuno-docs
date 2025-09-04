@@ -590,6 +590,13 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ### Merchant Advice Codes (MAC)
 
+These codes will provide useful guidance when dealing with declined transactions. You may find these fields in our public API responses:
+
+* **`transactions.merchant_advice_code` and `transactions.merchant_advice_code_message`**: Yuno-normalized fields providing standardized codes and explanations regarding the denial. 
+* **`transactions.provider_data.merchant_advice_code` and `transactions.merchant_advice_code_message`**: Raw code and message from the provider.
+
+Please refer to [Merchant Advice Codes (MAC)](ref:merchant-advice-codes) for more information.
+
 <HTMLBlock>{`
 <body>
   <details open class="table-card">
