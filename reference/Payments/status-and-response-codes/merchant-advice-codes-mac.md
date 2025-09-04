@@ -5,15 +5,13 @@ hidden: true
 metadata:
   robots: index
 ---
-Merchant Advice Codes (MAC) are advisory signals that indicate whether and when a declined transaction should be retried. Yuno surfaces MAC in a normalized form and also passes through raw provider values so you can automate decisions while preserving full transparency.
+When transactions are declined, Merchant Advice Codes (MAC) serve as guiding signals indicating whether and when a declined transaction should be retried. To assist decision making and transparency, Yuno has implemented normalized and raw response codes into its public APIs. Understanding MACs will prove extremely useful when trying to understand the reason for a decline, and what to adjust in case you're allowed to retry it, such as routing or customer information. 
 
 ## About retries
 
-When a card purchase is declined, any subsequent attempt to complete the purchase using the same card is a retry. Fees and thresholds for retries are defined by each card network. How many times you can retry before fees apply varies by brand.
+When a card purchase is declined, any subsequent attempt to complete the purchase using the same card is a retry. Fees and thresholds for retries are defined by each card network. How many times you can retry before fees apply varies by brand. Merchants that don’t comply may be charged fees for exceeded transactions.
 
-In e-commerce, networks apply distinct rules for card‑present vs. card‑not‑present scenarios (CP/CNP), such as online purchases. E‑commerce merchants that don’t comply may be charged fees for exceeded transactions, as defined by each brand.
-
-To improve the shopping experience, the payments industry, together with ABECS, standardized response codes for card transaction declines. These attempts are categorized into two types:
+The payments industry, together with ABECS, standardized response codes for card transaction declines. These attempts are categorized into two types:
 
 * **Reversible**: A potentially temporary denial that may change over time. The issuer may deny the transaction due to insufficient funds, system issues, or too many unsuccessful PIN attempts.
 * **Irreversible**: Any authorization after an irreversible decline that doesn’t change message fields will fail. This could mean the card has been cancelled or fraud has been confirmed.
@@ -27,8 +25,15 @@ Visa, Mastercard, and Elo updated their policies to limit authorization retry at
 
 ### MAC fields on transactions
 
-* **`transactions.merchant_advice_code`**: Yuno‑normalized MAC that standardizes provider guidance for retries across networks.
-* **`transactions.merchant_advice_code_message`** Human‑readable message for the normalized MAC.
+Yuno has implemented several fields within its public API to streamline the use of MACs in your implementation and ease the gathering of information.
+
+First, we have Yuno-normalized fields:
+
+* **`transactions.merchant_advice_code`**: A Yuno-normalized MAC returned upon transaction decline. Understanding the meaning of this code will provide vital guidance regarding the reason for the denial, whether it can be retried, and potential actions you need to perform before trying again.
+* **`transactions.merchant_advice_code_message`**: This fields complements the `merchant_advice_code` seen above, providing an explanation of the code in human‑readable terms. This message will allow you to act on the information without having to memorize the meaning of each code.
+
+We also provide raw MAC fields for transparency from each provider.
+
 * **`transactions.provider_data.merchant_advice_code`**: Raw MAC as sent by the provider.
 * **`transactions.provider_data.merchant_advice_code_message`**: Raw provider message associated with the MAC.
 
