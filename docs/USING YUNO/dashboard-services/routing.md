@@ -83,11 +83,13 @@ You can now add a post-authorization provider immediately after a Smart Routing 
 * How it behaves: define branches for Succeeded, Pending, Declined and Error/Paused, and chain follow‑up actions such as Refund/Cancel.
 * Availability: enabled for Brazilian merchants; rollout may expand over time.
 
-Example
+### Post-authorization example
 
-![](https://files.readme.io/84c9fc8385e02ab6d7461fa3dfd7f78e6011fb65ff62cee4ab7bbb36f0eb23a7-image.png)
+This image shows how to add a post-authorization provider after a Smart Routing step. You can see Cybersource added as a post-auth node, with branches for different outcomes and a Refund/Cancel action attached.
 
-Updating an existing route
+<Image align="center" src="/img/routing/post-auth-after-smart-routing.png" />
+
+### Updating an existing route
 
 1. Open your route and locate the Smart Routing step.
 2. Click the connector on the right of the Smart Routing node and select a post‑auth provider.
