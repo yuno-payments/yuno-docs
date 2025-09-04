@@ -87,7 +87,7 @@ You can now add a post-authorization provider immediately after a Smart Routing 
 
 This image shows how to add a post-authorization provider after a Smart Routing step. You can see Cybersource added as a post-auth node, with branches for different outcomes and a Refund/Cancel action attached.
 
-<Image align="center" src="/img/routing/post-auth-after-smart-routing.png" />
+![](https://files.readme.io/4f296625f1362d991f0b1ed518bc846a9a5cdfa61cca38e8c93845ef1cda9a5c-image.png)
 
 ### Updating an existing route
 
