@@ -3141,6 +3141,15 @@ This object represents the payment created after generating the checkout session
         <br /><small> Example: AA01</small>
       </p>
 
+      <p><strong><code>merchant_advice_code</code></strong> <small>enum</small>
+        <br />Normalized Merchant Advice Code for declined transactions; use it to guide retry behavior and routing.
+        <br /><small> Example: TRY_AGAIN_LATER </small>
+      </p>
+      <p><strong><code>merchant_advice_code_message</code></strong> <small>string</small>
+        <br />Human‑readable message that explains the advice returned in <code>merchant_advice_code</code>.
+        <br /><small> Example: Retry within 24 hours </small>
+      </p>
+
       <details class="yuno">
         <summary>
           <strong><code>provider_data</code></strong> <small>object</small>
@@ -3181,6 +3190,15 @@ This object represents the payment created after generating the checkout session
           <p><strong><code>status_detail</code></strong> <small>string</small>
             <br />The status_detail of the transaction.
             <br /><small> Example: APPROVED </small>
+          </p>
+
+          <p><strong><code>merchant_advice_code</code></strong> <small>string</small>
+            <br />Raw Merchant Advice Code returned by the provider for declined transactions.
+            <br /><small> Example: 25 </small>
+          </p>
+          <p><strong><code>merchant_advice_code_message</code></strong> <small>string</small>
+            <br />Provider message that explains the meaning of the raw Merchant Advice Code.
+            <br /><small> Example: Retry after 24 hours </small>
           </p>
 
           <p><strong><code>response_code</code></strong> <small>string</small>
