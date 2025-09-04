@@ -85,7 +85,7 @@ You can now add a post-authorization provider immediately after a Smart Routing 
 
 Example
 
-<Image align="center" src="/img/routing/post-auth-after-smart-routing.png" />
+![](https://files.readme.io/84c9fc8385e02ab6d7461fa3dfd7f78e6011fb65ff62cee4ab7bbb36f0eb23a7-image.png)
 
 Updating an existing route
 
