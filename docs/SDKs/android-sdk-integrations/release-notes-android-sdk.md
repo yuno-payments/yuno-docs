@@ -14,6 +14,23 @@ The Android SDK release notes offer a comprehensive overview of the updates, imp
 
 | Version   | Changes                                                                                                                                                                     |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.4.2     | **NEW**: Default credit processing for hybrid cards in Brazil (payment and enrollment); cards can be saved                                                                  |
+|           | **CHANGE**: Country-gated enablement; ensure 3DS flow compatibility                                                                                                         |
+| 2.4.0     | **FIX**: OTP screen in APM render mode was cut off and digits not visible                                                                                                   |
+|           | **CHANGE**: Checkout Builder endpoint signature updates; styling/actions rendering alignment                                                                                |
+|           | **IMPROVE**: Flexible action screen compatibility with Google Pay                                                                                                           |
+|           | **CHANGE**: Include `first_name` and `last_name` inputs in card forms (One Step, Step-by-Step, Enrolled Payment)                                                            |
+| 2.3.0     | **FIX**: Do not validate hidden CVV for UATP cards in One Step and Step-by-Step                                                                                             |
+|           | **FIX**: Prevent CVV tooltip from reappearing when keyboard hides                                                                                                           |
+|           | **NEW**: Support geolocation (latitude/longitude) in `customer_payer` for fraud analysis                                                                                    |
+|           | **NEW**: `renderMode` support for enrollment flows in Mobile Lite (manual rendering via Checkout Builder)                                                                   |
+|           | **IMPROVE**: Focus error handling in payment list directs user to missing field                                                                                             |
+|           | **CHANGE**: Make `expirationDate` mandatory for voucher brands requiring it (Sodexo, VR, Elo, Alelo, Ticket) using card-iin                                                 |
+| 2.2.2     | **CHANGE**: Rollback to Luhn validation for all cards; clarify management and documentation                                                                                 |
+| 2.2.1     | **IMPROVE**: Minor fixes and internal updates; QA items tracked (e.g., CORECM-12007, CORECM-11970)                                                                          |
+| 2.2.0     | **NEW**: SVG icon support in form headers (full, lite, seamless, list) for brands like Sodexo, Elo, Alelo, Bradexco, Cartes                                                 |
+|           | **NEW**: PayPal enrollment support                                                                                                                                          |
+|           | **FIX/IMPROVE**: Apply prior button standardisation and related form updates                                                                                                |
 | 2.1.0     | **IMPROVE**: Enhanced enrolled cards with instant "unfolded" fields and improved UX                                                                                         |
 |           | **IMPROVE**: Added specific error messages for expiration date validation                                                                                                   |
 |           | **NEW**: Implemented proactive logging for document validation failures                                                                                                     |
@@ -21,6 +38,14 @@ The Android SDK release notes offer a comprehensive overview of the updates, imp
 |           | **NEW**: Integrated PagBank payment method via Chrome Custom Tab                                                                                                            |
 |           | **NEW**: Added mandatory `expirationDate` validation for Sodexo BR (card-iin detection)                                                                                     |
 |           | **NEW**: Added support for 13 new languages (Indonesian, Malaysian, Thai, Filipino, Traditional Chinese, French, Polish, Italian, German, Russian, Turkish, Dutch, Swedish) |
+| 2.0.0     | **NEW**: NuPay payment conditions and installments (debit/credit/additional limit)                                                                                          |
+|           | **NEW**: Render integration to manually control SDK loader visibility                                                                                                       |
+|           | **NEW**: Astropay enrollment                                                                                                                                                |
+|           | **FIX**: Country code dropdown validation when preselected; card type copy in One Step; CVV enrolled-only view alignment                                                    |
+|           | **IMPROVE**: Demo country selection list completeness; error messaging specificity (expiry date)                                                                            |
+| 1.24.0    | **NEW**: MODO APM via deeplink flow (Android)                                                                                                                               |
+|           | **CHANGE**: Mercado Pago Checkout Pro opens in external browser (WebView deprecated)                                                                                        |
+|           | **IMPROVE**: Compose-based theming for APM forms (buttons/fonts/radius)                                                                                                     |
 | 1.20.2    | **FIX**: NuPay redirect issue                                                                                                                                               |
 |           | **FIX**: CVV validation in enrollment                                                                                                                                       |
 |           | **NEW**: Callback `tokenWithInformation`                                                                                                                                    |
