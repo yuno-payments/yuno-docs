@@ -31,10 +31,10 @@ The payments industry, together with ABECS, standardized response codes for card
 
 Visa, Mastercard, and Elo updated their policies to limit authorization retry attempts after a decline, and they charge fees for attempts beyond those limits. See each brand’s rules below.
 
-* Mastercard
-* Visa
-* Elo
-* Other brands
+* [Mastercard](#mastercard)
+* [Visa](#visa)
+* [Elo](#elo)
+* [Other brands](#other-brands)
 
 > 📘 Normalized vs. Raw MACs
 >
