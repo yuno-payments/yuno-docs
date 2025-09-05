@@ -229,10 +229,6 @@ apiClientEnroll.continueEnrollment(
 
 ```
 
-> 🚧 PCI Compliance
->
-> Ensure you adhere to best practices for managing sensitive card data. Without PCI certification, you are prohibited from storing any card data except for the token provided by the SDK.
-
 The `apiClientEnroll.continueEnrollment` function returns an Observable type that extends `LiveData`. You can observe the response as a standard `LiveData` with type `SingleLiveEvent<Map<String, Any?>>`. This `LiveData` emits only once and returns a `Map` containing the complete response. Below is an example response from calling `apiClientEnroll.continueEnrollment`:
 
 ```json
