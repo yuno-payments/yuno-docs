@@ -74,3 +74,16 @@ You only need to specify which providers you want to work with and which variabl
 Smart routing can be applied automatically, optimizing payment distribution for you. Alternatively, manual control lets you define the exact percentage of transactions to route through each connection.
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/refs/heads/main/doc/yourPaymentsOperationSystem/smart-routing.mp4" />
+
+## Post-authorization after Smart Routing
+
+You can add a post-authorization provider after a Smart Routing step. This lets you run additional actions, such as risk reviews or settlements/captures, after approval. Add a new step and choose your desired provider (for example, Cybersource).
+
+![](https://files.readme.io/4f296625f1362d991f0b1ed518bc846a9a5cdfa61cca38e8c93845ef1cda9a5c-image.png)
+
+### Updating an existing route
+
+1. Open your route and locate the Smart Routing step.
+2. Click the connector on the right of the Smart Routing node and select a post‑authorization provider.
+3. Configure the outcome branches and attach any follow‑up actions you need.
+4. Publish the route.
