@@ -79,7 +79,7 @@ Smart routing can be applied automatically, optimizing payment distribution for 
 
 You can now add a post-authorization provider immediately after a Smart Routing step. This lets you run downstream actions (for example, risk review, settlement/capture, refunds or cancellations) on the outcome of the routed authorization.
 
-* **Where to add it**: in **Routing**, after the **Smart Routing node**, select the connector to add a new step and choose a provider (e.g., Cybersource).
+* **Where to add it**: in **Routing**, after the **Smart Routing node**, select the **Connector** to add a new step and choose a provider (e.g., Cybersource).
 * **How it behaves**: define branches for Succeeded, Pending, Declined, and Error/Paused, and chain follow‑up actions such as Refund/Cancel.
 * **Availability**: enabled for Brazilian merchants; rollout may expand over time.
 
@@ -91,7 +91,7 @@ This image shows how to add a post-authorization provider after a **Smart Routin
 
 ### Updating an existing route
 
-1. Open your route and locate the Smart Routing step.
-2. Click the connector on the right of the Smart Routing node and select a post‑auth provider.
+1. Open your **Route** and locate the **Smart Routing step**.
+2. Click the **Connector** on the right of the **Smart Routing node** and select a post‑auth provider.
 3. Configure the outcome branches (Succeeded, Pending, Declined, Error/Paused) and attach the desired follow‑up action(s).
-4. Publish the route.
+4. Publish the **Route**.
