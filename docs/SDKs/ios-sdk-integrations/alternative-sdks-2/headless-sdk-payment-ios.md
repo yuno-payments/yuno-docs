@@ -46,7 +46,7 @@ You can install Yuno SDK in two ways:
 
 ## Step 2: Initialize Headless SDK with the public key
 
-To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
+To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC_API_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
 
 > 🚧 UISceneDelegate Initialization
 >
@@ -197,10 +197,6 @@ let result = try await apiClientPayment.generateToken(
 )
 
 ```
-
-> 🚧 PCI Compliance
->
-> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
 
 The following code block presents the `apiClientPayment.generateToken` function responses for both examples above. The response is a dictionary of type `[String: Any]`.
 
