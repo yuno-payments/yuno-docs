@@ -300,12 +300,6 @@ Once you have completed the steps described before, you can create a payment. Th
 Yuno.continuePayment()
 ```
 
-The parameter `showPaymentStatus` is used to determine whether the payment status should be displayed. By passing `true` as an argument, the payment status might be shown while passing `false` could indicate that the payment status should not be displayed.
-
-> 📘 Default Payment Status Display
->
-> In Yuno's iOS Lite SDK, the default value for `showPaymentStatus` is `true`. [test](#test)
-
 ## Step 7: Handle Payment Status (Optional)
 
 > ❗️ Deep Links and Mercado Pago Checkout Pro
@@ -325,11 +319,11 @@ func application(_ app: UIApplication,
   guard url.scheme == "yunoexample" else { return false }
 
   // Let Yuno handle the deep link and show the payment status screen
-  return Yuno.receiveDeeplink(url, showStatusView: true)
+  return Yuno.receiveDeeplink(url)
 }
 ```
 
-This code listens for deep links that open your app. When a URL is received, it checks if the scheme matches the one you used in the `callback_url` during checkout session setup. If it matches, the URL is passed to the Yuno SDK using `Yuno.receiveDeeplink(...)`. The SDK then reads the payment result and, if `showStatusView` is set to `true`, shows the appropriate status screen to the user.
+This code listens for deep links that open your app. When a URL is received, it checks if the scheme matches the one you used in the `callback_url` during checkout session setup. If it matches, the URL is passed to the Yuno SDK using `Yuno.receiveDeeplink(...)`. The SDK then reads the payment result and shows the appropriate status screen to the user.
 
 Make sure the `url.scheme` in this code matches the `callback_url` you provided when creating the `checkout_session`.
 
