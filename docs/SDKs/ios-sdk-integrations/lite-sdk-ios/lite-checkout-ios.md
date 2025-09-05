@@ -266,7 +266,6 @@ To effectively start a payment after displaying the payment methods, you have to
 startPaymentLite(
     with: YunoPaymentDelegate,
     paymentSelected: PaymentMethodSelected,
-    showPaymentStatus: Bool = true
 )
 ```
 
@@ -278,7 +277,7 @@ protocol PaymentMethodSelected {
     var paymentMethodType: String { get }
 }
 
-startPaymentLite(with: self, paymentSelected: paymentSelected, showPaymentStatus: Bool)
+startPaymentLite(with: self, paymentSelected: paymentSelected)
 ```
 
 ## Step 5: Get the OTT (one-time token)
@@ -298,14 +297,8 @@ Once you have completed the steps described before, you can create a payment. Th
 > Yuno **requires** you integrate the `continuePayment` method of the SDK after the payment is created because certain asynchronous payment methods require additional action from the customer to complete it. The API will inform you of this scenario via the `sdk_action_required` field of the response, which will be returned as true. The `yuno.continuePayment()` function will display the additional screens to the customers, where they can carry out the necessary actions to complete the payment without needing you to handle every scenario.
 
 ```swift
-Yuno.continuePayment(showPaymentStatus: Bool)
+Yuno.continuePayment()
 ```
-
-The parameter `showPaymentStatus` is used to determine whether the payment status should be displayed. By passing `true` as an argument, the payment status might be shown while passing `false` could indicate that the payment status should not be displayed.
-
-> 📘 Default Payment Status Display
->
-> In Yuno's iOS Lite SDK, the default value for `showPaymentStatus` is `true`. [test](#test)
 
 ## Step 7: Handle Payment Status (Optional)
 
@@ -326,11 +319,11 @@ func application(_ app: UIApplication,
   guard url.scheme == "yunoexample" else { return false }
 
   // Let Yuno handle the deep link and show the payment status screen
-  return Yuno.receiveDeeplink(url, showStatusView: true)
+  return Yuno.receiveDeeplink(url)
 }
 ```
 
-This code listens for deep links that open your app. When a URL is received, it checks if the scheme matches the one you used in the `callback_url` during checkout session setup. If it matches, the URL is passed to the Yuno SDK using `Yuno.receiveDeeplink(...)`. The SDK then reads the payment result and, if `showStatusView` is set to `true`, shows the appropriate status screen to the user.
+This code listens for deep links that open your app. When a URL is received, it checks if the scheme matches the one you used in the `callback_url` during checkout session setup. If it matches, the URL is passed to the Yuno SDK using `Yuno.receiveDeeplink(...)`. The SDK then reads the payment result and shows the appropriate status screen to the user.
 
 Make sure the `url.scheme` in this code matches the `callback_url` you provided when creating the `checkout_session`.
 
@@ -815,7 +808,7 @@ If you're migrating from `startPayment()` or `startPaymentLite()`:
 
 ```swift
 // Previous method
-Yuno.startPayment(showPaymentStatus: true)
+Yuno.startPayment()
 
 // New render method
 let flow = Yuno.startPaymentRender(paymentMethodSelected: method, with: delegate)
