@@ -300,6 +300,12 @@ Once you have completed the steps described before, you can create a payment. Th
 Yuno.continuePayment()
 ```
 
+The parameter `showPaymentStatus` is used to determine whether the payment status should be displayed. By passing `true` as an argument, the payment status might be shown while passing `false` could indicate that the payment status should not be displayed.
+
+> 📘 Default Payment Status Display
+>
+> In Yuno's iOS Lite SDK, the default value for `showPaymentStatus` is `true`. [test](#test)
+
 ## Step 7: Handle Payment Status (Optional)
 
 > ❗️ Deep Links and Mercado Pago Checkout Pro
