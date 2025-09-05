@@ -194,10 +194,6 @@ const oneTimeToken = await apiClientPayment.generateToken({
 });
 ```
 
-> ❗️ PCI Compliance
->
-> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
-
 The following code block presents the `apiClientPayment.generateToken` function responses for both examples above.
 
 ```json Example 1
@@ -589,11 +585,11 @@ if (data.action === "REDIRECT_URL") {
 
 Each action type requires specific handling based on the data provided:
 
-* **PAYMENT\_CODE**: Display the payment code and reference to the user
+* **PAYMENT_CODE**: Display the payment code and reference to the user
 * **IMAGE**: Show a QR code or other image to the user
 * **OTP**: Present an OTP input form to the user
-* **SDK\_PROVIDER**: Initialize the specific provider's SDK
-* **RENDER\_IFRAME**: Display an iframe with the provider's interface
+* **SDK_PROVIDER**: Initialize the specific provider's SDK
+* **RENDER_IFRAME**: Display an iframe with the provider's interface
 
 > 📘 Payment Action Handling
 >
