@@ -23,6 +23,10 @@ With the `three_d_secure_setup_id` in hand, you need to include the Yuno SDK fil
 <script src="https://sdk-web.y.uno/v1.1/static/js/main.min.js"></script>
 ```
 
+> 📘 Credentials
+>
+> See the credentials page for more information: https://docs.y.uno/reference/authentication
+
 ## Step 2: Get the Setup Id
 
 Before starting the payment flow,  you have to request a setup Id (`three_d_secure_setup_id`). For each payment, you need to generate a new `three_d_secure_setup_id`. Use the [3DS Setup](ref:3ds-setup) endpoint to get the `three_d_secure_setup_id`. You need to inform your Yuno `account_id` and the card information used in the payment.
@@ -47,7 +51,7 @@ To initiate the data collection necessary for the 3DS payment flow, you will use
 
 The next code block presents an example of initialization.
 
-```javascript javasc
+```javascript
 Yuno.threeDSecure.setup({
       publicApiKey: '<public-api-key>',
       setupId: '<three_d_secure_setup_id>',
