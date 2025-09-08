@@ -53,6 +53,10 @@ The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your
 <script defer src="https://sdk-web.y.uno/v1.1/main.js"></script>
 ```
 
+> 📘 Credentials
+>
+> See the credentials page for more information: https://docs.y.uno/reference/authentication
+
 ### 2. Inject the SDK dynamically using JavaScript
 
 The dynamic JavaScript injection method provides enhanced control over SDK loading and initialization. This approach enables you to:
