@@ -43,7 +43,7 @@ The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your
 <!-- First, set up the event listener -->
 <script>
   window.addEventListener('yuno-sdk-ready', () => {
-    console.log('SDK loaded'); // The SDK is ready to use
+    console.log('SDK loaded');
     const yuno = await Yuno.initialize(PUBLIC_API_KEY);
   });
 </script>
@@ -71,34 +71,29 @@ This method is ideal when you need granular control over the SDK's loading proce
 **file.js**
 
 ```javascript
-// Function to inject the SDK dynamically
 export const injectScript = async (): Promise<boolean> => {
   const head = document.getElementsByTagName('head')[0];
   const js = document.createElement('script');
   js.src = "https://sdk-web.y.uno/v1.1/main.js";
   js.defer = true;
 
-  // Return a promise that resolves when the SDK is ready
   return new Promise((resolve, reject) => {
     window.addEventListener('yuno-sdk-ready', () => {
-      resolve(true); // SDK loaded successfully
+      resolve(true);
     });
 
     js.onerror = (error) => {
-      // Create a custom event in case of loading error
       const event = new CustomEvent('yuno-sdk-error', { detail: error });
       window.dispatchEvent(event);
 
       reject(new Error(`Failed to load script: ${js.src} - ${error.message}`));
     };
 
-    head.appendChild(js); // Add the script to the document
+    head.appendChild(js);
   });
 };
 
-// Using the function to inject the SDK
 await injectScript();
-// SDK is ready to use
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
