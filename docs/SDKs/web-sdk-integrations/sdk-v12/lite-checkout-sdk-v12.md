@@ -30,6 +30,8 @@ continuePayment({
 })
 ```
 
+### Parameters
+
 | Parameter           | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`   | The checkout session for the current payment. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -39,7 +41,7 @@ continuePayment({
 | `countryCode`       | Specifies the country code for the payment process. Use an `ENUM` value representing the desired country code.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `language`          | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>pt (Portuguese)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>fil (Filipino)</li><li>zh-TW (Chinese (Traditional, Taiwan)</li><li>zh-CN (Chinese (Simplified, China)</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
 
-### Example usage
+### Example
 
 ```javascript
 yuno.continuePayment({
@@ -70,7 +72,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `</body>
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](doc:developers-credentials) page for more information.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -127,7 +129,7 @@ yuno.startCheckout({
 
 ## Step 4: Mount the SDK
 
-Next, you have to mount the SDK, presenting the checkout based on the payment method selected by your customer. Remember, when using the Lite SDK, you're responsible for displaying the payment methods and capturing the customer's selection. Access [Lite SDK (Payment)](doc:the-ultimate-checkout-lite) for additional information.
+Next, mount the SDK to present the checkout based on the payment method selected by your customer. When using the Lite SDK, you are responsible for displaying payment methods and capturing the customer's selection. See [Lite SDK (Payment)](doc:the-ultimate-checkout-lite) for details.
 
 Use the `yuno.mountCheckoutLite()` function by selecting an HTML element and using a valid CSS selector (`#`, `.`, `[data-*]`) to display the checkout for the selected payment method.
 
@@ -214,7 +216,7 @@ yuno.startCheckout({
 })
 ```
 
-### Form of the issuer
+### Issuer's form
 
 | Parameter           | Description                                                                                |
 | :------------------ | :----------------------------------------------------------------------------------------- |
@@ -226,7 +228,7 @@ yuno.startCheckout({
 })
 ```
 
-### Mode of form rendering
+### Render mode
 
 > 📘 Enhanced Render Mode in Lite SDK v2.0.0
 >
@@ -322,7 +324,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        * `actionForm`: Element for the Continue Payment button, which opens a modal for completing provider-specific payment steps.
+        * `actionForm`: Element for the `ContinuePayment` button, which opens a modal for completing provider-specific payment steps.
       </td>
     </tr>
   </tbody>
@@ -330,9 +332,14 @@ yuno.startCheckout({
 
 ```javascript
 yuno.startCheckout({
-  renderMode: 
-
- 
+  renderMode: {
+    type: 'modal', // 'modal' | 'element' (default: 'modal')
+    elementSelector: {
+      apmForm: '#form-element',
+      actionForm: '#action-form-element',
+    },
+  },
+})
 ```
 
 ### Card form configurations

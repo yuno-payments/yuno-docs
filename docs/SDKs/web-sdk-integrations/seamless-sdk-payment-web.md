@@ -38,7 +38,7 @@ Choose the integration method that best suits your development workflow and tech
 
 ## Step 2: Initialize SDK with the public key
 
-Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`. You can find your API credentials in the [Get your API credentials](https://docs.y.uno/reference/authentication) guide.
+Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`. See the [credentials](https://docs.y.uno/reference/authentication) page for more information.
 
 ```javascript java
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
@@ -104,6 +104,8 @@ yuno.startSeamlessCheckout({
 ```
 
 Notice that when using the `startCheckout` you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
+
+### Parameters
 
 | Parameter                   | Description                                                                                                                                                                                                                                                                                   |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
