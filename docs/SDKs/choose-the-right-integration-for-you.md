@@ -1,27 +1,25 @@
 ---
-title: Choose the Right Integration for You
+title: Choose the right integration for you
 excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: Choose The Right Integration For You
+  title: Choose the right integration for you
   description: >-
-    This page covers why choosing the proper integration is important, the
-    relevant factors you need to consider, and the pros and cons of each
-    alternative.
+    Learn why your choice of integration matters, what to consider, and the pros and cons of each option.
   robots: index
 next:
   description: ''
   pages:
     - type: basic
       slug: build-your-integration
-      title: Step by Step Integration Process
+      title: Step-by-step integration process
 ---
-This page explains the importance of choosing the right integration, the factors to consider, and the pros and cons of each option.
+This page explains why choosing the right integration matters, what to consider, and the pros and cons of each option.
 
-> 👍 Recommended Integration
+> 👍 Recommended integration
 >
-> We recommend using Seamless SDK options for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+> We recommend the Seamless SDK for a smooth integration experience. It provides a flexible payment solution with prebuilt UI components and customization options.
 >
 > **Available Seamless SDK options:**
 >
@@ -29,19 +27,17 @@ This page explains the importance of choosing the right integration, the factors
 > * [iOS Seamless SDK](doc:seamless-sdk-payment-ios)
 > * [Android Seamless SDK](doc:seamless-sdk-payment-android)
 
-## Why choosing the right integration matters
+## Why your choice matters
 
-The integration method you select affects multiple aspects of your business, including:
+Your integration method affects several areas of your business:
 
-1. **Integration and maintenance effort**: The integration type impacts development time and the ongoing maintenance required.
+1. **Integration and maintenance effort**: Impacts development time and ongoing maintenance.
+2. **Add and manage payment methods**: Some options use the Yuno dashboard without code; others need developer work.
+3. **Compliance requirements**: Certain methods require certifications like PCI DSS or ISO. If you choose one of these, you must provide the necessary certifications to Yuno.
 
-2. **Effort to add and manage payment methods**: Some integrations allow you to manage payment methods directly from the Yuno dashboard with no coding required, while others may require developer intervention.
+## Integration types
 
-3. **Compliance requirements**: Certain integrations require certifications like PCI-DSS or ISO compliance. If you choose one of these methods, you must provide the necessary certifications to Yuno.
-
-## Integration Types
-
-Yuno provides 6 types of integrations. Below, you can see the specifications for each of them.
+Yuno provides six integration types. Below are the specifications for each.
 
 <HTMLBlock>{`
 <style>  
