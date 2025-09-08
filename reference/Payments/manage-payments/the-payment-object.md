@@ -45,8 +45,6 @@ This object represents the payment created after generating the checkout session
   }
 </style>
 
-
-
 <body>
 
   <div class="yuno">
@@ -90,7 +88,7 @@ This object represents the payment created after generating the checkout session
       <br /><small> Example: DECLINED </small>
     </p>
   </div>
-
+  
   <div class="yuno">
     <p><strong><code>merchant_order_id</code></strong> <small>string</small>
       <br />The unique identifier of the customer's order (MAX 255; MIN 3).
@@ -111,7 +109,6 @@ This object represents the payment created after generating the checkout session
       <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
     </p>
   </div>
-
 
   <!-- NO more used -->
   <!-- <div class="yuno">
@@ -190,8 +187,6 @@ This object represents the payment created after generating the checkout session
       </p>
     </div>
   </details>
-
-
 
   <details class="yuno">
     <summary>
@@ -275,7 +270,7 @@ This object represents the payment created after generating the checkout session
                 <br /><small> Example: 742A64 </small>
               </p>
               <p><strong><code>retrieval_reference_number</code></strong> <small>string</small>
-                <br />The unique identifier assigned by an acquirer to an authorization. In case of Brazil, you'll receive the nsu. 
+                <br />The unique identifier assigned by an acquirer to an authorization. In case of Brazil, you'll receive the nsu.
                 <br /><small> Example: 200000000012 </small>
               </p>
               <p><strong><code>voucher</code></strong> <small>string</small>
@@ -331,7 +326,7 @@ This object represents the payment created after generating the checkout session
                   <p><strong><code>security_code_length</code></strong> <small>integer</small>
                     <br />The length of the card's security code (MAX 1; MIN 1).
                     <br /><small> Example: 3 </small>
-                  </p> 
+                  </p>
                   <p><strong><code>brand</code></strong> <small>string</small>
                     <br />The card's brand information (MAX 255; MIN 3).
                     <br /><small> Example: VISA </small>
@@ -353,6 +348,7 @@ This object represents the payment created after generating the checkout session
                     <br />The type of the card's issuer (MAX 255; MIN 3).
                     <br /><small> Example: CREDIT, DEBIT, or CHARGE_CARD </small>
                   </p>
+
  <p><strong><code>fingerprint</code></strong> <small>string</small>
                     <br />When a customer enrolls a credit card multiple times related to one or many Yuno accounts, multiple vaulted_tokens will be generated, but the fingerprint lets you identify when the same card is used for the customer (MAX 255; MIN 3).
                     <br /><small> Example: 55a7fe38-cdc3-45dc-8c5f-820751799c76 </small>
@@ -408,7 +404,7 @@ This object represents the payment created after generating the checkout session
                     MIN 3).
                     <br /><small> Example: f38e6948-5388-41a6-bca4-b49723c19437 </small>
                   </p>
- 
+
                 </div>
               </details>
               <details class="yuno">
@@ -784,7 +780,7 @@ This object represents the payment created after generating the checkout session
                 <br />User´s benefit type for ticket payment method. JUNAEB, PRIVATE
                 <br /><small> Example: PRIVATE </small>
               </p>
-              
+
               <p><strong><code>provider_number</code></strong> <small>integer</small>
                 <br />The ticket's number.
                 <br /><small> Example: 13141 </small>
@@ -961,6 +957,7 @@ This object represents the payment created after generating the checkout session
         </div>
       </details>
     </div>
+
   </details>
 
   <details class="yuno">
@@ -985,6 +982,7 @@ This object represents the payment created after generating the checkout session
     	<p><strong><code>merchant_customer_created_at</code></strong> <small>timestamp</small>
          <br />Customer´s registration date on the merchants platform (ISO 8601 MAX 27; MIN 27).
          <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
+
    	  </p>
       
       <details class="yuno">
@@ -1008,7 +1006,6 @@ This object represents the payment created after generating the checkout session
           </p>
         </div>
       </details>
-
 
       <p><strong><code>first_name</code></strong> <small>string</small>
         <br />The customer's first name (MAX 255; MIN 1).
@@ -1250,7 +1247,7 @@ This object represents the payment created after generating the checkout session
           </p>
         </div>
       </details>
-      
+
       <details class="yuno">
         <summary><strong><code>geolocation</code></strong> <small>object</small>
           <br />
@@ -1267,9 +1264,10 @@ This object represents the payment created after generating the checkout session
           </p>
         </div>
       </details>
-      
- 
+
+
     </div>
+
   </details>
 
   <details class="yuno">
@@ -1671,7 +1669,7 @@ This object represents the payment created after generating the checkout session
               </p>
             </div>
           </details>
-          
+
           <details class="yuno">
             <summary><strong><code>discounts</code></strong> <small>array of objects</small>
               <br />
@@ -1692,7 +1690,7 @@ This object represents the payment created after generating the checkout session
               </p>
             </div>
           </details>
-          
+
 
           <details class="yuno">
             <summary>
@@ -1798,16 +1796,16 @@ This object represents the payment created after generating the checkout session
 
                 </div>
               </details>
-              
+
 
             </div>
           </details>
-          
-          
-          
-          
-          
-          
+
+
+
+
+
+
           <details class="yuno">
             <summary>
               <strong><code>shipping</code></strong> <small>object</small>
@@ -1835,7 +1833,7 @@ This object represents the payment created after generating the checkout session
               </p>
             </div>
           </details>
-          
+
           <!-- Account funding data -->
 
       <details class="yuno">
@@ -2194,12 +2192,92 @@ This object represents the payment created after generating the checkout session
         </div>
       </details>
 
-       
+      <details class="yuno">
+        <summary>
+          <strong><code>transportations</code></strong> <small>array of objects</small>
+          <br />
+          <p>Specifies the transportations array of objects.</p>
+        </summary>
+        <div>
+          <p><strong><code>id</code></strong> <small>string</small>
+            <br />The id of the transportation booking (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>description</code></strong> <small>string</small>
+            <br />The description of the transportation booking (MAX 255; MIN 1).
+          </p>
+          <p><strong><code>type</code></strong> <small>string</small>
+            <br />The type of transportation booking.
+          </p>
+          <details class="yuno">
+            <summary><strong><code>legs</code></strong> <small>array of objects</small>
+              <br />
+              <p>Specifies the legs array of objects.</p>
+            </summary>
+            <div>
+              <p><strong><code>order</code></strong> <small>integer</small>
+                <br />A running index (starts with 1), describing the order of legs in the same route.
+              </p>
+              <p><strong><code>route_order</code></strong> <small>integer</small>
+                <br />A running index (starts with 1), describing the order of routes by time.
+              </p>
+              <p><strong><code>departure_country</code></strong> <small>string</small>
+                <br />Country of the departure (MAX 2; MIN 2; ISO 3166-1).
+              </p>
+              <p><strong><code>departure_city</code></strong> <small>string</small>
+                <br />The city of the departure (MAX 255; MIN 1).
+              </p>
+              <p><strong><code>departure_timezone</code></strong> <small>string</small>
+                <br />Departure timezone (MAX 6; MIN 6).
+              </p>
+              <p><strong><code>departure_datetime</code></strong> <small>string</small>
+                <br />The departure date and time in local time at the departure.
+              </p>
+              <p><strong><code>departure_reference</code></strong> <small>string</small>
+                <br />The reference of the departure (MAX 255; MIN 1).
+              </p>
+              <p><strong><code>arrival_country</code></strong> <small>string</small>
+                <br />Country of the arrival (MAX 2; MIN 2; ISO 3166-1).
+              </p>
+              <p><strong><code>arrival_city</code></strong> <small>string</small>
+                <br />The city of the arrival (MAX 255; MIN 1).
+              </p>
+              <p><strong><code>arrival_timezone</code></strong> <small>string</small>
+                <br />Arrival timezone (MAX 6; MIN 6).
+              </p>
+              <p><strong><code>arrival_datetime</code></strong> <small>string</small>
+                <br />The arrival date and time in local time at the arrival.
+              </p>
+              <p><strong><code>arrival_reference</code></strong> <small>string</small>
+                <br />The reference of the arrival (MAX 255; MIN 1).
+              </p>
+              <details class="yuno">
+                <summary><strong><code>transport</code></strong> <small>object</small>
+                  <br />
+                  <p>Specifies the transport object.</p>
+                </summary>
+                <div>
+                  <p><strong><code>id</code></strong> <small>string</small>
+                    <br />The id of the transportation vehicle (MAX 255; MIN 1).
+                  </p>
+                  <p><strong><code>type</code></strong> <small>string</small>
+                    <br />The type of transportation vehicle.
+                  </p>
+                  <p><strong><code>description</code></strong> <small>string</small>
+                    <br />The description of the transportation vehicle (MAX 255; MIN 1).
+                  </p>
+                </div>
+              </details>
+            </div>
+          </details>
+        </div>
+      </details>
+
+
 
 
     </div>
-  </details>
 
+  </details>
 
   <details class="yuno">
     <summary>
@@ -2409,6 +2487,7 @@ This object represents the payment created after generating the checkout session
                       <p><strong><code>type</code></strong> <small>string</small>
                         <br />The type of the card's issuer (MAX 255; MIN 3).
                         <br /><small> Example: CREDIT, DEBIT, or CHARGE_CARD </small>
+
  <p><strong><code>fingerprint</code></strong> <small>string</small>
                     <br />When a customer enrolls a credit card multiple times related to one or many Yuno accounts, multiple vaulted_tokens will be generated, but the fingerprint lets you identify when the same card is used for the customer (MAX 255; MIN 3).
                     <br /><small> Example: 55a7fe38-cdc3-45dc-8c5f-820751799c76 </small>
@@ -2471,7 +2550,7 @@ This object represents the payment created after generating the checkout session
                     <br />Indicates the outcome of the cardholder authentication during the 3-D Secure process. It informs you whether the authentication was successful (Y), failed (N), could not be completed (U), or was only attempted (A).
                     <br /><small> Example: Y </small>
                   </p>
-                  
+
                   <p><strong><code>acs_id</code></strong> <small>string</small>
                     <br />Unique identifier provided by the Access Control Server (ACS) during the 3-D Secure authentication process.
                     <br /><small> Example: ACS-1234567890 </small>
@@ -2820,7 +2899,7 @@ This object represents the payment created after generating the checkout session
                     <br /><small> Example: AA01234-BC </small>
                   </p>
                   <p><strong><code>retrieval_reference_number</code></strong> <small>string</small>
-                    <br />The unique identifier assigned by an acquirer to an authorization.In case of Brazil, you'll receive the nsu. 
+                    <br />The unique identifier assigned by an acquirer to an authorization.In case of Brazil, you'll receive the nsu.
                     <br /><small> Example: 200000000012 </small>
                   </p>
                   <p><strong><code>payment_instruction</code></strong> <small>string</small>
@@ -2857,7 +2936,7 @@ This object represents the payment created after generating the checkout session
                     <br />User´s benefit type for ticket payment method. JUNAEB, PRIVATE
                     <br /><small> Example: PRIVATE </small>
                   </p>
-                  
+
                   <p><strong><code>provider_number</code></strong> <small>integer</small>
                     <br />The ticket's number.
                     <br /><small> Example: 13141 </small>
@@ -3062,6 +3141,15 @@ This object represents the payment created after generating the checkout session
         <br /><small> Example: AA01</small>
       </p>
 
+      <p><strong><code>merchant_advice_code</code></strong> <small>enum</small>
+        <br />Normalized Merchant Advice Code for declined transactions; use it to guide retry behavior and routing.
+        <br /><small> Example: TRY_AGAIN_LATER </small>
+      </p>
+      <p><strong><code>merchant_advice_code_message</code></strong> <small>string</small>
+        <br />Human‑readable message that explains the advice returned in <code>merchant_advice_code</code>.
+        <br /><small> Example: Retry within 24 hours </small>
+      </p>
+
       <details class="yuno">
         <summary>
           <strong><code>provider_data</code></strong> <small>object</small>
@@ -3102,6 +3190,15 @@ This object represents the payment created after generating the checkout session
           <p><strong><code>status_detail</code></strong> <small>string</small>
             <br />The status_detail of the transaction.
             <br /><small> Example: APPROVED </small>
+          </p>
+
+          <p><strong><code>merchant_advice_code</code></strong> <small>string</small>
+            <br />Raw Merchant Advice Code returned by the provider for declined transactions.
+            <br /><small> Example: 25 </small>
+          </p>
+          <p><strong><code>merchant_advice_code_message</code></strong> <small>string</small>
+            <br />Provider message that explains the meaning of the raw Merchant Advice Code.
+            <br /><small> Example: Retry after 24 hours </small>
           </p>
 
           <p><strong><code>response_code</code></strong> <small>string</small>
@@ -3524,7 +3621,7 @@ This object represents the payment created after generating the checkout session
                     <br />The ticket's type.
                     <br /><small> Example: number, barcode, custom, reference_code, qr </small>
                   </p>
-                  
+
                   <p><strong><code>provider_number</code></strong> <small>integer</small>
                     <br />The ticket's number.
                     <br /><small> Example: 13141 </small>
@@ -3719,6 +3816,7 @@ This object represents the payment created after generating the checkout session
       <br /> The date and time from the last time the transaction was updated.
       <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
     </p>
+
   </details>
 
   <details class="yuno">
@@ -3772,84 +3870,6 @@ This object represents the payment created after generating the checkout session
       </details>
     </div>
   </details>
-  <details class="yuno">
-    <summary><strong><code>transportations</code></strong> <small>array of objects</small>
-      <br />
-      <p>Specifies the transportations array of objects.</p>
-    </summary>
-    <div>
-      <p><strong><code>id</code></strong> <small>string</small>
-        <br />The id of the transportation booking (MAX 255; MIN 1).
-      </p>
-      <p><strong><code>description</code></strong> <small>string</small>
-        <br />The description of the transportation booking (MAX 255; MIN 1).
-      </p>
-      <p><strong><code>type</code></strong> <small>string</small>
-        <br />The type of transportation booking.
-      </p>
-      <details class="yuno">
-        <summary><strong><code>legs</code></strong> <small>array of objects</small>
-          <br />
-          <p>Specifies the legs array of objects.</p>
-        </summary>
-        <div>
-          <p><strong><code>order</code></strong> <small>integer</small>
-            <br />A running index (starts with 1), describing the order of legs in the same route.
-          </p>
-          <p><strong><code>route_order</code></strong> <small>integer</small>
-            <br />A running index (starts with 1), describing the order of routes by time.
-          </p>
-          <p><strong><code>departure_country</code></strong> <small>string</small>
-            <br />Country of the departure (MAX 2; MIN 2; ISO 3166-1).
-          </p>
-          <p><strong><code>departure_city</code></strong> <small>string</small>
-            <br />The city of the departure (MAX 255; MIN 1).
-          </p>
-          <p><strong><code>departure_timezone</code></strong> <small>string</small>
-            <br />Departure timezone (MAX 6; MIN 6).
-          </p>
-          <p><strong><code>departure_datetime</code></strong> <small>string</small>
-            <br />The departure date and time in local time at the departure.
-          </p>
-          <p><strong><code>departure_reference</code></strong> <small>string</small>
-            <br />The reference of the departure (MAX 255; MIN 1).
-          </p>
-          <p><strong><code>arrival_country</code></strong> <small>string</small>
-            <br />Country of the arrival (MAX 2; MIN 2; ISO 3166-1).
-          </p>
-          <p><strong><code>arrival_city</code></strong> <small>string</small>
-            <br />The city of the arrival (MAX 255; MIN 1).
-          </p>
-          <p><strong><code>arrival_timezone</code></strong> <small>string</small>
-            <br />Arrival timezone (MAX 6; MIN 6).
-          </p>
-          <p><strong><code>arrival_datetime</code></strong> <small>string</small>
-            <br />The arrival date and time in local time at the arrival.
-          </p>
-          <p><strong><code>arrival_reference</code></strong> <small>string</small>
-            <br />The reference of the arrival (MAX 255; MIN 1).
-          </p>
-          <details class="yuno">
-            <summary><strong><code>transport</code></strong> <small>object</small>
-              <br />
-              <p>Specifies the transport object.</p>
-            </summary>
-            <div>
-              <p><strong><code>id</code></strong> <small>string</small>
-                <br />The id of the transportation vehicle (MAX 255; MIN 1).
-              </p>
-              <p><strong><code>type</code></strong> <small>string</small>
-                <br />The type of transportation vehicle.
-              </p>
-              <p><strong><code>description</code></strong> <small>string</small>
-                <br />The description of the transportation vehicle (MAX 255; MIN 1).
-              </p>
-            </div>
-          </details>
-        </div>
-      </details>
-    </div>
-  </details>
 
   <div class="yuno">
     <p><strong><code>transactions_history</code></strong> <small>array of objects</small>
@@ -3872,6 +3892,7 @@ This object represents the payment created after generating the checkout session
     </ul>
 
     </p>
+
   </div>
 
   <div class="yuno">
@@ -4045,8 +4066,8 @@ This object represents the payment created after generating the checkout session
         <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
       </p>
     </div>
-  </details>
 
+  </details>
 
 </body>
 `}</HTMLBlock>

@@ -46,7 +46,7 @@ Choose the integration method that best suits your development workflow and tech
 
 ## Step 2: Initialize Headless SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
 
 The code block below presents an example of initializing the `Yuno` class and assigning it to the `yuno`constant.
 
@@ -136,10 +136,6 @@ const vaultedTokenResponse = await apiClientEnroll.continueEnrollment({
  })
 
 ```
-
-> ❗️ PCI Compliance
->
-> Please bear in mind that you are capturing sensitive card data. Therefore, you need to comply with good practices regarding data management. If you don't have a PCI certification, you can't save any card data other than the token provided by the SDK.
 
 After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function.
 

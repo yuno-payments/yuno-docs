@@ -86,7 +86,7 @@ Yuno SDK includes, by default, the `INTERNET` permission, which is required to m
 
 ## Step 4: Initialize headless SDK with the public key
 
-To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC\_API\_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
+To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC_API_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
 
 Create a custom application if you haven't already. In the `onCreate()` method of your application class, initialize the SDK by calling the `Yuno.initialize()` function, as shown in the following example:
 
@@ -307,10 +307,6 @@ apiClientPayment.generateToken(
 )
 
 ```
-
-> 🚧 PCI Compliance
->
-> Ensure you adhere to best practices for managing sensitive card data. Without PCI certification, you are prohibited from saving any card data except for the token provided by the SDK.
 
 The **apiClientPayment.generateToken** function returns an Observable type, which is a subclass of `LiveData`. As a result, you can observe the response as a common `LiveData` with the following type `SingleLiveEvent<Map<String, Any?>>`, which is a `LiveData` that only emits once. The response type is  a `Map` containing the whole response. The following code block presents the examples of response after calling the `apiClientPayment.generateToken` function.
 

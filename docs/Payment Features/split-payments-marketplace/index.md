@@ -17,6 +17,7 @@ The key features of the split payments marketplace include:
 * **Flexible configuration**: Supports absolute-based splits.
 * **Integration with providers**: Splits can be executed by payment providers that support this functionality.
 * **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
+* **Onboarding transfer**: Allows the transfer of onboardings between different recipients.
 
 To use this feature, you must **first onboard your recipients** for the payment split, and **then create the payment** specifying the necessary information.
 
@@ -35,13 +36,13 @@ This **architecture** enables:
 * Independent status tracking per provider.
 * Easy scaling of submerchant operations across providers.
 
-This design ensures flexibility, transparency, and full traceability throughout the onboarding lifecycle. The [/recipients endpoint](ref:create-recipient-1) is used to create and manage each submerchant profile and to trigger the corresponding provider-specific onboarding workflows.
+This design ensures flexibility, transparency, and full traceability throughout the onboarding lifecycle. The [recipients endpoint](ref:create-recipient-1) is used to create and manage each submerchant profile and to trigger the corresponding provider-specific onboarding workflows.
 
 ### Onboarding flows
 
 Yuno offers two onboarding flows for submerchants, providing flexibility based on the submerchant's current status with payment providers.
 
-1. **Pre-onboarded accounts**: If a submerchant has already completed the onboarding process with a specific provider (e.g., through an external dashboard or platform), the marketplace can supply the corresponding **recipient\_id** during creation. In this scenario, no further onboarding is required, and the status will be immediately set to **SUCCEEDED** (`onboardings.type`=`PREVIOUSLY_ONBOARDED`).
+1. **Pre-onboarded accounts**: If a submerchant has already completed the onboarding process with a specific provider (e.g., through an external dashboard or platform), the marketplace can supply the corresponding `recipient_id` during creation. In this scenario, no further onboarding is required, and the status will be immediately set to `SUCCEEDED` (`onboardings.type`=`PREVIOUSLY_ONBOARDED`).
 
 2. **Dynamic onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the chosen provider (`onboardings.type`=`ONBOARD_ONTO_PROVIDER`). This process may include:
    1. Form submission or redirection to a hosted onboarding page.
@@ -76,10 +77,12 @@ The onboarding workflow follows a structured process that ensures submerchants a
 1. **Organization & Account Setup**: The marketplace owner creates an organization in Yuno and configures accounts with payment provider connections.
 
 2. **Recipient Creation**: For each submerchant, the marketplace creates a recipient using the [Create Recipients API](ref:create-recipient-1) endpoint, specifying either:
+
    * `provider_recipient_id` for pre-onboarded submerchants
    * Provider connection details for new onboarding
 
 3. **Onboarding Execution**:
+
    * **Pre-onboarded**: Status immediately becomes `SUCCEEDED`
    * **New onboarding**: Yuno initiates provider-specific flow with status progression from `CREATED` → `PENDING` → `SUCCEEDED`
 
@@ -129,8 +132,8 @@ In this section, we explore how the `split_marketplace` object is used to divide
     }
   ]
 }
-
 ```
+
 ```json Example using Yuno recipients
 {
   "split_marketplace": [
@@ -153,6 +156,33 @@ In this section, we explore how the `split_marketplace` object is used to divide
   ]
 }
 ```
+
+## 3- Onboarding transfer
+
+The goal of this flow is to allow the transfer of onboardings between recipients in a controlled and reversible way.
+
+The process has several stages. First, the initial recipient is created with its onboarding (a prior step). Later, when a transfer is required, follow the steps to create the new recipient, use the transfer service, and, if needed, reverse the operation.
+
+1. **Recipient and onboarding (before any transfer)**: [Create recipient](https://docs.y.uno/reference/create-recipient-1), then [create onboarding](https://docs.y.uno/reference/create-onboarding).
+
+<Callout icon="📘" theme="info">
+  This step happens in advance when a new recipient is created and its onboarding is assigned. It is not part of the transfer itself.
+</Callout>
+
+If you decide to transfer the onboarding to another recipient, continue the flow:
+
+2. **Create the new recipient and onboarding**: Use the [create recipient](https://docs.y.uno/reference/create-recipient-1) and [create onboarding](https://docs.y.uno/reference/create-onboarding) endpoints to set up the recipient and onboarding that will receive the transfer.
+
+3. **Transfer the onboarding**: Use [transfer onboarding](https://docs.y.uno/reference/transfer-onboarding) and include:
+
+   * `recipient_id`: the target recipient ID
+   * `onboarding_id`: the onboarding to transfer
+
+   The onboarding will be transferred to the new recipient.
+
+4. **Reverse the transfer (optional)**: Use [reverse onboarding](https://docs.y.uno/reference/reverse-onboarding) to revert the previous transfer, providing the same `recipient_id` and `onboarding_id`.
+
+The `onboarding` object includes a `history` element that stores the complete traceability of the onboarding. This history includes not only updates to the object but also events related to transfers between recipients, ensuring full lifecycle visibility.
 
 ***
 
@@ -177,3 +207,5 @@ This section lists the API endpoints involved in managing split payments.
 * **[Refund payment](ref:refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
 * **[Cancel or refund a payment](https://docs.y.uno/reference/cancel-or-refund-a-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/cancel-or-refund`
 * **[Cancel or refund a payment with transaction](https://docs.y.uno/reference/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
+* **[Transfer onboarding](https://docs.y.uno/reference/transfer-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
+* **[Reverse onboarding transfer](https://docs.y.uno/reference/reverse-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`

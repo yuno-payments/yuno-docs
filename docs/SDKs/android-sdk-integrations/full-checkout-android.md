@@ -1,6 +1,6 @@
 ---
 title: Full SDK (Android)
-excerpt: ""
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
@@ -11,9 +11,8 @@ metadata:
     your mobile platform.
   robots: index
 next:
-  description: ""
+  description: ''
 ---
-
 > 👍 Recommended SDK
 >
 > We recommend using the [Android Seamless SDK](seamless-sdk-payment-android) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
@@ -27,8 +26,8 @@ Before starting the Yuno Android SDK, make sure your project meets the [technica
 1. You must have an active Yuno account
 2. To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
 
-- Create a `checkout_session`, which initializes the payment flow
-- Create the payment associated with the session
+* Create a `checkout_session`, which initializes the payment flow
+* Create the payment associated with the session
 
 3. Before creating a payment, you must first create a customer using the [Create customer endpoint](ref:create-customer)
 
@@ -104,7 +103,6 @@ The following table includes descriptions for each customization available.
         Description
       </th>
     </tr>
-
   </thead>
 
   <tbody>
@@ -114,7 +112,11 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](/docs/full-checkout-android#render-options) for more information
+        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section 
+
+        [Render options](/docs/full-checkout-android#render-options)
+
+         for more information
       </td>
     </tr>
 
@@ -124,7 +126,11 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Enables the **Save card checkbox** on card flows. Check the [Save card](/docs/full-checkout-android#save-card-for-future-payments)  section for more information.
+        Enables the **Save card checkbox** on card flows. Check the 
+
+        [Save card](/docs/full-checkout-android#save-card-for-future-payments)
+
+          section for more information.
       </td>
     </tr>
 
@@ -158,10 +164,13 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles)  section.
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the 
+
+        [`styles`](/docs/full-checkout-android#styles)
+
+          section.
       </td>
     </tr>
-
   </tbody>
 </Table>
 
@@ -226,14 +235,68 @@ The following table provide additional information about the possible states:
 
 ## Step 5: Add the SDK view to the checkout
 
-When implementing the Full SDK, be sure to include the `PaymentMethodListView` in your layout to display the available payment methods. Additionally, use the `.setOnSelectedEvent` lambda function to notify your app when to enable or disable the pay button.
+When implementing the Full SDK with Jetpack Compose, use the `PaymentMethodListViewComponent` to display the available payment methods. This component provides callbacks to notify your app when to enable or disable the pay button, and when an enrolled payment method is successfully removed.
 
-```xml
-<com.yuno.payments.features.payment.ui.views.PaymentMethodListView
-  android:id="@+id/list_payment_methods"
-  android:layout_width="match_parent"
-	android:layout_height="wrap_content" />
+### Component signature
+
+```kotlin
+@Composable
+fun PaymentMethodListViewComponent(
+    activity: Activity,
+    modifier: Modifier? = null,
+    onPaymentSelected: (Boolean) -> Unit,
+    onUnEnrollSuccess: (Boolean) -> Unit = {}
+)
 ```
+
+### Parameters
+
+* `activity: Activity`
+  * The current `Activity` where the component is hosted. Required to handle payment flows correctly.
+* `modifier: Modifier?` (optional)
+  * Allows you to customise the layout and appearance (for example, padding, spacing). Defaults to `null`.
+* `onPaymentSelected: (Boolean) -> Unit`
+  * Callback invoked whenever a payment method is selected or deselected.
+    * `true` → A method is selected (enable the pay button).
+    * `false` → No method is selected (disable the pay button).
+* `onUnEnrollSuccess: (Boolean) -> Unit` (optional)
+  * Callback invoked when a stored payment method is successfully removed (unenrolled).
+    * `true` → Indicates the removal succeeded.
+    * Can be used to show a snackbar, refresh the list, or update UI state.
+
+### Example
+
+```kotlin
+val coroutineScope = rememberCoroutineScope()
+val snackbarHostState = remember { SnackbarHostState() }
+var paymentMethodIsSelected by remember { mutableStateOf(false) }
+
+Column(
+    modifier = Modifier
+        .weight(1f)
+        .verticalScroll(rememberScrollState())
+) {
+    PaymentMethodListViewComponent(
+        activity = activity,
+        onPaymentSelected = { isSelected ->
+            paymentMethodIsSelected = isSelected
+        },
+        onUnEnrollSuccess = { success ->
+            if (success) {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Your payment method has been removed",
+                    )
+                }
+            }
+        },
+    )
+}
+```
+
+> ❗ Important
+>
+> Always wrap the component in a `Column` with `.verticalScroll(rememberScrollState())`. Without this, the list of payment methods may not render or scroll properly when there are multiple methods available.
 
 ## Step 6: Initiate the payment process
 
@@ -384,8 +447,8 @@ Control the payment flow using the returned controller instance.
 
 #### Methods
 
-- **`submitForm()`**: Submits the current form when available
-- **`continuePayment()`**: Continues the payment flow after backend OTT processing
+* **`submitForm()`**: Submits the current form when available
+* **`continuePayment()`**: Continues the payment flow after backend OTT processing
 
 ```kotlin
 // Submit form when ready
@@ -399,14 +462,14 @@ fragmentController.continuePayment()
 
 #### UI flexibility
 
-- **Compose and XML compatible**: Works with both Jetpack Compose and traditional XML views
-- **Complete control**: You decide where and how to display each view
-- **Custom integration**: Easy integration with existing app design
+* **Compose and XML compatible**: Works with both Jetpack Compose and traditional XML views
+* **Complete control**: You decide where and how to display each view
+* **Custom integration**: Easy integration with existing app design
 
 #### Flow control
 
-- **Custom submit logic**: Control when to submit forms
-- **Backend integration**: Process OTT on your backend before continuing
+* **Custom submit logic**: Control when to submit forms
+* **Backend integration**: Process OTT on your backend before continuing
 
 ### Complete integration example
 

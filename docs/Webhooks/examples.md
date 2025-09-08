@@ -14,7 +14,7 @@ next:
 ---
 # Webhook attributes
 
-The attributes of the JSON for the Yuno webhooks are listed below:
+The JSON attributes for Yuno webhooks are listed below:
 
 <HTMLBlock>{`
 <body>
@@ -95,6 +95,10 @@ Yuno provides several webhooks related to enrollment and payment notifications. 
   <YunoCard title="Payouts" href="/docs/examples#payouts" titleSize="h4" />
 
   <YunoCard title="Subscriptions" href="/docs/examples#subscriptions" titleSize="h4" />
+
+  <YunoCard title="Onboardings" href="/docs/examples#onboardings" titleSize="h4" />
+
+  <YunoCard title="Refunds" href="/docs/examples#refunds" titleSize="h4" />
 </Shelf>
 
 ## Payment
@@ -1485,129 +1489,410 @@ The next JSON object presents an example of a data structure related to a paymen
 
 ```json Example
 {
-    "type": "onboarding",
-    "type_event": "onboarding.declined",
-    "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
-    "retry": 0,
-    "version": 2,
-    "data": {
-        "id": "4ccdb7bf-ff16-4e32-8cd9-bdbe345f057e",
-        "type": "ONBOARD_ONTO_THE_PROVIDER",
-        "workflow": "DIRECT",
-        "status": "REJECTED",
-        "callback_url": "https://merchant.example.com/webhook/onboarding",
-        "provider": {
-            "id": "ALELO",
-            "connection_id": "cc389b51-53a1-4a29-af40-c8cee26c3399",
-            "redirect_url": null,
-            "recipient_id": "1234567890"
+  "type": "onboarding",
+  "type_event": "onboarding.declined",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "id": "c3ec4ea5-1873-4c7e-bab6-49611d9cf14d",
+    "type": "ONBOARD_ONTO_THE_PROVIDER",
+    "workflow": "DIRECT",
+    "status": "REJECTED",
+    "response_message": null,
+    "callback_url": "https://merchant.example.com/webhook/onboarding",
+    "provider": {
+      "id": "ALELO",
+      "connection_id": "f2a2b72f-3dae-47c5-8634-0d55c265e201",
+      "redirect_url": null,
+      "recipient_id": "1196387292"
+    },
+    "documentation": [
+      {
+        "file_name": "onboarding.pdf",
+        "content_type": "application/pdf",
+        "content_category": "IDENTIFICATION_DOCUMENT",
+        "content": "onboarding.pdf-773c5d26-fb66-4867-8d98-b0eb25e3bfbb"
+      }
+    ],
+    "legal_representatives": [
+      {
+        "merchant_reference": "REP_001",
+        "first_name": "María",
+        "last_name": "González",
+        "email": "maria.gonzalez@example.com",
+        "date_of_birth": "1985-05-20",
+        "country": "CO",
+        "nationality": "CO",
+        "title": "CEO",
+        "publicly_exposed_person": false,
+        "ultimate_beneficial_owner": true,
+        "document": {
+          "document_number": "0987654321",
+          "document_type": "CC"
         },
-        "documentation": [],
-        "legal_representatives": [],
-        "withdrawal_methods": {
-            "bank": {
-                "code": "002",
-                "branch": "002",
-                "branch_digit": null,
-                "account": "9876543210",
-                "account_digit": null,
-                "account_type": "CHECKINGS",
-                "routing": "021000022",
-                "country": "US",
-                "currency": "USD"
-            }
+        "phone": {
+          "country_code": "+57",
+          "number": "3109876543"
         },
-        "requirements": [],
-        "terms_of_service": null,
-        "recipient": {
-            "id": "1d7598aa-268d-4140-82e5-838bbb50fb5a",
-            "national_entity": "INDIVIDUAL",
-            "merchant_recipient_id": "MERCHANT_2de21e60-bc96-4572-b2ba-ec1bd41505d2",
-            "entity_type": "PRIVATE",
-            "first_name": "Juan",
-            "last_name": "Pérez",
-            "legal_name": null,
-            "email": "juan.perez@example.com",
-            "date_of_birth": "1990-01-15",
+        "address": {
+          "address_line_1": "Calle 26 # 13-19",
+          "address_line_2": null,
+          "city": "Bogotá",
+          "country": "CO",
+          "state": "Cundinamarca",
+          "zip_code": "110311",
+          "neighborhood": null
+        }
+      }
+    ],
+    "withdrawal_methods": {
+      "bank": {
+        "code": "002",
+        "branch": "002",
+        "branch_digit": null,
+        "account": "9876543210",
+        "account_digit": null,
+        "account_type": "CHECKINGS",
+        "routing": "021000022",
+        "country": "US",
+        "currency": "USD"
+      }
+    },
+    "requirements": [],
+    "terms_of_service": {
+      "acceptance": true,
+      "date": "2025-07-21T20:43:54.786342Z",
+      "ip": "129.21.111.11"
+    },
+    "recipient": {
+      "id": "dc4608f7-38a0-484e-b301-39138c13ad5c",
+      "national_entity": "INDIVIDUAL",
+      "merchant_recipient_id": "MERCHANT_d020efbf-1b2f-4f7f-ab12-80e0e5009f34",
+      "entity_type": "PRIVATE",
+      "first_name": "Pedro",
+      "last_name": "Castro",
+      "legal_name": "Pedro Castro",
+      "email": "p.castro@example.com",
+      "date_of_birth": "1992-01-21",
+      "country": "CO",
+      "website": "https://pedro.com",
+      "industry": "Technology",
+      "merchant_category_code": "5740",
+      "document": {
+        "document_number": "1196387292",
+        "document_type": "CC"
+      },
+      "phone": {
+        "country_code": "57",
+        "number": "3001234567"
+      },
+      "address": {
+        "address_line_1": "Carrera 7 # 32-16",
+        "address_line_2": "Oficina 201",
+        "city": "Bogotá",
+        "country": "CO",
+        "state": "Cundinamarca",
+        "zip_code": "110311",
+        "neighborhood": "Centro"
+      },
+      "withdrawal_methods": {
+        "bank": {
+          "code": "001",
+          "branch": "004",
+          "branch_digit": "123",
+          "account": "1234567890",
+          "account_digit": "123",
+          "account_type": "SAVINGS",
+          "routing": "021000021",
+          "country": "CO",
+          "currency": "COP"
+        }
+      },
+      "documentation": [
+        {
+          "file_name": "recipient.pdf",
+          "content_type": "application/pdf",
+          "content_category": "IDENTIFICATION_DOCUMENT",
+          "content": "recipient.pdf-be7d472e-8faf-4615-b8a8-16221c86d393"
+        }
+      ],
+      "legal_representatives": [
+        {
+          "merchant_reference": "REP_001",
+          "first_name": "María",
+          "last_name": "González",
+          "email": "maria.gonzalez@example.com",
+          "date_of_birth": "1985-05-20",
+          "country": "CO",
+          "nationality": "CO",
+          "title": "CEO",
+          "publicly_exposed_person": false,
+          "ultimate_beneficial_owner": true,
+          "document": {
+            "document_number": "0987654321",
+            "document_type": "CC"
+          },
+          "phone": {
+            "country_code": "+57",
+            "number": "3109876543"
+          },
+          "address": {
+            "address_line_1": "Calle 26 # 13-19",
+            "address_line_2": null,
+            "city": "Bogotá",
             "country": "CO",
-            "website": "https://juanperez.com",
-            "industry": "Technology",
-            "merchant_category_code": "5734",
-            "document": {
-                "document_number": "1234567890",
-                "document_type": "CC"
+            "state": "Cundinamarca",
+            "zip_code": "110311",
+            "neighborhood": null
+          }
+        }
+      ],
+      "created_at": "2025-09-04T15:57:56.115849Z",
+      "updated_at": "2025-09-04T15:57:56.115861Z"
+    },
+    "created_at": "2025-09-04T15:58:04.35936Z",
+    "updated_at": "2025-09-04T15:58:06.513176Z",
+    "expires_at": null
+  }
+}
+```
+
+## Refunds
+
+```json Example
+{
+  "payment": {
+    "code": "f7bcf40d-7255-4e13-9dba-df6fa09be6b2",
+    "id": "f7bcf40d-7255-4e13-9dba-df6fa09be6b2",
+    "idempotency_key": "49eda7f2-bb05-437f-9676-7c8bb6df94a9",
+    "organization_code": "c60f4657-6ec5-487c-b9d5-a5fdbc887a1f",
+    "account_code": "2e7bc710-32db-43b2-a7aa-21c3bd031f8f",
+    "account_id": "2e7bc710-32db-43b2-a7aa-21c3bd031f8f",
+    "description": "Test goold",
+    "country": "CO",
+    "status": "REFUNDED",
+    "sub_status": "REFUNDED",
+    "order_id": "0000023",
+    "merchant_order_id": "0000023",
+    "created_at": "2025-09-03T21:51:08.633533Z",
+    "updated_at": "2025-09-03T21:53:40.368707Z",
+    "amount": {
+      "currency": "COP",
+      "value": 30000,
+      "refunded": 30000,
+      "captured": 0,
+      "currency_conversion": null
+    },
+    "checkout": {
+      "session": null,
+      "sdk_action_required": false
+    },
+    "customer_payer": {
+      "code": "1ca7351f-8855-4765-bbe5-bd5110809cf2",
+      "id": "1ca7351f-8855-4765-bbe5-bd5110809cf2",
+      "organization_customer_external_id": "1756936266",
+      "merchant_customer_id": "1756936266",
+      "first_name": "Willintong",
+      "last_name": "Ramirez",
+      "gender": "M",
+      "date_of_birth": "1990-02-28",
+      "email": "willintong.ramirez@y.uno",
+      "nationality": "AR",
+      "ip_address": null,
+      "device_fingerprint": null,
+      "third_party_session_id": null,
+      "device_fingerprints": [],
+      "browser_info": null,
+      "document": {
+        "document_number": "123554332",
+        "document_type": "PASS"
+      },
+      "billing_address": {
+        "address_line_1": "Calle 34 # 56 - 78",
+        "address_line_2": "Apartamento 502, Torre I",
+        "city": "Bogotá",
+        "country": "CO",
+        "state": "Cundinamarca",
+        "zip_code": "111111",
+        "neighborhood": null
+      },
+      "shipping_address": {
+        "address_line_1": "Calle 34 # 56 - 78",
+        "address_line_2": "Apartamento 502, Torre I",
+        "city": "Bogotá",
+        "country": "CO",
+        "state": "Cundinamarca",
+        "zip_code": "111111",
+        "neighborhood": null
+      },
+      "phone": {
+        "country_code": "57",
+        "number": "3132450765"
+      },
+      "merchant_customer_created_at": null,
+      "geo_location": {
+        "latitude": null,
+        "longitude": null
+      },
+      "merchant_customer_validations": {
+        "account_is_verified": true,
+        "email_is_verified": true,
+        "phone_is_verified": true
+      }
+    },
+    "additional_data": {
+      "order": {
+        "shipping_amount": 10.35,
+        "fee_amount": 40.5,
+        "tip_amount": null,
+        "items": [
+          {
+            "id": "123AD",
+            "name": "Skirt",
+            "quantity": 3,
+            "unit_amount": 20,
+            "category": "Clothes",
+            "brand": "XYZ",
+            "sku_code": "8765432109",
+            "manufacture_part_number": "XYZ123456"
+          }
+        ],
+        "taxes": [],
+        "shipping": null,
+        "account_funding": null,
+        "tickets": [],
+        "fulfillment": null,
+        "discounts": [],
+        "sales_channel": null
+      },
+      "airline": null,
+      "transportations": null,
+      "seller_details": null
+    },
+    "transactions": {
+      "code": "14a2ca8a-07bd-47b2-9070-4868ab176ac8",
+      "id": "14a2ca8a-07bd-47b2-9070-4868ab176ac8",
+      "type": "REFUND",
+      "status": "SUCCEEDED",
+      "category": "CARD",
+      "amount": 30000,
+      "provider_id": "YUNO_TEST_PAYMENT_GW",
+      "response_code": "SUCCEEDED",
+      "merchant_reference": "REFUND_001",
+      "response_message": "Transaction successful",
+      "reason": "REQUESTED_BY_CUSTOMER",
+      "description": "Test refund",
+      "created_at": "2025-09-03T21:53:40.230290Z",
+      "updated_at": "2025-09-03T21:53:40.346884Z",
+      "payment_method": {
+        "token": null,
+        "type": "CARD",
+        "vaulted_token": null,
+        "vault_on_success": false,
+        "parent_payment_method_type": null,
+        "payment_method_detail": {
+          "card": {
+            "verify": false,
+            "capture": false,
+            "installments": 1,
+            "installments_plan_id": null,
+            "first_installment_deferral": null,
+            "installments_amount": null,
+            "installments_type": null,
+            "soft_descriptor": "",
+            "authorization_code": "658571",
+            "retrieval_reference_number": "",
+            "voucher": null,
+            "card_data": {
+              "holder_name": "Pepito Perez",
+              "iin": "41111111",
+              "lfd": "1111",
+              "number_length": 16,
+              "security_code_length": 3,
+              "brand": "VISA",
+              "issuer_name": "CONOTOXIA SP Z O O",
+              "issuer_code": null,
+              "country_code": "PL",
+              "category": "CLASSIC",
+              "type": "DEBIT",
+              "three_d_secure": {
+                "version": null,
+                "electronic_commerce_indicator": null,
+                "cryptogram": null,
+                "transaction_id": null,
+                "directory_server_transaction_id": null,
+                "pares_status": null,
+                "acs_id": null,
+                "strong_customer_authentication_exemptions": null
+              },
+              "network_token": null,
+              "fingerprint": "3d49ec9d-e941-4eaf-80eb-251469d66108",
+              "expiration_month": 3,
+              "expiration_year": 26
             },
-            "phone": {
-                "country_code": "57",
-                "number": "3001234567"
-            },
-            "address": {
-                "address_line_1": "Carrera 7 # 32-16",
-                "address_line_2": "Oficina 201",
-                "city": "Bogotá",
-                "country": "CO",
-                "state": "Cundinamarca",
-                "zip_code": "110311",
-                "neighborhood": "Centro"
-            },
-            "withdrawal_methods": {
-                "bank": {
-                    "code": "001",
-                    "branch": "004",
-                    "branch_digit": "123",
-                    "account": "1234567890",
-                    "account_digit": "123",
-                    "account_type": "SAVINGS",
-                    "routing": "021000021",
-                    "country": "CO",
-                    "currency": "COP"
-                }
-            },
-            "documentation": [
-                {
-                    "file_name": "test",
-                    "content_type": "application/pdf",
-                    "content_category": "BANK_STATEMENT",
-                    "content": "test-0f8a7d4e-bc6a-4221-bc6c-6c03499dbe3d"
-                }
-            ],
-            "legal_representatives": [
-                {
-                    "merchant_reference": "REP_001",
-                    "first_name": "María",
-                    "last_name": "González",
-                    "email": "maria.gonzalez@example.com",
-                    "date_of_birth": "1985-05-20",
-                    "country": "CO",
-                    "nationality": "CO",
-                    "title": "CEO",
-                    "publicly_exposed_person": false,
-                    "ultimate_beneficial_owner": true,
-                    "document": {
-                        "document_number": "0987654321",
-                        "document_type": "CC"
-                    },
-                    "phone": {
-                        "country_code": "+57",
-                        "number": "3109876543"
-                    },
-                    "address": {
-                        "address_line_1": "Calle 26 # 13-19",
-                        "address_line_2": null,
-                        "city": "Bogotá",
-                        "country": "CO",
-                        "state": "Cundinamarca",
-                        "zip_code": "110311",
-                        "neighborhood": null
-                    }
-                }
-            ],
-            "created_at": "2025-07-29T02:25:11.753937Z",
-            "updated_at": "2025-07-29T02:25:11.75395Z"
+            "stored_credentials": {
+              "reason": null,
+              "usage": null,
+              "subscription_agreement_id": null,
+              "network_transaction_id": null
+            }
+          },
+          "wallet": null,
+          "bnpl": null,
+          "bank_transfer": null,
+          "ticket": null,
+          "payment_link": null
+        }
+      },
+      "provider": {
+        "provider_transaction_id": "a9908f18-71ca-458b-9f94-f63e55bdc94a"
+      },
+      "provider_data": {
+        "raw_response": {
+          "message": "provider response"
         },
-        "created_at": "2025-07-29T02:25:17.093647Z",
-        "updated_at": "2025-07-29T02:25:17.965926Z",
-        "expires_at": null
+        "id": "YUNO_TEST_PAYMENT_GW",
+        "transaction_id": "a9908f18-71ca-458b-9f94-f63e55bdc94a",
+        "account_id": null,
+        "status": null,
+        "status_detail": null,
+        "response_message": null,
+        "response_code": "SUCCEEDED",
+        "third_party_transaction_id": null,
+        "third_party_account_id": null,
+        "iso8583_response_code": null,
+        "iso8583_response_message": null
+      },
+      "connection_data": {
+        "id": null,
+        "name": null
+      },
+      "simplified_mode": false,
+      "third_party_session_id": null,
+      "receipt": false,
+      "receipt_language": null,
+      "receipt_url": null,
+      "device_fingerprint": null
+    },
+    "transactions_history": [],
+    "callback_url": null,
+    "workflow": "DIRECT",
+    "split_marketplace": [],
+    "payment_link_code": "",
+    "subscription_id": null,
+    "subscription": null,
+    "fraud_screening": null,
+    "metadata": [],
+    "routing_rules": {
+      "smart_routing": false,
+      "monitors": false,
+      "condition": {
+        "id": 148781,
+        "name": null,
+        "description": null
+      }
     }
+  }
 }
 ```
