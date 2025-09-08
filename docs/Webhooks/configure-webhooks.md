@@ -25,7 +25,7 @@ Once configured, you'll need to define which events you want to list for the ena
 
 You can configure different webhooks using the [Yuno Merchant Dashboard](https://dashboard.y.uno/). At the **Developers** tab, you can choose **Webhooks**. To create a new webhook, you need to name it, define the endpoint, and select the trigger event. The image below shows the side panel to add a webhook.
 
-![](https://files.readme.io/b6f4592-webhooks_configure1.png)
+<Image align="center" src="https://files.readme.io/8479b7aabbea3816f7139a2e2d22b2217a3451d1a35001bb30180e84a15e8866-Screenshot_2025-08-28_at_2.26.55_PM.png" />
 
 In the [Yuno Merchant Dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button.
 
@@ -36,9 +36,9 @@ Access the [Webhooks Examples](ref:examples) page to check examples for payment 
 In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wiki/OAuth) for your webhook reception, Yuno also offers the possibility to define the required parameters in the same dashboard section. You will need to configure the following fields so we can obtain the authorization token that will be sent in the headers of the webhooks.
 
 * `Authentication_url`: url to use for authentication
-* `Credentials`: Necessary credentials to communicate with the authentication\_url.
-  * Client Secret\_key
-  * Cliente Client\_ID
+* `Credentials`: Necessary credentials to communicate with the authentication_url.
+  * Client Secret_key
+  * Cliente Client_ID
 * `Grant type`: Type of grant for the authentication.
 
 <Image align="center" src="https://files.readme.io/3075c93d6bfd9bc1a786206a165768229231928441c12c919717ab38d89df995-Screenshot_2025-02-07_at_10.49.53_AM.png" />
@@ -169,28 +169,28 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
 
 Depending on the type of event, you will receive a different type of webhook and event. The next table presents the possible event types for enrollments and payments currently available.
 
-| type         | type\_event |
-| :----------- | :---------- |
-| enrollment   | enroll      |
-| enrollment   | unenroll    |
-| enrollment   | expiration  |
-| payment      | purchase    |
-| payment      | authorize   |
-| payment      | capture     |
-| payment      | refund      |
-| payment      | cancel      |
-| payment      | verify      |
-| payment      | chargeback  |
-| payout       | payout      |
-| subscription | create      |
-| subscription | pause       |
-| subscription | resume      |
-| subscription | cancel      |
-| subscription | complete    |
-| onboarding   | create      |
-| onboarding   | pending     |
-| onboarding   | succeeded   |
-| onboarding   | canceled    |
-| onboarding   | declined    |
-| onboarding   | blocked     |
-| onboarding   | unblocked   |
+| type         | type_event |
+| :----------- | :--------- |
+| enrollment   | enroll     |
+| enrollment   | unenroll   |
+| enrollment   | expiration |
+| payment      | purchase   |
+| payment      | authorize  |
+| payment      | capture    |
+| payment      | refund     |
+| payment      | cancel     |
+| payment      | verify     |
+| payment      | chargeback |
+| payout       | payout     |
+| subscription | create     |
+| subscription | pause      |
+| subscription | resume     |
+| subscription | cancel     |
+| subscription | complete   |
+| onboarding   | create     |
+| onboarding   | pending    |
+| onboarding   | succeeded  |
+| onboarding   | canceled   |
+| onboarding   | declined   |
+| onboarding   | blocked    |
+| onboarding   | unblocked  |

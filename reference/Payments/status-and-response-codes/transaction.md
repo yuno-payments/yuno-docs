@@ -489,6 +489,10 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ### Declined status
 
+<Callout icon="📘" theme="info">
+  Some declines include a `merchant_advice_code` (MAC) that indicates whether and when to retry. See [Merchant Advice Codes (MAC)](#merchant-advice-codes-mac).
+</Callout>
+
 <HTMLBlock>{`
 <body>
   <details open class="table-card">
@@ -579,6 +583,62 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
   </tbody>
 </table>
 
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+### Merchant Advice Codes (MAC)
+
+These codes will provide useful guidance when dealing with declined transactions. You may find these fields in our public API responses:
+
+* **`transactions.merchant_advice_code` and `transactions.merchant_advice_code_message`**: Yuno-normalized fields providing standardized codes and explanations regarding the denial.
+* **`transactions.provider_data.merchant_advice_code` and `transactions.merchant_advice_code_message`**: Raw code and message from the provider.
+
+Please refer to [Merchant Advice Codes (MAC)](#merchant-advice-codes-mac) for more information.
+
+<HTMLBlock>{`
+<body>
+  <details open class="table-card">
+    <summary>
+      <span class="table-call">Merchant Advice Codes (MAC)</span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <p>Merchant Advice Codes provide guidance from issuers/providers about retry behavior and policy. When present on a decline, use the MAC to determine whether to retry and the recommended timing.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>merchant_advice_code</th>
+            <th>Description</th>
+            <th>Provider MAC code</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>UPDATE_INFORMATION</code></td><td>Updated/additional information needed</td><td>01 – Updated account information available</td></tr>
+          <tr><td><code>TRY_AGAIN_LATER</code></td><td>Retry after 10 days</td><td>02 – Try again later</td></tr>
+          <tr><td><code>DO_NOT_TRY_AGAIN</code></td><td>Do not try again</td><td>03 – Do not try again</td></tr>
+          <tr><td><code>REQUIREMENTS_NOT_FULFILLED</code></td><td>Token requirements not fulfilled</td><td>04 – Token requirements not fulfilled</td></tr>
+          <tr><td><code>NO_RETRY_LIFE_CYCLE</code></td><td>No retry life cycle</td><td>21 – Recurring plan cancelled</td></tr>
+          <tr><td><code>RETRY_AFTER_1_H</code></td><td>Retry after 1 hour</td><td>24 – Retry after 1 hour (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_24_H</code></td><td>Retry after 24 hours</td><td>25 – Retry after 24 hours (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_2_D</code></td><td>Retry after 2 days</td><td>26 – Retry after 2 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_4_D</code></td><td>Retry after 4 days</td><td>27 – Retry after 4 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_6_D</code></td><td>Retry after 6 days</td><td>28 – Retry after 6 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_8_D</code></td><td>Retry after 8 days</td><td>29 – Retry after 8 days (insufficient funds)</td></tr>
+          <tr><td><code>RETRY_AFTER_10_D</code></td><td>Retry after 10 days</td><td>30 – Retry after 10 days (insufficient funds)</td></tr>
+          <tr><td><code>NO_RETRY_POLICY</code></td><td>No retry policy</td><td>40 – Non‑rechargeable prepaid card</td></tr>
+          <tr><td><code>NO_RETRY_SECURITY</code></td><td>No retry security</td><td>42 – Sanction score exceeded</td></tr>
+          <tr><td><code>MULTIPLE_USE_CARD</code></td><td>Multiple‑use virtual card</td><td>43 – Multiple‑use virtual card</td></tr>
+        </tbody>
+      </table>
     </div>
   </details>
 </body>
@@ -876,7 +936,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
 
 ***
 
-### Chargebacks specific response\_codes
+### Chargebacks specific response_codes
 
 For more details, please refer to the [reason codes page](https://docs.y.uno/docs/reason-codes) in the [Chargeback guides](https://docs.y.uno/docs/chargeback-management) section.
 

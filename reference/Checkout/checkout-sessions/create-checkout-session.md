@@ -15,4 +15,4 @@ metadata:
 next:
   description: ''
 ---
-This request creates a checkout session using the unique identifier generated when the Customer resource was created.
+This request creates a checkout session using the unique identifier generated when the `customer` resource was created.
