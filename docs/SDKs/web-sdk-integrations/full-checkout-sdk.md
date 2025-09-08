@@ -6,8 +6,7 @@ hidden: false
 metadata:
   title: Full SDK (WEB)
   description: >-
-    Here, you will find an outline of the step-by-step process to enable the
-    Full SDK functionalities within your system.
+    Learn the step-by-step process to enable Full SDK functionality in your application.
   keywords:
     - Full SDK WEB Configuration
   robots: index
@@ -16,9 +15,9 @@ next:
 ---
 > 👍 Recommended SDK
 >
-> We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+> We recommend the [Web Seamless SDK](doc:seamless-sdk-payment-web) for a smooth integration experience. It provides a flexible payment solution with prebuilt UI components and customization options.
 
-Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
+Welcome to the Yuno Full SDK (Web) guide. Use this guide to get started with Yuno's payment solutions and create a seamless payment experience for your users.
 
 > 📘 Web SDK v1.1 Release
 >
@@ -117,10 +116,8 @@ Then, load and initialize the SDK as follows:
 // Import the SDK module from npm
 import { loadScript } from '@yuno-payments/sdk-web';
 
-// Load and initialize the SDK
-const yuno = await loadScript();
-
-// Initialize the SDK with the public key
+// Load the SDK and initialize it with the public key
+await loadScript();
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
