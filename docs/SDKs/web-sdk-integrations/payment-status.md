@@ -6,20 +6,19 @@ hidden: false
 metadata:
   title: Payment Status
   description: >-
-    To monitor payments, you can use one of the monitoring status solutions
-    provided by Yuno. You can use on of two options, Status and Status Lite.
+    Monitor payment progress using Status (UI) or Status Lite (no UI).
   robots: index
 next:
   description: ''
 ---
-To monitor payments, you can use one of the monitoring status solutions provided by Yuno. You can use on of two options:
+Monitor payment progress using one of two options:
 
-* **Status**: You can use the Status SDK to update the user about the payment process. It provides visual information for customers.
-* **Status Lite**: You can use the Status Lite SDK to get info about the current payment status. However, the Status Lite does not mount any element.
+* **Status**: Shows the status to customers using a full-screen UI.
+* **Status Lite**: Returns the status programmatically without rendering UI.
 
 Both solutions initialize the same way. After adding the Yuno SDK to your system and creating an instance, check the desired status solution to learn how to use it.
 
-## Step 1: Include the library in your project.
+## Step 1: Include the library in your project
 
 Ensure the Yuno SDK file is included in your webpage before closing the `<body>` tag. Refer to the example below:
 
@@ -29,7 +28,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `<body>`
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](https://docs.y.uno/reference/authentication) page for more information.
 
 Like the example below, use the initialized class that is attributed to the `yuno` constant.
 
@@ -45,20 +44,22 @@ To use the Status, you need to mount it. Use the `mountStatusPayment` function t
 
 The callback will be executed when the status is received, informing the user. Defining the element to mount the Status is unnecessary since it will cover the entire screen. The next code block presents an example of the parameter configuration.
 
+### Parameters
+
+Configure the Status view with the following options:
+
+| Parameter          | Description                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`  | Checkout session for the payment.                                                                        |
+| `countryCode`      | Country code. See the full list in [Country coverage](doc:country-coverage-yuno-sdk).                    |
+| `language`         | UI language (e.g., `en`, `fr`, `pt`).                                                                    |
+| `yunoPaymentResult`| Callback invoked with the status result.                                                                  |
+
 ```javascript
 yuno.mountStatusPayment({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638',
-  /**
-   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-   */
   countryCode: 'FR',
-  /**
-  * Language can be one of en, fr, jp
-  */
   language: 'fr',
-  /**
-   * @param {'READY_TO_PAY' | 'CREATED' | 'SUCCEEDED' | 'REJECTED' | 'CANCELLED' | 'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'} data
-   */
   yunoPaymentResult(data) {
     console.log('yunoPaymentResult', data)
   }
@@ -70,14 +71,10 @@ yuno.mountStatusPayment({
 To receive the current payment status using Status Lite, you need to call the method `yunoPaymentResult` providing the `checkoutSession` related to the payment, as shown in the example below:
 
 ```javascript
-/**
- * Call method that returns status, this won't render anything
- * 
- * @return {'READY_TO_PAY' | 'CREATED' | 'SUCCEEDED' | 'REJECTED' | 'CANCELLED' | 'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'}
- */
-const status = await yuno.yunoPaymentResult(checkoutSession)
+// Call method that returns the status without rendering UI
+const status = await yuno.yunoPaymentResult(checkoutSession);
 ```
 
-> 👍 Custom Payment Status Integration
+> 👍 Custom Payment Status integration
 >
-> If you prefer to use your own custom Payment Status page instead of personalizing the one provided by our SDK, you can do so by editing the HTML file to connect to an edited `status-lite.js` script. This allows you to fully customize the appearance and behavior of the payment status display while still using Yuno's status functionality. For example, after calling the `yunoPaymentResult` function, you can handle the status result in your own version of the `status-lite.js` script, which will then update your custom HTML file.
+> If you prefer to use your own custom Payment Status page instead of personalizing the one provided by our SDK, you can connect your HTML to a modified `status-lite.js`. After calling `yunoPaymentResult`, handle the result in your script and update your custom UI accordingly.
