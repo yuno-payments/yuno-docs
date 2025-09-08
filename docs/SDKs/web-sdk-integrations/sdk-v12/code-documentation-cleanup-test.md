@@ -86,7 +86,7 @@ After completing the SDK integration, you can proceed with the following steps t
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. For more information on obtaining your API credentials, see the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](https://docs.y.uno/docs/developers-credentials) page for more information.
 
 Use the initialized class that is attributed to the `yuno` constant:
 
@@ -139,7 +139,7 @@ yuno.startCheckout({
 
 ## Step 4: Mount the SDK
 
-Display the payment methods by using `yuno.mountCheckout()`:
+Display the payment methods by using:
 
 ```javascript
 yuno.mountCheckout();
@@ -192,7 +192,7 @@ Once the previous steps are complete, you can proceed to create a payment. Back-
 >
 > After Step 7, you have successfully implemented the basic payment flow. To test your integration, create a test payment using the checkout session and one-time token. For additional features and advanced configurations, see the [Complementary Features](#complementary-features) section below.
 
-> ❗️ Continue Payment Method
+> ❗️ ContinuePaymentmethod
 >
 > After creating a payment, Yuno **requires** you to integrate the `continuePayment` method from the SDK. This is necessary because some asynchronous payment methods require additional customer actions to complete the process. The API response will indicate this scenario by setting the `sdk_action_required` field to true. When this occurs, you must call `yuno.continuePayment()`, which will automatically present the necessary screens to the customer, allowing them to complete the payment flow without requiring you to handle each case manually.
 
