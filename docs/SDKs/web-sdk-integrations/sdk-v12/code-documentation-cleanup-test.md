@@ -192,7 +192,7 @@ Once the previous steps are complete, you can proceed to create a payment. Back-
 >
 > After Step 7, you have successfully implemented the basic payment flow. To test your integration, create a test payment using the checkout session and one-time token. For additional features and advanced configurations, see the [Complementary Features](#complementary-features) section below.
 
-> ❗️ ContinuePaymentmethod
+> ❗️ ContinuePayment Method
 >
 > After creating a payment, Yuno **requires** you to integrate the `continuePayment` method from the SDK. This is necessary because some asynchronous payment methods require additional customer actions to complete the process. The API response will indicate this scenario by setting the `sdk_action_required` field to true. When this occurs, you must call `yuno.continuePayment()`, which will automatically present the necessary screens to the customer, allowing them to complete the payment flow without requiring you to handle each case manually.
 
