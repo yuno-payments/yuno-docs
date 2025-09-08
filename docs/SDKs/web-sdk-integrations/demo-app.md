@@ -6,15 +6,12 @@ hidden: false
 metadata:
   title: Demo App
   description: >-
-    To help you understand and check how the Yuno SDKs work, the Yuno team
-    provides the Demo App. It provides implementation examples for all Yuno
-    SDKs. Therefore, if you are having trouble running some SDK on your
-    platform, you can check the working examples from the Demo App.
+    Explore a working example of Yuno SDKs to see implementations and behavior.
   robots: index
 next:
   description: ''
 ---
-To help you understand and check how the Yuno SDKs work, the Yuno team provides the Demo App. It provides implementation examples for all Yuno SDKs. Therefore, if you are having trouble running some SDK on your platform, you can check the working examples from the Demo App.
+Use the Demo App to explore working implementations of Yuno SDKs and their behavior.
 
 > 🚧 Connect Payment Methods
 >
@@ -33,7 +30,7 @@ All files from the Demo App are available on a [GitHub repository](https://githu
 > cd yuno-sdk-web
 ```
 
-### Step 2: Update the environment variables
+### Step 2: Configure environment variables
 
 First, you need to provide some information to run the application properly. Create a `.env` file in the root folder and define the following variables with your information:
 
@@ -43,20 +40,22 @@ YUNO_PUBLIC_API_KEY=your_public_api_key
 YUNO_PRIVATE_SECRET_KEY=your_private_secret_key
 ```
 
-You can find `account_code`, `public_apy_key`, and `private_secrete_key` in [Yuno Merchant Dashboard](https://docs.y.uno/reference/authentication).
+> 📘 Credentials
+>
+> See where to get `account_code`, `public_api_key`, and `private_secret_key`: https://docs.y.uno/reference/authentication
 
 ### Step 3: Start the Demo App
 
 After defining the `.env` file, install all dependencies:
 
 ```shell
-> npm install
+npm install
 ```
 
 Now you are ready to run the application using the following command:
 
 ```shell
-> npm start
+npm start
 ```
 
 To access the running application, open your browser and go to:
