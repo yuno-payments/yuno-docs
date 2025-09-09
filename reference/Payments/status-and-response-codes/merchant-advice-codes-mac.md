@@ -134,7 +134,7 @@ Reversible, is triggered by a data error identified by the issuer. Merchants mus
 
 Reversible, includes all other decline response codes not in categories 1, 2, and 3, as there may be cases where there is no response code value for a specific decline. Issuers may use other response code values ​​defined in the VisaNet Technical Specifications. However, minimal use is advised.
 
-All Visa MACs and their Yuno-normalized equivalents are available in the [MACs list](##macs-list).
+All Visa MACs and their Yuno-normalized equivalents are available in the [MACs list](#macs-list).
 
 ## Elo
 
@@ -158,7 +158,7 @@ Elo classifies reversible and irreversible codes into three separate groups:
   “CNPJ” refers to the Brazilian business taxpayer identification for the establishment (Root CNPJ at the group level).
 </Callout>
 
-Refer to the for all Elo [MACs list](##macs-list)and Yuno-normalized equivalents.
+Refer to the for all Elo [MACs list](#macs-list)and Yuno-normalized equivalents.
 
 ## Other brands
 
