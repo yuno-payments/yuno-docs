@@ -1,17 +1,17 @@
 ---
 title: Create One Time Use Token
-excerpt: ""
+excerpt: ''
 api:
   file: tokens.json
-  operationId: create-one-time-use-token
+  operationId: create-onte-time-use-token
 deprecated: false
 hidden: true
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 > ❗️ This endpoint is for PCI compliant merchants only
