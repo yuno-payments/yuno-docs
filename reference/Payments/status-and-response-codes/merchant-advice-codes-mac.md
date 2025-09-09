@@ -95,7 +95,7 @@ Other MACs, such as those indicating a temporary issue or insufficient funds, do
 
 In some cases, MACs will recommend waiting a specific amount of time before retrying (for example, “Retry after 24 hours”). These help you choose the best moment to try again.
 
-View all Mastercard MACs and their Yuno-normalized equivalents in the [MACs list](##macs-list).
+View all Mastercard MACs and their Yuno-normalized equivalents in the [MACs list](#macs-list).
 
 ## Visa
 
@@ -158,7 +158,7 @@ Elo classifies reversible and irreversible codes into three separate groups:
   “CNPJ” refers to the Brazilian business taxpayer identification for the establishment (Root CNPJ at the group level).
 </Callout>
 
-Refer to the for all Elo [MACs list](##macs-list)and Yuno-normalized equivalents.  
+Refer to the for all Elo [MACs list](##macs-list)and Yuno-normalized equivalents.
 
 ## Other brands
 
