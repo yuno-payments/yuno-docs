@@ -1,7 +1,7 @@
 ---
 title: Merchant Advice Codes (MAC)
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
