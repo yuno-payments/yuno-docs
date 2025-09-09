@@ -162,7 +162,31 @@ Access the [Payment type](ref:payment-type-list) page to see the complete list o
 
 The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
 
-After mounting, the checkout flow for the selected payment method will automatically begin.
+After mounting, you must start the checkout flow by calling `yuno.startPayment()`. If you skip this call, the payment form will not open.
+
+## Step 6: Start the payment flow (Required)
+
+Call `yuno.startPayment()` immediately after `yuno.mountSeamlessCheckout()` to open the selected payment method UI.
+
+```javascript
+// Mount the SDK
+yuno.mountSeamlessCheckout({
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  vaultedToken: VAULTED_TOKEN,
+});
+
+// Required: start the payment flow
+yuno.startPayment();
+```
+
+Alternatively, you can trigger the start from a user action such as a button click:
+
+```javascript
+const payButton = document.querySelector('#button-pay');
+payButton.addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
 
 > 📘 Demo App
 >
