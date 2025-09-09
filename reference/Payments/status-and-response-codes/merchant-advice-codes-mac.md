@@ -5,14 +5,46 @@ hidden: true
 metadata:
   robots: index
 ---
-When a transaction is declined, Merchant Advice Codes (MAC) provide clear guidance on whether and when a retry is appropriate. To support transparency and informed decision-making, Yuno’s public APIs include both normalized and raw response codes. By understanding MACs, merchants can quickly identify the reason for a decline and determine the best actions to take, such as updating routing or customer information before attempting a retry.
+When a transaction is declined, Merchant Advice Codes (MACs) provide clear guidance on whether and when a retry is appropriate. To support transparency and informed decision-making, Yuno’s public APIs include both normalized and raw response codes. By understanding MACs, merchants can quickly identify the reason for a decline and determine the best actions to take, such as updating routing or customer information before attempting a retry.
+
+## MACs list
+
+This table maps Yuno’s normalized Merchant Advice Codes (`merchant_advice_code` and `merchant_advice_code_message`) to their equivalents from Mastercard, Visa, and Elo. Use it as a reference to interpret decline reasons, set retry rules, and apply consistent routing strategies across networks.
+
+| `merchant_advice_code`     | `merchant_advice_code_message`                                       | Mastercard                                     | Visa                                                                                  | Elo                                                            |
+| :------------------------- | :------------------------------------------------------------------- | :--------------------------------------------- | :------------------------------------------------------------------------------------ | :------------------------------------------------------------- |
+| UPDATE_INFORMATION         | Updated/additional information needed                                | 01 – Updated account information available     | –                                                                                     | –                                                              |
+| TRY_AGAIN_LATER            | Retry within 30 days                                                 | 02 – Try again later                           | 3, 19, 39, 51, 52, 53, 59, 60, 61, 62, 65, 75, 78, 86, 91, 93, 96, N3, N4, Z5, 5C, 9G | 51, 59, 04, 06, 38, 61, 62, 65, 75, 78, 91                     |
+| DO_NOT_TRY_AGAIN           | Do not try again                                                     | 03 – Do not try again                          | 4, 7, 12, 14, 15, 41, 43, 46, 57, R0, R1, R3                                          | 57, 14, 56, 46, FM, 19, 12, 30, 13, 23, 41, 43, 64, 83, 76, 77 |
+| REQUIREMENTS_NOT_FULFILLED | Token requirements not fulfilled                                     | 04 – Token requirements not fulfilled          | –                                                                                     | –                                                              |
+| NO_RETRY_LIFE_CYCLE        | No retry life cycle                                                  | 21 – Recurring plan cancelled                  | –                                                                                     | –                                                              |
+| RETRY_AFTER_1_H            | Retry after 1 hours                                                  | 24 – Retry after 1 hours (insufficient funds)  | –                                                                                     | –                                                              |
+| RETRY_AFTER_24_H           | Retry after 24 hours                                                 | 25 – Retry after 24 hours (insufficient funds) | –                                                                                     | –                                                              |
+| RETRY_AFTER_2_D            | Retry after 2 days                                                   | 26 – Retry after 2 days (insufficient funds)   | –                                                                                     | –                                                              |
+| RETRY_AFTER_4_D            | Retry after 4 days                                                   | 27 – Retry after 4 days (insufficient funds)   | –                                                                                     | –                                                              |
+| RETRY_AFTER_6_D            | Retry after 6 days                                                   | 28 – Retry after 6 days (insufficient funds)   | –                                                                                     | –                                                              |
+| RETRY_AFTER_8_D            | Retry after 8 days                                                   | 29 – Retry after 8 days (insufficient funds)   | –                                                                                     | –                                                              |
+| RETRY_AFTER_10_D           | Retry after 10 days                                                  | 30 – Retry after 10 days (insufficient funds)  | –                                                                                     | –                                                              |
+| NO_RETRY_POLICY            | No retry policy                                                      | 40 – Non-rechargeable prepaid card             | –                                                                                     | –                                                              |
+| NO_RETRY_SECURITY          | No retry security                                                    | 42 – Sanction score exceeded                   | –                                                                                     | –                                                              |
+| MULTIPLE_USE_CARD          | Multiple-use virtual card                                            | 43 – Multiple-use virtual card                 | –                                                                                     | –                                                              |
+| INVALID_DATA               | Incorrect payment information; merchant must revalidate before retry | –                                              | 54, 55, 82, N7, 1A, 70, 6P                                                            | 54, 55, 82, 63                                                 |
 
 ## MAC fields on transactions
 
 Yuno’s public API includes dedicated fields to facilitate the use of Merchant Advice Codes.
 
+### Normalized MACs
+
+Yuno provides a standardized set of Merchant Advice Codes that simplify provider responses. These codes let you build retry logic and routing rules without needing to manage every provider’s unique variations.
+
 * **`transactions.merchant_advice_code`**: A Yuno-normalized MAC returned when a transaction is declined. This code helps you understand the reason for the denial, whether a retry is possible, and what actions to take before reattempting the payment.
 * **`transactions.merchant_advice_code_message`**: This fields complements the `merchant_advice_code` seen above, providing an explanation of the code in human‑readable terms. This message will allow you to act on the information without having to memorize the meaning of each code.
+
+### Raw MACs
+
+Alongside normalized values, Yuno also exposes the original codes and messages returned by providers. These raw fields ensure full transparency and allow you to troubleshoot or follow provider-specific guidance when needed.
+
 * **`transactions.provider_data.merchant_advice_code`**: The original Merchant Advice Code returned directly from the payment provider. This field gives you access to the raw code for full transparency and troubleshooting.
 * **`transactions.provider_data.merchant_advice_code_message`**: A human-readable message from the provider that explains the meaning of the raw MAC. Use this message to understand provider-specific guidance without needing to interpret code values.
 
@@ -63,25 +95,7 @@ Other MACs, such as those indicating a temporary issue or insufficient funds, do
 
 In some cases, MACs will recommend waiting a specific amount of time before retrying (for example, “Retry after 24 hours”). These help you choose the best moment to try again.
 
-Here is a list of Yuno's normalized MACs for Mastercard.
-
-| Provider MAC Code (Mastercard)                 | `merchant_advice_code`     | `merchant_advice_code_message`        |
-| :--------------------------------------------- | :------------------------- | :------------------------------------ |
-| 01 - Updated account information available     | UPDATE_INFORMATION         | Updated/additional information needed |
-| 02 - Try again later                           | TRY_AGAIN_LATER            | Retry within 30 days                  |
-| 03 - Do not try again                          | DO_NOT_TRY_AGAIN           | Do not try again                      |
-| 04 - Token requirements not fulfilled          | REQUIREMENTS_NOT_FULFILLED | Token requirements not fulfilled      |
-| 21 - Recurring plan cancelled                  | NO_RETRY_LIFE_CYCLE        | No retry life cycle                   |
-| 24 - Retry after 1 hour (insufficient funds)   | RETRY_AFTER_1_H            | Retry after 1 hours                   |
-| 25 - Retry after 24 hours (insufficient funds) | RETRY_AFTER_24_H           | Retry after 24 hours                  |
-| 26 - Retry after 2 days (insufficient funds)   | RETRY_AFTER_2_D            | Retry after 2 days                    |
-| 27 - Retry after 4 days (insufficient funds)   | RETRY_AFTER_4_D            | Retry after 4 days                    |
-| 28 - Retry after 6 days (insufficient funds)   | RETRY_AFTER_6_D            | Retry after 6 days                    |
-| 29 - Retry after 8 days (insufficient funds)   | RETRY_AFTER_8_D            | Retry after 8 days                    |
-| 30 - Retry after 10 days (insufficient funds)  | RETRY_AFTER_10_D           | Retry after 10 days                   |
-| 40 - Non-rechargeable prepaid card             | NO_RETRY_POLICY            | No retry policy                       |
-| 42 - Sanction score exceeded                   | NO_RETRY_SECURITY          | No retry security                     |
-| 43 - Multiple-use virtual card                 | MULTIPLE_USE_CARD          | Multiple-use virtual card             |
+View all Mastercard MACs and their Yuno-normalized equivalents in the [MACs list](##macs-list).
 
 ## Visa
 
@@ -120,19 +134,15 @@ Reversible, is triggered by a data error identified by the issuer. Merchants mus
 
 Reversible, includes all other decline response codes not in categories 1, 2, and 3, as there may be cases where there is no response code value for a specific decline. Issuers may use other response code values ​​defined in the VisaNet Technical Specifications. However, minimal use is advised.
 
-### Yuno normalized Visa MACs
-
-Use this mapping to build routing and retry rules. Yuno returns normalized MACs in `merchant_advice_code` while provider raw values are still available under `provider_data`.
-
-| Visa MACs                                                                             | `merchant_advice_code` | `merchant_advice_code_message`                            |
-| :------------------------------------------------------------------------------------ | :--------------------- | :-------------------------------------------------------- |
-| 4, 7, 12, 14, 15, 41, 43, 46, 57, R0, R1, R3                                          | `DO_NOT_TRY_AGAIN`     | Do not try again                                          |
-| 3, 19, 39, 51, 52, 53, 59, 60, 61, 62, 65, 75, 78, 86, 91, 93, 96, N3, N4, Z5, 5C, 9G | `TRY_AGAIN_LATER`      | Retry within 30 days                                      |
-| 54, 55, 82, N7, 1A, 70, 6P                                                            | `INVALID_DATA`         | Incorrect payment information; revalidate before retrying |
+All Visa MACs and their Yuno-normalized equivalents are available in the [MACs list](##macs-list).
 
 ## Elo
 
 Elo implemented rules in January 2025, aiming to reduce unnecessary retries by merchants and acquirers. Transactions are counted from the 1st to the last calendar day of the month.
+
+> 📘 Elo Fees
+>
+> BRL 0.80 per attempt that exceeds the group limit.
 
 ### Elo groups and retry rules
 
@@ -144,27 +154,11 @@ Elo classifies reversible and irreversible codes into three separate groups:
 | Group 2 (Reversible)   | Transactions declined with reversible codes                                                    | Charged from the 16th attempt within the month of assessment     |
 | Group 3 (Data quality) | Declines with characteristics of brute‑force attacks (considering the same merchant Root CNPJ) | Charged from 10,001 denied transactions if >5% of total refusals |
 
-> 📘 Elo Fees
->
-> BRL 0.80 per attempt that exceeds the group limit.
-
 <Callout icon="📘" theme="info">
   “CNPJ” refers to the Brazilian business taxpayer identification for the establishment (Root CNPJ at the group level).
 </Callout>
 
-### Yuno normalized Elo MACs
-
-Here are Yuno's normalized codes for Elo. Notice the correlation between our `merchant_advice_code` and Elo's message groups:
-
-* `DO_NOT_TRY_AGAIN` → Group 1 (Irreversible)
-* `TRY_AGAIN_LATER` → Group 2 (Reversible)
-* `INVALID_DATA` → Group 3 (Data quality)
-
-| Elo MACs                                                           | `merchant_advice_code` | `merchant_advice_code_message`                            |
-| :----------------------------------------------------------------- | :--------------------- | :-------------------------------------------------------- |
-| 57, 14, 56, 58, 46, FM, 19, 12, 30, 13, 23, 41, 43, 64, 83, 76, 77 | `DO_NOT_TRY_AGAIN`     | Do not try again                                          |
-| 51, 59, 04, 06, 38, 61, 62, 65, 75, 78, 91                         | `TRY_AGAIN_LATER`      | Retry within 30 days                                      |
-| 54, 55, 82, 63                                                     | `INVALID_DATA`         | Incorrect payment information; revalidate before retrying |
+Refer to the for all Elo [MACs list](##macs-list)and Yuno-normalized equivalents.  
 
 ## Other brands
 
