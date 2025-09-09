@@ -1,4 +1,4 @@
 ---
 title: Accounts
-hidden: false
+hidden: true
 ---
