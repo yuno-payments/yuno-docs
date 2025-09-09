@@ -3,7 +3,7 @@ title: Create One Time Use Token
 excerpt: ''
 api:
   file: tokens.json
-  operationId: create-onte-time-use-token
+  operationId: post_tokens
 deprecated: false
 hidden: true
 metadata:
