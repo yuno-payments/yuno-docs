@@ -7,7 +7,7 @@ metadata:
 ---
 When a transaction is declined, Merchant Advice Codes (MAC) provide clear guidance on whether and when a retry is appropriate. To support transparency and informed decision-making, Yuno’s public APIs include both normalized and raw response codes. By understanding MACs, merchants can quickly identify the reason for a decline and determine the best actions to take, such as updating routing or customer information before attempting a retry.
 
-### MAC fields on transactions
+## MAC fields on transactions
 
 Yuno’s public API includes dedicated fields to facilitate the use of Merchant Advice Codes.
 
