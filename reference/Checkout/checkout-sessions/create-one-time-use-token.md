@@ -5,7 +5,7 @@ api:
   file: tokens.json
   operationId: post_tokens
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
