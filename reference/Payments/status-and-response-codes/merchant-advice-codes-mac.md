@@ -30,7 +30,7 @@ This table maps Yuno’s normalized Merchant Advice Codes (`merchant_advice_code
 | MULTIPLE_USE_CARD          | Multiple-use virtual card                                            | 43 – Multiple-use virtual card                 | –                                                                                     | –                                                              |
 | INVALID_DATA               | Incorrect payment information; merchant must revalidate before retry | –                                              | 54, 55, 82, N7, 1A, 70, 6P                                                            | 54, 55, 82, 63                                                 |
 
-## MAC fields on transactions
+## MAC fields in transactions
 
 Yuno’s public API includes dedicated fields to facilitate the use of Merchant Advice Codes.
 
@@ -67,13 +67,6 @@ Visa, Mastercard, and Elo updated their policies to limit authorization retry at
 * [Visa](#visa)
 * [Elo](#elo)
 * [Other brands](#other-brands)
-
-> 📘 Normalized vs. Raw MACs
->
-> The sections below will provide a list of normalized MACs from Yuno. However, keep in mind you will still be able to extract the raw information from the provider using these fields:
->
-> * `transactions.provider_data.merchant_advice_code_message`
-> * `transactions.provider_data.merchant_advice_code`
 
 ## Mastercard
 
