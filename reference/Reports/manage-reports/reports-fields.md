@@ -1508,25 +1508,25 @@ Below, you will find details of each report type.
 
 ## Transaction reconciliation report
 
-> 📘
->
-> The following columns are mapped upon request, you may request them when activating the reconciliations module. Contact support for more details.
->
-> * `description`
-> * `provider_card_brand`
-> * `card_issuer_name`
-> * `card_issuer_country`
-> * `reconciliation_settlement_date`
-> * `local_amount`
-> * `local_retention`
-> * `local_tax`
-> * `provider_fees`
-> * `provider_fee_taxes`
-> * `net_amount`
-> * `card_expiration_month`
-> * `card_expiration_year`
-> * `estimated_settlement_date`
-> * `retrieval_reference_number`
+<Callout icon="📘" theme="info">
+  The following columns are mapped upon request, you may request them when activating the reconciliations module. Contact support for more details.
+
+  * `description`
+  * `provider_card_brand`
+  * `card_issuer_name`
+  * `card_issuer_country`
+  * `reconciliation_settlement_date`
+  * `local_amount`
+  * `local_retention`
+  * `local_tax`
+  * `provider_fees`
+  * `provider_fee_taxes`
+  * `net_amount`
+  * `card_expiration_month`
+  * `card_expiration_year`
+  * `estimated_settlement_date`
+  * `retrieval_reference_number`
+</Callout>
 
 <HTMLBlock>{`
 <body>
@@ -1628,6 +1628,12 @@ Below, you will find details of each report type.
             <td>string</td>
             <td>The unique identifier of the transaction from the provider (MAX 255; MIN 3).</td>
             <td>53443e9c-dd17-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>third_party_transaction_id</code></td>
+            <td>string</td>
+            <td>The unique identifier of a third party transaction (MAX 255; MIN 3).</td>
+            <td>69ad0a39-b769-423c-b223-d7b8bf9a1c2d</td>
           </tr>
           <tr>
             <td><code>status</code></td>
@@ -1803,9 +1809,9 @@ Below, you will find details of each report type.
 
 ## Settlement report
 
-> 📘
->
-> The Settlements report now supports timezone selection for `transaction_date`, similar to the Transactions report. The date format is now **ISO 8601** (e.g., `2023-12-11T01:14:38.000Z` for UTC, `2023-02-23T17:39:36.065+01:00` for UTC+1). Update any automations that depend on this field format.
+<Callout icon="📘" theme="info">
+  The Settlements report now supports timezone selection for `transaction_date`, similar to the Transactions report. The date format is now **ISO 8601** (e.g., `2023-12-11T01:14:38.000Z` for UTC, `2023-02-23T17:39:36.065+01:00` for UTC+1). Update any automations that depend on this field format.
+</Callout>
 
 The settlement report has two types of reports:
 
@@ -2080,6 +2086,12 @@ The settlement report has two types of reports:
             <td>The unique identifier of the transaction assigned by the gateway. This field is empty if the gateway
               doesn't provide transaction information (MAX 255; MIN 3).</td>
             <td>53443e9c-dd17-11ec-9d64-0242ac120002</td>
+          </tr>
+          <tr>
+            <td><code>third_party_transaction_id</code></td>
+            <td>string</td>
+            <td>The unique identifier of a third party transaction (MAX 255; MIN 3).</td>
+            <td>69ad0a39-b769-423c-b223-d7b8bf9a1c2d</td>
           </tr>
           <tr>
             <td><code>transaction_date</code></td>
