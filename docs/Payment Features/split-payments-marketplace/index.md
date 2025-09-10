@@ -90,8 +90,6 @@ The onboarding workflow follows a structured process that ensures submerchants a
 
 5. **Split Processing**: The payment provider executes the split according to the defined distribution, transferring funds to each recipient's designated share.
 
-***
-
 ## 2- Payment split integration
 
 In this section, we explore how the `split_marketplace` object is used to divide a [payment](ref:create-payment) among multiple recipients. This object is an array where each entry specifies a recipient and their corresponding share of the payment.
@@ -132,7 +130,7 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        The unique identifier for the recipient within the 
+        The unique identifier for the recipient within the
 
         [Yuno system](ref:create-recipients)
 
@@ -224,11 +222,11 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        **Propagation considerations** 
+        **Propagation considerations**
 
-        - Items are sent to the provider only if it supports transmitting details
+        * Items are sent to the provider only if it supports transmitting details
 
-        - These types do not affect fund disbursement, they are merely informational when the provider allows it
+        * These types do not affect fund disbursement, they are merely informational when the provider allows it
 
         <br />
       </td>
@@ -471,8 +469,6 @@ If you decide to transfer the onboarding to another recipient, continue the flow
 4. **Reverse the transfer (optional)**: Use [reverse onboarding](https://docs.y.uno/reference/reverse-onboarding) to revert the previous transfer, providing the same `recipient_id` and `onboarding_id`.
 
 The `onboarding` object includes a `history` element that stores the complete traceability of the onboarding. This history includes not only updates to the object but also events related to transfers between recipients, ensuring full lifecycle visibility.
-
-***
 
 ## Validations
 
