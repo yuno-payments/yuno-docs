@@ -96,19 +96,307 @@ The onboarding workflow follows a structured process that ensures submerchants a
 
 In this section, we explore how the `split_marketplace` object is used to divide a [payment](ref:create-payment) among multiple recipients. This object is an array where each entry specifies a recipient and their corresponding share of the payment.
 
-| Field                   | Type      | Description                                                                                                                                                                                | Mandatory   | Example Value  |
-| :---------------------- | :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------- | :------------- |
-| `recipient_id`          | `string`  | The unique identifier for the recipient within the [Yuno system](ref:create-recipients).                                                                                                   | Conditional | `rec_test123`  |
-| `provider_recipient_id` | `string`  | The recipient's ID as provided by the payment provider, if applicable.                                                                                                                     | Conditional | `prov_rec_abc` |
-| **Note:**               |           | You must provide either `recipient_id` or `provider_recipient_id`. For marketplace owners (`type`=`COMMISSION`), `provider_recipient_id` is optional if not required by the provider.      |             |                |
-| `type`*                 | `enum`    | The type of split. Options include `PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`. `recipient_id`is mandatory for `PURCHASE`and `MARKETPLACE`.                               | Conditional | `PURCHASE`     |
-| `merchant_reference`    | `string`  | An identifier for the payment transaction. This is optional. If not specified, the main payment's merchant reference will be used for all split transactions. (MAX 255; MIN 3 characters). | No          | `AAB01-432245` |
-| `amount`*               | `struct`  | Specifies the amount for the split.                                                                                                                                                        | Yes         |                |
-|     `value`*            | `number`  | The monetary value of the split (e.g., 7500 for 75.00).                                                                                                                                    | Yes         | `7500`         |
-|     `currency`*         | `enum`    | The currency in which the payment is made (ISO 4217, 3 characters).                                                                                                                        | Yes         | `COP`          |
-| `liability`             | `struct`  | Information about the recipient's liability for fees and chargebacks, if applicable.                                                                                                       | No          |                |
-|     `processing_fee`    | `enum`    | Specifies who is responsible for the transaction fee: `MERCHANT`, `RECIPIENT`, `SHARED`.                                                                                                   | No          | `MERCHANT`     |
-|     `chargebacks`       | `boolean` | Indicates if the recipient is liable for chargebacks (`true` if they are responsible).                                                                                                     | No          | `false`        |
+<Table align={["left","left","left","left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Field
+      </th>
+
+      <th>
+        Type
+      </th>
+
+      <th>
+        Description
+      </th>
+
+      <th>
+        Mandatory
+      </th>
+
+      <th>
+        Example Value
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `recipient_id`
+      </td>
+
+      <td>
+        `string`
+      </td>
+
+      <td>
+        The unique identifier for the recipient within the 
+
+        [Yuno system](ref:create-recipients)
+
+        .
+      </td>
+
+      <td>
+        Conditional
+      </td>
+
+      <td>
+        `rec_test123`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `provider_recipient_id`
+      </td>
+
+      <td>
+        `string`
+      </td>
+
+      <td>
+        The recipient's ID as provided by the payment provider, if applicable.
+      </td>
+
+      <td>
+        Conditional
+      </td>
+
+      <td>
+        `prov_rec_abc`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **Note:**
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+        You must provide either `recipient_id` or `provider_recipient_id`. For marketplace owners (`type`=`COMMISSION`), `provider_recipient_id` is optional if not required by the provider.
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `type`*
+      </td>
+
+      <td>
+        `enum`
+      </td>
+
+      <td>
+        The type of split. Options include `PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`. `recipient_id`is mandatory for `PURCHASE`and `MARKETPLACE`.
+      </td>
+
+      <td>
+        Conditional
+      </td>
+
+      <td>
+        `PURCHASE`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        **Note:**
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+        **Propagation considerations** 
+
+        - Items are sent to the provider only if it supports transmitting details
+
+        - These types do not affect fund disbursement, they are merely informational when the provider allows it
+
+        <br />
+      </td>
+
+      <td>
+
+      </td>
+
+      <td>
+
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `merchant_reference`
+      </td>
+
+      <td>
+        `string`
+      </td>
+
+      <td>
+        An identifier for the payment transaction. This is optional. If not specified, the main payment's merchant reference will be used for all split transactions. (MAX 255; MIN 3 characters).
+      </td>
+
+      <td>
+        No
+      </td>
+
+      <td>
+        `AAB01-432245`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `amount`*
+      </td>
+
+      <td>
+        `struct`
+      </td>
+
+      <td>
+        Specifies the amount for the split.
+      </td>
+
+      <td>
+        Yes
+      </td>
+
+      <td>
+
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+            `value`*
+      </td>
+
+      <td>
+        `number`
+      </td>
+
+      <td>
+        The monetary value of the split (e.g., 7500 for 75.00).
+      </td>
+
+      <td>
+        Yes
+      </td>
+
+      <td>
+        `7500`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+            `currency`*
+      </td>
+
+      <td>
+        `enum`
+      </td>
+
+      <td>
+        The currency in which the payment is made (ISO 4217, 3 characters).
+      </td>
+
+      <td>
+        Yes
+      </td>
+
+      <td>
+        `COP`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `liability`
+      </td>
+
+      <td>
+        `struct`
+      </td>
+
+      <td>
+        Information about the recipient's liability for fees and chargebacks, if applicable.
+      </td>
+
+      <td>
+        No
+      </td>
+
+      <td>
+
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+            `processing_fee`
+      </td>
+
+      <td>
+        `enum`
+      </td>
+
+      <td>
+        Specifies who is responsible for the transaction fee: `MERCHANT`, `RECIPIENT`, `SHARED`.
+      </td>
+
+      <td>
+        No
+      </td>
+
+      <td>
+        `MERCHANT`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+            `chargebacks`
+      </td>
+
+      <td>
+        `boolean`
+      </td>
+
+      <td>
+        Indicates if the recipient is liable for chargebacks (`true` if they are responsible).
+      </td>
+
+      <td>
+        No
+      </td>
+
+      <td>
+        `false`
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 <br />
 
