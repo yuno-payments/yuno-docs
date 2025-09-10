@@ -32,7 +32,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 | **Enable Test Mode**     | It enables you to decide whether to use the Production or Sandbox environments. While you are testing, Yuno recommends you enable test mode.                                                                                 |
 | **Automatic Settlement** | Select the option **Use behavior recommended by payment processor**.                                                                                                                                                         |
 | **Affiliation Name**     | This name should be equal to the previously provided for connection **Name**.                                                                                                                                                |
-| **Account\_ID**          | The Yuno `account_id`. You can find this information in the [Yuno dashboard](https://dashboard.y.uno/developers). For additional information, see [Developers (Credentials)](doc:developers-credentials).                    |
+| **Account_ID**           | The Yuno `account_id`. You can find this information in the [Yuno dashboard](https://dashboard.y.uno/developers). For additional information, see [Developers (Credentials)](doc:developers-credentials).                    |
 | **Public API Key**       | The Yuno `public-api-key`. You can find this information in the Yuno dashboard. For additional information, see [Developers (Credentials)](doc:developers-credentials).                                                      |
 | **Private Secret Key**   | The Yuno `private-secret-key`. You can find this information in the Yuno dashboard. For additional information, see [Developers (Credentials)](doc:developers-credentials).                                                  |
 
@@ -57,7 +57,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 8. After you select the payment method, a new dialog is displayed where you need to configure the payment provider:
    1. At the **Process with provider**, select **Yuno**.
-   2. Add special conditions if necessary. For additional information regarding configuring the special conditions, access [Configuring payment special conditions](https://help.vtex.com/tutorial/special-conditions--tutorials_456#). For further information on configuring payment conditions considering installments with or without interest, check the [VTEX page](https://help.vtex.com/en/tutorial/how-to-configure-payment-conditions--tutorials_455?\&utm_source=autocomplete#installments-without-interest).
+   2. Add special conditions if necessary. For additional information regarding configuring the special conditions, access [Configuring payment special conditions](https://help.vtex.com/tutorial/special-conditions--tutorials_456#). For further information on configuring payment conditions considering installments with or without interest, check the [VTEX page](https://help.vtex.com/en/tutorial/how-to-configure-payment-conditions--tutorials_455?&utm_source=autocomplete#installments-without-interest).
    3. Click **Save**.
    4. Change the **Status**  to **Active**.
 
@@ -72,7 +72,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
    2. Select the **Webhooks** tab.
    3. Click **add webhook**. The webhook  form will show up, where you should provide the following information:
       1. **Name**: Define a name for the VTEX webhook.
-      2. **Endpoint URL**: You should inform the following URL **[https://store\_name.myvtex.com/\_v/yunopartnerbr.yuno/v4/webhook](https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook)**.
+      2. **Endpoint URL**: You should inform the following URL **[https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook](https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook)**.
       3. **x-api-key** and **x-secret**: You can set any information here. For example, you can add **VTEX** for both fields.
    4. For **Trigger on**, check all events that should notify you through the webhooks. Yuno recommends checking all options.
    5. Click **Add**.
@@ -83,16 +83,21 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 When configuring PIX payments with VTEX, Yuno provides automatic expiration handling to prevent order reconciliation issues:
 
-* **Custom expiration tracking**: Yuno internally monitors PIX payment expiration dates without relying solely on provider webhooks
-* **Proactive verification**: Before expiration, Yuno verifies with the provider if the payment was completed
-* **Automatic order cancellation**: When PIX payments expire unpaid, Yuno immediately notifies VTEX via webhook, allowing automatic order cancellation
-* **Reconciliation consistency**: This ensures payment statuses remain synchronized between VTEX, Yuno, and the payment provider
+* **Custom expiration tracking (connection level):** Yuno monitors PIX payment expiration based on the `expiration_date` defined in the VTEX–Yuno connection, without relying solely on provider webhooks
+* **Proactive verification:** Before expiration, Yuno makes a request to the provider to confirm whether the payment was completed
+* **Automatic order cancellation:** If a PIX QR code expires unpaid, Yuno marks the payment as expired and immediately notifies VTEX via webhook so the order can be cancelled automatically
+* **Reconciliation consistency:** This ensures payment statuses remain synchronized across VTEX, Yuno, and the payment provider
 
-This feature is particularly valuable for merchants who set custom expiration dates on PIX payments, as it prevents orphaned orders and inventory discrepancies. It specifically addresses the common issue where VTEX continues attempting to authorize expired PIX payments for extended periods (up to 24 retries), creating status mismatches across systems.
+This feature is particularly useful to prevent VTEX from continuing to retry expired PIX payments, eliminating status mismatches and reducing reconciliation overhead.
 
-> **Important**: This enhanced expiration handling only works when you configure a custom `expiration_date` during PIX payment creation, not for default provider expiration times.
+<Callout icon="📘" theme="info">
+  ## Important
 
-After completing the steps above, your clients can access a new payment method at checkout. If you configure Visa, for example, when your customers arrive at the checkout phase and select credit card as the payment method, the Yuno checkout will gather all the information required for fraud screening and 3DS services in the background while using the VTEX credit card form.
+  For VTEX integrations, the `expiration_date` is configured at the **connection level** in Yuno. This enhanced expiration handling only applies when a custom expiration time is set in the connection, not when using the default provider expiration.
+</Callout>
+
+After completing the steps above, your clients can access a new payment method at checkout.
+For example, if you configure Visa, when your customers select credit card at checkout, the Yuno checkout will gather all the information required for fraud screening and 3DS services in the background while using the VTEX credit card form.
 
 <Image align="center" src="https://files.readme.io/a17a02d-vtex.png" />
 
