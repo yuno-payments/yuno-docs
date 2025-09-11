@@ -19,7 +19,7 @@ Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK funct
 Ensure the Yuno SDK file is included in your webpage before closing the `</body>` tag. Refer to the example below:
 
 ```html
-<script src="https://sdk-web.y.uno/v1.1/static/js/main.min.js"></script>
+<script src="https://sdk-web.y.uno/v1.1/main.js"></script>
 ```
 
 > 📘 TypeScript Support
