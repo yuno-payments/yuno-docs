@@ -61,7 +61,7 @@ yuno.continuePayment({
 Ensure the Yuno SDK file is included in your webpage before closing the `</body>` tag. Refer to the example below:
 
 ```html
-<script src="https://sdk-web.y.uno/v1.2/static/js/main.min.js"></script>
+<script src="https://sdk-web.y.uno/v1.2/main.js"></script>
 ```
 
 > 📘 TypeScript Support

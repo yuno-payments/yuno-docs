@@ -20,7 +20,7 @@ Before integrating the 3DS into your system, be sure to enable 3DS in your [Yuno
 With the `three_d_secure_setup_id` in hand, you need to include the Yuno SDK file in your webpage before closing the `<head>` tag. See the example below:
 
 ```html
-<script src="https://sdk-web.y.uno/v1.1/static/js/main.min.js"></script>
+<script src="https://sdk-web.y.uno/v1.1/main.js"></script>
 ```
 
 ## Step 2: Get the Setup Id
