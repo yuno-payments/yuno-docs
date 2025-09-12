@@ -22,7 +22,7 @@ Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started w
 
 > 📘 Latest Web SDK
 >
-> This guide covers the latest Web SDK version with enhanced UI grouping, expanded language support, and improved performance. For information about previous versions, visit our [SDK Changelog](../../../../changelog/).
+> This guide covers the latest Web SDK version with enhanced UI grouping, expanded language support, and improved performance. For information about previous versions, visit our [SDK Changelog](changelog/).
 
 ## Choose your integration method
 
@@ -137,7 +137,7 @@ After integrating the SDK using one of the methods described above, follow these
 
 > 📘 Current Version
 >
-> These instructions are for the latest Web SDK version (v1.3). For information about previous versions or migration guidance, visit our [SDK Changelog](../../../../changelog/).
+> These instructions are for the latest Web SDK version (v1.3). For information about previous versions or migration guidance, visit our [SDK Changelog](changelog/).
 
 ## Step 1: Initialize SDK with the public key
 
@@ -235,6 +235,6 @@ For detailed information about these features, visit our [complementary features
 ## Need Help?
 
 - **API Reference**: [Payment API Documentation](../../../../reference/Payments/)
-- **SDK Changelog**: [Version History](../../../../changelog/)
+- **SDK Changelog**: [Version History](changelog/)
 - **Country Coverage**: [Supported Countries](doc:country-coverage-yuno-sdk)
 - **Support**: Contact our team for implementation assistance

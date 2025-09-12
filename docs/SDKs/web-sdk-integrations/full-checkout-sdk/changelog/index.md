@@ -22,7 +22,7 @@ Welcome to the Yuno SDK changelog. Here you can find detailed information about 
 
 > 📘 Latest Version
 >
-> For implementation instructions using the latest Web SDK version, visit the [Web SDK documentation](../docs/SDKs/web-sdk-integrations/full-checkout-sdk).
+> For implementation instructions using the latest Web SDK version, visit the [Web SDK documentation](../index).
 
 ## How to Use This Changelog
 
