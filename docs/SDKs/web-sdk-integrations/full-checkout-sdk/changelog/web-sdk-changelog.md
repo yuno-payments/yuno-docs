@@ -1,10 +1,10 @@
 ---
-title: Changelog
+title: Web SDK Changelog
 excerpt: 'Track updates and changes to Yuno SDKs'
 deprecated: false
 hidden: false
 metadata:
-  title: 'SDK Changelog'
+  title: 'Web SDK Changelog'
   description: 'Version history and updates for Yuno Web, Android, and iOS SDKs'
   robots: index
 ---
