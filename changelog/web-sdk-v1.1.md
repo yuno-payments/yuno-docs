@@ -20,7 +20,7 @@ next:
 
 Starting April 2025, Yuno launched version 1.1 of its Web SDKs with major performance improvements, a more flexible checkout experience, better visual consistency, and new features that improve both security and usability.
 
-### 🚀 Async Method Updates
+### Async Method Updates
 1. **Promise-based Methods**: Key methods such as `initialize()`, `mountCheckout()`, and `startCheckout()` now return Promises. This change supports better handling of dynamic flows like 3DS, PayPal redirects, and custom UI rendering.
 
    ```javascript
@@ -29,14 +29,14 @@ Starting April 2025, Yuno launched version 1.1 of its Web SDKs with major perfor
    await yuno.startCheckout(checkoutConfig);
    ```
 
-### 🔄 Enhanced `continuePayment` Method  
+### Enhanced `continuePayment` Method  
 2. **Critical Payment Continuation**: With the introduction of new payment methods and dynamic flows in SDK v1.1, the `continuePayment` method became more important for completing customer payment experiences after payment creation.
 
    - **When to use**: When the API response includes `sdk_action_required: true`, you must call `continuePayment` to resume the process
    - **Automatic handling**: The SDK automatically renders necessary screens (3DS authentication, external wallet steps)
    - **Return behavior**: May return a redirect object for merchant-side handling, otherwise returns `null`
 
-### 🛡️ 3DS Enhancements (June 5, 2025)
+### 3DS Enhancements (June 5, 2025)
 3. **Simplified 3DS Integration**: Updated 3DS flow to increase reliability and simplify integration:
 
    - **No separate setup service**: 3DS data collection and setup now included in payment creation
@@ -44,14 +44,14 @@ Starting April 2025, Yuno launched version 1.1 of its Web SDKs with major perfor
    - **Required implementation**: Must implement `continuePayment()` and `yunoPaymentResult()` after payment creation
    - **Performance optimization**: SDK triggers `collect` step only when 3DS is required
 
-### ⚡ Performance Improvements
+### Performance Improvements
 4. **Optimized Flows**: 
    - Reduced unnecessary API calls
    - Improved overall performance  
    - Better visual consistency
    - Enhanced security features
 
-### 💳 Click-to-Pay (C2P) Dynamic Behavior
+### Click-to-Pay (C2P) Dynamic Behavior
 5. **Enhanced C2P**: Improved click-to-pay functionality with dynamic behavior support
 
 ## Implementation Changes
@@ -104,11 +104,3 @@ if (paymentResponse.sdk_action_required) {
 - **Separate 3DS setup service**: No longer required; integrated into payment creation
 - **Synchronous method calls**: Methods now return Promises and should use `await`
 - **Manual 3DS handling**: SDK now handles 3DS flows automatically
-
----
-
-## Need Help?
-
-- **Latest Documentation**: [Web SDK Integration Guide](../docs/SDKs/web-sdk-integrations/full-checkout-sdk)
-- **Next Version**: [Web SDK v1.2 Changelog](web-sdk-v1.2)
-- **Support**: Contact our team for migration assistance

@@ -18,10 +18,10 @@ next:
 
 ## What's New in v1.3
 
-### 🎯 Enhanced User Experience
+### Enhanced User Experience
 1. **Smart Payment Method Grouping**: When a customer has an enrolled payment method, other available payment methods are now grouped under a "More options" dropdown. The enrolled method is displayed prominently by default, and customers can expand the dropdown to choose a different method.
 
-### 🌍 Expanded Language Support  
+### Expanded Language Support  
 2. **Multilingual Enhancement**: Added support for multiple Asian and European languages:
    - German (de)
    - Dutch (nl) 
@@ -31,7 +31,7 @@ next:
    - Japanese (ja)
    - Korean (ko)
 
-### 🛠️ Quality & Performance Improvements
+### Quality & Performance Improvements
 3. **General Bug Fixes**: Resolved various issues to improve stability and reliability
 4. **Enhanced Styling and Branding**: Improvements to visual consistency and customization options
 
@@ -64,11 +64,3 @@ Upgrading from v1.2 to v1.3 requires minimal changes:
 ## What's Deprecated
 
 No features were deprecated in v1.3. All previous functionality remains available and supported.
-
----
-
-## Need Help?
-
-- **Latest Documentation**: [Web SDK Integration Guide](../docs/SDKs/web-sdk-integrations/full-checkout-sdk)
-- **Previous Version**: [Web SDK v1.2 Changelog](web-sdk-v1.2)
-- **Support**: Contact our team for implementation assistance

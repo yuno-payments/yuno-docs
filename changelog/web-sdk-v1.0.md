@@ -18,28 +18,28 @@ next:
 
 ## What's New in v1.0
 
-### 🎉 Initial Release
+### Initial Release
 The first version of Yuno's Web SDK providing comprehensive payment integration capabilities.
 
-### 🛠️ Core Features
+### Core Features
 1. **Full Checkout SDK**: Complete payment form with multiple payment methods
 2. **Lite Checkout SDK**: Streamlined payment flow for simpler integrations  
 3. **Seamless SDK**: Customizable payment components
 4. **Headless SDK**: API-first approach for custom UI implementations
 
-### 💳 Payment Method Support
+### Payment Method Support
 - Credit and debit cards
 - Digital wallets
 - Bank transfers
 - Local payment methods
 - Multiple currencies and countries
 
-### 🔧 Integration Methods
+### Integration Methods
 - **HTML Script Tag**: Simple script inclusion
 - **Dynamic JavaScript**: Programmatic loading
 - **NPM Module**: Modern JavaScript framework integration
 
-### 🌍 Multi-language Support
+### Multi-language Support
 Initial language support including:
 - English (en)
 - Spanish (es)  
@@ -75,11 +75,3 @@ yuno.startCheckout({
 ## What's Deprecated
 
 This is the initial release - no deprecated features.
-
----
-
-## Need Help?
-
-- **Latest Documentation**: [Web SDK Integration Guide](../docs/SDKs/web-sdk-integrations/full-checkout-sdk)
-- **Next Version**: [Web SDK v1.1 Changelog](web-sdk-v1.1)
-- **Support**: Contact our team for implementation assistance

@@ -18,10 +18,10 @@ next:
 
 ## What's New in v1.2
 
-### 🚀 Advanced Initialization Options
+### Advanced Initialization Options
 1. **Optional `options` Parameter**: Support for an optional `options` parameter in `Yuno.initialize`, giving you more control over SDK behavior. This addition is intended for teams with advanced use cases or custom session and tracking requirements.
 
-### 🔄 Enhanced `continuePayment` Method
+### Enhanced `continuePayment` Method
 2. **Extended `continuePayment` Functionality**: Starting from version 1.2.0, the `continuePayment` method now accepts additional properties that were previously only available in `startCheckout`. This allows you to override specific configurations when continuing a payment.
 
 #### New `continuePayment` Properties
@@ -45,7 +45,7 @@ continuePayment({
 - **`countryCode`**: Specify country code during payment continuation
 - **`language`**: Set language preference during payment continuation
 
-### 🌍 Language Support
+### Language Support
 Includes comprehensive language support:
 - Spanish (es), Portuguese (pt), Indonesian (id), Malay (ms), Thai (th)
 - Filipino (fil), Chinese Traditional (zh-TW), Chinese Simplified (zh-CN)
@@ -96,12 +96,3 @@ Upgrading from v1.1 to v1.2:
 ## What's Deprecated
 
 No features were deprecated in v1.2. All previous functionality remains available and supported.
-
----
-
-## Need Help?
-
-- **Latest Documentation**: [Web SDK Integration Guide](../docs/SDKs/web-sdk-integrations/full-checkout-sdk)
-- **Next Version**: [Web SDK v1.3 Changelog](web-sdk-v1.3)
-- **Previous Version**: [Web SDK v1.1 Changelog](web-sdk-v1.1)
-- **Support**: Contact our team for implementation assistance
