@@ -46,7 +46,7 @@ continuePayment({
 - **`language`**: Set language preference during payment continuation
 
 ### Language Support
-Includes comprehensive language support:
+Expanded language support:
 - Spanish (es), Portuguese (pt), Indonesian (id), Malay (ms), Thai (th)
 - Filipino (fil), Chinese Traditional (zh-TW), Chinese Simplified (zh-CN)
 - Vietnamese (vi), French (fr), Polish (pl), Italian (it), German (de)

@@ -22,14 +22,7 @@ next:
 1. **Smart Payment Method Grouping**: When a customer has an enrolled payment method, other available payment methods are now grouped under a "More options" dropdown. The enrolled method is displayed prominently by default, and customers can expand the dropdown to choose a different method.
 
 ### Expanded Language Support  
-2. **Multilingual Enhancement**: Added support for multiple Asian and European languages:
-   - German (de)
-   - Dutch (nl) 
-   - Swedish (sv)
-   - French (fr)
-   - Italian (it)
-   - Japanese (ja)
-   - Korean (ko)
+2. **Multilingual Enhancement**: Added support for multiple Asian and European languages: German, Dutch, Swedish, French, Italian, Japanese, Korean
 
 ### Quality & Performance Improvements
 3. **General Bug Fixes**: Resolved various issues to improve stability and reliability

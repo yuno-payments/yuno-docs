@@ -41,29 +41,49 @@ The first version of Yuno's Web SDK providing comprehensive payment integration 
 
 ### Multi-language Support
 Initial language support including:
+- Spanish (es)
 - English (en)
-- Spanish (es)  
 - Portuguese (pt)
-- And additional regional languages
+- Filipino (fil)
+- Indonesian (id)
+- Malay (ms)
+- Thai (th)
 
 ## Implementation
 
 ### Script Tag
 ```html
-<script src="https://sdk-web.y.uno/v1.0/main.js"></script>
+<script src="https://sdk-web.y.uno/v1/static/js/main.min.js"></script>
 ```
 
 ### Basic Usage
 ```javascript
 // v1.0 synchronous initialization
-const yuno = Yuno.initialize(PUBLIC_API_KEY);
+const yuno = Yuno.initialize(PUBLIC_API_KEY)
 
 yuno.startCheckout({
-  checkoutSession: "session-id",
-  elementSelector: "#payment-container",
-  countryCode: "US",
-  language: "en",
-  // ... other configuration
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  country_code: "FR",
+  language: "fr",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  card: {
+    isCreditCardProcessingOnly: true,
+  },
+  onLoading: (args) => {
+    console.log(args);
+  },
+  yunoPaymentMethodSelected: () => {
+    console.log("Payment method selected");
+  },
+  yunoPaymentResult: (status) => {
+    console.log("Payment result:", status);
+  },
+  yunoError: (message, data) => {
+    console.error("Payment error:", message, data);
+  },
 });
 ```
 

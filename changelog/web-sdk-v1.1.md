@@ -23,11 +23,10 @@ Starting April 2025, Yuno launched version 1.1 of its Web SDKs with major perfor
 ### Async Method Updates
 1. **Promise-based Methods**: Key methods such as `initialize()`, `mountCheckout()`, and `startCheckout()` now return Promises. This change supports better handling of dynamic flows like 3DS, PayPal redirects, and custom UI rendering.
 
-   ```javascript
-   // v1.1 async implementation
-   const yuno = await Yuno.initialize(PUBLIC_API_KEY);
-   await yuno.startCheckout(checkoutConfig);
-   ```
+```javascript
+// v1.1 async implementation
+const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+```
 
 ### Enhanced `continuePayment` Method  
 2. **Critical Payment Continuation**: With the introduction of new payment methods and dynamic flows in SDK v1.1, the `continuePayment` method became more important for completing customer payment experiences after payment creation.
