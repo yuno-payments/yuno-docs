@@ -16,29 +16,39 @@ This changelog documents the changes, new features, and deprecated functionality
 ## What's New in v1.3
 
 ### New Features
-- **Feature Name**: Brief description of the new feature
-- **Another Feature**: Description of another new feature
+- **Enrolled Payment Method Grouping**: When a customer has an enrolled payment method, other available payment methods are grouped under a "More options" dropdown. The enrolled method is shown prominently by default, and customers can expand the dropdown to choose a different method.
+- **Expanded Language Support**: Added support for multiple Asian and European languages: German, Dutch, Swedish, French, Italian, Japanese, Korean
 
 ### Enhancements
-- **Improved Performance**: Description of performance improvements
-- **Better Error Handling**: Description of error handling improvements
+- **General Bug Fixes**: Various bug fixes and stability improvements
+- **Styling and Branding**: Enhancements to styling and branding capabilities
+- **User Experience**: Improved user experience in payment flows
 
-### Bug Fixes
-- Fixed issue with [specific functionality]
-- Resolved problem with [another functionality]
+### Language Support
+The following languages are now supported in v1.3:
+- German (de)
+- Dutch (nl) 
+- Swedish (sv)
+- French (fr)
+- Italian (it)
+- Japanese (ja)
+- Korean (ko)
+- Plus all previously supported languages from v1.2
 
 ## What's Deprecated in v1.3
 
-### Deprecated Features
-- **Old Feature Name**: This feature is deprecated and will be removed in v1.4
-- **Another Old Feature**: This feature is deprecated and will be removed in v2.0
+No features were deprecated in v1.3.
 
-### Migration Guide
-- **From v1.2 to v1.3**: Instructions for migrating from the previous version
-- **Breaking Changes**: List of any breaking changes that require code updates
+## Migration Guide
+
+### From v1.2 to v1.3
+
+1. **No breaking changes**: v1.3 is backward compatible with v1.2
+2. **New language support**: You can now use the additional languages in your payment forms
+3. **Enrolled payment method grouping**: This feature is automatically enabled for customers with enrolled payment methods
 
 ## Version Information
-- **Release Date**: [Date]
+- **Release Date**: [To be filled]
 - **Previous Version**: v1.2
 - **Next Version**: v1.4 (planned)
 

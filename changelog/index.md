@@ -18,6 +18,7 @@ This section contains version history and changelog information for all Yuno SDK
 - [Web SDK v1.3](/changelog/web-sdk-v1.3) - Latest version
 - [Web SDK v1.2](/changelog/web-sdk-v1.2) - Previous version
 - [Web SDK v1.1](/changelog/web-sdk-v1.1) - Earlier version
+- [Web SDK v1.0](/changelog/web-sdk-v1.0) - Initial release
 
 ## Android SDK Changelogs
 
