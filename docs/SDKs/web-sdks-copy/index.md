@@ -1,7 +1,7 @@
 ---
 title: Web SDKs (old folder)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Web SDK Integrations
   description: >-
