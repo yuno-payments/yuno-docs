@@ -9,7 +9,7 @@ Welcome to the Yuno SDK changelog. Here you can find detailed information about 
 
 ## Web SDK Versions
 
-Comprehensive version history showing the evolution of Yuno's Web SDK capabilities:
+Below is a complete version history highlighting key updates and improvements to Yuno's Web SDK:
 
 * [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/) - Latest version with enhanced UI grouping and multilingual support
 * [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/) - Enhanced `continuePayment` method and optional initialization parameters
