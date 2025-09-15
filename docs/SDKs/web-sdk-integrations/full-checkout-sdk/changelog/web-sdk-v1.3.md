@@ -18,21 +18,31 @@ next:
 
 ## What's New in v1.3
 
+The latest version focuses on user experience improvements and international expansion with smart UI enhancements and comprehensive language support.
+
 ### Enhanced User Experience
+Intelligent payment method organization improves customer checkout flow and reduces decision complexity.
+
 1. **Smart Payment Method Grouping**: When a customer has an enrolled payment method, other available payment methods are now grouped under a "More options" dropdown. The enrolled method is displayed prominently by default, and customers can expand the dropdown to choose a different method.
 
-### Expanded Language Support  
+### Expanded Language Support
+Comprehensive international language coverage for global market expansion.
+
 2. **Multilingual Enhancement**: Added support for multiple Asian and European languages: German, Dutch, Swedish, French, Italian, Japanese, Korean
 
 ### Quality & Performance Improvements
+Continuous refinements to ensure optimal performance and visual consistency.
+
 3. **General Bug Fixes**: Resolved various issues to improve stability and reliability
 4. **Enhanced Styling and Branding**: Improvements to visual consistency and customization options
 
 ## Implementation
 
+Complete backward compatibility ensures easy adoption of v1.3 enhancements.
+
 > 📘 Current Version Implementation
 >
-> For complete implementation instructions using v1.3, visit the [Web SDK documentation](../docs/SDKs/web-sdk-integrations/full-checkout-sdk).
+> For complete implementation instructions using v1.3, visit the [Web SDK documentation](../index).
 
 ### Key Changes from v1.2
 
@@ -41,12 +51,15 @@ next:
 - **UI behavior**: Enrolled payment methods now display with improved grouping logic
 
 ### Script Tag Update
+Latest script source for v1.3 features and improvements:
 
 ```html
 <script src="https://sdk-web.y.uno/v1.3/main.js"></script>
 ```
 
 ## Migration from v1.2
+
+Seamless upgrade process with no breaking changes or code modifications required.
 
 Upgrading from v1.2 to v1.3 requires minimal changes:
 
@@ -55,5 +68,7 @@ Upgrading from v1.2 to v1.3 requires minimal changes:
 3. No code changes required for existing implementations
 
 ## What's Deprecated
+
+Fully backward compatible release maintaining all existing functionality.
 
 No features were deprecated in v1.3. All previous functionality remains available and supported.
