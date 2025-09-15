@@ -1,5 +1,5 @@
 ---
-title: Yuno Web SDK v1.1 (COPY)
+title: Yuno Web SDK v1.1
 deprecated: false
 hidden: true
 metadata:
