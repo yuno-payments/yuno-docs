@@ -94,6 +94,14 @@ The onboarding workflow follows a structured process that ensures submerchants a
 
 In this section, we explore how the `split_marketplace` object is used to divide a [payment](ref:create-payment) among multiple recipients. This object is an array where each entry specifies a recipient and their corresponding share of the payment.
 
+<Callout icon="ℹ️" theme="info">
+  In this step, reference recipients created in Step 1 (Onboarding). 
+
+  For `type` = `PURCHASE` or `MARKETPLACE`, include the `recipient_id` of that recipient.
+
+  For `PAYMENTFEE`, `VAT` and `COMMISSION`, `recipient_id` is optional.
+</Callout>
+
 <Table align={["left","left","left","left","left"]}>
   <thead>
     <tr>
@@ -132,9 +140,7 @@ In this section, we explore how the `split_marketplace` object is used to divide
       <td>
         The unique identifier for the recipient within the
 
-        [Yuno system](ref:create-recipients)
-
-        .
+        Use the ID of a recipient created in Step 1 (Onboarding) when `type` is `PURCHASE` or `MARKETPLACE`.
       </td>
 
       <td>
@@ -178,7 +184,9 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        You must provide either `recipient_id` or `provider_recipient_id`. For marketplace owners (`type`=`COMMISSION`), `provider_recipient_id` is optional if not required by the provider.
+        You must provide either `recipient_id` or `provider_recipient_id`. 
+
+        For marketplace owners (`type`=`COMMISSION`), `provider_recipient_id` is optional if not required by the provider.
       </td>
 
       <td>
@@ -200,7 +208,9 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        The type of split. Options include `PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`. `recipient_id`is mandatory for `PURCHASE`and `MARKETPLACE`.
+        The transaction detail item type. Options include `PURCHASE`, `PAYMENTFEE`, `VAT`, `COMMISSION`, `MARKETPLACE`. 
+
+        `recipient_id` is mandatory for `PURCHASE` and `MARKETPLACE`.
       </td>
 
       <td>
