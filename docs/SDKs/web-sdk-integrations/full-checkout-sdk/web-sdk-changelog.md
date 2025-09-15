@@ -18,7 +18,7 @@ Comprehensive version history showing the evolution of Yuno's Web SDK capabiliti
 
 > 📘 Latest Version
 >
-> For implementation instructions using the latest Web SDK version, visit the [Web SDK documentation](../index).
+> For implementation instructions using the latest Web SDK version, visit the [Web SDK documentation](/docs/full-checkout-sdk).
 
 ## How to Use This Changelog
 
