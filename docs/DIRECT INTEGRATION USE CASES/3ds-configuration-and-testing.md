@@ -567,13 +567,10 @@ Name the connection and select **3D Secure** under Integration type. Using the i
 
 ## Configure routing
 
-Navigate to Routing and find the Card route in either the Published or Not Published tab. Click **View** or **Set Up**, then **Create new route**.
-
-Add a step to the route: select **Cybersource 3DS** (or your provider) and click **Select**.
-
-Then, for the "Succeeded" path, add **Yuno Test Payment Gateway** and click **Select**.
-
-Click **Publish** to save your changes.
+* Navigate to Routing and find the Card route in either the Published or Not Published tab. Click **View** or **Set Up**, then **Create new route**.
+* Add a step to the route: select **Cybersource 3DS** (or your provider) and click **Select**.
+* Then, for the "Succeeded" path, add **Yuno Test Payment Gateway** and click **Select**.
+* Click **Publish** to save your changes.
 
 ## Configure Checkout Builder
 
