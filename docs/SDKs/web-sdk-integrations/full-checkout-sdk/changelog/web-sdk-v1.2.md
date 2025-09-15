@@ -18,13 +18,20 @@ next:
 
 ## What's New in v1.2
 
+Version 1.2 builds on v1.1's foundation with enhanced customization options and expanded payment flow control capabilities.
+
 ### Advanced Initialization Options
+New initialization parameters provide greater control over SDK behavior for complex implementations.
+
 1. **Optional `options` Parameter**: Support for an optional `options` parameter in `Yuno.initialize`, giving you more control over SDK behavior. This addition is intended for teams with advanced use cases or custom session and tracking requirements.
 
 ### Enhanced `continuePayment` Method
+Expanded functionality allows dynamic configuration changes during payment continuation.
+
 2. **Extended `continuePayment` Functionality**: Starting from version 1.2.0, the `continuePayment` method now accepts additional properties that were previously only available in `startCheckout`. This allows you to override specific configurations when continuing a payment.
 
 #### New `continuePayment` Properties
+Complete list of configuration options now available in `continuePayment`:
 
 ```typescript
 continuePayment({
@@ -46,13 +53,15 @@ continuePayment({
 - **`language`**: Set language preference during payment continuation
 
 ### Language Support
-Expanded language support:
-- Spanish (es), Portuguese (pt), Indonesian (id), Malay (ms), Thai (th)
-- Filipino (fil), Chinese Traditional (zh-TW), Chinese Simplified (zh-CN)
-- Vietnamese (vi), French (fr), Polish (pl), Italian (it), German (de)
-- Russian (ru), Turkish (tr), Dutch (nl), Swedish (sv), Korean (ko), Japanese (ja)
+Significantly expanded international language coverage for global implementations:
+
+- **Core languages**: Spanish (es), Portuguese (pt), Indonesian (id), Malay (ms), Thai (th)
+- **Asian languages**: Filipino (fil), Chinese Traditional (zh-TW), Chinese Simplified (zh-CN), Vietnamese (vi), Korean (ko), Japanese (ja)
+- **European languages**: French (fr), Polish (pl), Italian (it), German (de), Russian (ru), Turkish (tr), Dutch (nl), Swedish (sv)
 
 ## Implementation Notes
+
+Important considerations for v1.2 implementation and migration.
 
 ### Key Changes from v1.1
 
@@ -61,12 +70,14 @@ Expanded language support:
 - **Backward compatibility**: All v1.1 functionality remains supported
 
 ### Script Tag
+Updated script source for v1.2 functionality:
 
 ```html
 <script src="https://sdk-web.y.uno/v1.2/main.js"></script>
 ```
 
 ### Example Usage
+Demonstration of enhanced `continuePayment` capabilities:
 
 ```javascript
 // Enhanced continuePayment with configuration override
@@ -86,6 +97,8 @@ yuno.continuePayment({
 
 ## Migration from v1.1
 
+Smooth upgrade path with no breaking changes from v1.1.
+
 Upgrading from v1.1 to v1.2:
 
 1. Update script source to v1.2
@@ -94,5 +107,7 @@ Upgrading from v1.1 to v1.2:
 4. No breaking changes - existing implementations continue to work
 
 ## What's Deprecated
+
+Fully backward compatible release with no deprecated features.
 
 No features were deprecated in v1.2. All previous functionality remains available and supported.

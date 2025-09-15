@@ -18,29 +18,38 @@ next:
 
 ## What's New in v1.0
 
-### Initial Release
-The first version of Yuno's Web SDK providing comprehensive payment integration capabilities.
+The initial release of Yuno's Web SDK introduces comprehensive payment integration capabilities with support for multiple SDK types, payment methods, and integration approaches.
 
-### Core Features
-1. **Full Checkout SDK**: Complete payment form with multiple payment methods
+### Initial Release
+The foundational version of Yuno's Web SDK providing complete payment processing functionality across different integration patterns.
+
+### Core SDK Features
+Yuno v1.0 includes four distinct SDK approaches to meet different integration needs:
+
+1. **Full Checkout SDK**: Complete payment form with multiple payment methods and full UI
 2. **Lite Checkout SDK**: Streamlined payment flow for simpler integrations  
-3. **Seamless SDK**: Customizable payment components
+3. **Seamless SDK**: Customizable payment components for branded experiences
 4. **Headless SDK**: API-first approach for custom UI implementations
 
 ### Payment Method Support
+Comprehensive support for global and regional payment methods:
+
 - Credit and debit cards
-- Digital wallets
-- Bank transfers
-- Local payment methods
+- Digital wallets (PayPal, Apple Pay, Google Pay)
+- Bank transfers and direct debits
+- Local payment methods by region
 - Multiple currencies and countries
 
 ### Integration Methods
-- **HTML Script Tag**: Simple script inclusion
-- **Dynamic JavaScript**: Programmatic loading
-- **NPM Module**: Modern JavaScript framework integration
+Flexible implementation options to fit different development workflows:
+
+- **HTML Script Tag**: Simple script inclusion for quick setup
+- **Dynamic JavaScript**: Programmatic loading for advanced configurations
+- **NPM Module**: Modern JavaScript framework integration support
 
 ### Multi-language Support
-Initial language support including:
+Initial international support with seven languages:
+
 - Spanish (es)
 - English (en)
 - Portuguese (pt)
@@ -52,11 +61,15 @@ Initial language support including:
 ## Implementation
 
 ### Script Tag
+Simple integration using standard HTML script tag inclusion:
+
 ```html
 <script src="https://sdk-web.y.uno/v1/static/js/main.min.js"></script>
 ```
 
 ### Basic Usage
+Standard synchronous initialization and checkout process for v1.0:
+
 ```javascript
 // v1.0 synchronous initialization
 const yuno = Yuno.initialize(PUBLIC_API_KEY)
@@ -88,10 +101,33 @@ yuno.startCheckout({
 ```
 
 ### Key Methods
-- `Yuno.initialize()`: Initialize SDK with API key
-- `startCheckout()`: Begin payment process
-- `mountCheckout()`: Mount payment form to DOM element
+Core methods available in the initial v1.0 release:
+
+- **`Yuno.initialize()`**: Initialize SDK with public API key
+- **`startCheckout()`**: Begin the payment process with configuration
+- **`mountCheckout()`**: Mount payment form to specified DOM element
+- **`startPayment()`**: Initiate payment flow after customer selection
 
 ## What's Deprecated
 
-This is the initial release - no deprecated features.
+This is the initial release - no deprecated features at launch.
+
+## Migration Notes
+
+### From Earlier Beta Versions
+If upgrading from any pre-release or beta versions:
+
+1. Update script source to the stable v1.0 release URL
+2. Ensure all method calls use the final v1.0 API signatures
+3. Verify checkout session creation follows the stable API format
+4. Test payment flows thoroughly in your sandbox environment
+
+### Looking Forward
+While v1.0 provides a solid foundation, be aware that:
+
+- **v1.1 introduces async methods**: Future versions will move to Promise-based APIs
+- **Enhanced payment flows**: Later versions will add improved payment continuation methods
+- **3DS integration changes**: Future releases will streamline 3DS setup and handling
+
+For the most current information, always refer to the [latest SDK documentation](doc:full-checkout-sdk) and consider planning for future version migrations.
+
