@@ -1,7 +1,7 @@
 ---
 title: Full Web SDK v1.2 (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
