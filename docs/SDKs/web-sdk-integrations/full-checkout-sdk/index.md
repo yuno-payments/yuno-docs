@@ -24,7 +24,7 @@ Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started w
 
 > 📘 Web SDK v1.1 Release
 >
-> v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, [visit the Web SDK v1.1 page](https://docs.y.uno/docs/yuno-web-sdk-v11).
+> v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, [visit the Web SDK v1.1 changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v11-changelog#/).
 
 ## Choose your integration method
 
