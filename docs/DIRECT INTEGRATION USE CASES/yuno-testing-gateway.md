@@ -1024,6 +1024,180 @@ Another option to get the expected payment results is to use one of the testing 
 </body>
 `}</HTMLBlock>
 
+#### 4.4.3 - 3DS Test Cards
+
+Use these cards and OTP codes to test 3DS flows through our preview environment using a Netcetera Demo Merchant (NDM) Simulator, which is configured to mock a Directory Server and/or ACS with predefined schemes and testing card numbers. It does not reach external test DS/ACS, it only helps complete 3DS flows for testing purposes.
+
+<HTMLBlock>{`
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+
+  .table-card {
+    border-radius: 10px;
+    border: 1px solid #614ad623;
+    display: flex;
+    transition: all .2s;
+  }
+
+  .table-card:hover {
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .table-card .control-icon {
+    fill: rebeccapurple;
+    transition: .3s ease;
+    pointer-events: none;
+  }
+
+  .table-card .control-icon-close {
+    display: none;
+  }
+
+  details[open] .control-icon-close {
+    display: initial;
+    transition: .3s ease;
+  }
+
+  details[open] .control-icon-expand {
+    display: none;
+  }
+
+  details[open] summary {
+    border: 1px solid #614ad623;
+  }
+
+
+  .table-card summary {
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .table-card summary .table-call {
+    display: block;
+    padding: 0;
+    margin: 0;
+    font-size: 0.938rem;
+
+  }
+
+
+  .table-card summary .sumary-icon {
+    display: flex;
+    justify-content: flex-end;
+    flex-grow: 1;
+  }
+
+  .table-card .table-div {
+    margin: 0.5rem 0;
+    padding: 0 0.5rem;
+  }
+
+  .table-card .table-div table {
+    margin: 0 !important;
+    font-size: 0.85rem;
+  }
+
+  .table-card .table-div td {
+    text-align: center;
+  }
+  
+  
+  .table-card .table-div table {
+      display: block !important;
+      overflow-x: auto !important;
+    }
+  
+  summary table {
+  width: 100%;
+  table-layout: fixed;
+}
+  
+  summary th, summary td {
+  width: auto;
+}
+  
+  @media only screen and (max-width: 700px) {
+    .table-card .table-div table {
+      display: block !important;
+      overflow-x: auto !important;
+    }
+  }
+  
+
+
+
+  details[open] div {
+    animation: sweep .3s ease-in-out;
+  }
+
+  @keyframes sweep {
+    0% {
+      opacity: 0;
+      margin-left: -10px
+    }
+
+    100% {
+      opacity: 1;
+      margin-left: 0px
+    }
+  }
+</style>
+
+<body>
+  <details open class="table-card">
+    <summary>
+      <span class="table-call">Amex</span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>Card Number</th>
+            <th>Expected Response 3DS 2.x</th>
+            <th>Expected Response 3DS 1.x DS (VERes)</th>
+            <th>Expected Response 3DS 1.x ACS (PARes)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>341502098634895</td><td>AUTHENTICATED_APPLICATION_FRICTIONLESS</td><td>ENROLLED_Y</td><td>TRANSACTION_STATUS_N</td></tr>
+          <tr><td>348638267931507</td><td>BROWSER_CHALLENGE</td><td>ENROLLED_Y</td><td>TRANSACTION_CHALLENGE_OTP</td></tr>
+          <tr><td>345695399207589</td><td>NOT_AUTHENTICATED_APPLICATION_FRICTIONLESS</td><td>ENROLLED_Y</td><td>TRANSACTION_STATUS_N</td></tr>
+          <tr><td>349531373081938</td><td>APPLICATION_CHALLENGE</td><td>ENROLLED_Y</td><td>TRANSACTION_STATUS_N</td></tr>
+          <tr><td>342316317472410</td><td>APPLICATION_CHALLENGE_SDK_TRANS_ID_INVALID_FORMAT</td><td>ENROLLED_Y</td><td>TRANSACTION_STATUS_N</td></tr>
+          <tr><td>347899129656655</td><td>AUTHENTICATED_BROWSER_FRICTIONLESS</td><td>ENROLLED_Y</td><td>TRANSACTION_STATUS_N</td></tr>
+          <tr><td>345197771649926</td><td>NOT_AUTHENTICATED_BROWSER_FRICTIONLESS</td><td>ENROLLED_Y</td><td>TRANSACTION_STATUS_N</td></tr>
+          <tr><td>372021106351394</td><td>BROWSER_CHALLENGE</td><td>ENROLLED_Y</td><td>TRANSACTION_CHALLENGE_OTP</td></tr>
+          <tr><td>3734123412340000</td><td></td><td>ENROLLED_Y</td><td>TRANSACTION_STATUS_N</td></tr>
+          <tr><td>3434567891111005</td><td></td><td>ENROLLED_Y</td><td>TRANSACTION_CHALLENGE_OTP</td></tr>
+          <tr><td>3794521996036850</td><td></td><td>ENROLLED_Y</td><td>TRANSACTION_CHALLENGE_OTP</td></tr>
+        </tbody>
+        </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
 #### 5. Check the payment status
 
 After performing the request to the [Create Payment](ref:create-payment), you can check the payment status by analyzing the `status` and `sub_status` from the response. Check the [Payment Status](ref:payment) page to see all the options you can receive in response to the payment creation request.
