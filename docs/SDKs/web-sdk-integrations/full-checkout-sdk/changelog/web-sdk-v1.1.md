@@ -61,7 +61,67 @@ Comprehensive optimizations across all SDK operations for faster, more reliable 
 ### Click-to-Pay (C2P) Dynamic Behavior
 Improved click-to-pay functionality with enhanced user experience and dynamic behavior support.
 
-5. **Enhanced C2P**: Improved click-to-pay functionality with dynamic behavior support
+5. **Enhanced C2P**: Comprehensive improvements to click-to-pay functionality:
+   - Terms & Conditions and logos dynamically update based on the card
+   - C2P options are hidden for unsupported cards
+   - Phone number field added for registration
+   - Compliance settings for `privacy` and `tnc` (terms and conditions) are now passed along with the card
+
+### User Interface Enhancements
+Significant improvements to payment form design and user experience.
+
+6. **Enrolled Card Visualization Improvements**:
+   - Generic card visuals now appear for Visa and Mastercard
+   - American Express displays CVV on the front of the card
+   - Card visualization flips dynamically based on CVV field focus
+   - Dynamic titles adapt to the input entered by users
+   - Redesigned installment selector for better UX in mobile and desktop
+   - Consistent styling and behavior across platforms
+
+7. **Layout Improvements**:
+   - Corrected overlapping between document type and installment fields
+   - Layout now adjusts appropriately during validation
+
+8. **Preselected Payment Method**:
+   - Automatically preselects the last payment method used (or first configured one)
+   - Error-free handling of invalid or deleted methods
+
+9. **Enrolled Payment Method Management**:
+   - Users can now remove saved payment methods directly within the SDK interface
+
+10. **Inline Card Input**:
+    - Users can now enter card details directly beneath the **Card** option
+    - Full compatibility with existing flows, such as installments and card selector
+    - Fields persist when switching methods
+
+### Technical Improvements
+Backend and integration enhancements for better reliability and functionality.
+
+11. **PayPal Fallback Client ID**:
+    - When the PayPal `clientId` is not provided in merchant configuration, the SDK uses the fallback from the `paymentByCheckoutSession` endpoint response
+
+12. **Flexible Checkout Styling**:
+    - Flexible Actions elements now support custom styling passed through the `UI` object in the `getPaymentByCheckout` response
+    - Ensures consistent design across platforms and devices
+
+13. **Obsolete Field Removal**:
+    - Removed the unused `gender` field from the SDK and required fields configuration
+
+14. **Status Screen Updates**:
+    - Visual enhancements to all status screens, providing a cleaner look
+
+### Security and Payment Method Enhancements
+New security integrations and expanded payment method support.
+
+15. **New Security Integrations**:
+    - **Airwallex**: Adds an additional security layer for web
+    - **Forter (Web)**: Enhanced payment protection thanks to Forter's fraud prevention technology
+    - **Checkout 3DS**: New 3D Secure provider supported. Renders the authentication page when the transaction provider is `checkout3ds`
+    - **Unlimit 3DS**: Introduced 3DS support for Unlimit payments, enhancing authentication and fraud prevention
+
+16. **Brazilian Payment Improvements**:
+    - **Hybrid cards**: Now processed as credit by default, improving conversion for Brazil-based merchants
+    - **New Boleto Payment Method**: Boleto Bancário is now available for all merchants operating in Brazil, expanding local payment options and improving conversion for users who prefer offline methods
 
 ## Implementation Changes
 
@@ -113,6 +173,10 @@ Essential steps for upgrading existing v1.0 implementations to v1.1.
 **Timeline:**
 - **Sandbox**: Changes active from June 5, 2025
 - **Production**: Changes active from September 5, 2025
+
+> 📘 Additional Resources
+>
+> For implementation guidance and examples, visit the [Web SDK documentation page](https://docs.y.uno/docs/full-checkout-sdk) and the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web/blob/main/README.md) for more information.
 
 ## What's Deprecated in v1.1
 
