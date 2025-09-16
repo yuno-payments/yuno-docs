@@ -11,12 +11,9 @@ metadata:
 ---
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK functionality in your application.
 
-## What's new in v1.3
-
-1. Optimizations to the Lite SDK's weight and performance
-2. Added support for multiple Asian and European languages: German, Dutch, Swedish, French, Italian, Japanese, Korean.
-3. General bug fixes
-4. Enhancements to styling and branding
+> 📘 Changelog Reference:
+>
+> This guide is for SDK version 1.3. For details on previous versions, see the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/).
 
 ## Step 1: Include the library in your project
 
@@ -32,7 +29,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `</body>
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
