@@ -1,8 +1,8 @@
 ---
 title: Lite Web SDK (Enrollment)
-excerpt: ""
+excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Lite SDK (Enrollment)
   description: >-
@@ -10,7 +10,7 @@ metadata:
     include the Yuno SDK file in your webpage before closing the `<body>`.
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 > 👍 Recommended SDK
