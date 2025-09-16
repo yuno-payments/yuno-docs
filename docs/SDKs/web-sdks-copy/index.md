@@ -1,5 +1,5 @@
 ---
-title: Web SDKs (old folder)
+title: Web SDKs (old folders and files)
 deprecated: false
 hidden: true
 metadata:
