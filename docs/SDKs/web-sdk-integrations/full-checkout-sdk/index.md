@@ -138,5 +138,5 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 After integrating the SDK using one of the methods described above, follow these steps to implement the full checkout functionality:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Full Web SDK" href="/v1.0.2_add-sdk-changelog-pages/docs/full-sdk-implementation" titleSize="h4" />
+  <YunoCard title="Full SDK implementation" href="/v1.0.2_add-sdk-changelog-pages/docs/full-sdk-implementation" titleSize="h4" />
 </Shelf>
