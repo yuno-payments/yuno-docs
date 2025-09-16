@@ -7,11 +7,9 @@ metadata:
 ---
 Follow this step-by-step guide to implement and enable Yuno's Full Web SDK functionality in your application.
 
-<br />
-
-> **Note:**
+> 📘 Changelog Reference:
 >
-> This guide covers version 1.3 of the SDK. For details on earlier versions, please check the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/).
+> This guide is for SDK version 1.3. For details on previous versions, see the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/).
 
 ## Step 1: Include the library in your project
 
