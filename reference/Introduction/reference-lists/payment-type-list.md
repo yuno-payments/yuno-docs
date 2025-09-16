@@ -79,4 +79,4 @@ On this page, you will find the payment method types available on the Yuno API. 
 |           `WEBPAY`          | Payment link Payments - Multiple payment methods | `PAYMENT_LINK`              |
 |       `PAGO_EFECTIVO`       | Payment link Payments - Multiple payment methods | `PAYMENT_LINK`              |
 |         `SAFETYPAY`         | Payment link Payments - Multiple payment methods | `PAYMENT_LINK`              |
-|           `DLOCAL`          | Payment link Payments - Multiple payment methods | `DLOCAL_CHECKOUT`           |
+|      `DLOCAL_CHECKOUT`      | Payment link Payments - Multiple payment methods | `PAYMENT_LINK`              |
