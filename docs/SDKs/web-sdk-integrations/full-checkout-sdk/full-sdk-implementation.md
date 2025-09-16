@@ -7,12 +7,9 @@ metadata:
 ---
 Follow this step-by-step guide to implement and enable Yuno's Full Web SDK functionality in your application.
 
-## What's new in v1.3
-
-1. When a customer has an enrolled payment method, other available payment methods are grouped under a “More options” dropdown. The enrolled method is shown prominently by default, and customers can expand the dropdown to choose a different method
-2. Added support for multiple Asian and European languages: German, Dutch, Swedish, French, Italian, Japanese, Korean
-3. General bug fixes
-4. Enhancements to styling and branding
+> **Note:**
+>
+> This guide covers version 1.3 of the SDK. For details on earlier versions, please check the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/).
 
 ## Step 1: Include the library in your project
 
