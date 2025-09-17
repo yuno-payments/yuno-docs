@@ -31,6 +31,8 @@ Select one of the user-friendly Web integration options available and kickstart 
   <YunoCard title="Seamless SDK" href="../docs/seamless-sdk-payment-web" titleSize="h4" description="Fastest integration with pre-built UI components and maximum flexibility" badge="Recommended" />
 
   <YunoCard title="Direct Workflow" href="../docs/direct-flow" titleSize="h4" description="Direct integration without SDK components" badge="Quick Setup" />
+
+  <YunoCard title="Web SDK Changelog" href="../docs/web-sdk-changelog" titleSize="h4" description="Check all updates, improvements and version history for the Web SDK" badge="Changelog" />
 </Shelf>
 
 > ❗️ Browser Support
