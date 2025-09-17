@@ -1,14 +1,14 @@
 ---
 title: Country reference
-excerpt: ""
+excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 On this page, you will find the country's information you need when using Yuno API endpoints. The below table provides standard codes for the country's identification, currencies, document types used in each country, and phone codes. Use this page to understand and have access to standard values for each piece of information. Use the buttons below to go directly to the desired country list region.
