@@ -14,12 +14,15 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Americas" href="#americas" />
+
   <YunoCard title="Africa" href="#africa" />
+
   <YunoCard title="Asia Pacific" href="#asia-pacific" />
+
   <YunoCard title="Europe" href="#europe" />
+
   <YunoCard title="Middle East" href="#middle-east" />
 </Shelf>
-
 
 ## Americas
 
@@ -212,7 +215,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -239,7 +242,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           Social Security Card
           Driver's license
       </td>
@@ -285,12 +288,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BOB`\
+        `BOB`
         `BOV`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2\
+        2
         2
       </td>
 
@@ -352,7 +355,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           Driver's license
           National ID Card
       </td>
@@ -380,7 +383,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * Voter ID Card\
+        * Voter ID Card
           Driver's License
       </td>
 
@@ -399,12 +402,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `CLP`\
+        `CLP`
         `CLF`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        0\
+        0
         0
       </td>
 
@@ -430,12 +433,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `COP`\
+        `COP`
         `COU`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2\
+        2
         2
       </td>
 
@@ -488,12 +491,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `CUP`\
+        `CUP`
         `CUC`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2\
+        2
         2
       </td>
 
@@ -524,7 +527,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           Identity Card
           Driver's license
       </td>
@@ -552,7 +555,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -579,7 +582,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)\
+        * **CI** (Identity Card)
           Cédula de menor
       </td>
 
@@ -661,7 +664,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -688,7 +691,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -715,7 +718,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -742,7 +745,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -770,7 +773,7 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **DPI** (Personal Identification Document)
-        * *CUI*\* (Unique Identification Code)
+        * _CUI_* (Unique Identification Code)
         * **PAS** (Passport)
       </td>
 
@@ -815,12 +818,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `HTG`\
+        `HTG`
         `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2\
+        2
         2
       </td>
 
@@ -922,12 +925,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `MXN`\
+        `MXN`
         `MXV`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2\
+        2
         2
       </td>
 
@@ -1008,12 +1011,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `PAB`\
+        `PAB`
         `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2\
+        2
         2
       </td>
 
@@ -1178,7 +1181,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -1379,12 +1382,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `UYU`\
+        `UYU`
         `UYI`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2\
+        2
         2
       </td>
 
@@ -1478,7 +1481,7 @@ On this page, you will find the country's information you need when using Yuno A
   </tbody>
 </Table>
 
-**(1)** *The number of digits after the decimal separator*.
+**(1)** _The number of digits after the decimal separator_.
 
 ## Africa
 
@@ -1820,7 +1823,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS**(Passport)\
+        * **PAS**(Passport)
           National ID Card
       </td>
 
@@ -1873,7 +1876,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)  National ID Card\
+        * **PAS** (Passport)  National ID Card
           Driver's license
       </td>
 
@@ -1952,7 +1955,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)  National ID Card\
+        * **PAS** (Passport)  National ID Card
           Driver's license
       </td>
 
@@ -2057,7 +2060,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)  National ID Card\
+        * **PAS** (Passport)  National ID Card
           Voter ID Card
       </td>
 
@@ -2154,12 +2157,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `LSL`\
+        `LSL`
         `ZAR`
       </td>
 
       <td>
-        2\
+        2
         2
       </td>
 
@@ -2238,7 +2241,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        0.7\[8]
+        0.7[8]
       </td>
 
       <td>
@@ -2316,7 +2319,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        0.7\[8]
+        0.7[8]
       </td>
 
       <td>
@@ -2442,12 +2445,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `NAD`\
+        `NAD`
         `ZAR`
       </td>
 
       <td>
-        2\
+        2
         2
       </td>
 
@@ -2504,7 +2507,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * *PAS*\* (Passport)
+        * _PAS_* (Passport)
       </td>
 
       <td>
@@ -2530,7 +2533,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -3009,7 +3012,7 @@ On this page, you will find the country's information you need when using Yuno A
   </tbody>
 </Table>
 
-**(1)** *The number of digits after the decimal separator*.
+**(1)** _The number of digits after the decimal separator_.
 
 ## Asia Pacific
 
@@ -3117,7 +3120,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           ID Card
       </td>
 
@@ -3188,12 +3191,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `INR`\
+        `INR`
         `BTN`
       </td>
 
       <td>
-        2\
+        2
         2
       </td>
 
@@ -3302,7 +3305,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           Australian driver's license
       </td>
 
@@ -3329,7 +3332,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           Australian driver's licenses
       </td>
 
@@ -3356,7 +3359,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           Driver's license
           National ID Card
           Birth certificate
@@ -3749,7 +3752,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -3906,7 +3909,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           Tarjeta de Identificación
       </td>
 
@@ -4543,7 +4546,7 @@ On this page, you will find the country's information you need when using Yuno A
   </tbody>
 </Table>
 
-**(1)** *The number of digits after the decimal separator*.
+**(1)** _The number of digits after the decimal separator_.
 
 ## Europe
 
@@ -4563,7 +4566,7 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th>
-        CCurrency decimal digits
+        Currency decimal digits
 
         <sup>
           (1)
@@ -4837,7 +4840,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
       </td>
 
@@ -4947,7 +4950,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * *PAS*\* (Passport)
+        * _PAS_* (Passport)
         * Driver's licenses
         * National ID Card
       </td>
@@ -5926,13 +5929,13 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `CHF`\
+        `CHF`
         `CHE`
         `CHW`
       </td>
 
       <td>
-        2\
+        2
         2
         2
       </td>
@@ -6018,7 +6021,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        * **PAS** (Passport)\
+        * **PAS** (Passport)
           National ID Card
           Driver's licenses
       </td>
@@ -6056,7 +6059,7 @@ On this page, you will find the country's information you need when using Yuno A
   </tbody>
 </Table>
 
-**(1)** *The number of digits after the decimal separator*.
+**(1)** _The number of digits after the decimal separator_.
 
 ## Middle East
 
@@ -6434,7 +6437,7 @@ On this page, you will find the country's information you need when using Yuno A
   </tbody>
 </Table>
 
-**(1)** *The number of digits after the decimal separator*.
+**(1)** _The number of digits after the decimal separator_.
 
 <HTMLBlock>{`
 <style>
