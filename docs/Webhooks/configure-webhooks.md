@@ -47,7 +47,7 @@ In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wi
 
 Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate that the webhook was received. The merchant system response does not need to provide any information on the body request, only the HTTP 200 status. In case of not receiving a response at the specified time, Yuno webhooks will send the event notification up to seven times to avoid information loss. The table below presents the webhooks notification schedule and the confirmation waiting time.
 
-<Table align={["left","left","left"]}>
+<Table align={["left","left"]}>
   <thead>
     <tr>
       <th>
@@ -56,10 +56,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
 
       <th>
         Deadline after the first try
-      </th>
-
-      <th>
-        Confirmation waiting time
       </th>
     </tr>
   </thead>
@@ -73,10 +69,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
       <td>
         * <br />
       </td>
-
-      <td>
-        23 seconds
-      </td>
     </tr>
 
     <tr>
@@ -86,10 +78,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
 
       <td>
         5 minutes
-      </td>
-
-      <td>
-        7 seconds
       </td>
     </tr>
 
@@ -101,10 +89,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
       <td>
         50 minutes
       </td>
-
-      <td>
-        7 seconds
-      </td>
     </tr>
 
     <tr>
@@ -114,10 +98,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
 
       <td>
         6 hours
-      </td>
-
-      <td>
-        7 seconds
       </td>
     </tr>
 
@@ -129,10 +109,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
       <td>
         24 hours
       </td>
-
-      <td>
-        7 seconds
-      </td>
     </tr>
 
     <tr>
@@ -143,10 +119,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
       <td>
         48 hours
       </td>
-
-      <td>
-        7 seconds
-      </td>
     </tr>
 
     <tr>
@@ -156,10 +128,6 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
 
       <td>
         96 hours
-      </td>
-
-      <td>
-        7 seconds
       </td>
     </tr>
   </tbody>
