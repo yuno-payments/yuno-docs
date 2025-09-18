@@ -2,7 +2,7 @@
 title: Country reference 2025 copy
 excerpt: ""
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ""
   description: ""
