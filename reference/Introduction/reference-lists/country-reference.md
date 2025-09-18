@@ -2,7 +2,7 @@
 title: Country reference
 excerpt: ""
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ""
   description: ""
