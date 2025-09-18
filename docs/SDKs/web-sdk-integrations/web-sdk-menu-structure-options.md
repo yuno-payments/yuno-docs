@@ -5,34 +5,32 @@ hidden: false
 metadata:
   robots: index
 ---
-## Overview
-
 This document presents two improved menu structure options for the Yuno Web SDK documentation section. Both options use only existing pages and aim to create a more intuitive user experience.
 
 ## Research approach
 
 We analyzed the current structure and studied best practices from leading payment platforms:
 
-* Adyen Documentation: User journey-based approach with clear decision guidance
-* Stripe Documentation: Progressive disclosure and user-centric organization
-* PayPal Developer Docs: Platform-first structure with action-oriented grouping
-* Checkout.com Docs: Feature-based organization with clear categorization
+* **Adyen Documentation**: User journey-based approach with clear decision guidance
+* **Stripe Documentation**: Progressive disclosure and user-centric organization
+* **PayPal Developer Docs**: Platform-first structure with action-oriented grouping
+* **Checkout.com Docs**: Feature-based organization with clear categorization
 
 ## Current structure
 
 The Web SDK section contains 11 pages in this order:
 
-1. web-sdk-changelog - Version history and updates
-2. full-checkout-sdk - Complete SDK implementation
-3. lite-checkout-sdk - Lightweight SDK option
-4. secure-fields-web - Secure payment fields
-5. alternative-sdks - Headless and Seamless SDKs
-6. loader - SDK loading utilities
-7. payment-status - Payment status tracking
-8. sdk-customizations - Customization options
-9. demo-app - Demo application
-10. 3ds-setup-sdk - 3D Secure setup (deprecated)
-11. other-integrations - Direct workflow and additional options
+1. `web-sdk-changelog` apresenta o histórico de versões e atualizações
+2. `full-checkout-sdk` oferece a implementação completa do SDK
+3. `lite-checkout-sdk` disponibiliza uma opção de SDK mais leve
+4. `secure-fields-web` fornece campos de pagamento seguros
+5. `alternative-sdks` inclui Headless e Seamless SDKs
+6. `loader` traz utilitários para carregamento do SDK
+7. `payment-status` permite o acompanhamento do status de pagamento
+8. `sdk-customizations` apresenta opções de personalização
+9. `demo-app` disponibiliza um aplicativo de demonstração
+10. `3ds-setup-sdk` trata da configuração do 3D Secure (obsoleto)
+11. `other-integrations` reúne fluxo direto e opções adicionais
 
 ### Current structure visualization
 
@@ -63,16 +61,16 @@ Web SDKs (Current)
 
 We applied these core principles:
 
-* Start with user needs, not technical categories
-* Guide users through decision-making process
-* Present information in order of importance and complexity
-* Group related functionality together
-* Follow patterns users expect from other payment platforms
+* **Start with user needs**: Not technical categories
+* **Guide users**: Through decision-making process
+* **Present information**: In order of importance and complexity
+* **Group related functionality**: Together
+* **Follow patterns**: Users expect from other payment platforms
 
 The two options represent different approaches to solving the same problems:
 
-* Option 1 (User Journey-Based): Focuses on guiding users through their decision-making process
-* Option 2 (Feature-First): Organizes content by what users want to accomplish
+* **Option 1 (User Journey-Based)**: Focuses on guiding users through their decision-making process
+* **Option 2 (Feature-First)**: Organizes content by what users want to accomplish
 
 ## Option 1: User Journey-Based Structure
 
@@ -103,10 +101,10 @@ Web SDKs
 
 ### Key benefits
 
-* Starts with decision-making, then implementation
-* Groups main options together
-* Progressive complexity from simple to advanced solutions
-* Related features grouped together
+* **Starts with decision-making**: Then implementation
+* **Groups main options**: Together
+* **Progressive complexity**: From simple to advanced solutions
+* **Related features**: Grouped together
 
 ### Recommended page reordering
 
@@ -152,10 +150,10 @@ Web SDKs
 
 ### Key benefits
 
-* Action-oriented grouping: Build, Customize, Launch
-* Clear progression from decision to implementation to launch
-* Maintains all existing pages in logical groupings
-* Better discoverability of related features
+* **Action-oriented grouping**: Build, Customize, Launch
+* **Clear progression**: From decision to implementation to launch
+* **Maintains all existing pages**: In logical groupings
+* **Better discoverability**: Of related features
 
 ### Recommended page reordering
 
@@ -184,10 +182,10 @@ We recommend Option 1 (User Journey-Based) because it:
 
 ### Key improvements
 
-* "Choose the Right Integration" becomes the entry point
-* Changelog moved from position 1 to position 2 for better visibility
-* Main SDKs grouped together, utilities grouped together
-* Clear categories help users understand what each section contains
+* **"Choose the Right Integration"**: Becomes the entry point
+* **Changelog**: Moved from position 1 to position 2 for better visibility
+* **Main SDKs**: Grouped together, utilities grouped together
+* **Clear categories**: Help users understand what each section contains
 
 ## Implementation
 
