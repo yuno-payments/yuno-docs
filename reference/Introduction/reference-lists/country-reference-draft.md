@@ -1,14 +1,14 @@
 ---
 title: Country reference
-excerpt: ""
+excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 On this page, you will find the country's information you need when using Yuno API endpoints. The below table provides standard codes for the country's identification, currencies, document types used in each country, and phone codes. Use this page to understand and have access to standard values for each piece of information. Use the buttons below to go directly to the desired country list region.
@@ -23,6 +23,10 @@ On this page, you will find the country's information you need when using Yuno A
 </Shelf>
 
 ## Americas
+
+
+**(1)** _The number of digits after the decimal separator_.
+
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -77,9 +81,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -105,9 +108,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -133,11 +135,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CUIL** (Tax ID (Person))
-  _ **CUIT** (Tax ID (Entity))
-  _ **DNI** (National Identity Document) \* **PAS** (Passport)
-  </td>
+* **CUIL** (Tax ID (Person))
+* **CUIT** (Tax ID (Entity))
+* **DNI** (National Identity Document)
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         54
@@ -163,9 +165,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         297
@@ -191,9 +192,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -219,9 +219,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -247,9 +246,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         501
@@ -275,9 +273,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -305,11 +302,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CI** (Identity Card)
-  _ **NIT** (Tax ID (Entity))
-  _ **PAS** (Passport)
-  </td>
+* **CI** (Identity Card)
+* **NIT** (Tax ID (Entity))
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         591
@@ -318,6 +314,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td style={{ textAlign: "left" }}>
+          Bonaire, Sint Eustatius and Saba
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `BQ`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `USD`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          599
+        </td>
+      </tr>
+
+      <tr>
       <td style={{ textAlign: "left" }}>
         Brazil
       </td>
@@ -335,13 +357,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CNH** (Driver Licence)
-  _ **CNPJ** (Tax ID (Entity))
-  _ **CPF** (Tax ID (Person))
-  _ **PAS** (Passport)
-  _ **RG** (Identity Card)
-  </td>
+* **CNH** (Driver Licence)
+* **CNPJ** (Tax ID (Entity))
+* **CPF** (Tax ID (Person))
+* **PAS** (Passport)
+* **RG** (Identity Card)
+</td>
 
       <td style={{ textAlign: "left" }}>
         55
@@ -367,13 +388,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **BNE** (Business Number (Entity))
-  _ **DLIC** (Driver Licence)
-  _ **PAS** (Passport)
-  _ **PRC** (Permanent Resident Card)
-  _ **SIN** (Social Insurance Number)
-  </td>
+* **BNE** (Business Number (Entity))
+* **DLIC** (Driver Licence)
+* **PAS** (Passport)
+* **PRC** (Permanent Resident Card)
+* **SIN** (Social Insurance Number)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -399,9 +419,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -429,11 +448,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  _ **RUN** (National Identification Number)
-  _ **RUT** (Tax ID (Person/Entity))
-  </td>
+* **PAS** (Passport)
+* **RUN** (National Identification Number)
+* **RUT** (Tax ID (Person/Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         56
@@ -461,13 +479,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CC** (Citizenship Card)
-  _ **CE** (Foreigner ID)
-  _ **NIT** (Tax Identification Number (Entity))
-  _ **PAS** (Passport)
-  _ **TI** (Identity Card (minors))
-  </td>
+* **CC** (Citizenship Card)
+* **CE** (Foreigner ID)
+* **NIT** (Tax Identification Number (Entity))
+* **PAS** (Passport)
+* **TI** (Identity Card (minors))
+</td>
 
       <td style={{ textAlign: "left" }}>
         57
@@ -493,11 +510,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CI** (Identity Card)
-  _ **CJUR** (Company ID)
-  _ **DMEX** (Foreigner ID) \* **PAS** (Passport)
-  </td>
+* **CI** (Identity Card)
+* **CJUR** (Company ID)
+* **DMEX** (Foreigner ID)
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         506
@@ -525,9 +542,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         53
@@ -553,9 +569,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         599
@@ -581,9 +596,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -609,11 +623,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CI** (Identity and Electoral Card)
-  _ **PAS** (Passport)
-  _ **RNC** (Company Tax Number)
-  </td>
+* **CI** (Identity and Electoral Card)
+* **PAS** (Passport)
+* **RNC** (Company Tax Number)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -639,11 +652,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CI** (Identity Card)
-  _ **PAS** (Passport)
-  _ **RUC** (Tax ID (Entity))
-  </td>
+* **CI** (Identity Card)
+* **PAS** (Passport)
+* **RUC** (Tax ID (Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         593
@@ -669,11 +681,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **DUI** (Unique Identity Document)
-  _ **NIT** (Tax Identification Number)
-  _ **PAS** (Passport)
-  </td>
+* **DUI** (Unique Identity Document)
+* **NIT** (Tax Identification Number)
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         503
@@ -699,9 +710,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         500
@@ -727,9 +737,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         594
@@ -755,9 +764,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         473
@@ -783,9 +791,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         590
@@ -811,11 +818,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **DPI** (Personal Identification Document)
-  _ **NIT** (Tax ID (Person/Entity))
-  _ **PAS** (Passport)
-  </td>
+* **DPI** (Personal Identification Document)
+* **NIT** (Tax ID (Person/Entity))
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         502
@@ -841,9 +847,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         592
@@ -871,9 +876,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         509
@@ -899,11 +903,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **DNI** (National Identity Document)
-  _ **PAS** (Passport)
-  _ **TRN** (Tax Number)
-  </td>
+* **DNI** (National Identity Document)
+* **PAS** (Passport)
+* **TRN** (Tax Number)
+</td>
 
       <td style={{ textAlign: "left" }}>
         504
@@ -929,9 +932,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -957,9 +959,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         596
@@ -987,11 +988,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CURP** (Population ID Code)
-  _ **INE** (Voter ID)
-  _ **PAS** (Passport) \* **RFC** (Tax ID (Person/Entity))
-  </td>
+* **CURP** (Population ID Code)
+* **INE** (Voter ID)
+* **PAS** (Passport)
+* **RFC** (Tax ID (Person/Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         52
@@ -1017,9 +1018,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1045,11 +1045,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CI** (Identity Card)
-  _ **PAS** (Passport)
-  _ **RUC** (Tax ID (Entity))
-  </td>
+* **CI** (Identity Card)
+* **PAS** (Passport)
+* **RUC** (Tax ID (Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         505
@@ -1077,11 +1076,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CIP** (Identity Card)
-  _ **PAS** (Passport)
-  _ **RUC** (Tax ID (Entity))
-  </td>
+* **CIP** (Identity Card)
+* **PAS** (Passport)
+* **RUC** (Tax ID (Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         507
@@ -1107,11 +1105,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CIC** (Identity Card)
-  _ **PAS** (Passport)
-  _ **RUC** (Tax ID (Entity))
-  </td>
+* **CIC** (Identity Card)
+* **PAS** (Passport)
+* **RUC** (Tax ID (Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         595
@@ -1137,11 +1134,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CE** (Foreigner ID Card)
-  _ **DNI** (National Identity Document)
-  _ **PAS** (Passport) \* **RUC** (Tax ID (Entity))
-  </td>
+* **CE** (Foreigner ID Card)
+* **DNI** (National Identity Document)
+* **PAS** (Passport)
+* **RUC** (Tax ID (Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         51
@@ -1167,9 +1164,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1178,6 +1174,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td style={{ textAlign: "left" }}>
+          Saint Barthélemy
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `BL`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `EUR`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          590
+        </td>
+      </tr>
+
+      <tr>
       <td style={{ textAlign: "left" }}>
         Saint Kitts And Nevis
       </td>
@@ -1195,9 +1217,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1223,9 +1244,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1251,9 +1271,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         590
@@ -1279,9 +1298,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         508
@@ -1307,9 +1325,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1318,6 +1335,58 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td style={{ textAlign: "left" }}>
+          Sint Maarten (Dutch part)
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `SX`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `ANG`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          1
+        </td>
+      </tr>
+
+      <tr>
+        <td style={{ textAlign: "left" }}>
+          South Georgia and the South Sandwich Islands
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `GS`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `GBP`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          500
+        </td>
+      </tr>
+
+  <tr>
       <td style={{ textAlign: "left" }}>
         Suriname
       </td>
@@ -1335,9 +1404,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         597
@@ -1363,9 +1431,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1391,9 +1458,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1419,13 +1485,13 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **DLIC** (Driver Licence)
-  _ **EIN** (Employer Identification Number)
-  _ **ITIN** (Individual Taxpayer Identification Number)
-  _ **PAS** (Passport)
-  _ **PRC** (Permanent Resident Card) \* **SSN** (Social Security Number)
-  </td>
+* **DLIC** (Driver Licence)
+* **EIN** (Employer Identification Number)
+* **ITIN** (Individual Taxpayer Identification Number)
+* **PAS** (Passport)
+* **PRC** (Permanent Resident Card)
+* **SSN** (Social Security Number)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1451,9 +1517,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1481,11 +1546,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **CI** (Identity Card)
-  _ **PAS** (Passport)
-  _ **RUT** (Tax ID (Entity))
-  </td>
+* **CI** (Identity Card)
+* **PAS** (Passport)
+* **RUT** (Tax ID (Entity))
+</td>
 
       <td style={{ textAlign: "left" }}>
         598
@@ -1503,17 +1567,16 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `VEF`
-      </td>
+        `VES`
+</td>
 
       <td style={{ textAlign: "left" }}>
         2
-      </td>
+</td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         58
@@ -1539,9 +1602,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td style={{ textAlign: "left" }}>
         1
@@ -1567,125 +1629,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-
-- **PAS** (Passport)
-  </td>
-
-        <td style={{ textAlign: "left" }}>
-          1
-        </td>
-      </tr>
-
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          Bonaire, Sint Eustatius and Saba
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `BQ`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `USD`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          599
-        </td>
-      </tr>
-
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          Saint Barthélemy
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `BL`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `EUR`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          590
-        </td>
-      </tr>
-
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          Sint Maarten (Dutch part)
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `SX`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `ANG`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-        </td>
+* **PAS** (Passport)
+</td>
 
         <td style={{ textAlign: "left" }}>
           1
         </td>
       </tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          South Georgia and the South Sandwich Islands
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `GS`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `GBP`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          500
-        </td>
-      </tr>
-
-  </tbody>
+      </tbody>
   </Table>
+
+## Africa
+
 
 **(1)** _The number of digits after the decimal separator_.
 
-## Africa
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -1740,9 +1699,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         213
@@ -1768,9 +1726,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         244
@@ -1796,9 +1753,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         229
@@ -1824,9 +1780,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         267
@@ -1852,9 +1807,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         226
@@ -1880,9 +1834,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         257
@@ -1908,9 +1861,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         237
@@ -1936,9 +1888,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         238
@@ -1964,9 +1915,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         236
@@ -1992,9 +1942,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         235
@@ -2020,9 +1969,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         269
@@ -2031,6 +1979,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Côte d'Ivoire
+        </td>
+
+        <td>
+          `CI`
+        </td>
+
+        <td>
+          `XOF`
+        </td>
+
+        <td>
+          0
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          225
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Democratic Republic Of Congo
       </td>
@@ -2048,9 +2022,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         243
@@ -2076,9 +2049,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         253
@@ -2104,11 +2076,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CREG** (Commercial Registration Number)
-  _ **NID** (National ID Number)
-  _ **PAS** (Passport) \* **TIN** (Tax Identification Number)
-  </td>
+* **CREG** (Commercial Registration Number)
+* **NID** (National ID Number)
+* **PAS** (Passport)
+* **TIN** (Tax Identification Number)
+</td>
 
       <td>
         20
@@ -2134,9 +2106,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         240
@@ -2162,9 +2133,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         291
@@ -2190,9 +2160,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         251
@@ -2218,9 +2187,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         262
@@ -2246,9 +2214,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         241
@@ -2274,9 +2241,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         220
@@ -2302,42 +2268,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BRN** (Business Registration Number)
-  _ **GHID** (Ghana Card)
-  _ **PAS** (Passport) \* **TIN** (Taxpayer Identification Number)
-  </td>
+* **BRN** (Business Registration Number)
+* **GHID** (Ghana Card)
+* **PAS** (Passport)
+* **TIN** (Taxpayer Identification Number)
+</td>
 
       <td>
         233
-      </td>
-
-    </tr>
-
-    <tr>
-      <td>
-        Guinea-bissau
-      </td>
-
-      <td>
-        `GW`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-
-- **PAS** (Passport)
-  </td>
-
-      <td>
-        245
       </td>
 
     </tr>
@@ -2360,12 +2298,38 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         224
+      </td>
+
+    </tr>
+
+    <tr>
+      <td>
+        Guinea-bissau
+      </td>
+
+      <td>
+        `GW`
+      </td>
+
+      <td>
+        `XOF`
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+* **PAS** (Passport)
+</td>
+
+      <td>
+        245
       </td>
 
     </tr>
@@ -2388,11 +2352,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BRN** (Business Registration Number)
-  _ **IDN** (National ID Number)
-  _ **KRAP** (KRA PIN) \* **PAS** (Passport)
-  </td>
+* **BRN** (Business Registration Number)
+* **IDN** (National ID Number)
+* **KRAP** (KRA PIN)
+* **PAS** (Passport)
+</td>
 
       <td>
         254
@@ -2420,9 +2384,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         266
@@ -2448,9 +2411,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         231
@@ -2476,9 +2438,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         218
@@ -2504,9 +2465,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         261
@@ -2532,9 +2492,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         265
@@ -2560,9 +2519,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         223
@@ -2588,9 +2546,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         222
@@ -2616,9 +2573,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         230
@@ -2644,9 +2600,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         262
@@ -2672,11 +2627,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CIN** (National Identity Card)
-  _ **ICE** (Common Company Identifier)
-  _ **PAS** (Passport)
-  </td>
+* **CIN** (National Identity Card)
+* **ICE** (Common Company Identifier)
+* **PAS** (Passport)
+</td>
 
       <td>
         212
@@ -2702,9 +2656,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         258
@@ -2732,9 +2685,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         264
@@ -2760,9 +2712,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         227
@@ -2788,13 +2739,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BVN** (Bank Verification Number)
-  _ **CACN** (Company Registration Number)
-  _ **NIN** (National Identification Number)
-  _ **PAS** (Passport)
-  _ **TIN** (Tax Identification Number)
-  </td>
+* **BVN** (Bank Verification Number)
+* **CACN** (Company Registration Number)
+* **NIN** (National Identification Number)
+* **PAS** (Passport)
+* **TIN** (Tax Identification Number)
+</td>
 
       <td>
         234
@@ -2820,9 +2770,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         242
@@ -2848,9 +2797,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         262
@@ -2876,9 +2824,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         250
@@ -2904,40 +2851,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         290
-      </td>
-
-    </tr>
-
-    <tr>
-      <td>
-        São Tomé and Príncipe
-      </td>
-
-      <td>
-        `ST`
-      </td>
-
-      <td>
-        `STD`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-
-- **PAS** (Passport)
-  </td>
-
-      <td>
-        239
       </td>
 
     </tr>
@@ -2960,9 +2878,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         221
@@ -2988,9 +2905,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         248
@@ -3016,9 +2932,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         232
@@ -3044,9 +2959,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         252
@@ -3072,11 +2986,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CIPC** (Company Registration Number)
-  _ **IDN** (Identity Number)
-  _ **PAS** (Passport) \* **TRN** (Tax Reference Number)
-  </td>
+* **CIPC** (Company Registration Number)
+* **IDN** (Identity Number)
+* **PAS** (Passport)
+* **TRN** (Tax Reference Number)
+</td>
 
       <td>
         27
@@ -3102,9 +3016,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         211
@@ -3130,9 +3043,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         249
@@ -3158,12 +3070,38 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         268
+      </td>
+
+    </tr>
+
+    <tr>
+      <td>
+        São Tomé and Príncipe
+      </td>
+
+      <td>
+        `ST`
+      </td>
+
+      <td>
+        `STN`
+</td>
+
+      <td>
+        2
+</td>
+
+      <td>
+* **PAS** (Passport)
+</td>
+
+      <td>
+        239
       </td>
 
     </tr>
@@ -3186,9 +3124,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         255
@@ -3214,9 +3151,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         228
@@ -3242,9 +3178,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         216
@@ -3270,9 +3205,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         256
@@ -3298,9 +3232,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         212
@@ -3326,38 +3259,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
         <td>
           260
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Côte d'Ivoire
-        </td>
-
-        <td>
-          `CI`
-        </td>
-
-        <td>
-          `XOF`
-        </td>
-
-        <td>
-          0
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          225
         </td>
       </tr>
 
@@ -3380,7 +3286,7 @@ On this page, you will find the country's information you need when using Yuno A
 
         <td>
           * **PAS** (Passport)
-        </td>
+</td>
 
         <td>
           263
@@ -3390,9 +3296,11 @@ On this page, you will find the country's information you need when using Yuno A
   </tbody>
   </Table>
 
+## Asia Pacific
+
+
 **(1)** _The number of digits after the decimal separator_.
 
-## Asia Pacific
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -3447,9 +3355,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport) \* **TAZK** (Tazkira (National ID))
-  </td>
+* **PAS** (Passport)
+* **TAZK** (Tazkira (National ID))
+</td>
 
       <td>
         93
@@ -3458,6 +3366,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          American Samoa
+        </td>
+
+        <td>
+          `AS`
+        </td>
+
+        <td>
+          `USD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          1
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Armenia
       </td>
@@ -3475,9 +3409,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         374
@@ -3503,13 +3436,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **ABN** (Australian Business Number)
-  _ **ACN** (Australian Company Number)
-  _ **DLIC** (Driver Licence)
-  _ **PAS** (Passport)
-  _ **TFN** (Tax File Number)
-  </td>
+* **ABN** (Australian Business Number)
+* **ACN** (Australian Company Number)
+* **DLIC** (Driver Licence)
+* **PAS** (Passport)
+* **TFN** (Tax File Number)
+</td>
 
       <td>
         61
@@ -3535,9 +3467,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         994
@@ -3563,9 +3494,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         880
@@ -3593,9 +3523,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         975
@@ -3604,6 +3533,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          British Indian Ocean Territory
+        </td>
+
+        <td>
+          `IO`
+        </td>
+
+        <td>
+          `USD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          246
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Brunei Darussalam
       </td>
@@ -3621,9 +3576,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         673
@@ -3649,9 +3603,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         855
@@ -3677,11 +3630,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **FPRD** (Foreign Permanent Resident ID)
-  _ **PAS** (Passport)
-  _ **RIC** (Resident Identity Card) \* **USCC** (Unified Social Credit Code)
-  </td>
+* **FPRD** (Foreign Permanent Resident ID)
+* **PAS** (Passport)
+* **RIC** (Resident Identity Card)
+* **USCC** (Unified Social Credit Code)
+</td>
 
       <td>
         86
@@ -3707,9 +3660,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         61
@@ -3735,9 +3687,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         61
@@ -3763,9 +3714,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         682
@@ -3791,9 +3741,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         679
@@ -3819,9 +3768,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         689
@@ -3847,9 +3795,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         1
@@ -3858,6 +3805,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Heard Island and McDonald Islands
+        </td>
+
+        <td>
+          `HM`
+        </td>
+
+        <td>
+          `AUD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          672
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Hong Kong
       </td>
@@ -3875,11 +3848,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BRN** (Business Registration Number)
-  _ **HKID** (Hong Kong Identity Card)
-  _ **PAS** (Passport)
-  </td>
+* **BRN** (Business Registration Number)
+* **HKID** (Hong Kong Identity Card)
+* **PAS** (Passport)
+</td>
 
       <td>
         852
@@ -3905,13 +3877,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **AADH** (Aadhaar Number)
-  _ **CIN** (Corporate Identification Number)
-  _ **GSTN** (GST Number (Entity))
-  _ **PAN** (Permanent Account Number)
-  _ **PAS** (Passport)
-  </td>
+* **AADH** (Aadhaar Number)
+* **CIN** (Corporate Identification Number)
+* **GSTN** (GST Number (Entity))
+* **PAN** (Permanent Account Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         91
@@ -3937,13 +3908,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **KTAS** (Limited Stay Permit Card)
-  _ **KTP** (National ID Card)
-  _ **NIB** (Business Identification Number)
-  _ **NPWP** (Taxpayer Registration Number)
-  _ **PAS** (Passport)
-  </td>
+* **KTAS** (Limited Stay Permit Card)
+* **KTP** (National ID Card)
+* **NIB** (Business Identification Number)
+* **NPWP** (Taxpayer Registration Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         62
@@ -3969,11 +3939,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **HOUJ** (Corporate Number)
-  _ **MYNO** (My Number (Individual Number))
-  _ **PAS** (Passport) \* **ZAIR** (Residence Card)
-  </td>
+* **HOUJ** (Corporate Number)
+* **MYNO** (My Number (Individual Number))
+* **PAS** (Passport)
+* **ZAIR** (Residence Card)
+</td>
 
       <td>
         81
@@ -3999,9 +3969,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         7
@@ -4027,9 +3996,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         686
@@ -4038,6 +4006,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Korea, Democratic People's Republic of
+        </td>
+
+        <td>
+          `KP`
+        </td>
+
+        <td>
+          `KPW`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          850
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Kyrgyzstan
       </td>
@@ -4055,9 +4049,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         996
@@ -4066,6 +4059,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Lao People's Democratic Republic
+        </td>
+
+        <td>
+          `LA`
+        </td>
+
+        <td>
+          `LAK`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          856
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Macao
       </td>
@@ -4083,9 +4102,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         853
@@ -4111,11 +4129,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **NRIC** (National Registration Identity Card)
-  _ **PAS** (Passport)
-  _ **SSM** (Company Number) \* **TIN** (Tax Identification Number)
-  </td>
+* **NRIC** (National Registration Identity Card)
+* **PAS** (Passport)
+* **SSM** (Company Number)
+* **TIN** (Tax Identification Number)
+</td>
 
       <td>
         60
@@ -4141,9 +4159,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         960
@@ -4169,9 +4186,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         692
@@ -4197,9 +4213,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         691
@@ -4225,9 +4240,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         976
@@ -4253,9 +4267,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         95
@@ -4281,9 +4294,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         674
@@ -4309,9 +4321,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         977
@@ -4337,9 +4348,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         687
@@ -4365,11 +4375,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **DLIC** (Driver Licence)
-  _ **IRD** (Inland Revenue Number)
-  _ **NZBN** (New Zealand Business Number) \* **PAS** (Passport)
-  </td>
+* **DLIC** (Driver Licence)
+* **IRD** (Inland Revenue Number)
+* **NZBN** (New Zealand Business Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         64
@@ -4395,9 +4405,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         683
@@ -4423,9 +4432,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         672
@@ -4451,9 +4459,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         1
@@ -4479,9 +4486,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         92
@@ -4507,9 +4513,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         680
@@ -4535,9 +4540,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         675
@@ -4563,11 +4567,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  _ **PSN** (PhilSys Number)
-  _ **TIN** (Taxpayer Identification Number) \* **UMID** (Unified Multi-Purpose ID)
-  </td>
+* **PAS** (Passport)
+* **PSN** (PhilSys Number)
+* **TIN** (Taxpayer Identification Number)
+* **UMID** (Unified Multi-Purpose ID)
+</td>
 
       <td>
         63
@@ -4593,9 +4597,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         872
@@ -4621,9 +4624,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         685
@@ -4649,11 +4651,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **FIN** (Foreign Identification Number)
-  _ **NRIC** (National Registration Identity Card)
-  _ **PAS** (Passport) \* **UEN** (Unique Entity Number)
-  </td>
+* **FIN** (Foreign Identification Number)
+* **NRIC** (National Registration Identity Card)
+* **PAS** (Passport)
+* **UEN** (Unique Entity Number)
+</td>
 
       <td>
         65
@@ -4679,9 +4681,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         677
@@ -4707,11 +4708,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **ARC** (Alien Registration Card)
-  _ **BRN** (Business Registration Number)
-  _ **PAS** (Passport) \* **RRN** (Resident Registration Number)
-  </td>
+* **ARC** (Alien Registration Card)
+* **BRN** (Business Registration Number)
+* **PAS** (Passport)
+* **RRN** (Resident Registration Number)
+</td>
 
       <td>
         82
@@ -4737,9 +4738,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         94
@@ -4765,11 +4765,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **ARC** (Alien Resident Certificate)
-  _ **GUI** (Unified Business Number)
-  _ **PAS** (Passport) \* **TWID** (National ID Card)
-  </td>
+* **ARC** (Alien Resident Certificate)
+* **GUI** (Unified Business Number)
+* **PAS** (Passport)
+* **TWID** (National ID Card)
+</td>
 
       <td>
         886
@@ -4795,9 +4795,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         992
@@ -4823,11 +4822,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BRN** (Business Registration Number)
-  _ **NID** (National ID Number)
-  _ **PAS** (Passport) \* **TAX** (Tax Identification Number)
-  </td>
+* **BRN** (Business Registration Number)
+* **NID** (National ID Number)
+* **PAS** (Passport)
+* **TAX** (Tax Identification Number)
+</td>
 
       <td>
         66
@@ -4836,6 +4835,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Timor-Leste
+        </td>
+
+        <td>
+          `TL`
+        </td>
+
+        <td>
+          `USD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          670
+        </td>
+      </tr>
+
+  <tr>
       <td>
         Tokelau
       </td>
@@ -4853,9 +4878,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         690
@@ -4881,9 +4905,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         676
@@ -4909,9 +4932,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         993
@@ -4937,9 +4959,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         688
@@ -4965,9 +4986,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         998
@@ -4993,9 +5013,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         678
@@ -5021,11 +5040,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CCCD** (Citizen ID Card)
-  _ **CMND** (Identity Card (legacy))
-  _ **MST** (Tax Identification Number) \* **PAS** (Passport)
-  </td>
+* **CCCD** (Citizen ID Card)
+* **CMND** (Identity Card (legacy))
+* **MST** (Tax Identification Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         84
@@ -5051,177 +5070,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
         <td>
           681
         </td>
       </tr>
 
-      <tr>
-        <td>
-          American Samoa
-        </td>
-
-        <td>
-          `AS`
-        </td>
-
-        <td>
-          `USD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          1
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          British Indian Ocean Territory
-        </td>
-
-        <td>
-          `IO`
-        </td>
-
-        <td>
-          `USD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          246
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Heard Island and McDonald Islands
-        </td>
-
-        <td>
-          `HM`
-        </td>
-
-        <td>
-          `AUD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          672
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Korea, Democratic People's Republic of
-        </td>
-
-        <td>
-          `KP`
-        </td>
-
-        <td>
-          `KPW`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          850
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Lao People's Democratic Republic
-        </td>
-
-        <td>
-          `LA`
-        </td>
-
-        <td>
-          `LAK`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          856
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Timor-Leste
-        </td>
-
-        <td>
-          `TL`
-        </td>
-
-        <td>
-          `USD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          670
-        </td>
-      </tr>
-
-  </tbody>
+      </tbody>
   </Table>
+
+## Europe
+
 
 **(1)** _The number of digits after the decimal separator_.
 
-## Europe
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -5239,7 +5103,7 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th>
-        CCurrency decimal digits
+        Currency decimal digits
 
         <sup>
           (1)
@@ -5257,36 +5121,7 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>
-    <tr>
-      <td>
-        Åland Islands
-      </td>
-
-      <td>
-        `AX`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-
-- **NIDC** (National ID Card) \* **PAS** (Passport)
-  </td>
-
-      <td>
-        358
-      </td>
-
-    </tr>
-
-    <tr>
+  <tbody><tr>
       <td>
         Albania
       </td>
@@ -5304,9 +5139,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **EIDC** (Electronic Identity Card) \* **PAS** (Passport)
-  </td>
+* **EIDC** (Electronic Identity Card)
+* **PAS** (Passport)
+</td>
 
       <td>
         355
@@ -5332,9 +5167,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         376
@@ -5360,11 +5194,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  _ **SVNR** (Social Insurance Number)
-  _ **UID** (VAT Identification Number) \* **ZMRN** (Central Register Number)
-  </td>
+* **PAS** (Passport)
+* **SVNR** (Social Insurance Number)
+* **UID** (VAT Identification Number)
+* **ZMRN** (Central Register Number)
+</td>
 
       <td>
         43
@@ -5382,17 +5216,16 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `BYR`
-      </td>
+        `BYN`
+</td>
 
       <td>
-        0
-      </td>
+        2
+</td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         375
@@ -5418,11 +5251,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BCE** (Company Number)
-  _ **EID** (Electronic ID Card)
-  _ **PAS** (Passport) \* **RRN** (National Register Number)
-  </td>
+* **BCE** (Company Number)
+* **EID** (Electronic ID Card)
+* **PAS** (Passport)
+* **RRN** (National Register Number)
+</td>
 
       <td>
         32
@@ -5448,9 +5281,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         387
@@ -5459,6 +5291,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Bouvet Island
+        </td>
+
+        <td>
+          `BV`
+        </td>
+
+        <td>
+          `NOK`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          47
+        </td>
+      </tr>
+
+  <tr>
       <td>
         Bulgaria
       </td>
@@ -5476,11 +5334,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **EGN** (Personal Number)
-  _ **LNC** (Foreigner Personal Number)
-  _ **PAS** (Passport) \* **UIC** (Unified ID Code (Entity))
-  </td>
+* **EGN** (Personal Number)
+* **LNC** (Foreigner Personal Number)
+* **PAS** (Passport)
+* **UIC** (Unified ID Code (Entity))
+</td>
 
       <td>
         359
@@ -5498,17 +5356,16 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `HRK`
-      </td>
+        `EUR`
+</td>
 
       <td>
         2
-      </td>
+</td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         385
@@ -5534,9 +5391,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         357
@@ -5562,11 +5418,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **DIC** (Tax Identification Number)
-  _ **ICO** (Company Number)
-  _ **PAS** (Passport) \* **RNUM** (Birth Number)
-  </td>
+* **DIC** (Tax Identification Number)
+* **ICO** (Company Number)
+* **PAS** (Passport)
+* **RNUM** (Birth Number)
+</td>
 
       <td>
         420
@@ -5592,11 +5448,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CPR** (Personal ID Number)
-  _ **CVR** (Company Registration Number)
-  _ **PAS** (Passport)
-  </td>
+* **CPR** (Personal ID Number)
+* **CVR** (Company Registration Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         45
@@ -5622,9 +5477,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         372
@@ -5650,9 +5504,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         298
@@ -5678,11 +5531,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **HETU** (Personal Identity Code)
-  _ **PAS** (Passport)
-  _ **YID** (Business ID)
-  </td>
+* **HETU** (Personal Identity Code)
+* **PAS** (Passport)
+* **YID** (Business ID)
+</td>
 
       <td>
         358
@@ -5708,11 +5560,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CNI** (National Identity Card)
-  _ **NIR** (Personal Identification Number (INSEE))
-  _ **PAS** (Passport) \* **SIRE** (Company ID (SIREN/SIRET))
-  </td>
+* **CNI** (National Identity Card)
+* **NIR** (Personal Identification Number (INSEE))
+* **PAS** (Passport)
+* **SIRE** (Company ID (SIREN/SIRET))
+</td>
 
       <td>
         33
@@ -5738,9 +5590,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         995
@@ -5766,13 +5617,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **EAT** (Electronic Residence Permit)
-  _ **IDNR** (Tax Identification Number (Person))
-  _ **PAS** (Passport)
-  _ **PAUS** (National Identity Card)
-  _ **USTI** (VAT Identification Number (Entity))
-  </td>
+* **EAT** (Electronic Residence Permit)
+* **IDNR** (Tax Identification Number (Person))
+* **PAS** (Passport)
+* **PAUS** (National Identity Card)
+* **USTI** (VAT Identification Number (Entity))
+</td>
 
       <td>
         49
@@ -5798,9 +5648,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         350
@@ -5826,11 +5675,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **AFM** (Tax Identification Number)
-  _ **AMKA** (Social Security Number)
-  _ **GEMI** (Company Register Number) \* **PAS** (Passport)
-  </td>
+* **AFM** (Tax Identification Number)
+* **AMKA** (Social Security Number)
+* **GEMI** (Company Register Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         30
@@ -5856,9 +5705,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         299
@@ -5884,9 +5732,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         44
@@ -5912,9 +5759,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         36
@@ -5940,9 +5786,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         354
@@ -5968,11 +5813,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CRN** (Company Registration Number)
-  _ **PAS** (Passport)
-  _ **PPSN** (Personal Public Service Number) \* **VAT** (VAT Number)
-  </td>
+* **CRN** (Company Registration Number)
+* **PAS** (Passport)
+* **PPSN** (Personal Public Service Number)
+* **VAT** (VAT Number)
+</td>
 
       <td>
         353
@@ -5998,9 +5843,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         44
@@ -6026,11 +5870,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CF** (Tax Code (Person))
-  _ **CIE** (Electronic Identity Card)
-  _ **PAS** (Passport) \* **PIVA** (VAT Number (Entity))
-  </td>
+* **CF** (Tax Code (Person))
+* **CIE** (Electronic Identity Card)
+* **PAS** (Passport)
+* **PIVA** (VAT Number (Entity))
+</td>
 
       <td>
         39
@@ -6056,9 +5900,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         44
@@ -6084,9 +5927,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         371
@@ -6112,9 +5954,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         423
@@ -6140,9 +5981,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         370
@@ -6168,9 +6008,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         352
@@ -6196,9 +6035,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         356
@@ -6224,9 +6062,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         373
@@ -6252,9 +6089,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         377
@@ -6280,9 +6116,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         382
@@ -6308,11 +6143,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BSN** (Citizen Service Number)
-  _ **BTW** (VAT Number)
-  _ **KVK** (Chamber of Commerce Number) \* **PAS** (Passport)
-  </td>
+* **BSN** (Citizen Service Number)
+* **BTW** (VAT Number)
+* **KVK** (Chamber of Commerce Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         31
@@ -6338,9 +6173,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         389
@@ -6366,11 +6200,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **DNR** (Temporary ID Number (D-number))
-  _ **FNR** (National Identity Number)
-  _ **ORG** (Organization Number) \* **PAS** (Passport)
-  </td>
+* **DNR** (Temporary ID Number (D-number))
+* **FNR** (National Identity Number)
+* **ORG** (Organization Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         47
@@ -6396,11 +6230,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **NIP** (Tax Identification Number)
-  _ **PAS** (Passport)
-  _ **PESEL** (Personal ID Number (PESEL)) \* **REGON** (Statistical Number (REGON))
-  </td>
+* **NIP** (Tax Identification Number)
+* **PAS** (Passport)
+* **PESEL** (Personal ID Number (PESEL))
+* **REGON** (Statistical Number (REGON))
+</td>
 
       <td>
         48
@@ -6426,11 +6260,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CC** (Citizen Card)
-  _ **NIF** (Tax Identification Number)
-  _ **NIPC** (Company Tax Number) \* **PAS** (Passport)
-  </td>
+* **CC** (Citizen Card)
+* **NIF** (Tax Identification Number)
+* **NIPC** (Company Tax Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         351
@@ -6456,11 +6290,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CNP** (Personal Numeric Code)
-  _ **CUI** (Unique Registration Code (Entity))
-  _ **PAS** (Passport)
-  </td>
+* **CNP** (Personal Numeric Code)
+* **CUI** (Unique Registration Code (Entity))
+* **PAS** (Passport)
+</td>
 
       <td>
         40
@@ -6486,9 +6319,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         7
@@ -6514,9 +6346,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         378
@@ -6542,9 +6373,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         381
@@ -6570,9 +6400,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         421
@@ -6598,9 +6427,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         386
@@ -6626,11 +6454,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **DNI** (National Identity Document)
-  _ **NIE** (Foreigner Identity Number)
-  _ **NIF** (Tax ID (Person/Entity)) \* **PAS** (Passport)
-  </td>
+* **DNI** (National Identity Document)
+* **NIE** (Foreigner Identity Number)
+* **NIF** (Tax ID (Person/Entity))
+* **PAS** (Passport)
+</td>
 
       <td>
         34
@@ -6656,9 +6484,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         47
@@ -6684,11 +6511,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **ORG** (Organization Number)
-  _ **PAS** (Passport)
-  _ **PNR** (Personal Identity Number)
-  </td>
+* **ORG** (Organization Number)
+* **PAS** (Passport)
+* **PNR** (Personal Identity Number)
+</td>
 
       <td>
         46
@@ -6718,11 +6544,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **AHVN** (Social Security Number)
-  _ **PAS** (Passport)
-  _ **UID** (Company Identification Number)
-  </td>
+* **AHVN** (Social Security Number)
+* **PAS** (Passport)
+* **UID** (Company Identification Number)
+</td>
 
       <td>
         41
@@ -6748,13 +6573,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **MERS** (Company Registration (MERSIS))
-  _ **PAS** (Passport)
-  _ **TCKN** (Turkish ID Number)
-  _ **VKN** (Tax ID Number (Entity))
-  _ **YKN** (Foreigner ID Number)
-  </td>
+* **MERS** (Company Registration (MERSIS))
+* **PAS** (Passport)
+* **TCKN** (Turkish ID Number)
+* **VKN** (Tax ID Number (Entity))
+* **YKN** (Foreigner ID Number)
+</td>
 
       <td>
         90
@@ -6780,9 +6604,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         380
@@ -6808,13 +6631,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **BRP** (Biometric Residence Permit)
-  _ **CRN** (Company Registration Number)
-  _ **NINO** (National Insurance Number)
-  _ **PAS** (Passport)
-  _ **UTR** (Unique Taxpayer Reference)
-  </td>
+* **BRP** (Biometric Residence Permit)
+* **CRN** (Company Registration Number)
+* **NINO** (National Insurance Number)
+* **PAS** (Passport)
+* **UTR** (Unique Taxpayer Reference)
+</td>
 
       <td>
         44
@@ -6840,47 +6662,51 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
         <td>
           379
         </td>
       </tr>
 
-      <tr>
-        <td>
-          Bouvet Island
-        </td>
+      
+    <tr>
+      <td>
+        Åland Islands
+      </td>
 
-        <td>
-          `BV`
-        </td>
+      <td>
+        `AX`
+      </td>
 
-        <td>
-          `NOK`
-        </td>
+      <td>
+        `EUR`
+      </td>
 
-        <td>
-          2
-        </td>
+      <td>
+        2
+      </td>
 
-        <td>
-          * **PAS** (Passport)
-        </td>
+      <td>
+* **NIDC** (National ID Card)
+* **PAS** (Passport)
+</td>
 
-        <td>
-          47
-        </td>
-      </tr>
+      <td>
+        358
+      </td>
 
-  </tbody>
+    </tr>
+
+    </tbody>
   </Table>
+
+## Middle East
+
 
 **(1)** _The number of digits after the decimal separator_.
 
-## Middle East
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -6935,11 +6761,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CPR** (Personal Number (CPR))
-  _ **CRN** (Commercial Registration Number)
-  _ **PAS** (Passport) \* **VATN** (VAT Registration Number)
-  </td>
+* **CPR** (Personal Number (CPR))
+* **CRN** (Commercial Registration Number)
+* **PAS** (Passport)
+* **VATN** (VAT Registration Number)
+</td>
 
       <td>
         973
@@ -6965,9 +6791,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         98
@@ -6993,9 +6818,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         964
@@ -7021,11 +6845,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CNUM** (Company Number)
-  _ **PAS** (Passport)
-  _ **TEUD** (National ID)
-  </td>
+* **CNUM** (Company Number)
+* **PAS** (Passport)
+* **TEUD** (National ID)
+</td>
 
       <td>
         972
@@ -7051,9 +6874,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         962
@@ -7079,11 +6901,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CID** (Civil ID)
-  _ **CREG** (Commercial Registration Number)
-  _ **PAS** (Passport)
-  </td>
+* **CID** (Civil ID)
+* **CREG** (Commercial Registration Number)
+* **PAS** (Passport)
+</td>
 
       <td>
         965
@@ -7109,9 +6930,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         961
@@ -7137,11 +6957,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CID** (Civil ID)
-  _ **CREG** (Commercial Registration Number)
-  _ **PAS** (Passport) \* **VATN** (VAT Registration Number)
-  </td>
+* **CID** (Civil ID)
+* **CREG** (Commercial Registration Number)
+* **PAS** (Passport)
+* **VATN** (VAT Registration Number)
+</td>
 
       <td>
         968
@@ -7150,6 +6970,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Palestine, State of
+        </td>
+
+        <td>
+          `PS`
+        </td>
+
+        <td>
+          `ILS`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          970
+        </td>
+      </tr>
+
+  <tr>
       <td>
         Qatar
       </td>
@@ -7167,11 +7013,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CREG** (Commercial Registration Number)
-  _ **PAS** (Passport)
-  _ **QID** (Qatar ID) \* **TRN** (Tax Registration Number)
-  </td>
+* **CREG** (Commercial Registration Number)
+* **PAS** (Passport)
+* **QID** (Qatar ID)
+* **TRN** (Tax Registration Number)
+</td>
 
       <td>
         974
@@ -7197,13 +7043,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **CRN** (Commercial Registration Number)
-  _ **IQAM** (Iqama (Resident ID))
-  _ **NID** (National ID)
-  _ **PAS** (Passport)
-  _ **VATN** (VAT Registration Number)
-  </td>
+* **CRN** (Commercial Registration Number)
+* **IQAM** (Iqama (Resident ID))
+* **NID** (National ID)
+* **PAS** (Passport)
+* **VATN** (VAT Registration Number)
+</td>
 
       <td>
         966
@@ -7229,9 +7074,8 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
       <td>
         963
@@ -7257,11 +7101,11 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **EID** (Emirates ID)
-  _ **PAS** (Passport)
-  _ **TLN** (Trade Licence Number) \* **TRN** (Tax Registration Number)
-  </td>
+* **EID** (Emirates ID)
+* **PAS** (Passport)
+* **TLN** (Trade Licence Number)
+* **TRN** (Tax Registration Number)
+</td>
 
       <td>
         971
@@ -7287,45 +7131,16 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-
-- **PAS** (Passport)
-  </td>
+* **PAS** (Passport)
+</td>
 
         <td>
           967
         </td>
       </tr>
 
-      <tr>
-        <td>
-          Palestine, State of
-        </td>
-
-        <td>
-          `PS`
-        </td>
-
-        <td>
-          `ILS`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-        </td>
-
-        <td>
-          970
-        </td>
-      </tr>
-
-  </tbody>
+      </tbody>
   </Table>
-
-**(1)** _The number of digits after the decimal separator_.
 
 <HTMLBlock>{`
 
@@ -7338,6 +7153,10 @@ On this page, you will find the country's information you need when using Yuno A
 `}</HTMLBlock>
 
 ## Antarctica
+
+
+**(1)** _The number of digits after the decimal separator_.
+
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -7393,7 +7212,7 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td>
         * **PAS** (Passport)
-      </td>
+</td>
 
       <td>
 

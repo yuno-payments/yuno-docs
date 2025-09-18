@@ -32,7 +32,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `</body>
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno`constant.
 
@@ -50,7 +50,7 @@ The following table lists all required parameters and their descriptions. For op
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                                                                                  |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                        |
-| `country_code`                    | Determines the country for which the payment process is being configured. See [Country coverage](doc:country-coverage-yuno-sdk) for supported countries and their codes.                                          |
+| `countryCode`                     | Determines the country for which the payment process is being configured. See [Country coverage](doc:country-coverage-yuno-sdk) for supported countries and their codes.                                          |
 | `language`                        | Defines the language for payment forms. Options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul>. |
 | `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                                                                       |
 | `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                                                         |
@@ -62,7 +62,7 @@ The following table lists all required parameters and their descriptions. For op
 yuno.startCheckout({
   checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
   elementSelector: "#root",
-  country_code: "FR",
+  countryCode: "FR",
   language: "fr",
   showLoading: true,
   issuersFormEnable: true,
