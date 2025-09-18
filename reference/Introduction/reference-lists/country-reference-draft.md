@@ -24,6 +24,10 @@ On this page, you will find the country's information you need when using Yuno A
 
 ## Americas
 
+
+**(1)** _The number of digits after the decimal separator_.
+
+
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
@@ -310,6 +314,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td style={{ textAlign: "left" }}>
+          Bonaire, Sint Eustatius and Saba
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `BQ`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `USD`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          599
+        </td>
+      </tr>
+
+      <tr>
       <td style={{ textAlign: "left" }}>
         Brazil
       </td>
@@ -1144,6 +1174,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td style={{ textAlign: "left" }}>
+          Saint Barthélemy
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `BL`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `EUR`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          590
+        </td>
+      </tr>
+
+      <tr>
       <td style={{ textAlign: "left" }}>
         Saint Kitts And Nevis
       </td>
@@ -1279,6 +1335,58 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td style={{ textAlign: "left" }}>
+          Sint Maarten (Dutch part)
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `SX`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `ANG`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          1
+        </td>
+      </tr>
+
+      <tr>
+        <td style={{ textAlign: "left" }}>
+          South Georgia and the South Sandwich Islands
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `GS`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          `GBP`
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          2
+        </td>
+
+        <td style={{ textAlign: "left" }}>
+          * **PAS** (Passport)
+</td>
+
+        <td style={{ textAlign: "left" }}>
+          500
+        </td>
+      </tr>
+
+  <tr>
       <td style={{ textAlign: "left" }}>
         Suriname
       </td>
@@ -1529,116 +1637,14 @@ On this page, you will find the country's information you need when using Yuno A
         </td>
       </tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          Bonaire, Sint Eustatius and Saba
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `BQ`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `USD`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-</td>
-
-        <td style={{ textAlign: "left" }}>
-          599
-        </td>
-      </tr>
-
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          Saint Barthélemy
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `BL`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `EUR`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-</td>
-
-        <td style={{ textAlign: "left" }}>
-          590
-        </td>
-      </tr>
-
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          Sint Maarten (Dutch part)
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `SX`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `ANG`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-</td>
-
-        <td style={{ textAlign: "left" }}>
-          1
-        </td>
-      </tr>
-
-      <tr>
-        <td style={{ textAlign: "left" }}>
-          South Georgia and the South Sandwich Islands
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `GS`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          `GBP`
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          2
-        </td>
-
-        <td style={{ textAlign: "left" }}>
-          * **PAS** (Passport)
-</td>
-
-        <td style={{ textAlign: "left" }}>
-          500
-        </td>
-      </tr>
-
-  </tbody>
+      </tbody>
   </Table>
+
+## Africa
+
 
 **(1)** _The number of digits after the decimal separator_.
 
-## Africa
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -1973,6 +1979,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Côte d'Ivoire
+        </td>
+
+        <td>
+          `CI`
+        </td>
+
+        <td>
+          `XOF`
+        </td>
+
+        <td>
+          0
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          225
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Democratic Republic Of Congo
       </td>
@@ -2250,33 +2282,6 @@ On this page, you will find the country's information you need when using Yuno A
 
     <tr>
       <td>
-        Guinea-bissau
-      </td>
-
-      <td>
-        `GW`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-* **PAS** (Passport)
-</td>
-
-      <td>
-        245
-      </td>
-
-    </tr>
-
-    <tr>
-      <td>
         Guinea
       </td>
 
@@ -2298,6 +2303,33 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td>
         224
+      </td>
+
+    </tr>
+
+    <tr>
+      <td>
+        Guinea-bissau
+      </td>
+
+      <td>
+        `GW`
+      </td>
+
+      <td>
+        `XOF`
+      </td>
+
+      <td>
+        0
+      </td>
+
+      <td>
+* **PAS** (Passport)
+</td>
+
+      <td>
+        245
       </td>
 
     </tr>
@@ -2830,33 +2862,6 @@ On this page, you will find the country's information you need when using Yuno A
 
     <tr>
       <td>
-        São Tomé and Príncipe
-      </td>
-
-      <td>
-        `ST`
-      </td>
-
-      <td>
-        `STN`
-</td>
-
-      <td>
-        2
-</td>
-
-      <td>
-* **PAS** (Passport)
-</td>
-
-      <td>
-        239
-      </td>
-
-    </tr>
-
-    <tr>
-      <td>
         Senegal
       </td>
 
@@ -3076,6 +3081,33 @@ On this page, you will find the country's information you need when using Yuno A
 
     <tr>
       <td>
+        São Tomé and Príncipe
+      </td>
+
+      <td>
+        `ST`
+      </td>
+
+      <td>
+        `STN`
+</td>
+
+      <td>
+        2
+</td>
+
+      <td>
+* **PAS** (Passport)
+</td>
+
+      <td>
+        239
+      </td>
+
+    </tr>
+
+    <tr>
+      <td>
         Tanzania
       </td>
 
@@ -3237,32 +3269,6 @@ On this page, you will find the country's information you need when using Yuno A
 
       <tr>
         <td>
-          Côte d'Ivoire
-        </td>
-
-        <td>
-          `CI`
-        </td>
-
-        <td>
-          `XOF`
-        </td>
-
-        <td>
-          0
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          225
-        </td>
-      </tr>
-
-      <tr>
-        <td>
           Zimbabwe
         </td>
 
@@ -3290,9 +3296,11 @@ On this page, you will find the country's information you need when using Yuno A
   </tbody>
   </Table>
 
+## Asia Pacific
+
+
 **(1)** _The number of digits after the decimal separator_.
 
-## Asia Pacific
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -3358,6 +3366,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          American Samoa
+        </td>
+
+        <td>
+          `AS`
+        </td>
+
+        <td>
+          `USD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          1
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Armenia
       </td>
@@ -3499,6 +3533,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          British Indian Ocean Territory
+        </td>
+
+        <td>
+          `IO`
+        </td>
+
+        <td>
+          `USD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          246
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Brunei Darussalam
       </td>
@@ -3745,6 +3805,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Heard Island and McDonald Islands
+        </td>
+
+        <td>
+          `HM`
+        </td>
+
+        <td>
+          `AUD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          672
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Hong Kong
       </td>
@@ -3920,6 +4006,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Korea, Democratic People's Republic of
+        </td>
+
+        <td>
+          `KP`
+        </td>
+
+        <td>
+          `KPW`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          850
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Kyrgyzstan
       </td>
@@ -3947,6 +4059,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Lao People's Democratic Republic
+        </td>
+
+        <td>
+          `LA`
+        </td>
+
+        <td>
+          `LAK`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          856
+        </td>
+      </tr>
+
+      <tr>
       <td>
         Macao
       </td>
@@ -4697,6 +4835,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Timor-Leste
+        </td>
+
+        <td>
+          `TL`
+        </td>
+
+        <td>
+          `USD`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          670
+        </td>
+      </tr>
+
+  <tr>
       <td>
         Tokelau
       </td>
@@ -4914,168 +5078,14 @@ On this page, you will find the country's information you need when using Yuno A
         </td>
       </tr>
 
-      <tr>
-        <td>
-          American Samoa
-        </td>
-
-        <td>
-          `AS`
-        </td>
-
-        <td>
-          `USD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          1
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          British Indian Ocean Territory
-        </td>
-
-        <td>
-          `IO`
-        </td>
-
-        <td>
-          `USD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          246
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Heard Island and McDonald Islands
-        </td>
-
-        <td>
-          `HM`
-        </td>
-
-        <td>
-          `AUD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          672
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Korea, Democratic People's Republic of
-        </td>
-
-        <td>
-          `KP`
-        </td>
-
-        <td>
-          `KPW`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          850
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Lao People's Democratic Republic
-        </td>
-
-        <td>
-          `LA`
-        </td>
-
-        <td>
-          `LAK`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          856
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Timor-Leste
-        </td>
-
-        <td>
-          `TL`
-        </td>
-
-        <td>
-          `USD`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          670
-        </td>
-      </tr>
-
-  </tbody>
+      </tbody>
   </Table>
+
+## Europe
+
 
 **(1)** _The number of digits after the decimal separator_.
 
-## Europe
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -5111,36 +5121,7 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>
-    <tr>
-      <td>
-        Åland Islands
-      </td>
-
-      <td>
-        `AX`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-* **NIDC** (National ID Card)
-* **PAS** (Passport)
-</td>
-
-      <td>
-        358
-      </td>
-
-    </tr>
-
-    <tr>
+  <tbody><tr>
       <td>
         Albania
       </td>
@@ -5310,6 +5291,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Bouvet Island
+        </td>
+
+        <td>
+          `BV`
+        </td>
+
+        <td>
+          `NOK`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          47
+        </td>
+      </tr>
+
+  <tr>
       <td>
         Bulgaria
       </td>
@@ -6663,38 +6670,43 @@ On this page, you will find the country's information you need when using Yuno A
         </td>
       </tr>
 
-      <tr>
-        <td>
-          Bouvet Island
-        </td>
+      
+    <tr>
+      <td>
+        Åland Islands
+      </td>
 
-        <td>
-          `BV`
-        </td>
+      <td>
+        `AX`
+      </td>
 
-        <td>
-          `NOK`
-        </td>
+      <td>
+        `EUR`
+      </td>
 
-        <td>
-          2
-        </td>
+      <td>
+        2
+      </td>
 
-        <td>
-          * **PAS** (Passport)
+      <td>
+* **NIDC** (National ID Card)
+* **PAS** (Passport)
 </td>
 
-        <td>
-          47
-        </td>
-      </tr>
+      <td>
+        358
+      </td>
 
-  </tbody>
+    </tr>
+
+    </tbody>
   </Table>
+
+## Middle East
+
 
 **(1)** _The number of digits after the decimal separator_.
 
-## Middle East
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -6958,6 +6970,32 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
 
     <tr>
+        <td>
+          Palestine, State of
+        </td>
+
+        <td>
+          `PS`
+        </td>
+
+        <td>
+          `ILS`
+        </td>
+
+        <td>
+          2
+        </td>
+
+        <td>
+          * **PAS** (Passport)
+</td>
+
+        <td>
+          970
+        </td>
+      </tr>
+
+  <tr>
       <td>
         Qatar
       </td>
@@ -7101,36 +7139,8 @@ On this page, you will find the country's information you need when using Yuno A
         </td>
       </tr>
 
-      <tr>
-        <td>
-          Palestine, State of
-        </td>
-
-        <td>
-          `PS`
-        </td>
-
-        <td>
-          `ILS`
-        </td>
-
-        <td>
-          2
-        </td>
-
-        <td>
-          * **PAS** (Passport)
-</td>
-
-        <td>
-          970
-        </td>
-      </tr>
-
-  </tbody>
+      </tbody>
   </Table>
-
-**(1)** _The number of digits after the decimal separator_.
 
 <HTMLBlock>{`
 
@@ -7143,6 +7153,10 @@ On this page, you will find the country's information you need when using Yuno A
 `}</HTMLBlock>
 
 ## Antarctica
+
+
+**(1)** _The number of digits after the decimal separator_.
+
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
