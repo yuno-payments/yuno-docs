@@ -28,113 +28,113 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
-    <tr>
-      <th style={{ textAlign: "left" }}>
+<tr>
+<th style={{ textAlign: "left" }}>
         Name
-      </th>
+</th>
 
-      <th style={{ textAlign: "left" }}>
+<th style={{ textAlign: "left" }}>
         Country code (ISO 3166-1 Alpha 2)
-      </th>
+</th>
 
-      <th style={{ textAlign: "left" }}>
+<th style={{ textAlign: "left" }}>
         Currency code (ISO 4217 Alpha 3)
-      </th>
+</th>
 
-      <th style={{ textAlign: "left" }}>
+<th style={{ textAlign: "left" }}>
         Currency decimal digits
 
-        <sup>
+<sup>
           (1)
-        </sup>
-      </th>
+</sup>
+</th>
 
-      <th style={{ textAlign: "left" }}>
+<th style={{ textAlign: "left" }}>
         Document type
-      </th>
+</th>
 
-      <th style={{ textAlign: "left" }}>
+<th style={{ textAlign: "left" }}>
         Phone country calling code
-      </th>
-    </tr>
+</th>
+</tr>
 
   </thead>
 
   <tbody>
-    <tr>
-      <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
         Anguilla
-      </td>
+</td>
 
-      <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
         `AI`
-      </td>
+</td>
 
-      <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
         `XCD`
-      </td>
+</td>
 
-      <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
         2
-      </td>
+</td>
 
-      <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Antigua And Barbuda
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `AG`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `XCD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Argentina
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `AR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `ARS`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CUIL** (Tax ID (Person))
 - **CUIT** (Tax ID (Entity))
@@ -142,229 +142,229 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           54
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Aruba
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `AW`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `AWG`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           297
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Bahamas
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BS`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BSD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Barbados
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BB`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BBD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Belize
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BZ`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BZD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           501
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Bermuda
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BM`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BMD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Bolivia
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BO`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BOB`\
           `BOV`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2\
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CI** (Identity Card)
 - **NIT** (Tax ID (Entity))
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           591
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
             Bonaire, Sint Eustatius and Saba
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `BQ`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `USD`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             2
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             * **PAS** (Passport)
 
   </td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             599
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Brazil
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `BRL`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CNH** (Driver Licence)
 - **CNPJ** (Tax ID (Entity))
@@ -373,30 +373,30 @@ On this page, you will find the country's information you need when using Yuno A
 - **RG** (Identity Card)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           55
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Canada
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CA`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CAD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **BNE** (Business Number (Entity))
 - **DLIC** (Driver Licence)
@@ -405,92 +405,92 @@ On this page, you will find the country's information you need when using Yuno A
 - **SIN** (Social Insurance Number)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Cayman Islands
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `KY`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `KYD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Chile
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CL`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CLP`\
           `CLF`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           0\
           0
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
 - **RUN** (National Identification Number)
 - **RUT** (Tax ID (Person/Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           56
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Colombia
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CO`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `COP`\
           `COU`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2\
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CC** (Citizenship Card)
 - **CE** (Foreigner ID)
@@ -499,30 +499,30 @@ On this page, you will find the country's information you need when using Yuno A
 - **TI** (Identity Card (minors))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           57
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Costa Rica
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CRC`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CI** (Identity Card)
 - **CJUR** (Company ID)
@@ -530,494 +530,494 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           506
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Cuba
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CU`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CUP`\
           `CUC`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2\
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           53
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Curacao
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `CW`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `ANG`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           599
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Dominica
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `DM`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `XCD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Dominican Republic
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `DO`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `DOP`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CI** (Identity and Electoral Card)
 - **PAS** (Passport)
 - **RNC** (Company Tax Number)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Ecuador
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `EC`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CI** (Identity Card)
 - **PAS** (Passport)
 - **RUC** (Tax ID (Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           593
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           El Salvador
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `SV`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **DUI** (Unique Identity Document)
 - **NIT** (Tax Identification Number)
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           503
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Falkland Islands
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `FK`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `FKP`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           500
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           French Guiana
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `GF`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `EUR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           594
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Grenada
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `GD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `XCD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           473
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Guadeloupe
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `GP`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `EUR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           590
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Guatemala
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `GT`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `GTQ`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **DPI** (Personal Identification Document)
 - **NIT** (Tax ID (Person/Entity))
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           502
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Guyana
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `GY`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `GYD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           592
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Haiti
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `HT`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `HTG`\
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2\
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           509
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Honduras
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `HN`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `HNL`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **DNI** (National Identity Document)
 - **PAS** (Passport)
 - **TRN** (Tax Number)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           504
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Jamaica
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `JM`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `JMD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Martinique
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `MQ`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `EUR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           596
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Mexico
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `MX`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `MXN`\
           `MXV`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2\
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CURP** (Population ID Code)
 - **INE** (Voter ID)
@@ -1025,150 +1025,150 @@ On this page, you will find the country's information you need when using Yuno A
 - **RFC** (Tax ID (Person/Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           52
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Montserrat
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `MS`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `XCD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Nicaragua
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `NI`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `NIO`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CI** (Identity Card)
 - **PAS** (Passport)
 - **RUC** (Tax ID (Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           505
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Panama
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PA`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PAB`\
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2\
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CIP** (Identity Card)
 - **PAS** (Passport)
 - **RUC** (Tax ID (Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           507
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Paraguay
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PY`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PYG`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           0
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CIC** (Identity Card)
 - **PAS** (Passport)
 - **RUC** (Tax ID (Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           595
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Peru
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PE`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PEN`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CE** (Foreigner ID Card)
 - **DNI** (National Identity Document)
@@ -1176,363 +1176,363 @@ On this page, you will find the country's information you need when using Yuno A
 - **RUC** (Tax ID (Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           51
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Puerto Rico
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
             Saint Barthélemy
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `BL`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `EUR`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             2
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             * **PAS** (Passport)
 
   </td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             590
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Saint Kitts And Nevis
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `KN`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `XCD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Saint Lucia
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `LC`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `XCD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Saint Martin
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `MF`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `EUR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           590
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Saint Pierre And Miquelon
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `PM`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `EUR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           508
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Saint Vincent And The Grenadines
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `VC`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `XCD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
             Sint Maarten (Dutch part)
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `SX`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `ANG`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             2
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             * **PAS** (Passport)
 
   </td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             1
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-          <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
             South Georgia and the South Sandwich Islands
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `GS`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             `GBP`
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             2
-          </td>
+</td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             * **PAS** (Passport)
 
   </td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             500
-          </td>
-        </tr>
+</td>
+</tr>
 
-    <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Suriname
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `SR`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `SRD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           597
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Trinidad And Tobago
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `TT`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `TTD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Turks And Caicos Islands
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `TC`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           United States
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `US`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **DLIC** (Driver Licence)
 - **EIN** (Employer Identification Number)
@@ -1542,158 +1542,158 @@ On this page, you will find the country's information you need when using Yuno A
 - **SSN** (Social Security Number)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           United States Minor Outlying Islands
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `UM`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Uruguay
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `UY`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `UYU`\
           `UYI`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2\
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **CI** (Identity Card)
 - **PAS** (Passport)
 - **RUT** (Tax ID (Entity))
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           598
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Venezuela
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `VE`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `VES`
 
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
 
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           58
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Virgin Islands (British)
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `VG`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td style={{ textAlign: "left" }}>
+<tr>
+<td style={{ textAlign: "left" }}>
           Virgin Islands (US)
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `VI`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           `USD`
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
           2
-        </td>
+</td>
 
-        <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
 
 - **PAS** (Passport)
   </td>
 
-          <td style={{ textAlign: "left" }}>
+<td style={{ textAlign: "left" }}>
             1
-          </td>
-        </tr>
+</td>
+</tr>
 
-        </tbody>
+</tbody>
 
     </Table>
 
@@ -1703,448 +1703,448 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
-    <tr>
-      <th>
+<tr>
+<th>
         Name
-      </th>
+</th>
 
-      <th>
+<th>
         Country code (ISO 3166-1 Alpha 2)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency code (ISO 4217 Alpha 3)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency decimal digits
 
-        <sup>
+<sup>
           (1)
-        </sup>
-      </th>
+</sup>
+</th>
 
-      <th>
+<th>
         Document type
-      </th>
+</th>
 
-      <th>
+<th>
         Phone country calling code
-      </th>
-    </tr>
+</th>
+</tr>
 
   </thead>
 
   <tbody>
-    <tr>
-      <td>
+<tr>
+<td>
         Algeria
-      </td>
+</td>
 
-      <td>
+<td>
         `DZ`
-      </td>
+</td>
 
-      <td>
+<td>
         `DZD`
-      </td>
+</td>
 
-      <td>
+<td>
         2
-      </td>
+</td>
 
-      <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           213
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Angola
-        </td>
+</td>
 
-        <td>
+<td>
           `AO`
-        </td>
+</td>
 
-        <td>
+<td>
           `AOA`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           244
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Benin
-        </td>
+</td>
 
-        <td>
+<td>
           `BJ`
-        </td>
+</td>
 
-        <td>
+<td>
           `XOF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           229
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Botswana
-        </td>
+</td>
 
-        <td>
+<td>
           `BW`
-        </td>
+</td>
 
-        <td>
+<td>
           `BWP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           267
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Burkina Faso
-        </td>
+</td>
 
-        <td>
+<td>
           `BF`
-        </td>
+</td>
 
-        <td>
+<td>
           `XOF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           226
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Burundi
-        </td>
+</td>
 
-        <td>
+<td>
           `BI`
-        </td>
+</td>
 
-        <td>
+<td>
           `BIF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           257
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Cameroon
-        </td>
+</td>
 
-        <td>
+<td>
           `CM`
-        </td>
+</td>
 
-        <td>
+<td>
           `XAF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           237
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Cape Verde
-        </td>
+</td>
 
-        <td>
+<td>
           `CV`
-        </td>
+</td>
 
-        <td>
+<td>
           `CVE`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           238
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Central African Republic
-        </td>
+</td>
 
-        <td>
+<td>
           `CF`
-        </td>
+</td>
 
-        <td>
+<td>
           `XAF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           236
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Chad
-        </td>
+</td>
 
-        <td>
+<td>
           `TD`
-        </td>
+</td>
 
-        <td>
+<td>
           `XAF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           235
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Comoros
-        </td>
+</td>
 
-        <td>
+<td>
           `KM`
-        </td>
+</td>
 
-        <td>
+<td>
           `KMF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           269
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             Côte d'Ivoire
-          </td>
+</td>
 
-          <td>
+<td>
             `CI`
-          </td>
+</td>
 
-          <td>
+<td>
             `XOF`
-          </td>
+</td>
 
-          <td>
+<td>
             0
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             225
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td>
+<tr>
+<td>
           Democratic Republic Of Congo
-        </td>
+</td>
 
-        <td>
+<td>
           `CD`
-        </td>
+</td>
 
-        <td>
+<td>
           `CDF`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           243
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Djibouti
-        </td>
+</td>
 
-        <td>
+<td>
           `DJ`
-        </td>
+</td>
 
-        <td>
+<td>
           `DJF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           253
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Egypt
-        </td>
+</td>
 
-        <td>
+<td>
           `EG`
-        </td>
+</td>
 
-        <td>
+<td>
           `EGP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CREG** (Commercial Registration Number)
 - **NID** (National ID Number)
@@ -2152,198 +2152,198 @@ On this page, you will find the country's information you need when using Yuno A
 - **TIN** (Tax Identification Number)
   </td>
 
-        <td>
+<td>
           20
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Equatorial Guinea
-        </td>
+</td>
 
-        <td>
+<td>
           `GQ`
-        </td>
+</td>
 
-        <td>
+<td>
           `XAF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           240
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Eritrea
-        </td>
+</td>
 
-        <td>
+<td>
           `ER`
-        </td>
+</td>
 
-        <td>
+<td>
           `ERN`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           291
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Ethiopia
-        </td>
+</td>
 
-        <td>
+<td>
           `ET`
-        </td>
+</td>
 
-        <td>
+<td>
           `ETB`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           251
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           French Southern Territories
-        </td>
+</td>
 
-        <td>
+<td>
           `TF`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           262
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Gabon Republic
-        </td>
+</td>
 
-        <td>
+<td>
           `GA`
-        </td>
+</td>
 
-        <td>
+<td>
           `XAF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           241
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Gambia
-        </td>
+</td>
 
-        <td>
+<td>
           `GM`
-        </td>
+</td>
 
-        <td>
+<td>
           `GMD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           220
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Ghana
-        </td>
+</td>
 
-        <td>
+<td>
           `GH`
-        </td>
+</td>
 
-        <td>
+<td>
           `GHS`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BRN** (Business Registration Number)
 - **GHID** (Ghana Card)
@@ -2351,86 +2351,86 @@ On this page, you will find the country's information you need when using Yuno A
 - **TIN** (Taxpayer Identification Number)
   </td>
 
-        <td>
+<td>
           233
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Guinea
-        </td>
+</td>
 
-        <td>
+<td>
           `GN`
-        </td>
+</td>
 
-        <td>
+<td>
           `GNF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           224
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Guinea-bissau
-        </td>
+</td>
 
-        <td>
+<td>
           `GW`
-        </td>
+</td>
 
-        <td>
+<td>
           `XOF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           245
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Kenya
-        </td>
+</td>
 
-        <td>
+<td>
           `KE`
-        </td>
+</td>
 
-        <td>
+<td>
           `KES`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BRN** (Business Registration Number)
 - **IDN** (National ID Number)
@@ -2438,400 +2438,400 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           254
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Lesotho
-        </td>
+</td>
 
-        <td>
+<td>
           `LS`
-        </td>
+</td>
 
-        <td>
+<td>
           `LSL`\
           `ZAR`
-        </td>
+</td>
 
-        <td>
+<td>
           2\
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           266
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Liberia
-        </td>
+</td>
 
-        <td>
+<td>
           `LR`
-        </td>
+</td>
 
-        <td>
+<td>
           `LRD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           231
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Libya
-        </td>
+</td>
 
-        <td>
+<td>
           `LY`
-        </td>
+</td>
 
-        <td>
+<td>
           `LYD`
-        </td>
+</td>
 
-        <td>
+<td>
           3
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           218
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Madagascar
-        </td>
+</td>
 
-        <td>
+<td>
           `MG`
-        </td>
+</td>
 
-        <td>
+<td>
           `MGA`
-        </td>
+</td>
 
-        <td>
+<td>
           0.7\[8]
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           261
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Malawi
-        </td>
+</td>
 
-        <td>
+<td>
           `MW`
-        </td>
+</td>
 
-        <td>
+<td>
           `MWK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           265
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Mali
-        </td>
+</td>
 
-        <td>
+<td>
           `ML`
-        </td>
+</td>
 
-        <td>
+<td>
           `XOF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           223
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Mauritania
-        </td>
+</td>
 
-        <td>
+<td>
           `MR`
-        </td>
+</td>
 
-        <td>
+<td>
           `MRO`
-        </td>
+</td>
 
-        <td>
+<td>
           0.7\[8]
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           222
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Mauritius
-        </td>
+</td>
 
-        <td>
+<td>
           `MU`
-        </td>
+</td>
 
-        <td>
+<td>
           `MUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           230
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Mayotte
-        </td>
+</td>
 
-        <td>
+<td>
           `YT`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           262
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Morocco
-        </td>
+</td>
 
-        <td>
+<td>
           `MA`
-        </td>
+</td>
 
-        <td>
+<td>
           `MAD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CIN** (National Identity Card)
 - **ICE** (Common Company Identifier)
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           212
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Mozambique
-        </td>
+</td>
 
-        <td>
+<td>
           `MZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `MZN`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           258
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Namibia
-        </td>
+</td>
 
-        <td>
+<td>
           `NA`
-        </td>
+</td>
 
-        <td>
+<td>
           `NAD`\
           `ZAR`
-        </td>
+</td>
 
-        <td>
+<td>
           2\
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           264
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Niger
-        </td>
+</td>
 
-        <td>
+<td>
           `NE`
-        </td>
+</td>
 
-        <td>
+<td>
           `XOF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           227
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Nigeria
-        </td>
+</td>
 
-        <td>
+<td>
           `NG`
-        </td>
+</td>
 
-        <td>
+<td>
           `NGN`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BVN** (Bank Verification Number)
 - **CACN** (Company Registration Number)
@@ -2840,254 +2840,254 @@ On this page, you will find the country's information you need when using Yuno A
 - **TIN** (Tax Identification Number)
   </td>
 
-        <td>
+<td>
           234
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Republic Of Congo
-        </td>
+</td>
 
-        <td>
+<td>
           `CG`
-        </td>
+</td>
 
-        <td>
+<td>
           `XAF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           242
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Reunion
-        </td>
+</td>
 
-        <td>
+<td>
           `RE`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           262
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Rwanda
-        </td>
+</td>
 
-        <td>
+<td>
           `RW`
-        </td>
+</td>
 
-        <td>
+<td>
           `RWF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           250
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Saint Helena, Ascension And Tristan Da Cunha
-        </td>
+</td>
 
-        <td>
+<td>
           `SH`
-        </td>
+</td>
 
-        <td>
+<td>
           `SHP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           290
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Senegal
-        </td>
+</td>
 
-        <td>
+<td>
           `SN`
-        </td>
+</td>
 
-        <td>
+<td>
           `XOF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           221
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Seychelles
-        </td>
+</td>
 
-        <td>
+<td>
           `SC`
-        </td>
+</td>
 
-        <td>
+<td>
           `SCR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           248
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Sierra Leone
-        </td>
+</td>
 
-        <td>
+<td>
           `SL`
-        </td>
+</td>
 
-        <td>
+<td>
           `SLL`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           232
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Somalia
-        </td>
+</td>
 
-        <td>
+<td>
           `SO`
-        </td>
+</td>
 
-        <td>
+<td>
           `SOS`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           252
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           South Africa
-        </td>
+</td>
 
-        <td>
+<td>
           `ZA`
-        </td>
+</td>
 
-        <td>
+<td>
           `ZAR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CIPC** (Company Registration Number)
 - **IDN** (Identity Number)
@@ -3095,321 +3095,321 @@ On this page, you will find the country's information you need when using Yuno A
 - **TRN** (Tax Reference Number)
   </td>
 
-        <td>
+<td>
           27
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           South Sudan
-        </td>
+</td>
 
-        <td>
+<td>
           `SS`
-        </td>
+</td>
 
-        <td>
+<td>
           `SSP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           211
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Sudan
-        </td>
+</td>
 
-        <td>
+<td>
           `SD`
-        </td>
+</td>
 
-        <td>
+<td>
           `SDG`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           249
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Swaziland
-        </td>
+</td>
 
-        <td>
+<td>
           `SZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `SZL`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           268
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           São Tomé and Príncipe
-        </td>
+</td>
 
-        <td>
+<td>
           `ST`
-        </td>
+</td>
 
-        <td>
+<td>
           `STN`
 
   </td>
 
-        <td>
+<td>
           2
 
   </td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           239
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Tanzania
-        </td>
+</td>
 
-        <td>
+<td>
           `TZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `TZS`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           255
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Togo
-        </td>
+</td>
 
-        <td>
+<td>
           `TG`
-        </td>
+</td>
 
-        <td>
+<td>
           `XOF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           228
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Tunisia
-        </td>
+</td>
 
-        <td>
+<td>
           `TN`
-        </td>
+</td>
 
-        <td>
+<td>
           `TND`
-        </td>
+</td>
 
-        <td>
+<td>
           3
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           216
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Uganda
-        </td>
+</td>
 
-        <td>
+<td>
           `UG`
-        </td>
+</td>
 
-        <td>
+<td>
           `UGX`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           256
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Western Sahara
-        </td>
+</td>
 
-        <td>
+<td>
           `EH`
-        </td>
+</td>
 
-        <td>
+<td>
           `MAD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           212
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Zambia
-        </td>
+</td>
 
-        <td>
+<td>
           `ZM`
-        </td>
+</td>
 
-        <td>
+<td>
           `ZMW`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-          <td>
+<td>
             260
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-          <td>
+<tr>
+<td>
             Zimbabwe
-          </td>
+</td>
 
-          <td>
+<td>
             `ZW`
-          </td>
+</td>
 
-          <td>
+<td>
             `ZWL`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             263
-          </td>
-        </tr>
+</td>
+</tr>
 
-    </tbody>
+</tbody>
     </Table>
 
 ## Asia Pacific
@@ -3418,141 +3418,141 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
-    <tr>
-      <th>
+<tr>
+<th>
         Name
-      </th>
+</th>
 
-      <th>
+<th>
         Country code (ISO 3166-1 Alpha 2)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency code (ISO 4217 Alpha 3)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency decimal digits
 
-        <sup>
+<sup>
           (1)
-        </sup>
-      </th>
+</sup>
+</th>
 
-      <th>
+<th>
         Document type
-      </th>
+</th>
 
-      <th>
+<th>
         Phone country calling code
-      </th>
-    </tr>
+</th>
+</tr>
 
   </thead>
 
   <tbody>
-    <tr>
-      <td>
+<tr>
+<td>
         Afghanistan
-      </td>
+</td>
 
-      <td>
+<td>
         `AF`
-      </td>
+</td>
 
-      <td>
+<td>
         `AFN`
-      </td>
+</td>
 
-      <td>
+<td>
         2
-      </td>
+</td>
 
-      <td>
+<td>
 
 - **PAS** (Passport)
 - **TAZK** (Tazkira (National ID))
   </td>
 
-        <td>
+<td>
           93
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             American Samoa
-          </td>
+</td>
 
-          <td>
+<td>
             `AS`
-          </td>
+</td>
 
-          <td>
+<td>
             `USD`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             1
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td>
+<tr>
+<td>
           Armenia
-        </td>
+</td>
 
-        <td>
+<td>
           `AM`
-        </td>
+</td>
 
-        <td>
+<td>
           `AMD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           374
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Australia
-        </td>
+</td>
 
-        <td>
+<td>
           `AU`
-        </td>
+</td>
 
-        <td>
+<td>
           `AUD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **ABN** (Australian Business Number)
 - **ACN** (Australian Company Number)
@@ -3561,199 +3561,199 @@ On this page, you will find the country's information you need when using Yuno A
 - **TFN** (Tax File Number)
   </td>
 
-        <td>
+<td>
           61
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Azerbaijan
-        </td>
+</td>
 
-        <td>
+<td>
           `AZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `AZN`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           994
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Bangladesh
-        </td>
+</td>
 
-        <td>
+<td>
           `BD`
-        </td>
+</td>
 
-        <td>
+<td>
           `BDT`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           880
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Bhutan
-        </td>
+</td>
 
-        <td>
+<td>
           `BT`
-        </td>
+</td>
 
-        <td>
+<td>
           `INR`\
           `BTN`
-        </td>
+</td>
 
-        <td>
+<td>
           2\
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           975
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             British Indian Ocean Territory
-          </td>
+</td>
 
-          <td>
+<td>
             `IO`
-          </td>
+</td>
 
-          <td>
+<td>
             `USD`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             246
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td>
+<tr>
+<td>
           Brunei Darussalam
-        </td>
+</td>
 
-        <td>
+<td>
           `BN`
-        </td>
+</td>
 
-        <td>
+<td>
           `BND`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           673
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Cambodia
-        </td>
+</td>
 
-        <td>
+<td>
           `KH`
-        </td>
+</td>
 
-        <td>
+<td>
           `KHR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           855
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           China
-        </td>
+</td>
 
-        <td>
+<td>
           `CN`
-        </td>
+</td>
 
-        <td>
+<td>
           `CNY`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **FPRD** (Foreign Permanent Resident ID)
 - **PAS** (Passport)
@@ -3761,255 +3761,255 @@ On this page, you will find the country's information you need when using Yuno A
 - **USCC** (Unified Social Credit Code)
   </td>
 
-        <td>
+<td>
           86
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Christmas Island
-        </td>
+</td>
 
-        <td>
+<td>
           `CX`
-        </td>
+</td>
 
-        <td>
+<td>
           `AUD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           61
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Cocos (Keeling) Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `CC`
-        </td>
+</td>
 
-        <td>
+<td>
           `AUD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           61
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Cook Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `CK`
-        </td>
+</td>
 
-        <td>
+<td>
           `NZD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           682
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Fiji
-        </td>
+</td>
 
-        <td>
+<td>
           `FJ`
-        </td>
+</td>
 
-        <td>
+<td>
           `FJD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           679
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           French Polynesia
-        </td>
+</td>
 
-        <td>
+<td>
           `PF`
-        </td>
+</td>
 
-        <td>
+<td>
           `XPF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           689
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Guam
-        </td>
+</td>
 
-        <td>
+<td>
           `GU`
-        </td>
+</td>
 
-        <td>
+<td>
           `USD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             Heard Island and McDonald Islands
-          </td>
+</td>
 
-          <td>
+<td>
             `HM`
-          </td>
+</td>
 
-          <td>
+<td>
             `AUD`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             672
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td>
+<tr>
+<td>
           Hong Kong
-        </td>
+</td>
 
-        <td>
+<td>
           `HK`
-        </td>
+</td>
 
-        <td>
+<td>
           `HKD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BRN** (Business Registration Number)
 - **HKID** (Hong Kong Identity Card)
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           852
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           India
-        </td>
+</td>
 
-        <td>
+<td>
           `IN`
-        </td>
+</td>
 
-        <td>
+<td>
           `INR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **AADH** (Aadhaar Number)
 - **CIN** (Corporate Identification Number)
@@ -4018,30 +4018,30 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           91
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Indonesia
-        </td>
+</td>
 
-        <td>
+<td>
           `ID`
-        </td>
+</td>
 
-        <td>
+<td>
           `IDR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **KTAS** (Limited Stay Permit Card)
 - **KTP** (National ID Card)
@@ -4050,30 +4050,30 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           62
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Japan
-        </td>
+</td>
 
-        <td>
+<td>
           `JP`
-        </td>
+</td>
 
-        <td>
+<td>
           `JPY`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **HOUJ** (Corporate Number)
 - **MYNO** (My Number (Individual Number))
@@ -4081,196 +4081,196 @@ On this page, you will find the country's information you need when using Yuno A
 - **ZAIR** (Residence Card)
   </td>
 
-        <td>
+<td>
           81
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Kazakhstan
-        </td>
+</td>
 
-        <td>
+<td>
           `KZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `KZT`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           7
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Kiribati
-        </td>
+</td>
 
-        <td>
+<td>
           `KI`
-        </td>
+</td>
 
-        <td>
+<td>
           `AUD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           686
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             Korea, Democratic People's Republic of
-          </td>
+</td>
 
-          <td>
+<td>
             `KP`
-          </td>
+</td>
 
-          <td>
+<td>
             `KPW`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             850
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td>
+<tr>
+<td>
           Kyrgyzstan
-        </td>
+</td>
 
-        <td>
+<td>
           `KG`
-        </td>
+</td>
 
-        <td>
+<td>
           `KGS`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           996
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             Lao People's Democratic Republic
-          </td>
+</td>
 
-          <td>
+<td>
             `LA`
-          </td>
+</td>
 
-          <td>
+<td>
             `LAK`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             856
-          </td>
-        </tr>
+</td>
+</tr>
 
-        <tr>
-        <td>
+<tr>
+<td>
           Macao
-        </td>
+</td>
 
-        <td>
+<td>
           `MO`
-        </td>
+</td>
 
-        <td>
+<td>
           `MOP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           853
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Malaysia
-        </td>
+</td>
 
-        <td>
+<td>
           `MY`
-        </td>
+</td>
 
-        <td>
+<td>
           `MYR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **NRIC** (National Registration Identity Card)
 - **PAS** (Passport)
@@ -4278,254 +4278,254 @@ On this page, you will find the country's information you need when using Yuno A
 - **TIN** (Tax Identification Number)
   </td>
 
-        <td>
+<td>
           60
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Maldives
-        </td>
+</td>
 
-        <td>
+<td>
           `MV`
-        </td>
+</td>
 
-        <td>
+<td>
           `MVR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           960
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Marshall Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `MH`
-        </td>
+</td>
 
-        <td>
+<td>
           `USD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           692
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Micronesia
-        </td>
+</td>
 
-        <td>
+<td>
           `FM`
-        </td>
+</td>
 
-        <td>
+<td>
           `USD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           691
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Mongolia
-        </td>
+</td>
 
-        <td>
+<td>
           `MN`
-        </td>
+</td>
 
-        <td>
+<td>
           `MNT`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           976
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Myanmar
-        </td>
+</td>
 
-        <td>
+<td>
           `MM`
-        </td>
+</td>
 
-        <td>
+<td>
           `MMK`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           95
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Nauru
-        </td>
+</td>
 
-        <td>
+<td>
           `NR`
-        </td>
+</td>
 
-        <td>
+<td>
           `AUD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           674
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Nepal
-        </td>
+</td>
 
-        <td>
+<td>
           `NP`
-        </td>
+</td>
 
-        <td>
+<td>
           `NPR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           977
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           New Caledonia
-        </td>
+</td>
 
-        <td>
+<td>
           `NC`
-        </td>
+</td>
 
-        <td>
+<td>
           `XPF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           687
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           New Zealand
-        </td>
+</td>
 
-        <td>
+<td>
           `NZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `NZD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **DLIC** (Driver Licence)
 - **IRD** (Inland Revenue Number)
@@ -4533,198 +4533,198 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           64
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Niue
-        </td>
+</td>
 
-        <td>
+<td>
           `NU`
-        </td>
+</td>
 
-        <td>
+<td>
           `NZD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           683
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Norfolk Island
-        </td>
+</td>
 
-        <td>
+<td>
           `NF`
-        </td>
+</td>
 
-        <td>
+<td>
           `AUD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           672
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Northern Mariana Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `MP`
-        </td>
+</td>
 
-        <td>
+<td>
           `USD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           1
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Pakistan
-        </td>
+</td>
 
-        <td>
+<td>
           `PK`
-        </td>
+</td>
 
-        <td>
+<td>
           `PKR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           92
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Palau
-        </td>
+</td>
 
-        <td>
+<td>
           `PW`
-        </td>
+</td>
 
-        <td>
+<td>
           `USD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           680
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Papua New Guinea
-        </td>
+</td>
 
-        <td>
+<td>
           `PG`
-        </td>
+</td>
 
-        <td>
+<td>
           `PGK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           675
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Philippines
-        </td>
+</td>
 
-        <td>
+<td>
           `PH`
-        </td>
+</td>
 
-        <td>
+<td>
           `PHP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
 - **PSN** (PhilSys Number)
@@ -4732,86 +4732,86 @@ On this page, you will find the country's information you need when using Yuno A
 - **UMID** (Unified Multi-Purpose ID)
   </td>
 
-        <td>
+<td>
           63
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Pitcairn Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `PN`
-        </td>
+</td>
 
-        <td>
+<td>
           `NZD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           872
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Samoa
-        </td>
+</td>
 
-        <td>
+<td>
           `WS`
-        </td>
+</td>
 
-        <td>
+<td>
           `WST`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           685
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Singapore
-        </td>
+</td>
 
-        <td>
+<td>
           `SG`
-        </td>
+</td>
 
-        <td>
+<td>
           `SGD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **FIN** (Foreign Identification Number)
 - **NRIC** (National Registration Identity Card)
@@ -4819,58 +4819,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **UEN** (Unique Entity Number)
   </td>
 
-        <td>
+<td>
           65
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Solomon Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `SB`
-        </td>
+</td>
 
-        <td>
+<td>
           `SBD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           677
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           South Korea
-        </td>
+</td>
 
-        <td>
+<td>
           `KR`
-        </td>
+</td>
 
-        <td>
+<td>
           `KRW`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **ARC** (Alien Registration Card)
 - **BRN** (Business Registration Number)
@@ -4878,58 +4878,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **RRN** (Resident Registration Number)
   </td>
 
-        <td>
+<td>
           82
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Sri Lanka
-        </td>
+</td>
 
-        <td>
+<td>
           `LK`
-        </td>
+</td>
 
-        <td>
+<td>
           `LKR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           94
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Taiwan
-        </td>
+</td>
 
-        <td>
+<td>
           `TW`
-        </td>
+</td>
 
-        <td>
+<td>
           `TWD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **ARC** (Alien Resident Certificate)
 - **GUI** (Unified Business Number)
@@ -4937,58 +4937,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **TWID** (National ID Card)
   </td>
 
-        <td>
+<td>
           886
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Tajikistan
-        </td>
+</td>
 
-        <td>
+<td>
           `TJ`
-        </td>
+</td>
 
-        <td>
+<td>
           `TJS`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           992
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Thailand
-        </td>
+</td>
 
-        <td>
+<td>
           `TH`
-        </td>
+</td>
 
-        <td>
+<td>
           `THB`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BRN** (Business Registration Number)
 - **NID** (National ID Number)
@@ -4996,225 +4996,225 @@ On this page, you will find the country's information you need when using Yuno A
 - **TAX** (Tax Identification Number)
   </td>
 
-        <td>
+<td>
           66
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             Timor-Leste
-          </td>
+</td>
 
-          <td>
+<td>
             `TL`
-          </td>
+</td>
 
-          <td>
+<td>
             `USD`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             670
-          </td>
-        </tr>
+</td>
+</tr>
 
-    <tr>
-        <td>
+<tr>
+<td>
           Tokelau
-        </td>
+</td>
 
-        <td>
+<td>
           `TK`
-        </td>
+</td>
 
-        <td>
+<td>
           `NZD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           690
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Tonga
-        </td>
+</td>
 
-        <td>
+<td>
           `TO`
-        </td>
+</td>
 
-        <td>
+<td>
           `TOP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           676
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Turkmenistan
-        </td>
+</td>
 
-        <td>
+<td>
           `TM`
-        </td>
+</td>
 
-        <td>
+<td>
           `TMT`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           993
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Tuvalu
-        </td>
+</td>
 
-        <td>
+<td>
           `TV`
-        </td>
+</td>
 
-        <td>
+<td>
           `AUD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           688
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Uzbekistan
-        </td>
+</td>
 
-        <td>
+<td>
           `UZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `UZS`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           998
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Vanuatu
-        </td>
+</td>
 
-        <td>
+<td>
           `VU`
-        </td>
+</td>
 
-        <td>
+<td>
           `VUV`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           678
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Vietnam
-        </td>
+</td>
 
-        <td>
+<td>
           `VN`
-        </td>
+</td>
 
-        <td>
+<td>
           `VND`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CCCD** (Citizen ID Card)
 - **CMND** (Identity Card (legacy))
@@ -5222,40 +5222,40 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           84
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Wallis and Futuna
-        </td>
+</td>
 
-        <td>
+<td>
           `WF`
-        </td>
+</td>
 
-        <td>
+<td>
           `XPF`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-          <td>
+<td>
             681
-          </td>
-        </tr>
+</td>
+</tr>
 
-        </tbody>
+</tbody>
 
     </Table>
 
@@ -5265,113 +5265,113 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
-    <tr>
-      <th>
+<tr>
+<th>
         Name
-      </th>
+</th>
 
-      <th>
+<th>
         Country code (ISO 3166-1 Alpha 2)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency code (ISO 4217 Alpha 3)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency decimal digits
 
-        <sup>
+<sup>
           (1)
-        </sup>
-      </th>
+</sup>
+</th>
 
-      <th>
+<th>
         Document type
-      </th>
+</th>
 
-      <th>
+<th>
         Phone country calling code
-      </th>
-    </tr>
+</th>
+</tr>
 
   </thead>
 
   <tbody><tr>
-      <td>
+<td>
         Albania
-      </td>
+</td>
 
-      <td>
+<td>
         `AL`
-      </td>
+</td>
 
-      <td>
+<td>
         `ALL`
-      </td>
+</td>
 
-      <td>
+<td>
         2
-      </td>
+</td>
 
-      <td>
+<td>
 
 - **EIDC** (Electronic Identity Card)
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           355
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Andorra
-        </td>
+</td>
 
-        <td>
+<td>
           `AD`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           376
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Austria
-        </td>
+</td>
 
-        <td>
+<td>
           `AT`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
 - **SVNR** (Social Insurance Number)
@@ -5379,60 +5379,60 @@ On this page, you will find the country's information you need when using Yuno A
 - **ZMRN** (Central Register Number)
   </td>
 
-        <td>
+<td>
           43
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Belarus
-        </td>
+</td>
 
-        <td>
+<td>
           `BY`
-        </td>
+</td>
 
-        <td>
+<td>
           `BYN`
 
   </td>
 
-        <td>
+<td>
           2
 
   </td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           375
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Belgium
-        </td>
+</td>
 
-        <td>
+<td>
           `BE`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BCE** (Company Number)
 - **EID** (Electronic ID Card)
@@ -5440,85 +5440,85 @@ On this page, you will find the country's information you need when using Yuno A
 - **RRN** (National Register Number)
   </td>
 
-        <td>
+<td>
           32
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Bosnia & Herzegovina
-        </td>
+</td>
 
-        <td>
+<td>
           `BA`
-        </td>
+</td>
 
-        <td>
+<td>
           `BAM`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           387
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             Bouvet Island
-          </td>
+</td>
 
-          <td>
+<td>
             `BV`
-          </td>
+</td>
 
-          <td>
+<td>
             `NOK`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             47
-          </td>
-        </tr>
+</td>
+</tr>
 
-    <tr>
-        <td>
+<tr>
+<td>
           Bulgaria
-        </td>
+</td>
 
-        <td>
+<td>
           `BG`
-        </td>
+</td>
 
-        <td>
+<td>
           `BGN`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **EGN** (Personal Number)
 - **LNC** (Foreigner Personal Number)
@@ -5526,88 +5526,88 @@ On this page, you will find the country's information you need when using Yuno A
 - **UIC** (Unified ID Code (Entity))
   </td>
 
-        <td>
+<td>
           359
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Croatia
-        </td>
+</td>
 
-        <td>
+<td>
           `HR`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
 
   </td>
 
-        <td>
+<td>
           2
 
   </td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           385
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Cyprus
-        </td>
+</td>
 
-        <td>
+<td>
           `CY`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           357
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Czech Republic
-        </td>
+</td>
 
-        <td>
+<td>
           `CZ`
-        </td>
+</td>
 
-        <td>
+<td>
           `VZK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **DIC** (Tax Identification Number)
 - **ICO** (Company Number)
@@ -5615,146 +5615,146 @@ On this page, you will find the country's information you need when using Yuno A
 - **RNUM** (Birth Number)
   </td>
 
-        <td>
+<td>
           420
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Denmark
-        </td>
+</td>
 
-        <td>
+<td>
           `DK`
-        </td>
+</td>
 
-        <td>
+<td>
           `DKK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CPR** (Personal ID Number)
 - **CVR** (Company Registration Number)
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           45
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Estonia
-        </td>
+</td>
 
-        <td>
+<td>
           `EE`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           372
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Faroe Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `FO`
-        </td>
+</td>
 
-        <td>
+<td>
           `DKK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           298
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Finland
-        </td>
+</td>
 
-        <td>
+<td>
           `FI`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **HETU** (Personal Identity Code)
 - **PAS** (Passport)
 - **YID** (Business ID)
   </td>
 
-        <td>
+<td>
           358
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           France
-        </td>
+</td>
 
-        <td>
+<td>
           `FR`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CNI** (National Identity Card)
 - **NIR** (Personal Identification Number (INSEE))
@@ -5762,58 +5762,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **SIRE** (Company ID (SIREN/SIRET))
   </td>
 
-        <td>
+<td>
           33
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Georgia
-        </td>
+</td>
 
-        <td>
+<td>
           `GE`
-        </td>
+</td>
 
-        <td>
+<td>
           `GEL`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           995
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Germany
-        </td>
+</td>
 
-        <td>
+<td>
           `DE`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **EAT** (Electronic Residence Permit)
 - **IDNR** (Tax Identification Number (Person))
@@ -5822,58 +5822,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **USTI** (VAT Identification Number (Entity))
   </td>
 
-        <td>
+<td>
           49
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Gibraltar
-        </td>
+</td>
 
-        <td>
+<td>
           `GI`
-        </td>
+</td>
 
-        <td>
+<td>
           `GIP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           350
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Greece
-        </td>
+</td>
 
-        <td>
+<td>
           `GR`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **AFM** (Tax Identification Number)
 - **AMKA** (Social Security Number)
@@ -5881,142 +5881,142 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           30
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Greenland
-        </td>
+</td>
 
-        <td>
+<td>
           `GL`
-        </td>
+</td>
 
-        <td>
+<td>
           `DKK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           299
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Guernsey
-        </td>
+</td>
 
-        <td>
+<td>
           `GG`
-        </td>
+</td>
 
-        <td>
+<td>
           `GBP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           44
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Hungary
-        </td>
+</td>
 
-        <td>
+<td>
           `HU`
-        </td>
+</td>
 
-        <td>
+<td>
           `HUF`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           36
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Iceland
-        </td>
+</td>
 
-        <td>
+<td>
           `IS`
-        </td>
+</td>
 
-        <td>
+<td>
           `ISK`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           354
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Ireland
-        </td>
+</td>
 
-        <td>
+<td>
           `IE`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CRN** (Company Registration Number)
 - **PAS** (Passport)
@@ -6024,58 +6024,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **VAT** (VAT Number)
   </td>
 
-        <td>
+<td>
           353
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Isle Of Man
-        </td>
+</td>
 
-        <td>
+<td>
           `IM`
-        </td>
+</td>
 
-        <td>
+<td>
           `GBP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           44
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Italy
-        </td>
+</td>
 
-        <td>
+<td>
           `IT`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CF** (Tax Code (Person))
 - **CIE** (Electronic Identity Card)
@@ -6083,282 +6083,282 @@ On this page, you will find the country's information you need when using Yuno A
 - **PIVA** (VAT Number (Entity))
   </td>
 
-        <td>
+<td>
           39
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Jersey
-        </td>
+</td>
 
-        <td>
+<td>
           `JE`
-        </td>
+</td>
 
-        <td>
+<td>
           `GBP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           44
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Latvia
-        </td>
+</td>
 
-        <td>
+<td>
           `LV`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           371
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Liechtenstein
-        </td>
+</td>
 
-        <td>
+<td>
           `LI`
-        </td>
+</td>
 
-        <td>
+<td>
           `CHF`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           423
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Lithuania
-        </td>
+</td>
 
-        <td>
+<td>
           `LT`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           370
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Luxembourg
-        </td>
+</td>
 
-        <td>
+<td>
           `LU`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           352
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Malta
-        </td>
+</td>
 
-        <td>
+<td>
           `MT`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           356
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Moldova
-        </td>
+</td>
 
-        <td>
+<td>
           `MD`
-        </td>
+</td>
 
-        <td>
+<td>
           `MDL`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           373
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Monaco
-        </td>
+</td>
 
-        <td>
+<td>
           `MC`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           377
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Montenegro
-        </td>
+</td>
 
-        <td>
+<td>
           `ME`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           382
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Netherlands
-        </td>
+</td>
 
-        <td>
+<td>
           `NL`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BSN** (Citizen Service Number)
 - **BTW** (VAT Number)
@@ -6366,58 +6366,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           31
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           North Macedonia
-        </td>
+</td>
 
-        <td>
+<td>
           `MK`
-        </td>
+</td>
 
-        <td>
+<td>
           `MKD`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           389
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Norway
-        </td>
+</td>
 
-        <td>
+<td>
           `NO`
-        </td>
+</td>
 
-        <td>
+<td>
           `NOK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **DNR** (Temporary ID Number (D-number))
 - **FNR** (National Identity Number)
@@ -6425,30 +6425,30 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           47
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Poland
-        </td>
+</td>
 
-        <td>
+<td>
           `PL`
-        </td>
+</td>
 
-        <td>
+<td>
           `PLN`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **NIP** (Tax Identification Number)
 - **PAS** (Passport)
@@ -6456,30 +6456,30 @@ On this page, you will find the country's information you need when using Yuno A
 - **REGON** (Statistical Number (REGON))
   </td>
 
-        <td>
+<td>
           48
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Portugal
-        </td>
+</td>
 
-        <td>
+<td>
           `PT`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CC** (Citizen Card)
 - **NIF** (Tax Identification Number)
@@ -6487,200 +6487,200 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           351
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Romania
-        </td>
+</td>
 
-        <td>
+<td>
           `RO`
-        </td>
+</td>
 
-        <td>
+<td>
           `RON`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CNP** (Personal Numeric Code)
 - **CUI** (Unique Registration Code (Entity))
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           40
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Russia
-        </td>
+</td>
 
-        <td>
+<td>
           `RU`
-        </td>
+</td>
 
-        <td>
+<td>
           `RUB`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           7
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           San Marino
-        </td>
+</td>
 
-        <td>
+<td>
           `SM`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           378
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Serbia
-        </td>
+</td>
 
-        <td>
+<td>
           `RS`
-        </td>
+</td>
 
-        <td>
+<td>
           `RSD`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           381
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Slovakia
-        </td>
+</td>
 
-        <td>
+<td>
           `SK`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           421
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Slovenia
-        </td>
+</td>
 
-        <td>
+<td>
           `SI`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           386
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Spain
-        </td>
+</td>
 
-        <td>
+<td>
           `ES`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **DNI** (National Identity Document)
 - **NIE** (Foreigner Identity Number)
@@ -6688,122 +6688,122 @@ On this page, you will find the country's information you need when using Yuno A
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           34
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Svalbard and Jan Mayen
-        </td>
+</td>
 
-        <td>
+<td>
           `SJ`
-        </td>
+</td>
 
-        <td>
+<td>
           `NOK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           47
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Sweden
-        </td>
+</td>
 
-        <td>
+<td>
           `SE`
-        </td>
+</td>
 
-        <td>
+<td>
           `SEK`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **ORG** (Organization Number)
 - **PAS** (Passport)
 - **PNR** (Personal Identity Number)
   </td>
 
-        <td>
+<td>
           46
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Switzerland
-        </td>
+</td>
 
-        <td>
+<td>
           `CH`
-        </td>
+</td>
 
-        <td>
+<td>
           `CHF`\
           `CHE`
           `CHW`
-        </td>
+</td>
 
-        <td>
+<td>
           2\
           2
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **AHVN** (Social Security Number)
 - **PAS** (Passport)
 - **UID** (Company Identification Number)
   </td>
 
-        <td>
+<td>
           41
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Turkey
-        </td>
+</td>
 
-        <td>
+<td>
           `TR`
-        </td>
+</td>
 
-        <td>
+<td>
           `TRY`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **MERS** (Company Registration (MERSIS))
 - **PAS** (Passport)
@@ -6812,58 +6812,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **YKN** (Foreigner ID Number)
   </td>
 
-        <td>
+<td>
           90
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Ukraine
-        </td>
+</td>
 
-        <td>
+<td>
           `UA`
-        </td>
+</td>
 
-        <td>
+<td>
           `UAH`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           380
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           United Kingdom
-        </td>
+</td>
 
-        <td>
+<td>
           `GB`
-        </td>
+</td>
 
-        <td>
+<td>
           `GBP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **BRP** (Biometric Residence Permit)
 - **CRN** (Company Registration Number)
@@ -6872,70 +6872,69 @@ On this page, you will find the country's information you need when using Yuno A
 - **UTR** (Unique Taxpayer Reference)
   </td>
 
-        <td>
+<td>
           44
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Vatican City State
-        </td>
+</td>
 
-        <td>
+<td>
           `VA`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-          <td>
+<td>
             379
-          </td>
-        </tr>
+</td>
+</tr>
 
-
-      <tr>
-        <td>
+<tr>
+<td>
           Åland Islands
-        </td>
+</td>
 
-        <td>
+<td>
           `AX`
-        </td>
+</td>
 
-        <td>
+<td>
           `EUR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **NIDC** (National ID Card)
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           358
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      </tbody>
+</tbody>
 
     </Table>
 
@@ -6945,57 +6944,57 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
-    <tr>
-      <th>
+<tr>
+<th>
         Name
-      </th>
+</th>
 
-      <th>
+<th>
         Country code (ISO 3166-1 Alpha 2)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency code (ISO 4217 Alpha 3)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency decimal digits
 
-        <sup>
+<sup>
           (1)
-        </sup>
-      </th>
+</sup>
+</th>
 
-      <th>
+<th>
         Document type
-      </th>
+</th>
 
-      <th>
+<th>
         Phone country calling code
-      </th>
-    </tr>
+</th>
+</tr>
 
   </thead>
 
   <tbody>
-    <tr>
-      <td>
+<tr>
+<td>
         Bahrain
-      </td>
+</td>
 
-      <td>
+<td>
         `BH`
-      </td>
+</td>
 
-      <td>
+<td>
         `BHD`
-      </td>
+</td>
 
-      <td>
+<td>
         3
-      </td>
+</td>
 
-      <td>
+<td>
 
 - **CPR** (Personal Number (CPR))
 - **CRN** (Commercial Registration Number)
@@ -7003,202 +7002,202 @@ On this page, you will find the country's information you need when using Yuno A
 - **VATN** (VAT Registration Number)
   </td>
 
-        <td>
+<td>
           973
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Iran
-        </td>
+</td>
 
-        <td>
+<td>
           `IR`
-        </td>
+</td>
 
-        <td>
+<td>
           `IRR`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           98
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Iraq
-        </td>
+</td>
 
-        <td>
+<td>
           `IQ`
-        </td>
+</td>
 
-        <td>
+<td>
           `IQD`
-        </td>
+</td>
 
-        <td>
+<td>
           3
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           964
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Israel
-        </td>
+</td>
 
-        <td>
+<td>
           `IL`
-        </td>
+</td>
 
-        <td>
+<td>
           `ILS`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CNUM** (Company Number)
 - **PAS** (Passport)
 - **TEUD** (National ID)
   </td>
 
-        <td>
+<td>
           972
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Jordan
-        </td>
+</td>
 
-        <td>
+<td>
           `JO`
-        </td>
+</td>
 
-        <td>
+<td>
           `JOD`
-        </td>
+</td>
 
-        <td>
+<td>
           3
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           962
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Kuwait
-        </td>
+</td>
 
-        <td>
+<td>
           `KW`
-        </td>
+</td>
 
-        <td>
+<td>
           `KWD`
-        </td>
+</td>
 
-        <td>
+<td>
           3
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CID** (Civil ID)
 - **CREG** (Commercial Registration Number)
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           965
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Lebanon
-        </td>
+</td>
 
-        <td>
+<td>
           `LB`
-        </td>
+</td>
 
-        <td>
+<td>
           `LBP`
-        </td>
+</td>
 
-        <td>
+<td>
           0
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           961
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Oman
-        </td>
+</td>
 
-        <td>
+<td>
           `OM`
-        </td>
+</td>
 
-        <td>
+<td>
           `OMR`
-        </td>
+</td>
 
-        <td>
+<td>
           3
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CID** (Civil ID)
 - **CREG** (Commercial Registration Number)
@@ -7206,57 +7205,57 @@ On this page, you will find the country's information you need when using Yuno A
 - **VATN** (VAT Registration Number)
   </td>
 
-        <td>
+<td>
           968
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-          <td>
+<tr>
+<td>
             Palestine, State of
-          </td>
+</td>
 
-          <td>
+<td>
             `PS`
-          </td>
+</td>
 
-          <td>
+<td>
             `ILS`
-          </td>
+</td>
 
-          <td>
+<td>
             2
-          </td>
+</td>
 
-          <td>
+<td>
             * **PAS** (Passport)
 
   </td>
 
-          <td>
+<td>
             970
-          </td>
-        </tr>
+</td>
+</tr>
 
-    <tr>
-        <td>
+<tr>
+<td>
           Qatar
-        </td>
+</td>
 
-        <td>
+<td>
           `QA`
-        </td>
+</td>
 
-        <td>
+<td>
           `QAR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CREG** (Commercial Registration Number)
 - **PAS** (Passport)
@@ -7264,30 +7263,30 @@ On this page, you will find the country's information you need when using Yuno A
 - **TRN** (Tax Registration Number)
   </td>
 
-        <td>
+<td>
           974
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Saudi Arabia
-        </td>
+</td>
 
-        <td>
+<td>
           `SA`
-        </td>
+</td>
 
-        <td>
+<td>
           `SAR`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **CRN** (Commercial Registration Number)
 - **IQAM** (Iqama (Resident ID))
@@ -7296,58 +7295,58 @@ On this page, you will find the country's information you need when using Yuno A
 - **VATN** (VAT Registration Number)
   </td>
 
-        <td>
+<td>
           966
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Syria
-        </td>
+</td>
 
-        <td>
+<td>
           `SY`
-        </td>
+</td>
 
-        <td>
+<td>
           `SYP`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-        <td>
+<td>
           963
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           United Arab Emirates
-        </td>
+</td>
 
-        <td>
+<td>
           `AE`
-        </td>
+</td>
 
-        <td>
+<td>
           `AED`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **EID** (Emirates ID)
 - **PAS** (Passport)
@@ -7355,40 +7354,40 @@ On this page, you will find the country's information you need when using Yuno A
 - **TRN** (Tax Registration Number)
   </td>
 
-        <td>
+<td>
           971
-        </td>
+</td>
 
-      </tr>
+</tr>
 
-      <tr>
-        <td>
+<tr>
+<td>
           Yemen
-        </td>
+</td>
 
-        <td>
+<td>
           `YE`
-        </td>
+</td>
 
-        <td>
+<td>
           `YER`
-        </td>
+</td>
 
-        <td>
+<td>
           2
-        </td>
+</td>
 
-        <td>
+<td>
 
 - **PAS** (Passport)
   </td>
 
-          <td>
+<td>
             967
-          </td>
-        </tr>
+</td>
+</tr>
 
-        </tbody>
+</tbody>
 
     </Table>
 
@@ -7408,65 +7407,65 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
-    <tr>
-      <th>
+<tr>
+<th>
         Name
-      </th>
+</th>
 
-      <th>
+<th>
         Country code (ISO 3166-1 Alpha 2)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency code (ISO 4217 Alpha 3)
-      </th>
+</th>
 
-      <th>
+<th>
         Currency decimal digits
 
-        <sup>
+<sup>
           (1)
-        </sup>
-      </th>
+</sup>
+</th>
 
-      <th>
+<th>
         Document type
-      </th>
+</th>
 
-      <th>
+<th>
         Phone country calling code
-      </th>
-    </tr>
+</th>
+</tr>
 
   </thead>
 
   <tbody>
-    <tr>
-      <td>
+<tr>
+<td>
         Antarctica
-      </td>
+</td>
 
-      <td>
+<td>
         `AQ`
-      </td>
+</td>
 
-      <td>
+<td>
 
-      </td>
+</td>
 
-      <td>
+<td>
 
-      </td>
+</td>
 
-      <td>
+<td>
         * **PAS** (Passport)
 
 </td>
 
-      <td>
+<td>
 
-      </td>
-    </tr>
+</td>
+</tr>
 
   </tbody>
 </Table>
