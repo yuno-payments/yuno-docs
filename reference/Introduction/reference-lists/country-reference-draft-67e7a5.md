@@ -1100,8 +1100,7 @@ On this page, you will find the country's information you need when using Yuno A
         `PYG`
       </td>
 
-      <td style={{ textAlign: "left" }}>
-        0
+      <td style={{ textAlign: "left" }}>4
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1748,8 +1747,7 @@ On this page, you will find the country's information you need when using Yuno A
         `XOF`
       </td>
 
-      <td>
-        0
+      <td> 2 
       </td>
 
       <td>
@@ -2538,7 +2536,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `MRO`
+        `MRU`
       </td>
 
       <td>
@@ -2924,7 +2922,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td>
-        `SLL`
+        `SLE`
       </td>
 
       <td>
