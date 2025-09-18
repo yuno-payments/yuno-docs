@@ -18,7 +18,7 @@ We analyzed the current structure and studied best practices from leading paymen
 
 ## Current structure
 
-The Web SDK section contains 11 pages in this order:
+The Web SDK section contains 10 pages in this order:
 
 1. `full-checkout-sdk` - Complete SDK implementation
 2. `lite-checkout-sdk` - Lightweight SDK option
@@ -30,7 +30,6 @@ The Web SDK section contains 11 pages in this order:
 8. `sdk-customizations` - Customization options
 9. `demo-app` - Demo application
 10. `3ds-setup-sdk` - 3D Secure setup (deprecated)
-11. `other-integrations` - Direct workflow and additional options
 
 ### Current structure visualization
 
@@ -45,8 +44,7 @@ Web SDKs (Current)
 ├── payment-status
 ├── sdk-customizations
 ├── demo-app
-├── 3ds-setup-sdk (deprecated)
-└── other-integrations
+└── 3ds-setup-sdk (deprecated)
 ```
 
 ### Key problems
@@ -88,15 +86,13 @@ Web SDKs
 │   ├── Lite Checkout SDK
 │   └── Secure Fields
 ├── Advanced Solutions
-│   ├── Alternative SDKs (contains Headless & Seamless)
+│   ├── Alternative SDKs (includes Headless & Seamless)
 │   └── 3DS Setup SDK (deprecated)
-├── Tools & Utilities
-│   ├── Loader
-│   ├── Payment Status
-│   ├── SDK Customizations
-│   └── Demo App
-└── Additional Resources
-    └── Other Integrations (remaining content)
+└── Tools & Utilities
+    ├── Loader
+    ├── Payment Status
+    ├── SDK Customizations
+    └── Demo App
 ```
 
 ### Key benefits
@@ -125,8 +121,6 @@ Organize the pages into the following new folders to match the proposed structur
    * Payment Status
    * SDK Customizations
    * Demo App
-5. **Additional Resources**
-   * Other Integrations (remaining content)
 
 The folder structure should look like this:
 
@@ -148,20 +142,18 @@ Web SDKs
 ├── Advanced Customization
 │   ├── Alternative SDKs
 │   └── 3DS Setup SDK
-├── Launch & Monitor
-│   ├── Loader
-│   ├── Payment Status
-│   ├── SDK Customizations
-│   └── Demo App
-└── Additional Options
-    └── Other Integrations
+└── Launch & Monitor
+    ├── Loader
+    ├── Payment Status
+    ├── SDK Customizations
+    └── Demo App
 ```
 
 ### Key benefits
 
 * **Action-oriented grouping**: Build, Customize, Launch
 * **Clear progression**: From decision to implementation to launch
-* **Maintains all existing pages**: In logical groupings
+* **Maintains all 10 pages**: In logical groupings
 * **Better discoverability**: Of related features
 
 ### Recommended page reordering with new folders
@@ -183,8 +175,6 @@ Organize the pages into the following new folders to match the proposed structur
    * Payment Status
    * SDK Customizations
    * Demo App
-5. **Additional Options**
-   * Other Integrations
 
 The folder structure should look like this:
 
