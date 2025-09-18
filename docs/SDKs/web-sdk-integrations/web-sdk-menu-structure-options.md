@@ -106,20 +106,29 @@ Web SDKs
 * **Progressive complexity**: From simple to advanced solutions
 * **Related features**: Grouped together
 
-### Recommended page reordering
+### Recommended page reordering with new folders
 
-1. Choose the Right Integration for You (moved from parent level)
-2. Web SDK Changelog
-3. Full Checkout SDK
-4. Lite Checkout SDK
-5. Secure Fields
-6. Alternative SDKs
-7. Loader
-8. Payment Status
-9. SDK Customizations
-10. Demo App
-11. 3DS Setup SDK
-12. Other Integrations
+Organize the pages into the following new folders to match the proposed structure:
+
+1. **Getting Started**
+   * Choose the Right Integration for You (moved from parent level)
+   * Web SDK Changelog (moved up for visibility)
+2. **Main Integration Options**
+   * Full Checkout SDK
+   * Lite Checkout SDK
+   * Secure Fields
+3. **Advanced Solutions**
+   * Alternative SDKs (includes Headless & Seamless)
+   * 3DS Setup SDK (deprecated)
+4. **Tools & Utilities**
+   * Loader
+   * Payment Status
+   * SDK Customizations
+   * Demo App
+5. **Additional Resources**
+   * Other Integrations (remaining content)
+
+The folder structure should look like this:
 
 ## Option 2: Feature-First Structure
 
@@ -155,20 +164,29 @@ Web SDKs
 * **Maintains all existing pages**: In logical groupings
 * **Better discoverability**: Of related features
 
-### Recommended page reordering
+### Recommended page reordering with new folders
 
-1. Choose the Right Integration for You (moved from parent level)
-2. Web SDK Changelog
-3. Full Checkout SDK
-4. Lite Checkout SDK
-5. Secure Fields
-6. Alternative SDKs
-7. Loader
-8. Payment Status
-9. SDK Customizations
-10. Demo App
-11. 3DS Setup SDK
-12. Other Integrations
+Organize the pages into the following new folders to match the proposed structure:
+
+1. **Choose Your Integration**
+   * Choose the Right Integration for You (moved from parent level)
+   * Web SDK Changelog
+2. **Build Your Checkout**
+   * Full Checkout SDK
+   * Lite Checkout SDK
+   * Secure Fields
+3. **Advanced Customization**
+   * Alternative SDKs
+   * 3DS Setup SDK
+4. **Launch & Monitor**
+   * Loader
+   * Payment Status
+   * SDK Customizations
+   * Demo App
+5. **Additional Options**
+   * Other Integrations
+
+The folder structure should look like this:
 
 ## Recommendation
 
