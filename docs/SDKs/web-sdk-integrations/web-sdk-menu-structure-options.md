@@ -20,11 +20,11 @@ We analyzed the current structure and studied best practices from leading paymen
 
 The Web SDK section contains 11 pages in this order:
 
-1. `web-sdk-changelog` - Version history and updates
-2. `full-checkout-sdk` - Complete SDK implementation
-3. `lite-checkout-sdk` - Lightweight SDK option
-4. `secure-fields-web` - Secure payment fields
-5. `alternative-sdks` - Headless and Seamless SDKs
+1. `full-checkout-sdk` - Complete SDK implementation
+2. `lite-checkout-sdk` - Lightweight SDK option
+3. `secure-fields-web` - Secure payment fields
+4. `alternative-sdks` - Headless and Seamless SDKs
+5. `web-sdk-changelog` - Version history and updates
 6. `loader` - SDK loading utilities
 7. `payment-status` - Payment status tracking
 8. `sdk-customizations` - Customization options
@@ -36,11 +36,11 @@ The Web SDK section contains 11 pages in this order:
 
 ```
 Web SDKs (Current)
-├── web-sdk-changelog
 ├── full-checkout-sdk
 ├── lite-checkout-sdk
 ├── secure-fields-web
 ├── alternative-sdks
+├── web-sdk-changelog
 ├── loader
 ├── payment-status
 ├── sdk-customizations
@@ -183,8 +183,6 @@ We recommend Option 1 (User Journey-Based) because it:
 ### Key improvements
 
 * **"Choose the Right Integration"**: Becomes the entry point
-* **Changelog**: Moved from position 1 to position 2 for better visibility
+* **Changelog**: Moved from position 5 to position 2 for better visibility
 * **Main SDKs**: Grouped together, utilities grouped together
 * **Clear categories**: Help users understand what each section contains
-
-<br />
