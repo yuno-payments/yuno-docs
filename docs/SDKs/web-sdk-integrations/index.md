@@ -21,8 +21,6 @@ Yuno's Web SDKs provide several features designed to enhance your payment proces
 Select one of the user-friendly Web integration options available and kickstart your journey toward efficient payment processing:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Web SDK Changelog" href="../docs/web-sdk-changelog" titleSize="h4" description="Check all updates, improvements and version history for the Web SDK" badge="Changelog" />
-
   <YunoCard title="Full SDK" href="../docs/full-checkout-sdk" titleSize="h4" description="Complete control with backend support and full customization options" badge="Most Popular" />
 
   <YunoCard title="Lite SDK" href="../docs/lite-checkout-sdk" titleSize="h4" description="Lightweight integration with UI control and backend support" badge="Lightweight" />
@@ -36,6 +34,8 @@ Select one of the user-friendly Web integration options available and kickstart 
   <YunoCard title="Seamless SDK" href="../docs/seamless-sdk-payment-web" titleSize="h4" description="Fastest integration with pre-built UI components and maximum flexibility" badge="Recommended" />
 
   <YunoCard title="Direct Workflow" href="../docs/direct-flow" titleSize="h4" description="Direct integration without SDK components" badge="Quick Setup" />
+
+  <YunoCard title="Web SDK Changelog" href="../docs/web-sdk-changelog" titleSize="h4" description="Check all updates, improvements and version history for the Web SDK" badge="Changelog" />
 </Shelf>
 
 > ❗️ Browser Support
