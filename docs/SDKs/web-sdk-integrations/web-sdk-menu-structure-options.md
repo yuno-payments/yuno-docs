@@ -53,7 +53,7 @@ Web SDKs (Current)
 * Main SDKs are mixed with utilities and tools
 * Related functionality is scattered across different pages
 * No clear progression from simple to advanced solutions
-* Important content like demo app and utilities are hard to find
+* Important content, like the demo app and utilities, is hard to find.
 
 ## Design approach
 
@@ -62,7 +62,7 @@ We applied these core principles:
 * **Start with user needs**: Not technical categories
 * **Guide users**: Through decision-making process
 * **Present information**: In order of importance and complexity
-* **Group related functionality**: Together
+* **Group**: Put related functionality together
 * **Follow patterns**: Users expect from other payment platforms
 
 The two options represent different approaches to solving the same problems:
@@ -98,7 +98,7 @@ Web SDKs
 ### Key benefits
 
 * **Starts with decision-making**: Then implementation
-* **Groups main options**: Together
+* **Groups**: Put main options together
 * **Progressive complexity**: From simple to advanced solutions
 * **Related features**: Grouped together
 
