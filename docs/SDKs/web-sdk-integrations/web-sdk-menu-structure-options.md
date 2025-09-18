@@ -5,7 +5,7 @@ hidden: false
 metadata:
   robots: index
 ---
-This document presents two improved menu structure options for the Yuno Web SDK documentation section. Both options use only existing pages and aim to create a more intuitive user experience.
+This page presents two improved menu structure options for the Yuno Web SDK documentation section. Both options use only existing pages and aim to create a more intuitive user experience.
 
 ## Research approach
 
