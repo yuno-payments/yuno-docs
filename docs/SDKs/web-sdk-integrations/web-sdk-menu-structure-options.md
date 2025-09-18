@@ -46,18 +46,18 @@ The current Web SDK section contains 11 pages in this order:
 ### Current Structure Visualization
 
 ```
-📚 Web SDKs (Current)
-├── 📋 web-sdk-changelog
-├── 🏗️ full-checkout-sdk
-├── ⚡ lite-checkout-sdk
-├── 🔒 secure-fields-web
-├── 🔧 alternative-sdks
-├── 📦 loader
-├── 📊 payment-status
-├── 🎨 sdk-customizations
-├── 🎮 demo-app
-├── ⚠️ 3ds-setup-sdk (deprecated)
-└── 🔗 other-integrations
+Web SDKs (Current)
+├── web-sdk-changelog
+├── full-checkout-sdk
+├── lite-checkout-sdk
+├── secure-fields-web
+├── alternative-sdks
+├── loader
+├── payment-status
+├── sdk-customizations
+├── demo-app
+├── 3ds-setup-sdk (deprecated)
+└── other-integrations
 ```
 
 **Issues with Current Structure:**
@@ -140,24 +140,23 @@ This structure follows the user's mental model and decision-making process, insp
 ### Structure
 
 ```
-📚 Web SDKs
-├── 🚀 Getting Started
+Web SDKs
+├── Getting Started
 │   ├── Choose the Right Integration for You (move from parent level)
 │   └── Web SDK Changelog (moved up for visibility)
-├── 💳 Main Integration Options
+├── Main Integration Options
 │   ├── Full Checkout SDK
 │   ├── Lite Checkout SDK
 │   └── Secure Fields
-├── 🛠️ Advanced Solutions
+├── Advanced Solutions
 │   ├── Alternative SDKs (contains Headless & Seamless)
-│   ├── Direct Workflow (from other-integrations)
 │   └── 3DS Setup SDK (deprecated)
-├── 🔧 Tools & Utilities
+├── Tools & Utilities
 │   ├── Loader
 │   ├── Payment Status
 │   ├── SDK Customizations
 │   └── Demo App
-└── 📋 Additional Resources
+└── Additional Resources
     └── Other Integrations (remaining content)
 ```
 
@@ -192,23 +191,23 @@ This organizes content by what users want to accomplish, inspired by PayPal and 
 ### Structure
 
 ```
-📚 Web SDKs
-├── 🎯 Choose Your Integration
+Web SDKs
+├── Choose Your Integration
 │   ├── Choose the Right Integration for You (move from parent level)
 │   └── Web SDK Changelog
-├── 🏗️ Build Your Checkout
+├── Build Your Checkout
 │   ├── Full Checkout SDK
 │   ├── Lite Checkout SDK
 │   └── Secure Fields
-├── ⚙️ Advanced Customization
+├── Advanced Customization
 │   ├── Alternative SDKs
-│   ├── SDK Customizations
 │   └── 3DS Setup SDK
-├── 🚀 Launch & Monitor
+├── Launch & Monitor
 │   ├── Loader
 │   ├── Payment Status
+│   ├── SDK Customizations
 │   └── Demo App
-└── 🔗 Additional Options
+└── Additional Options
     └── Other Integrations
 ```
 
@@ -227,11 +226,11 @@ This organizes content by what users want to accomplish, inspired by PayPal and 
 4. Lite Checkout SDK
 5. Secure Fields
 6. Alternative SDKs
-7. SDK Customizations
-8. 3DS Setup SDK
-9. Loader
-10. Payment Status
-11. Demo App
+7. Loader
+8. Payment Status
+9. SDK Customizations
+10. Demo App
+11. 3DS Setup SDK
 12. Other Integrations
 
 ## Recommendation
