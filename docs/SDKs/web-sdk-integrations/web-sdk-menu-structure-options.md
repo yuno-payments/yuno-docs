@@ -20,17 +20,17 @@ We analyzed the current structure and studied best practices from leading paymen
 
 The Web SDK section contains 11 pages in this order:
 
-1. `web-sdk-changelog` apresenta o histórico de versões e atualizações
-2. `full-checkout-sdk` oferece a implementação completa do SDK
-3. `lite-checkout-sdk` disponibiliza uma opção de SDK mais leve
-4. `secure-fields-web` fornece campos de pagamento seguros
-5. `alternative-sdks` inclui Headless e Seamless SDKs
-6. `loader` traz utilitários para carregamento do SDK
-7. `payment-status` permite o acompanhamento do status de pagamento
-8. `sdk-customizations` apresenta opções de personalização
-9. `demo-app` disponibiliza um aplicativo de demonstração
-10. `3ds-setup-sdk` trata da configuração do 3D Secure (obsoleto)
-11. `other-integrations` reúne fluxo direto e opções adicionais
+1. `web-sdk-changelog` - Version history and updates
+2. `full-checkout-sdk` - Complete SDK implementation
+3. `lite-checkout-sdk` - Lightweight SDK option
+4. `secure-fields-web` - Secure payment fields
+5. `alternative-sdks` - Headless and Seamless SDKs
+6. `loader` - SDK loading utilities
+7. `payment-status` - Payment status tracking
+8. `sdk-customizations` - Customization options
+9. `demo-app` - Demo application
+10. `3ds-setup-sdk` - 3D Secure setup (deprecated)
+11. `other-integrations` - Direct workflow and additional options
 
 ### Current structure visualization
 
