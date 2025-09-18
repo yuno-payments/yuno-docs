@@ -43,6 +43,31 @@ The current Web SDK section contains 11 pages in this order:
 10. **3ds-setup-sdk** - 3D Secure setup (deprecated)
 11. **other-integrations** - Direct workflow and additional options
 
+### Current Structure Visualization
+
+```
+📚 Web SDKs (Current)
+├── 📋 web-sdk-changelog
+├── 🏗️ full-checkout-sdk
+├── ⚡ lite-checkout-sdk
+├── 🔒 secure-fields-web
+├── 🔧 alternative-sdks
+├── 📦 loader
+├── 📊 payment-status
+├── 🎨 sdk-customizations
+├── 🎮 demo-app
+├── ⚠️ 3ds-setup-sdk (deprecated)
+└── 🔗 other-integrations
+```
+
+**Issues with Current Structure:**
+
+* **No clear entry point** - Changelog is first, not decision guidance
+* **Mixed content types** - Main SDKs mixed with utilities and tools
+* **No logical grouping** - Related functionality is scattered
+* **Poor information hierarchy** - No clear progression from simple to complex
+* **Buried important content** - Demo app and utilities are hard to find
+
 ### Key Problems Identified
 
 **1. Poor Decision Flow**
