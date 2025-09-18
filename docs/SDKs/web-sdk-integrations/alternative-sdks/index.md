@@ -1,5 +1,5 @@
 ---
-title: Alternative Web SDKs
+title: Alternative SDKs
 excerpt: ''
 deprecated: false
 hidden: false
