@@ -174,9 +174,9 @@ We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 4. **Makes changelog discoverable** by moving it to position 2, following Adyen's pattern of surfacing important updates
 5. **Maintains simplicity** by using existing pages without adding complexity
 
-### Key improveme### Structure
+### Key improvements
 
-ive complexity from simple to advanced
-
-* Better discoverability of important content like demo app and utilities
-* Professional organization that matches user expectations from other payment platforms
+* **"Choose the Right Integration"**: Becomes the clear entry point
+* **Changelog**: Moved from position 5 to position 2 for better visibility
+* **Main SDKs**: Grouped together, utilities grouped together
+* **Clear categories**: Help users understand what each section contains
