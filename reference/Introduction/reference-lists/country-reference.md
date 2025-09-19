@@ -26,7 +26,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 **(1)** _The number of digits after the decimal separator_.
 
-<Table align={["left","left","left","left","left","left"]}>
+<Table align={["left","left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th style={{ textAlign: "left" }}>
@@ -5362,7 +5362,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 **(1)** _The number of digits after the decimal separator_.
 
-<Table align={["left","left","left","left","left","left"]}>
+<Table align={["left","left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th style={{ textAlign: "left" }}>
@@ -10686,7 +10686,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 **(1)** _The number of digits after the decimal separator_.
 
-<Table align={["left","left","left","left","left","left"]}>
+<Table align={["left","left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th style={{ textAlign: "left" }}>
@@ -12579,7 +12579,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 **(1)** _The number of digits after the decimal separator_.
 
-<Table align={["left","left","left","left","left","left"]}>
+<Table align={["left","left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th style={{ textAlign: "left" }}>
@@ -14368,7 +14368,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 **(1)** _The number of digits after the decimal separator_.
 
-<Table align={["left","left","left","left","left","left"]}>
+<Table align={["left","left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th style={{ textAlign: "left" }}>
@@ -14860,7 +14860,7 @@ On this page, you will find the country's information you need when using Yuno A
 
 **(1)** _The number of digits after the decimal separator_.
 
-<Table align={["left","left","left","left","left","left"]}>
+<Table align={["left","left","left","left","left","left","left"]}>
   <thead>
     <tr>
       <th style={{ textAlign: "left" }}>
