@@ -1,5 +1,5 @@
 ---
-title: Country Reference up-codpu
+title: Country Reference
 excerpt: ""
 deprecated: false
 hidden: true
@@ -636,7 +636,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        809/829/849
       </td>
     </tr>
     <tr>
@@ -1546,7 +1546,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `VED`
+        `VES`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3282,7 +3282,36 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         93
       </td>
+    </tr>    <tr>
+      <td style={{ textAlign: "left" }}>
+        American Samoa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `passport`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        684
+      </td>
     </tr>
+
     <tr>
       <td style={{ textAlign: "left" }}>
         Armenia
@@ -5145,35 +5174,7 @@ On this page, you will find the country's information you need when using Yuno A
         213
       </td>
     </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        American Samoa
-      </td>
 
-      <td style={{ textAlign: "left" }}>
-        `AS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `passport`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Angola
