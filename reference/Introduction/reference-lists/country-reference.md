@@ -1,8 +1,8 @@
 ---
-title: Country reference
+title: Country Reference
 excerpt: ""
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ""
   description: ""
@@ -15,19 +15,16 @@ On this page, you will find the country's information you need when using Yuno A
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Americas" href="#americas" />
-
   <YunoCard title="Africa" href="#africa" />
-
   <YunoCard title="Asia Pacific" href="#asia-pacific" />
-
   <YunoCard title="Europe" href="#europe" />
-
   <YunoCard title="Middle East" href="#middle-east" />
-
   <YunoCard title="Antarctica" href="#antarctica" />
 </Shelf>
 
 ## Americas
+
+**(1)** _The number of digits after the decimal separator_.
 
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
@@ -61,12 +58,34 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
     </tr>
 
-    
-
   </thead>
 
   <tbody>
-    
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Antigua and Barbuda
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Anguilla
@@ -77,7 +96,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `XCD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -89,62 +108,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Saint Martin (French part)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MF`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `XCD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        590
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Antigua And Barbuda
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `AG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `XCD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Argentina
@@ -163,12 +129,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DNI** (National Identity Document)
-        * **CI** (Identity Card)
-        * **LC** (Civic Notebook)
-        * **LE** (Book Enlistment)
-        * **CUIT** (Single Tax Identification)
         * **CUIL** (Unique Labor Identification Code)
+        * **CUIT** (Single Tax Identification)
+        * **DNI** (National Identity Document)
         * **PAS** (Passport)
       </td>
 
@@ -176,7 +139,31 @@ On this page, you will find the country's information you need when using Yuno A
         54
       </td>
     </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        American Samoa
+      </td>
 
+      <td style={{ textAlign: "left" }}>
+        `AS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Aruba
@@ -187,34 +174,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `AWG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-        * **PIN** (individual Identity number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        297
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Bahamas
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BSD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -226,10 +186,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Barbados
@@ -240,7 +199,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BBD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -249,25 +208,23 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-          National ID Card
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Belize
+        Saint Barthélemy
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BZ`
+        `BL`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BZD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -276,15 +233,12 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-          Social Security Card
-          Driver's license
       </td>
 
       <td style={{ textAlign: "left" }}>
-        501
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Bermuda
@@ -295,7 +249,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BMD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -307,10 +261,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Bolivia
@@ -321,27 +274,48 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BOB`
-        `BOV`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
         2
       </td>
 
       <td style={{ textAlign: "left" }}>
         * **CI** (Identity Card)
-        * **CJUR** (Company ID)
-        * **DMEX** (Foreigner ID - DIMEX)
+        * **NIT** (Tax Identification Number)
         * **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
-        591
+        N/A
       </td>
     </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bonaire, Sint Eustatius and Saba
+      </td>
 
+      <td style={{ textAlign: "left" }}>
+        `BQ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Brazil
@@ -360,18 +334,67 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **RG** (Identity Card)
-        * **CPF** (Natural Persons Register)
         * **CNH** (Driver License)
         * **CNPJ** (National Registry of Legal Entities)
+        * **CPF** (Natural Persons Register)
         * **PAS** (Passport)
+        * **RG** (Identity Card)
       </td>
 
       <td style={{ textAlign: "left" }}>
         55
       </td>
     </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bahamas
+      </td>
 
+      <td style={{ textAlign: "left" }}>
+        `BS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Belize
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Canada
@@ -390,43 +413,17 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        * **BNE** (BNE)
+        * **DLIC** (Driver License)
         * **PAS** (Passport)
-          Driver's license
-          National ID Card
+        * **PRC** (Permanent Resident Card)
+        * **SIN** (Social Insurance Number)
       </td>
 
       <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Cayman Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KY`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KYD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * Voter ID Card
-          Driver's License
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Chile
@@ -438,26 +435,22 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         `CLP`
-        `CLF`
       </td>
 
       <td style={{ textAlign: "left" }}>
         0
-        0
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)
-        * **RUT** (Unique Tax Role)
-        * **RUN** (Unique National Role)
         * **PAS** (Passport)
+        * **RUN** (Unique National Role)
+        * **RUT** (Unique Tax Role)
       </td>
 
       <td style={{ textAlign: "left" }}>
         56
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Colombia
@@ -469,27 +462,24 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         `COP`
-        `COU`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
         2
       </td>
 
       <td style={{ textAlign: "left" }}>
         * **CC** (Citizenship Card)
-        * **TI** (Identity Card - minors)
         * **CE** (Foreign Certificate)
         * **NIT** (Tax Identification Number)
         * **PAS** (Passport)
+        * **TI** (Identity Card (minors))
       </td>
 
       <td style={{ textAlign: "left" }}>
         57
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Costa Rica
@@ -500,7 +490,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `CRC`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -509,15 +499,15 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **CI** (Identity Card)
-        * **RUC** (Tax ID - Entity)
+        * **CJUR** (CJUR)
+        * **DMEX** (DMEX)
         * **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
-        506
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Cuba
@@ -528,12 +518,10 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `CUP`
-        `CUC`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
         2
       </td>
 
@@ -542,13 +530,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        53
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Curacao
+        Curaçao
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -556,35 +543,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `ANG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-          Identity Card
-          Driver's license
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        599
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Saint Barthélemy
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `EUR`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -596,36 +555,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        590
+        N/A
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Sint Maarten (Dutch part)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SX`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `ANG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Dominica
@@ -636,7 +568,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `XCD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -645,14 +577,12 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-          National ID Card
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Dominican Republic
@@ -663,7 +593,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `DOP`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -672,14 +602,14 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **CI** (Identity Card)
-          Cédula de menor
+        * **PAS** (Passport)
+        * **RNC** (RNC)
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Ecuador
@@ -700,44 +630,16 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         * **CI** (Identity Card)
         * **PAS** (Passport)
+        * **RUC** (Tax ID (Entity))
       </td>
 
       <td style={{ textAlign: "left" }}>
         593
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        El Salvador
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SV`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **DUI**(Unique Identity Document)
-          **PIC**
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        503
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Falkland Islands
+        Falkland Islands (Malvinas)
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -745,7 +647,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `FKP`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -754,41 +656,12 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-          National ID Card
       </td>
 
       <td style={{ textAlign: "left" }}>
-        500
+        N/A
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        French Guiana
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GF`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `EUR`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-          National ID Card
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        594
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Grenada
@@ -799,7 +672,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `XCD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -808,14 +681,62 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-          National ID Card
       </td>
 
       <td style={{ textAlign: "left" }}>
-        473
+        N/A
       </td>
     </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        French Guiana
+      </td>
 
+      <td style={{ textAlign: "left" }}>
+        `GF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Greenland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Guadeloupe
@@ -826,7 +747,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `EUR`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -835,14 +756,12 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-          National ID Card
       </td>
 
       <td style={{ textAlign: "left" }}>
-        590
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Guatemala
@@ -853,7 +772,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `GTQ`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -862,15 +781,14 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **DPI** (Personal Identification Document)
-        * _CUI_* (Unique Identification Code)
+        * **NIT** (Tax Identification Number)
         * **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
-        502
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Guyana
@@ -881,7 +799,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `GYD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -893,38 +811,9 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        592
+        N/A
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Haiti
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `HT`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `HTG`
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **CIN**(Carte d'Identification Nationale)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        509
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Honduras
@@ -935,7 +824,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `HNL`
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **DNI** (National Identity Document)
+        * **PAS** (Passport)
+        * **TRN** (Tax Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Haiti
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -944,14 +860,12 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-        * **DNI** (National Identification Document)
       </td>
 
       <td style={{ textAlign: "left" }}>
-        504
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Jamaica
@@ -962,33 +876,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `JMD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * National ID Card
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Martinique
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MQ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `EUR`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1000,10 +888,159 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        596
+        N/A
       </td>
     </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Kitts and Nevis
+      </td>
 
+      <td style={{ textAlign: "left" }}>
+        `KN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cayman Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Lucia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Martin (French part)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Martinique
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MQ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Montserrat
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Mexico
@@ -1015,54 +1052,23 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         `MXN`
-        `MXV`
       </td>
 
       <td style={{ textAlign: "left" }}>
         2
-        2
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **IFE** (Federal Electoral Institute)
+        * **CURP** (Unique Population Registry Code)
         * **INE** (National Electoral Institute)
-        * **CP** (Professional ID)
         * **PAS** (Passport)
         * **RFC** (Federal Taxpayer Registry)
-        * **CURP** (Unique Population Registry Code)
       </td>
 
       <td style={{ textAlign: "left" }}>
         52
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Montserrat
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `XCD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Nicaragua
@@ -1073,7 +1079,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `NIO`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1083,13 +1089,13 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         * **CI** (Identity Card)
         * **PAS** (Passport)
+        * **RUC** (Tax ID (Entity))
       </td>
 
       <td style={{ textAlign: "left" }}>
-        505
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Panama
@@ -1100,51 +1106,23 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `PAB`
-        `USD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
         2
       </td>
 
       <td style={{ textAlign: "left" }}>
         * **CIP** (Identity Card)
         * **PAS** (Passport)
+        * **RUC** (Tax ID (Entity))
       </td>
 
       <td style={{ textAlign: "left" }}>
-        507
+        N/A
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Paraguay
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PY`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PYG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        0
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **CIC** (Cédula de Identidad Civil)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        595
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Peru
@@ -1163,16 +1141,41 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DNI** (National Identification Document)
-        * **CE** (Immigration Card)
-        * **RUC** (Single Registry of Taxpayers)
+        * **CE** (Foreign Certificate)
+        * **DNI** (National Identity Document)
+        * **PAS** (Passport)
+        * **RUC** (Tax ID (Entity))
       </td>
 
       <td style={{ textAlign: "left" }}>
         51
       </td>
     </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Pierre and Miquelon
+      </td>
 
+      <td style={{ textAlign: "left" }}>
+        `PM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         Puerto Rico
@@ -1183,113 +1186,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **NIS** (Numero de identificacion social)
-        * **LC** (Licencia de conducir)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Saint Kitts And Nevis
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `XCD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * National ID Card
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Saint Lucia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LC`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `XCD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * National ID Card
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Saint Martin
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MF`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `EUR`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-          National ID Card
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        590
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Saint Pierre And Miquelon
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `EUR`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1301,21 +1198,20 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        508
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Saint Vincent And The Grenadines
+        Paraguay
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `VC`
+        `PY`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `XCD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1323,14 +1219,15 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        * **CIC** (Cédula de Identidad Civil)
         * **PAS** (Passport)
+        * **RUC** (Tax ID (Entity))
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Suriname
@@ -1341,7 +1238,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `SRD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1353,21 +1250,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        597
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Trinidad And Tobago
+        El Salvador
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `TT`
+        `SV`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `TTD`
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **DUI** (Unique Identity Document)
+        * **NIT** (Tax Identification Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sint Maarten (Dutch part)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SX`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1379,13 +1302,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Turks And Caicos Islands
+        Turks and Caicos Islands
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1393,7 +1315,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `USD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1405,10 +1327,59 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Trinidad and Tobago
+      </td>
 
+      <td style={{ textAlign: "left" }}>
+        `TT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        United States Minor Outlying Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
         United States
@@ -1427,40 +1398,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        * **DLIC** (Driver License)
+        * **EIN** (Employer Identification Number)
+        * **ITIN** (Individual Taxpayer Identification Number)
         * **PAS** (Passport)
+        * **PRC** (Permanent Resident Card)
+        * **SSN** (Social Security Number)
       </td>
 
       <td style={{ textAlign: "left" }}>
         1
       </td>
     </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        United States Minor Outlying Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `UM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
         Uruguay
@@ -1471,29 +1420,51 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `UYU`
-        `UYI`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
         2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CI** (Identity Card)
+        * **PAS** (Passport)
+        * **RUT** (Unique Tax Role)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Vincent and the Grenadines
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
       <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-        * **CI** (Identity Card)
-        * **RUT** (Tax ID - Entity)
       </td>
 
       <td style={{ textAlign: "left" }}>
-        598
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Venezuela
+        Venezuela, Bolivarian Republic of
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1501,7 +1472,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `VEF`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1513,13 +1484,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        58
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Virgin Islands (British)
+        Virgin Islands, British
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1527,7 +1497,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `USD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1539,13 +1509,12 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
+        N/A
       </td>
     </tr>
-
     <tr>
       <td style={{ textAlign: "left" }}>
-        Virgin Islands (US)
+        Virgin Islands, U.S.
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1553,7 +1522,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `USD`
+        `N/A`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1565,3414 +1534,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        American Samoa
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `AS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Korea, Democratic People's Republic of
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KP`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KPW`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        850
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Lao People's Democratic Republic
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LA`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LAK`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        856
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Timor-Leste
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        670
-      </td>
-    </tr>
-
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Bonaire, Sint Eustatius and Saba
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BQ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        599
+        N/A
       </td>
     </tr>
 
   </tbody>
 </Table>
 
-**(1)** _The number of digits after the decimal separator_.
-
-## Africa
-
-<Table align={["left","left","left","left","left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Name
-      </th>
-
-      <th>
-        Country code (ISO 3166-1 Alpha 2)
-      </th>
-
-      <th>
-        Currency code (ISO 4217 Alpha 3)
-      </th>
-
-      <th>
-        Currency decimal digits
-
-        <sup>
-          (1)
-        </sup>
-      </th>
-
-      <th>
-        Document type
-      </th>
-
-      <th>
-        Phone country calling code
-      </th>
-    </tr>
-
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        Algeria
-      </td>
-
-      <td>
-        `DZ`
-      </td>
-
-      <td>
-        `DZD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        213
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Angola
-      </td>
-
-      <td>
-        `AO`
-      </td>
-
-      <td>
-        `AOA`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * National Identity Card
-      </td>
-
-      <td>
-        244
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Benin
-      </td>
-
-      <td>
-        `BJ`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **CNIP** (Carte Nationale d'Identité Personnelle)
-      </td>
-
-      <td>
-        229
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Botswana
-      </td>
-
-      <td>
-        `BW`
-      </td>
-
-      <td>
-        `BWP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **ID** (National Identity Card)
-      </td>
-
-      <td>
-        267
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Burkina Faso
-      </td>
-
-      <td>
-        `BF`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **CNI** (Carte Nationale d'Identité)
-      </td>
-
-      <td>
-        226
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Burundi
-      </td>
-
-      <td>
-        `BI`
-      </td>
-
-      <td>
-        `BIF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **CNI** (Carte Nationale d'Identité)
-      </td>
-
-      <td>
-        257
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Cameroon
-      </td>
-
-      <td>
-        `CM`
-      </td>
-
-      <td>
-        `XAF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **CNI** (Carte Nationale d'Identité)
-      </td>
-
-      <td>
-        237
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Cape Verde
-      </td>
-
-      <td>
-        `CV`
-      </td>
-
-      <td>
-        `CVE`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **BI** (Bilhete de Identidade)
-      </td>
-
-      <td>
-        238
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Central African Republic
-      </td>
-
-      <td>
-        `CF`
-      </td>
-
-      <td>
-        `XAF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        236
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Chad
-      </td>
-
-      <td>
-        `TD`
-      </td>
-
-      <td>
-        `XAF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        235
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Comoros
-      </td>
-
-      <td>
-        `KM`
-      </td>
-
-      <td>
-        `KMF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * Carte d'Identité Nationale
-      </td>
-
-      <td>
-        269
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Democratic Republic Of Congo
-      </td>
-
-      <td>
-        `CD`
-      </td>
-
-      <td>
-        `CDF`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS**(Passport)
-          National ID Card
-      </td>
-
-      <td>
-        243
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Djibouti
-      </td>
-
-      <td>
-        `DJ`
-      </td>
-
-      <td>
-        `DJF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        253
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Côte d'Ivoire
-      </td>
-
-      <td>
-        `CI`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        225
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Egypt
-      </td>
-
-      <td>
-        `EG`
-      </td>
-
-      <td>
-        `EGP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-          Driver's license
-      </td>
-
-      <td>
-        20
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Equatorial Guinea
-      </td>
-
-      <td>
-        `GQ`
-      </td>
-
-      <td>
-        `XAF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        240
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Eritrea
-      </td>
-
-      <td>
-        `ER`
-      </td>
-
-      <td>
-        `ERN`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        291
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Ethiopia
-      </td>
-
-      <td>
-        `ET`
-      </td>
-
-      <td>
-        `ETB`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-          Driver's license
-      </td>
-
-      <td>
-        251
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        French Southern Territories
-      </td>
-
-      <td>
-        `TF`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        262
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Gabon Republic
-      </td>
-
-      <td>
-        `GA`
-      </td>
-
-      <td>
-        `XAF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        241
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Gambia
-      </td>
-
-      <td>
-        `GM`
-      </td>
-
-      <td>
-        `GMD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        220
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Ghana
-      </td>
-
-      <td>
-        `GH`
-      </td>
-
-      <td>
-        `GHS`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-          Voter ID Card
-      </td>
-
-      <td>
-        233
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Guinea-bissau
-      </td>
-
-      <td>
-        `GW`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        245
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Guinea
-      </td>
-
-      <td>
-        `GN`
-      </td>
-
-      <td>
-        `GNF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        224
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Kenya
-      </td>
-
-      <td>
-        `KE`
-      </td>
-
-      <td>
-        `KES`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        254
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Lesotho
-      </td>
-
-      <td>
-        `LS`
-      </td>
-
-      <td>
-        `LSL`
-        `ZAR`
-      </td>
-
-      <td>
-        2
-        2
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        266
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Liberia
-      </td>
-
-      <td>
-        `LR`
-      </td>
-
-      <td>
-        `LRD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * National Identification Registry Card
-      </td>
-
-      <td>
-        231
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Libya
-      </td>
-
-      <td>
-        `LY`
-      </td>
-
-      <td>
-        `LYD`
-      </td>
-
-      <td>
-        3
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        218
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Madagascar
-      </td>
-
-      <td>
-        `MG`
-      </td>
-
-      <td>
-        `MGA`
-      </td>
-
-      <td>
-        0.7[8]
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        261
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Malawi
-      </td>
-
-      <td>
-        `MW`
-      </td>
-
-      <td>
-        `MWK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        265
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Mali
-      </td>
-
-      <td>
-        `ML`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        223
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Mauritania
-      </td>
-
-      <td>
-        `MR`
-      </td>
-
-      <td>
-        `MRO`
-      </td>
-
-      <td>
-        0.7[8]
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        222
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Mauritius
-      </td>
-
-      <td>
-        `MU`
-      </td>
-
-      <td>
-        `MUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        230
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Mayotte
-      </td>
-
-      <td>
-        `YT`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        262
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Morocco
-      </td>
-
-      <td>
-        `MA`
-      </td>
-
-      <td>
-        `MAD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        212
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Mozambique
-      </td>
-
-      <td>
-        `MZ`
-      </td>
-
-      <td>
-        `MZN`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        258
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Namibia
-      </td>
-
-      <td>
-        `NA`
-      </td>
-
-      <td>
-        `NAD`
-        `ZAR`
-      </td>
-
-      <td>
-        2
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        264
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Niger
-      </td>
-
-      <td>
-        `NE`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        227
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Nigeria
-      </td>
-
-      <td>
-        `NG`
-      </td>
-
-      <td>
-        `NGN`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * _PAS_* (Passport)
-      </td>
-
-      <td>
-        234
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Republic Of Congo
-      </td>
-
-      <td>
-        `CG`
-      </td>
-
-      <td>
-        `XAF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          National ID Card
-      </td>
-
-      <td>
-        242
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Reunion
-      </td>
-
-      <td>
-        `RE`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        262
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Rwanda
-      </td>
-
-      <td>
-        `RW`
-      </td>
-
-      <td>
-        `RWF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        250
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Saint Helena, Ascension And Tristan Da Cunha
-      </td>
-
-      <td>
-        `SH`
-      </td>
-
-      <td>
-        `SHP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        290
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        São Tomé and Príncipe
-      </td>
-
-      <td>
-        `ST`
-      </td>
-
-      <td>
-        `STD`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        239
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Senegal
-      </td>
-
-      <td>
-        `SN`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        221
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Seychelles
-      </td>
-
-      <td>
-        `SC`
-      </td>
-
-      <td>
-        `SCR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        248
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Sierra Leone
-      </td>
-
-      <td>
-        `SL`
-      </td>
-
-      <td>
-        `SLL`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        232
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Somalia
-      </td>
-
-      <td>
-        `SO`
-      </td>
-
-      <td>
-        `SOS`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        252
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        South Africa
-      </td>
-
-      <td>
-        `ZA`
-      </td>
-
-      <td>
-        `ZAR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        27
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        South Sudan
-      </td>
-
-      <td>
-        `SS`
-      </td>
-
-      <td>
-        `SSP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        211
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Sudan
-      </td>
-
-      <td>
-        `SD`
-      </td>
-
-      <td>
-        `SDG`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        249
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Swaziland
-      </td>
-
-      <td>
-        `SZ`
-      </td>
-
-      <td>
-        `SZL`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        268
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Tanzania
-      </td>
-
-      <td>
-        `TZ`
-      </td>
-
-      <td>
-        `TZS`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        255
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Togo
-      </td>
-
-      <td>
-        `TG`
-      </td>
-
-      <td>
-        `XOF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        228
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Tunisia
-      </td>
-
-      <td>
-        `TN`
-      </td>
-
-      <td>
-        `TND`
-      </td>
-
-      <td>
-        3
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        216
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Uganda
-      </td>
-
-      <td>
-        `UG`
-      </td>
-
-      <td>
-        `UGX`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        256
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Western Sahara
-      </td>
-
-      <td>
-        `EH`
-      </td>
-
-      <td>
-        `MAD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * No se emiten documentos de identidad reconocidos
-      </td>
-
-      <td>
-        212
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Zambia
-      </td>
-
-      <td>
-        `ZM`
-      </td>
-
-      <td>
-        `ZMW`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        260
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Zimbabwe
-      </td>
-
-      <td>
-        `ZW`
-      </td>
-
-      <td>
-        `ZWL`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        263
-      </td>
-    </tr>
-
-  </tbody>
-</Table>
-
-**(1)** _The number of digits after the decimal separator_.
-
-## Asia Pacific
-
-<Table align={["left","left","left","left","left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Name
-      </th>
-
-      <th>
-        Country code (ISO 3166-1 Alpha 2)
-      </th>
-
-      <th>
-        Currency code (ISO 4217 Alpha 3)
-      </th>
-
-      <th>
-        Currency decimal digits
-
-        <sup>
-          (1)
-        </sup>
-      </th>
-
-      <th>
-        Document type
-      </th>
-
-      <th>
-        Phone country calling code
-      </th>
-    </tr>
-
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        Afghanistan
-      </td>
-
-      <td>
-        `AF`
-      </td>
-
-      <td>
-        `AFN`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * Tazkira
-      </td>
-
-      <td>
-        93
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Armenia
-      </td>
-
-      <td>
-        `AM`
-      </td>
-
-      <td>
-        `AMD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * Tarjeta de Identidad
-      </td>
-
-      <td>
-        374
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Australia
-      </td>
-
-      <td>
-        `AU`
-      </td>
-
-      <td>
-        `AUD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          ID Card
-      </td>
-
-      <td>
-        61
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Azerbaijan
-      </td>
-
-      <td>
-        `AZ`
-      </td>
-
-      <td>
-        `AZN`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        994
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Bangladesh
-      </td>
-
-      <td>
-        `BD`
-      </td>
-
-      <td>
-        `BDT`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)  National ID Card
-      </td>
-
-      <td>
-        880
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Bhutan
-      </td>
-
-      <td>
-        `BT`
-      </td>
-
-      <td>
-        `INR`
-        `BTN`
-      </td>
-
-      <td>
-        2
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        975
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Brunei Darussalam
-      </td>
-
-      <td>
-        `BN`
-      </td>
-
-      <td>
-        `BND`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        673
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        British Indian Ocean Territory
-      </td>
-
-      <td>
-        `IO`
-      </td>
-
-      <td>
-        `USD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        246
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Cambodia
-      </td>
-
-      <td>
-        `KH`
-      </td>
-
-      <td>
-        `KHR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        855
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        China
-      </td>
-
-      <td>
-        `CN`
-      </td>
-
-      <td>
-        `CNY`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        86
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Christmas Island
-      </td>
-
-      <td>
-        `CX`
-      </td>
-
-      <td>
-        `AUD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          Australian driver's license
-      </td>
-
-      <td>
-        61
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Cocos (Keeling) Islands
-      </td>
-
-      <td>
-        `CC`
-      </td>
-
-      <td>
-        `AUD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          Australian driver's licenses
-      </td>
-
-      <td>
-        61
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Cook Islands
-      </td>
-
-      <td>
-        `CK`
-      </td>
-
-      <td>
-        `NZD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          Driver's license
-          National ID Card
-          Birth certificate
-      </td>
-
-      <td>
-        682
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Fiji
-      </td>
-
-      <td>
-        `FJ`
-      </td>
-
-      <td>
-        `FJD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        679
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        French Polynesia
-      </td>
-
-      <td>
-        `PF`
-      </td>
-
-      <td>
-        `XPF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        689
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Guam
-      </td>
-
-      <td>
-        `GU`
-      </td>
-
-      <td>
-        `USD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Hong Kong
-      </td>
-
-      <td>
-        `HK`
-      </td>
-
-      <td>
-        `HKD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        852
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        India
-      </td>
-
-      <td>
-        `IN`
-      </td>
-
-      <td>
-        `INR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * Aadhaar Card
-      </td>
-
-      <td>
-        91
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Indonesia
-      </td>
-
-      <td>
-        `ID`
-      </td>
-
-      <td>
-        `IDR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **KTP** (Kartu Tanda Penduduk)
-      </td>
-
-      <td>
-        62
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Japan
-      </td>
-
-      <td>
-        `JP`
-      </td>
-
-      <td>
-        `JPY`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * My Number Card
-      </td>
-
-      <td>
-        81
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Kazakhstan
-      </td>
-
-      <td>
-        `KZ`
-      </td>
-
-      <td>
-        `KZT`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        7
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Kiribati
-      </td>
-
-      <td>
-        `KI`
-      </td>
-
-      <td>
-        `AUD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        686
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Kyrgyzstan
-      </td>
-
-      <td>
-        `KG`
-      </td>
-
-      <td>
-        `KGS`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        996
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Macao
-      </td>
-
-      <td>
-        `MO`
-      </td>
-
-      <td>
-        `MOP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        853
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Malaysia
-      </td>
-
-      <td>
-        `MY`
-      </td>
-
-      <td>
-        `MYR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        60
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Maldives
-      </td>
-
-      <td>
-        `MV`
-      </td>
-
-      <td>
-        `MVR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        960
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Marshall Islands
-      </td>
-
-      <td>
-        `MH`
-      </td>
-
-      <td>
-        `USD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        692
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Micronesia
-      </td>
-
-      <td>
-        `FM`
-      </td>
-
-      <td>
-        `USD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          National ID Card
-      </td>
-
-      <td>
-        691
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Mongolia
-      </td>
-
-      <td>
-        `MN`
-      </td>
-
-      <td>
-        `MNT`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        976
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Myanmar
-      </td>
-
-      <td>
-        `MM`
-      </td>
-
-      <td>
-        `MMK`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        95
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Nauru
-      </td>
-
-      <td>
-        `NR`
-      </td>
-
-      <td>
-        `AUD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        674
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Nepal
-      </td>
-
-      <td>
-        `NP`
-      </td>
-
-      <td>
-        `NPR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        977
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        New Caledonia
-      </td>
-
-      <td>
-        `NC`
-      </td>
-
-      <td>
-        `XPF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * Carte d'identité de Nouvelle-Calédonie
-      </td>
-
-      <td>
-        687
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        New Zealand
-      </td>
-
-      <td>
-        `NZ`
-      </td>
-
-      <td>
-        `NZD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          Tarjeta de Identificación
-      </td>
-
-      <td>
-        64
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Niue
-      </td>
-
-      <td>
-        `NU`
-      </td>
-
-      <td>
-        `NZD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        683
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Norfolk Island
-      </td>
-
-      <td>
-        `NF`
-      </td>
-
-      <td>
-        `AUD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        672
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Northern Mariana Islands
-      </td>
-
-      <td>
-        `MP`
-      </td>
-
-      <td>
-        `USD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Pakistan
-      </td>
-
-      <td>
-        `PK`
-      </td>
-
-      <td>
-        `PKR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        92
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Palau
-      </td>
-
-      <td>
-        `PW`
-      </td>
-
-      <td>
-        `USD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        680
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Papua New Guinea
-      </td>
-
-      <td>
-        `PG`
-      </td>
-
-      <td>
-        `PGK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        675
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Philippines
-      </td>
-
-      <td>
-        `PH`
-      </td>
-
-      <td>
-        `PHP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        63
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Pitcairn Islands
-      </td>
-
-      <td>
-        `PN`
-      </td>
-
-      <td>
-        `NZD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        872
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Samoa
-      </td>
-
-      <td>
-        `WS`
-      </td>
-
-      <td>
-        `WST`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        685
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Singapore
-      </td>
-
-      <td>
-        `SG`
-      </td>
-
-      <td>
-        `SGD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        65
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Solomon Islands
-      </td>
-
-      <td>
-        `SB`
-      </td>
-
-      <td>
-        `SBD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        677
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        South Korea
-      </td>
-
-      <td>
-        `KR`
-      </td>
-
-      <td>
-        `KRW`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **RRN**(Resident Registration Number)
-      </td>
-
-      <td>
-        82
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Sri Lanka
-      </td>
-
-      <td>
-        `LK`
-      </td>
-
-      <td>
-        `LKR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-
-          National ID Card
-      </td>
-
-      <td>
-        94
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Taiwan
-      </td>
-
-      <td>
-        `TW`
-      </td>
-
-      <td>
-        `TWD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        886
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Tajikistan
-      </td>
-
-      <td>
-        `TJ`
-      </td>
-
-      <td>
-        `TJS`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        992
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Thailand
-      </td>
-
-      <td>
-        `TH`
-      </td>
-
-      <td>
-        `THB`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        66
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Tokelau
-      </td>
-
-      <td>
-        `TK`
-      </td>
-
-      <td>
-        `NZD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        690
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Tonga
-      </td>
-
-      <td>
-        `TO`
-      </td>
-
-      <td>
-        `TOP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        676
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Turkmenistan
-      </td>
-
-      <td>
-        `TM`
-      </td>
-
-      <td>
-        `TMT`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        993
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Tuvalu
-      </td>
-
-      <td>
-        `TV`
-      </td>
-
-      <td>
-        `AUD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        688
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Uzbekistan
-      </td>
-
-      <td>
-        `UZ`
-      </td>
-
-      <td>
-        `UZS`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        998
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Vanuatu
-      </td>
-
-      <td>
-        `VU`
-      </td>
-
-      <td>
-        `VUV`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        678
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Vietnam
-      </td>
-
-      <td>
-        `VN`
-      </td>
-
-      <td>
-        `VND`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        84
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Wallis and Futuna
-      </td>
-
-      <td>
-        `WF`
-      </td>
-
-      <td>
-        `XPF`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * Carte d'identité territoriale de Wallis-et-Futuna
-      </td>
-
-      <td>
-        681
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        American Samoa
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `AS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        1
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Korea, Democratic People's Republic of
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KP`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KPW`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        850
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Lao People's Democratic Republic
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LA`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LAK`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        856
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Timor-Leste
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `USD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        670
-      </td>
-    </tr>
-
-  </tbody>
-</Table>
-
-**(1)** _The number of digits after the decimal separator_.
 
 ## Europe
 
+**(1)** _The number of digits after the decimal separator_.
+
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
-      <th>
+      <th style={{ textAlign: "left" }}>
         Name
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Country code (ISO 3166-1 Alpha 2)
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Currency code (ISO 4217 Alpha 3)
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Currency decimal digits
 
         <sup>
@@ -4980,11 +1569,11 @@ On this page, you will find the country's information you need when using Yuno A
         </sup>
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Document type
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
@@ -4993,1501 +1582,1443 @@ On this page, you will find the country's information you need when using Yuno A
 
   <tbody>
     <tr>
-      <td>
-        Åland Islands
-      </td>
-
-      <td>
-        `AX`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID card
-      </td>
-
-      <td>
-        358
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Albania
-      </td>
-
-      <td>
-        `AL`
-      </td>
-
-      <td>
-        `ALL`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * Tarjeta de Identidad Electrónica
-      </td>
-
-      <td>
-        355
-      </td>
-    </tr>
-
-    <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Andorra
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         `AD`
       </td>
 
-      <td>
-        `EUR`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * Targeta de Resident
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
       </td>
 
-      <td>
-        376
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
+        Albania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **EIDC** (Electronic Identity Card)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
         Austria
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         `AT`
       </td>
 
-      <td>
-        `EUR`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
+        * **SVNR** (Social Security Number)
+        * **UID** (Enterprise Identification Number)
+        * **ZMRN** (Central Residents Register Number)
       </td>
 
-      <td>
-        43
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        Belarus
+      <td style={{ textAlign: "left" }}>
+        Åland Islands
       </td>
 
-      <td>
-        `BY`
+      <td style={{ textAlign: "left" }}>
+        `AX`
       </td>
 
-      <td>
-        `BYR`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        375
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Belgium
-      </td>
-
-      <td>
-        `BE`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
+        * **NIDC** (National Identity Card)
         * **PAS** (Passport)
-        * National ID Card
       </td>
 
-      <td>
-        32
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        Bosnia & Herzegovina
+      <td style={{ textAlign: "left" }}>
+        Bosnia and Herzegovina
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         `BA`
       </td>
 
-      <td>
-        `BAM`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
-        * National ID Card
       </td>
 
-      <td>
-        387
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
+        Belgium
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BCE** (Crossroads Bank for Enterprises Number)
+        * **EID** (Emirates ID)
+        * **PAS** (Passport)
+        * **RRN** (Resident Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
         Bulgaria
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         `BG`
       </td>
 
-      <td>
-        `BGN`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
+        * **EGN** (Uniform Civil Number)
+        * **LNC** (Personal Number)
+        * **PAS** (Passport)
+        * **UIC** (Unified Identification Code)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Belarus
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
       </td>
 
-      <td>
-        359
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        Croatia
-      </td>
-
-      <td>
-        `HR`
-      </td>
-
-      <td>
-        `HRK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **OI** (Osobna iskaznica)
-      </td>
-
-      <td>
-        385
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Cyprus
-      </td>
-
-      <td>
-        `CY`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          National ID Card
-      </td>
-
-      <td>
-        357
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Czech Republic
-      </td>
-
-      <td>
-        `CZ`
-      </td>
-
-      <td>
-        `VZK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-        * Driver's license
-      </td>
-
-      <td>
-        420
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Denmark
-      </td>
-
-      <td>
-        `DK`
-      </td>
-
-      <td>
-        `DKK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-        * Driver's license
-      </td>
-
-      <td>
-        45
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Estonia
-      </td>
-
-      <td>
-        `EE`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        372
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Faroe Islands
-      </td>
-
-      <td>
-        `FO`
-      </td>
-
-      <td>
-        `DKK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * _PAS_* (Passport)
-        * Driver's licenses
-        * National ID Card
-      </td>
-
-      <td>
-        298
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Finland
-      </td>
-
-      <td>
-        `FI`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-        * Driver's license
-      </td>
-
-      <td>
-        358
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        France
-      </td>
-
-      <td>
-        `FR`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-        * Driver's license
-      </td>
-
-      <td>
-        33
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Georgia
-      </td>
-
-      <td>
-        `GE`
-      </td>
-
-      <td>
-        `GEL`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        995
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Germany
-      </td>
-
-      <td>
-        `DE`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-        * Driver's license
-      </td>
-
-      <td>
-        49
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Gibraltar
-      </td>
-
-      <td>
-        `GI`
-      </td>
-
-      <td>
-        `GIP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        350
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Greece
-      </td>
-
-      <td>
-        `GR`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        30
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Greenland
-      </td>
-
-      <td>
-        `GL`
-      </td>
-
-      <td>
-        `DKK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        299
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Guernsey
-      </td>
-
-      <td>
-        `GG`
-      </td>
-
-      <td>
-        `GBP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        44
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Hungary
-      </td>
-
-      <td>
-        `HU`
-      </td>
-
-      <td>
-        `HUF`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **SZIG** (Személyazonosító igazolvány)
-      </td>
-
-      <td>
-        36
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Iceland
-      </td>
-
-      <td>
-        `IS`
-      </td>
-
-      <td>
-        `ISK`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * Kennitala
-      </td>
-
-      <td>
-        354
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Ireland
-      </td>
-
-      <td>
-        `IE`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        353
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Isle Of Man
-      </td>
-
-      <td>
-        `IM`
-      </td>
-
-      <td>
-        `GBP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * Driving License
-      </td>
-
-      <td>
-        44
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Italy
-      </td>
-
-      <td>
-        `IT`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * Carta d'Identità
-      </td>
-
-      <td>
-        39
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Jersey
-      </td>
-
-      <td>
-        `JE`
-      </td>
-
-      <td>
-        `GBP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * Driving License
-      </td>
-
-      <td>
-        44
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Latvia
-      </td>
-
-      <td>
-        `LV`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * Personal ID Card
-      </td>
-
-      <td>
-        371
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Liechtenstein
-      </td>
-
-      <td>
-        `LI`
-      </td>
-
-      <td>
-        `CHF`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * ID Card
-        * Resident Permit
-      </td>
-
-      <td>
-        423
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Lithuania
-      </td>
-
-      <td>
-        `LT`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * Personal ID Card
-      </td>
-
-      <td>
-        370
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Luxembourg
-      </td>
-
-      <td>
-        `LU`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        352
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Malta
-      </td>
-
-      <td>
-        `MT`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        356
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Moldova
-      </td>
-
-      <td>
-        `MD`
-      </td>
-
-      <td>
-        `MDL`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        373
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Monaco
-      </td>
-
-      <td>
-        `MC`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-      </td>
-
-      <td>
-        377
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Montenegro
-      </td>
-
-      <td>
-        `ME`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * ID Card
-      </td>
-
-      <td>
-        382
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Netherlands
-      </td>
-
-      <td>
-        `NL`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        31
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        North Macedonia
-      </td>
-
-      <td>
-        `MK`
-      </td>
-
-      <td>
-        `MKD`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        389
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Norway
-      </td>
-
-      <td>
-        `NO`
-      </td>
-
-      <td>
-        `NOK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        47
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Poland
-      </td>
-
-      <td>
-        `PL`
-      </td>
-
-      <td>
-        `PLN`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        48
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Portugal
-      </td>
-
-      <td>
-        `PT`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        351
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Romania
-      </td>
-
-      <td>
-        `RO`
-      </td>
-
-      <td>
-        `RON`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        40
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Russia
-      </td>
-
-      <td>
-        `RU`
-      </td>
-
-      <td>
-        `RUB`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        7
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        San Marino
-      </td>
-
-      <td>
-        `SM`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        378
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Serbia
-      </td>
-
-      <td>
-        `RS`
-      </td>
-
-      <td>
-        `RSD`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        381
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Slovakia
-      </td>
-
-      <td>
-        `SK`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        421
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Slovenia
-      </td>
-
-      <td>
-        `SI`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        386
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Spain
-      </td>
-
-      <td>
-        `ES`
-      </td>
-
-      <td>
-        `EUR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-        * National ID Card
-        * Driver's license
-      </td>
-
-      <td>
-        34
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Svalbard and Jan Mayen
-      </td>
-
-      <td>
-        `SJ`
-      </td>
-
-      <td>
-        `NOK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        47
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Sweden
-      </td>
-
-      <td>
-        `SE`
-      </td>
-
-      <td>
-        `SEK`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        46
-      </td>
-    </tr>
-
-    <tr>
-      <td>
+      <td style={{ textAlign: "left" }}>
         Switzerland
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         `CH`
       </td>
 
-      <td>
-        `CHF`
-        `CHE`
-        `CHW`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
-        2
-        2
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
+        * **AHVN** (Social Security Number)
         * **PAS** (Passport)
-        * National ID Card
-        * Driver's license
+        * **UID** (Enterprise Identification Number)
       </td>
 
-      <td>
-        41
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        Turkey
+      <td style={{ textAlign: "left" }}>
+        Cyprus
       </td>
 
-      <td>
-        `TR`
+      <td style={{ textAlign: "left" }}>
+        `CY`
       </td>
 
-      <td>
-        `TRY`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
       </td>
 
-      <td>
-        90
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        Ukraine
+      <td style={{ textAlign: "left" }}>
+        Czechia
       </td>
 
-      <td>
-        `UA`
+      <td style={{ textAlign: "left" }}>
+        `CZ`
       </td>
 
-      <td>
-        `UAH`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
+        * **DIC** (Tax Identification Number)
+        * **ICO** (Company Identification Number)
         * **PAS** (Passport)
+        * **RNUM** (Registration Number)
       </td>
 
-      <td>
-        380
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        United Kingdom
+      <td style={{ textAlign: "left" }}>
+        Germany
       </td>
 
-      <td>
-        `GB`
+      <td style={{ textAlign: "left" }}>
+        `DE`
       </td>
 
-      <td>
-        `GBP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-          National ID Card
-          Driver's licenses
-      </td>
-
-      <td>
-        44
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Vatican City State
-      </td>
-
-      <td>
-        `VA`
-      </td>
-
-      <td>
+      <td style={{ textAlign: "left" }}>
         `EUR`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-
+      <td style={{ textAlign: "left" }}>
+        * **EAT** (European Article Number)
+        * **IDNR** (Tax Identification Number)
+        * **PAS** (Passport)
+        * **PAUS** (PAUS)
+        * **USTI** (VAT Identification Number)
       </td>
 
-      <td>
-        379
+      <td style={{ textAlign: "left" }}>
+        49
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Denmark
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CPR** (Civil Registration Number)
+        * **CVR** (Central Business Register Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Estonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Spain
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ES`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **DNI** (National Identity Document)
+        * **NIE** (Foreigner Identity Number)
+        * **NIF** (Tax Identification Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        34
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Finland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **HETU** (Personal Identity Code)
+        * **PAS** (Passport)
+        * **YID** (Business ID)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Faroe Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        France
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CNI** (National Identity Card)
+        * **NIR** (National Identity Register)
+        * **PAS** (Passport)
+        * **SIRE** (Business Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        33
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        United Kingdom
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GBP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BRP** (Biometric Residence Permit)
+        * **CRN** (Company Registration Number)
+        * **NINO** (National Insurance Number)
+        * **PAS** (Passport)
+        * **UTR** (Unique Taxpayer Reference)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        44
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Georgia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guernsey
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gibraltar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Greece
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **AFM** (Tax Registration Number)
+        * **AMKA** (Social Security Number)
+        * **GEMI** (General Commercial Registry Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Croatia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Hungary
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ireland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CRN** (Company Registration Number)
+        * **PAS** (Passport)
+        * **PPSN** (Personal Public Service Number)
+        * **VAT** (VAT Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Isle of Man
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Iceland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Italy
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CF** (Fiscal Code)
+        * **CIE** (Electronic Identity Card)
+        * **PAS** (Passport)
+        * **PIVA** (VAT Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        39
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Jersey
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `JE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Liechtenstein
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lithuania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Luxembourg
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Latvia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Monaco
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Moldova, Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Montenegro
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ME`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        North Macedonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Malta
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Netherlands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BSN** (Burgerservicenummer)
+        * **BTW** (BTW Number)
+        * **KVK** (Chamber of Commerce Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        31
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Norway
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **DNR** (D-Number)
+        * **FNR** (National Identity Number)
+        * **ORG** (Organization Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Poland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **NIP** (Tax Identification Number)
+        * **PAS** (Passport)
+        * **PESEL** (Personal Identity Number)
+        * **REGON** (Statistical Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Portugal
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CC** (Citizenship Card)
+        * **NIF** (Tax Identification Number)
+        * **NIPC** (Corporate Tax Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Romania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CNP** (Personal Numerical Code)
+        * **CUI** (Unique Registration Code)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Serbia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Russian Federation
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sweden
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **ORG** (Organization Number)
+        * **PAS** (Passport)
+        * **PNR** (Personal Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Slovenia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Svalbard and Jan Mayen
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Slovakia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        San Marino
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Turkey
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **MERS** (Central Registration System)
+        * **PAS** (Passport)
+        * **TCKN** (Turkish Citizenship Number)
+        * **VKN** (Tax Number)
+        * **YKN** (Foreign National ID)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ukraine
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Holy See (Vatican City State)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
 
   </tbody>
 </Table>
 
+
+## Asia Pacific
+
 **(1)** _The number of digits after the decimal separator_.
 
-## Middle East
-
 <Table align={["left","left","left","left","left","left"]}>
   <thead>
     <tr>
-      <th>
+      <th style={{ textAlign: "left" }}>
         Name
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Country code (ISO 3166-1 Alpha 2)
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Currency code (ISO 4217 Alpha 3)
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Currency decimal digits
 
         <sup>
@@ -6495,11 +3026,11 @@ On this page, you will find the country's information you need when using Yuno A
         </sup>
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Document type
       </th>
 
-      <th>
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
@@ -6508,510 +3039,3668 @@ On this page, you will find the country's information you need when using Yuno A
 
   <tbody>
     <tr>
-      <td>
-        Bahrain
+      <td style={{ textAlign: "left" }}>
+        Afghanistan
       </td>
 
-      <td>
-        `BH`
+      <td style={{ textAlign: "left" }}>
+        `AF`
       </td>
 
-      <td>
-        `BHD`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
-        3
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        973
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Iran
-      </td>
-
-      <td>
-        `IR`
-      </td>
-
-      <td>
-        `IRR`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * National Card
-      </td>
-
-      <td>
-        98
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Iraq
-      </td>
-
-      <td>
-        `IQ`
-      </td>
-
-      <td>
-        `IQD`
-      </td>
-
-      <td>
-        3
-      </td>
-
-      <td>
-        * National Card
-      </td>
-
-      <td>
-        964
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Israel
-      </td>
-
-      <td>
-        `IL`
-      </td>
-
-      <td>
-        `ILS`
-      </td>
-
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
-        * Teudat Zehut
-      </td>
-
-      <td>
-        972
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Jordan
-      </td>
-
-      <td>
-        `JO`
-      </td>
-
-      <td>
-        `JOD`
-      </td>
-
-      <td>
-        3
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        962
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Kuwait
-      </td>
-
-      <td>
-        `KW`
-      </td>
-
-      <td>
-        `KWD`
-      </td>
-
-      <td>
-        3
-      </td>
-
-      <td>
-        * Civil ID Card
-      </td>
-
-      <td>
-        965
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Lebanon
-      </td>
-
-      <td>
-        `LB`
-      </td>
-
-      <td>
-        `LBP`
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * National ID Card
-      </td>
-
-      <td>
-        961
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Oman
-      </td>
-
-      <td>
-        `OM`
-      </td>
-
-      <td>
-        `OMR`
-      </td>
-
-      <td>
-        3
-      </td>
-
-      <td>
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
+        * **TAZK** (Tazkira)
       </td>
 
-      <td>
-        968
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Palestine, State of
-      </td>
-
-      <td>
-        `PS`
-      </td>
-
-      <td>
-        `ILS`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        970
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Qatar
-      </td>
-
-      <td>
-        `QA`
-      </td>
-
-      <td>
-        `QAR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        974
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Saudi Arabia
-      </td>
-
-      <td>
-        `SA`
-      </td>
-
-      <td>
-        `SAR`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        966
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Syria
-      </td>
-
-      <td>
-        `SY`
-      </td>
-
-      <td>
-        `SYP`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        963
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        United Arab Emirates
-      </td>
-
-      <td>
-        `AE`
-      </td>
-
-      <td>
-        `AED`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * Emirates ID
-      </td>
-
-      <td>
-        971
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        Yemen
-      </td>
-
-      <td>
-        `YE`
-      </td>
-
-      <td>
-        `YER`
-      </td>
-
-      <td>
-        2
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
-        967
-      </td>
-    </tr>
-
-  </tbody>
- </Table>
-
-## Antarctica
-
-<Table align={["left","left","left","left","left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Name
-      </th>
-
-      <th>
-        Country code (ISO 3166-1 Alpha 2)
-      </th>
-
-      <th>
-        Currency code (ISO 4217 Alpha 3)
-      </th>
-
-      <th>
-        Currency decimal digits
-
-        <sup>
-          (1)
-        </sup>
-      </th>
-
-      <th>
-        Document type
-      </th>
-
-      <th>
-        Phone country calling code
-      </th>
-    </tr>
-
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        Antarctica
-      </td>
-
-      <td>
-        `AQ`
-      </td>
-
-      <td>
-        N/A
-      </td>
-
-      <td>
-        0
-      </td>
-
-      <td>
-        * **PAS** (Passport)
-      </td>
-
-      <td>
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        Bouvet Island
+      <td style={{ textAlign: "left" }}>
+        Armenia
       </td>
 
-      <td>
-        `BV`
+      <td style={{ textAlign: "left" }}>
+        `AM`
       </td>
 
-      <td>
-        `NOK`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
     </tr>
-
     <tr>
-      <td>
-        Heard Island and McDonald Islands
+      <td style={{ textAlign: "left" }}>
+        Australia
       </td>
 
-      <td>
-        `HM`
+      <td style={{ textAlign: "left" }}>
+        `AU`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         `AUD`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
+        * **ABN** (Australian Business Number)
+        * **ACN** (Australian Company Number)
+        * **DLIC** (Driver License)
+        * **PAS** (Passport)
+        * **TFN** (Tax File Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Azerbaijan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bangladesh
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Brunei Darussalam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bhutan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cocos (Keeling) Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cook Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        China
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CNY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **FPRD** (Foreigner Permanent Residence Document)
+        * **PAS** (Passport)
+        * **RIC** (Resident Identity Card)
+        * **USCC** (Unified Social Credit Code)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        86
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Christmas Island
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CX`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Fiji
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Micronesia, Federated States of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Hong Kong
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BRN** (Business Registration Number)
+        * **HKID** (Hong Kong Identity Card)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Indonesia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ID`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **KTAS** (Kartu Tanda Anggota Sukarela)
+        * **KTP** (Kartu Tanda Penduduk)
+        * **NIB** (Business Identification Number)
+        * **NPWP** (Taxpayer Registration Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        India
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `INR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **AADH** (Aadhaar Card)
+        * **CIN** (Corporate Identity Number)
+        * **GSTN** (Goods and Services Tax Number)
+        * **PAN** (Permanent Account Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        91
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        British Indian Ocean Territory
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Japan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `JP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `JPY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        0
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **HOUJ** (Corporate Number)
+        * **MYNO** (My Number)
+        * **PAS** (Passport)
+        * **ZAIR** (Resident Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        81
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kyrgyzstan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cambodia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kiribati
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Korea, Democratic People's Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Korea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KRW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        0
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **ARC** (Alien Registration Card)
+        * **BRN** (Business Registration Number)
+        * **PAS** (Passport)
+        * **RRN** (Resident Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        82
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kazakhstan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lao People's Democratic Republic
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sri Lanka
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Marshall Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Myanmar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mongolia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Macao
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Northern Mariana Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Maldives
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Malaysia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **NRIC** (National Registration Identity Card)
+        * **PAS** (Passport)
+        * **SSM** (SSM)
+        * **TIN** (Tax Identification Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        New Caledonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Norfolk Island
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nepal
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nauru
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Niue
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        New Zealand
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **DLIC** (Driver License)
+        * **IRD** (Inland Revenue Department Number)
+        * **NZBN** (New Zealand Business Number)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        French Polynesia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Papua New Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Philippines
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+        * **PSN** (PhilSys Number)
+        * **TIN** (Tax Identification Number)
+        * **UMID** (Unified Multi-Purpose ID)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Pakistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Pitcairn
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Palau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Solomon Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Singapore
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SGD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **FIN** (Foreign Identification Number)
+        * **NRIC** (National Registration Identity Card)
+        * **PAS** (Passport)
+        * **UEN** (Unique Entity Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        65
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Thailand
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BRN** (Business Registration Number)
+        * **NID** (NID)
+        * **PAS** (Passport)
+        * **TAX** (TAX)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tajikistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tokelau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Timor-Leste
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Turkmenistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tonga
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tuvalu
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Taiwan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **ARC** (Alien Registration Card)
+        * **GUI** (Uniform Invoice Number)
+        * **PAS** (Passport)
+        * **TWID** (Taiwan ID)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Uzbekistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Vietnam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CCCD** (Citizen Identity Card)
+        * **CMND** (Identity Card)
+        * **MST** (Tax Code)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Vanuatu
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Wallis and Futuna
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `WF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Samoa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `WS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
     </tr>
 
+  </tbody>
+</Table>
+
+
+## Africa
+
+**(1)** _The number of digits after the decimal separator_.
+
+<Table align={["left","left","left","left","left","left"]}>
+  <thead>
     <tr>
-      <td>
-        South Georgia and the South Sandwich Islands
+      <th style={{ textAlign: "left" }}>
+        Name
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Country code (ISO 3166-1 Alpha 2)
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Currency code (ISO 4217 Alpha 3)
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Currency decimal digits
+
+        <sup>
+          (1)
+        </sup>
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Document type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Phone country calling code
+      </th>
+    </tr>
+
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Angola
       </td>
 
-      <td>
-        `GS`
+      <td style={{ textAlign: "left" }}>
+        `AO`
       </td>
 
-      <td>
-        `FKP`
+      <td style={{ textAlign: "left" }}>
+        `N/A`
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         2
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
         * **PAS** (Passport)
       </td>
 
-      <td>
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Burkina Faso
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Burundi
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Benin
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Botswana
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Congo, The Democratic Republic of the
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Central African Republic
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Congo
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Côte d'Ivoire
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cameroon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cabo Verde
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Djibouti
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Algeria
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Egypt
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EGP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CREG** (Commercial Registration)
+        * **NID** (NID)
+        * **PAS** (Passport)
+        * **TIN** (Tax Identification Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        20
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Western Sahara
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Eritrea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ER`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ethiopia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ET`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gabon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ghana
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BRN** (Business Registration Number)
+        * **GHID** (Ghana Card)
+        * **PAS** (Passport)
+        * **TIN** (Tax Identification Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gambia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Equatorial Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GQ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guinea-Bissau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kenya
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KES`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BRN** (Business Registration Number)
+        * **IDN** (Identity Number)
+        * **KRAP** (Kenya Revenue Authority PIN)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        254
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Comoros
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Liberia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lesotho
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Libya
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Morocco
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CIN** (Corporate Identity Number)
+        * **ICE** (Common Company Identifier)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Madagascar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mali
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ML`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mauritania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mauritius
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Malawi
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mozambique
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Namibia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Niger
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nigeria
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NGN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **BVN** (Bank Verification Number)
+        * **CACN** (Corporate Affairs Commission Number)
+        * **NIN** (National Identification Number)
+        * **PAS** (Passport)
+        * **TIN** (Tax Identification Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        234
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Réunion
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Rwanda
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Seychelles
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sudan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Helena, Ascension and Tristan da Cunha
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sierra Leone
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Senegal
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Somalia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Sudan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sao Tome and Principe
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ST`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Eswatini
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Chad
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        French Southern Territories
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Togo
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tunisia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tanzania, United Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Uganda
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mayotte
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `YT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Africa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZAR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CIPC** (CIPC)
+        * **IDN** (Identity Number)
+        * **PAS** (Passport)
+        * **TRN** (Tax Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        27
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Zambia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Zimbabwe
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+
+  </tbody>
+</Table>
+
+
+## Middle East
+
+**(1)** _The number of digits after the decimal separator_.
+
+<Table align={["left","left","left","left","left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Name
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Country code (ISO 3166-1 Alpha 2)
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Currency code (ISO 4217 Alpha 3)
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Currency decimal digits
+
+        <sup>
+          (1)
+        </sup>
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Document type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Phone country calling code
+      </th>
+    </tr>
+
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        United Arab Emirates
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AED`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **EID** (Emirates ID)
+        * **PAS** (Passport)
+        * **TLN** (Trade License Number)
+        * **TRN** (Tax Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        971
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bahrain
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CPR** (Civil Registration Number)
+        * **CRN** (Company Registration Number)
+        * **PAS** (Passport)
+        * **VATN** (VAT Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Israel
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CNUM** (Identity Number)
+        * **PAS** (Passport)
+        * **TEUD** (Identity Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Iraq
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IQ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Iran, Islamic Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Jordan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `JO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kuwait
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CID** (Civil ID)
+        * **CREG** (Commercial Registration)
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lebanon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Oman
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `OM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CID** (Civil ID)
+        * **CREG** (Commercial Registration)
+        * **PAS** (Passport)
+        * **VATN** (VAT Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Palestine, State of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Qatar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `QA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CREG** (Commercial Registration)
+        * **PAS** (Passport)
+        * **QID** (Qatar ID)
+        * **TRN** (Tax Registration Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saudi Arabia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SAR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **CRN** (Company Registration Number)
+        * **IQAM** (Iqama)
+        * **NID** (NID)
+        * **PAS** (Passport)
+        * **VATN** (VAT Number)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        966
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Syrian Arab Republic
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Yemen
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `YE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+
+  </tbody>
+</Table>
+
+
+## Antarctica
+
+**(1)** _The number of digits after the decimal separator_.
+
+<Table align={["left","left","left","left","left","left"]}>
+  <thead>
+    <tr>
+      <th style={{ textAlign: "left" }}>
+        Name
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Country code (ISO 3166-1 Alpha 2)
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Currency code (ISO 4217 Alpha 3)
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Currency decimal digits
+
+        <sup>
+          (1)
+        </sup>
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Document type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
+        Phone country calling code
+      </th>
+    </tr>
+
+  </thead>
+
+  <tbody>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Antarctica
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AQ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `N/A`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        0
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bouvet Island
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NOK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Georgia and the South Sandwich Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FKP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         500
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Heard Island and McDonald Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AUD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
       </td>
     </tr>
 
@@ -7019,7 +6708,6 @@ On this page, you will find the country's information you need when using Yuno A
 </Table>
 
 **(1)** _The number of digits after the decimal separator_.
-
 <HTMLBlock>{`
 
 <style>
