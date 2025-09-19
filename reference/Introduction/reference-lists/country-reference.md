@@ -38,7 +38,7 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
-        Currency code (ISO N/A Alpha 3)
+        Currency code (ISO 4217 Alpha 3)
       </th>
 
       <th style={{ textAlign: "left" }}>
