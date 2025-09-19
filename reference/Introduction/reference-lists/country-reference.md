@@ -38,7 +38,7 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
-        Currency code (ISO 4217 Alpha 3)
+        Currency code (ISO N/A Alpha 3)
       </th>
 
       <th style={{ textAlign: "left" }}>
@@ -54,24 +54,27 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
+        Normalized type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
 
   </thead>
 
-  <tbody>
-    <tr>
+  <tbody>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Antigua and Barbuda
+        Afghanistan
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `AG`
+        `AF`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `N/A````
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -79,14 +82,109 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+        **TAZK** (Tazkira)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        93
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Albania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **EIDC** (Electronic Identity Card)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        355
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        American Samoa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        684
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Andorra
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        376
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Anguilla
       </td>
@@ -96,7 +194,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -104,14 +202,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        264
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Antigua and Barbuda
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `XCD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        268
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Argentina
       </td>
@@ -129,27 +260,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CUIL** (Unique Labor Identification Code)
-        * **CUIT** (Single Tax Identification)
-        * **DNI** (National Identity Document)
-        * **PAS** (Passport)
+        **CUIL** (Unique Labor Identification Code)
+        **CUIT** (Single Tax Identification)
+        **DNI** (National Identity Document)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        tax_id_entity
+        national_id
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
         54
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        American Samoa
+        Armenia
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `AS`
+        `AM`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -157,14 +295,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        374
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Aruba
       </td>
@@ -174,7 +316,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -182,14 +324,177 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        297
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Australia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AUD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ABN** (Australian Business Number)
+        **ACN** (Australian Company Number)
+        **DLIC** (Driver License)
+        **PAS** (Passport)
+        **TFN** (Tax File Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        company_register_no
+        drivers_license
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Austria
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+        **SVNR** (Social Security Number)
+        **UID** (Enterprise Identification Number)
+        **ZMRN** (Central Residents Register Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        tax_id_person
+        company_register_no
+        national_id
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        43
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Azerbaijan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        994
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bahamas
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        242
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bangladesh
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        880
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Barbados
       </td>
@@ -199,7 +504,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -207,24 +512,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        246
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Saint Barthélemy
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BL`
+        Belarus
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `BY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -232,14 +541,82 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        375
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Belgium
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BCE** (Crossroads Bank for Enterprises Number)
+        **EID** (Emirates ID)
+        **PAS** (Passport)
+        **RRN** (Resident Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        national_id
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        32
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Belize
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        501
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Bermuda
       </td>
@@ -249,7 +626,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -257,14 +634,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        441
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bhutan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        975
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Bolivia
       </td>
@@ -274,7 +684,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -282,16 +692,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)
-        * **NIT** (Tax Identification Number)
-        * **PAS** (Passport)
+        **CI** (Identity Card)
+        **NIT** (Tax Identification Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_entity
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        591
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Bonaire, Sint Eustatius and Saba
       </td>
@@ -301,7 +717,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -309,14 +725,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        599
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bosnia and Herzegovina
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        387
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Brazil
       </td>
@@ -334,53 +783,36 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CNH** (Driver License)
-        * **CNPJ** (National Registry of Legal Entities)
-        * **CPF** (Natural Persons Register)
-        * **PAS** (Passport)
-        * **RG** (Identity Card)
+        **CNH** (Driver License)
+        **CNPJ** (National Registry of Legal Entities)
+        **CPF** (Natural Persons Register)
+        **PAS** (Passport)
+        **RG** (Identity Card)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        drivers_license
+        tax_id_entity
+        tax_id_person
+        passport
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
         55
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Bahamas
+        British Indian Ocean Territory
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BS`
+        `IO`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Belize
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BZ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -388,14 +820,111 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        246
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Brunei Darussalam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        673
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bulgaria
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **EGN** (Uniform Civil Number)
+        **LNC** (Personal Number)
+        **PAS** (Passport)
+        **UIC** (Unified Identification Code)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        359
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cambodia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        855
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Canada
       </td>
@@ -413,18 +942,55 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **BNE** (BNE)
-        * **DLIC** (Driver License)
-        * **PAS** (Passport)
-        * **PRC** (Permanent Resident Card)
-        * **SIN** (Social Insurance Number)
+        **BNE** (BNE)
+        **DLIC** (Driver License)
+        **PAS** (Passport)
+        **PRC** (Permanent Resident Card)
+        **SIN** (Social Insurance Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_entity
+        drivers_license
+        passport
+        residence_permit
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         1
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cayman Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        345
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Chile
       </td>
@@ -442,16 +1008,115 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-        * **RUN** (Unique National Role)
-        * **RUT** (Unique Tax Role)
+        **PAS** (Passport)
+        **RUN** (Unique National Role)
+        **RUT** (Unique Tax Role)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         56
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        China
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CNY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **FPRD** (Foreigner Permanent Residence Document)
+        **PAS** (Passport)
+        **RIC** (Resident Identity Card)
+        **USCC** (Unified Social Credit Code)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        passport
+        national_id
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        86
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Christmas Island
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CX`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cocos (Keeling) Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Colombia
       </td>
@@ -469,18 +1134,55 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CC** (Citizenship Card)
-        * **CE** (Foreign Certificate)
-        * **NIT** (Tax Identification Number)
-        * **PAS** (Passport)
-        * **TI** (Identity Card (minors))
+        **CC** (Citizenship Card)
+        **CE** (Foreign Certificate)
+        **NIT** (Tax Identification Number)
+        **PAS** (Passport)
+        **TI** (Identity Card (minors))
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        residence_permit
+        tax_id_entity
+        passport
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
         57
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cook Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        682
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Costa Rica
       </td>
@@ -490,7 +1192,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -498,17 +1200,53 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)
-        * **CJUR** (CJUR)
-        * **DMEX** (DMEX)
-        * **PAS** (Passport)
+        **CI** (Identity Card)
+        **CJUR** (CJUR)
+        **DMEX** (DMEX)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        residence_permit
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        506
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Croatia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        385
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Cuba
       </td>
@@ -518,7 +1256,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -526,14 +1264,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        53
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Curaçao
       </td>
@@ -543,7 +1285,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -551,14 +1293,115 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        599
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cyprus
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        357
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Czechia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DIC** (Tax Identification Number)
+        **ICO** (Company Identification Number)
+        **PAS** (Passport)
+        **RNUM** (Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        company_register_no
+        passport
+        national_id
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        420
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Denmark
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CPR** (Civil Registration Number)
+        **CVR** (Central Business Register Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        45
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Dominica
       </td>
@@ -568,7 +1411,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -576,14 +1419,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        767
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Dominican Republic
       </td>
@@ -593,7 +1440,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -601,16 +1448,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)
-        * **PAS** (Passport)
-        * **RNC** (RNC)
+        **CI** (Identity Card)
+        **PAS** (Passport)
+        **RNC** (RNC)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        809
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Ecuador
       </td>
@@ -628,16 +1481,84 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)
-        * **PAS** (Passport)
-        * **RUC** (Tax ID (Entity))
+        **CI** (Identity Card)
+        **PAS** (Passport)
+        **RUC** (Tax ID (Entity))
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
         593
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        El Salvador
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DUI** (Unique Identity Document)
+        **NIT** (Tax Identification Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_entity
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        503
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Estonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        372
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Falkland Islands (Malvinas)
       </td>
@@ -647,7 +1568,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -655,24 +1576,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        500
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Grenada
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GD`
+        Faroe Islands
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `FO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -680,14 +1605,115 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        298
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Fiji
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        679
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Finland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **HETU** (Personal Identity Code)
+        **PAS** (Passport)
+        **YID** (Business ID)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        358
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        France
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CNI** (National Identity Card)
+        **NIR** (National Identity Register)
+        **PAS** (Passport)
+        **SIRE** (Business Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_person
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        33
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         French Guiana
       </td>
@@ -697,7 +1723,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -705,14 +1731,177 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        594
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        French Polynesia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        689
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Georgia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        995
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Germany
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **EAT** (European Article Number)
+        **IDNR** (Tax Identification Number)
+        **PAS** (Passport)
+        **PAUS** (PAUS)
+        **USTI** (VAT Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        tax_id_person
+        passport
+        national_id
+        tax_id_entity
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        49
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gibraltar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        350
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Greece
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **AFM** (Tax Registration Number)
+        **AMKA** (Social Security Number)
+        **GEMI** (General Commercial Registry Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        national_id
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        30
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Greenland
       </td>
@@ -722,7 +1911,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -730,14 +1919,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        299
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Grenada
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        473
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Guadeloupe
       </td>
@@ -747,7 +1969,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -755,14 +1977,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        590
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        671
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Guatemala
       </td>
@@ -772,7 +2027,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -780,16 +2035,51 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DPI** (Personal Identification Document)
-        * **NIT** (Tax Identification Number)
-        * **PAS** (Passport)
+        **DPI** (Personal Identification Document)
+        **NIT** (Tax Identification Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_entity
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        502
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guernsey
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        44
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Guyana
       </td>
@@ -799,7 +2089,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -807,41 +2097,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        592
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Honduras
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `HN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **DNI** (National Identity Document)
-        * **PAS** (Passport)
-        * **TRN** (Tax Registration Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Haiti
       </td>
@@ -851,7 +2118,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -859,14 +2126,340 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        509
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Holy See (Vatican City State)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Honduras
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DNI** (National Identity Document)
+        **PAS** (Passport)
+        **TRN** (Tax Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        504
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Hong Kong
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRN** (Business Registration Number)
+        **HKID** (Hong Kong Identity Card)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        852
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Hungary
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        36
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Iceland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        354
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        India
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `INR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **AADH** (Aadhaar Card)
+        **CIN** (Corporate Identity Number)
+        **GSTN** (Goods and Services Tax Number)
+        **PAN** (Permanent Account Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        tax_id_entity
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        91
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Indonesia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ID`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **KTAS** (Kartu Tanda Anggota Sukarela)
+        **KTP** (Kartu Tanda Penduduk)
+        **NIB** (Business Identification Number)
+        **NPWP** (Taxpayer Registration Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        national_id
+        company_register_no
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        62
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ireland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CRN** (Company Registration Number)
+        **PAS** (Passport)
+        **PPSN** (Personal Public Service Number)
+        **VAT** (VAT Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        tax_id_person
+        tax_id_entity
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        353
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Isle of Man
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        44
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Italy
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CF** (Fiscal Code)
+        **CIE** (Electronic Identity Card)
+        **PAS** (Passport)
+        **PIVA** (VAT Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        national_id
+        passport
+        tax_id_entity
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        39
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Jamaica
       </td>
@@ -876,7 +2469,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -884,74 +2477,63 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        876
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Saint Kitts and Nevis
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KN`
+        Japan
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `JP`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
+        `JPY`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        0
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        **HOUJ** (Corporate Number)
+        **MYNO** (My Number)
+        **PAS** (Passport)
+        **ZAIR** (Resident Registration Number)
       </td>
-    </tr>
-    <tr>
+
+      
       <td style={{ textAlign: "left" }}>
-        Cayman Islands
+        company_register_no
+        national_id
+        passport
+        residence_permit
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `KY`
+        81
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Jersey
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `JE`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Saint Lucia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LC`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -959,24 +2541,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        44
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Saint Martin (French part)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MF`
+        Kazakhstan
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `KZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -984,14 +2570,401 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        7
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kiribati
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        686
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Korea, Democratic People's Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        850
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kyrgyzstan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        996
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lao People's Democratic Republic
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        856
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Latvia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        371
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Liechtenstein
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        423
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lithuania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        370
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Luxembourg
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        352
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Macao
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        853
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Malaysia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **NRIC** (National Registration Identity Card)
+        **PAS** (Passport)
+        **SSM** (SSM)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        company_register_no
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        60
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Maldives
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        960
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Malta
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        356
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Marshall Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        692
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Martinique
       </td>
@@ -1001,7 +2974,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1009,39 +2982,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        596
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Montserrat
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Mexico
       </td>
@@ -1059,17 +3011,384 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CURP** (Unique Population Registry Code)
-        * **INE** (National Electoral Institute)
-        * **PAS** (Passport)
-        * **RFC** (Federal Taxpayer Registry)
+        **CURP** (Unique Population Registry Code)
+        **INE** (National Electoral Institute)
+        **PAS** (Passport)
+        **RFC** (Federal Taxpayer Registry)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        voter_id
+        passport
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         52
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Micronesia, Federated States of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        691
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Moldova, Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        373
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Monaco
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        377
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mongolia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        976
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Montenegro
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ME`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        382
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Montserrat
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        664
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Myanmar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        95
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nauru
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        674
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nepal
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        977
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Netherlands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BSN** (Burgerservicenummer)
+        **BTW** (BTW Number)
+        **KVK** (Chamber of Commerce Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_entity
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        31
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        New Caledonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        687
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        New Zealand
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DLIC** (Driver License)
+        **IRD** (Inland Revenue Department Number)
+        **NZBN** (New Zealand Business Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        drivers_license
+        tax_id_person
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        64
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Nicaragua
       </td>
@@ -1079,7 +3398,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1087,16 +3406,231 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)
-        * **PAS** (Passport)
-        * **RUC** (Tax ID (Entity))
+        **CI** (Identity Card)
+        **PAS** (Passport)
+        **RUC** (Tax ID (Entity))
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        505
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Niue
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        683
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Norfolk Island
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        672
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        North Macedonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        389
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Northern Mariana Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        670
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Norway
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DNR** (D-Number)
+        **FNR** (National Identity Number)
+        **ORG** (Organization Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        47
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Pakistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        92
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Palau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        680
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Panama
       </td>
@@ -1106,7 +3640,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1114,16 +3648,84 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CIP** (Identity Card)
-        * **PAS** (Passport)
-        * **RUC** (Tax ID (Entity))
+        **CIP** (Identity Card)
+        **PAS** (Passport)
+        **RUC** (Tax ID (Entity))
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        507
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Papua New Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        675
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Paraguay
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CIC** (Cédula de Identidad Civil)
+        **PAS** (Passport)
+        **RUC** (Tax ID (Entity))
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        tax_id_entity
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        595
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Peru
       </td>
@@ -1141,27 +3743,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CE** (Foreign Certificate)
-        * **DNI** (National Identity Document)
-        * **PAS** (Passport)
-        * **RUC** (Tax ID (Entity))
+        **CE** (Foreign Certificate)
+        **DNI** (National Identity Document)
+        **PAS** (Passport)
+        **RUC** (Tax ID (Entity))
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        national_id
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
         51
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Saint Pierre and Miquelon
+        Philippines
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `PM`
+        `PH`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1169,14 +3778,119 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+        **PSN** (PhilSys Number)
+        **TIN** (Tax Identification Number)
+        **UMID** (Unified Multi-Purpose ID)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
+        tax_id_person
+        other
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        63
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Pitcairn
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Poland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **NIP** (Tax Identification Number)
+        **PAS** (Passport)
+        **PESEL** (Personal Identity Number)
+        **REGON** (Statistical Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        tax_id_person
+        passport
+        national_id
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        48
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Portugal
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CC** (Citizenship Card)
+        **NIF** (Tax Identification Number)
+        **NIPC** (Corporate Tax Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_person
+        tax_id_entity
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        351
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Puerto Rico
       </td>
@@ -1186,7 +3900,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1194,51 +3908,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        787
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Paraguay
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PY`
+        Romania
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `RO`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **CIC** (Cédula de Identidad Civil)
-        * **PAS** (Passport)
-        * **RUC** (Tax ID (Entity))
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Suriname
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SR`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1246,24 +3937,32 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **CNP** (Personal Numerical Code)
+        **CUI** (Unique Registration Code)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        40
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        El Salvador
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SV`
+        Russian Federation
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `RU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1271,16 +3970,314 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DUI** (Unique Identity Document)
-        * **NIT** (Tax Identification Number)
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        7
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Barthélemy
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        590
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Kitts and Nevis
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        869
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Lucia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        758
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Martin (French part)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        590
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Pierre and Miquelon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        508
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Vincent and the Grenadines
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        784
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Samoa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `WS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        685
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        San Marino
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        378
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Serbia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        381
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Singapore
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SGD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **FIN** (Foreign Identification Number)
+        **NRIC** (National Registration Identity Card)
+        **PAS** (Passport)
+        **UEN** (Unique Entity Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        65
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Sint Maarten (Dutch part)
       </td>
@@ -1290,7 +4287,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1298,24 +4295,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        721
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Turks and Caicos Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TC`
+        Slovakia
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `SK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1323,14 +4324,477 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        421
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Slovenia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        386
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Solomon Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        677
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Korea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KRW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        0
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ARC** (Alien Registration Card)
+        **BRN** (Business Registration Number)
+        **PAS** (Passport)
+        **RRN** (Resident Registration Number)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Spain
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ES`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DNI** (National Identity Document)
+        **NIE** (Foreigner Identity Number)
+        **NIF** (Tax Identification Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        passport
+        national_id
+        national_id
+        national_id
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        34
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sri Lanka
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        94
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Suriname
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        597
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Svalbard and Jan Mayen
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        47
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sweden
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ORG** (Organization Number)
+        **PAS** (Passport)
+        **PNR** (Personal Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        national_id
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        46
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Switzerland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **AHVN** (Social Security Number)
+        **PAS** (Passport)
+        **UID** (Enterprise Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        41
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Taiwan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ARC** (Alien Registration Card)
+        **GUI** (Uniform Invoice Number)
+        **PAS** (Passport)
+        **TWID** (Taiwan ID)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tajikistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        passport
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        992
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Thailand
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRN** (Business Registration Number)
+        **NID** (NID)
+        **PAS** (Passport)
+        **TAX** (TAX)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        66
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Timor-Leste
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        670
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tokelau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        690
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tonga
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        676
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Trinidad and Tobago
       </td>
@@ -1340,7 +4804,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1348,24 +4812,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        868
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        United States Minor Outlying Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `UM`
+        Turkey
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `TR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1373,14 +4841,179 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **MERS** (Central Registration System)
+        **PAS** (Passport)
+        **TCKN** (Turkish Citizenship Number)
+        **VKN** (Tax Number)
+        **YKN** (Foreign National ID)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        national_id
+        tax_id_entity
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        90
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Turkmenistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        993
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Turks and Caicos Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        649
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tuvalu
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        688
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ukraine
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        380
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        United Kingdom
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GBP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRP** (Biometric Residence Permit)
+        **CRN** (Company Registration Number)
+        **NINO** (National Insurance Number)
+        **PAS** (Passport)
+        **UTR** (Unique Taxpayer Reference)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        tax_id_person
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        44
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         United States
       </td>
@@ -1398,19 +5031,57 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DLIC** (Driver License)
-        * **EIN** (Employer Identification Number)
-        * **ITIN** (Individual Taxpayer Identification Number)
-        * **PAS** (Passport)
-        * **PRC** (Permanent Resident Card)
-        * **SSN** (Social Security Number)
+        **DLIC** (Driver License)
+        **EIN** (Employer Identification Number)
+        **ITIN** (Individual Taxpayer Identification Number)
+        **PAS** (Passport)
+        **PRC** (Permanent Resident Card)
+        **SSN** (Social Security Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        drivers_license
+        tax_id_entity
+        tax_id_person
+        passport
+        residence_permit
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         1
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        United States Minor Outlying Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        1
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Uruguay
       </td>
@@ -1420,7 +5091,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1428,26 +5099,32 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CI** (Identity Card)
-        * **PAS** (Passport)
-        * **RUT** (Unique Tax Role)
+        **CI** (Identity Card)
+        **PAS** (Passport)
+        **RUT** (Unique Tax Role)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        598
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Saint Vincent and the Grenadines
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `VC`
+        Uzbekistan
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `UZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1455,14 +5132,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        998
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Vanuatu
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        678
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Venezuela, Bolivarian Republic of
       </td>
@@ -1472,7 +5182,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1480,14 +5190,53 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        58
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Vietnam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CCCD** (Citizen Identity Card)
+        **CMND** (Identity Card)
+        **MST** (Tax Code)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        84
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Virgin Islands, British
       </td>
@@ -1497,7 +5246,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1505,14 +5254,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        284
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Virgin Islands, U.S.
       </td>
@@ -1522,7 +5275,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1530,15 +5283,78 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        340
       </td>
-    </tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Wallis and Futuna
+      </td>
 
-  </tbody>
+      <td style={{ textAlign: "left" }}>
+        `WF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        681
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Åland Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AX`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **NIDC** (National Identity Card)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        358
+      </td>
+    </tr>\n  </tbody>
 </Table>
 
 
@@ -1574,24 +5390,27 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
+        Normalized type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
 
   </thead>
 
-  <tbody>
-    <tr>
+  <tbody>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Andorra
+        Afghanistan
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `AD`
+        `AF`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1599,14 +5418,20 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+        **TAZK** (Tazkira)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        93
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Albania
       </td>
@@ -1616,7 +5441,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1624,15 +5449,173 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **EIDC** (Electronic Identity Card)
-        * **PAS** (Passport)
+        **EIDC** (Electronic Identity Card)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        355
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Algeria
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        213
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Andorra
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        376
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Angola
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        244
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Armenia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        374
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Australia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AUD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ABN** (Australian Business Number)
+        **ACN** (Australian Company Number)
+        **DLIC** (Driver License)
+        **PAS** (Passport)
+        **TFN** (Tax File Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        company_register_no
+        drivers_license
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Austria
       </td>
@@ -1642,7 +5625,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1650,53 +5633,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-        * **SVNR** (Social Security Number)
-        * **UID** (Enterprise Identification Number)
-        * **ZMRN** (Central Residents Register Number)
+        **PAS** (Passport)
+        **SVNR** (Social Security Number)
+        **UID** (Enterprise Identification Number)
+        **ZMRN** (Central Residents Register Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        tax_id_person
+        company_register_no
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        43
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Åland Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `AX`
+        Azerbaijan
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `AZ`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **NIDC** (National Identity Card)
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Bosnia and Herzegovina
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BA`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1704,52 +5668,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        994
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Belgium
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BE`
+        Bangladesh
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `BD`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **BCE** (Crossroads Bank for Enterprises Number)
-        * **EID** (Emirates ID)
-        * **PAS** (Passport)
-        * **RRN** (Resident Registration Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Bulgaria
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1757,17 +5697,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **EGN** (Uniform Civil Number)
-        * **LNC** (Personal Number)
-        * **PAS** (Passport)
-        * **UIC** (Unified Identification Code)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        880
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Belarus
       </td>
@@ -1777,7 +5718,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1785,24 +5726,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        375
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Switzerland
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CH`
+        Belgium
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `BE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1810,16 +5755,674 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **AHVN** (Social Security Number)
-        * **PAS** (Passport)
-        * **UID** (Enterprise Identification Number)
+        **BCE** (Crossroads Bank for Enterprises Number)
+        **EID** (Emirates ID)
+        **PAS** (Passport)
+        **RRN** (Resident Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        32
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Benin
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        229
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bhutan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        975
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bosnia and Herzegovina
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        387
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Botswana
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        267
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        British Indian Ocean Territory
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        246
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Brunei Darussalam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        673
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Bulgaria
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **EGN** (Uniform Civil Number)
+        **LNC** (Personal Number)
+        **PAS** (Passport)
+        **UIC** (Unified Identification Code)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        359
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Burkina Faso
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        226
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Burundi
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        257
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cabo Verde
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        238
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cambodia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        855
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cameroon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        237
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Central African Republic
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        236
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Chad
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        235
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        China
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CNY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **FPRD** (Foreigner Permanent Residence Document)
+        **PAS** (Passport)
+        **RIC** (Resident Identity Card)
+        **USCC** (Unified Social Credit Code)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        passport
+        national_id
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        86
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Christmas Island
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CX`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cocos (Keeling) Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Comoros
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        269
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Congo
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        242
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Congo, The Democratic Republic of the
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        243
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cook Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        682
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Croatia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        385
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Cyprus
       </td>
@@ -1829,7 +6432,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1837,14 +6440,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        357
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Czechia
       </td>
@@ -1854,7 +6461,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1862,27 +6469,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DIC** (Tax Identification Number)
-        * **ICO** (Company Identification Number)
-        * **PAS** (Passport)
-        * **RNUM** (Registration Number)
+        **DIC** (Tax Identification Number)
+        **ICO** (Company Identification Number)
+        **PAS** (Passport)
+        **RNUM** (Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        company_register_no
+        passport
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        420
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Germany
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `DE`
+        Côte d'Ivoire
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `EUR`
+        `CI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1890,18 +6504,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **EAT** (European Article Number)
-        * **IDNR** (Tax Identification Number)
-        * **PAS** (Passport)
-        * **PAUS** (PAUS)
-        * **USTI** (VAT Identification Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        49
+        225
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Denmark
       </td>
@@ -1911,7 +6525,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1919,16 +6533,144 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CPR** (Civil Registration Number)
-        * **CVR** (Central Business Register Number)
-        * **PAS** (Passport)
+        **CPR** (Civil Registration Number)
+        **CVR** (Central Business Register Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        45
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Djibouti
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        253
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Egypt
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EGP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CREG** (Commercial Registration)
+        **NID** (NID)
+        **PAS** (Passport)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        20
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Equatorial Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GQ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        240
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Eritrea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ER`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        291
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Estonia
       </td>
@@ -1938,7 +6680,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1946,52 +6688,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        372
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Spain
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `ES`
+        Eswatini
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `EUR`
+        `SZ`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **DNI** (National Identity Document)
-        * **NIE** (Foreigner Identity Number)
-        * **NIF** (Tax Identification Number)
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        34
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Finland
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `FI`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -1999,16 +6717,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **HETU** (Personal Identity Code)
-        * **PAS** (Passport)
-        * **YID** (Business ID)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        268
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ethiopia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ET`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        251
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Faroe Islands
       </td>
@@ -2018,7 +6767,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2026,14 +6775,80 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        298
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Fiji
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        679
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Finland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **HETU** (Personal Identity Code)
+        **PAS** (Passport)
+        **YID** (Business ID)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        358
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         France
       </td>
@@ -2051,27 +6866,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CNI** (National Identity Card)
-        * **NIR** (National Identity Register)
-        * **PAS** (Passport)
-        * **SIRE** (Business Registration Number)
+        **CNI** (National Identity Card)
+        **NIR** (National Identity Register)
+        **PAS** (Passport)
+        **SIRE** (Business Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_person
+        passport
+        company_register_no
       </td>
 
       <td style={{ textAlign: "left" }}>
         33
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        United Kingdom
+        French Polynesia
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `GB`
+        `PF`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `GBP`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2079,18 +6901,101 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **BRP** (Biometric Residence Permit)
-        * **CRN** (Company Registration Number)
-        * **NINO** (National Insurance Number)
-        * **PAS** (Passport)
-        * **UTR** (Unique Taxpayer Reference)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        44
+        689
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        French Southern Territories
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gabon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        241
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gambia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        220
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Georgia
       </td>
@@ -2100,7 +7005,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2108,24 +7013,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        995
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Guernsey
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GG`
+        Germany
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `DE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2133,14 +7042,61 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **EAT** (European Article Number)
+        **IDNR** (Tax Identification Number)
+        **PAS** (Passport)
+        **PAUS** (PAUS)
+        **USTI** (VAT Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        tax_id_person
+        passport
+        national_id
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        49
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ghana
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRN** (Business Registration Number)
+        **GHID** (Ghana Card)
+        **PAS** (Passport)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        233
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Gibraltar
       </td>
@@ -2150,7 +7106,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2158,14 +7114,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        350
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Greece
       </td>
@@ -2175,7 +7135,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2183,27 +7143,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **AFM** (Tax Registration Number)
-        * **AMKA** (Social Security Number)
-        * **GEMI** (General Commercial Registry Number)
-        * **PAS** (Passport)
+        **AFM** (Tax Registration Number)
+        **AMKA** (Social Security Number)
+        **GEMI** (General Commercial Registry Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        national_id
+        company_register_no
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        30
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Croatia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `HR`
+        Guam
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `GU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2211,14 +7178,163 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        671
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guernsey
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        44
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        224
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guinea-Bissau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        245
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Holy See (Vatican City State)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Hong Kong
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `HK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRN** (Business Registration Number)
+        **HKID** (Hong Kong Identity Card)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        company_register_no
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        852
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Hungary
       </td>
@@ -2228,7 +7344,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2236,67 +7352,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        36
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Ireland
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `IE`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **CRN** (Company Registration Number)
-        * **PAS** (Passport)
-        * **PPSN** (Personal Public Service Number)
-        * **VAT** (VAT Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Isle of Man
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `IM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Iceland
       </td>
@@ -2306,7 +7373,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2314,14 +7381,156 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        354
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        India
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `INR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **AADH** (Aadhaar Card)
+        **CIN** (Corporate Identity Number)
+        **GSTN** (Goods and Services Tax Number)
+        **PAN** (Permanent Account Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        tax_id_entity
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        91
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Indonesia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ID`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **KTAS** (Kartu Tanda Anggota Sukarela)
+        **KTP** (Kartu Tanda Penduduk)
+        **NIB** (Business Identification Number)
+        **NPWP** (Taxpayer Registration Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        national_id
+        company_register_no
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        62
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ireland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CRN** (Company Registration Number)
+        **PAS** (Passport)
+        **PPSN** (Personal Public Service Number)
+        **VAT** (VAT Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        tax_id_person
+        tax_id_entity
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        353
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Isle of Man
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        44
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Italy
       </td>
@@ -2339,17 +7548,59 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CF** (Fiscal Code)
-        * **CIE** (Electronic Identity Card)
-        * **PAS** (Passport)
-        * **PIVA** (VAT Number)
+        **CF** (Fiscal Code)
+        **CIE** (Electronic Identity Card)
+        **PAS** (Passport)
+        **PIVA** (VAT Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        national_id
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
         39
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Japan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `JP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `JPY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        0
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **HOUJ** (Corporate Number)
+        **MYNO** (My Number)
+        **PAS** (Passport)
+        **ZAIR** (Resident Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        residence_permit
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        81
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Jersey
       </td>
@@ -2359,7 +7610,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2367,49 +7618,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        44
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Liechtenstein
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LI`
+        Kazakhstan
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `KZ`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Lithuania
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LT`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2417,24 +7647,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        7
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Luxembourg
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LU`
+        Kenya
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `KE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KES`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2442,14 +7676,140 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **BRN** (Business Registration Number)
+        **IDN** (Identity Number)
+        **KRAP** (Kenya Revenue Authority PIN)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        tax_id_person
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        254
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kiribati
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        686
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Korea, Democratic People's Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        850
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kyrgyzstan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        996
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lao People's Democratic Republic
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        856
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Latvia
       </td>
@@ -2459,7 +7819,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2467,49 +7827,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        371
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Monaco
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MC`
+        Lesotho
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `LS`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Moldova, Republic of
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2517,49 +7856,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        266
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Montenegro
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `ME`
+        Liberia
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `LR`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        North Macedonia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MK`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2567,14 +7885,314 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        231
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Libya
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        218
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Liechtenstein
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        423
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Lithuania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        370
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Luxembourg
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        352
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Macao
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        853
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Madagascar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        261
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Malawi
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        265
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Malaysia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MY`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **NRIC** (National Registration Identity Card)
+        **PAS** (Passport)
+        **SSM** (SSM)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        company_register_no
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        60
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Maldives
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        960
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mali
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ML`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        223
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Malta
       </td>
@@ -2584,7 +8202,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2592,14 +8210,457 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        356
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Marshall Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        692
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mauritania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        222
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mauritius
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        230
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mayotte
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `YT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        262
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Micronesia, Federated States of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        691
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Moldova, Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        373
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Monaco
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        377
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mongolia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        976
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Montenegro
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ME`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        382
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Morocco
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CIN** (Corporate Identity Number)
+        **ICE** (Common Company Identifier)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        212
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mozambique
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        258
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Myanmar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        95
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Namibia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        264
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nauru
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        674
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nepal
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        977
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Netherlands
       </td>
@@ -2617,17 +8678,270 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **BSN** (Burgerservicenummer)
-        * **BTW** (BTW Number)
-        * **KVK** (Chamber of Commerce Number)
-        * **PAS** (Passport)
+        **BSN** (Burgerservicenummer)
+        **BTW** (BTW Number)
+        **KVK** (Chamber of Commerce Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_entity
+        company_register_no
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
         31
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        New Caledonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        687
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        New Zealand
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DLIC** (Driver License)
+        **IRD** (Inland Revenue Department Number)
+        **NZBN** (New Zealand Business Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        drivers_license
+        tax_id_person
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        64
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Niger
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        227
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Nigeria
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NGN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BVN** (Bank Verification Number)
+        **CACN** (Corporate Affairs Commission Number)
+        **NIN** (National Identification Number)
+        **PAS** (Passport)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        other
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        234
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Niue
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        683
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Norfolk Island
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        672
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        North Macedonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        389
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Northern Mariana Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        670
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Norway
       </td>
@@ -2637,7 +8951,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2645,17 +8959,170 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DNR** (D-Number)
-        * **FNR** (National Identity Number)
-        * **ORG** (Organization Number)
-        * **PAS** (Passport)
+        **DNR** (D-Number)
+        **FNR** (National Identity Number)
+        **ORG** (Organization Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        47
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Pakistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        92
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Palau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        680
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Papua New Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        675
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Philippines
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+        **PSN** (PhilSys Number)
+        **TIN** (Tax Identification Number)
+        **UMID** (Unified Multi-Purpose ID)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
+        tax_id_person
+        other
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        63
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Pitcairn
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Poland
       </td>
@@ -2665,7 +9132,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2673,17 +9140,25 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **NIP** (Tax Identification Number)
-        * **PAS** (Passport)
-        * **PESEL** (Personal Identity Number)
-        * **REGON** (Statistical Number)
+        **NIP** (Tax Identification Number)
+        **PAS** (Passport)
+        **PESEL** (Personal Identity Number)
+        **REGON** (Statistical Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        tax_id_person
+        passport
+        national_id
+        company_register_no
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        48
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Portugal
       </td>
@@ -2693,7 +9168,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2701,17 +9176,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CC** (Citizenship Card)
-        * **NIF** (Tax Identification Number)
-        * **NIPC** (Corporate Tax Number)
-        * **PAS** (Passport)
+        **CC** (Citizenship Card)
+        **NIF** (Tax Identification Number)
+        **NIPC** (Corporate Tax Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        tax_id_person
+        tax_id_entity
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        351
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Romania
       </td>
@@ -2721,7 +9203,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2729,41 +9211,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CNP** (Personal Numerical Code)
-        * **CUI** (Unique Registration Code)
-        * **PAS** (Passport)
+        **CNP** (Personal Numerical Code)
+        **CUI** (Unique Registration Code)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        40
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Serbia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `RS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Russian Federation
       </td>
@@ -2773,7 +9236,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2781,51 +9244,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        7
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Sweden
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SE`
+        Rwanda
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `RW`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **ORG** (Organization Number)
-        * **PAS** (Passport)
-        * **PNR** (Personal Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Slovenia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SI`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2833,49 +9273,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        250
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Svalbard and Jan Mayen
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SJ`
+        Réunion
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `RE`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Slovakia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SK`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2883,14 +9302,76 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        262
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Saint Helena, Ascension and Tristan da Cunha
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        290
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Samoa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `WS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        685
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         San Marino
       </td>
@@ -2900,7 +9381,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2908,14 +9389,866 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        378
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sao Tome and Principe
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ST`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        239
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Senegal
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        221
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Serbia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        381
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Seychelles
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        248
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sierra Leone
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        232
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Singapore
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SGD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **FIN** (Foreign Identification Number)
+        **NRIC** (National Registration Identity Card)
+        **PAS** (Passport)
+        **UEN** (Unique Entity Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        65
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Slovakia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        421
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Slovenia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        386
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Solomon Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        677
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Somalia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        252
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Africa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZAR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CIPC** (CIPC)
+        **IDN** (Identity Number)
+        **PAS** (Passport)
+        **TRN** (Tax Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        27
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Korea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KRW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        0
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ARC** (Alien Registration Card)
+        **BRN** (Business Registration Number)
+        **PAS** (Passport)
+        **RRN** (Resident Registration Number)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Sudan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        passport
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        211
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Spain
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ES`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EUR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **DNI** (National Identity Document)
+        **NIE** (Foreigner Identity Number)
+        **NIF** (Tax Identification Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        34
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sri Lanka
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        94
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sudan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        249
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Svalbard and Jan Mayen
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        47
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sweden
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ORG** (Organization Number)
+        **PAS** (Passport)
+        **PNR** (Personal Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        national_id
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        46
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Switzerland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **AHVN** (Social Security Number)
+        **PAS** (Passport)
+        **UID** (Enterprise Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        tax_id_person
+        passport
+        company_register_no
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        41
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Taiwan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ARC** (Alien Registration Card)
+        **GUI** (Uniform Invoice Number)
+        **PAS** (Passport)
+        **TWID** (Taiwan ID)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tajikistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        passport
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        992
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tanzania, United Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        255
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Thailand
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRN** (Business Registration Number)
+        **NID** (NID)
+        **PAS** (Passport)
+        **TAX** (TAX)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        66
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Timor-Leste
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        670
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Togo
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        228
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tokelau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        690
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tonga
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        676
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tunisia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        216
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Turkey
       </td>
@@ -2925,7 +10258,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2933,18 +10266,113 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **MERS** (Central Registration System)
-        * **PAS** (Passport)
-        * **TCKN** (Turkish Citizenship Number)
-        * **VKN** (Tax Number)
-        * **YKN** (Foreign National ID)
+        **MERS** (Central Registration System)
+        **PAS** (Passport)
+        **TCKN** (Turkish Citizenship Number)
+        **VKN** (Tax Number)
+        **YKN** (Foreign National ID)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        national_id
+        tax_id_entity
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        90
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Turkmenistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        993
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tuvalu
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        688
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Uganda
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        256
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Ukraine
       </td>
@@ -2954,7 +10382,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2962,24 +10390,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        380
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Holy See (Vatican City State)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `VA`
+        United Kingdom
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `GB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GBP`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -2987,15 +10419,266 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **BRP** (Biometric Residence Permit)
+        **CRN** (Company Registration Number)
+        **NINO** (National Insurance Number)
+        **PAS** (Passport)
+        **UTR** (Unique Taxpayer Reference)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        tax_id_person
+        passport
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        44
       </td>
-    </tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Uzbekistan
+      </td>
 
-  </tbody>
+      <td style={{ textAlign: "left" }}>
+        `UZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        998
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Vanuatu
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        678
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Vietnam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CCCD** (Citizen Identity Card)
+        **CMND** (Identity Card)
+        **MST** (Tax Code)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        84
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Wallis and Futuna
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `WF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        681
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Western Sahara
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        212
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Zambia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        260
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Zimbabwe
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ZW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        263
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Åland Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AX`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **NIDC** (National Identity Card)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        358
+      </td>
+    </tr>\n  </tbody>
 </Table>
 
 
@@ -3031,14 +10714,17 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
+        Normalized type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
 
   </thead>
 
-  <tbody>
-    <tr>
+  <tbody>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Afghanistan
       </td>
@@ -3048,7 +10734,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3056,15 +10742,20 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-        * **TAZK** (Tazkira)
+        **PAS** (Passport)
+        **TAZK** (Tazkira)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        93
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Armenia
       </td>
@@ -3074,7 +10765,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3082,14 +10773,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        374
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Australia
       </td>
@@ -3107,18 +10802,26 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **ABN** (Australian Business Number)
-        * **ACN** (Australian Company Number)
-        * **DLIC** (Driver License)
-        * **PAS** (Passport)
-        * **TFN** (Tax File Number)
+        **ABN** (Australian Business Number)
+        **ACN** (Australian Company Number)
+        **DLIC** (Driver License)
+        **PAS** (Passport)
+        **TFN** (Tax File Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        company_register_no
+        drivers_license
+        passport
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Azerbaijan
       </td>
@@ -3128,7 +10831,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3136,14 +10839,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        994
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Bangladesh
       </td>
@@ -3153,7 +10860,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3161,39 +10868,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        880
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Brunei Darussalam
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Bhutan
       </td>
@@ -3203,7 +10889,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3211,49 +10897,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        975
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Cocos (Keeling) Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CC`
+        British Indian Ocean Territory
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `IO`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Cook Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CK`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3261,14 +10926,76 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        246
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Brunei Darussalam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        673
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cambodia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        855
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         China
       </td>
@@ -3286,17 +11013,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **FPRD** (Foreigner Permanent Residence Document)
-        * **PAS** (Passport)
-        * **RIC** (Resident Identity Card)
-        * **USCC** (Unified Social Credit Code)
+        **FPRD** (Foreigner Permanent Residence Document)
+        **PAS** (Passport)
+        **RIC** (Resident Identity Card)
+        **USCC** (Unified Social Credit Code)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        passport
+        national_id
+        company_register_no
       </td>
 
       <td style={{ textAlign: "left" }}>
         86
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Christmas Island
       </td>
@@ -3306,7 +11040,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3314,14 +11048,76 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        61
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cocos (Keeling) Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        61
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cook Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        682
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Fiji
       </td>
@@ -3331,7 +11127,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3339,24 +11135,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        679
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Micronesia, Federated States of
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `FM`
+        French Polynesia
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `PF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3364,14 +11164,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        689
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Guam
       </td>
@@ -3381,7 +11185,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3389,14 +11193,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        671
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Hong Kong
       </td>
@@ -3406,7 +11214,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3414,45 +11222,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **BRN** (Business Registration Number)
-        * **HKID** (Hong Kong Identity Card)
-        * **PAS** (Passport)
+        **BRN** (Business Registration Number)
+        **HKID** (Hong Kong Identity Card)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        852
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Indonesia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `ID`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **KTAS** (Kartu Tanda Anggota Sukarela)
-        * **KTP** (Kartu Tanda Penduduk)
-        * **NIB** (Business Identification Number)
-        * **NPWP** (Taxpayer Registration Number)
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         India
       </td>
@@ -3470,28 +11255,36 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **AADH** (Aadhaar Card)
-        * **CIN** (Corporate Identity Number)
-        * **GSTN** (Goods and Services Tax Number)
-        * **PAN** (Permanent Account Number)
-        * **PAS** (Passport)
+        **AADH** (Aadhaar Card)
+        **CIN** (Corporate Identity Number)
+        **GSTN** (Goods and Services Tax Number)
+        **PAN** (Permanent Account Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        tax_id_entity
+        tax_id_person
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
         91
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        British Indian Ocean Territory
+        Indonesia
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `IO`
+        `ID`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3499,14 +11292,26 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **KTAS** (Kartu Tanda Anggota Sukarela)
+        **KTP** (Kartu Tanda Penduduk)
+        **NIB** (Business Identification Number)
+        **NPWP** (Taxpayer Registration Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        national_id
+        company_register_no
+        tax_id_person
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        62
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Japan
       </td>
@@ -3524,145 +11329,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **HOUJ** (Corporate Number)
-        * **MYNO** (My Number)
-        * **PAS** (Passport)
-        * **ZAIR** (Resident Registration Number)
+        **HOUJ** (Corporate Number)
+        **MYNO** (My Number)
+        **PAS** (Passport)
+        **ZAIR** (Resident Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        residence_permit
       </td>
 
       <td style={{ textAlign: "left" }}>
         81
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Kyrgyzstan
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Cambodia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KH`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Kiribati
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KI`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Korea, Democratic People's Republic of
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KP`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        South Korea
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KR`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KRW`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        0
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **ARC** (Alien Registration Card)
-        * **BRN** (Business Registration Number)
-        * **PAS** (Passport)
-        * **RRN** (Resident Registration Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        82
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Kazakhstan
       </td>
@@ -3672,7 +11356,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3680,14 +11364,105 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        7
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kiribati
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        686
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Korea, Democratic People's Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        850
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Kyrgyzstan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        996
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Lao People's Democratic Republic
       </td>
@@ -3697,7 +11472,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3705,114 +11480,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        856
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Sri Lanka
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LK`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Marshall Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MH`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Myanmar
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Mongolia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Macao
       </td>
@@ -3822,7 +11501,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3830,64 +11509,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        853
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Northern Mariana Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MP`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Maldives
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MV`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Malaysia
       </td>
@@ -3897,7 +11530,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3905,52 +11538,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **NRIC** (National Registration Identity Card)
-        * **PAS** (Passport)
-        * **SSM** (SSM)
-        * **TIN** (Tax Identification Number)
+        **NRIC** (National Registration Identity Card)
+        **PAS** (Passport)
+        **SSM** (SSM)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        company_register_no
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        60
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        New Caledonia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `NC`
+        Maldives
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `MV`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Norfolk Island
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `NF`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3958,24 +11573,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        960
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Nepal
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `NP`
+        Marshall Islands
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `MH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -3983,14 +11602,105 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        692
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Micronesia, Federated States of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        691
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mongolia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        976
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Myanmar
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        95
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Nauru
       </td>
@@ -4000,7 +11710,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4008,24 +11718,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        674
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Niue
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `NU`
+        Nepal
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `NP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4033,14 +11747,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        977
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        New Caledonia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `NC`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        687
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         New Zealand
       </td>
@@ -4050,7 +11797,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4058,52 +11805,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **DLIC** (Driver License)
-        * **IRD** (Inland Revenue Department Number)
-        * **NZBN** (New Zealand Business Number)
-        * **PAS** (Passport)
+        **DLIC** (Driver License)
+        **IRD** (Inland Revenue Department Number)
+        **NZBN** (New Zealand Business Number)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        drivers_license
+        tax_id_person
+        company_register_no
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        64
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        French Polynesia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PF`
+        Niue
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `NU`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Papua New Guinea
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4111,24 +11840,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        683
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Philippines
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PH`
+        Norfolk Island
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `NF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4136,17 +11869,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-        * **PSN** (PhilSys Number)
-        * **TIN** (Tax Identification Number)
-        * **UMID** (Unified Multi-Purpose ID)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        672
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Northern Mariana Islands
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        670
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Pakistan
       </td>
@@ -4156,7 +11919,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4164,39 +11927,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        92
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Pitcairn
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `PN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Palau
       </td>
@@ -4206,7 +11948,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4214,24 +11956,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        680
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Solomon Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SB`
+        Papua New Guinea
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `PG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4239,14 +11985,107 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        675
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Philippines
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+        **PSN** (PhilSys Number)
+        **TIN** (Tax Identification Number)
+        **UMID** (Unified Multi-Purpose ID)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        national_id
+        tax_id_person
+        other
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        63
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Pitcairn
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `PN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Samoa
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `WS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        685
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Singapore
       </td>
@@ -4264,55 +12103,34 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **FIN** (Foreign Identification Number)
-        * **NRIC** (National Registration Identity Card)
-        * **PAS** (Passport)
-        * **UEN** (Unique Entity Number)
+        **FIN** (Foreign Identification Number)
+        **NRIC** (National Registration Identity Card)
+        **PAS** (Passport)
+        **UEN** (Unique Entity Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        passport
+        company_register_no
       </td>
 
       <td style={{ textAlign: "left" }}>
         65
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Thailand
+        Solomon Islands
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `TH`
+        `SB`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **BRN** (Business Registration Number)
-        * **NID** (NID)
-        * **PAS** (Passport)
-        * **TAX** (TAX)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Tajikistan
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TJ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4320,24 +12138,55 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        677
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Korea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KRW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        0
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **ARC** (Alien Registration Card)
+        **BRN** (Business Registration Number)
+        **PAS** (Passport)
+        **RRN** (Resident Registration Number)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Tokelau
+        Sri Lanka
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `TK`
+        `LK`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4345,114 +12194,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        passport
+        national_id
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        94
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Timor-Leste
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Turkmenistan
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Tonga
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TO`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Tuvalu
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TV`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Taiwan
       </td>
@@ -4462,7 +12219,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4470,17 +12227,229 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **ARC** (Alien Registration Card)
-        * **GUI** (Uniform Invoice Number)
-        * **PAS** (Passport)
-        * **TWID** (Taiwan ID)
+        **ARC** (Alien Registration Card)
+        **GUI** (Uniform Invoice Number)
+        **PAS** (Passport)
+        **TWID** (Taiwan ID)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tajikistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        residence_permit
+        company_register_no
+        passport
+        national_id
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        992
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Thailand
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRN** (Business Registration Number)
+        **NID** (NID)
+        **PAS** (Passport)
+        **TAX** (TAX)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        66
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Timor-Leste
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        670
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tokelau
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        690
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tonga
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        676
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Turkmenistan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        993
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tuvalu
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        688
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Uzbekistan
       </td>
@@ -4490,7 +12459,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4498,42 +12467,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        998
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Vietnam
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `VN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **CCCD** (Citizen Identity Card)
-        * **CMND** (Identity Card)
-        * **MST** (Tax Code)
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Vanuatu
       </td>
@@ -4543,7 +12488,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4551,14 +12496,53 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        678
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Vietnam
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `VN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CCCD** (Citizen Identity Card)
+        **CMND** (Identity Card)
+        **MST** (Tax Code)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        national_id
+        tax_id_person
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        84
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Wallis and Futuna
       </td>
@@ -4568,7 +12552,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4576,40 +12560,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        681
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Samoa
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `WS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-
-  </tbody>
+    </tr>\n  </tbody>
 </Table>
 
 
@@ -4645,314 +12607,17 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
+        Normalized type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
 
   </thead>
 
-  <tbody>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Angola
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `AO`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Burkina Faso
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BF`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Burundi
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BI`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Benin
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BJ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Botswana
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `BW`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Congo, The Democratic Republic of the
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Central African Republic
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CF`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Congo
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Côte d'Ivoire
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CI`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Cameroon
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Cabo Verde
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `CV`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Djibouti
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `DJ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+  <tbody>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Algeria
       </td>
@@ -4962,7 +12627,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -4970,14 +12635,424 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        213
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Angola
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AO`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        244
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Benin
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        229
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Botswana
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BW`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        267
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Burkina Faso
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        226
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Burundi
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `BI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        257
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cabo Verde
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CV`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        238
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Cameroon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        237
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Central African Republic
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        236
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Chad
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        235
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Comoros
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `KM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        269
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Congo
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        242
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Congo, The Democratic Republic of the
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        243
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Côte d'Ivoire
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `CI`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        225
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Djibouti
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DJ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        253
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Egypt
       </td>
@@ -4995,195 +13070,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CREG** (Commercial Registration)
-        * **NID** (NID)
-        * **PAS** (Passport)
-        * **TIN** (Tax Identification Number)
+        **CREG** (Commercial Registration)
+        **NID** (NID)
+        **PAS** (Passport)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         20
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Western Sahara
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `EH`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Eritrea
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `ER`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Ethiopia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `ET`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Gabon
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GA`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Ghana
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GH`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **BRN** (Business Registration Number)
-        * **GHID** (Ghana Card)
-        * **PAS** (Passport)
-        * **TIN** (Tax Identification Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Gambia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Guinea
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Equatorial Guinea
       </td>
@@ -5193,7 +13097,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5201,14 +13105,252 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        240
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Eritrea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ER`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        291
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Eswatini
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        268
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ethiopia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ET`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        251
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        French Southern Territories
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TF`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gabon
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        241
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Gambia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GM`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        220
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Ghana
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **BRN** (Business Registration Number)
+        **GHID** (Ghana Card)
+        **PAS** (Passport)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        233
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Guinea
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        224
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Guinea-Bissau
       </td>
@@ -5218,7 +13360,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5226,14 +13368,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        245
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Kenya
       </td>
@@ -5251,67 +13397,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **BRN** (Business Registration Number)
-        * **IDN** (Identity Number)
-        * **KRAP** (Kenya Revenue Authority PIN)
-        * **PAS** (Passport)
+        **BRN** (Business Registration Number)
+        **IDN** (Identity Number)
+        **KRAP** (Kenya Revenue Authority PIN)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        tax_id_person
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
         254
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Comoros
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `KM`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Liberia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `LR`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Lesotho
       </td>
@@ -5321,7 +13424,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5329,14 +13432,47 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        266
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Liberia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `LR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        231
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Libya
       </td>
@@ -5346,7 +13482,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5354,41 +13490,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        218
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Morocco
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MA`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **CIN** (Corporate Identity Number)
-        * **ICE** (Common Company Identifier)
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Madagascar
       </td>
@@ -5398,7 +13511,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5406,89 +13519,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        261
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Mali
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `ML`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Mauritania
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MR`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Mauritius
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `MU`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Malawi
       </td>
@@ -5498,7 +13540,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5506,14 +13548,167 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        265
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mali
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `ML`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        223
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mauritania
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MR`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        222
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mauritius
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        230
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Mayotte
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `YT`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        262
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Morocco
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `MA`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CIN** (Corporate Identity Number)
+        **ICE** (Common Company Identifier)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        212
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Mozambique
       </td>
@@ -5523,7 +13718,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5531,14 +13726,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        258
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Namibia
       </td>
@@ -5548,7 +13747,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5556,14 +13755,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        264
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Niger
       </td>
@@ -5573,7 +13776,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5581,14 +13784,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        227
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Nigeria
       </td>
@@ -5606,43 +13813,26 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **BVN** (Bank Verification Number)
-        * **CACN** (Corporate Affairs Commission Number)
-        * **NIN** (National Identification Number)
-        * **PAS** (Passport)
-        * **TIN** (Tax Identification Number)
+        **BVN** (Bank Verification Number)
+        **CACN** (Corporate Affairs Commission Number)
+        **NIN** (National Identification Number)
+        **PAS** (Passport)
+        **TIN** (Tax Identification Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        other
+        company_register_no
+        national_id
+        passport
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         234
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Réunion
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `RE`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Rwanda
       </td>
@@ -5652,7 +13842,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5660,49 +13850,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        250
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Seychelles
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SC`
+        Réunion
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `RE`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Sudan
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5710,14 +13879,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        262
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Helena, Ascension and Tristan da Cunha
       </td>
@@ -5727,7 +13900,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5735,114 +13908,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        290
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Sierra Leone
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Senegal
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SN`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Somalia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SO`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        South Sudan
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Sao Tome and Principe
       </td>
@@ -5852,7 +13929,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5860,49 +13937,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        239
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Eswatini
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `SZ`
+        Senegal
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `SN`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Chad
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TD`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5910,49 +13966,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        221
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        French Southern Territories
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TF`
+        Seychelles
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `SC`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Togo
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TG`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -5960,49 +13995,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        248
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Tunisia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TN`
+        Sierra Leone
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `SL`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Tanzania, United Republic of
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `TZ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6010,49 +14024,28 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        232
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
-        Uganda
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `UG`
+        Somalia
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `SO`
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Mayotte
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `YT`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6060,14 +14053,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        252
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         South Africa
       </td>
@@ -6085,17 +14082,227 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CIPC** (CIPC)
-        * **IDN** (Identity Number)
-        * **PAS** (Passport)
-        * **TRN** (Tax Registration Number)
+        **CIPC** (CIPC)
+        **IDN** (Identity Number)
+        **PAS** (Passport)
+        **TRN** (Tax Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        national_id
+        passport
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
         27
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Sudan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        211
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Sudan
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `SD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        249
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tanzania, United Republic of
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TZ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        255
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Togo
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        228
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Tunisia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `TN`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        216
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Uganda
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `UG`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        256
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Western Sahara
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `EH`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        212
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Zambia
       </td>
@@ -6105,7 +14312,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6113,14 +14320,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        260
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Zimbabwe
       </td>
@@ -6130,7 +14341,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6138,15 +14349,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        263
       </td>
-    </tr>
-
-  </tbody>
+    </tr>\n  </tbody>
 </Table>
 
 
@@ -6182,42 +14396,17 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
+        Normalized type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
 
   </thead>
 
-  <tbody>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        United Arab Emirates
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `AE`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `AED`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **EID** (Emirates ID)
-        * **PAS** (Passport)
-        * **TLN** (Trade License Number)
-        * **TRN** (Tax Registration Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        971
-      </td>
-    </tr>
-    <tr>
+  <tbody>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Bahrain
       </td>
@@ -6227,7 +14416,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6235,69 +14424,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CPR** (Civil Registration Number)
-        * **CRN** (Company Registration Number)
-        * **PAS** (Passport)
-        * **VATN** (VAT Number)
+        **CPR** (Civil Registration Number)
+        **CRN** (Company Registration Number)
+        **PAS** (Passport)
+        **VATN** (VAT Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        973
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Israel
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `IL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **CNUM** (Identity Number)
-        * **PAS** (Passport)
-        * **TEUD** (Identity Number)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Iraq
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `IQ`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `N/A`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        N/A
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Iran, Islamic Republic of
       </td>
@@ -6307,7 +14451,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6315,14 +14459,80 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        98
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Iraq
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IQ`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        964
+      </td>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        Israel
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `IL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `USD`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **CNUM** (Identity Number)
+        **PAS** (Passport)
+        **TEUD** (Identity Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        national_id
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        972
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Jordan
       </td>
@@ -6332,7 +14542,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6340,14 +14550,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        962
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Kuwait
       </td>
@@ -6357,7 +14571,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6365,16 +14579,22 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CID** (Civil ID)
-        * **CREG** (Commercial Registration)
-        * **PAS** (Passport)
+        **CID** (Civil ID)
+        **CREG** (Commercial Registration)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        965
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Lebanon
       </td>
@@ -6384,7 +14604,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6392,14 +14612,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        961
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Oman
       </td>
@@ -6409,7 +14633,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6417,17 +14641,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CID** (Civil ID)
-        * **CREG** (Commercial Registration)
-        * **PAS** (Passport)
-        * **VATN** (VAT Number)
+        **CID** (Civil ID)
+        **CREG** (Commercial Registration)
+        **PAS** (Passport)
+        **VATN** (VAT Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        company_register_no
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        968
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Palestine, State of
       </td>
@@ -6437,7 +14668,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6445,14 +14676,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        970
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Qatar
       </td>
@@ -6462,7 +14697,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6470,17 +14705,24 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CREG** (Commercial Registration)
-        * **PAS** (Passport)
-        * **QID** (Qatar ID)
-        * **TRN** (Tax Registration Number)
+        **CREG** (Commercial Registration)
+        **PAS** (Passport)
+        **QID** (Qatar ID)
+        **TRN** (Tax Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        passport
+        national_id
+        tax_id_person
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        974
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Saudi Arabia
       </td>
@@ -6498,18 +14740,26 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **CRN** (Company Registration Number)
-        * **IQAM** (Iqama)
-        * **NID** (NID)
-        * **PAS** (Passport)
-        * **VATN** (VAT Number)
+        **CRN** (Company Registration Number)
+        **IQAM** (Iqama)
+        **NID** (NID)
+        **PAS** (Passport)
+        **VATN** (VAT Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        company_register_no
+        residence_permit
+        national_id
+        passport
+        tax_id_entity
       </td>
 
       <td style={{ textAlign: "left" }}>
         966
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Syrian Arab Republic
       </td>
@@ -6519,7 +14769,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6527,14 +14777,53 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        963
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        United Arab Emirates
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `AED`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **EID** (Emirates ID)
+        **PAS** (Passport)
+        **TLN** (Trade License Number)
+        **TRN** (Tax Registration Number)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        national_id
+        passport
+        company_register_no
+        tax_id_person
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        971
+      </td>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Yemen
       </td>
@@ -6544,7 +14833,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `N/A`
+        `USD`
       </td>
 
       <td style={{ textAlign: "left" }}>
@@ -6552,15 +14841,18 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
+      </td>
+
+      
+      <td style={{ textAlign: "left" }}>
+        passport
       </td>
 
       <td style={{ textAlign: "left" }}>
-        N/A
+        967
       </td>
-    </tr>
-
-  </tbody>
+    </tr>\n  </tbody>
 </Table>
 
 
@@ -6596,14 +14888,17 @@ On this page, you will find the country's information you need when using Yuno A
       </th>
 
       <th style={{ textAlign: "left" }}>
+        Normalized type
+      </th>
+
+      <th style={{ textAlign: "left" }}>
         Phone country calling code
       </th>
     </tr>
 
   </thead>
 
-  <tbody>
-    <tr>
+  <tbody>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Antarctica
       </td>
@@ -6617,18 +14912,17 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        0
+        N/A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Bouvet Island
       </td>
@@ -6646,39 +14940,13 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        South Georgia and the South Sandwich Islands
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GS`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `FKP`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        500
-      </td>
-    </tr>
-    <tr>
+    </tr>\n    <tr>
       <td style={{ textAlign: "left" }}>
         Heard Island and McDonald Islands
       </td>
@@ -6696,15 +14964,37 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
+        **PAS** (Passport)
       </td>
 
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>
+    </tr>\n    <tr>
+      <td style={{ textAlign: "left" }}>
+        South Georgia and the South Sandwich Islands
+      </td>
 
-  </tbody>
+      <td style={{ textAlign: "left" }}>
+        `GS`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `FKP`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        N/A
+      </td>
+    </tr>\n  </tbody>
 </Table>
 
 **(1)** _The number of digits after the decimal separator_.
