@@ -2299,7 +2299,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        995
+        49
       </td>
     </tr>
     <tr>
@@ -2464,7 +2464,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        2
+        0
       </td>
 
       <td style={{ textAlign: "left" }}>
