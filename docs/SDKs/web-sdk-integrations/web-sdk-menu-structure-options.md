@@ -102,6 +102,8 @@ This structure follows Adyen's proven approach of guiding users through a clear 
 
 ### Structure
 
+Organize the pages into the following new folders:
+
 ```
 Web SDKs
 ├── Get Started
@@ -128,31 +130,13 @@ Web SDKs
 * **Adyen-style organization**: Proven pattern that users recognize
 * **Related functionality**: Grouped by implementation phase
 
-### Recommended page reordering with new folders
-
-Organize the pages into the following new folders to match the proposed structure:
-
-1. **Get Started**
-   * Choose the Right Integration for You (moved from parent level)
-   * Web SDK Changelog (moved up for visibility)
-2. **Build Your Integration**
-   * Full Checkout SDK
-   * Lite Checkout SDK
-   * Secure Fields
-3. **Advanced Solutions**
-   * Alternative SDKs (includes Headless & Seamless)
-   * 3DS Setup SDK (deprecated)
-4. **Developer Resources**
-   * Loader
-   * Payment Status
-   * SDK Customizations
-   * Demo App
-
 ## Option 2: Stripe-Inspired Progressive Disclosure Structure
 
 This organizes content using Stripe's approach of progressive disclosure with multiple entry points and layered information depth.
 
 ### Structure
+
+Organize the pages into the following new folders:
 
 ```
 Web SDKs
@@ -180,26 +164,6 @@ Web SDKs
 * **Stripe-style organization**: Familiar pattern for developers
 * **Tool accessibility**: Developer resources easily discoverable
 
-### Recommended page reordering with new folders
-
-Organize the pages into the following new folders to match the proposed structure:
-
-1. **Quick Start**
-   * Choose the Right Integration for You (moved from parent level)
-   * Web SDK Changelog
-2. **Core Integrations**
-   * Full Checkout SDK
-   * Lite Checkout SDK
-   * Secure Fields
-3. **Advanced Features**
-   * Alternative SDKs
-   * 3DS Setup SDK (deprecated)
-4. **Tools & Resources**
-   * Loader
-   * Payment Status
-   * SDK Customizations
-   * Demo App
-
 ## Recommendation
 
 We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
@@ -210,20 +174,9 @@ We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 4. **Makes changelog discoverable** by moving it to position 2, following Adyen's pattern of surfacing important updates
 5. **Maintains simplicity** by using existing pages without adding complexity
 
-### Key improvements
+### Key improveme### Structure
 
-* **"Choose the Right Integration"**: Becomes the clear entry point with decision guidance
-* **Changelog**: Moved from position 5 to position 2 for better visibility
-* **Main SDKs**: Grouped together in logical implementation order
-* **Clear categories**: Help users understand what each section contains
-* **Proven pattern**: Based on Adyen's successful user journey approach
+ive complexity from simple to advanced
 
-### Implementation notes
-
-Both options address the core problems identified in the current structure:
-
-* Clear entry point for integration selection
-* Logical grouping of related functionality
-* Progressive complexity from simple to advanced
 * Better discoverability of important content like demo app and utilities
 * Professional organization that matches user expectations from other payment platforms
