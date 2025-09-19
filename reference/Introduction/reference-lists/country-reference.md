@@ -2126,6 +2126,35 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
+        Georgia
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GE`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GEL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `passport`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        995
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
         Germany
       </td>
 
@@ -2154,36 +2183,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        49
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Greenland
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `DKK`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `passport`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        299
+        995
       </td>
     </tr>
     <tr>
@@ -2213,6 +2213,35 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         350
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Greenland
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `GL`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `DKK`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `passport`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        299
       </td>
     </tr>
     <tr>
@@ -2903,6 +2932,35 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         40
+      </td>
+    </tr>
+    <tr>
+      <td style={{ textAlign: "left" }}>
+        Russian Federation
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RU`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `RUB`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        2
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        * **PAS** (Passport)
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        `passport`
+      </td>
+
+      <td style={{ textAlign: "left" }}>
+        7
       </td>
     </tr>
     <tr>
@@ -3755,35 +3813,6 @@ On this page, you will find the country's information you need when using Yuno A
 
       <td style={{ textAlign: "left" }}>
         689
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
-        Georgia
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GE`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `GEL`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `passport`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        995
       </td>
     </tr>
     <tr>
@@ -6710,35 +6739,6 @@ On this page, you will find the country's information you need when using Yuno A
     </tr>
     <tr>
       <td style={{ textAlign: "left" }}>
-        Russian Federation
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `RU`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `RUB`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        2
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        * **PAS** (Passport)
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        `passport`
-      </td>
-
-      <td style={{ textAlign: "left" }}>
-        7
-      </td>
-    </tr>
-    <tr>
-      <td style={{ textAlign: "left" }}>
         Rwanda
       </td>
 
@@ -7506,7 +7506,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
     </tr>
   </tbody>
-</Table>
+ </Table>
 
 ## Antarctica
 
