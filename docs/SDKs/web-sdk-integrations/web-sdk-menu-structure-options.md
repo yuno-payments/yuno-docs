@@ -1,5 +1,5 @@
 ---
-title: 🛠️ Web SDK Menu Structure Options
+title: 🔧 Web SDK Menu Structure Options
 deprecated: false
 hidden: false
 metadata:
