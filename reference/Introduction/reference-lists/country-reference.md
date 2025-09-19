@@ -64,7 +64,8 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>\n    <tr>
+  <tbody>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Afghanistan
       </td>
@@ -95,7 +96,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         93
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Albania
       </td>
@@ -126,7 +128,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         355
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         American Samoa
       </td>
@@ -155,7 +158,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         684
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Andorra
       </td>
@@ -184,7 +188,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         376
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Anguilla
       </td>
@@ -213,7 +218,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         264
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Antigua and Barbuda
       </td>
@@ -242,7 +248,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         268
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Argentina
       </td>
@@ -277,7 +284,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         54
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Armenia
       </td>
@@ -306,7 +314,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         374
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Aruba
       </td>
@@ -335,7 +344,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         297
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Australia
       </td>
@@ -372,7 +382,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Austria
       </td>
@@ -407,7 +418,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         43
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Azerbaijan
       </td>
@@ -436,7 +448,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         994
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bahamas
       </td>
@@ -465,7 +478,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         242
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bangladesh
       </td>
@@ -494,7 +508,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         880
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Barbados
       </td>
@@ -523,7 +538,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         246
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Belarus
       </td>
@@ -552,7 +568,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         375
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Belgium
       </td>
@@ -587,7 +604,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         32
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Belize
       </td>
@@ -616,7 +634,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         501
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bermuda
       </td>
@@ -645,7 +664,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         441
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bhutan
       </td>
@@ -674,7 +694,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         975
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bolivia
       </td>
@@ -707,7 +728,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         591
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bonaire, Sint Eustatius and Saba
       </td>
@@ -736,7 +758,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         599
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bosnia and Herzegovina
       </td>
@@ -765,7 +788,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         387
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Brazil
       </td>
@@ -802,7 +826,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         55
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         British Indian Ocean Territory
       </td>
@@ -831,7 +856,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         246
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Brunei Darussalam
       </td>
@@ -860,7 +886,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         673
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bulgaria
       </td>
@@ -895,7 +922,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         359
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cambodia
       </td>
@@ -924,7 +952,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         855
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Canada
       </td>
@@ -961,7 +990,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         1
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cayman Islands
       </td>
@@ -990,7 +1020,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         345
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Chile
       </td>
@@ -1023,7 +1054,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         56
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         China
       </td>
@@ -1058,7 +1090,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         86
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Christmas Island
       </td>
@@ -1087,7 +1120,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cocos (Keeling) Islands
       </td>
@@ -1116,7 +1150,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Colombia
       </td>
@@ -1153,7 +1188,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         57
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cook Islands
       </td>
@@ -1182,7 +1218,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         682
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Costa Rica
       </td>
@@ -1217,7 +1254,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         506
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Croatia
       </td>
@@ -1246,7 +1284,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         385
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cuba
       </td>
@@ -1275,7 +1314,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         53
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Curaçao
       </td>
@@ -1304,7 +1344,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         599
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cyprus
       </td>
@@ -1333,7 +1374,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         357
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Czechia
       </td>
@@ -1368,7 +1410,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         420
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Denmark
       </td>
@@ -1401,7 +1444,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         45
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Dominica
       </td>
@@ -1430,7 +1474,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         767
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Dominican Republic
       </td>
@@ -1463,7 +1508,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         809
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ecuador
       </td>
@@ -1496,7 +1542,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         593
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         El Salvador
       </td>
@@ -1529,7 +1576,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         503
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Estonia
       </td>
@@ -1558,7 +1606,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         372
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Falkland Islands (Malvinas)
       </td>
@@ -1587,7 +1636,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         500
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Faroe Islands
       </td>
@@ -1616,7 +1666,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         298
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Fiji
       </td>
@@ -1645,7 +1696,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         679
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Finland
       </td>
@@ -1678,7 +1730,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         358
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         France
       </td>
@@ -1713,7 +1766,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         33
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         French Guiana
       </td>
@@ -1742,7 +1796,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         594
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         French Polynesia
       </td>
@@ -1771,7 +1826,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         689
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Georgia
       </td>
@@ -1800,7 +1856,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         995
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Germany
       </td>
@@ -1837,7 +1894,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         49
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Gibraltar
       </td>
@@ -1866,7 +1924,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         350
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Greece
       </td>
@@ -1901,7 +1960,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         30
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Greenland
       </td>
@@ -1930,7 +1990,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         299
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Grenada
       </td>
@@ -1959,7 +2020,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         473
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guadeloupe
       </td>
@@ -1988,7 +2050,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         590
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guam
       </td>
@@ -2017,7 +2080,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         671
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guatemala
       </td>
@@ -2050,7 +2114,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         502
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guernsey
       </td>
@@ -2079,7 +2144,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guyana
       </td>
@@ -2108,7 +2174,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         592
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Haiti
       </td>
@@ -2137,7 +2204,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         509
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Holy See (Vatican City State)
       </td>
@@ -2159,9 +2227,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Honduras
       </td>
@@ -2195,7 +2268,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         504
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Hong Kong
       </td>
@@ -2228,7 +2302,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         852
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Hungary
       </td>
@@ -2257,7 +2332,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         36
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Iceland
       </td>
@@ -2286,7 +2362,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         354
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         India
       </td>
@@ -2323,7 +2400,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         91
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Indonesia
       </td>
@@ -2360,7 +2438,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         62
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ireland
       </td>
@@ -2395,7 +2474,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         353
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Isle of Man
       </td>
@@ -2424,7 +2504,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Italy
       </td>
@@ -2459,7 +2540,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         39
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Jamaica
       </td>
@@ -2488,7 +2570,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         876
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Japan
       </td>
@@ -2523,7 +2606,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         81
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Jersey
       </td>
@@ -2552,7 +2636,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kazakhstan
       </td>
@@ -2581,7 +2666,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         7
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kiribati
       </td>
@@ -2610,7 +2696,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         686
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Korea, Democratic People's Republic of
       </td>
@@ -2639,7 +2726,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         850
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kyrgyzstan
       </td>
@@ -2668,7 +2756,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         996
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lao People's Democratic Republic
       </td>
@@ -2697,7 +2786,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         856
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Latvia
       </td>
@@ -2726,7 +2816,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         371
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Liechtenstein
       </td>
@@ -2755,7 +2846,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         423
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lithuania
       </td>
@@ -2784,7 +2876,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         370
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Luxembourg
       </td>
@@ -2813,7 +2906,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         352
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Macao
       </td>
@@ -2842,7 +2936,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         853
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Malaysia
       </td>
@@ -2877,7 +2972,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         60
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Maldives
       </td>
@@ -2906,7 +3002,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         960
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Malta
       </td>
@@ -2935,7 +3032,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         356
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Marshall Islands
       </td>
@@ -2964,7 +3062,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         692
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Martinique
       </td>
@@ -2993,7 +3092,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         596
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mexico
       </td>
@@ -3028,7 +3128,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         52
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Micronesia, Federated States of
       </td>
@@ -3057,7 +3158,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         691
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Moldova, Republic of
       </td>
@@ -3086,7 +3188,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         373
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Monaco
       </td>
@@ -3115,7 +3218,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         377
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mongolia
       </td>
@@ -3144,7 +3248,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         976
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Montenegro
       </td>
@@ -3173,7 +3278,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         382
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Montserrat
       </td>
@@ -3202,7 +3308,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         664
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Myanmar
       </td>
@@ -3231,7 +3338,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         95
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nauru
       </td>
@@ -3260,7 +3368,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         674
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nepal
       </td>
@@ -3289,7 +3398,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         977
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Netherlands
       </td>
@@ -3324,7 +3434,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         31
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         New Caledonia
       </td>
@@ -3353,7 +3464,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         687
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         New Zealand
       </td>
@@ -3388,7 +3500,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         64
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nicaragua
       </td>
@@ -3421,7 +3534,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         505
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Niue
       </td>
@@ -3450,7 +3564,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         683
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Norfolk Island
       </td>
@@ -3479,7 +3594,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         672
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         North Macedonia
       </td>
@@ -3508,7 +3624,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         389
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Northern Mariana Islands
       </td>
@@ -3537,7 +3654,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         670
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Norway
       </td>
@@ -3572,7 +3690,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         47
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Pakistan
       </td>
@@ -3601,7 +3720,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         92
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Palau
       </td>
@@ -3630,7 +3750,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         680
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Panama
       </td>
@@ -3663,7 +3784,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         507
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Papua New Guinea
       </td>
@@ -3692,7 +3814,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         675
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Paraguay
       </td>
@@ -3725,7 +3848,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         595
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Peru
       </td>
@@ -3760,7 +3884,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         51
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Philippines
       </td>
@@ -3795,7 +3920,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         63
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Pitcairn
       </td>
@@ -3817,9 +3943,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Poland
       </td>
@@ -3855,7 +3986,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         48
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Portugal
       </td>
@@ -3890,7 +4022,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         351
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Puerto Rico
       </td>
@@ -3919,7 +4052,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         787
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Romania
       </td>
@@ -3952,7 +4086,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         40
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Russian Federation
       </td>
@@ -3981,7 +4116,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         7
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Barthélemy
       </td>
@@ -4010,7 +4146,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         590
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Kitts and Nevis
       </td>
@@ -4039,7 +4176,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         869
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Lucia
       </td>
@@ -4068,7 +4206,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         758
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Martin (French part)
       </td>
@@ -4097,7 +4236,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         590
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Pierre and Miquelon
       </td>
@@ -4126,7 +4266,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         508
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Vincent and the Grenadines
       </td>
@@ -4155,7 +4296,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         784
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Samoa
       </td>
@@ -4184,7 +4326,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         685
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         San Marino
       </td>
@@ -4213,7 +4356,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         378
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Serbia
       </td>
@@ -4242,7 +4386,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         381
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Singapore
       </td>
@@ -4277,7 +4422,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         65
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sint Maarten (Dutch part)
       </td>
@@ -4306,7 +4452,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         721
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Slovakia
       </td>
@@ -4335,7 +4482,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         421
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Slovenia
       </td>
@@ -4364,7 +4512,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         386
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Solomon Islands
       </td>
@@ -4393,7 +4542,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         677
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Korea
       </td>
@@ -4420,7 +4570,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Spain
       </td>
@@ -4459,7 +4610,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         34
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sri Lanka
       </td>
@@ -4488,7 +4640,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         94
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Suriname
       </td>
@@ -4517,7 +4670,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         597
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Svalbard and Jan Mayen
       </td>
@@ -4546,7 +4700,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         47
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sweden
       </td>
@@ -4579,7 +4734,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         46
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Switzerland
       </td>
@@ -4612,7 +4768,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         41
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Taiwan
       </td>
@@ -4639,7 +4796,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tajikistan
       </td>
@@ -4672,7 +4830,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         992
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Thailand
       </td>
@@ -4707,7 +4866,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         66
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Timor-Leste
       </td>
@@ -4736,7 +4896,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         670
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tokelau
       </td>
@@ -4765,7 +4926,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         690
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tonga
       </td>
@@ -4794,7 +4956,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         676
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Trinidad and Tobago
       </td>
@@ -4823,7 +4986,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         868
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Turkey
       </td>
@@ -4860,7 +5024,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         90
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Turkmenistan
       </td>
@@ -4889,7 +5054,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         993
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Turks and Caicos Islands
       </td>
@@ -4918,7 +5084,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         649
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tuvalu
       </td>
@@ -4947,7 +5114,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         688
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ukraine
       </td>
@@ -4976,7 +5144,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         380
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         United Kingdom
       </td>
@@ -5013,7 +5182,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         United States
       </td>
@@ -5052,7 +5222,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         1
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         United States Minor Outlying Islands
       </td>
@@ -5081,7 +5252,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         1
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Uruguay
       </td>
@@ -5114,7 +5286,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         598
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Uzbekistan
       </td>
@@ -5143,7 +5316,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         998
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Vanuatu
       </td>
@@ -5172,7 +5346,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         678
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Venezuela, Bolivarian Republic of
       </td>
@@ -5201,7 +5376,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         58
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Vietnam
       </td>
@@ -5236,7 +5412,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         84
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Virgin Islands, British
       </td>
@@ -5265,7 +5442,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         284
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Virgin Islands, U.S.
       </td>
@@ -5294,7 +5472,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         340
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Wallis and Futuna
       </td>
@@ -5323,7 +5502,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         681
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Åland Islands
       </td>
@@ -5354,7 +5534,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         358
       </td>
-    </tr>\n  </tbody>
+    </tr>
+  </tbody>
 </Table>
 
 
@@ -5400,7 +5581,8 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>\n    <tr>
+  <tbody>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Afghanistan
       </td>
@@ -5431,7 +5613,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         93
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Albania
       </td>
@@ -5462,7 +5645,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         355
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Algeria
       </td>
@@ -5491,7 +5675,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         213
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Andorra
       </td>
@@ -5520,7 +5705,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         376
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Angola
       </td>
@@ -5549,7 +5735,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         244
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Armenia
       </td>
@@ -5578,7 +5765,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         374
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Australia
       </td>
@@ -5615,7 +5803,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Austria
       </td>
@@ -5650,7 +5839,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         43
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Azerbaijan
       </td>
@@ -5679,7 +5869,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         994
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bangladesh
       </td>
@@ -5708,7 +5899,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         880
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Belarus
       </td>
@@ -5737,7 +5929,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         375
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Belgium
       </td>
@@ -5772,7 +5965,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         32
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Benin
       </td>
@@ -5801,7 +5995,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         229
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bhutan
       </td>
@@ -5830,7 +6025,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         975
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bosnia and Herzegovina
       </td>
@@ -5859,7 +6055,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         387
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Botswana
       </td>
@@ -5888,7 +6085,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         267
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         British Indian Ocean Territory
       </td>
@@ -5917,7 +6115,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         246
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Brunei Darussalam
       </td>
@@ -5946,7 +6145,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         673
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bulgaria
       </td>
@@ -5981,7 +6181,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         359
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Burkina Faso
       </td>
@@ -6010,7 +6211,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         226
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Burundi
       </td>
@@ -6039,7 +6241,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         257
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cabo Verde
       </td>
@@ -6068,7 +6271,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         238
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cambodia
       </td>
@@ -6097,7 +6301,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         855
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cameroon
       </td>
@@ -6126,7 +6331,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         237
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Central African Republic
       </td>
@@ -6155,7 +6361,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         236
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Chad
       </td>
@@ -6184,7 +6391,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         235
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         China
       </td>
@@ -6219,7 +6427,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         86
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Christmas Island
       </td>
@@ -6248,7 +6457,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cocos (Keeling) Islands
       </td>
@@ -6277,7 +6487,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Comoros
       </td>
@@ -6306,7 +6517,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         269
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Congo
       </td>
@@ -6335,7 +6547,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         242
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Congo, The Democratic Republic of the
       </td>
@@ -6364,7 +6577,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         243
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cook Islands
       </td>
@@ -6393,7 +6607,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         682
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Croatia
       </td>
@@ -6422,7 +6637,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         385
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cyprus
       </td>
@@ -6451,7 +6667,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         357
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Czechia
       </td>
@@ -6486,7 +6703,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         420
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Côte d'Ivoire
       </td>
@@ -6515,7 +6733,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         225
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Denmark
       </td>
@@ -6548,7 +6767,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         45
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Djibouti
       </td>
@@ -6577,7 +6797,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         253
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Egypt
       </td>
@@ -6612,7 +6833,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         20
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Equatorial Guinea
       </td>
@@ -6641,7 +6863,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         240
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Eritrea
       </td>
@@ -6670,7 +6893,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         291
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Estonia
       </td>
@@ -6699,7 +6923,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         372
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Eswatini
       </td>
@@ -6728,7 +6953,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         268
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ethiopia
       </td>
@@ -6757,7 +6983,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         251
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Faroe Islands
       </td>
@@ -6786,7 +7013,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         298
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Fiji
       </td>
@@ -6815,7 +7043,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         679
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Finland
       </td>
@@ -6848,7 +7077,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         358
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         France
       </td>
@@ -6883,7 +7113,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         33
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         French Polynesia
       </td>
@@ -6912,7 +7143,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         689
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         French Southern Territories
       </td>
@@ -6934,9 +7166,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Gabon
       </td>
@@ -6966,7 +7203,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         241
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Gambia
       </td>
@@ -6995,7 +7233,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         220
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Georgia
       </td>
@@ -7024,7 +7263,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         995
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Germany
       </td>
@@ -7061,7 +7301,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         49
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ghana
       </td>
@@ -7096,7 +7337,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         233
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Gibraltar
       </td>
@@ -7125,7 +7367,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         350
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Greece
       </td>
@@ -7160,7 +7403,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         30
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guam
       </td>
@@ -7189,7 +7433,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         671
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guernsey
       </td>
@@ -7218,7 +7463,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guinea
       </td>
@@ -7247,7 +7493,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         224
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guinea-Bissau
       </td>
@@ -7276,7 +7523,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         245
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Holy See (Vatican City State)
       </td>
@@ -7298,9 +7546,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Hong Kong
       </td>
@@ -7334,7 +7587,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         852
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Hungary
       </td>
@@ -7363,7 +7617,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         36
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Iceland
       </td>
@@ -7392,7 +7647,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         354
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         India
       </td>
@@ -7429,7 +7685,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         91
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Indonesia
       </td>
@@ -7466,7 +7723,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         62
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ireland
       </td>
@@ -7501,7 +7759,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         353
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Isle of Man
       </td>
@@ -7530,7 +7789,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Italy
       </td>
@@ -7565,7 +7825,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         39
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Japan
       </td>
@@ -7600,7 +7861,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         81
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Jersey
       </td>
@@ -7629,7 +7891,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kazakhstan
       </td>
@@ -7658,7 +7921,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         7
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kenya
       </td>
@@ -7693,7 +7957,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         254
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kiribati
       </td>
@@ -7722,7 +7987,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         686
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Korea, Democratic People's Republic of
       </td>
@@ -7751,7 +8017,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         850
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kyrgyzstan
       </td>
@@ -7780,7 +8047,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         996
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lao People's Democratic Republic
       </td>
@@ -7809,7 +8077,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         856
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Latvia
       </td>
@@ -7838,7 +8107,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         371
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lesotho
       </td>
@@ -7867,7 +8137,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         266
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Liberia
       </td>
@@ -7896,7 +8167,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         231
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Libya
       </td>
@@ -7925,7 +8197,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         218
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Liechtenstein
       </td>
@@ -7954,7 +8227,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         423
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lithuania
       </td>
@@ -7983,7 +8257,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         370
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Luxembourg
       </td>
@@ -8012,7 +8287,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         352
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Macao
       </td>
@@ -8041,7 +8317,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         853
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Madagascar
       </td>
@@ -8070,7 +8347,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         261
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Malawi
       </td>
@@ -8099,7 +8377,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         265
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Malaysia
       </td>
@@ -8134,7 +8413,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         60
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Maldives
       </td>
@@ -8163,7 +8443,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         960
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mali
       </td>
@@ -8192,7 +8473,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         223
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Malta
       </td>
@@ -8221,7 +8503,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         356
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Marshall Islands
       </td>
@@ -8250,7 +8533,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         692
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mauritania
       </td>
@@ -8279,7 +8563,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         222
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mauritius
       </td>
@@ -8308,7 +8593,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         230
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mayotte
       </td>
@@ -8337,7 +8623,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         262
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Micronesia, Federated States of
       </td>
@@ -8366,7 +8653,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         691
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Moldova, Republic of
       </td>
@@ -8395,7 +8683,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         373
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Monaco
       </td>
@@ -8424,7 +8713,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         377
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mongolia
       </td>
@@ -8453,7 +8743,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         976
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Montenegro
       </td>
@@ -8482,7 +8773,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         382
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Morocco
       </td>
@@ -8515,7 +8807,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         212
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mozambique
       </td>
@@ -8544,7 +8837,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         258
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Myanmar
       </td>
@@ -8573,7 +8867,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         95
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Namibia
       </td>
@@ -8602,7 +8897,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         264
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nauru
       </td>
@@ -8631,7 +8927,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         674
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nepal
       </td>
@@ -8660,7 +8957,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         977
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Netherlands
       </td>
@@ -8695,7 +8993,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         31
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         New Caledonia
       </td>
@@ -8724,7 +9023,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         687
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         New Zealand
       </td>
@@ -8759,7 +9059,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         64
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Niger
       </td>
@@ -8788,7 +9089,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         227
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nigeria
       </td>
@@ -8825,7 +9127,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         234
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Niue
       </td>
@@ -8854,7 +9157,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         683
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Norfolk Island
       </td>
@@ -8883,7 +9187,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         672
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         North Macedonia
       </td>
@@ -8912,7 +9217,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         389
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Northern Mariana Islands
       </td>
@@ -8941,7 +9247,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         670
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Norway
       </td>
@@ -8976,7 +9283,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         47
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Pakistan
       </td>
@@ -9005,7 +9313,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         92
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Palau
       </td>
@@ -9034,7 +9343,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         680
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Papua New Guinea
       </td>
@@ -9063,7 +9373,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         675
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Philippines
       </td>
@@ -9098,7 +9409,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         63
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Pitcairn
       </td>
@@ -9120,9 +9432,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Poland
       </td>
@@ -9158,7 +9475,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         48
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Portugal
       </td>
@@ -9193,7 +9511,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         351
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Romania
       </td>
@@ -9226,7 +9545,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         40
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Russian Federation
       </td>
@@ -9255,7 +9575,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         7
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Rwanda
       </td>
@@ -9284,7 +9605,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         250
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Réunion
       </td>
@@ -9313,7 +9635,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         262
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Helena, Ascension and Tristan da Cunha
       </td>
@@ -9342,7 +9665,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         290
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Samoa
       </td>
@@ -9371,7 +9695,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         685
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         San Marino
       </td>
@@ -9400,7 +9725,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         378
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sao Tome and Principe
       </td>
@@ -9429,7 +9755,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         239
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Senegal
       </td>
@@ -9458,7 +9785,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         221
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Serbia
       </td>
@@ -9487,7 +9815,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         381
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Seychelles
       </td>
@@ -9516,7 +9845,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         248
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sierra Leone
       </td>
@@ -9545,7 +9875,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         232
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Singapore
       </td>
@@ -9580,7 +9911,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         65
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Slovakia
       </td>
@@ -9609,7 +9941,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         421
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Slovenia
       </td>
@@ -9638,7 +9971,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         386
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Solomon Islands
       </td>
@@ -9667,7 +10001,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         677
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Somalia
       </td>
@@ -9696,7 +10031,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         252
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Africa
       </td>
@@ -9731,7 +10067,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         27
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Korea
       </td>
@@ -9758,7 +10095,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Sudan
       </td>
@@ -9791,7 +10129,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         211
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Spain
       </td>
@@ -9826,7 +10165,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         34
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sri Lanka
       </td>
@@ -9855,7 +10195,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         94
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sudan
       </td>
@@ -9884,7 +10225,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         249
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Svalbard and Jan Mayen
       </td>
@@ -9913,7 +10255,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         47
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sweden
       </td>
@@ -9946,7 +10289,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         46
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Switzerland
       </td>
@@ -9979,7 +10323,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         41
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Taiwan
       </td>
@@ -10006,7 +10351,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tajikistan
       </td>
@@ -10039,7 +10385,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         992
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tanzania, United Republic of
       </td>
@@ -10068,7 +10415,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         255
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Thailand
       </td>
@@ -10103,7 +10451,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         66
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Timor-Leste
       </td>
@@ -10132,7 +10481,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         670
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Togo
       </td>
@@ -10161,7 +10511,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         228
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tokelau
       </td>
@@ -10190,7 +10541,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         690
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tonga
       </td>
@@ -10219,7 +10571,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         676
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tunisia
       </td>
@@ -10248,7 +10601,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         216
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Turkey
       </td>
@@ -10285,7 +10639,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         90
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Turkmenistan
       </td>
@@ -10314,7 +10669,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         993
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tuvalu
       </td>
@@ -10343,7 +10699,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         688
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Uganda
       </td>
@@ -10372,7 +10729,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         256
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ukraine
       </td>
@@ -10401,7 +10759,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         380
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         United Kingdom
       </td>
@@ -10438,7 +10797,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         44
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Uzbekistan
       </td>
@@ -10467,7 +10827,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         998
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Vanuatu
       </td>
@@ -10496,7 +10857,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         678
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Vietnam
       </td>
@@ -10531,7 +10893,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         84
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Wallis and Futuna
       </td>
@@ -10560,7 +10923,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         681
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Western Sahara
       </td>
@@ -10589,7 +10953,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         212
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Zambia
       </td>
@@ -10618,7 +10983,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         260
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Zimbabwe
       </td>
@@ -10647,7 +11013,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         263
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Åland Islands
       </td>
@@ -10678,7 +11045,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         358
       </td>
-    </tr>\n  </tbody>
+    </tr>
+  </tbody>
 </Table>
 
 
@@ -10724,7 +11092,8 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>\n    <tr>
+  <tbody>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Afghanistan
       </td>
@@ -10755,7 +11124,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         93
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Armenia
       </td>
@@ -10784,7 +11154,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         374
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Australia
       </td>
@@ -10821,7 +11192,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Azerbaijan
       </td>
@@ -10850,7 +11222,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         994
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bangladesh
       </td>
@@ -10879,7 +11252,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         880
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bhutan
       </td>
@@ -10908,7 +11282,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         975
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         British Indian Ocean Territory
       </td>
@@ -10937,7 +11312,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         246
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Brunei Darussalam
       </td>
@@ -10966,7 +11342,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         673
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cambodia
       </td>
@@ -10995,7 +11372,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         855
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         China
       </td>
@@ -11030,7 +11408,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         86
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Christmas Island
       </td>
@@ -11059,7 +11438,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cocos (Keeling) Islands
       </td>
@@ -11088,7 +11468,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         61
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cook Islands
       </td>
@@ -11117,7 +11498,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         682
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Fiji
       </td>
@@ -11146,7 +11528,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         679
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         French Polynesia
       </td>
@@ -11175,7 +11558,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         689
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guam
       </td>
@@ -11204,7 +11588,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         671
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Hong Kong
       </td>
@@ -11237,7 +11622,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         852
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         India
       </td>
@@ -11274,7 +11660,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         91
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Indonesia
       </td>
@@ -11311,7 +11698,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         62
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Japan
       </td>
@@ -11346,7 +11734,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         81
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kazakhstan
       </td>
@@ -11375,7 +11764,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         7
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kiribati
       </td>
@@ -11404,7 +11794,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         686
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Korea, Democratic People's Republic of
       </td>
@@ -11433,7 +11824,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         850
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kyrgyzstan
       </td>
@@ -11462,7 +11854,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         996
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lao People's Democratic Republic
       </td>
@@ -11491,7 +11884,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         856
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Macao
       </td>
@@ -11520,7 +11914,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         853
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Malaysia
       </td>
@@ -11555,7 +11950,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         60
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Maldives
       </td>
@@ -11584,7 +11980,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         960
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Marshall Islands
       </td>
@@ -11613,7 +12010,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         692
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Micronesia, Federated States of
       </td>
@@ -11642,7 +12040,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         691
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mongolia
       </td>
@@ -11671,7 +12070,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         976
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Myanmar
       </td>
@@ -11700,7 +12100,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         95
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nauru
       </td>
@@ -11729,7 +12130,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         674
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nepal
       </td>
@@ -11758,7 +12160,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         977
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         New Caledonia
       </td>
@@ -11787,7 +12190,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         687
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         New Zealand
       </td>
@@ -11822,7 +12226,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         64
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Niue
       </td>
@@ -11851,7 +12256,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         683
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Norfolk Island
       </td>
@@ -11880,7 +12286,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         672
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Northern Mariana Islands
       </td>
@@ -11909,7 +12316,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         670
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Pakistan
       </td>
@@ -11938,7 +12346,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         92
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Palau
       </td>
@@ -11967,7 +12376,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         680
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Papua New Guinea
       </td>
@@ -11996,7 +12406,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         675
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Philippines
       </td>
@@ -12031,7 +12442,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         63
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Pitcairn
       </td>
@@ -12053,9 +12465,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Samoa
       </td>
@@ -12085,7 +12502,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         685
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Singapore
       </td>
@@ -12120,7 +12538,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         65
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Solomon Islands
       </td>
@@ -12149,7 +12568,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         677
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Korea
       </td>
@@ -12176,7 +12596,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sri Lanka
       </td>
@@ -12209,7 +12630,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         94
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Taiwan
       </td>
@@ -12236,7 +12658,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tajikistan
       </td>
@@ -12269,7 +12692,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         992
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Thailand
       </td>
@@ -12304,7 +12728,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         66
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Timor-Leste
       </td>
@@ -12333,7 +12758,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         670
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tokelau
       </td>
@@ -12362,7 +12788,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         690
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tonga
       </td>
@@ -12391,7 +12818,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         676
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Turkmenistan
       </td>
@@ -12420,7 +12848,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         993
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tuvalu
       </td>
@@ -12449,7 +12878,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         688
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Uzbekistan
       </td>
@@ -12478,7 +12908,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         998
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Vanuatu
       </td>
@@ -12507,7 +12938,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         678
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Vietnam
       </td>
@@ -12542,7 +12974,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         84
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Wallis and Futuna
       </td>
@@ -12571,7 +13004,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         681
       </td>
-    </tr>\n  </tbody>
+    </tr>
+  </tbody>
 </Table>
 
 
@@ -12617,7 +13051,8 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>\n    <tr>
+  <tbody>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Algeria
       </td>
@@ -12646,7 +13081,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         213
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Angola
       </td>
@@ -12675,7 +13111,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         244
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Benin
       </td>
@@ -12704,7 +13141,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         229
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Botswana
       </td>
@@ -12733,7 +13171,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         267
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Burkina Faso
       </td>
@@ -12762,7 +13201,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         226
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Burundi
       </td>
@@ -12791,7 +13231,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         257
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cabo Verde
       </td>
@@ -12820,7 +13261,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         238
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Cameroon
       </td>
@@ -12849,7 +13291,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         237
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Central African Republic
       </td>
@@ -12878,7 +13321,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         236
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Chad
       </td>
@@ -12907,7 +13351,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         235
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Comoros
       </td>
@@ -12936,7 +13381,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         269
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Congo
       </td>
@@ -12965,7 +13411,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         242
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Congo, The Democratic Republic of the
       </td>
@@ -12994,7 +13441,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         243
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Côte d'Ivoire
       </td>
@@ -13023,7 +13471,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         225
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Djibouti
       </td>
@@ -13052,7 +13501,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         253
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Egypt
       </td>
@@ -13087,7 +13537,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         20
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Equatorial Guinea
       </td>
@@ -13116,7 +13567,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         240
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Eritrea
       </td>
@@ -13145,7 +13597,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         291
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Eswatini
       </td>
@@ -13174,7 +13627,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         268
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ethiopia
       </td>
@@ -13203,7 +13657,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         251
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         French Southern Territories
       </td>
@@ -13225,9 +13680,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Gabon
       </td>
@@ -13257,7 +13717,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         241
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Gambia
       </td>
@@ -13286,7 +13747,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         220
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Ghana
       </td>
@@ -13321,7 +13783,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         233
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guinea
       </td>
@@ -13350,7 +13813,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         224
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Guinea-Bissau
       </td>
@@ -13379,7 +13843,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         245
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kenya
       </td>
@@ -13414,7 +13879,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         254
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lesotho
       </td>
@@ -13443,7 +13909,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         266
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Liberia
       </td>
@@ -13472,7 +13939,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         231
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Libya
       </td>
@@ -13501,7 +13969,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         218
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Madagascar
       </td>
@@ -13530,7 +13999,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         261
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Malawi
       </td>
@@ -13559,7 +14029,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         265
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mali
       </td>
@@ -13588,7 +14059,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         223
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mauritania
       </td>
@@ -13617,7 +14089,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         222
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mauritius
       </td>
@@ -13646,7 +14119,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         230
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mayotte
       </td>
@@ -13675,7 +14149,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         262
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Morocco
       </td>
@@ -13708,7 +14183,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         212
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Mozambique
       </td>
@@ -13737,7 +14213,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         258
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Namibia
       </td>
@@ -13766,7 +14243,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         264
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Niger
       </td>
@@ -13795,7 +14273,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         227
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Nigeria
       </td>
@@ -13832,7 +14311,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         234
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Rwanda
       </td>
@@ -13861,7 +14341,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         250
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Réunion
       </td>
@@ -13890,7 +14371,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         262
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saint Helena, Ascension and Tristan da Cunha
       </td>
@@ -13919,7 +14401,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         290
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sao Tome and Principe
       </td>
@@ -13948,7 +14431,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         239
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Senegal
       </td>
@@ -13977,7 +14461,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         221
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Seychelles
       </td>
@@ -14006,7 +14491,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         248
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sierra Leone
       </td>
@@ -14035,7 +14521,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         232
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Somalia
       </td>
@@ -14064,7 +14551,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         252
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Africa
       </td>
@@ -14099,7 +14587,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         27
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Sudan
       </td>
@@ -14128,7 +14617,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         211
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Sudan
       </td>
@@ -14157,7 +14647,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         249
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tanzania, United Republic of
       </td>
@@ -14186,7 +14677,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         255
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Togo
       </td>
@@ -14215,7 +14707,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         228
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Tunisia
       </td>
@@ -14244,7 +14737,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         216
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Uganda
       </td>
@@ -14273,7 +14767,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         256
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Western Sahara
       </td>
@@ -14302,7 +14797,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         212
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Zambia
       </td>
@@ -14331,7 +14827,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         260
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Zimbabwe
       </td>
@@ -14360,7 +14857,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         263
       </td>
-    </tr>\n  </tbody>
+    </tr>
+  </tbody>
 </Table>
 
 
@@ -14406,7 +14904,8 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>\n    <tr>
+  <tbody>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bahrain
       </td>
@@ -14441,7 +14940,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         973
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Iran, Islamic Republic of
       </td>
@@ -14470,7 +14970,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         98
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Iraq
       </td>
@@ -14499,7 +15000,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         964
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Israel
       </td>
@@ -14532,7 +15034,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         972
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Jordan
       </td>
@@ -14561,7 +15064,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         962
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Kuwait
       </td>
@@ -14594,7 +15098,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         965
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Lebanon
       </td>
@@ -14623,7 +15128,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         961
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Oman
       </td>
@@ -14658,7 +15164,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         968
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Palestine, State of
       </td>
@@ -14687,7 +15194,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         970
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Qatar
       </td>
@@ -14722,7 +15230,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         974
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Saudi Arabia
       </td>
@@ -14759,7 +15268,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         966
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Syrian Arab Republic
       </td>
@@ -14788,7 +15298,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         963
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         United Arab Emirates
       </td>
@@ -14823,7 +15334,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         971
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Yemen
       </td>
@@ -14852,7 +15364,8 @@ On this page, you will find the country's information you need when using Yuno A
       <td style={{ textAlign: "left" }}>
         967
       </td>
-    </tr>\n  </tbody>
+    </tr>
+  </tbody>
 </Table>
 
 
@@ -14898,7 +15411,8 @@ On this page, you will find the country's information you need when using Yuno A
 
   </thead>
 
-  <tbody>\n    <tr>
+  <tbody>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Antarctica
       </td>
@@ -14920,9 +15434,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Bouvet Island
       </td>
@@ -14944,9 +15463,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         Heard Island and McDonald Islands
       </td>
@@ -14968,9 +15492,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n    <tr>
+    </tr>
+    <tr>
       <td style={{ textAlign: "left" }}>
         South Georgia and the South Sandwich Islands
       </td>
@@ -14992,9 +15521,14 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
+        passport
+      </td>
+
+      <td style={{ textAlign: "left" }}>
         N/A
       </td>
-    </tr>\n  </tbody>
+    </tr>
+  </tbody>
 </Table>
 
 **(1)** _The number of digits after the decimal separator_.
