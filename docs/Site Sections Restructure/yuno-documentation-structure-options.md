@@ -1,5 +1,5 @@
 ---
-title: Yuno Documentation Structure Options
+title: Docs Structure Options
 deprecated: false
 hidden: false
 metadata:
@@ -51,8 +51,6 @@ The Yuno documentation contains 13 main sections with significant complexity imb
 > ℹ️ Note
 >
 > This visualisation displays only the top-level (Level 1) items in each category. The SDKs category has more than 50 sub-items spread across its 6 main sections, while the other categories have far fewer sub-items.
-
-<br />
 
 ```
 HOW YUNO WORKS (CATEGORY)
@@ -195,8 +193,8 @@ Both options reorganize the existing 13 categories into 4 new categories:
 
 **Current 13 categories → New 4 categories:**
 
-* HOW YUNO WORKS, GET STARTED WITH YUNO → Get Started/Quick Start
-* SDKs (consolidated), Payment Features, BUILD YOUR INTEGRATION → Build Your Integration/Core Integrations
+* HOW YUNO WORKS, GET STARTED WITH YUNO, BUILD YOUR INTEGRATION → Get Started/Quick Start
+* SDKs (consolidated), Payment Features → Build Your Integration/Core Integrations
 * Wallets, Security and Compliance, Webhooks, Additional Services → Advanced Features
 * USING YUNO, Disputes, Payout Management, DIRECT INTEGRATION USE CASES, PLUGINS → Operations & Management/Operations & Tools
 
@@ -212,7 +210,7 @@ Reorganize the documentation into the following new structure that complies with
 Get Started (CATEGORY)
 ├── HOW YUNO WORKS (Level 1)
 ├── GET STARTED WITH YUNO (Level 1)
-└── Choose the Right Integration (Level 1)
+└── BUILD YOUR INTEGRATION (Level 1)
 
 Build Your Integration (CATEGORY)
 ├── Seamless SDKs (Recommended) (Level 1)
@@ -244,11 +242,12 @@ Operations & Management (CATEGORY)
 
 ### Key benefits
 
-* **Clear decision guidance**: Integration choice upfront with decision checklist
+* **Clear decision guidance**: Integration choice upfront using existing "Choose the Right Integration" content
 * **Linear progression**: Get Started → Build → Advanced → Operations
 * **Adyen-style organization**: Proven pattern that users recognize
 * **Related functionality**: Grouped by implementation phase
 * **Reduced complexity**: SDK section consolidated and reorganized
+* **Platform compliance**: Fixes current Readme 3-level violations
 
 ## Option 2: Stripe-Inspired Progressive Disclosure Structure
 
@@ -262,7 +261,7 @@ Reorganize the documentation into the following new structure that complies with
 Quick Start (CATEGORY)
 ├── HOW YUNO WORKS (Level 1)
 ├── GET STARTED WITH YUNO (Level 1)
-└── Choose the Right Integration (Level 1)
+└── BUILD YOUR INTEGRATION (Level 1)
 
 Core Integrations (CATEGORY)
 ├── Seamless SDKs (Recommended) (Level 1)
@@ -299,26 +298,28 @@ Operations & Tools (CATEGORY)
 * **Stripe-style organization**: Familiar pattern for developers
 * **Tool accessibility**: Operational resources easily discoverable
 * **Platform consolidation**: Mobile SDKs combined for better organization
+* **Platform compliance**: Fixes current Readme 3-level violations
 
 ## Recommendation
 
 We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 
-1. **Provides clear decision guidance** upfront, addressing the main pain point of users not knowing which integration to choose
+1. **Provides clear decision guidance** upfront using existing "Choose the Right Integration" content
 2. **Follows a proven linear progression** that users expect from payment platform documentation
 3. **Consolidates the overwhelming SDK section** by combining mobile platforms and reorganizing web SDKs
 4. **Groups operations together** in one section, making administrative tasks easily discoverable
 5. **Maintains simplicity** by using existing content without adding complexity
+6. **Fixes platform compliance issues** by respecting Readme's 3-level maximum constraint
 
 ### Key improvements
 
 * **Readme platform compliance**: Fixes current violations of 3-level maximum constraint
-* **"Choose the Right Integration"**: Becomes the clear entry point after understanding Yuno
+* **"Choose the Right Integration"**: Moves from buried position to clear entry point after understanding Yuno
 * **SDK consolidation**: Mobile SDKs combined, web SDKs consolidated to reduce version fragmentation (v1.0, v1.1, v1.2, v1.3)
 * **Linear progression**: Clear path from learning → building → advanced features → operations
 * **Better discoverability**: Related functionality grouped together
 * **Reduced cognitive load**: 4 main sections instead of 13 scattered sections
-* **Platform-optimized navigation**: Designed specifically for Readme's limitations
+* **Platform-optimized navigation**: Designed specifically for Readme's 3-level maximum constraint
 
 ### Implementation notes
 
