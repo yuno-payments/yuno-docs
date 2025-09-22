@@ -35,14 +35,14 @@ GET STARTED WITH YUNO
 USING YUNO
 DIRECT INTEGRATION USE CASES
 SDKs
-Security and Compliance
-Payment Features
-Payout Management
-Disputes
-Webhooks
-Wallets
+SECURITY AND COMPLIANCE
+PAYMENT FEATURES
+PAYOUT MANAGEMENT
+DISPUTES
+WEBHOOKS
+WALLETS
 PLUGINS
-Additional Services
+ADDITIONAL SERVICES
 ```
 
 ### Complete structure visualization
@@ -158,7 +158,7 @@ SDKs
 │   └── Complementary features 
 └── Country coverage 
 
-Security and Compliance 
+SECURITY AND COMPLIANCE 
 ├── 3D Secure 
 ├── Card Fingerprint 
 ├── Card Verification 
@@ -170,7 +170,7 @@ Security and Compliance
     ├── Via API 
     └── Exporting Tokens from Yuno 
 
-Payment Features 
+PAYMENT FEATURES 
 ├── Enroll Payment Methods 
 ├── Enroll cards with payment links 
 ├── Installments 
@@ -185,19 +185,19 @@ Payment Features
 ├── SCA Exemptions 
 └── Cancel and Capture Flow 
 
-Payout Management 
+PAYOUT MANAGEMENT 
 └── Payouts 
 
-Disputes 
+DISPUTES 
 ├── Chargeback Management 
 └── Chargeback response codes 
 
-Webhooks 
+WEBHOOKS 
 ├── Webhooks overview 
 ├── Configure Webhooks 
 └── Object and Examples 
 
-Wallets 
+WALLETS 
 ├── Wallets Overview 
 ├── Apple Pay 
 │   ├── Prerequisites (Apple Pay) 
@@ -214,7 +214,7 @@ PLUGINS
     ├── Configure Yuno as Provider 
     └── VTEX Headless Integration Guide 
 
-Additional Services 
+ADDITIONAL SERVICES 
 ├── Aida AI Agent 
 ├── Card Account Updater 
 ├── Currency Conversion 
@@ -281,14 +281,26 @@ The two options represent different approaches:
 
 ### Content mapping
 
-Both options reorganize the existing 13 categories into 4 new categories:
+Both options reorganize the existing 13 categories into different structures:
 
-**Current 13 categories → New 4 categories:**
+**Current 13 categories → New structures:**
 
-* HOW YUNO WORKS, GET STARTED WITH YUNO → Get Started
-* SDKs (consolidated), Payment Features, DIRECT INTEGRATION USE CASES → Build Your Integration
-* Wallets, Security and Compliance, Webhooks, Additional Services → Advanced Features
-* USING YUNO, Disputes, Payout Management, PLUGINS → Operations & Management
+**Option 1 (4 categories):**
+
+* HOW YUNO WORKS, GET STARTED WITH YUNO → GET STARTED
+* SDKs (consolidated), Payment Features, DIRECT INTEGRATION USE CASES → BUILD YOUR INTEGRATION
+* Wallets, Security and Compliance, Webhooks, Additional Services → ADVANCED FEATURES
+* USING YUNO, Disputes, Payout Management, PLUGINS → OPERATIONS & MANAGEMENT
+
+**Option 2 (7 categories):**
+
+* HOW YUNO WORKS, GET STARTED WITH YUNO → GET STARTED
+* SDKs → SDKs
+* Payment Features, DIRECT INTEGRATION USE CASES → PAYMENT FEATURES
+* Security and Compliance, Webhooks → SECURITY & COMPLIANCE
+* Wallets → WALLETS
+* USING YUNO, Disputes, Payout Management, PLUGINS → OPERATIONS
+* Additional Services → ADDITIONAL SERVICES
 
 ## Option 1: Adyen-Inspired User Journey Structure
 
@@ -297,10 +309,10 @@ This structure follows Adyen's approach with clear decision guidance and linear 
 ### Structure visualization (Only Categories)
 
 ```
-Get Started 
-Build Your Integration 
-Advanced Features 
-Operations & Management 
+GET STARTED 
+BUILD YOUR INTEGRATION 
+ADVANCED FEATURES 
+OPERATIONS & MANAGEMENT 
 ```
 
 ### Structure (Readme Platform Compliant)
@@ -308,7 +320,7 @@ Operations & Management
 Reorganize the documentation into the following new structure that complies with Readme's 3-level maximum:
 
 ```
-Get Started 
+GET STARTED 
 ├── HOW YUNO WORKS 
 │   ├── What is Yuno? 
 │   ├── How Yuno Payment Process Works 
@@ -331,7 +343,7 @@ Get Started
     ├── Direct Flow Integration 
     └── SDK Integration Overview 
 
-Build Your Integration 
+BUILD YOUR INTEGRATION 
 ├── Seamless SDKs (Recommended) 
 │   └── Seamless SDK 
 ├── Web SDKs 
@@ -373,7 +385,7 @@ Build Your Integration
 │       ├── Loader 
 │       ├── SDK Customizations 
 │       └── Complementary features 
-├── Payment Features 
+├── PAYMENT FEATURES 
 │   ├── Enroll Payment Methods 
 │   ├── Enroll cards with payment links 
 │   ├── Installments 
@@ -396,8 +408,8 @@ Build Your Integration
     ├── Build Reports 
     └── Yuno Testing Gateway 
 
-Advanced Features 
-├── Wallets 
+ADVANCED FEATURES 
+├── WALLETS 
 │   ├── Wallets Overview 
 │   ├── Apple Pay 
 │   │   ├── Prerequisites (Apple Pay) 
@@ -423,13 +435,13 @@ Advanced Features
 │   ├── Webhooks overview 
 │   ├── Configure Webhooks 
 │   └── Object and Examples 
-└── Additional Services 
+└── ADDITIONAL SERVICES 
     ├── Aida AI Agent 
     ├── Card Account Updater 
     ├── Currency Conversion 
     └── Building AI Integrations with Yuno's LLMs and MCP 
 
-Operations & Management 
+OPERATIONS & MANAGEMENT 
 ├── USING YUNO 
 │   ├── Environments 
 │   ├── Dashboard Overview 
@@ -471,7 +483,7 @@ Operations & Management
 ### Key benefits
 
 * **Clear decision guidance**: Integration choice upfront with step-by-step wizards
-* **Linear progression**: Get Started → Build → Advanced → Operations
+* **Linear progression**: GET STARTED → BUILD → ADVANCED → OPERATIONS
 * **Use case-driven navigation**: Clear separation between online, mobile, and direct integrations
 * **Workflow-based content**: Aligns with business processes
 * **Reduced complexity**: SDK section consolidated and reorganized
@@ -479,15 +491,18 @@ Operations & Management
 
 ## Option 2: Stripe-Inspired Progressive Disclosure Structure
 
-This organizes content using Stripe's approach with progressive disclosure and multiple entry points.
+This organizes content using Stripe's approach with progressive disclosure and multiple entry points, using more categories for better content separation.
 
 ### Structure visualization (Only Categories)
 
 ```
-Get Started 
-Build Your Integration 
-Advanced Features 
-Operations & Management 
+GET STARTED
+SDKs
+PAYMENT FEATURES
+SECURITY & COMPLIANCE
+WALLETS
+OPERATIONS
+ADDITIONAL SERVICES
 ```
 
 ### Structure (Readme Platform Compliant)
@@ -495,7 +510,7 @@ Operations & Management
 Reorganize the documentation into the following new structure that complies with Readme's 3-level maximum:
 
 ```
-Get Started 
+GET STARTED
 ├── HOW YUNO WORKS 
 │   ├── What is Yuno? 
 │   ├── How Yuno Payment Process Works 
@@ -518,7 +533,7 @@ Get Started
     ├── Direct Flow Integration 
     └── SDK Integration Overview 
 
-Build Your Integration 
+SDKs
 ├── Seamless SDKs (Recommended) 
 │   └── Seamless SDK 
 ├── Web SDKs 
@@ -560,20 +575,22 @@ Build Your Integration
 │       ├── Loader 
 │       ├── SDK Customizations 
 │       └── Complementary features 
-├── Payment Features 
-│   ├── Enroll Payment Methods 
-│   ├── Enroll cards with payment links 
-│   ├── Installments 
-│   │   ├── Merchant Installments 
-│   │   └── Provider Installments 
-│   ├── Subscriptions 
-│   │   └── Smart Retries 
-│   ├── Transaction Retries 
-│   ├── Split Payments Marketplace 
-│   ├── Account Funding Transactions (AFTs) 
-│   ├── Payment Details 
-│   ├── SCA Exemptions 
-│   └── Cancel and Capture Flow 
+└── Country coverage 
+
+PAYMENT FEATURES
+├── Enroll Payment Methods 
+├── Enroll cards with payment links 
+├── Installments 
+│   ├── Merchant Installments 
+│   └── Provider Installments 
+├── Subscriptions 
+│   └── Smart Retries 
+├── Transaction Retries 
+├── Split Payments Marketplace 
+├── Account Funding Transactions (AFTs) 
+├── Payment Details 
+├── SCA Exemptions 
+├── Cancel and Capture Flow 
 └── Direct Integration 
     ├── Set Up Payment Connection 
     ├── Create Payments 
@@ -583,40 +600,35 @@ Build Your Integration
     ├── Build Reports 
     └── Yuno Testing Gateway 
 
-Advanced Features 
-├── Wallets 
-│   ├── Wallets Overview 
-│   ├── Apple Pay 
-│   │   ├── Prerequisites (Apple Pay) 
-│   │   ├── Apple Pay Setup and Configuration 
-│   │   ├── SDK Integration 
-│   │   └── Direct Integration 
-│   ├── Google Pay™ 
-│   │   ├── Direct Integration 
-│   │   └── Integration Via Provider 
-│   └── Click to Pay 
-├── Security and Compliance 
-│   ├── 3D Secure 
-│   ├── Card Fingerprint 
-│   ├── Card Verification 
-│   ├── PCI Compliance 
-│   ├── Stored Credentials 
-│   ├── Network Tokens 
-│   └── Data Migration Processes 
-│       ├── Token Migration Process 
-│       ├── Via API 
-│       └── Exporting Tokens from Yuno 
-├── Webhooks 
-│   ├── Webhooks overview 
-│   ├── Configure Webhooks 
-│   └── Object and Examples 
-└── Additional Services 
-    ├── Aida AI Agent 
-    ├── Card Account Updater 
-    ├── Currency Conversion 
-    └── Building AI Integrations with Yuno's LLMs and MCP 
+SECURITY & COMPLIANCE
+├── 3D Secure 
+├── Card Fingerprint 
+├── Card Verification 
+├── PCI Compliance 
+├── Stored Credentials 
+├── Network Tokens 
+├── Data Migration Processes 
+│   ├── Token Migration Process 
+│   ├── Via API 
+│   └── Exporting Tokens from Yuno 
+└── Webhooks 
+    ├── Webhooks overview 
+    ├── Configure Webhooks 
+    └── Object and Examples 
 
-Operations & Management 
+WALLETS
+├── Wallets Overview 
+├── Apple Pay 
+│   ├── Prerequisites (Apple Pay) 
+│   ├── Apple Pay Setup and Configuration 
+│   ├── SDK Integration 
+│   └── Direct Integration 
+├── Google Pay™ 
+│   ├── Direct Integration 
+│   └── Integration Via Provider 
+└── Click to Pay 
+
+OPERATIONS
 ├── USING YUNO 
 │   ├── Environments 
 │   ├── Dashboard Overview 
@@ -646,6 +658,12 @@ Operations & Management
     └── VTEX 
         ├── Configure Yuno as Provider 
         └── VTEX Headless Integration Guide 
+
+ADDITIONAL SERVICES
+├── Aida AI Agent 
+├── Card Account Updater 
+├── Currency Conversion 
+└── Building AI Integrations with Yuno's LLMs and MCP 
 ```
 
 **Key Changes for Readme Compliance:**
@@ -675,13 +693,15 @@ We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 5. **Maintains simplicity** by using existing content without adding complexity
 6. **Fixes platform compliance issues** by respecting Readme's 3-level maximum constraint
 
+**Option 2** offers a different approach with **7 categories** that provides more granular organization but may be more complex for users to navigate initially.
+
 ### Key improvements
 
 * **"Choose the Right Integration"**: Moves from buried position to clear entry point after understanding Yuno
 * **SDK consolidation**: Mobile SDKs combined, web SDKs consolidated to reduce version fragmentation
 * **Linear progression**: Clear path from learning → building → advanced features → operations
 * **Better discoverability**: Related functionality grouped together
-* **Reduced cognitive load**: 4 main sections instead of 13 scattered sections
+* **Reduced cognitive load**: 4 main sections instead of 13 scattered sections (Option 1) or 7 organized sections (Option 2)
 * **Platform compliance**: Fixes current violations of 3-level maximum constraint
 
 ### Implementation notes
