@@ -126,26 +126,26 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
  customer: {
    session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
  },
- status: "ENROLLED" 
- 
- /**List of possible statuses:
- * CREATED,
- * EXPIRED,
- * REJECTED,
- * READY_TO_ENROLL,
- * ENROLL_IN_PROCESS,
- * UNENROLL_IN_PROCESS,
- * IN_PROCESS,
- * ENROLLED,
- * DECLINED,
- * CANCELED,
- * ERROR,
- * UNENROLLED;
- */
-
+ status: "ENROLLED"
 }
-
 ```
+
+> 📘 Possible Status Values
+>
+> The `status` field can have one of the following values:
+>
+> * `CREATED`
+> * `EXPIRED`
+> * `REJECTED`
+> * `READY_TO_ENROLL`
+> * `ENROLL_IN_PROCESS`
+> * `UNENROLL_IN_PROCESS`
+> * `IN_PROCESS`
+> * `ENROLLED`
+> * `DECLINED`
+> * `CANCELED`
+> * `ERROR`
+> * `UNENROLLED`
 
 > 📘 Demo App
 >
