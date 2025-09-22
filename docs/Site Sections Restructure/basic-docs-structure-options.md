@@ -9,7 +9,7 @@ This document presents two improved menu structure options for the entire Yuno d
 
 > ℹ️ Note:
 >
-> This is the high-level overview. For complete Level 2 and Level 3 structure details, see the [Detailed Version](detailed-docs-structure-options).
+> This is the high-level overview. For complete Level 2 and Level 3 structure details, see the [Detailed Version](detailed-docs-structure-options.md).
 
 ## Research approach
 
@@ -79,8 +79,9 @@ DIRECT INTEGRATION USE CASES (CATEGORY)
 ├── Build Reports (Level 1)
 └── Yuno Testing Gateway (Level 1)
 SDKs (CATEGORY)
+├── Choose the Right Integration for You (Level 1)
 ├── Yuno SDKs Introduction (Level 1)
-├── Seamless SDKs (Recommended) (Level 1)
+├── SDK Integration Overview (Level 1)
 ├── Web SDKs (Level 1)
 ├── Android SDKs (Level 1)
 ├── iOS SDKs (Level 1)
@@ -125,7 +126,7 @@ Additional Services (CATEGORY)
 ├── Card Account Updater (Level 1)
 ├── Currency Conversion (Level 1)
 ├── Building AI Integrations with Yuno's LLMs and MCP (Level 1)
-└── Enviroments (Level 1)
+└── Environments (Level 1)
 ```
 
 ### Key problems
