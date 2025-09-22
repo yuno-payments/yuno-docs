@@ -1,7 +1,7 @@
 ---
 title: 3DS Setup SDK (Deprecated)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
