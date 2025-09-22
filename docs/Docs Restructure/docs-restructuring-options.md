@@ -223,47 +223,34 @@ ADDITIONAL SERVICES
 
 ### Current problems
 
-* **Massive SDK section**: Contains 50+ sub-items across multiple platforms vs. 1-13 items in other sections - completely disproportionate
-* **Version fragmentation**: Multiple versions of same SDKs creating confusion (now consolidated)
-* **No clear entry point**: Users overwhelmed by SDK section with no guidance on where to start
-* **Inconsistent section depth**: Some sections with 1-2 main items while SDK section has 6 main items containing 50+ sub-items
-* **Poor discoverability**: Important integration guidance buried in massive SDK section
-* **Mixed organization**: Well-organized sections alongside overwhelming SDK complexity
-* **Scattered related content**: Integration guidance split between "GET STARTED" and "SDKs"
+Our documentation has several critical issues that make it difficult for users to find what they need:
+
+* **Overwhelming SDK section**: 50+ items in one section while other sections have only 1-13 items - completely unbalanced
+* **No clear starting point**: Users don't know where to begin their integration journey
+* **Scattered guidance**: Integration help is split between "GET STARTED" and "SDKs" sections
+* **Version confusion**: Multiple versions of the same SDKs create unnecessary complexity
+* **Hard to discover**: Important information is buried deep in the massive SDK section
+* **Inconsistent structure**: Some sections are simple while others are overwhelming
+* **Poor user experience**: Users struggle to navigate and find relevant information
 
 ### Platform limitations
 
-**Critical constraint**: The Yuno documentation is hosted on the **Readme platform**, which enforces strict navigation limitations:
+**Why this matters**: Our documentation runs on **Readme**, which has strict rules about how deep we can organize content.
 
-**Platform limitations:**
+**The rules:**
 
-* **Maximum 3 levels** of navigation within each category
-* **No subcategories beyond 3 levels** are supported
-* **Platform enforces these limits** - deeper nesting is not possible
+* **Only 3 levels deep** - that's the maximum allowed
+* **No exceptions** - the platform won't let us go deeper
+* **Current violations** - some parts of our site already break these rules
 
-**Structure analysis:**
+**How it works:**
 
 ```
-CATEGORY (Level 0 - Readme Category)
-├── Level 1 (Section)
-│   └── Level 2 (Subsection)
-│       └── Level 3 (Maximum allowed - Page)
+CATEGORY (Main section)
+├── Section (Level 1)
+│   └── Subsection (Level 2)
+│       └── Page (Level 3 - Maximum allowed)
 ```
-
-**Current violations:**
-
-* **SDKs section exceeds limits**: Has 4+ levels in multiple areas
-* **Web SDKs nested structure**: `SDKs → Web SDKs → Full Web SDK → Version-specific pages` (4 levels)
-* **Version fragmentation**: Creates unnecessary depth that violates platform constraints
-* **Multiple sections affected**: Several areas exceed the 3-level maximum
-
-**Impact on restructuring:**
-This constraint makes restructuring **more critical** because:
-
-1. **Current site violates platform limits** - some areas are already broken
-2. **Our proposed structure would fix violations** while improving organization
-3. **Version consolidation becomes essential** - not just for UX but for platform compliance
-4. **Simplified navigation required** - must work within Readme's constraints
 
 ## Design approach
 
