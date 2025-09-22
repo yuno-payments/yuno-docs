@@ -7,7 +7,7 @@ metadata:
 ---
 This document presents two improved menu structure options for the entire Yuno documentation. Both options use only existing content and aim to create a more intuitive user experience based on proven patterns from leading payment platforms.
 
-> **Note**:
+> ℹ️ Note:
 >
 > This is the high-level overview. For complete Level 2 and Level 3 structure details, see the [Detailed Version](detailed-docs-structure-options.md).
 
