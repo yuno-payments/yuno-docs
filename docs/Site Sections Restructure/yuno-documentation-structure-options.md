@@ -48,29 +48,91 @@ The Yuno documentation contains 13 main sections with significant complexity imb
 
 ### Current structure visualization
 
+> ℹ️ **Note**
+> This visualisation displays only the top-level (Level 1) items in each category. The SDKs category has more than 50 sub-items spread across its 6 main sections, while the other categories have far fewer sub-items.
+
 ```
-Yuno Documentation (Current Site Structure)
-├── HOW YUNO WORKS/ (12 items)
-├── GET STARTED WITH YUNO/ (8 items)
-├── USING YUNO/ (13 items)
-├── DIRECT INTEGRATION USE CASES/ (7 items)
-├── SDKs/ (50+ items - disproportionately large)
-├── Security and Compliance/ (9 items)
-├── Payment Features/ (12 items)
-├── Payout Management/ (1 item)
-├── Disputes/ (2 items)
-├── Webhooks/ (3 items)
-├── Wallets/ (7 items)
-├── PLUGINS/ (2 items)
-└── Additional Services/ (5 items)
+HOW YUNO WORKS (CATEGORY)
+├── What is Yuno? (Level 1)
+├── How Yuno Payment Process Works (Level 1)
+└── Basic Concepts (Level 1)
+GET STARTED WITH YUNO (CATEGORY)
+├── Overview (Level 1)
+├── Set Up Your Account (Level 1)
+├── Create Your First Payment With SDK (Level 1)
+└── BUILD YOUR INTEGRATION (Level 1)
+USING YUNO (CATEGORY)
+├── Environments (Level 1)
+├── Dashboard Overview (Level 1)
+├── Other tools (Level 1)
+├── Account Management (Level 1)
+├── Teams and Roles (Level 1)
+├── Single Sign-On (SSO) (Level 1)
+└── Security (Level 1)
+DIRECT INTEGRATION USE CASES (CATEGORY)
+├── Set Up Payment Connection (Level 1)
+├── Create Payments (Level 1)
+├── Refund Payments (Level 1)
+├── Cancel Payments (Level 1)
+├── Capture Payments (Level 1)
+├── Build Reports (Level 1)
+└── Yuno Testing Gateway (Level 1)
+SDKs (CATEGORY)
+├── Yuno SDKs Introduction (Level 1)
+├── Seamless SDKs (Recommended) (Level 1)
+├── Web SDKs (Level 1)
+├── Android SDKs (Level 1)
+├── iOS SDKs (Level 1)
+└── Country coverage (Level 1)
+Security and Compliance (CATEGORY)
+├── 3D Secure (Level 1)
+├── Card Fingerprint (Level 1)
+├── Card Verification (Level 1)
+├── PCI Compliance (Level 1)
+├── Stored Credentials (Level 1)
+├── Network Tokens (Level 1)
+└── Data Migration Processes (Level 1)
+Payment Features (CATEGORY)
+├── Enroll Payment Methods (Level 1)
+├── Enroll cards with payment links (Level 1)
+├── Installments (Level 1)
+├── Subscriptions (Level 1)
+├── Transaction Retries (Level 1)
+├── Split Payments Marketplace (Level 1)
+├── Account Funding Transactions (AFTs) (Level 1)
+├── Payment Details (Level 1)
+├── SCA Exemptions (Level 1)
+└── Cancel and Capture Flow (Level 1)
+Payout Management (CATEGORY)
+└── Payouts (Level 1)
+Disputes (CATEGORY)
+├── Chargeback Management (Level 1)
+└── Chargeback response codes (Level 1)
+Webhooks (CATEGORY)
+├── Webhooks overview (Level 1)
+├── Configure Webhooks (Level 1)
+└── Object and Examples (Level 1)
+Wallets (CATEGORY)
+├── Wallets Overview (Level 1)
+├── Apple Pay (Level 1)
+├── Google Pay™ (Level 1)
+└── Click to Pay (Level 1)
+PLUGINS (CATEGORY)
+└── VTEX (Level 1)
+Additional Services (CATEGORY)
+├── Aida AI Agent (Level 1)
+├── Card Account Updater (Level 1)
+├── Currency Conversion (Level 1)
+├── Building AI Integrations with Yuno's LLMs and MCP (Level 1)
+└── Enviroments (Level 1)
 ```
 
 ### Key problems
 
-* **Massive SDK section**: 50+ items vs. 1-13 items in other sections - completely disproportionate
+* **Massive SDK section**: Contains 50+ sub-items across multiple platforms vs. 1-13 items in other sections - completely disproportionate
 * **Version fragmentation**: Multiple versions of same SDKs (v1.0, v1.1, v1.2, v1.3) creating confusion
 * **No clear entry point**: Users overwhelmed by SDK section with no guidance on where to start
-* **Inconsistent section depth**: Some sections with 1-2 items while SDK section has 50+
+* **Inconsistent section depth**: Some sections with 1-2 Level 1 items while SDK section has 6 Level 1 items containing 50+ sub-items
 * **Poor discoverability**: Important integration guidance buried in massive SDK section
 * **Mixed organization**: Well-organized sections alongside overwhelming SDK complexity
 * **Scattered related content**: Integration guidance split between "GET STARTED" and "SDKs"
@@ -124,6 +186,17 @@ The two options represent different approaches to solving the same problems:
 * **Option 1 (Adyen-Inspired User Journey)**: Linear progression with clear decision points and integration checklists
 * **Option 2 (Stripe-Inspired Progressive Disclosure)**: Layered information with multiple entry points based on user goals
 
+### Content mapping
+
+Both options reorganize the existing 13 categories into 4 new categories:
+
+**Current 13 categories → New 4 categories:**
+
+* HOW YUNO WORKS, GET STARTED WITH YUNO → Get Started/Quick Start
+* SDKs (consolidated), Payment Features, BUILD YOUR INTEGRATION → Build Your Integration/Core Integrations
+* Wallets, Security and Compliance, Webhooks, Additional Services → Advanced Features
+* USING YUNO, Disputes, Payout Management, DIRECT INTEGRATION USE CASES, PLUGINS → Operations & Management/Operations & Tools
+
 ## Option 1: Adyen-Inspired User Journey Structure
 
 This structure follows Adyen's proven approach of guiding users through a clear decision-making process with linear progression from setup to implementation.
@@ -143,7 +216,7 @@ Build Your Integration (CATEGORY)
 ├── Web SDKs (Level 1)
 ├── Mobile SDKs (Level 1)
 ├── Payment Features (Level 1)
-└── Build Your Integration (Level 1)
+└── Direct Integration (Level 1)
 
 Advanced Features (CATEGORY)
 ├── Wallets (Level 1)
@@ -193,7 +266,7 @@ Core Integrations (CATEGORY)
 ├── Web SDKs (Level 1)
 ├── Mobile SDKs (Level 1)
 ├── Payment Features (Level 1)
-└── Build Your Integration (Level 1)
+└── Direct Integration (Level 1)
 
 Advanced Features (CATEGORY)
 ├── Wallets (Level 1)
