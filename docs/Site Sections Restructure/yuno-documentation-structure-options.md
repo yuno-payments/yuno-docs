@@ -75,6 +75,40 @@ Yuno Documentation (Current Site Structure)
 * **Mixed organization**: Well-organized sections alongside overwhelming SDK complexity
 * **Scattered related content**: Integration guidance split between "GET STARTED" and "SDKs"
 
+### Readme Platform Constraint
+
+**Critical Finding**: The Yuno documentation is hosted on the **Readme platform**, which has strict navigation limitations:
+
+**Readme Platform Limitations:**
+
+* **Maximum 3 levels** of navigation within each category
+* **No subcategories beyond Level 3** are supported
+* **Platform enforces these limits** - deeper nesting is not possible
+
+**Current Structure Analysis:**
+
+```
+CATEGORY (Level 0 - Readme Category)
+├── Level 1 (Section)
+│   └── Level 2 (Subsection)
+│       └── Level 3 (Maximum allowed - Page)
+```
+
+**Current violations identified:**
+
+* **SDKs section exceeds limits**: Has 4+ levels in multiple areas
+* **Web SDKs nested structure**: `SDKs → Web SDKs → Full Web SDK → Full Web SDK v1.3` (4 levels)
+* **Version fragmentation**: Creates unnecessary depth that violates platform constraints
+* **Multiple sections affected**: Several areas exceed the 3-level maximum
+
+**Impact on Restructuring:**
+This constraint makes restructuring **MORE necessary** because:
+
+1. **Current site violates platform limits** - some areas are already broken
+2. **Our proposed structure would fix violations** while improving organization
+3. **Version consolidation becomes essential** - not just for UX but for platform compliance
+4. **Simplified navigation required** - must work within Readme's constraints
+
 ## Design approach
 
 We applied these core principles based on proven patterns from leading platforms:
@@ -94,35 +128,43 @@ The two options represent different approaches to solving the same problems:
 
 This structure follows Adyen's proven approach of guiding users through a clear decision-making process with linear progression from setup to implementation.
 
-### Structure
+### Structure (Readme Platform Compliant)
 
-Reorganize the documentation into the following new structure:
+Reorganize the documentation into the following new structure that complies with Readme's 3-level maximum:
 
 ```
-Yuno Documentation
-├── Get Started
-│   ├── HOW YUNO WORKS/ (existing)
-│   ├── GET STARTED WITH YUNO/ (existing)
-│   └── Choose the Right Integration for You (move from GET STARTED)
-├── Build Your Integration
-│   ├── SDKs/ (reorganized and consolidated)
-│   │   ├── Seamless SDKs (Recommended) (existing)
-│   │   ├── Web SDKs (consolidated versions)
-│   │   ├── Mobile SDKs (Android + iOS combined)
-│   │   └── Build Your Integration (existing)
-│   └── Payment Features/ (existing)
-├── Advanced Features
-│   ├── Wallets/ (existing)
-│   ├── Security and Compliance/ (existing)
-│   ├── Webhooks/ (existing)
-│   └── Additional Services/ (existing)
-└── Operations & Management
-    ├── USING YUNO/ (existing)
-    ├── Disputes/ (existing)
-    ├── Payout Management/ (existing)
-    ├── DIRECT INTEGRATION USE CASES/ (existing)
-    └── PLUGINS/ (existing)
+Get Started (CATEGORY)
+├── HOW YUNO WORKS (Level 1)
+├── GET STARTED WITH YUNO (Level 1)
+└── Choose the Right Integration (Level 1)
+
+Build Your Integration (CATEGORY)
+├── Seamless SDKs (Recommended) (Level 1)
+├── Web SDKs (Level 1)
+├── Mobile SDKs (Level 1)
+├── Payment Features (Level 1)
+└── Build Your Integration (Level 1)
+
+Advanced Features (CATEGORY)
+├── Wallets (Level 1)
+├── Security and Compliance (Level 1)
+├── Webhooks (Level 1)
+└── Additional Services (Level 1)
+
+Operations & Management (CATEGORY)
+├── USING YUNO (Level 1)
+├── Disputes (Level 1)
+├── Payout Management (Level 1)
+├── DIRECT INTEGRATION USE CASES (Level 1)
+└── PLUGINS (Level 1)
 ```
+
+**Key Changes for Readme Compliance:**
+
+* **Flattened structure**: All major sections at Level 1 within each category
+* **Eliminated version nesting**: Consolidated v1.0, v1.1, v1.2, v1.3 into single pages
+* **Simplified navigation**: No more than 2 levels within each category
+* **Platform-optimized**: Designed specifically for Readme's constraints
 
 ### Key benefits
 
@@ -136,35 +178,43 @@ Yuno Documentation
 
 This organizes content using Stripe's approach of progressive disclosure with multiple entry points and layered information depth.
 
-### Structure
+### Structure (Readme Platform Compliant)
 
-Reorganize the documentation into the following new structure:
+Reorganize the documentation into the following new structure that complies with Readme's 3-level maximum:
 
 ```
-Yuno Documentation
-├── Quick Start
-│   ├── HOW YUNO WORKS/ (existing)
-│   ├── GET STARTED WITH YUNO/ (existing)
-│   └── Choose the Right Integration for You (move from GET STARTED)
-├── Core Integrations
-│   ├── SDKs/ (reorganized and consolidated)
-│   │   ├── Seamless SDKs (Recommended) (existing)
-│   │   ├── Web SDKs (consolidated versions)
-│   │   ├── Mobile SDKs (Android + iOS combined)
-│   │   └── Build Your Integration (existing)
-│   └── Payment Features/ (existing)
-├── Advanced Features
-│   ├── Wallets/ (existing)
-│   ├── Security and Compliance/ (existing)
-│   ├── Webhooks/ (existing)
-│   └── Additional Services/ (existing)
-└── Operations & Tools
-    ├── USING YUNO/ (existing)
-    ├── Disputes/ (existing)
-    ├── Payout Management/ (existing)
-    ├── DIRECT INTEGRATION USE CASES/ (existing)
-    └── PLUGINS/ (existing)
+Quick Start (CATEGORY)
+├── HOW YUNO WORKS (Level 1)
+├── GET STARTED WITH YUNO (Level 1)
+└── Choose the Right Integration (Level 1)
+
+Core Integrations (CATEGORY)
+├── Seamless SDKs (Recommended) (Level 1)
+├── Web SDKs (Level 1)
+├── Mobile SDKs (Level 1)
+├── Payment Features (Level 1)
+└── Build Your Integration (Level 1)
+
+Advanced Features (CATEGORY)
+├── Wallets (Level 1)
+├── Security and Compliance (Level 1)
+├── Webhooks (Level 1)
+└── Additional Services (Level 1)
+
+Operations & Tools (CATEGORY)
+├── USING YUNO (Level 1)
+├── Disputes (Level 1)
+├── Payout Management (Level 1)
+├── DIRECT INTEGRATION USE CASES (Level 1)
+└── PLUGINS (Level 1)
 ```
+
+**Key Changes for Readme Compliance:**
+
+* **Flattened structure**: All major sections at Level 1 within each category
+* **Eliminated version nesting**: Consolidated v1.0, v1.1, v1.2, v1.3 into single pages
+* **Simplified navigation**: No more than 2 levels within each category
+* **Platform-optimized**: Designed specifically for Readme's constraints
 
 ### Key benefits
 
@@ -186,11 +236,13 @@ We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 
 ### Key improvements
 
+* **Readme platform compliance**: Fixes current violations of 3-level maximum constraint
 * **"Choose the Right Integration"**: Becomes the clear entry point after understanding Yuno
 * **SDK consolidation**: Mobile SDKs combined, web SDKs consolidated to reduce version fragmentation (v1.0, v1.1, v1.2, v1.3)
 * **Linear progression**: Clear path from learning → building → advanced features → operations
 * **Better discoverability**: Related functionality grouped together
 * **Reduced cognitive load**: 4 main sections instead of 13 scattered sections
+* **Platform-optimized navigation**: Designed specifically for Readme's limitations
 
 ### Implementation notes
 
