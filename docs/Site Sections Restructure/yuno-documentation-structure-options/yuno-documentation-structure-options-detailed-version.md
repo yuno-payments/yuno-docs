@@ -44,12 +44,13 @@ We analyzed the current structure and studied the actual navigation patterns fro
 
 ## Current structure
 
-The Yuno documentation contains 13 main sections with significant complexity imbalance:
+The Yuno documentation contains 13 main sections with a significant complexity imbalance:
 
-### Current structure visualization (Complete with Level 2 and Level 3)
+### Current structure visualization
 
-> ℹ️ **Note**
-> This visualisation displays the complete structure including Level 2 and Level 3 items. The SDKs category has more than 50 sub-items spread across its 6 main sections, demonstrating the complexity imbalance.
+> ℹ️ Note
+>
+> This visualisation displays only the top-level (Level 1) items in each category. The SDKs category has more than 50 sub-items spread across its 6 main sections, while the other categories have far fewer sub-items.
 
 ```
 HOW YUNO WORKS (CATEGORY)
