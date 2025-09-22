@@ -1,5 +1,5 @@
 ---
-title: Docs Structure Options (Detailed)
+title: Detailed Docs Structure Options
 deprecated: false
 hidden: false
 metadata:
