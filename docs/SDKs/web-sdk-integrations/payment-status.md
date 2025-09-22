@@ -29,7 +29,7 @@ Ensure the Yuno SDK file is included in your webpage before closing the `<body>`
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](ref:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](ref:developers-credentials) guide.
 
 Like the example below, use the initialized class that is attributed to the `yuno` constant.
 
@@ -48,17 +48,8 @@ The callback will be executed when the status is received, informing the user. D
 ```javascript
 yuno.mountStatusPayment({
   checkoutSession: '438413b7-4921-41e4-b8f3-28a5a0141638',
-  /**
-   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-   */
   countryCode: 'FR',
-  /**
-  * Language can be one of en, fr, jp
-  */
   language: 'fr',
-  /**
-   * @param {'READY_TO_PAY' | 'CREATED' | 'SUCCEEDED' | 'REJECTED' | 'CANCELLED' | 'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'} data
-   */
   yunoPaymentResult(data) {
     console.log('yunoPaymentResult', data)
   }
@@ -70,11 +61,6 @@ yuno.mountStatusPayment({
 To receive the current payment status using Status Lite, you need to call the method `yunoPaymentResult` providing the `checkoutSession` related to the payment, as shown in the example below:
 
 ```javascript
-/**
- * Call method that returns status, this won't render anything
- * 
- * @return {'READY_TO_PAY' | 'CREATED' | 'SUCCEEDED' | 'REJECTED' | 'CANCELLED' | 'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'}
- */
 const status = await yuno.yunoPaymentResult(checkoutSession)
 ```
 
