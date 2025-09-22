@@ -5,8 +5,6 @@ hidden: false
 metadata:
   robots: index
 ---
-# Docs Restructuring Options
-
 This document presents two improved menu structure options for the entire Yuno documentation. Both options use only existing content and aim to create a more intuitive user experience based on proven patterns from leading payment platforms.
 
 > ℹ️ Note:
