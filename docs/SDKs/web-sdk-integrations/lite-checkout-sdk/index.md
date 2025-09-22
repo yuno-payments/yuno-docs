@@ -10,15 +10,17 @@ metadata:
 next:
   description: ''
 ---
+<br />
+
 > 👍 Recommended SDK
 >
 > We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
 Welcome to the Yuno Lite SDK (Web) guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
 
-> 📘 Web SDK v1.1 Release
+> 📘 Web SDK v1.3 Release
 >
-> v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, [visit the Web SDK v1.1 page](https://docs.y.uno/docs/yuno-web-sdk-v11).
+> v1.3 is the latest version with enhanced UI grouping and multilingual support. To learn more, [visit the Web SDK changelog](doc:web-sdk-changelog).
 
 ## Choose your integration method
 
@@ -37,15 +39,13 @@ The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your
 > While the `defer` attribute ensures the script is executed after the HTML is parsed, it doesn't guarantee that the SDK script will always load last. In some cases, if the SDK loads faster than expected and the event listener is declared afterward, the `yuno-sdk-ready` event may have already fired — and your listener won't catch it. To prevent this, always define the listener before loading the SDK script.
 
 ```html
-<!-- First, set up the event listener -->
 <script>
   window.addEventListener('yuno-sdk-ready', () => {
-    console.log('SDK loaded'); // The SDK is ready to use
+    console.log('SDK loaded');
     await yuno.initialize('publicKey');
   });
 </script>
 
-<!-- Then load the SDK -->
 <script defer src="https://sdk-web.y.uno/v1.1/main.js"></script>
 ```
 
@@ -64,34 +64,28 @@ This method is ideal when you need granular control over the SDK's loading proce
 **file.js**
 
 ```javascript
-// Function to inject the SDK dynamically
 export const injectScript = async (): Promise<boolean> => {
   const head = document.getElementsByTagName('head')[0];
   const js = document.createElement('script');
   js.src = "https://sdk-web.y.uno/v1.1/main.js";
   js.defer = true;
 
-  // Return a promise that resolves when the SDK is ready
   return new Promise((resolve, reject) => {
     window.addEventListener('yuno-sdk-ready', () => {
-      resolve(true); // SDK loaded successfully
+      resolve(true);
     });
 
     js.onerror = (error) => {
-      // Create a custom event in case of loading error
       const event = new CustomEvent('yuno-sdk-error', { detail: error });
       window.dispatchEvent(event);
-
       reject(new Error(`Failed to load script: ${js.src} - ${error.message}`));
     };
 
-    head.appendChild(js); // Add the script to the document
+    head.appendChild(js);
   });
 };
 
-// Using the function to inject the SDK
 await injectScript();
-// SDK is ready to use
 await yuno.initialize('publicKey');
 ```
 
@@ -106,13 +100,9 @@ npm install @yuno-payments/sdk-web
 Then, load and initialize the SDK as follows:
 
 ```javascript
-// Import the SDK module from npm
 import { loadScript } from '@yuno-payments/sdk-web';
 
-// Load and initialize the SDK
 const yuno = await loadScript();
-
-// Initialize the SDK with the public key
 await yuno.initialize('publicKey');
 ```
 
@@ -121,7 +111,6 @@ await yuno.initialize('publicKey');
 To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the `<head>` tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
 
 ```html
-<!-- Improve performance with preconnect -->
 <link rel="preconnect" href="https://sdk-web.y.uno" />
 <link rel="preconnect" href="https://api.y.uno" />
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
@@ -132,5 +121,5 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 After integrating the SDK using one of the methods described above, follow these steps to implement the Lite Checkout functionality:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Lite SDK implementation" href="/v1.0.2_add-sdk-changelog-pages/update/docs/lite-sdk-implementation" titleSize="h4" />
+  <YunoCard title="Lite SDK implementation" href="/docs/lite-sdk-implementation" titleSize="h4" />
 </Shelf>
