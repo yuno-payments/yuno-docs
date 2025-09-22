@@ -9,7 +9,7 @@ This document presents two improved menu structure options for the entire Yuno d
 
 > ℹ️ Note:
 >
-> This is the detailed version with complete Level 2 and Level 3 structure breakdown. For a high-level overview, see the [Basic Version](basic-docs-structure-options.md).
+> This is the detailed version with complete Level 2 and Level 3 structure breakdown. For a high-level overview, see the [Basic Version](basic-docs-structure-options).
 
 ## Research approach
 
