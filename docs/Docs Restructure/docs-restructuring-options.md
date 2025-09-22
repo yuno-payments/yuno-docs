@@ -270,26 +270,37 @@ The two options represent different approaches:
 
 ### Content mapping
 
-Both options reorganize the existing 13 categories into different structures:
+Both options reorganize the existing 13 categories into more logical structures. Here's how each current category maps to the new structures:
 
 **Current 13 categories → New structures:**
 
 **Option 1 (4 categories):**
 
-* HOW YUNO WORKS, GET STARTED WITH YUNO → GET STARTED
-* SDKs (consolidated), Payment Features, DIRECT INTEGRATION USE CASES → BUILD YOUR INTEGRATION
-* Wallets, Security and Compliance, Webhooks, Additional Services → ADVANCED FEATURES
-* USING YUNO, Disputes, Payout Management, PLUGINS → OPERATIONS & MANAGEMENT
+* **GET STARTED**: HOW YUNO WORKS + GET STARTED WITH YUNO
+  * _Combines learning and initial setup into one logical flow_
+* **BUILD YOUR INTEGRATION**: SDKs + PAYMENT FEATURES + DIRECT INTEGRATION USE CASES
+  * _Consolidates all integration-related content in one place_
+* **ADVANCED FEATURES**: WALLETS + SECURITY AND COMPLIANCE + WEBHOOKS + ADDITIONAL SERVICES
+  * _Groups advanced functionality and specialized features_
+* **OPERATIONS & MANAGEMENT**: USING YUNO + DISPUTES + PAYOUT MANAGEMENT + PLUGINS
+  * _Combines all operational and administrative tasks_
 
 **Option 2 (7 categories):**
 
-* HOW YUNO WORKS, GET STARTED WITH YUNO → GET STARTED
-* SDKs → SDKs
-* Payment Features, DIRECT INTEGRATION USE CASES → PAYMENT FEATURES
-* Security and Compliance, Webhooks → SECURITY & COMPLIANCE
-* Wallets → WALLETS
-* USING YUNO, Disputes, Payout Management, PLUGINS → OPERATIONS
-* Additional Services → ADDITIONAL SERVICES
+* **GET STARTED**: HOW YUNO WORKS + GET STARTED WITH YUNO
+  * _Same as Option 1 - learning and initial setup_
+* **SDKs**: SDKs (standalone)
+  * _Keeps SDKs as a dedicated section for better discoverability_
+* **PAYMENT FEATURES**: PAYMENT FEATURES + DIRECT INTEGRATION USE CASES
+  * _Groups all payment-related functionality_
+* **SECURITY & COMPLIANCE**: SECURITY AND COMPLIANCE + WEBHOOKS
+  * _Combines security and compliance with webhook configuration_
+* **WALLETS**: WALLETS (standalone)
+  * _Dedicated section for wallet integrations_
+* **OPERATIONS**: USING YUNO + DISPUTES + PAYOUT MANAGEMENT + PLUGINS
+  * _Same as Option 1 - operational and administrative tasks_
+* **ADDITIONAL SERVICES**: ADDITIONAL SERVICES (standalone)
+  * _Keeps additional services separate for better organization_
 
 ## Option 1: Adyen-Inspired User Journey Structure (4 Categories)
 
