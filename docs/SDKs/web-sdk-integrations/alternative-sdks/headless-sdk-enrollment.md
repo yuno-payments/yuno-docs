@@ -13,6 +13,8 @@ metadata:
 next:
   description: ''
 ---
+<br />
+
 > 👍 Recommended SDK
 >
 > We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
@@ -46,13 +48,15 @@ Choose the integration method that best suits your development workflow and tech
 
 ## Step 2: Initialize Headless SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
-
-The code block below presents an example of initializing the `Yuno` class and assigning it to the `yuno`constant.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`.
 
 ```javascript
-const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
+
+> 📘 Credentials
+>
+> See the credentials page for more information: [https://docs.y.uno/reference/authentication](https://docs.y.uno/reference/authentication)
 
 ## Step 3: Create a customer session
 
@@ -70,26 +74,22 @@ You need an enrollment payment method object to set Headless SDK integration for
 
 ## Step 5: Start the enrollment process
 
-Next, you will start the checkout process using the `apiClientEnroll` function, providing the necessary configuration parameters. The following table lists all required parameters and their descriptions.
+Next, you will start the checkout process using the `apiClientEnroll` function, providing the necessary configuration parameters.
+
+### Parameters
+
+Configure the enrollment with the following options:
 
 | Parameter          | Description                                                                                                                                                                                                                                                                                   |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `country_code`     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
-| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                          |
-
-The next code block presents an example of the parameter configuration.
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                          |
 
 ```javascript
 const apiClientEnroll = yuno.apiClientEnroll({
-  /**
-     * country can be one of the following: https://docs.y.uno/docs/country-coverage-yuno-sdk
-     */
-    country_code: "CO",
-     /**
-     * The customer_session created in https://docs.y.uno/reference/create-customer-session
-     */
-    customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
-  })
+  country_code: "CO",
+  customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+});
 ```
 
 ## Step 6: Generate a vaulted token
@@ -97,44 +97,25 @@ const apiClientEnroll = yuno.apiClientEnroll({
 After collecting all user information, you can start the enrollment. First, you need to create a `vaulted_token` using the function `apiClientEnroll.continueEnrollment`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. Below, you will find an example of creating a  `vaulted_token`:
 
 ```javascript
-/**
-* Create Token
-* This will trigger an error if there is missing data
-* You can catch it using a try/catch
-*/
 const vaultedTokenResponse = await apiClientEnroll.continueEnrollment({
-   /**
-    * @optional
-    * The customer_session created in https://docs.y.uno/reference/create-customer-session
-    */
-   customer_session:"eec6578e-ac2f-40a0-8065-25b5957f6dd3",
-   /**
-    * The necessary info to use the payment method structure
-    */
-   payment_method: {
-         type: "CARD",
-         card: {
-             detail: {
-                 expiration_month: 11,
-                 expiration_year: 25,
-                 number: "4111111111111111",
-                 security_code: "123",
-                 holder_name: "ANDREA B",
-                 type: 'DEBIT' or 'CREDIT'
-             }
-         },
-        /**
-         * @optional
-         * customer information
-         */
-         customer: {
-        // Add the complete customer object here.
-        // You can check the object here: https://docs.y.uno/reference/the-customer-object
-        // You create the customer using the following endpoint: https://docs.y.uno/reference/create-customer
-        }
-     }
- })
-
+  customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  payment_method: {
+    type: "CARD",
+    card: {
+      detail: {
+        expiration_month: 11,
+        expiration_year: 25,
+        number: "4111111111111111",
+        security_code: "123",
+        holder_name: "ANDREA B",
+        type: "DEBIT" // or "CREDIT"
+      }
+    },
+    customer: {
+      // Add the complete customer object here
+    }
+  }
+});
 ```
 
 After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function.
