@@ -239,9 +239,9 @@ Our documentation has several critical issues that make it difficult for users t
 
 **The rules:**
 
-* **Only 3 levels deep** - that's the maximum allowed
-* **No exceptions** - the platform won't let us go deeper
-* **Current violations** - some parts of our site already break these rules
+* **Only 3 levels deep**: that's the maximum allowed
+* **No exceptions**: the platform won't let us go deeper
+* **Current complexity**: our SDK section is too deep and complex for optimal navigation
 
 **How it works:**
 
