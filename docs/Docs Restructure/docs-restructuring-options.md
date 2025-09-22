@@ -302,7 +302,7 @@ Both options reorganize the existing 13 categories into different structures:
 * USING YUNO, Disputes, Payout Management, PLUGINS → OPERATIONS
 * Additional Services → ADDITIONAL SERVICES
 
-## Option 1: Adyen-Inspired User Journey Structure
+## Option 1: Adyen-Inspired User Journey Structure (4 Categories)
 
 This structure follows Adyen's approach with clear decision guidance and linear progression from setup to implementation.
 
@@ -489,7 +489,7 @@ OPERATIONS & MANAGEMENT
 * **Reduced complexity**: SDK section consolidated and reorganized
 * **Platform compliance**: Fixes current Readme 3-level violations
 
-## Option 2: Stripe-Inspired Progressive Disclosure Structure
+## Option 2: Stripe-Inspired Progressive Disclosure Structure (7 Categories)
 
 This organizes content using Stripe's approach with progressive disclosure and multiple entry points, using more categories for better content separation.
 
