@@ -7,6 +7,10 @@ metadata:
 ---
 This document presents two improved menu structure options for the entire Yuno documentation. Both options use only existing content and aim to create a more intuitive user experience based on proven patterns from leading payment platforms.
 
+> ℹ️ Note:
+>
+> This is the detailed version with complete Level 2 and Level 3 structure breakdown. For a high-level overview, see the [Basic Version](basic-docs-structure-options.md).
+
 ## Research approach
 
 We analyzed the current structure and studied the actual navigation patterns from leading payment platforms:
@@ -51,8 +55,6 @@ The Yuno documentation contains 13 main sections with significant complexity imb
 > ℹ️ Note
 >
 > This visualisation displays the complete structure including Level 2 and Level 3 items. The SDKs category has more than 50 sub-items spread across its 6 main sections, demonstrating the complexity imbalance.
-
-<br />
 
 ```
 HOW YUNO WORKS (CATEGORY)
