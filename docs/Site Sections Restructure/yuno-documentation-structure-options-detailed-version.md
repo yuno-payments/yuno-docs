@@ -1,5 +1,5 @@
 ---
-title: Yuno Documentation Structure Options (Detailed version)
+title: Docs Structure Options (Detailed)
 deprecated: false
 hidden: false
 metadata:
@@ -44,13 +44,12 @@ We analyzed the current structure and studied the actual navigation patterns fro
 
 ## Current structure
 
-The Yuno documentation contains 13 main sections with a significant complexity imbalance:
+The Yuno documentation contains 13 main sections with significant complexity imbalance:
 
-### Current structure visualization
+### Current structure visualization (Complete with Level 2 and Level 3)
 
-> ℹ️ Note
->
-> This visualisation displays only the top-level (Level 1) items in each category. The SDKs category has more than 50 sub-items spread across its 6 main sections, while the other categories have far fewer sub-items.
+> ℹ️ **Note**
+> This visualisation displays the complete structure including Level 2 and Level 3 items. The SDKs category has more than 50 sub-items spread across its 6 main sections, demonstrating the complexity imbalance.
 
 ```
 HOW YUNO WORKS (CATEGORY)
@@ -298,8 +297,8 @@ Both options reorganize the existing 13 categories into 4 new categories:
 
 **Current 13 categories → New 4 categories:**
 
-* HOW YUNO WORKS, GET STARTED WITH YUNO → Get Started/Quick Start
-* SDKs (consolidated), Payment Features, BUILD YOUR INTEGRATION → Build Your Integration/Core Integrations
+* HOW YUNO WORKS, GET STARTED WITH YUNO, BUILD YOUR INTEGRATION → Get Started/Quick Start
+* SDKs (consolidated), Payment Features → Build Your Integration/Core Integrations
 * Wallets, Security and Compliance, Webhooks, Additional Services → Advanced Features
 * USING YUNO, Disputes, Payout Management, DIRECT INTEGRATION USE CASES, PLUGINS → Operations & Management/Operations & Tools
 
@@ -330,10 +329,10 @@ Get Started (CATEGORY)
 │   ├── Overview (Level 2)
 │   ├── Set Up Your Account (Level 2)
 │   └── Create Your First Payment With SDK (Level 2)
-└── Choose the Right Integration (Level 1)
-    ├── Integration Decision Guide (Level 2)
-    ├── Seamless vs SDK vs Direct (Level 2)
-    └── Platform Selection (Level 2)
+└── BUILD YOUR INTEGRATION (Level 1)
+    ├── Choose the Right Integration for You (Level 2)
+    ├── Direct Flow Integration (Level 2)
+    └── SDK Integration Overview (Level 2)
 
 Build Your Integration (CATEGORY)
 ├── Seamless SDKs (Recommended) (Level 1)
@@ -368,23 +367,19 @@ Build Your Integration (CATEGORY)
 │   │   ├── Requirements (Level 3)
 │   │   ├── Android SDK Release Notes (Level 3)
 │   │   ├── Full SDK (Android) (Level 3)
-│   │   ├── Lite SDK (Android) (Level 3)
-│   │   │   ├── Lite SDK (Payment Android) (Level 3)
-│   │   │   └── Lite SDK (Enrollment Android) (Level 3)
-│   │   ├── Headless SDKs (Android) (Level 3)
-│   │   │   ├── Headless SDK (Enrollment Android) (Level 3)
-│   │   │   └── Headless SDK (Payment Android) (Level 3)
+│   │   ├── Lite SDK (Payment Android) (Level 3)
+│   │   ├── Lite SDK (Enrollment Android) (Level 3)
+│   │   ├── Headless SDK (Enrollment Android) (Level 3)
+│   │   ├── Headless SDK (Payment Android) (Level 3)
 │   │   ├── SDK Customizations (Level 3)
 │   │   └── Handle External Browser Return (callback_url) (Level 3)
 │   └── iOS SDKs (Level 2)
 │       ├── iOS SDK release notes (Level 3)
 │       ├── Full SDK (iOS) (Level 3)
-│       ├── Lite SDK (iOS) (Level 3)
-│       │   ├── Lite SDK (Payment iOS) (Level 3)
-│       │   └── Lite SDK (Enrollment iOS) (Level 3)
-│       ├── Headless SDKs (iOS) (Level 3)
-│       │   ├── Headless SDK (Enrollment iOS) (Level 3)
-│       │   └── Headless SDK (Payment iOS) (Level 3)
+│       ├── Lite SDK (Payment iOS) (Level 3)
+│       ├── Lite SDK (Enrollment iOS) (Level 3)
+│       ├── Headless SDK (Enrollment iOS) (Level 3)
+│       ├── Headless SDK (Payment iOS) (Level 3)
 │       ├── Loader (Level 3)
 │       ├── SDK Customizations (Level 3)
 │       └── Complementary features (Level 3)
@@ -494,11 +489,12 @@ Operations & Management (CATEGORY)
 
 ### Key benefits
 
-* **Clear decision guidance**: Integration choice upfront with decision checklist
+* **Clear decision guidance**: Integration choice upfront with existing decision content
 * **Linear progression**: Get Started → Build → Advanced → Operations
 * **Adyen-style organization**: Proven pattern that users recognize
 * **Related functionality**: Grouped by implementation phase
 * **Reduced complexity**: SDK section consolidated and reorganized
+* **Platform compliance**: Fixes current Readme 3-level violations
 
 ## Option 2: Stripe-Inspired Progressive Disclosure Structure
 
@@ -527,10 +523,10 @@ Quick Start (CATEGORY)
 │   ├── Overview (Level 2)
 │   ├── Set Up Your Account (Level 2)
 │   └── Create Your First Payment With SDK (Level 2)
-└── Choose the Right Integration (Level 1)
-    ├── Integration Decision Guide (Level 2)
-    ├── Seamless vs SDK vs Direct (Level 2)
-    └── Platform Selection (Level 2)
+└── BUILD YOUR INTEGRATION (Level 1)
+    ├── Choose the Right Integration for You (Level 2)
+    ├── Direct Flow Integration (Level 2)
+    └── SDK Integration Overview (Level 2)
 
 Core Integrations (CATEGORY)
 ├── Seamless SDKs (Recommended) (Level 1)
@@ -565,23 +561,19 @@ Core Integrations (CATEGORY)
 │   │   ├── Requirements (Level 3)
 │   │   ├── Android SDK Release Notes (Level 3)
 │   │   ├── Full SDK (Android) (Level 3)
-│   │   ├── Lite SDK (Android) (Level 3)
-│   │   │   ├── Lite SDK (Payment Android) (Level 3)
-│   │   │   └── Lite SDK (Enrollment Android) (Level 3)
-│   │   ├── Headless SDKs (Android) (Level 3)
-│   │   │   ├── Headless SDK (Enrollment Android) (Level 3)
-│   │   │   └── Headless SDK (Payment Android) (Level 3)
+│   │   ├── Lite SDK (Payment Android) (Level 3)
+│   │   ├── Lite SDK (Enrollment Android) (Level 3)
+│   │   ├── Headless SDK (Enrollment Android) (Level 3)
+│   │   ├── Headless SDK (Payment Android) (Level 3)
 │   │   ├── SDK Customizations (Level 3)
 │   │   └── Handle External Browser Return (callback_url) (Level 3)
 │   └── iOS SDKs (Level 2)
 │       ├── iOS SDK release notes (Level 3)
 │       ├── Full SDK (iOS) (Level 3)
-│       ├── Lite SDK (iOS) (Level 3)
-│       │   ├── Lite SDK (Payment iOS) (Level 3)
-│       │   └── Lite SDK (Enrollment iOS) (Level 3)
-│       ├── Headless SDKs (iOS) (Level 3)
-│       │   ├── Headless SDK (Enrollment iOS) (Level 3)
-│       │   └── Headless SDK (Payment iOS) (Level 3)
+│       ├── Lite SDK (Payment iOS) (Level 3)
+│       ├── Lite SDK (Enrollment iOS) (Level 3)
+│       ├── Headless SDK (Enrollment iOS) (Level 3)
+│       ├── Headless SDK (Payment iOS) (Level 3)
 │       ├── Loader (Level 3)
 │       ├── SDK Customizations (Level 3)
 │       └── Complementary features (Level 3)
@@ -696,26 +688,28 @@ Operations & Tools (CATEGORY)
 * **Stripe-style organization**: Familiar pattern for developers
 * **Tool accessibility**: Operational resources easily discoverable
 * **Platform consolidation**: Mobile SDKs combined for better organization
+* **Platform compliance**: Fixes current Readme 3-level violations
 
 ## Recommendation
 
 We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 
-1. **Provides clear decision guidance** upfront, addressing the main pain point of users not knowing which integration to choose
+1. **Provides clear decision guidance** upfront using existing "Choose the Right Integration" content
 2. **Follows a proven linear progression** that users expect from payment platform documentation
 3. **Consolidates the overwhelming SDK section** by combining mobile platforms and reorganizing web SDKs
 4. **Groups operations together** in one section, making administrative tasks easily discoverable
 5. **Maintains simplicity** by using existing content without adding complexity
+6. **Fixes platform compliance issues** by respecting Readme's 3-level maximum constraint
 
 ### Key improvements
 
 * **Readme platform compliance**: Fixes current violations of 3-level maximum constraint
-* **"Choose the Right Integration"**: Becomes the clear entry point after understanding Yuno
+* **"Choose the Right Integration"**: Moves from buried position to clear entry point after understanding Yuno
 * **SDK consolidation**: Mobile SDKs combined, web SDKs consolidated to reduce version fragmentation (v1.0, v1.1, v1.2, v1.3)
 * **Linear progression**: Clear path from learning → building → advanced features → operations
 * **Better discoverability**: Related functionality grouped together
 * **Reduced cognitive load**: 4 main sections instead of 13 scattered sections
-* **Platform-optimized navigation**: Designed specifically for Readme's limitations
+* **Platform-optimized navigation**: Designed specifically for Readme's 3-level maximum constraint
 
 ### Implementation notes
 
