@@ -56,6 +56,15 @@ yuno.mountStatusPayment({
 })
 ```
 
+### Parameters
+
+| Parameter           | Description                                                                                                                                                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`   | The checkout session ID for the payment you want to monitor                                                                                                                                                       |
+| `countryCode`       | The country code for the payment process. See [Country Coverage](doc:country-coverage-yuno-sdk) for supported countries                                                                                           |
+| `language`          | Language for the status display. Supported options: en, fr, jp                                                                                                                                                    |
+| `yunoPaymentResult` | Callback function that receives the payment status. The data parameter can be: 'READY_TO_PAY', 'CREATED', 'SUCCEEDED', 'REJECTED', 'CANCELLED', 'ERROR', 'DECLINED', 'PENDING', 'EXPIRED', 'VERIFIED', 'REFUNDED' |
+
 ### Use Status Lite
 
 To receive the current payment status using Status Lite, you need to call the method `yunoPaymentResult` providing the `checkoutSession` related to the payment, as shown in the example below:
@@ -63,6 +72,20 @@ To receive the current payment status using Status Lite, you need to call the me
 ```javascript
 const status = await yuno.yunoPaymentResult(checkoutSession)
 ```
+
+The `yunoPaymentResult` method returns the current payment status without rendering any UI elements. The returned status can be one of the following values:
+
+* `READY_TO_PAY`
+* `CREATED`
+* `SUCCEEDED`
+* `REJECTED`
+* `CANCELLED`
+* `ERROR`
+* `DECLINED`
+* `PENDING`
+* `EXPIRED`
+* `VERIFIED`
+* `REFUNDED`
 
 > 👍 Custom Payment Status Integration
 >
