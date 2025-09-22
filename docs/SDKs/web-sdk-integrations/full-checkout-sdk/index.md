@@ -22,9 +22,9 @@ next:
 
 Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
 
-> 📘 Web SDK v1.1 Release
+> 📘 Web SDK v1.3 Release
 >
-> v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, [visit the Web SDK v1.1 changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v11-changelog#/).
+> v1.3 is the latest version with enhanced UI grouping and multilingual support. To learn more, [visit the Web SDK changelog](doc:web-sdk-changelog).
 
 ## Choose your integration method
 
@@ -138,5 +138,5 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 After integrating the SDK using one of the methods described above, follow these steps to implement the full checkout functionality:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Full SDK implementation" href="/v1.0.2_add-sdk-changelog-pages/docs/full-sdk-implementation" titleSize="h4" />
+  <YunoCard title="Full SDK implementation" href="/docs/full-sdk-implementation" titleSize="h4" />
 </Shelf>
