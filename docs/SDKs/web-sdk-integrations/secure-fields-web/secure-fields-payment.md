@@ -30,21 +30,25 @@ Choose the integration method that best suits your development workflow and tech
 
 ## Step 2: Initialize secure fields with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC\_API\_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide.
-
-Like the example below, use the initialized class that is attributed to the `yuno`constant.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`.
 
 ```javascript
-const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
+
+> 📘 Credentials
+>
+> See the credentials page for more information: [https://docs.y.uno/reference/authentication](https://docs.y.uno/reference/authentication)
 
 ## Step 3: Start the checkout process
 
 You will start the checkout process. To do it, use the `secureFields` function and provide the necessary configuration parameters.
 
-The essential parameters are the `country_code`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.  The next code block presents an example of the parameter configuration.
+The essential parameters are the `country_code`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.
 
-The following table lists all required parameters and their descriptions.
+### Parameters
+
+Configure the secure fields with the following options:
 
 | Parameter            | Description                                                                                                                                                                                                                                                                                   |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -53,18 +57,11 @@ The following table lists all required parameters and their descriptions.
 | `installmentsEnable` | This parameter is optional and is set false by default. If set True, the installments set for the account will be shown as a secure field.                                                                                                                                                    |
 
 ```javascript
-  const secureFields = yuno.secureFields({
-    /**
-     * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-     */
-    country_code: country,
-     /**
-     * Should be added her or in the token generation
-     * @optional
-     */
-    checkoutSession,
-    installmentsEnable: false,
-  })
+const secureFields = yuno.secureFields({
+  country_code: country,
+  checkoutSession,
+  installmentsEnable: false
+});
 ```
 
 > 📘 Customer and Merchant-Initiated Transactions
@@ -92,101 +89,47 @@ The table below presents all configurations available:
 | `options.onFocus`               | An auxiliary function that can be configured and will run when focussing on the input.                                                                                              |
 | `options.onRenderedSecureField` | An auxiliary function that can be configured and will run when the element finishes rendering.                                                                                      |
 | `options.errorMessage`          | This allows for the definition of the field's error message.                                                                                                                        |
-| `options.inputMode`             | *(v1.2+ only)* Defines the type of keyboard to display on mobile devices. Possible values: `'numeric'` (default) or `'text'`.                                                       |
+| `options.inputMode`             | _(v1.2+ only)_ Defines the type of keyboard to display on mobile devices. Possible values: `'numeric'` (default) or `'text'`.                                                       |
 
 Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
 The following code block presents an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user.
 
+### Secure Field Parameters
+
+| Parameter                       | Description                                                                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                          | Field type: 'cvv', 'pan', or 'expiration'                                                                                                         |
+| `options.placeholder`           | Placeholder text displayed in the input field                                                                                                     |
+| `options.styles`                | CSS styles to be injected into the iframe. You can customize the appearance by writing CSS                                                        |
+| `options.label`                 | Label text for the field                                                                                                                          |
+| `options.showError`             | Whether to display error messages                                                                                                                 |
+| `options.errorMessage`          | Custom error message to display                                                                                                                   |
+| `options.validateOnBlur`        | Whether to validate the field when it loses focus                                                                                                 |
+| `options.onChange`              | Callback function triggered when field value changes. Receives `{error, data}` where `data` contains card IIN information and installment options |
+| `options.onBlur`                | Callback function triggered when field loses focus                                                                                                |
+| `options.onFocus`               | Callback function triggered when field gains focus                                                                                                |
+| `options.onRenderedSecureField` | Callback function triggered when the secure field has finished rendering                                                                          |
+
+### Data Available in onChange Callback
+
+When the `onChange` callback is triggered, the `data` parameter contains:
+
+* **Card IIN Information**: Card issuer details including scheme, brand, type, and issuer information
+* **Installment Plans**: Available installment options for the account if configured
+* **Loading States**: `isCardIINLoading` and `isInstallmentLoading` boolean flags
+
 ```javascript
-/**
-   * interface SecureField {
-   *  render(elementSelector: string): void
-   * 
-   *  clearValue(): void
-   * 
-   *  setError(errorMessage: string): void
-   * 
-   *  updateProps(args: Record<string, unknown>): void
-   * 
-   *  focus(): void
-   * 
-   *  validate(): void
-   * 
-   *  unmountSync(): Promise<void>
-   * }
-   */  
 const secureNumber = secureFields.create({
-     /**
-     * name can be 'cvv' | 'pan' | 'expiration'
-    */
     name: 'pan',
     options: {
       placeholder: '0000 0000 0000 0000',
-      /**
-       * you can edit card form styles
-       * only you should write css then it will be injected into the iframe
-       * example 
-       * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-       *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-       *    color: red;
-       *    font-family: 'Luckiest Guy' !important;
-       *   }`
-       */
       styles: ``,
       label: 'Card Number',
       showError: true,
       errorMessage: "Custom Error",
       validateOnBlur: false,
-      // Indicates if the field has an error
       onChange: ({ error,data }) => {
-      /**
-       * in data.installments you could receive an installments plan list information 
-       regarding the installments plan set for your account and chosen by the customer
-    		[{
-            installmentId: string;
-            installment: number;
-            amount: {
-                currency: string;
-                value: string;
-                total_value: string;
-            } | undefined;
-        }]
-       */
-        /**
-       * in data.cardIIN you can receive card_data
-    		[{
-            "id": "436c457c-1234-4e5e-b51d-1814e67d696a",
-            "iin": "411111",
-            "scheme": "VISA",
-            "issuer_name": "JPMORGAN CHASE BANK N A",
-            "issuer_code": null,
-            "brand": "VISA",
-            "type": "CREDIT",
-            "category": "CREDIT",
-            "country_code": "US",
-            "country_name": "United States of America",
-            "website": "https://www.chase.com",
-            "phone": {
-                "country_code": null,
-                "number": "+ (1) 212-270-6000"
-            },
-            "address": {
-                "address_line_1": null,
-                "address_line_2": null,
-                "city": null,
-                "country": null,
-                "state": null,
-                "zip_code": null
-            }
-        }]
-       */
-       /**
-       * in data.isCardIINLoading you can receive a true or false indicating if the card iin search is being excecuted.
-       */
-       /**
-       * in data.isInstallmentLoading you can receive a true or false indicating if the installments search is being excecuted.
-       */
         if (error) {
           console.log('error_pan')
         } else {
@@ -212,23 +155,9 @@ const secureNumber = secureFields.create({
   secureNumber.render('#pan')
 
   const secureExpiration = secureFields.create({
-    /**
-     * Fields name, can be 'cvv' | 'pan' | 'expiration'
-     */
     name: 'expiration',
-    // All options are optional
     options: {
       placeholder: 'MM / YY',
-      /**
-       * you can edit card form styles
-       * only you should write css then it will be injected into the iframe
-       * example 
-       * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-       *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-       *    color: red;
-       *    font-family: 'Luckiest Guy' !important;
-       *   }`
-       */
       styles: ``,
       label: 'Card Expiration',
       showError: true,
@@ -264,16 +193,6 @@ const secureNumber = secureFields.create({
     name: 'cvv',
     options: {
       placeholder: 'CVV',
-      /**
-       * you can edit card form styles
-       * only you should write css then it will be injected into the iframe
-       * example 
-       * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-       *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-       *    color: red;
-       *    font-family: 'Luckiest Guy' !important;
-       *   }`
-       */
       styles: ``,
       label: 'CVV',
       showError: true,
@@ -329,24 +248,21 @@ With all user information in hand, you can start the payment. First, you need to
 >
 > When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. In addition, you can add installment information and a security code if the provider requires it.
 
+### Generate Token Parameters
+
+| Parameter         | Description                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `checkoutSession` | Optional: Different checkout session ID for card data persistence after payment errors |
+| `cardHolderName`  | Required: Name of the cardholder                                                       |
+| `saveCard`        | Optional: Whether to save the card for future payments                                 |
+| `vaultedToken`    | Optional: Use if you have a previously enrolled payment method                         |
+| `installment`     | Optional: Required only if an installment plan is configured for the account           |
+
 ```javascript
-// Create one-time token
-// This will trigger an error if there are missing data
-// You can catch it using a try/catch
 const oneTimeToken = await secureFields.generateToken({
-  // Optional: This parameter is used to indicate that a different checkout session is desired, 
-  //rather than the one initially generated.
-  //A use case is for the persistence of card data after a payment error.
   checkoutSession: '{{the checkout session id}}',
-  // Required: You can create an input to get this formation
   cardHolderName: 'John Deer',
-  // Optional: You can create an input to get this formation
   saveCard: true,
-  /**
-   * @optional
-   * Send this value if you already have a registered or enrolled payment method.
-   * Other fields like card and customer are optional unless your provider requires them.
-   */
   vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
   // Optional: only neccessary if an installments plan is created for the account
   installment: {
@@ -367,8 +283,7 @@ const oneTimeToken = await secureFields.generateToken({
       document_type: 'CC',
     },
   },
-  // This is useful for dual cards where the same card can be either used as credit or debit
-  cardType: 'DEBIT' or 'CREDIT'
+  cardType: 'DEBIT'
 })
 ```
 
@@ -387,11 +302,6 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
   cardHolderName: 'John Deer',
   // Optional: You can create an input to get this formation
   saveCard: true,
-  /**
-   * @optional
-   * Send this value if you already have a registered or enrolled payment method.
-   * Other fields like card and customer are optional unless your provider requires them.
-   */
   vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
   // Optional: only neccessary if an installments plan is created for the account
   installment: {
@@ -412,8 +322,7 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
       document_type: 'CC',
     },
   },
-  // This is useful for dual cards where the same card can be either used as credit or debit
-  cardType: 'DEBIT' or 'CREDIT'
+  cardType: 'DEBIT'
 })
 ```
 
@@ -428,44 +337,31 @@ Both options require you to provide the `oneTimeToken` and the `checkoutSession`
 
 After, you can check the payment status using the `yuno.mountStatusPayment`function. The following example uses the `createPayment` function to create the payment and the `mountStatusPayment` to display the payment status:
 
+### Payment Creation Flow
+
+1. **Create Payment**: Use the `createPayment` function with the one-time token and checkout session
+2. **Check SDK Action**: If `sdk_action_required` is true, call `yuno.continuePayment()` for additional customer actions
+3. **Mount Status**: If no SDK action is required, use `yuno.mountStatusPayment()` to display payment status
+
+### Mount Status Payment Parameters
+
+| Parameter           | Description                                            |
+| ------------------- | ------------------------------------------------------ |
+| `checkoutSession`   | The checkout session ID for the payment                |
+| `country_code`      | Country code for the payment process                   |
+| `language`          | Language for the status display                        |
+| `yunoPaymentResult` | Callback function that receives payment status updates |
+
 ```javascript
-// Create your payment using the createPayment function. 
 const payment = await createPayment({ oneTimeToken, checkoutSession })
 
-// Check if an SDK action is required. If yes, call the continuePayment function.
 if (payment.checkout.sdk_action_required) {
       yuno.continuePayment()
 } else {
-  // Mount the payment status view and check the payment status.
   yuno.mountStatusPayment({
     checkoutSession: checkoutSession,
-    /**
-     * Specify the country code for the payment process configuration.
-     * For a full list of supported countries and their codes, refer to the 
-     * {https://docs.y.uno/docs/country-coverage-yuno-sdk | Country Coverage} page.
-     * @type {String}
-     */
     country_code: 'US',
-    /**
-     * Specify the language for the payment process.
-     * Supported languages:
-     * - es (Spanish)
-     * - en (English)
-     * - pt (Portuguese)
-     * - fil (Filipino)
-     * - id (Indonesian)
-     * - ms (Malay)
-     * - th (Thai)
-     * By default, the SDK will use the browser language.
-     * @type {String}
-     */
     language: 'en',
-    /**
-     * Handle the payment result with the provided callback.
-     * @param {'READY_TO_PAY' | 'CREATED' | 'SUCCEEDED' | 'REJECTED' | 'CANCELLED' | 
-     *         'ERROR' | 'DECLINED' | 'PENDING' | 'EXPIRED' | 'VERIFIED' | 'REFUNDED'} data
-     * The payment status will be passed as an argument.
-     */
     yunoPaymentResult(data) {
       console.log('yunoPaymentResult', data)
     },
@@ -531,7 +427,7 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 })
 ```
 
-2. In case the transaction is rejected, you will need to:\
+2. In case the transaction is rejected, you will need to:
    i. Create a new checkout session.
    ii. Generate a new one-time token. In the one-time token generation, send the new checkout session in the `checkoutSession` parameter.
 3. Continue with the new checkout and one-time token with the regular payment flow.
