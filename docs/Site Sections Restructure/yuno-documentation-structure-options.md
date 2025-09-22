@@ -49,6 +49,8 @@ The Yuno documentation contains 13 main sections with significant complexity imb
 ### Current structure visualization
 
 > ℹ️ **Note**
+>
+>
 > This visualisation displays only the top-level (Level 1) items in each category. The SDKs category has more than 50 sub-items spread across its 6 main sections, while the other categories have far fewer sub-items.
 
 ```
