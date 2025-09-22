@@ -43,7 +43,7 @@ YUNO_PUBLIC_API_KEY=your_public_api_key
 YUNO_PRIVATE_SECRET_KEY=your_private_secret_key
 ```
 
-You can find `account_code`, `public_apy_key`, and `private_secrete_key` in [Yuno Merchant Dashboard](https://docs.y.uno/reference/authentication).
+You can find `account_code`, `public_api_key`, and `private_secret_key` in the [Yuno Merchant Dashboard](https://docs.y.uno/reference/authentication).
 
 ### Step 3: Start the Demo App
 
