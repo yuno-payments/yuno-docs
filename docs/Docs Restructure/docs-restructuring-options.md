@@ -7,10 +7,6 @@ metadata:
 ---
 This document presents two improved menu structure options for the entire Yuno documentation. Both options use only existing content and aim to create a more intuitive user experience based on proven patterns from leading payment platforms.
 
-> ℹ️ Note:
->
-> This document provides complete Level 2 and Level 3 structure breakdown for both proposed options.
-
 ## Research approach
 
 We analyzed the current structure and studied navigation patterns from leading payment platforms:
@@ -34,195 +30,195 @@ The current Yuno documentation consists of 13 main categories with significant c
 ### Structure visualization (Only Categories)
 
 ```
-HOW YUNO WORKS (CATEGORY)
-GET STARTED WITH YUNO (CATEGORY)
-USING YUNO (CATEGORY)
-DIRECT INTEGRATION USE CASES (CATEGORY)
-SDKs (CATEGORY)
-Security and Compliance (CATEGORY)
-Payment Features (CATEGORY)
-Payout Management (CATEGORY)
-Disputes (CATEGORY)
-Webhooks (CATEGORY)
-Wallets (CATEGORY)
-PLUGINS (CATEGORY)
-Additional Services (CATEGORY)
+HOW YUNO WORKS
+GET STARTED WITH YUNO
+USING YUNO
+DIRECT INTEGRATION USE CASES
+SDKs
+Security and Compliance
+Payment Features
+Payout Management
+Disputes
+Webhooks
+Wallets
+PLUGINS
+Additional Services
 ```
 
 ### Complete structure visualization
 
-The complete structure shows all categories with Level 2 and Level 3 items. The SDKs category contains over 50 sub-items, demonstrating the complexity imbalance.
+The complete structure shows all categories with their sub-items. The SDKs category contains over 50 sub-items, demonstrating the complexity imbalance.
 
 ```
-HOW YUNO WORKS (CATEGORY)
-├── What is Yuno? (Level 1)
-├── How Yuno Payment Process Works (Level 1)
-└── Basic Concepts (Level 1)
-    ├── Customers (Level 2)
-    ├── Sessions (Level 2)
-    ├── Payments (Level 2)
-    ├── Transactions (Level 2)
-    ├── Tokens (Level 2)
-    ├── Payment methods (Level 2)
-    ├── Webhooks (Level 2)
-    ├── Fraud prevention (Level 2)
-    └── 3DS (Level 2)
+HOW YUNO WORKS 
+├── What is Yuno? 
+├── How Yuno Payment Process Works 
+└── Basic Concepts 
+    ├── Customers 
+    ├── Sessions 
+    ├── Payments 
+    ├── Transactions 
+    ├── Tokens 
+    ├── Payment methods 
+    ├── Webhooks 
+    ├── Fraud prevention 
+    └── 3DS 
 
-GET STARTED WITH YUNO (CATEGORY)
-├── Overview (Level 1)
-├── Set Up Your Account (Level 1)
-├── Create Your First Payment With SDK (Level 1)
-└── BUILD YOUR INTEGRATION (Level 1)
-    ├── Choose the Right Integration for You (Level 2)
-    ├── Direct Flow Integration (Level 2)
-    └── SDK Integration Overview (Level 2)
+GET STARTED WITH YUNO 
+├── Overview 
+├── Set Up Your Account 
+├── Create Your First Payment With SDK 
+└── BUILD YOUR INTEGRATION 
+    ├── Choose the Right Integration for You 
+    ├── Direct Flow Integration 
+    └── SDK Integration Overview 
 
-USING YUNO (CATEGORY)
-├── Environments (Level 1)
-├── Dashboard Overview (Level 1)
-│   ├── Home (Level 2)
-│   ├── Connections (Level 2)
-│   ├── Routing (Level 2)
-│   ├── Monitors (Level 2)
-│   ├── Checkout Builder (Level 2)
-│   ├── Payments (Level 2)
-│   ├── Insights (Level 2)
-│   ├── Reconciliations (Level 2)
-│   └── Developers (Credentials) (Level 2)
-├── Other tools (Level 1)
-│   ├── Risk Conditions (Level 2)
-│   ├── Payment Links (Level 2)
-│   └── Audit logs (Level 2)
-├── Account Management (Level 1)
-├── Teams and Roles (Level 1)
-├── Single Sign-On (SSO) (Level 1)
-└── Security (Level 1)
+USING YUNO 
+├── Environments 
+├── Dashboard Overview 
+│   ├── Home 
+│   ├── Connections 
+│   ├── Routing 
+│   ├── Monitors 
+│   ├── Checkout Builder 
+│   ├── Payments 
+│   ├── Insights 
+│   ├── Reconciliations 
+│   └── Developers (Credentials) 
+├── Other tools 
+│   ├── Risk Conditions 
+│   ├── Payment Links 
+│   └── Audit logs 
+├── Account Management 
+├── Teams and Roles 
+├── Single Sign-On (SSO) 
+└── Security 
 
-DIRECT INTEGRATION USE CASES (CATEGORY)
-├── Set Up Payment Connection (Level 1)
-├── Create Payments (Level 1)
-├── Refund Payments (Level 1)
-├── Cancel Payments (Level 1)
-├── Capture Payments (Level 1)
-├── Build Reports (Level 1)
-└── Yuno Testing Gateway (Level 1)
+DIRECT INTEGRATION USE CASES 
+├── Set Up Payment Connection 
+├── Create Payments 
+├── Refund Payments 
+├── Cancel Payments 
+├── Capture Payments 
+├── Build Reports 
+└── Yuno Testing Gateway 
 
-SDKs (CATEGORY)
-├── Choose the Right Integration for You (Level 1)
-├── Yuno SDKs Introduction (Level 1)
-├── SDK Integration Overview (Level 1)
-│   ├── Seamless SDK (Level 2)
-│   ├── Full SDK (Level 2)
-│   ├── Lite SDK (Payment) (Level 2)
-│   ├── Lite SDK (Enrollment) (Level 2)
-│   ├── Secure Fields (Level 2)
-│   ├── Headless SDK (Payment) (Level 2)
-│   └── Headless SDK (Enrollment) (Level 2)
-├── Web SDKs (Level 1)
-│   ├── Full Web SDK (Level 2)
-│   │   └── Full SDK implementation (Level 3)
-│   ├── Lite Web SDK (Level 2)
-│   │   └── Lite SDK implementation (Level 3)
-│   ├── Secure Fields (Web) (Level 2)
-│   │   ├── Secure Fields (Payment) (Level 3)
-│   │   └── Secure Fields (Enrollment) (Level 3)
-│   ├── Alternative SDKs (Level 2)
-│   │   ├── Headless SDK (Enrollment Web) (Level 3)
-│   │   ├── Headless SDK (Payment Web) (Level 3)
-│   │   └── Seamless SDK (Payment Web) (Level 3)
-│   ├── Web SDK Changelog (Level 2)
-│   ├── Loader (Level 2)
-│   ├── Payment Status (Level 2)
-│   ├── SDK Customizations (Level 2)
-│   ├── Demo App (Level 2)
-│   └── 3DS Setup SDK (Deprecated) (Level 2)
-├── Android SDKs (Level 1)
-│   ├── Requirements (Level 2)
-│   ├── Android SDK Release Notes (Level 2)
-│   ├── Full SDK (Android) (Level 2)
-│   ├── Lite SDK (Android) (Level 2)
-│   │   ├── Lite SDK (Payment Android) (Level 3)
-│   │   └── Lite SDK (Enrollment Android) (Level 3)
-│   ├── Headless SDKs (Android) (Level 2)
-│   │   ├── Headless SDK (Enrollment Android) (Level 3)
-│   │   └── Headless SDK (Payment Android) (Level 3)
-│   ├── SDK Customizations (Level 2)
-│   └── Handle External Browser Return (callback_url) (Level 2)
-├── iOS SDKs (Level 1)
-│   ├── iOS SDK release notes (Level 2)
-│   ├── Full SDK (iOS) (Level 2)
-│   ├── Lite SDK (iOS) (Level 2)
-│   │   ├── Lite SDK (Payment iOS) (Level 3)
-│   │   └── Lite SDK (Enrollment iOS) (Level 3)
-│   ├── Headless SDKs (iOS) (Level 2)
-│   │   ├── Headless SDK (Enrollment iOS) (Level 3)
-│   │   └── Headless SDK (Payment iOS) (Level 3)
-│   ├── Loader (Level 2)
-│   ├── SDK Customizations (Level 2)
-│   └── Complementary features (Level 2)
-└── Country coverage (Level 1)
+SDKs 
+├── Choose the Right Integration for You 
+├── Yuno SDKs Introduction 
+├── SDK Integration Overview 
+│   ├── Seamless SDK 
+│   ├── Full SDK 
+│   ├── Lite SDK (Payment) 
+│   ├── Lite SDK (Enrollment) 
+│   ├── Secure Fields 
+│   ├── Headless SDK (Payment) 
+│   └── Headless SDK (Enrollment) 
+├── Web SDKs 
+│   ├── Full Web SDK 
+│   │   └── Full SDK implementation 
+│   ├── Lite Web SDK 
+│   │   └── Lite SDK implementation 
+│   ├── Secure Fields (Web) 
+│   │   ├── Secure Fields (Payment) 
+│   │   └── Secure Fields (Enrollment) 
+│   ├── Alternative SDKs 
+│   │   ├── Headless SDK (Enrollment Web) 
+│   │   ├── Headless SDK (Payment Web) 
+│   │   └── Seamless SDK (Payment Web) 
+│   ├── Web SDK Changelog 
+│   ├── Loader 
+│   ├── Payment Status 
+│   ├── SDK Customizations 
+│   ├── Demo App 
+│   └── 3DS Setup SDK (Deprecated) 
+├── Android SDKs 
+│   ├── Requirements 
+│   ├── Android SDK Release Notes 
+│   ├── Full SDK (Android) 
+│   ├── Lite SDK (Android) 
+│   │   ├── Lite SDK (Payment Android) 
+│   │   └── Lite SDK (Enrollment Android) 
+│   ├── Headless SDKs (Android) 
+│   │   ├── Headless SDK (Enrollment Android) 
+│   │   └── Headless SDK (Payment Android) 
+│   ├── SDK Customizations 
+│   └── Handle External Browser Return (callback_url) 
+├── iOS SDKs 
+│   ├── iOS SDK release notes 
+│   ├── Full SDK (iOS) 
+│   ├── Lite SDK (iOS) 
+│   │   ├── Lite SDK (Payment iOS) 
+│   │   └── Lite SDK (Enrollment iOS) 
+│   ├── Headless SDKs (iOS) 
+│   │   ├── Headless SDK (Enrollment iOS) 
+│   │   └── Headless SDK (Payment iOS) 
+│   ├── Loader 
+│   ├── SDK Customizations 
+│   └── Complementary features 
+└── Country coverage 
 
-Security and Compliance (CATEGORY)
-├── 3D Secure (Level 1)
-├── Card Fingerprint (Level 1)
-├── Card Verification (Level 1)
-├── PCI Compliance (Level 1)
-├── Stored Credentials (Level 1)
-├── Network Tokens (Level 1)
-└── Data Migration Processes (Level 1)
-    ├── Token Migration Process (Level 2)
-    ├── Via API (Level 2)
-    └── Exporting Tokens from Yuno (Level 2)
+Security and Compliance 
+├── 3D Secure 
+├── Card Fingerprint 
+├── Card Verification 
+├── PCI Compliance 
+├── Stored Credentials 
+├── Network Tokens 
+└── Data Migration Processes 
+    ├── Token Migration Process 
+    ├── Via API 
+    └── Exporting Tokens from Yuno 
 
-Payment Features (CATEGORY)
-├── Enroll Payment Methods (Level 1)
-├── Enroll cards with payment links (Level 1)
-├── Installments (Level 1)
-│   ├── Merchant Installments (Level 2)
-│   └── Provider Installments (Level 2)
-├── Subscriptions (Level 1)
-│   └── Smart Retries (Level 2)
-├── Transaction Retries (Level 1)
-├── Split Payments Marketplace (Level 1)
-├── Account Funding Transactions (AFTs) (Level 1)
-├── Payment Details (Level 1)
-├── SCA Exemptions (Level 1)
-└── Cancel and Capture Flow (Level 1)
+Payment Features 
+├── Enroll Payment Methods 
+├── Enroll cards with payment links 
+├── Installments 
+│   ├── Merchant Installments 
+│   └── Provider Installments 
+├── Subscriptions 
+│   └── Smart Retries 
+├── Transaction Retries 
+├── Split Payments Marketplace 
+├── Account Funding Transactions (AFTs) 
+├── Payment Details 
+├── SCA Exemptions 
+└── Cancel and Capture Flow 
 
-Payout Management (CATEGORY)
-└── Payouts (Level 1)
+Payout Management 
+└── Payouts 
 
-Disputes (CATEGORY)
-├── Chargeback Management (Level 1)
-└── Chargeback response codes (Level 1)
+Disputes 
+├── Chargeback Management 
+└── Chargeback response codes 
 
-Webhooks (CATEGORY)
-├── Webhooks overview (Level 1)
-├── Configure Webhooks (Level 1)
-└── Object and Examples (Level 1)
+Webhooks 
+├── Webhooks overview 
+├── Configure Webhooks 
+└── Object and Examples 
 
-Wallets (CATEGORY)
-├── Wallets Overview (Level 1)
-├── Apple Pay (Level 1)
-│   ├── Prerequisites (Apple Pay) (Level 2)
-│   ├── Apple Pay Setup and Configuration (Level 2)
-│   ├── SDK Integration (Level 2)
-│   └── Direct Integration (Level 2)
-├── Google Pay™ (Level 1)
-│   ├── Direct Integration (Level 2)
-│   └── Integration Via Provider (Level 2)
-└── Click to Pay (Level 1)
+Wallets 
+├── Wallets Overview 
+├── Apple Pay 
+│   ├── Prerequisites (Apple Pay) 
+│   ├── Apple Pay Setup and Configuration 
+│   ├── SDK Integration 
+│   └── Direct Integration 
+├── Google Pay™ 
+│   ├── Direct Integration 
+│   └── Integration Via Provider 
+└── Click to Pay 
 
-PLUGINS (CATEGORY)
-└── VTEX (Level 1)
-    ├── Configure Yuno as Provider (Level 2)
-    └── VTEX Headless Integration Guide (Level 2)
+PLUGINS 
+└── VTEX 
+    ├── Configure Yuno as Provider 
+    └── VTEX Headless Integration Guide 
 
-Additional Services (CATEGORY)
-├── Aida AI Agent (Level 1)
-├── Card Account Updater (Level 1)
-├── Currency Conversion (Level 1)
-└── Building AI Integrations with Yuno's LLMs and MCP (Level 1)
+Additional Services 
+├── Aida AI Agent 
+├── Card Account Updater 
+├── Currency Conversion 
+└── Building AI Integrations with Yuno's LLMs and MCP 
 ```
 
 ### Current problems
@@ -230,7 +226,7 @@ Additional Services (CATEGORY)
 * **Massive SDK section**: Contains 50+ sub-items across multiple platforms vs. 1-13 items in other sections - completely disproportionate
 * **Version fragmentation**: Multiple versions of same SDKs creating confusion (now consolidated)
 * **No clear entry point**: Users overwhelmed by SDK section with no guidance on where to start
-* **Inconsistent section depth**: Some sections with 1-2 Level 1 items while SDK section has 6 Level 1 items containing 50+ sub-items
+* **Inconsistent section depth**: Some sections with 1-2 main items while SDK section has 6 main items containing 50+ sub-items
 * **Poor discoverability**: Important integration guidance buried in massive SDK section
 * **Mixed organization**: Well-organized sections alongside overwhelming SDK complexity
 * **Scattered related content**: Integration guidance split between "GET STARTED" and "SDKs"
@@ -242,7 +238,7 @@ Additional Services (CATEGORY)
 **Platform limitations:**
 
 * **Maximum 3 levels** of navigation within each category
-* **No subcategories beyond Level 3** are supported
+* **No subcategories beyond 3 levels** are supported
 * **Platform enforces these limits** - deeper nesting is not possible
 
 **Structure analysis:**
@@ -301,10 +297,10 @@ This structure follows Adyen's approach with clear decision guidance and linear 
 ### Structure visualization (Only Categories)
 
 ```
-Get Started (CATEGORY)
-Build Your Integration (CATEGORY)
-Advanced Features (CATEGORY)
-Operations & Management (CATEGORY)
+Get Started 
+Build Your Integration 
+Advanced Features 
+Operations & Management 
 ```
 
 ### Structure (Readme Platform Compliant)
@@ -312,162 +308,162 @@ Operations & Management (CATEGORY)
 Reorganize the documentation into the following new structure that complies with Readme's 3-level maximum:
 
 ```
-Get Started (CATEGORY)
-├── HOW YUNO WORKS (Level 1)
-│   ├── What is Yuno? (Level 2)
-│   ├── How Yuno Payment Process Works (Level 2)
-│   └── Basic Concepts (Level 2)
-│       ├── Customers (Level 3)
-│       ├── Sessions (Level 3)
-│       ├── Payments (Level 3)
-│       ├── Transactions (Level 3)
-│       ├── Tokens (Level 3)
-│       ├── Payment methods (Level 3)
-│       ├── Webhooks (Level 3)
-│       ├── Fraud prevention (Level 3)
-│       └── 3DS (Level 3)
-├── GET STARTED WITH YUNO (Level 1)
-│   ├── Overview (Level 2)
-│   ├── Set Up Your Account (Level 2)
-│   └── Create Your First Payment With SDK (Level 2)
-└── BUILD YOUR INTEGRATION (Level 1)
-    ├── Choose the Right Integration for You (Level 2)
-    ├── Direct Flow Integration (Level 2)
-    └── SDK Integration Overview (Level 2)
+Get Started 
+├── HOW YUNO WORKS 
+│   ├── What is Yuno? 
+│   ├── How Yuno Payment Process Works 
+│   └── Basic Concepts 
+│       ├── Customers 
+│       ├── Sessions 
+│       ├── Payments 
+│       ├── Transactions 
+│       ├── Tokens 
+│       ├── Payment methods 
+│       ├── Webhooks 
+│       ├── Fraud prevention 
+│       └── 3DS 
+├── GET STARTED WITH YUNO 
+│   ├── Overview 
+│   ├── Set Up Your Account 
+│   └── Create Your First Payment With SDK 
+└── BUILD YOUR INTEGRATION 
+    ├── Choose the Right Integration for You 
+    ├── Direct Flow Integration 
+    └── SDK Integration Overview 
 
-Build Your Integration (CATEGORY)
-├── Seamless SDKs (Recommended) (Level 1)
-│   └── Seamless SDK (Level 2)
-├── Web SDKs (Level 1)
-│   ├── Full Web SDK (Level 2)
-│   │   └── Full SDK implementation (Level 3)
-│   ├── Lite Web SDK (Level 2)
-│   │   └── Lite SDK implementation (Level 3)
-│   ├── Secure Fields (Web) (Level 2)
-│   │   ├── Secure Fields (Payment) (Level 3)
-│   │   └── Secure Fields (Enrollment) (Level 3)
-│   ├── Alternative SDKs (Level 2)
-│   │   ├── Headless SDK (Enrollment Web) (Level 3)
-│   │   ├── Headless SDK (Payment Web) (Level 3)
-│   │   └── Seamless SDK (Payment Web) (Level 3)
-│   ├── Web SDK Changelog (Level 2)
-│   ├── Loader (Level 2)
-│   ├── Payment Status (Level 2)
-│   ├── SDK Customizations (Level 2)
-│   ├── Demo App (Level 2)
-│   └── 3DS Setup SDK (Deprecated) (Level 2)
-├── Mobile SDKs (Level 1)
-│   ├── Android SDKs (Level 2)
-│   │   ├── Requirements (Level 3)
-│   │   ├── Android SDK Release Notes (Level 3)
-│   │   ├── Full SDK (Android) (Level 3)
-│   │   ├── Lite SDK (Payment Android) (Level 3)
-│   │   ├── Lite SDK (Enrollment Android) (Level 3)
-│   │   ├── Headless SDK (Enrollment Android) (Level 3)
-│   │   ├── Headless SDK (Payment Android) (Level 3)
-│   │   ├── SDK Customizations (Level 3)
-│   │   └── Handle External Browser Return (callback_url) (Level 3)
-│   └── iOS SDKs (Level 2)
-│       ├── iOS SDK release notes (Level 3)
-│       ├── Full SDK (iOS) (Level 3)
-│       ├── Lite SDK (Payment iOS) (Level 3)
-│       ├── Lite SDK (Enrollment iOS) (Level 3)
-│       ├── Headless SDK (Enrollment iOS) (Level 3)
-│       ├── Headless SDK (Payment iOS) (Level 3)
-│       ├── Loader (Level 3)
-│       ├── SDK Customizations (Level 3)
-│       └── Complementary features (Level 3)
-├── Payment Features (Level 1)
-│   ├── Enroll Payment Methods (Level 2)
-│   ├── Enroll cards with payment links (Level 2)
-│   ├── Installments (Level 2)
-│   │   ├── Merchant Installments (Level 3)
-│   │   └── Provider Installments (Level 3)
-│   ├── Subscriptions (Level 2)
-│   │   └── Smart Retries (Level 3)
-│   ├── Transaction Retries (Level 2)
-│   ├── Split Payments Marketplace (Level 2)
-│   ├── Account Funding Transactions (AFTs) (Level 2)
-│   ├── Payment Details (Level 2)
-│   ├── SCA Exemptions (Level 2)
-│   └── Cancel and Capture Flow (Level 2)
-└── Direct Integration (Level 1)
-    ├── Set Up Payment Connection (Level 2)
-    ├── Create Payments (Level 2)
-    ├── Refund Payments (Level 2)
-    ├── Cancel Payments (Level 2)
-    ├── Capture Payments (Level 2)
-    ├── Build Reports (Level 2)
-    └── Yuno Testing Gateway (Level 2)
+Build Your Integration 
+├── Seamless SDKs (Recommended) 
+│   └── Seamless SDK 
+├── Web SDKs 
+│   ├── Full Web SDK 
+│   │   └── Full SDK implementation 
+│   ├── Lite Web SDK 
+│   │   └── Lite SDK implementation 
+│   ├── Secure Fields (Web) 
+│   │   ├── Secure Fields (Payment) 
+│   │   └── Secure Fields (Enrollment) 
+│   ├── Alternative SDKs 
+│   │   ├── Headless SDK (Enrollment Web) 
+│   │   ├── Headless SDK (Payment Web) 
+│   │   └── Seamless SDK (Payment Web) 
+│   ├── Web SDK Changelog 
+│   ├── Loader 
+│   ├── Payment Status 
+│   ├── SDK Customizations 
+│   ├── Demo App 
+│   └── 3DS Setup SDK (Deprecated) 
+├── Mobile SDKs 
+│   ├── Android SDKs 
+│   │   ├── Requirements 
+│   │   ├── Android SDK Release Notes 
+│   │   ├── Full SDK (Android) 
+│   │   ├── Lite SDK (Payment Android) 
+│   │   ├── Lite SDK (Enrollment Android) 
+│   │   ├── Headless SDK (Enrollment Android) 
+│   │   ├── Headless SDK (Payment Android) 
+│   │   ├── SDK Customizations 
+│   │   └── Handle External Browser Return (callback_url) 
+│   └── iOS SDKs 
+│       ├── iOS SDK release notes 
+│       ├── Full SDK (iOS) 
+│       ├── Lite SDK (Payment iOS) 
+│       ├── Lite SDK (Enrollment iOS) 
+│       ├── Headless SDK (Enrollment iOS) 
+│       ├── Headless SDK (Payment iOS) 
+│       ├── Loader 
+│       ├── SDK Customizations 
+│       └── Complementary features 
+├── Payment Features 
+│   ├── Enroll Payment Methods 
+│   ├── Enroll cards with payment links 
+│   ├── Installments 
+│   │   ├── Merchant Installments 
+│   │   └── Provider Installments 
+│   ├── Subscriptions 
+│   │   └── Smart Retries 
+│   ├── Transaction Retries 
+│   ├── Split Payments Marketplace 
+│   ├── Account Funding Transactions (AFTs) 
+│   ├── Payment Details 
+│   ├── SCA Exemptions 
+│   └── Cancel and Capture Flow 
+└── Direct Integration 
+    ├── Set Up Payment Connection 
+    ├── Create Payments 
+    ├── Refund Payments 
+    ├── Cancel Payments 
+    ├── Capture Payments 
+    ├── Build Reports 
+    └── Yuno Testing Gateway 
 
-Advanced Features (CATEGORY)
-├── Wallets (Level 1)
-│   ├── Wallets Overview (Level 2)
-│   ├── Apple Pay (Level 2)
-│   │   ├── Prerequisites (Apple Pay) (Level 3)
-│   │   ├── Apple Pay Setup and Configuration (Level 3)
-│   │   ├── SDK Integration (Level 3)
-│   │   └── Direct Integration (Level 3)
-│   ├── Google Pay™ (Level 2)
-│   │   ├── Direct Integration (Level 3)
-│   │   └── Integration Via Provider (Level 3)
-│   └── Click to Pay (Level 2)
-├── Security and Compliance (Level 1)
-│   ├── 3D Secure (Level 2)
-│   ├── Card Fingerprint (Level 2)
-│   ├── Card Verification (Level 2)
-│   ├── PCI Compliance (Level 2)
-│   ├── Stored Credentials (Level 2)
-│   ├── Network Tokens (Level 2)
-│   └── Data Migration Processes (Level 2)
-│       ├── Token Migration Process (Level 3)
-│       ├── Via API (Level 3)
-│       └── Exporting Tokens from Yuno (Level 3)
-├── Webhooks (Level 1)
-│   ├── Webhooks overview (Level 2)
-│   ├── Configure Webhooks (Level 2)
-│   └── Object and Examples (Level 2)
-└── Additional Services (Level 1)
-    ├── Aida AI Agent (Level 2)
-    ├── Card Account Updater (Level 2)
-    ├── Currency Conversion (Level 2)
-    └── Building AI Integrations with Yuno's LLMs and MCP (Level 2)
+Advanced Features 
+├── Wallets 
+│   ├── Wallets Overview 
+│   ├── Apple Pay 
+│   │   ├── Prerequisites (Apple Pay) 
+│   │   ├── Apple Pay Setup and Configuration 
+│   │   ├── SDK Integration 
+│   │   └── Direct Integration 
+│   ├── Google Pay™ 
+│   │   ├── Direct Integration 
+│   │   └── Integration Via Provider 
+│   └── Click to Pay 
+├── Security and Compliance 
+│   ├── 3D Secure 
+│   ├── Card Fingerprint 
+│   ├── Card Verification 
+│   ├── PCI Compliance 
+│   ├── Stored Credentials 
+│   ├── Network Tokens 
+│   └── Data Migration Processes 
+│       ├── Token Migration Process 
+│       ├── Via API 
+│       └── Exporting Tokens from Yuno 
+├── Webhooks 
+│   ├── Webhooks overview 
+│   ├── Configure Webhooks 
+│   └── Object and Examples 
+└── Additional Services 
+    ├── Aida AI Agent 
+    ├── Card Account Updater 
+    ├── Currency Conversion 
+    └── Building AI Integrations with Yuno's LLMs and MCP 
 
-Operations & Management (CATEGORY)
-├── USING YUNO (Level 1)
-│   ├── Environments (Level 2)
-│   ├── Dashboard Overview (Level 2)
-│   │   ├── Home (Level 3)
-│   │   ├── Connections (Level 3)
-│   │   ├── Routing (Level 3)
-│   │   ├── Monitors (Level 3)
-│   │   ├── Checkout Builder (Level 3)
-│   │   ├── Payments (Level 3)
-│   │   ├── Insights (Level 3)
-│   │   ├── Reconciliations (Level 3)
-│   │   └── Developers (Credentials) (Level 3)
-│   ├── Other tools (Level 2)
-│   │   ├── Risk Conditions (Level 3)
-│   │   ├── Payment Links (Level 3)
-│   │   └── Audit logs (Level 3)
-│   ├── Account Management (Level 2)
-│   ├── Teams and Roles (Level 2)
-│   ├── Single Sign-On (SSO) (Level 2)
-│   └── Security (Level 2)
-├── Disputes (Level 1)
-│   ├── Chargeback Management (Level 2)
-│   └── Chargeback response codes (Level 2)
-├── Payout Management (Level 1)
-│   └── Payouts (Level 2)
-└── PLUGINS (Level 1)
-    └── VTEX (Level 2)
-        ├── Configure Yuno as Provider (Level 3)
-        └── VTEX Headless Integration Guide (Level 3)
+Operations & Management 
+├── USING YUNO 
+│   ├── Environments 
+│   ├── Dashboard Overview 
+│   │   ├── Home 
+│   │   ├── Connections 
+│   │   ├── Routing 
+│   │   ├── Monitors 
+│   │   ├── Checkout Builder 
+│   │   ├── Payments 
+│   │   ├── Insights 
+│   │   ├── Reconciliations 
+│   │   └── Developers (Credentials) 
+│   ├── Other tools 
+│   │   ├── Risk Conditions 
+│   │   ├── Payment Links 
+│   │   └── Audit logs 
+│   ├── Account Management 
+│   ├── Teams and Roles 
+│   ├── Single Sign-On (SSO) 
+│   └── Security 
+├── Disputes 
+│   ├── Chargeback Management 
+│   └── Chargeback response codes 
+├── Payout Management 
+│   └── Payouts 
+└── PLUGINS 
+    └── VTEX 
+        ├── Configure Yuno as Provider 
+        └── VTEX Headless Integration Guide 
 ```
 
 **Key Changes for Readme Compliance:**
 
-* **Flattened structure**: All major sections at Level 1 within each category
+* **Flattened structure**: All major sections at top level within each category
 * **Eliminated version nesting**: Consolidated multiple versions into single pages
 * **Simplified navigation**: No more than 2 levels within each category
 * **Platform-optimized**: Designed specifically for Readme's constraints
@@ -488,10 +484,10 @@ This organizes content using Stripe's approach with progressive disclosure and m
 ### Structure visualization (Only Categories)
 
 ```
-Get Started (CATEGORY)
-Build Your Integration (CATEGORY)
-Advanced Features (CATEGORY)
-Operations & Management (CATEGORY)
+Get Started 
+Build Your Integration 
+Advanced Features 
+Operations & Management 
 ```
 
 ### Structure (Readme Platform Compliant)
@@ -499,162 +495,162 @@ Operations & Management (CATEGORY)
 Reorganize the documentation into the following new structure that complies with Readme's 3-level maximum:
 
 ```
-Get Started (CATEGORY)
-├── HOW YUNO WORKS (Level 1)
-│   ├── What is Yuno? (Level 2)
-│   ├── How Yuno Payment Process Works (Level 2)
-│   └── Basic Concepts (Level 2)
-│       ├── Customers (Level 3)
-│       ├── Sessions (Level 3)
-│       ├── Payments (Level 3)
-│       ├── Transactions (Level 3)
-│       ├── Tokens (Level 3)
-│       ├── Payment methods (Level 3)
-│       ├── Webhooks (Level 3)
-│       ├── Fraud prevention (Level 3)
-│       └── 3DS (Level 3)
-├── GET STARTED WITH YUNO (Level 1)
-│   ├── Overview (Level 2)
-│   ├── Set Up Your Account (Level 2)
-│   └── Create Your First Payment With SDK (Level 2)
-└── BUILD YOUR INTEGRATION (Level 1)
-    ├── Choose the Right Integration for You (Level 2)
-    ├── Direct Flow Integration (Level 2)
-    └── SDK Integration Overview (Level 2)
+Get Started 
+├── HOW YUNO WORKS 
+│   ├── What is Yuno? 
+│   ├── How Yuno Payment Process Works 
+│   └── Basic Concepts 
+│       ├── Customers 
+│       ├── Sessions 
+│       ├── Payments 
+│       ├── Transactions 
+│       ├── Tokens 
+│       ├── Payment methods 
+│       ├── Webhooks 
+│       ├── Fraud prevention 
+│       └── 3DS 
+├── GET STARTED WITH YUNO 
+│   ├── Overview 
+│   ├── Set Up Your Account 
+│   └── Create Your First Payment With SDK 
+└── BUILD YOUR INTEGRATION 
+    ├── Choose the Right Integration for You 
+    ├── Direct Flow Integration 
+    └── SDK Integration Overview 
 
-Build Your Integration (CATEGORY)
-├── Seamless SDKs (Recommended) (Level 1)
-│   └── Seamless SDK (Level 2)
-├── Web SDKs (Level 1)
-│   ├── Full Web SDK (Level 2)
-│   │   └── Full SDK implementation (Level 3)
-│   ├── Lite Web SDK (Level 2)
-│   │   └── Lite SDK implementation (Level 3)
-│   ├── Secure Fields (Web) (Level 2)
-│   │   ├── Secure Fields (Payment) (Level 3)
-│   │   └── Secure Fields (Enrollment) (Level 3)
-│   ├── Alternative SDKs (Level 2)
-│   │   ├── Headless SDK (Enrollment Web) (Level 3)
-│   │   ├── Headless SDK (Payment Web) (Level 3)
-│   │   └── Seamless SDK (Payment Web) (Level 3)
-│   ├── Web SDK Changelog (Level 2)
-│   ├── Loader (Level 2)
-│   ├── Payment Status (Level 2)
-│   ├── SDK Customizations (Level 2)
-│   ├── Demo App (Level 2)
-│   └── 3DS Setup SDK (Deprecated) (Level 2)
-├── Mobile SDKs (Level 1)
-│   ├── Android SDKs (Level 2)
-│   │   ├── Requirements (Level 3)
-│   │   ├── Android SDK Release Notes (Level 3)
-│   │   ├── Full SDK (Android) (Level 3)
-│   │   ├── Lite SDK (Payment Android) (Level 3)
-│   │   ├── Lite SDK (Enrollment Android) (Level 3)
-│   │   ├── Headless SDK (Enrollment Android) (Level 3)
-│   │   ├── Headless SDK (Payment Android) (Level 3)
-│   │   ├── SDK Customizations (Level 3)
-│   │   └── Handle External Browser Return (callback_url) (Level 3)
-│   └── iOS SDKs (Level 2)
-│       ├── iOS SDK release notes (Level 3)
-│       ├── Full SDK (iOS) (Level 3)
-│       ├── Lite SDK (Payment iOS) (Level 3)
-│       ├── Lite SDK (Enrollment iOS) (Level 3)
-│       ├── Headless SDK (Enrollment iOS) (Level 3)
-│       ├── Headless SDK (Payment iOS) (Level 3)
-│       ├── Loader (Level 3)
-│       ├── SDK Customizations (Level 3)
-│       └── Complementary features (Level 3)
-├── Payment Features (Level 1)
-│   ├── Enroll Payment Methods (Level 2)
-│   ├── Enroll cards with payment links (Level 2)
-│   ├── Installments (Level 2)
-│   │   ├── Merchant Installments (Level 3)
-│   │   └── Provider Installments (Level 3)
-│   ├── Subscriptions (Level 2)
-│   │   └── Smart Retries (Level 3)
-│   ├── Transaction Retries (Level 2)
-│   ├── Split Payments Marketplace (Level 2)
-│   ├── Account Funding Transactions (AFTs) (Level 2)
-│   ├── Payment Details (Level 2)
-│   ├── SCA Exemptions (Level 2)
-│   └── Cancel and Capture Flow (Level 2)
-└── Direct Integration (Level 1)
-    ├── Set Up Payment Connection (Level 2)
-    ├── Create Payments (Level 2)
-    ├── Refund Payments (Level 2)
-    ├── Cancel Payments (Level 2)
-    ├── Capture Payments (Level 2)
-    ├── Build Reports (Level 2)
-    └── Yuno Testing Gateway (Level 2)
+Build Your Integration 
+├── Seamless SDKs (Recommended) 
+│   └── Seamless SDK 
+├── Web SDKs 
+│   ├── Full Web SDK 
+│   │   └── Full SDK implementation 
+│   ├── Lite Web SDK 
+│   │   └── Lite SDK implementation 
+│   ├── Secure Fields (Web) 
+│   │   ├── Secure Fields (Payment) 
+│   │   └── Secure Fields (Enrollment) 
+│   ├── Alternative SDKs 
+│   │   ├── Headless SDK (Enrollment Web) 
+│   │   ├── Headless SDK (Payment Web) 
+│   │   └── Seamless SDK (Payment Web) 
+│   ├── Web SDK Changelog 
+│   ├── Loader 
+│   ├── Payment Status 
+│   ├── SDK Customizations 
+│   ├── Demo App 
+│   └── 3DS Setup SDK (Deprecated) 
+├── Mobile SDKs 
+│   ├── Android SDKs 
+│   │   ├── Requirements 
+│   │   ├── Android SDK Release Notes 
+│   │   ├── Full SDK (Android) 
+│   │   ├── Lite SDK (Payment Android) 
+│   │   ├── Lite SDK (Enrollment Android) 
+│   │   ├── Headless SDK (Enrollment Android) 
+│   │   ├── Headless SDK (Payment Android) 
+│   │   ├── SDK Customizations 
+│   │   └── Handle External Browser Return (callback_url) 
+│   └── iOS SDKs 
+│       ├── iOS SDK release notes 
+│       ├── Full SDK (iOS) 
+│       ├── Lite SDK (Payment iOS) 
+│       ├── Lite SDK (Enrollment iOS) 
+│       ├── Headless SDK (Enrollment iOS) 
+│       ├── Headless SDK (Payment iOS) 
+│       ├── Loader 
+│       ├── SDK Customizations 
+│       └── Complementary features 
+├── Payment Features 
+│   ├── Enroll Payment Methods 
+│   ├── Enroll cards with payment links 
+│   ├── Installments 
+│   │   ├── Merchant Installments 
+│   │   └── Provider Installments 
+│   ├── Subscriptions 
+│   │   └── Smart Retries 
+│   ├── Transaction Retries 
+│   ├── Split Payments Marketplace 
+│   ├── Account Funding Transactions (AFTs) 
+│   ├── Payment Details 
+│   ├── SCA Exemptions 
+│   └── Cancel and Capture Flow 
+└── Direct Integration 
+    ├── Set Up Payment Connection 
+    ├── Create Payments 
+    ├── Refund Payments 
+    ├── Cancel Payments 
+    ├── Capture Payments 
+    ├── Build Reports 
+    └── Yuno Testing Gateway 
 
-Advanced Features (CATEGORY)
-├── Wallets (Level 1)
-│   ├── Wallets Overview (Level 2)
-│   ├── Apple Pay (Level 2)
-│   │   ├── Prerequisites (Apple Pay) (Level 3)
-│   │   ├── Apple Pay Setup and Configuration (Level 3)
-│   │   ├── SDK Integration (Level 3)
-│   │   └── Direct Integration (Level 3)
-│   ├── Google Pay™ (Level 2)
-│   │   ├── Direct Integration (Level 3)
-│   │   └── Integration Via Provider (Level 3)
-│   └── Click to Pay (Level 2)
-├── Security and Compliance (Level 1)
-│   ├── 3D Secure (Level 2)
-│   ├── Card Fingerprint (Level 2)
-│   ├── Card Verification (Level 2)
-│   ├── PCI Compliance (Level 2)
-│   ├── Stored Credentials (Level 2)
-│   ├── Network Tokens (Level 2)
-│   └── Data Migration Processes (Level 2)
-│       ├── Token Migration Process (Level 3)
-│       ├── Via API (Level 3)
-│       └── Exporting Tokens from Yuno (Level 3)
-├── Webhooks (Level 1)
-│   ├── Webhooks overview (Level 2)
-│   ├── Configure Webhooks (Level 2)
-│   └── Object and Examples (Level 2)
-└── Additional Services (Level 1)
-    ├── Aida AI Agent (Level 2)
-    ├── Card Account Updater (Level 2)
-    ├── Currency Conversion (Level 2)
-    └── Building AI Integrations with Yuno's LLMs and MCP (Level 2)
+Advanced Features 
+├── Wallets 
+│   ├── Wallets Overview 
+│   ├── Apple Pay 
+│   │   ├── Prerequisites (Apple Pay) 
+│   │   ├── Apple Pay Setup and Configuration 
+│   │   ├── SDK Integration 
+│   │   └── Direct Integration 
+│   ├── Google Pay™ 
+│   │   ├── Direct Integration 
+│   │   └── Integration Via Provider 
+│   └── Click to Pay 
+├── Security and Compliance 
+│   ├── 3D Secure 
+│   ├── Card Fingerprint 
+│   ├── Card Verification 
+│   ├── PCI Compliance 
+│   ├── Stored Credentials 
+│   ├── Network Tokens 
+│   └── Data Migration Processes 
+│       ├── Token Migration Process 
+│       ├── Via API 
+│       └── Exporting Tokens from Yuno 
+├── Webhooks 
+│   ├── Webhooks overview 
+│   ├── Configure Webhooks 
+│   └── Object and Examples 
+└── Additional Services 
+    ├── Aida AI Agent 
+    ├── Card Account Updater 
+    ├── Currency Conversion 
+    └── Building AI Integrations with Yuno's LLMs and MCP 
 
-Operations & Management (CATEGORY)
-├── USING YUNO (Level 1)
-│   ├── Environments (Level 2)
-│   ├── Dashboard Overview (Level 2)
-│   │   ├── Home (Level 3)
-│   │   ├── Connections (Level 3)
-│   │   ├── Routing (Level 3)
-│   │   ├── Monitors (Level 3)
-│   │   ├── Checkout Builder (Level 3)
-│   │   ├── Payments (Level 3)
-│   │   ├── Insights (Level 3)
-│   │   ├── Reconciliations (Level 3)
-│   │   └── Developers (Credentials) (Level 3)
-│   ├── Other tools (Level 2)
-│   │   ├── Risk Conditions (Level 3)
-│   │   ├── Payment Links (Level 3)
-│   │   └── Audit logs (Level 3)
-│   ├── Account Management (Level 2)
-│   ├── Teams and Roles (Level 2)
-│   ├── Single Sign-On (SSO) (Level 2)
-│   └── Security (Level 2)
-├── Disputes (Level 1)
-│   ├── Chargeback Management (Level 2)
-│   └── Chargeback response codes (Level 2)
-├── Payout Management (Level 1)
-│   └── Payouts (Level 2)
-└── PLUGINS (Level 1)
-    └── VTEX (Level 2)
-        ├── Configure Yuno as Provider (Level 3)
-        └── VTEX Headless Integration Guide (Level 3)
+Operations & Management 
+├── USING YUNO 
+│   ├── Environments 
+│   ├── Dashboard Overview 
+│   │   ├── Home 
+│   │   ├── Connections 
+│   │   ├── Routing 
+│   │   ├── Monitors 
+│   │   ├── Checkout Builder 
+│   │   ├── Payments 
+│   │   ├── Insights 
+│   │   ├── Reconciliations 
+│   │   └── Developers (Credentials) 
+│   ├── Other tools 
+│   │   ├── Risk Conditions 
+│   │   ├── Payment Links 
+│   │   └── Audit logs 
+│   ├── Account Management 
+│   ├── Teams and Roles 
+│   ├── Single Sign-On (SSO) 
+│   └── Security 
+├── Disputes 
+│   ├── Chargeback Management 
+│   └── Chargeback response codes 
+├── Payout Management 
+│   └── Payouts 
+└── PLUGINS 
+    └── VTEX 
+        ├── Configure Yuno as Provider 
+        └── VTEX Headless Integration Guide 
 ```
 
 **Key Changes for Readme Compliance:**
 
-* **Flattened structure**: All major sections at Level 1 within each category
+* **Flattened structure**: All major sections at top level within each category
 * **Eliminated version nesting**: Consolidated multiple versions into single pages
 * **Simplified navigation**: No more than 2 levels within each category
 * **Platform-optimized**: Designed specifically for Readme's constraints
