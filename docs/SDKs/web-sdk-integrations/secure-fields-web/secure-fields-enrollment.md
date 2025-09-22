@@ -30,11 +30,15 @@ Choose the integration method that best suits your development workflow and tech
 
 ### Step 2: Initialize secure fields with the public key
 
-Get a `Yuno` instance class in your `JS` app with a valid **PUBLIC\_API\_KEY**
+Get a `Yuno` instance class in your JavaScript application with a valid `PUBLIC_API_KEY`.
 
 ```javascript
-const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
+
+> 📘 Credentials
+>
+> See the credentials page for more information: [https://docs.y.uno/reference/authentication](https://docs.y.uno/reference/authentication)
 
 ### Step 3: Create a customer session and an enrollment payment method object
 
@@ -46,9 +50,11 @@ Before continuing with the process, you will need to create a [customer session]
 
 ### Step 4: Start the enrollment process
 
-Next, you have to create a configuration object. The essential parameters are the `countryCode`, which determines the country for which the enrollment process is configured, and `customerSession`, which refers to the current enrollment's customer session.  The next code block presents an example of the parameter configuration.
+Next, you have to create a configuration object. The essential parameters are the `countryCode`, which determines the country for which the enrollment process is configured, and `customerSession`, which refers to the current enrollment's customer session.
 
-The following table lists all required parameters and their descriptions.
+### Parameters
+
+Configure the secure fields with the following options:
 
 | Parameter         | Description                                                                                                                                                                                                                                                                                   |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -57,15 +63,9 @@ The following table lists all required parameters and their descriptions.
 
 ```javascript
 const secureFields = yuno.secureFields({
-    /**
-     * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-    */
-    countryCode: "CO",
-     /**
-		 * The customer session created using the following endpoint https://docs.y.uno/reference/create-customer-session
-     */
-    customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
-  })
+  countryCode: "CO",
+  customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+});
 ```
 
 ### Step 5: Mount the Secure Fields
@@ -94,23 +94,10 @@ The next code block presents an example of the parameter configuration for three
 
 ```javascript
 const secureNumber = secureFields.create({
-  /**
-   * Field name, can be 'cvv', 'pan', or 'expiration'.
-   */
   name: 'pan',
   // All options are optional
   options: {
     placeholder: '0000 0000 0000 0000',
-    /**
-     * You can edit card form styles.
-     * Simply write CSS, and it will be injected into the iframe.
-     * Example: 
-     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-     *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-     *    color: red;
-     *    font-family: 'Luckiest Guy' !important;
-     *  }`
-     */
     styles: ``,
     label: 'Card Number',
     showError: true,
@@ -118,40 +105,6 @@ const secureNumber = secureFields.create({
     // Indicates if the field has an error
     validateOnBlur: false,
     onChange: ({ error, data }) => {
-      /**
-       * In data.cardIIN, you can receive card data:
-       * [{
-       *   "id": "436c457c-1234-4e5e-b51d-1814e67d696a",
-       *   "iin": "411111",
-       *   "scheme": "VISA",
-       *   "issuer_name": "JPMORGAN CHASE BANK N.A.",
-       *   "issuer_code": null,
-       *   "brand": "VISA",
-       *   "type": "CREDIT",
-       *   "category": "CREDIT",
-       *   "country_code": "US",
-       *   "country_name": "United States of America",
-       *   "website": "https://www.chase.com",
-       *   "phone": {
-       *       "country_code": null,
-       *       "number": "+1 212-270-6000"
-       *   },
-       *   "address": {
-       *       "address_line_1": null,
-       *       "address_line_2": null,
-       *       "city": null,
-       *       "country": null,
-       *       "state": null,
-       *       "zip_code": null
-       *   }
-       * }]
-       */
-      /**
-       * In data.isCardIINLoading, you can receive a true or false indicating if the card IIN search is being executed.
-       */
-      /**
-       * In data.isInstallmentLoading, you can receive a true or false indicating if the installments search is being executed.
-       */
       if (error) {
         console.log('error_pan')
       } else {
@@ -177,23 +130,10 @@ const secureNumber = secureFields.create({
 secureNumber.render('#pan')
 
 const secureExpiration = secureFields.create({
-  /**
-   * Field name, can be 'cvv', 'pan', or 'expiration'.
-   */
   name: 'expiration',
   // All options are optional
   options: {
     placeholder: 'MM / YY',
-    /**
-     * You can edit card form styles.
-     * Simply write CSS, and it will be injected into the iframe.
-     * Example: 
-     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-     *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-     *    color: red;
-     *    font-family: 'Luckiest Guy' !important;
-     *  }`
-     */
     styles: ``,
     label: 'Card Expiration',
     showError: true,
@@ -224,23 +164,10 @@ const secureExpiration = secureFields.create({
 secureExpiration.render('#expiration')
 
 const secureCvv = secureFields.create({
-  /**
-   * Field name, can be 'cvv', 'pan', or 'expiration'.
-   */
   name: 'cvv',
   // All options are optional
   options: {
     placeholder: 'CVV',
-        /**
-     * You can edit card form styles.
-     * Simply write CSS, and it will be injected into the iframe.
-     * Example: 
-     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-     *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-     *    color: red;
-     *    font-family: 'Luckiest Guy' !important;
-     *  }`
-     */
     styles: ``,
     label: 'CVV',
     showError: true,
@@ -274,7 +201,7 @@ secureCvv.render('#cvv')
 
 > 📘 Enrollment for Payouts
 >
-> If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the `secureNumber` object before creating the vaulted\_token and ignore the `secureExpiration` and `secureCvv` objects.
+> If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the `secureNumber` object before creating the vaulted_token and ignore the `secureExpiration` and `secureCvv` objects.
 
 After they are mounted, the three secure fields will be shown
 
@@ -283,38 +210,20 @@ After they are mounted, the three secure fields will be shown
 To enroll, create a Vaulted Token
 
 ```javascript
-// Create Vaulted Token
-// This will trigger an error if there are missing data
-// You can catch it using a try/catch
 const vaultedToken = await secureFields.generateVaultedToken({
-  // Required: You can create an input to get this formation
   cardHolderName: 'John Deer',
-  // Check your card processor to know if you need to send 
-  // customer information
-  // full object here https://docs.y.uno/reference/the-customer-object
   customer: {
     document: {
       document_number: '1090209924',
       document_type: 'CC',
     },
   },
-})
+});
 ```
 
 If you need the full response, you can use `secureFields.generateVaultedTokenWithInformation`
 
 ```javascript
-/**
- *  Create one-time token
- *  This will trigger an error if there are missing data
- *  You can catch it using a try/catch
- *  Returns an object with the full response
- *  {
- *   code: string;
- *   idempotency_key: string;
- *   organization_code: string;
- *   account_code: string;
- *   customer_session: string;
  *   name: string;
  *   description: string;
  *   status: Enrollment.Status;
