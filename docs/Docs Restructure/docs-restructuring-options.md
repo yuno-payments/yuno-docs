@@ -218,7 +218,9 @@ ADDITIONAL SERVICES
 ├── Aida AI Agent 
 ├── Card Account Updater 
 ├── Currency Conversion 
-└── Building AI Integrations with Yuno's LLMs and MCP 
+├── Building AI Integrations with Yuno's LLMs and MCP
+├── Environments
+└── Remote Yuno MCP Server 
 ```
 
 ### Current problems
@@ -426,7 +428,9 @@ ADVANCED FEATURES
     ├── Aida AI Agent 
     ├── Card Account Updater 
     ├── Currency Conversion 
-    └── Building AI Integrations with Yuno's LLMs and MCP 
+    ├── Building AI Integrations with Yuno's LLMs and MCP
+    ├── Environments
+    └── Remote Yuno MCP Server 
 
 OPERATIONS & MANAGEMENT 
 ├── USING YUNO 
@@ -650,7 +654,9 @@ ADDITIONAL SERVICES
 ├── Aida AI Agent 
 ├── Card Account Updater 
 ├── Currency Conversion 
-└── Building AI Integrations with Yuno's LLMs and MCP 
+├── Building AI Integrations with Yuno's LLMs and MCP
+├── Environments
+└── Remote Yuno MCP Server 
 ```
 
 **Key Changes for Readme Compliance:**
