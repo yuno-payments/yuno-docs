@@ -2,7 +2,7 @@
 title: Loader
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Loader
   description: >-
