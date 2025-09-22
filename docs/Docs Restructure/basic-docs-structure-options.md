@@ -132,7 +132,7 @@ Additional Services (CATEGORY)
 ### Key problems
 
 * **Massive SDK section**: Contains 50+ sub-items across multiple platforms vs. 1-13 items in other sections - completely disproportionate
-* **Version fragmentation**: Multiple versions of same SDKs (v1.0, v1.1, v1.2, v1.3) creating confusion
+* **Version fragmentation**: Multiple versions of same SDKs creating confusion (now consolidated)
 * **No clear entry point**: Users overwhelmed by SDK section with no guidance on where to start
 * **Inconsistent section depth**: Some sections with 1-2 Level 1 items while SDK section has 6 Level 1 items containing 50+ sub-items
 * **Poor discoverability**: Important integration guidance buried in massive SDK section
@@ -161,7 +161,7 @@ CATEGORY (Level 0 - Readme Category)
 **Current violations identified:**
 
 * **SDKs section exceeds limits**: Has 4+ levels in multiple areas
-* **Web SDKs nested structure**: `SDKs → Web SDKs → Full Web SDK → Full Web SDK v1.3` (4 levels)
+* **Web SDKs nested structure**: `SDKs → Web SDKs → Full Web SDK → Version-specific pages` (4 levels)
 * **Version fragmentation**: Creates unnecessary depth that violates platform constraints
 * **Multiple sections affected**: Several areas exceed the 3-level maximum
 
@@ -237,7 +237,7 @@ Operations & Management (CATEGORY)
 **Key Changes for Readme Compliance:**
 
 * **Flattened structure**: All major sections at Level 1 within each category
-* **Eliminated version nesting**: Consolidated v1.0, v1.1, v1.2, v1.3 into single pages
+* **Eliminated version nesting**: Consolidated multiple versions into single pages
 * **Simplified navigation**: No more than 2 levels within each category
 * **Platform-optimized**: Designed specifically for Readme's constraints
 
@@ -288,7 +288,7 @@ Operations & Tools (CATEGORY)
 **Key Changes for Readme Compliance:**
 
 * **Flattened structure**: All major sections at Level 1 within each category
-* **Eliminated version nesting**: Consolidated v1.0, v1.1, v1.2, v1.3 into single pages
+* **Eliminated version nesting**: Consolidated multiple versions into single pages
 * **Simplified navigation**: No more than 2 levels within each category
 * **Platform-optimized**: Designed specifically for Readme's constraints
 
@@ -316,7 +316,7 @@ We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 
 * **Readme platform compliance**: Fixes current violations of 3-level maximum constraint
 * **"Choose the Right Integration"**: Moves from buried position to clear entry point after understanding Yuno
-* **SDK consolidation**: Mobile SDKs combined, web SDKs consolidated to reduce version fragmentation (v1.0, v1.1, v1.2, v1.3)
+* **SDK consolidation**: Mobile SDKs combined, web SDKs consolidated to reduce version fragmentation
 * **Linear progression**: Clear path from learning → building → advanced features → operations
 * **Better discoverability**: Related functionality grouped together
 * **Reduced cognitive load**: 4 main sections instead of 13 scattered sections
