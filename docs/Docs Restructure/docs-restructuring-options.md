@@ -13,7 +13,7 @@ This document presents two improved menu structure options for the entire Yuno d
 
 ## Research approach
 
-We analyzed the current structure and studied the actual navigation patterns from leading payment platforms:
+We analyzed the current structure and studied navigation patterns from leading payment platforms:
 
 * **Adyen Documentation**: User journey-based approach with clear decision guidance and linear progression from setup to implementation
 * **Stripe Documentation**: Progressive disclosure with layered information depth, preventing information overload
@@ -29,13 +29,29 @@ We analyzed the current structure and studied the actual navigation patterns fro
 
 ## Current structure
 
-The Yuno documentation contains 13 main sections with significant complexity imbalance:
+The current Yuno documentation consists of 13 main categories with significant complexity imbalance:
 
-### Current structure visualization (Complete with Level 2 and Level 3)
+### Structure visualization (Only Categories)
 
-> ℹ️ Note
->
-> This visualization displays the complete structure including Level 2 and Level 3 items. The SDKs category has more than 50 sub-items spread across its 6 main sections, demonstrating the complexity imbalance.
+```
+HOW YUNO WORKS (CATEGORY)
+GET STARTED WITH YUNO (CATEGORY)
+USING YUNO (CATEGORY)
+DIRECT INTEGRATION USE CASES (CATEGORY)
+SDKs (CATEGORY)
+Security and Compliance (CATEGORY)
+Payment Features (CATEGORY)
+Payout Management (CATEGORY)
+Disputes (CATEGORY)
+Webhooks (CATEGORY)
+Wallets (CATEGORY)
+PLUGINS (CATEGORY)
+Additional Services (CATEGORY)
+```
+
+### Complete structure visualization
+
+The complete structure shows all categories with Level 2 and Level 3 items. The SDKs category contains over 50 sub-items, demonstrating the complexity imbalance.
 
 ```
 HOW YUNO WORKS (CATEGORY)
@@ -60,13 +76,6 @@ GET STARTED WITH YUNO (CATEGORY)
     ├── Choose the Right Integration for You (Level 2)
     ├── Direct Flow Integration (Level 2)
     └── SDK Integration Overview (Level 2)
-        ├── Seamless SDK (Level 3)
-        ├── Full SDK (Level 3)
-        ├── Lite SDK (Payment) (Level 3)
-        ├── Lite SDK (Enrollment) (Level 3)
-        ├── Secure Fields (Level 3)
-        ├── Headless SDK (Payment) (Level 3)
-        └── Headless SDK (Enrollment) (Level 3)
 
 USING YUNO (CATEGORY)
 ├── Environments (Level 1)
@@ -216,7 +225,7 @@ Additional Services (CATEGORY)
 └── Building AI Integrations with Yuno's LLMs and MCP (Level 1)
 ```
 
-### Key problems
+### Current problems
 
 * **Massive SDK section**: Contains 50+ sub-items across multiple platforms vs. 1-13 items in other sections - completely disproportionate
 * **Version fragmentation**: Multiple versions of same SDKs creating confusion (now consolidated)
@@ -226,17 +235,17 @@ Additional Services (CATEGORY)
 * **Mixed organization**: Well-organized sections alongside overwhelming SDK complexity
 * **Scattered related content**: Integration guidance split between "GET STARTED" and "SDKs"
 
-### Readme Platform Constraint
+### Platform limitations
 
-**Critical Finding**: The Yuno documentation is hosted on the **Readme platform**, which has strict navigation limitations:
+**Critical constraint**: The Yuno documentation is hosted on the **Readme platform**, which enforces strict navigation limitations:
 
-**Readme Platform Limitations:**
+**Platform limitations:**
 
 * **Maximum 3 levels** of navigation within each category
 * **No subcategories beyond Level 3** are supported
 * **Platform enforces these limits** - deeper nesting is not possible
 
-**Current Structure Analysis:**
+**Structure analysis:**
 
 ```
 CATEGORY (Level 0 - Readme Category)
@@ -245,15 +254,15 @@ CATEGORY (Level 0 - Readme Category)
 │       └── Level 3 (Maximum allowed - Page)
 ```
 
-**Current violations identified:**
+**Current violations:**
 
 * **SDKs section exceeds limits**: Has 4+ levels in multiple areas
 * **Web SDKs nested structure**: `SDKs → Web SDKs → Full Web SDK → Version-specific pages` (4 levels)
 * **Version fragmentation**: Creates unnecessary depth that violates platform constraints
 * **Multiple sections affected**: Several areas exceed the 3-level maximum
 
-**Impact on Restructuring:**
-This constraint makes restructuring **MORE necessary** because:
+**Impact on restructuring:**
+This constraint makes restructuring **more critical** because:
 
 1. **Current site violates platform limits** - some areas are already broken
 2. **Our proposed structure would fix violations** while improving organization
@@ -280,14 +289,23 @@ Both options reorganize the existing 13 categories into 4 new categories:
 
 **Current 13 categories → New 4 categories:**
 
-* HOW YUNO WORKS, GET STARTED WITH YUNO, BUILD YOUR INTEGRATION → Get Started/Quick Start
-* SDKs (consolidated), Payment Features → Build Your Integration/Core Integrations
+* HOW YUNO WORKS, GET STARTED WITH YUNO → Get Started
+* SDKs (consolidated), Payment Features, DIRECT INTEGRATION USE CASES → Build Your Integration
 * Wallets, Security and Compliance, Webhooks, Additional Services → Advanced Features
-* USING YUNO, Disputes, Payout Management, DIRECT INTEGRATION USE CASES, PLUGINS → Operations & Management/Operations & Tools
+* USING YUNO, Disputes, Payout Management, PLUGINS → Operations & Management
 
 ## Option 1: Adyen-Inspired User Journey Structure
 
-This structure follows Adyen's proven approach of guiding users through a clear decision-making process with linear progression from setup to implementation.
+This structure follows Adyen's approach with clear decision guidance and linear progression from setup to implementation.
+
+### Structure visualization (Only Categories)
+
+```
+Get Started (CATEGORY)
+Build Your Integration (CATEGORY)
+Advanced Features (CATEGORY)
+Operations & Management (CATEGORY)
+```
 
 ### Structure (Readme Platform Compliant)
 
@@ -441,14 +459,6 @@ Operations & Management (CATEGORY)
 │   └── Chargeback response codes (Level 2)
 ├── Payout Management (Level 1)
 │   └── Payouts (Level 2)
-├── DIRECT INTEGRATION USE CASES (Level 1)
-│   ├── Set Up Payment Connection (Level 2)
-│   ├── Create Payments (Level 2)
-│   ├── Refund Payments (Level 2)
-│   ├── Cancel Payments (Level 2)
-│   ├── Capture Payments (Level 2)
-│   ├── Build Reports (Level 2)
-│   └── Yuno Testing Gateway (Level 2)
 └── PLUGINS (Level 1)
     └── VTEX (Level 2)
         ├── Configure Yuno as Provider (Level 3)
@@ -473,14 +483,23 @@ Operations & Management (CATEGORY)
 
 ## Option 2: Stripe-Inspired Progressive Disclosure Structure
 
-This organizes content using Stripe's approach of progressive disclosure with multiple entry points and layered information depth.
+This organizes content using Stripe's approach with progressive disclosure and multiple entry points.
+
+### Structure visualization (Only Categories)
+
+```
+Get Started (CATEGORY)
+Build Your Integration (CATEGORY)
+Advanced Features (CATEGORY)
+Operations & Management (CATEGORY)
+```
 
 ### Structure (Readme Platform Compliant)
 
 Reorganize the documentation into the following new structure that complies with Readme's 3-level maximum:
 
 ```
-Quick Start (CATEGORY)
+Get Started (CATEGORY)
 ├── HOW YUNO WORKS (Level 1)
 │   ├── What is Yuno? (Level 2)
 │   ├── How Yuno Payment Process Works (Level 2)
@@ -503,7 +522,7 @@ Quick Start (CATEGORY)
     ├── Direct Flow Integration (Level 2)
     └── SDK Integration Overview (Level 2)
 
-Core Integrations (CATEGORY)
+Build Your Integration (CATEGORY)
 ├── Seamless SDKs (Recommended) (Level 1)
 │   └── Seamless SDK (Level 2)
 ├── Web SDKs (Level 1)
@@ -601,7 +620,7 @@ Advanced Features (CATEGORY)
     ├── Currency Conversion (Level 2)
     └── Building AI Integrations with Yuno's LLMs and MCP (Level 2)
 
-Operations & Tools (CATEGORY)
+Operations & Management (CATEGORY)
 ├── USING YUNO (Level 1)
 │   ├── Environments (Level 2)
 │   ├── Dashboard Overview (Level 2)
@@ -627,14 +646,6 @@ Operations & Tools (CATEGORY)
 │   └── Chargeback response codes (Level 2)
 ├── Payout Management (Level 1)
 │   └── Payouts (Level 2)
-├── DIRECT INTEGRATION USE CASES (Level 1)
-│   ├── Set Up Payment Connection (Level 2)
-│   ├── Create Payments (Level 2)
-│   ├── Refund Payments (Level 2)
-│   ├── Cancel Payments (Level 2)
-│   ├── Capture Payments (Level 2)
-│   ├── Build Reports (Level 2)
-│   └── Yuno Testing Gateway (Level 2)
 └── PLUGINS (Level 1)
     └── VTEX (Level 2)
         ├── Configure Yuno as Provider (Level 3)
