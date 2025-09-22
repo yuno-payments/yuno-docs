@@ -139,6 +139,15 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
       </div>
       <h4>Lost status</h4>
     </a>
+    
+    <a class="card" onclick="window.location='#prevented-status';">
+      <div class="svg_content">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="15" viewBox="0 0 14 15" fill="none">
+          <path d="M2 7.5h10M7 2v10" stroke="#513CE1" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h4>Prevented status</h4>
+    </a>
      
   </section>
 
@@ -933,6 +942,54 @@ Please refer to [Merchant Advice Codes (MAC)](#merchant-advice-codes-mac) for mo
   </details>
 </body>
 `}</HTMLBlock>
+
+### Prevented status
+
+<HTMLBlock>{`
+<body>
+  <details open class="table-card">
+    <summary>
+      <span class="table-call"><code>PREVENTED</code> status details </span>
+      <div class="sumary-icon">
+        <svg class="control-icon control-icon-expand" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+        </svg>
+        <svg class="control-icon control-icon-close" width="20" height="20" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z" />
+        </svg>
+      </div>
+    </summary>
+    <div class="table-div">
+      <table>
+        <thead>
+          <tr>
+            <th>response_code</th>
+            <th>Description</th>
+            <th>Hard/Soft decline</th>
+            <th>ISO 8583 code</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>PREVENTED</code></td>
+            <td>Predispute deflected by provider/network. No evidence required. Terminal.</td>
+            <td>N/A</td>
+            <td>-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</body>
+`}</HTMLBlock>
+
+> Note
+>
+> `PREVENTED` is only applicable to transactions with `type = CHARGEBACK` when the provider/network indicates a predispute deflection. In these scenarios, Yuno emits only the chargeback webhook; no refund webhook is sent.
 
 ***
 

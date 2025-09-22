@@ -66,6 +66,47 @@ The states of chargebacks in Yuno represent the various stages of the process:
 |                    | PENDING\_REVIEW       | Chargeback           | Pending\_review        | Dispute in review by the provider                                                                          |
 | `CHARGEBACK`       | LOST                  | Chargeback           | Lost                   | Expired/Closed/Review\_lost                                                                                |
 
+## Predisputes (deflections)
+
+Some networks and providers offer early-resolution programs that can deflect disputes before a formal chargeback is opened. Examples include Visa Rapid Dispute Resolution (RDR), Mastercard’s Ethoca ecosystem, and American Express Accelerated Dispute Resolution (ADR).
+
+When a provider/network explicitly reports a predispute deflection, Yuno:
+
+- Creates a `CHARGEBACK` transaction with `status = PREVENTED` so you can audit that a chargeback was prevented
+- Sets the payment to `status = CHARGEBACK` and `sub_status = LOST` to reflect the financial outcome
+- Emits only the chargeback webhook for the `CHARGEBACK / PREVENTED` transaction (no separate refund webhook)
+- Enforces idempotency to avoid duplicate transactions and notifications
+
+Additional details:
+
+- No evidence required: predispute deflections do not require evidence submission
+- Dispute ID mapping: the Dispute ID equals the chargeback transaction ID
+- Optional fields: chargeback webhooks may include `provider_dispute_id` and `is_pre_dispute` to indicate predispute-origin cases
+
+`PREVENTED` is used only on transactions of type `CHARGEBACK` and is a terminal state for that transaction.
+
+### Example predispute
+
+```json
+{
+  "transaction": {
+    "id": "tx_cb_001",
+    "type": "CHARGEBACK",
+    "status": "PREVENTED",
+    "category": "CARD",
+    "amount": 19700,
+    "provider_id": "STRIPE",
+    "provider_dispute_id": "du_1S2umUCXdfp1jQhWSW3lALH2"
+  },
+  "payment": {
+    "id": "pay_123",
+    "status": "CHARGEBACK",
+    "sub_status": "LOST",
+    "amount": { "currency": "USD", "value": 19700, "refunded": 0, "captured": 19700 }
+  }
+}
+```
+
 ## Key benefits of managing chargebacks with Yuno
 
 Yuno simplifies and optimizes your chargeback management through several key advantages:

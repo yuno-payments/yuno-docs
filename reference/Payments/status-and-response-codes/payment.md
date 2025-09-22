@@ -274,8 +274,8 @@ The payments can have the following status and sub status.
           <td rowspan="1" class="status"><code>CHARGEBACK</code></td>
           <td class="substatus"><code>LOST</code></td>
           <td>Chargeback</td>
-          <td>Lost</td>
-          <td>Expired/Closed/Review_lost</td>
+          <td>Prevented</td>
+          <td>Predispute deflected by provider/network. Payment reflects lost funds.</td>
         </tr>
         <tr>
           <td rowspan="4" class="status"><code>ERROR</code></td>
@@ -314,6 +314,10 @@ The payments can have the following status and sub status.
   </div>
 </body>
 `}</HTMLBlock>
+
+> Note
+>
+> `PREVENTED` is a transaction status only for `type = CHARGEBACK` when the provider/network reports a [predispute deflection](doc:chargeback-management). In these scenarios, only the chargeback webhook is sent; no refund webhook is emitted.
 
 ### Possible states for sync and async flows
 
