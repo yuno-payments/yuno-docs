@@ -1,15 +1,17 @@
 ---
-title: Detailed Docs Structure Options
+title: Docs Restructuring Options
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
+# Docs Restructuring Options
+
 This document presents two improved menu structure options for the entire Yuno documentation. Both options use only existing content and aim to create a more intuitive user experience based on proven patterns from leading payment platforms.
 
 > ℹ️ Note:
 >
-> This is the detailed version with complete Level 2 and Level 3 structure breakdown. For a high-level overview, see the [Basic Version](basic-docs-structure-options).
+> This document provides complete Level 2 and Level 3 structure breakdown for both proposed options.
 
 ## Research approach
 
@@ -20,31 +22,12 @@ We analyzed the current structure and studied the actual navigation patterns fro
 * **PayPal Developer Docs**: Platform-first structure with action-oriented grouping and tool accessibility
 * **Checkout.com Docs**: Feature-based organization with clear functional separation and business process alignment
 
-### Concrete examples observed:
+### Key patterns identified:
 
-**Adyen's Decision Guidance:**
-
-* Clear integration checklists guide users through choices
-* Linear progression: Get Started → Build Integration → Modify Payments
-* Decision points clearly marked (Drop-in vs Components vs API-only)
-
-**Stripe's Progressive Disclosure:**
-
-* Layered information depth (basic → advanced)
-* User-centric categories (Payments, Revenue, Platforms)
-* Multiple entry points based on user goals
-
-**PayPal's Action-Oriented Grouping:**
-
-* Platform-specific groupings (Online, In-person, Multiparty)
-* Clear separation between documentation and resources
-* Tool-focused organization for developer efficiency
-
-**Checkout.com's Feature-Based Organization:**
-
-* Feature-centric organization (Payments, Funds, Operations)
-* Business process alignment (Get Started → Build → Manage)
-* Clear functional separation with dashboard integration
+* **Adyen**: Decision wizards, linear progression, clear success criteria
+* **Stripe**: Progressive disclosure, contextual help, multiple entry points
+* **PayPal**: Use case-driven navigation, platform-specific groupings, quick start paths
+* **Checkout.com**: Workflow-based content, feature-centric organization, status indicators
 
 ## Current structure
 
@@ -232,8 +215,7 @@ Additional Services (CATEGORY)
 ├── Aida AI Agent (Level 1)
 ├── Card Account Updater (Level 1)
 ├── Currency Conversion (Level 1)
-├── Building AI Integrations with Yuno's LLMs and MCP (Level 1)
-└── Environments (Level 1)
+└── Building AI Integrations with Yuno's LLMs and MCP (Level 1)
 ```
 
 ### Key problems
@@ -282,18 +264,17 @@ This constraint makes restructuring **MORE necessary** because:
 
 ## Design approach
 
-We applied these core principles based on proven patterns from leading platforms:
+We applied proven patterns from leading platforms to solve the core problems:
 
-* **Start with user needs**: Not technical categories (inspired by Adyen's decision guidance)
-* **Guide users**: Through decision-making process with clear progression (Adyen's linear approach)
-* **Present information**: In layers of complexity (Stripe's progressive disclosure)
-* **Group related functionality**: By user goals and actions (PayPal's action-oriented grouping)
-* **Follow patterns**: Users expect from other payment platforms (Checkout.com's feature-based organization)
+* **Adyen**: Decision wizards and linear progression for clear guidance
+* **Stripe**: Progressive disclosure and multiple entry points for accessibility
+* **PayPal**: Use case-driven navigation and platform-specific groupings
+* **Checkout.com**: Workflow-based content and feature-centric organization
 
-The two options represent different approaches to solving the same problems:
+The two options represent different approaches:
 
-* **Option 1 (Adyen-Inspired User Journey)**: Linear progression with clear decision points and integration checklists
-* **Option 2 (Stripe-Inspired Progressive Disclosure)**: Layered information with multiple entry points based on user goals
+* **Option 1 (Adyen-Inspired)**: Linear progression with clear decision points
+* **Option 2 (Stripe-Inspired)**: Layered information with multiple entry points
 
 ### Content mapping
 
@@ -340,10 +321,7 @@ Get Started (CATEGORY)
 
 Build Your Integration (CATEGORY)
 ├── Seamless SDKs (Recommended) (Level 1)
-│   ├── Seamless SDK (Payment iOS) (Level 2)
-│   ├── Seamless SDK (Payment Android) (Level 2)
-│   ├── Seamless SDK (Payment Web) (Level 2)
-│   └── Seamless SDK (Flutter) - Deprecated (Level 2)
+│   └── Seamless SDK (Level 2)
 ├── Web SDKs (Level 1)
 │   ├── Full Web SDK (Level 2)
 │   │   └── Full SDK implementation (Level 3)
@@ -437,8 +415,7 @@ Advanced Features (CATEGORY)
     ├── Aida AI Agent (Level 2)
     ├── Card Account Updater (Level 2)
     ├── Currency Conversion (Level 2)
-    ├── Building AI Integrations with Yuno's LLMs and MCP (Level 2)
-    └── Environments (Level 2)
+    └── Building AI Integrations with Yuno's LLMs and MCP (Level 2)
 
 Operations & Management (CATEGORY)
 ├── USING YUNO (Level 1)
@@ -489,10 +466,10 @@ Operations & Management (CATEGORY)
 
 ### Key benefits
 
-* **Clear decision guidance**: Integration choice upfront with existing decision content
+* **Clear decision guidance**: Integration choice upfront with step-by-step wizards
 * **Linear progression**: Get Started → Build → Advanced → Operations
-* **Adyen-style organization**: Proven pattern that users recognize
-* **Related functionality**: Grouped by implementation phase
+* **Use case-driven navigation**: Clear separation between online, mobile, and direct integrations
+* **Workflow-based content**: Aligns with business processes
 * **Reduced complexity**: SDK section consolidated and reorganized
 * **Platform compliance**: Fixes current Readme 3-level violations
 
@@ -530,10 +507,7 @@ Quick Start (CATEGORY)
 
 Core Integrations (CATEGORY)
 ├── Seamless SDKs (Recommended) (Level 1)
-│   ├── Seamless SDK (Payment iOS) (Level 2)
-│   ├── Seamless SDK (Payment Android) (Level 2)
-│   ├── Seamless SDK (Payment Web) (Level 2)
-│   └── Seamless SDK (Flutter) - Deprecated (Level 2)
+│   └── Seamless SDK (Level 2)
 ├── Web SDKs (Level 1)
 │   ├── Full Web SDK (Level 2)
 │   │   └── Full SDK implementation (Level 3)
@@ -627,8 +601,7 @@ Advanced Features (CATEGORY)
     ├── Aida AI Agent (Level 2)
     ├── Card Account Updater (Level 2)
     ├── Currency Conversion (Level 2)
-    ├── Building AI Integrations with Yuno's LLMs and MCP (Level 2)
-    └── Environments (Level 2)
+    └── Building AI Integrations with Yuno's LLMs and MCP (Level 2)
 
 Operations & Tools (CATEGORY)
 ├── USING YUNO (Level 1)
@@ -681,8 +654,8 @@ Operations & Tools (CATEGORY)
 
 * **Progressive disclosure**: Basic concepts first, advanced topics layered
 * **Multiple entry points**: Users can start where they're most comfortable
-* **Stripe-style organization**: Familiar pattern for developers
-* **Tool accessibility**: Operational resources easily discoverable
+* **Use case-driven navigation**: Clear separation between online, mobile, and direct integrations
+* **Workflow-based content**: Aligns with business processes
 * **Platform consolidation**: Mobile SDKs combined for better organization
 * **Platform compliance**: Fixes current Readme 3-level violations
 
@@ -699,21 +672,22 @@ We recommend **Option 1 (Adyen-Inspired User Journey)** because it:
 
 ### Key improvements
 
-* **Readme platform compliance**: Fixes current violations of 3-level maximum constraint
 * **"Choose the Right Integration"**: Moves from buried position to clear entry point after understanding Yuno
 * **SDK consolidation**: Mobile SDKs combined, web SDKs consolidated to reduce version fragmentation
 * **Linear progression**: Clear path from learning → building → advanced features → operations
 * **Better discoverability**: Related functionality grouped together
 * **Reduced cognitive load**: 4 main sections instead of 13 scattered sections
-* **Platform-optimized navigation**: Designed specifically for Readme's 3-level maximum constraint
+* **Platform compliance**: Fixes current violations of 3-level maximum constraint
 
 ### Implementation notes
 
-Both options address the core problems identified in the current structure:
+Both options address the core problems by incorporating best practices from leading payment platforms:
 
-* Clear entry point for integration selection
-* Logical grouping of related functionality
+* Clear entry point for integration selection with decision wizards
 * Progressive complexity from simple to advanced
+* Use case-driven navigation ("Accept payments online" vs "Mobile payments")
+* Workflow-based content aligned with business processes
+* Logical grouping of related functionality
 * Better discoverability of important content
-* Professional organization that matches user expectations from other payment platforms
 * Consolidated SDK section that's easier to navigate
+* Platform compliance with Readme's 3-level maximum constraint
