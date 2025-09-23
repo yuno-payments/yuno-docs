@@ -13,7 +13,7 @@ next:
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
 * [Form loader](doc:complementary-features-full-sdk#loader-control-the-use-of-the-loader)
-* [Render mode](doc:complementary-features-full-sdk#mode-of-form-rendering)
+* [Render mode](doc:complementary-features-full-sdk#render-mode)
 * [Card form configurations ](doc:complementary-features-full-sdk#card-form-configurations)
   * [Save Card for future payments](doc:complementary-features-full-sdk#save-card-for-future-payments)
   * [Render mode](doc:complementary-features-full-sdk#rendering-modes)
@@ -27,51 +27,11 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 Control the use of the [loader](doc:loader).
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
+Parameters
 
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `showLoading`
-      </td>
-
-      <td>
-        * You can hide or show the Yuno loading/spinner page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * The default value is true.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| :-------- | :---------- |
+| `showLoading` | You can hide or show the Yuno loading/spinner page. Enabling this option ensures that the loading component remains displayed until either the `hideLoader()` or `continuePayment()` function is called. The default value is true. |
 
 ```javascript
 yuno.startCheckout({
@@ -80,6 +40,8 @@ yuno.startCheckout({
 ```
 
 ## Issuer's form
+
+Parameters
 
 | Parameter           | Description                                                                                |
 | :------------------ | :----------------------------------------------------------------------------------------- |
@@ -93,110 +55,19 @@ yuno.startCheckout({
 
 ## Render mode
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
+Configure how payment forms are displayed with the following options:
 
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
+Parameters
 
-  <tbody>
-    <tr>
-      <td>
-        `renderMode`
-      </td>
-
-      <td>
-        This parameter is optional. It determines the mode in which the payment forms will be displayed.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `type`: can be one of `modal` or `element`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `elementSelector`
-      </td>
-
-      <td>
-        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| :-------- | :---------- |
+| `renderMode` | This parameter is optional. It determines the mode in which the payment forms will be displayed. The `type` can be one of `modal` or `element`. The `elementSelector` is the element where the form will be rendered and is only required if `type` is `element`. |
+| `elementSelector` | Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options: **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted. **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code. |
 
 ```javascript
 yuno.startCheckout({
   renderMode: {
-    /**
-     * Type can be one of `modal` or `element`
-     * By default the system uses 'modal'
-     * It is optional
-     */
     type: 'modal',
-    /**
-     * Element where the form will be rendered.
-     * It is optional
-     * Can be a string (deprecated) or an object with the following structure:
-     * {
-     *   apmForm: "#form-element",
-     *   actionForm: "#action-form-element"
-     * }
-     */
     elementSelector: {
       apmForm: "#form-element",
       actionForm: "#action-form-element"
@@ -209,71 +80,13 @@ yuno.startCheckout({
 
 ## Card form configurations
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
+Configure specific settings for the credit card form:
 
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
+Parameters
 
-  <tbody>
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Define specific settings for the credit card form:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `type`: `step` or `extends`
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `styles`: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `cardSaveEnable`: Show checkbox for save/enroll card. The default value is false.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `texts`: Custom texts in the Card forms buttons.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| :-------- | :---------- |
+| `card` | Define specific settings for the credit card form. The `type` can be `step` or `extends`. The `styles` allows you to edit card form styles by writing CSS that will be injected into the iframe. The `cardSaveEnable` shows a checkbox for save/enroll card with a default value of false. The `texts` provides custom texts for the Card form buttons. |
 
 ```javascript
 yuno.startCheckout({
@@ -306,6 +119,8 @@ You also can choose one of the render options for the card form, `step` and `ext
 <Image align="center" src="https://files.readme.io/08654f8fa7b638641cb1b9f5b882a75537a9e449fff4960cf560c1ec5b3efb74-caracteristicas_Complemetarias_web_2.png" />
 
 ### Text payment form buttons
+
+Parameters
 
 | Parameter | Description                                                                                    |
 | :-------- | :--------------------------------------------------------------------------------------------- |
@@ -345,11 +160,6 @@ You can hide the Pay button when presenting the card or customer data form. To c
 
 ```javascript
 yuno.startCheckout({
-  /**
-   * Hide (false) or show (true) the customer or card form pay button
-   * @default true
-   * @optional
-   */
   showPayButton: false,
 })
 ```
@@ -365,9 +175,6 @@ The following images present examples of the Card Form with and without the Pay 
 If you hide the Pay button, you will need to start the OTT creation through your code. To create the OTT and continue the payment in your backend, call the `submitOneTimeTokenForm` function. The code block below presents how to use the `submitOneTimeTokenForm` function.
 
 ```javascript
-/**
- * This function triggers the same functionality that is called when the customer clicks on the pay form button.  This doesn't work on the step Card form
- */
 yuno.submitOneTimeTokenForm()
 ```
 
@@ -391,73 +198,17 @@ For Mercado Pago Checkout Pro integration in webview environments, the `await yu
 } | null
 ```
 
-### Properties
+Parameters
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Property
-      </th>
+The following table describes each property:
 
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `action`
-      </td>
-
-      <td>
-        * Always set to `'REDIRECT_URL'` when redirect handling is required.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `type`
-      </td>
-
-      <td>
-        * Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying Mercado Pago Checkout Pro as the payment method requiring custom handling.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `init_url`
-      </td>
-
-      <td>
-        * URL to redirect the customer to for completing the payment with Mercado Pago Checkout Pro.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `success_url`
-      </td>
-
-      <td>
-        * URL to redirect the customer to after a successful payment with Mercado Pago Checkout Pro.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `error_url`
-      </td>
-
-      <td>
-        * URL to redirect the customer to if the payment with Mercado Pago Checkout Pro fails.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Property | Description |
+| :------- | :---------- |
+| `action` | Always set to `'REDIRECT_URL'` when redirect handling is required. |
+| `type` | Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying Mercado Pago Checkout Pro as the payment method requiring custom handling. |
+| `init_url` | URL to redirect the customer to for completing the payment with Mercado Pago Checkout Pro. |
+| `success_url` | URL to redirect the customer to after a successful payment with Mercado Pago Checkout Pro. |
+| `error_url` | URL to redirect the customer to if the payment with Mercado Pago Checkout Pro fails. |
 
 ## Optional initialization `options` parameter
 
@@ -468,13 +219,20 @@ Starting from **Yuno SDK v1.2**, the `Yuno.initialize` function supports a new o
 The updated function signature is:
 
 ```javascript
-const yuno = await Yuno.initialize(publicApiKey, applicationSession, options);
+const yuno = await Yuno.initialize(PUBLIC_API_KEY, applicationSession, options);
 ```
 
-* `publicApiKey` (`string`): Your public API key.
-* `applicationSession` (`string | undefined`): Optional session ID.
-  > **Recommendation:** Leave this as `undefined` so the SDK can generate and manage its own session internally. Only set this if you require a custom session management strategy.
-* `options` (`object | undefined`): Optional object for advanced configuration.
+Parameters
+
+| Parameter | Description |
+| :-------- | :---------- |
+| `publicApiKey` | Your public API key. |
+| `applicationSession` | Optional session ID. Leave this as `undefined` so the SDK can generate and manage its own session internally. Only set this if you require a custom session management strategy. |
+| `options` | Optional object for advanced configuration. |
+
+> 📘 Credentials
+>
+> See the credentials page for more information: https://docs.y.uno/reference/authentication
 
 ### Options structure
 
@@ -495,7 +253,6 @@ const options = {
 ### Example Usage
 
 ```javascript
-const publicApiKey = 'your-public-api-key';
 const options = {
   cookies: {
     deviceId: {
@@ -504,8 +261,7 @@ const options = {
   }
 };
 
-// Recommended: omit the second parameter or set it to undefined
-const yuno = await Yuno.initialize(publicApiKey, undefined, options);
+const yuno = await Yuno.initialize(PUBLIC_API_KEY, undefined, options);
 ```
 
 This feature is **optional** and is intended for **advanced use cases** where you need to customize how device identification is handled via cookies.
