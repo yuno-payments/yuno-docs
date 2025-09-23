@@ -125,121 +125,15 @@ class ViewController: YunoPaymentDelegate {
 
 The following table presents all the protocol requirements you have to provide and their descriptions.
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `checkoutSession`
-      </td>
-
-      <td>
-        Refers to the current payment's checkout session.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `country_code`
-      </td>
-
-      <td>
-        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `language`
-      </td>
-
-      <td>
-        Defines the language to be used in the payment forms. You can set it to one of the available language options:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `en` (English)
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `es` (Spanish)
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `pt` (Portuguese)
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `navigationController`
-      </td>
-
-      <td>
-        This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoCreatePayment(with token: String)`
-      </td>
-
-      <td>
-        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoCreatePayment(with token: String, information: [String: Any])`
-      </td>
-
-      <td>
-        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoPaymentResult(_ result: Yuno.Result)`
-      </td>
-
-      <td>
-        This method is called when the payment process is completed, providing the result of the payment as a parameter of type `Yuno.Result`.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| :-------- | :---------- |
+| `checkoutSession` | Refers to the current payment's checkout session. |
+| `country_code` | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `language` | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>en (English)</li><li>es (Spanish)</li><li>pt (Portuguese)</li></ul> |
+| `navigationController` | This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance. |
+| `yunoCreatePayment(with token: String)` | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token. |
+| `yunoCreatePayment(with token: String, information: [String: Any])` | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary. |
+| `yunoPaymentResult(_ result: Yuno.Result)` | This method is called when the payment process is completed, providing the result of the payment as a parameter of type `Yuno.Result`. |
 
 > ❗️ Important Note on yunoCreatePayment
 >
