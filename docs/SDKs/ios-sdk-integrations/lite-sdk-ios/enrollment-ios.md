@@ -18,11 +18,11 @@ next:
 >
 > We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-On this page, you will find all the steps to add, configure, and use the Lite iOS SDK to enroll payment methods in your iOS project.
+This guide walks you through integrating Yuno's Lite iOS SDK for enrollment into your project.
 
 ## Requirements
 
-In order to implement the Yuno iOS SDK, first, you need to address the following requirements:
+Before implementing the Yuno iOS SDK, ensure you meet these requirements:
 
 - Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
 - Use iOS version 14.0 or above.
@@ -33,13 +33,13 @@ You can add the library using CocoaPods or Swift Package Manager.
 
 ### CocoaPods
 
-To add the Yuno SDK to your iOS project, you need to install the Yuno SDK. If you do not have a Podfile, follow the [CocoaPods guide](https://guides.cocoapods.org/using/using-cocoapods.html) to create one. After creating the Podfile, you will integrate the Yuno SDK with Cocoapods by adding the line below to your Podfile.
+Add the Yuno SDK to your iOS project using CocoaPods. If you don't have a Podfile, follow the [CocoaPods guide](https://guides.cocoapods.org/using/using-cocoapods.html) to create one. Then add the following line to your Podfile:
 
 ```ruby
 pod 'YunoSDK', '~> 1.1.22'
 ```
 
-After, you need to run the installation:
+Then run the installation:
 
 ```ruby
 pod install
@@ -48,7 +48,7 @@ pod install
 
 ### Swift Package Manager
 
-To add the Yuno SDK to your iOS project, you need to install the [Swift Package Manager](https://www.swift.org/package-manager/). With the Swift package set up, add Yuno SDK as a dependency, as presented in the following code block:
+Add the Yuno SDK using Swift Package Manager. Add YunoSDK as a dependency in your Package.swift file:
 
 ```swift
 dependencies: [
@@ -62,13 +62,11 @@ dependencies: [
 >
 > Before calling `Yuno.enrollPayment()`, make sure you’ve initialized the SDK with `Yuno.initialize()`.
 
-Yuno's iOS SDK provides an enrollment feature for payment methods integrated into Yuno. To display a view controller with the flow for integrating a new payment method, call the method presented in the following code snippet:
+Yuno's iOS SDK provides an enrollment feature for payment methods. To display the enrollment flow, implement the delegate and call the enrollment method:
 
 ```swift
 protocol YunoEnrollmentDelegate: AnyObject {
-
     var customerSession: String { get }
-  	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
     var countryCode: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
@@ -87,7 +85,7 @@ class ViewController: YunoEnrollmentDelegate {
 
 `Yuno.enrollPayment()` presents a full-screen `UIViewController` modally using the `viewController` provided in your `delegate`. This works only in UIKit. In SwiftUI, wrap a `UIViewController` and return it via the `viewController` property. The `delegate` must expose a visible controller to allow the SDK to present the UI.
 
-The following table presents all the protocol requirements you have to provide and their descriptions.
+The following table describes the protocol requirements:
 
 | Parameter                                      | Description                                                                                                                                                                                                                          |
 | :--------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -96,9 +94,9 @@ The following table presents all the protocol requirements you have to provide a
 | `language`                                     | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul>                                                                       |
 | `yunoEnrollmentResult(\_ result: Yuno.Result)` | This method is called when the enrollment process is completed, providing the result of the enrollment as a parameter of type `Yuno.Result`.                                                                                         |
 
-The parameter`showPaymentStatus`is used to determine whether the payment status should be displayed. Passing `true`as an argument will show the payment status while passing `false` indicates that the payment status should not be displayed.
+The `showPaymentStatus` parameter determines whether the payment status should be displayed. Passing `true` shows the payment status, while passing `false` hides it.
 
-The class `ViewController ` is a subclass of `UIViewController `and conforms to the `YunoEnrollmentDelegate `protocol. It includes a function called` enrollPayment(with delegate: YunoEnrollmentDelegate, showPaymentStatus: Bool)`, which parameters are described below:
+The `enrollPayment` method parameters are described below:
 
 - `delegate: YunoEnrollmentDelegate` : The delegate object that handles enrollment callbacks.
 - `showPaymentStatus: Bool`: A Boolean flag that determines whether to display status views during the payment enrollment process.
@@ -115,8 +113,6 @@ If you use a payment method that requires a deep link to return to your app, use
 
 ```swift
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-
-  // Here your scheme URL should be the same as the callback_url you set in the customer session
 
   guard url.scheme == "yunoexample" else { return false }
   return Yuno.receiveDeeplink(url, showStatusView: true)
@@ -152,7 +148,7 @@ enum Result {
 You can use a switch to handle each result case:
 
 ```swift
-`func yunoEnrollmentResult(_ result: Yuno.Result) {
+func yunoEnrollmentResult(_ result: Yuno.Result) {
     switch result {
     case .success:
         print("Enrollment successful")
@@ -207,17 +203,14 @@ var needSubmit: Bool { get }
 #### Step 1: Create enrollment flow instance
 
 ```swift
-// Create the render flow instance
-let enrollmentFlow = await Yuno.startEnrollmentRenderFlow(with: self) // YunoEnrollmentDelegate
+let enrollmentFlow = await Yuno.startEnrollmentRenderFlow(with: self)
 ```
 
 #### Step 2: Get and display the form
 
 ```swift
-// Get the form view
 let formView = await enrollmentFlow.formView(with: self)
 
-// Display the view if it exists (SwiftUI example)
 if let formView = formView {
     VStack {
         Text("Enroll Payment Method")
@@ -242,7 +235,7 @@ extension MyViewController: YunoEnrollmentDelegate {
     var viewController: UIViewController? { self }
 
     func yunoEnrollmentResult(_ result: Yuno.Result) {
-        // Handle final enrollment status based on your existing Result mapping
+        // Handle enrollment result
     }
 }
 ```
@@ -308,7 +301,6 @@ This approach uses immutable properties that are automatically thread-safe, maki
 @MainActor
 class MyViewController: UIViewController, YunoPaymentDelegate {
 
-    // Immutable properties - automatically thread-safe
     private let _countryCode = "CO"
     private let _language = "EN"
 
@@ -318,7 +310,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 
     nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
         Task { @MainActor in
-            // Handle result on MainActor
+            // Handle result
         }
     }
 }
@@ -336,7 +328,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
     @Published var configCountryCode: String = "CO"
 
     nonisolated var language: String? {
-        // ⚠️ Only works if called from MainActor
         MainActor.assumeIsolated { configLanguage }
     }
 
@@ -353,7 +344,6 @@ This approach is suitable for service classes that don't require MainActor isola
 ```swift
 class MyService: YunoPaymentDelegate {
 
-    // Thread-safe because they are immutable
     let countryCode: String
     let language: String?
     let checkoutSession: String
@@ -367,7 +357,7 @@ class MyService: YunoPaymentDelegate {
     }
 
     func yunoPaymentResult(_ result: Yuno.Result) {
-        // Already thread-safe
+        // Handle result
     }
 }
 ```
