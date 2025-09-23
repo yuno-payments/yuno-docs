@@ -1,7 +1,7 @@
 ---
 title: 3DS Configuration and Testing
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
