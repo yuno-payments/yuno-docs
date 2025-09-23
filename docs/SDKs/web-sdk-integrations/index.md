@@ -14,11 +14,11 @@ metadata:
 next:
   description: ''
 ---
-Yuno's Web SDKs provide several features designed to enhance your payment processing capabilities and provide a seamless checkout experience for your customers. In addition, the Web SDKs enable you to customize the user interface.
+Yuno's Web SDKs provide several features designed to enhance your payment processing capabilities and provide a seamless checkout experience for your customers. The Web SDKs also enable you to customize the user interface.
 
 ## Integration options
 
-Select one of the user-friendly Web integration options available and kickstart your journey toward efficient payment processing:
+Select one of the user-friendly Web integration options available and start your journey toward efficient payment processing:
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Full SDK" href="../docs/full-checkout-sdk" titleSize="h4" description="Complete control with backend support and full customization options" badge="Most Popular" />
@@ -40,7 +40,7 @@ Select one of the user-friendly Web integration options available and kickstart 
 
 > ❗️ Browser Support
 >
-> Yuno Web SDK does not support the IE browser.
+> Yuno Web SDK does not support Internet Explorer.
 
 > 🚧 TypeScript Support
 >
@@ -48,7 +48,7 @@ Select one of the user-friendly Web integration options available and kickstart 
 
 > 📘 Explore the SDK Project Example
 >
-> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
+> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). You can also access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
 
 > 🚧 Android WebView Configuration
 >
