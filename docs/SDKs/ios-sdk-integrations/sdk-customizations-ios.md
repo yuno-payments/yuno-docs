@@ -14,7 +14,7 @@ metadata:
 next:
   description: ''
 ---
-Yuno iOS SDK lets you modify styles by changing font, button, and color styles. To customize the iOS SDK appearance, you will set the appearance fields. This solution allows you to adapt the visual elements of the SDK to match your application brand, improving consistency and the UX.
+Yuno iOS SDK lets you modify styles by changing font, button, and color styles. To customize the iOS SDK appearance, set the appearance fields. This solution allows you to adapt the visual elements of the SDK to match your application brand, improving consistency and the UX.
 
 ## Appearance configuration
 
@@ -37,7 +37,7 @@ The following table presents all available fields you can use to customize the i
 > 
 > Ensure all colors are specified as UIColor to maintain compatibility. Colors can be sourced from Xcode's predefined palette or the merchant's assets, but they must always be of type UIColor.
 
-To control the appearance, you must use the `Yuno.Appearance()` function to define a variable with all your customizations. Then you have to inform it when initializing the SDK, as exemplified in the following code block:
+To control the appearance, use the `Yuno.Appearance()` function to define a variable with all your customizations. Then inform it when initializing the SDK, as shown below:
 
 ```swift
 // Create an instance of Yuno.Appearance to customize the SDK's appearance
@@ -64,7 +64,7 @@ Yuno.initialize(
 
 ### Usage examples
 
-Below, you will find two appearance customization for the iOS SDK:
+The following examples show two appearance customizations for the iOS SDK:
 
 ```swift Example 1 (left)
 let appearance = Yuno.Appearance(

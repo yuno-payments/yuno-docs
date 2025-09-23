@@ -13,7 +13,7 @@ next:
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
 * [Form loader](doc:complementary-features-full-sdk#loader-control-the-use-of-the-loader)
-* [Render mode ](doc:complementary-features-full-sdk#mode-of-form-rendering)
+* [Render mode](doc:complementary-features-full-sdk#mode-of-form-rendering)
 * [Card form configurations ](doc:complementary-features-full-sdk#card-form-configurations)
   * [Save Card for future payments](doc:complementary-features-full-sdk#save-card-for-future-payments)
   * [Render mode](doc:complementary-features-full-sdk#rendering-modes)
@@ -79,7 +79,7 @@ yuno.startCheckout({
 })
 ```
 
-## Form of the issuer
+## Issuer's form
 
 | Parameter           | Description                                                                                |
 | :------------------ | :----------------------------------------------------------------------------------------- |
@@ -91,7 +91,7 @@ yuno.startCheckout({
 })
 ```
 
-## Mode of form rendering
+## Render mode
 
 <Table>
   <thead>

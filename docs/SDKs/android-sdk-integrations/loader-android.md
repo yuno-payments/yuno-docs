@@ -14,7 +14,7 @@ next:
   description: ""
 ---
 
-Use the following function when initiating the payment:
+To initiate the payment with the loader, use the following function:
 
 ```kotlin
 startCompletePaymentFlow(
@@ -26,4 +26,4 @@ startCompletePaymentFlow(
 )
 ```
 
-The `createPaymentFun` parameter is a suspend function in which Yuno waits for the sequential payment creation. Once the payment is created, completing the suspend function allows Yuno to proceed with the payment. If you opt for this flow, there's no need to invoke `continuePayment()`.
+The `createPaymentFun` parameter is a suspend function in which Yuno waits for the sequential payment creation. Once the payment is created, completing the suspend function allows Yuno to proceed with the payment. If you use this flow, there's no need to invoke `continuePayment()`.

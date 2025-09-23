@@ -78,6 +78,10 @@ class CustomApplication : Application() {
 }
 ```
 
+> 📘 Credentials
+>
+> See the credentials page for more information: https://docs.y.uno/reference/authentication
+
 Use the data class `YunoConfig` to customize the SDK's behavior. You can include this configuration when calling `Yuno.initialize()`. The available options are:
 
 ```kotlin
@@ -302,7 +306,7 @@ Column(
 
 ## Step 6: Initiate the payment process
 
-To start a payment process, you have to call the method `startPayment()`.
+To start a payment process, call the `startPayment()` method:
 
 ```kotlin
 startPayment(

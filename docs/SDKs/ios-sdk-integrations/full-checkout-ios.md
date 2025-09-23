@@ -18,11 +18,11 @@ next:
 >
 > We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-On this page, you will find all the steps to add, configure, and use the Full iOS SDK in your project.
+This page provides all the steps to add, configure, and use the Full iOS SDK in your project.
 
 ## Requirements
 
-In order to implement the Yuno iOS SDK, first, you need to address the following requirements:
+To implement the Yuno iOS SDK, you need to meet the following requirements:
 
 - Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
 - Use iOS version 14.0 or above.
@@ -58,7 +58,7 @@ dependencies: [
 
 ## Step 2: Initialize SDK with the public key
 
-To start running the Yuno iOS Full checkout, you first need to get your Yuno app ID and Public API Key. Then, import and initialize Yuno as presented in the following code snippet:
+To start running the Yuno iOS Full checkout, first get your Yuno app ID and Public API Key. Then, import and initialize Yuno as shown below:
 
 ```swift
 import YunoSDK
@@ -71,11 +71,15 @@ Yuno.initialize(
 
 ```
 
+> 📘 Credentials
+>
+> See the credentials page for more information: https://docs.y.uno/reference/authentication
+
 > 🚧 UISceneDelegate Usage
 >
 > If your app is using a UISceneDelegate, ensure to place your Yuno initialization code within your SceneDelegate.
 
-The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
+The Full checkout enables you to configure the appearance and process. This is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block shows the elements that can be configured:
 
 ```swift
 final class YunoConfig {
@@ -86,7 +90,7 @@ final class YunoConfig {
 }
 ```
 
-Below, you find a description of each configuration variable available.
+The following table describes each configuration variable available:
 
 | Parameter         | Description                                                                                                                                                                           |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -130,7 +134,7 @@ class ViewController: YunoPaymentDelegate {
 }
 ```
 
-The following table presents all the protocol requirements you have to provide and their descriptions.
+The following table describes all the protocol requirements you need to provide:
 
 <Table>
   <thead>
@@ -295,7 +299,7 @@ This makes it easy to integrate the SDK into any iOS project, no matter which UI
 
 ## Step 5: Initiate the payment process
 
-To effectively start a payment after displaying the payment methods, you have to call the method `startPayment`, as presented in the code snippet below:
+To start a payment after displaying the payment methods, call the `startPayment` method:
 
 ```swift
 Yuno.startPayment(showPaymentStatus:Bool)
@@ -303,7 +307,7 @@ Yuno.startPayment(showPaymentStatus:Bool)
 
 ## Step 6: Get the OTT (one-time token)
 
-You can obtain the one-time token to create the payment back-to-back at the end of this process. You will get the one-time token in the function `yunoCreatePayment()` that you get when implementing the `YunoPaymentDelegate`. An example of retrieving the one-time token is presented below:
+You can obtain the one-time token to create the payment back-to-back at the end of this process. You will get the one-time token in the function `yunoCreatePayment()` that you implement when adopting the `YunoPaymentDelegate`. An example of retrieving the one-time token is shown below:
 
 ```swift
 func yunoCreatePayment(with token: String) { ... }
@@ -311,7 +315,7 @@ func yunoCreatePayment(with token: String) { ... }
 
 ## Step 7: Create the Payment
 
-Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
+Once you have completed the steps described above, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
 > 📘 Continue Payment Method
 >
