@@ -139,15 +139,27 @@ After integrating the SDK using one of the methods described above, follow these
 * Web SDK [v1.2 changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/)
 * Web SDK v1.1 [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v11-changelog#/)
 
-## Changelog
+<br />
 
-See what's new and what's changed in recent SDK versions on the [Web SDK changelog](../web-sdk-changelog) page.
+***
 
-## Changelog
+## Option 1: What's New
 
 Track the latest Web SDK updates, new features, and breaking changes on the [Web SDK changelog](../web-sdk-changelog) page.
 
-## Changelog
+***
+
+## Option 2: Recent Updates
+
+Keep your integration current by reviewing the [Web SDK changelog](../web-sdk-changelog) for:
+
+* Latest features and improvements
+* Breaking changes and migration paths
+* Bug fixes and performance updates
+
+***
+
+## Option 3: Stay Updated
 
 Stay up to date with the latest Web SDK improvements and new features. The [Web SDK changelog](../web-sdk-changelog) provides detailed information about:
 
@@ -157,3 +169,7 @@ Stay up to date with the latest Web SDK improvements and new features. The [Web 
 * **Deprecation notices** for outdated methods
 
 Visit the [Web SDK changelog](../web-sdk-changelog) to see what's new and plan your updates accordingly.
+
+***
+
+<br />
