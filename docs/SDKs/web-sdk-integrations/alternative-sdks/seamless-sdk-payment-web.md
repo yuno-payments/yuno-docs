@@ -34,11 +34,11 @@ Choose the integration method that best suits your development workflow and tech
 
 > 📘 TypeScript Library
 >
-> If you're using TypeScript, Yuno offers a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that provides access to all available methods in the Yuno Web SDK.
+> If you are using TypeScript, Yuno offers a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that provides access to all available methods in the Yuno Web SDK.
 
 ## Step 2: Initialize SDK with the public key
 
-Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`.
+Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`:
 
 ```javascript
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
@@ -61,7 +61,7 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 
 ## Step 4: Start the checkout process
 
-By following the instructions below, you will be able to provide a seamless and user-friendly payment experience for your customers.
+Use the configuration below to provide a seamless and user-friendly payment experience for your customers:
 
 ```javascript
 yuno.startSeamlessCheckout({
@@ -105,7 +105,7 @@ yuno.startSeamlessCheckout({
 });
 ```
 
-Notice that when using the `startSeamlessCheckout` you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects.
+When using `startSeamlessCheckout`, specify the callbacks to handle payments. You can also customize the checkout interface using the `texts` objects.
 
 ### Parameters
 
@@ -120,7 +120,7 @@ Configure the seamless checkout with the following options:
 | `showLoading`               | Controls the visibility of the Yuno loading/spinner page during the payment process. Default: `true`.                                                                                                                                                                                         |
 | `onLoading`                 | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                            |
 | `issuersFormEnable`         | Enables the issuer's form (e.g., a list of banks). Default: `true`.                                                                                                                                                                                                                           |
-| `showPaymentStatus`         | It shows the Yuno Payment Status page, which is useful when continuing a payment. Default: `true`.                                                                                                                                                                                            |
+| `showPaymentStatus`         | Shows the Yuno Payment Status page, which is useful when continuing a payment. Default: `true`.                                                                                                                                                                                                |
 | `showPayButton`             | Controls the visibility of the pay button in the customer or card form. Default: `true`.                                                                                                                                                                                                      |
 | `renderMode`                | Specify how and where the forms will be rendered. The options available are:                                                                                                                                                                                                                  |
 |                             | ▪️ `type: modal` (default)                                                                                                                                                                                                                                                                    |
@@ -136,7 +136,7 @@ Configure the seamless checkout with the following options:
 >
 > Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](/docs/stored-credentials).
 >
-> The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
+> The step-by-step on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
 ## Step 5: Mount the SDK
 
@@ -149,15 +149,15 @@ yuno.mountSeamlessCheckout({
 });
 ```
 
-Access the [Payment type](ref:payment-type-list) page to see the complete list of payment method types you can use when mounting the SDK.
+See the [Payment type](ref:payment-type-list) page to view the complete list of payment method types you can use when mounting the SDK.
 
-The `vaultedToken` is optional. It represents information of a previously enrolled payment method. If you inform the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
+The `vaultedToken` is optional. It represents a previously enrolled payment method. If you provide the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
 
 After mounting, you must start the checkout flow by calling `yuno.startPayment()`. If you skip this call, the payment form will not open.
 
 ## Step 6: Start the payment flow (Required)
 
-Call `yuno.startPayment()` immediately after `yuno.mountSeamlessCheckout()` to open the selected payment method UI.
+Call `yuno.startPayment()` immediately after `yuno.mountSeamlessCheckout()` to open the selected payment method UI:
 
 ```javascript
 // Mount the SDK
