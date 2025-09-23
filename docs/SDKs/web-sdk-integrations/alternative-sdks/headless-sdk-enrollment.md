@@ -108,11 +108,10 @@ const vaultedTokenResponse = await apiClientEnroll.continueEnrollment({
         number: "4111111111111111",
         security_code: "123",
         holder_name: "ANDREA B",
-        type: "DEBIT" // or "CREDIT"
+        type: "DEBIT"
       }
     },
     customer: {
-      // Add the complete customer object here
     }
   }
 });

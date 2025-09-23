@@ -344,23 +344,19 @@ Implement this interface to receive all events and views from the SDK during the
 class PaymentRenderListener : YunoPaymentRenderListener {
 
     override fun showView(fragment: Fragment) {
-        // Display fragment in your UI container
         supportFragmentManager.beginTransaction()
             .replace(R.id.payment_container, fragment)
             .commit()
     }
 
     override fun returnStatus(resultCode: Int, paymentStatus: String) {
-        // Handle final payment status
         when (paymentStatus) {
             "SUCCEEDED" -> handleSuccessfulPayment()
             "FAIL" -> handleFailedPayment()
-            // Handle other states
         }
     }
 
     override fun returnOneTimeToken(oneTimeToken: String, additionalData: OneTimeTokenModel?) {
-        // Process OTT in your backend, then continue the flow
         createPaymentInBackend(oneTimeToken) { result ->
             when (result) {
                 is Success -> fragmentController.continuePayment()
@@ -370,7 +366,6 @@ class PaymentRenderListener : YunoPaymentRenderListener {
     }
 
     override fun loadingListener(isLoading: Boolean) {
-        // Show/hide loading indicators
         progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 }
@@ -386,10 +381,8 @@ Control the payment flow using the returned controller instance:
 * **`continuePayment()`**: Continues the payment flow after backend OTT processing
 
 ```kotlin
-// Submit form when ready
 fragmentController.submitForm()
 
-// Continue after successful backend processing
 fragmentController.continuePayment()
 ```
 
@@ -429,7 +422,6 @@ class PaymentActivity : ComponentActivity() {
                 }
 
                 override fun returnOneTimeToken(oneTimeToken: String, additionalData: OneTimeTokenModel?) {
-                    // Process in backend and continue
                     processPaymentToken(oneTimeToken) {
                         fragmentController.continuePayment()
                     }

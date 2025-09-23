@@ -65,28 +65,28 @@ Use the configuration below to provide a seamless and user-friendly payment expe
 
 ```javascript
 yuno.startSeamlessCheckout({
-  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638", // Current payment session
-  elementSelector: "#root", // HTML element for rendering
-  countryCode: "US", // Country code for the payment process
-  language: "en", // Language for the payment forms
-  showLoading: true, // Show loading spinner
-  issuersFormEnable: true, // Enable issuer's form
-  showPaymentStatus: true, // Show payment status page
-  onLoading: (args) => console.log(args), // Callback for loading events
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  countryCode: "US",
+  language: "en",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  onLoading: (args) => console.log(args),
   renderMode: {
-    type: "modal", // Render as a modal
+    type: "modal",
     elementSelector: {
       apmForm: "#form-element",
       actionForm: "#action-form-element",
     },
   },
   card: {
-    type: "extends", // Card render mode
-    styles: "", // Custom card styles
-    cardSaveEnable: false, // Enable save card checkbox
-    texts: {}, // Custom texts for card forms
+    type: "extends",
+    styles: "",
+    cardSaveEnable: false,
+    texts: {},
   },
-  texts: {}, // Custom texts for payment forms
+  texts: {},
   async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
     await createPayment({ oneTimeToken, checkoutSession });
     yuno.continuePayment({ showPaymentStatus: true });
@@ -144,8 +144,8 @@ To present the checkout process based on the selected payment method, use the `y
 
 ```javascript
 yuno.mountSeamlessCheckout({
-  paymentMethodType: PAYMENT_METHOD_TYPE, // 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | 'CARD'
-  vaultedToken: VAULTED_TOKEN, // Optional vaulted token for previously enrolled payment method
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  vaultedToken: VAULTED_TOKEN,
 });
 ```
 
@@ -160,13 +160,11 @@ After mounting, you must start the checkout flow by calling `yuno.startPayment()
 Call `yuno.startPayment()` immediately after `yuno.mountSeamlessCheckout()` to open the selected payment method UI:
 
 ```javascript
-// Mount the SDK
 yuno.mountSeamlessCheckout({
   paymentMethodType: PAYMENT_METHOD_TYPE,
   vaultedToken: VAULTED_TOKEN,
 });
 
-// Required: start the payment flow
 yuno.startPayment();
 ```
 

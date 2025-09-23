@@ -347,14 +347,12 @@ class PaymentActivity : Activity() {
             paymentSelected = PaymentSelected.CARD,
             listener = object : YunoPaymentRenderListener {
                 override fun showView(fragment: Fragment) {
-                    // Display fragment in your custom layout
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.payment_container, fragment)
                         .commit()
                 }
 
                 override fun returnOneTimeToken(oneTimeToken: String, additionalData: OneTimeTokenModel?) {
-                    // Process token and continue payment
                     processPayment(oneTimeToken) {
                         fragmentController.continuePayment()
                     }
@@ -365,7 +363,6 @@ class PaymentActivity : Activity() {
                 }
 
                 override fun loadingListener(isLoading: Boolean) {
-                    // Handle loading state
                     updateLoadingUI(isLoading)
                 }
             }
