@@ -35,7 +35,9 @@ You can override Yuno Android SDK fonts if you want to use your font family. You
 * `YunoMediumFont`
 * `YunoBoldFont`
 
-The following code block presents an example of how you can configure the font style:
+### Example
+
+Configure the font style with the following code:
 
 ```xml
 <style name="YunoRegularFont">
@@ -117,7 +119,9 @@ For each style, you can set the following attributes:
 </style>
 ```
 
-The following code block presents an example of how you can configure a `Button.Normal.NeutralB` button. The example also shows how you can change the button font.
+### Example
+
+Configure a `Button.Normal.NeutralB` button and change the button font:
 
 ```kotlin
 <style name="Button.Normal.NeutralB">
@@ -147,7 +151,9 @@ You can override Yuno Android SDK color styles to personalize the SDK's appearan
 |                           | `primary_2`                 | `tertiary_3`                   |
 |                           | `primary_3`                 | `tertiary_4`                   |
 
-The following code block presents an example of how you can configure the colors when using the SDK with a version equal to or higher than v1.13.0:
+### Example
+
+Configure colors for SDK version 1.13.0 or higher:
 
 ```xml
 <color name="neutral_b">#fff000</color>
@@ -179,7 +185,9 @@ The following table lists all customization attributes you can use for each text
 | `TextSmall.NeutralB`  | `TextSmall`         | `android:textColor`      |
 | `TextSmall.NeutralB`  | `TextSmall`         | `android:textColorHint`  |
 
-The following code block presents how you can configure these text customizations:
+### Example
+
+Configure text customizations:
 
 ```kotlin
 <style name="YunoRegularFont">
@@ -385,9 +393,9 @@ The following code block presents how you can configure these text customization
 
 ## Create your own card form flow
 
-The first step to creating your card form flow is to create a new layout resource file called `screen_payment_card_form.xml` to override the current XML and implement your design.
+To create your own card form flow, create a new layout resource file called `screen_payment_card_form.xml` to override the current XML and implement your design.
 
-After creating the `screen_payment_card_form.xml` file, you can define your own design. You need to use the Yuno Secure Fields components, which ensures that the Yuno SDK can retrieve credit card information during the checkout. Below, you will find a list of all the components you can use to change the design:
+After creating the `screen_payment_card_form.xml` file, you can define your own design. You need to use the Yuno Secure Fields components, which ensures that the Yuno SDK can retrieve credit card information during the checkout. The following components are available for customization:
 
 > 🚧 Changing Components
 >

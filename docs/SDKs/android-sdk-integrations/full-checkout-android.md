@@ -61,9 +61,9 @@ Yuno SDK includes, by default, the `INTERNET` permission, which is required to m
 
 ## Step 2: Initialize SDK with the public key
 
-First, you must retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
+First, retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
 
-If you haven't implemented a custom application, create one. In the `onCreate()` method of your application class, call the initialize function (`Yuno.initialize`) as shown in the example below:
+If you haven't implemented a custom application, create one. In the `onCreate()` method of your application class, call the initialize function (`Yuno.initialize`) as shown below:
 
 ```kotlin
 class CustomApplication : Application() {
@@ -202,7 +202,9 @@ startCheckout(
 )
 ```
 
-Below is a description of the required parameters to start the checkout.
+### Parameters
+
+Configure the checkout with the following options:
 
 | Parameter              | Description                                                                                                                                                                               |
 | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -222,7 +224,7 @@ const val PAYMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
 const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED"
 ```
 
-The following table provide additional information about the possible states:
+The following table provides additional information about the possible states:
 
 | **State**        | **Description**                                                                                                                 | **Additional action required**                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -311,7 +313,9 @@ startPayment(
 
 ```
 
-Below is a description of the required parameters to start the payment.
+### Parameters
+
+Configure the payment with the following options:
 
 | Parameter                      | Description                                                                                                                                                            |
 | :----------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
