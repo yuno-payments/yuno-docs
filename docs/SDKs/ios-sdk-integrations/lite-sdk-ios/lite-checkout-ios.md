@@ -415,7 +415,6 @@ extension MyViewController: YunoPaymentDelegate {
     }
 
     func yunoPaymentResult(_ result: Yuno.Result) {
-        // Handle the final payment result
         switch result {
         case .succeeded:
             showSuccessMessage()
@@ -450,15 +449,12 @@ struct PaymentRenderView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            // Custom header
             Text("Complete Purchase")
                 .font(.title2)
                 .fontWeight(.bold)
 
-            // Order summary
             OrderSummaryView()
 
-            // Payment form (if necessary)
             if let formView = formView {
                 VStack(alignment: .leading) {
                     Text("Payment Information")
@@ -468,14 +464,12 @@ struct PaymentRenderView: View {
                 }
             }
 
-            // Additional view (e.g., 3DS)
             if let additionalView = additionalView {
                 additionalView
             }
 
             Spacer()
 
-            // Custom payment button
             Button(action: {
                 paymentFlow?.submitForm()
             }) {
@@ -495,7 +489,6 @@ struct PaymentRenderView: View {
     }
 
     private func setupPaymentFlow() {
-// Create the payment flow
 paymentFlow = await Yuno.startPaymentRenderFlow(
     paymentMethodSelected: selectedPaymentMethod,
     with: delegate
@@ -510,7 +503,6 @@ paymentFlow = await Yuno.startPaymentRenderFlow(
     }
 }
 
-// Delegate implementation
 class PaymentDelegate: YunoPaymentDelegate {
     let checkoutSession: String
     let countryCode: String
@@ -523,7 +515,6 @@ class PaymentDelegate: YunoPaymentDelegate {
     }
 
     func yunoCreatePayment(with token: String, information: [String: Any]) {
-        // Implement logic to create the payment
         PaymentService.createPayment(token: token) { [weak self] result in
             switch result {
             case .success:
@@ -538,20 +529,16 @@ class PaymentDelegate: YunoPaymentDelegate {
 
     func yunoPaymentResult(_ result: Yuno.Result) {
         DispatchQueue.main.async {
-            // Handle final result
             switch result {
             case .succeeded:
                 NotificationCenter.default.post(name: .paymentSucceeded, object: nil)
             case .reject:
                 NotificationCenter.default.post(name: .paymentRejected, object: nil)
-            // ... other cases
             }
         }
     }
 
     private func continuePaymentProcess() async {
-        // This function would be called from yunoCreatePayment
-        // after successfully creating the payment in the backend
     }
 }
 ```
@@ -565,11 +552,9 @@ This section outlines typical scenarios where the Yuno SDK can be utilized to ha
 In this use case, we demonstrate how to process payments using new credit card information, requiring the user to fill out a form to capture the necessary card details.
 
 ```swift
-// For payment methods that require a form (new cards)
 let cardPayment = CardPaymentMethod(paymentMethodType: "CARD")
 let flow = Yuno.startPaymentRender(paymentMethodSelected: cardPayment, with: delegate)
 
-// Will show form to capture card data
 let form = await flow.formView(paymentMethodSelected: cardPayment, with: delegate)
 ```
 
@@ -578,16 +563,13 @@ let form = await flow.formView(paymentMethodSelected: cardPayment, with: delegat
 This scenario demonstrates using a saved payment method, allowing users to pay without re-entering details by utilizing a vaulted token.
 
 ```swift
-// For already saved payment methods (don't require form)
 let savedCard = SavedCardPayment(
     paymentMethodType: "CARD",
     vaultedToken: "saved_token_123"
 )
 let flow = Yuno.startPaymentRender(paymentMethodSelected: savedCard, with: delegate)
 
-// Will return nil since no form is required
 let form = await flow.formView(paymentMethodSelected: savedCard, with: delegate)
-// form will be nil
 ```
 
 #### 3. Payment with 3DS authentication
@@ -595,12 +577,10 @@ let form = await flow.formView(paymentMethodSelected: savedCard, with: delegate)
 3D Secure (3DS) adds an extra verification step for enhanced security. The Yuno SDK integrates this process into your payment flow seamlessly.
 
 ```swift
-// After creating the payment, if it requires 3DS
 func yunoCreatePayment(with token: String, information: [String: Any]) {
     createPayment(token: token) { [weak self] success in
         if success {
             Task {
-                // May return a view for 3DS
                 let authView = await self?.paymentFlow?.continuePayment()
                 if let authView = authView {
                     self?.show3DSView(authView)
@@ -662,7 +642,6 @@ This section offers quick solutions to common issues encountered during Yuno SDK
 #### Debugging logs
 
 ```swift
-// Enable logs for debugging
 Yuno.config.environment = .staging
 ```
 
@@ -671,13 +650,10 @@ Yuno.config.environment = .staging
 If you're migrating from `startPayment()` or `startPaymentLite()`:
 
 ```swift
-// Previous method
 Yuno.startPayment()
 
-// New render method
 let flow = Yuno.startPaymentRender(paymentMethodSelected: method, with: delegate)
 let form = await flow.formView(paymentMethodSelected: method, with: delegate)
-// Integrate form into your custom UI
 ```
 
 The primary benefit of using the new method is the detailed control it provides over both the user interface and the payment process.
@@ -720,7 +696,6 @@ This approach uses immutable properties that are automatically thread-safe, maki
 @MainActor
 class MyViewController: UIViewController, YunoPaymentDelegate {
 
-    // Immutable properties - automatically thread-safe
     private let _countryCode = "CO"
     private let _language = "EN"
 
@@ -730,7 +705,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 
     nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
         Task { @MainActor in
-            // Handle result on MainActor
         }
     }
 }
@@ -748,7 +722,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
     @Published var configCountryCode: String = "CO"
 
     nonisolated var language: String? {
-        // ⚠️ Only works if called from MainActor
         MainActor.assumeIsolated { configLanguage }
     }
 
@@ -765,7 +738,6 @@ This approach is suitable for service classes that don't require MainActor isola
 ```swift
 class MyService: YunoPaymentDelegate {
 
-    // Thread-safe because they are immutable
     let countryCode: String
     let language: String?
     let checkoutSession: String
@@ -779,7 +751,6 @@ class MyService: YunoPaymentDelegate {
     }
 
     func yunoPaymentResult(_ result: Yuno.Result) {
-        // Already thread-safe
     }
 }
 ```
