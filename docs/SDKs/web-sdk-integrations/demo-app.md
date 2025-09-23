@@ -76,3 +76,7 @@ http://localhost:8080?country=DE
 You will find a panel, as shown below, with all Yuno SDKs available by accessing the URL. Select the desired SDK to see its appearance and how it works.
 
 ![Demo App Screenshot](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true)
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

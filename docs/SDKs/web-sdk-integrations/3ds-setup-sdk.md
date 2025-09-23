@@ -58,3 +58,7 @@ Yuno.threeDSecure.setup({
 ```
 
 After executing the `setup()` service, the Yuno system will receive the necessary device information. Thus, you can continue with the payment. Remember always to use the `three_d_secure_setup_id` to identify the device where the payment is being made.
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

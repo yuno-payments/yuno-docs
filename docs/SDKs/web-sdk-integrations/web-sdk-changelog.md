@@ -34,3 +34,7 @@ Each version page includes:
 ### Getting Help
 
 Need help with a specific version? Contact our support team or see the main SDK documentation for the latest implementation guidance.
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

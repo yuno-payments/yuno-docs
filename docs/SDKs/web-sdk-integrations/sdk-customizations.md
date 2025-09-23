@@ -1337,3 +1337,7 @@ The following sections detail the elements that make up the Card and APM forms, 
   </div>
 </body>
 `}</HTMLBlock>
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

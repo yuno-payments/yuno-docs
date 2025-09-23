@@ -90,3 +90,7 @@ The `yunoPaymentResult` method returns the current payment status without render
 > 👍 Custom Payment Status Integration
 >
 > If you prefer to use your own custom Payment Status page instead of personalizing the one provided by our SDK, you can do so by editing the HTML file to connect to an edited `status-lite.js` script. This allows you to fully customize the appearance and behavior of the payment status display while still using Yuno's status functionality. For example, after calling the `yunoPaymentResult` function, you can handle the status result in your own version of the `status-lite.js` script, which will then update your custom HTML file.
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

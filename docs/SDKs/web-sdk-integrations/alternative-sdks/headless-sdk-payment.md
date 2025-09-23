@@ -557,3 +557,7 @@ Each action type requires specific handling based on the data provided:
 > 📘 Demo App
 >
 > In addition to the code examples provided, you can access the [Demo App](#demo-app) for a complete implementation of Yuno SDKs.
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

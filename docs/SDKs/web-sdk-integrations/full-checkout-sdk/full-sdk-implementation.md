@@ -469,3 +469,7 @@ Learn about the additional configurations from the Full SDK by accessing [Comple
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
 * [Payment Status](doc:payment-status): Update the user about the payment process
 * [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

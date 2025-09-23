@@ -453,3 +453,7 @@ You can access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand.
 * [Payment Status](doc:payment-status): Update the user about the payment process.
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
