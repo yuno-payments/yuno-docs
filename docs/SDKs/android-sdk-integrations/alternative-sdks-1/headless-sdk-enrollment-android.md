@@ -49,7 +49,7 @@ You can obtain these credentials from the [Developers section of the Yuno dashbo
 
 > 📘 SDK Version Information
 >
-> Verify the latest SDK version by accessing the [Release notes](release-notes-android-sdk) or visiting the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android).
+> Verify the current SDK version by accessing the [Release notes](release-notes-android-sdk) or visiting the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android).
 
 ## Step 1: Create a customer
 

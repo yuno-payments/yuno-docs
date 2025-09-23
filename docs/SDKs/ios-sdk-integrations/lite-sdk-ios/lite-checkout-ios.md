@@ -103,7 +103,7 @@ Create a ViewController that adopts the `YunoPaymentDelegate` protocol:
 
 > ❗️ Deprecation
 >
-> The `startCheckout` method has been deprecated since iOS SDK version 2.4.
+> The `startCheckout` method has been deprecated in recent iOS SDK versions.
 
 ```swift
 protocol YunoPaymentDelegate: AnyObject {

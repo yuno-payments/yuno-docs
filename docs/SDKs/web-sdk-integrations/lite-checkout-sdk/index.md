@@ -18,9 +18,9 @@ next:
 
 This page provides a guide to get started with Yuno's Lite SDK (Web) payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
 
-> 📘 Web SDK v1.3 Release
+> 📘 Web SDK Release
 >
-> v1.3 is the latest version with enhanced UI grouping and multilingual support. To learn more, [visit the Web SDK changelog](doc:web-sdk-changelog).
+> This is the latest version with enhanced UI grouping and multilingual support. To learn more, [visit the Web SDK changelog](doc:web-sdk-changelog).
 
 ## Choose your integration method
 

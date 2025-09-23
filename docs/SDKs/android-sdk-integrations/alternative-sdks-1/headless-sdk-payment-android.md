@@ -43,7 +43,7 @@ Before starting the Yuno Android SDK integration, ensure your project meets the 
 
 > 📘 Latest SDK Version
 >
-> Check the [Release notes](release-notes-android-sdk) or visit the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
+> Check the [Release notes](release-notes-android-sdk) or visit the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
 
 ## Step 1: Create a customer
 

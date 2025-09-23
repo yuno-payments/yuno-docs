@@ -41,7 +41,7 @@ maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 
 > 📘 SDK Version
 >
-> Access the [Release notes](#docs/release-notes-android-sdk) or the [Yuno Android SDK repository](#https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
+> Access the [Release notes](#docs/release-notes-android-sdk) or the [Yuno Android SDK repository](#https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
 
 Then, include the following code in the `build.gradle` file to add the Yuno SDK dependency to the application:
 
