@@ -152,4 +152,4 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
 
 ## What's New
 
-Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../docs/web-sdk-changelog) page.

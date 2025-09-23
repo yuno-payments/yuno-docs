@@ -244,4 +244,4 @@ In addition to the code examples provided, you can access the [Demo App](ref:dem
 
 ## What's New
 
-Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../docs/web-sdk-changelog) page.
