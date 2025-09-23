@@ -295,7 +295,6 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 
 ```kotlin
 if (requestCode == YUNO_ENROLLMENT_REQUEST_CODE) {
-    // Specific enrollment processing
 }
 ```
 
@@ -312,22 +311,17 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
     super.onActivityResult(requestCode, resultCode, data)
 
     if (requestCode == YUNO_ENROLLMENT_REQUEST_CODE) {
-        // Handle the enrollment result
         val enrollmentState = data?.getStringExtra(YUNO_ENROLLMENT_RESULT)
         onEnrollmentStateChange(enrollmentState)
     }
 }
 
 fun onEnrollmentStateChange(enrollmentState: String?) {
-    // Implement your logic to handle different enrollment states here
     when (enrollmentState) {
         "SUCCEEDED" -> {
-            // Handle successful enrollment
         }
         "FAIL" -> {
-            // Handle failed enrollment
         }
-        // Add other states as needed
     }
 }
 ```
@@ -503,7 +497,7 @@ interface YunoEnrollmentFragmentController {
 val fragmentController = startEnrollmentRender(
     customerSession = "your_customer_session_id",
     countryCode = "US",
-    submitButton = false, // use your own submit UI when false
+    submitButton = false,
     coroutineScope = lifecycleScope,
     listener = enrollmentRenderListener
 )

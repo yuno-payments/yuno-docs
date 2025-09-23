@@ -312,13 +312,10 @@ class HeadlessWebView: UIViewController, WKScriptMessageHandler, WKNavigationDel
         let request = URLRequest(url: url)
         webView.load(request)
 
-        // Add the webview, and set constraints
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == "messageFromWeb", let messageBody = message.body as? String {
-            // Handle response 'messageBody'
-            // Possible responses from the webview
             self.dismiss(animated: true)
 
         }
@@ -335,7 +332,6 @@ class HeadlessWebView: UIViewController, WKScriptMessageHandler, WKNavigationDel
 The response will inform the challenge status, which can be `COMPLETED` or `ERROR`. The next code block presents examples for each possible option.
 
 ```swift COMPLETED
-// Challenge completed
 {
    "origin":"CHALLENGE",
    "status":"COMPLETED",
@@ -343,7 +339,6 @@ The response will inform the challenge status, which can be `COMPLETED` or `ERRO
 }
 ```
 ```swift ERROR
-// Challenge error
 {
    "origin":"CHALLENGE",
    "status":"ERROR",
@@ -371,10 +366,8 @@ func application(_ app: UIApplication,
                  open url: URL,
                  options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
 
-  // Make sure the scheme matches the one you used in the checkout_session
   guard url.scheme == "yunoexample" else { return false }
 
-  // Let Yuno handle the deep link and show the payment status screen
   return Yuno.receiveDeeplink(url, showStatusView: true)
 }
 ```

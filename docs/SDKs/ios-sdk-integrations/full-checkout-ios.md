@@ -114,7 +114,6 @@ The ViewController class is defined as a subclass of `UIViewController` and also
 protocol YunoPaymentDelegate: AnyObject {
 
     var checkoutSession: String { get }
-  	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
     var countryCode: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
@@ -235,10 +234,8 @@ func application(_ app: UIApplication,
                  open url: URL,
                  options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
 
-  // Make sure the scheme matches the one you used in the checkout_session
   guard url.scheme == "yunoexample" else { return false }
 
-  // Let Yuno handle the deep link and show the payment status screen
   return Yuno.receiveDeeplink(url)
 }
 ```
@@ -377,7 +374,6 @@ This section outlines the sequence of steps required to implement the payment re
 To begin using `startPaymentRender`, make sure the SDK is properly initialized and you possess a valid `checkoutSession`. Follow the steps below to set up your environment:
 
 ```swift
-// Initialize the SDK
 await Yuno.initialize(apiKey: "your_api_key")
 ```
 
@@ -386,7 +382,6 @@ await Yuno.initialize(apiKey: "your_api_key")
 Create a payment flow instance to manage and render the payment process using the selected method.
 
 ```swift
-// Create the render flow instance
 let paymentFlow = await Yuno.startPaymentRenderFlow(
     paymentMethodSelected: selectedPaymentMethod,
     with: self // YunoPaymentDelegate
@@ -437,7 +432,7 @@ extension MyViewController: YunoPaymentDelegate {
     }
 
     var countryCode: String {
-        return "CO" // or the corresponding country code
+        return "CO"
     }
 
     var viewController: UIViewController? {
@@ -466,22 +461,16 @@ extension MyViewController: YunoPaymentDelegate {
         // Handle the final payment result
         switch result {
         case .succeeded:
-            // Successful payment
             showSuccessMessage()
         case .reject:
-            // Rejected payment
             showRejectionMessage()
         case .fail:
-            // Failed payment
             showErrorMessage()
         case .processing:
-            // Payment in process
             showProcessingMessage()
         case .userCancell:
-            // User cancelled
             handleCancellation()
         case .internalError:
-            // Internal error
             showInternalErrorMessage()
         }
     }
@@ -719,7 +708,7 @@ This section offers quick solutions to common issues encountered during Yuno SDK
 
 ```swift
 // Enable logs for debugging
-Yuno.config.environment = .staging // or .sandbox for testing
+Yuno.config.environment = .staging
 ```
 
 ### Migration from other methods

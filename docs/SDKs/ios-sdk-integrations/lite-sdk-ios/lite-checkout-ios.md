@@ -394,7 +394,7 @@ extension MyViewController: YunoPaymentDelegate {
     }
 
     var countryCode: String {
-        return "CO" // or the corresponding country code
+        return "CO"
     }
 
     var viewController: UIViewController? {
@@ -418,22 +418,16 @@ extension MyViewController: YunoPaymentDelegate {
         // Handle the final payment result
         switch result {
         case .succeeded:
-            // Successful payment
             showSuccessMessage()
         case .reject:
-            // Rejected payment
             showRejectionMessage()
         case .fail:
-            // Failed payment
             showErrorMessage()
         case .processing:
-            // Payment in process
             showProcessingMessage()
         case .userCancell:
-            // User cancelled
             handleCancellation()
         case .internalError:
-            // Internal error
             showInternalErrorMessage()
         }
     }
@@ -669,7 +663,7 @@ This section offers quick solutions to common issues encountered during Yuno SDK
 
 ```swift
 // Enable logs for debugging
-Yuno.config.environment = .staging // or .sandbox for testing
+Yuno.config.environment = .staging
 ```
 
 ### Migration from other methods

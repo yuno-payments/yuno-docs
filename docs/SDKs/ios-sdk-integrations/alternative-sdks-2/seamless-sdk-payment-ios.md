@@ -160,10 +160,8 @@ func application(_ app: UIApplication,
                  open url: URL,
                  options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
 
-  // Make sure the scheme matches the one you used in the checkout_session
   guard url.scheme == "yunoexample" else { return false }
 
-  // Let Yuno handle the deep link and show the payment status screen
   return Yuno.receiveDeeplink(url, showStatusView: true)
 }
 ```
@@ -247,7 +245,6 @@ This approach uses immutable properties that are automatically thread-safe, maki
 @MainActor
 class MyViewController: UIViewController, YunoPaymentDelegate {
     
-    // Immutable properties - automatically thread-safe
     private let _countryCode = "CO"
     private let _language = "EN"
     
@@ -257,7 +254,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
     
     nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
         Task { @MainActor in
-            // Handle result on MainActor
         }
     }
 }
@@ -275,7 +271,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
     @Published var configCountryCode: String = "CO"
     
     nonisolated var language: String? {
-        // ⚠️ Only works if called from MainActor
         MainActor.assumeIsolated { configLanguage }
     }
     
@@ -292,7 +287,6 @@ This approach is suitable for service classes that don't require MainActor isola
 ```swift
 class MyService: YunoPaymentDelegate {
     
-    // Thread-safe because they are immutable
     let countryCode: String
     let language: String?
     let checkoutSession: String
@@ -306,7 +300,6 @@ class MyService: YunoPaymentDelegate {
     }
     
     func yunoPaymentResult(_ result: Yuno.Result) {
-        // Already thread-safe
     }
 }
 ```

@@ -139,7 +139,6 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
  vaulted_token: "9104911d-5df9-429e-8488-ad41abea1a4b",
  status: "ENROLLED",
 
-//Same status for all SDKs: CREATED,
     EXPIRED,
     REJECTED,
    
