@@ -12,11 +12,11 @@ metadata:
 next:
   description: ''
 ---
-The Yuno Android SDK enables you to modify multiple styles, allowing you to align the design of payment forms and the checkout flow with your brand guidelines and UX/UI principles. While the structure of each element remains uniform, you can adjust colors, text, buttons, and much more.
+This page explains how to modify multiple styles in the Yuno Android SDK, allowing you to align the design of payment forms and the checkout flow with your brand guidelines and UX/UI principles. While the structure of each element remains uniform, you can adjust colors, text, buttons, and much more.
 
 ## General Guidelines
 
-Yuno Android SDK supports XML themes and styles, which should be defined within your application's styles. Android customizations are a work in progress and are continuously updated.
+The Yuno Android SDK supports XML themes and styles, which should be defined within your application's styles. Android customizations are a work in progress and are continuously updated.
 
 ## Customizable Elements
 
@@ -29,7 +29,7 @@ The following sections detail the elements that can be modified to achieve a per
 
 ### Font styles
 
-You can override Yuno Android SDK fonts if you want to use your font family. You can override the following font styles:
+You can override Yuno Android SDK fonts to use your font family. You can override the following font styles:
 
 * `YunoRegularFont`
 * `YunoMediumFont`
@@ -37,7 +37,7 @@ You can override Yuno Android SDK fonts if you want to use your font family. You
 
 ### Example
 
-Configure the font style with the following code:
+Configure the font style:
 
 ```xml
 <style name="YunoRegularFont">
@@ -55,7 +55,7 @@ Configure the font style with the following code:
 
 ### Button styles
 
-You can override Yuno Android SDK button styles. The available configurations change depending on your SDK version. The following table lists all available buttons you can customize considering the SDK version.
+You can override Yuno Android SDK button styles. The available configurations change depending on your SDK version. The following table lists all available buttons you can customize:
 
 | Versions before v1.10.0     | Version v1.10.0 and higher          | Version v1.13.0 and higher          |
 | --------------------------- | ----------------------------------- | ----------------------------------- |
@@ -133,7 +133,7 @@ Configure a `Button.Normal.NeutralB` button and change the button font:
 
 ### Color styles
 
-You can override Yuno Android SDK color styles to personalize the SDK's appearance. The available configurations change depending on your SDK version. The following table presents the color styles you can override for each SDK version:
+You can override Yuno Android SDK color styles to personalize the SDK's appearance. The available configurations change depending on your SDK version. The following table shows the color styles you can override for each SDK version:
 
 | Versions before v1.10.0   | Version v1.10.0 and higher  | Version v1.13.0 and higher     |
 | ------------------------- | --------------------------- | ------------------------------ |
@@ -393,7 +393,7 @@ Configure text customizations:
 
 ## Create your own card form flow
 
-To create your own card form flow, create a new layout resource file called `screen_payment_card_form.xml` to override the current XML and implement your design.
+Create a new layout resource file called `screen_payment_card_form.xml` to override the current XML and implement your own card form flow design.
 
 After creating the `screen_payment_card_form.xml` file, you can define your own design. You need to use the Yuno Secure Fields components, which ensures that the Yuno SDK can retrieve credit card information during the checkout. The following components are available for customization:
 
