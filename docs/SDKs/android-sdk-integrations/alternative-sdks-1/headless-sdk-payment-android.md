@@ -238,7 +238,6 @@ apiClientPayment.generateToken(
 
 apiClientPayment.generateToken(
    collectedData = TokenCollectedData(
-			 // The checkout_session created using the following endpoint https://docs.y.uno/reference/create-checkout-session
        checkoutSession = "checkout_session",
        paymentMethod = PaymentMethod(
            type = "CARD",
@@ -431,9 +430,7 @@ The following code block shows an example of how you can observe the response fr
 ```kotlin
 apiClientPayment.getThreeDSecureChallenge(this)?.observe(this) {
    if (it.type == "URL") {
-     // Load the URL in web view, custom tab or navigator
    } else 
-     // Check the error message to identify the problem
 }
 
 ```
@@ -456,7 +453,6 @@ webView.addJavascriptInterface(
    object {
        @JavascriptInterface
        fun messageFromWeb(data: String?) {
-           // Challenge was completed here
        }
    },
    "Android"

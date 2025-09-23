@@ -102,7 +102,7 @@ Use the `yuno.mountCheckoutLite()` function to display the checkout for the sele
 
 ```javascript
 yuno.mountCheckoutLite({
-  paymentMethodType: PAYMENT_METHOD_TYPE, // 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | 'CARD'
+  paymentMethodType: PAYMENT_METHOD_TYPE,
   vaultedToken: VAULTED_TOKEN,
 });
 ```
@@ -295,7 +295,7 @@ yuno.startCheckout({
 ```javascript
 yuno.startCheckout({
   renderMode: {
-    type: "modal", // 'modal' | 'element' (default: 'modal')
+    type: "modal",
     elementSelector: {
       apmForm: "#form-element",
       actionForm: "#action-form-element",
@@ -431,7 +431,7 @@ You can hide the Pay button when presenting the card or customer data form. Set 
 
 ```javascript
 yuno.startCheckout({
-  showPayButton: false, // Hide (false) or show (true) the customer or card form pay button
+  showPayButton: false,
 });
 ```
 
@@ -476,7 +476,7 @@ The `options` object supports the following structure:
 const options = {
   cookies: {
     deviceId: {
-      name: "customCookieName", // Overrides the default cookie name used for device ID
+      name: "customCookieName",
     },
   },
 };
