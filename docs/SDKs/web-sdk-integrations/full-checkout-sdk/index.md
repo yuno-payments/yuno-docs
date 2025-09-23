@@ -42,16 +42,16 @@ The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your
 >
 > While the `defer` attribute ensures the script is executed after the HTML is parsed, it doesn't guarantee that the SDK script will always load last. In some cases, if the SDK loads faster than expected and the event listener is declared afterward, the `yuno-sdk-ready` event may have already fired — and your listener won't catch it. To prevent this, always define the listener before loading the SDK script.
 
+First, set up the event listener, then load the SDK:
+
 ```html
-<!-- First, set up the event listener -->
 <script>
   window.addEventListener('yuno-sdk-ready', () => {
-    console.log('SDK loaded'); // The SDK is ready to use
+    console.log('SDK loaded');
     const yuno = await Yuno.initialize(PUBLIC_API_KEY);
   });
 </script>
 
-<!-- Then load the SDK -->
 <script defer src="https://sdk-web.y.uno/v1.1/main.js"></script>
 ```
 
@@ -67,37 +67,35 @@ The dynamic JavaScript injection method provides enhanced control over SDK loadi
 
 This method is ideal when you need granular control over the SDK's loading process and want to handle various scenarios with precision.
 
-**file.js**
+Create a function to inject the SDK dynamically:
 
 ```javascript
-// Function to inject the SDK dynamically
 export const injectScript = async (): Promise<boolean> => {
   const head = document.getElementsByTagName('head')[0];
   const js = document.createElement('script');
   js.src = "https://sdk-web.y.uno/v1.1/main.js";
   js.defer = true;
 
-  // Return a promise that resolves when the SDK is ready
   return new Promise((resolve, reject) => {
     window.addEventListener('yuno-sdk-ready', () => {
-      resolve(true); // SDK loaded successfully
+      resolve(true);
     });
 
     js.onerror = (error) => {
-      // Create a custom event in case of loading error
       const event = new CustomEvent('yuno-sdk-error', { detail: error });
       window.dispatchEvent(event);
-
       reject(new Error(`Failed to load script: ${js.src} - ${error.message}`));
     };
 
-    head.appendChild(js); // Add the script to the document
+    head.appendChild(js);
   });
 };
+```
 
-// Using the function to inject the SDK
+Use the function to inject the SDK:
+
+```javascript
 await injectScript();
-// SDK is ready to use
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
@@ -112,13 +110,9 @@ npm install @yuno-payments/sdk-web
 Then, load and initialize the SDK as follows:
 
 ```javascript
-// Import the SDK module from npm
 import { loadScript } from '@yuno-payments/sdk-web';
 
-// Load and initialize the SDK
 const yuno = await loadScript();
-
-// Initialize the SDK with the public key
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
@@ -127,7 +121,6 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the `<head>` tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
 
 ```html
-<!-- Improve performance with preconnect -->
 <link rel="preconnect" href="https://sdk-web.y.uno" />
 <link rel="preconnect" href="https://api.y.uno" />
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
