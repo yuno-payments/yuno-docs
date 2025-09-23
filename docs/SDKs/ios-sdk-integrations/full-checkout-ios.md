@@ -18,11 +18,11 @@ next:
 >
 > We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-This page provides all the steps to add, configure, and use the Full iOS SDK in your project.
+This guide walks you through integrating Yuno's Full iOS SDK into your project.
 
 ## Requirements
 
-To implement the Yuno iOS SDK, you need to meet the following requirements:
+Before implementing the Yuno iOS SDK, ensure you meet these requirements:
 
 - Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
 - Use iOS version 14.0 or above.
@@ -58,15 +58,15 @@ dependencies: [
 
 ## Step 2: Initialize SDK with the public key
 
-To start running the Yuno iOS Full checkout, first get your Yuno app ID and Public API Key. Then, import and initialize Yuno as shown below:
+Initialize the Yuno iOS SDK with your Public API Key:
 
 ```swift
 import YunoSDK
 
 Yuno.initialize(
     apiKey: "<Public API Key>",
-    config: YunoConfig() // This is optional, by default it configures .oneStep card form and disables save card checkbox.,
-    callback: { (value: Bool) in }  // Optional callback to be notified when the SDK has completed initialization
+    config: YunoConfig(),
+    callback: { (value: Bool) in }
 )
 
 ```
@@ -97,7 +97,7 @@ The following table describes each configuration variable available:
 | `cardFormType`    | This field can be used to choose Payment and Enrollment Card flow. It's an optional property and considers **.oneStep** by default.                                                   |
 | `appearance`      | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                          |
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
-| `keepLoadere`     | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
+| `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
 
 > 📘 Access Your API Key
 >
@@ -113,9 +113,7 @@ The ViewController class is defined as a subclass of `UIViewController` and also
 
 ```swift
 protocol YunoPaymentDelegate: AnyObject {
-
     var checkoutSession: String { get }
-  	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
     var countryCode: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
