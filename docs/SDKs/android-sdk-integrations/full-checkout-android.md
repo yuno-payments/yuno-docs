@@ -94,85 +94,17 @@ data class YunoConfig(
 )
 ```
 
+Parameters
+
 The following table describes each customization available:
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Customization option
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        **cardFlow**
-      </td>
-
-      <td>
-        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section 
-
-        [Render options](/docs/full-checkout-android#render-options)
-
-         for more information
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **saveCardEnabled**
-      </td>
-
-      <td>
-        Enables the **Save card checkbox** on card flows. Check the 
-
-        [Save card](/docs/full-checkout-android#save-card-for-future-payments)
-
-          section for more information.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **cardFormDeployed**
-      </td>
-
-      <td>
-        This option is only available for Full SDK. If `TRUE`, the system presents the card form deployed on the payment methods list. If `FALSE`, presents the normal card form on another screen.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **language**
-      </td>
-
-      <td>
-        Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **styles**
-      </td>
-
-      <td>
-        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the 
-
-        [`styles`](/docs/full-checkout-android#styles)
-
-          section.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Customization option | Description |
+| :------------------- | :---------- |
+| `cardFlow` | It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the [Render options](/docs/full-checkout-android#render-options) section for more information. |
+| `saveCardEnabled` | Enables the Save card checkbox on card flows. Check the [Save card](/docs/full-checkout-android#save-card-for-future-payments) section for more information. |
+| `cardFormDeployed` | This option is only available for Full SDK. If `TRUE`, the system presents the card form deployed on the payment methods list. If `FALSE`, presents the normal card form on another screen. |
+| `language` | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
+| `styles` | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section. |
 
 Update your manifest to use your application:
 

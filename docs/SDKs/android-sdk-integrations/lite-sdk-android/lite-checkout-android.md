@@ -107,7 +107,7 @@ class CustomApplication : Application() {
     super.onCreate()
     Yuno.initialize(
       this,
-      "your api key",
+      PUBLIC_API_KEY,
       config: YunoConfig,
     )
   }
