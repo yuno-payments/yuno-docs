@@ -14,6 +14,12 @@ The Android SDK release notes offer a comprehensive overview of the updates, imp
 
 | Version   | Changes                                                                                                                                                                     |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.5       | **NEW**: Brazil hybrid card support - process as credit by default, enable card saving                                                                                      |
+|           | **NEW**: Complete Chinese localization support (zh-CN) across payments, errors, loaders, and APMs                                                                           |
+|           | **IMPROVE**: Enrollment and payment flow updates                                                                                                                            |
+|           | **NEW**: External browser support for APM links                                                                                                                             |
+|           | **IMPROVE**: Country-specific document types to streamline the user experience                                                                                              |
+|           | **FIX**: Chinese localization enhancements                                                                                                                                  |
 | 2.4.2     | **NEW**: Default credit processing for hybrid cards in Brazil (payment and enrollment); cards can be saved                                                                  |
 |           | **CHANGE**: Country-gated enablement; ensure 3DS flow compatibility                                                                                                         |
 | 2.4.0     | **FIX**: OTP screen in APM render mode was cut off and digits not visible                                                                                                   |
