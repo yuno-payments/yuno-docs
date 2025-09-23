@@ -14,11 +14,11 @@ metadata:
 next:
   description: ''
 ---
-Yuno's iOS SDKs are designed to simplify the integration of payment processing functionality in your iOS applications. Developers can implement features more efficiently, reducing the need for extensive knowledge of payment protocols and infrastructure.
+This page provides information about Yuno's iOS SDKs, which are designed to simplify the integration of payment processing functionality in your iOS applications. Developers can implement features more efficiently, reducing the need for extensive knowledge of payment protocols and infrastructure.
 
 ## Integration options
 
-Select one of the user-friendly iOS integration options available and kickstart your journey toward efficient payment processing:
+Select one of the user-friendly iOS integration options available and start your journey toward efficient payment processing:
 
 <Shelf classname="cards_container">
   <div class="first_row">
@@ -52,4 +52,4 @@ Select one of the user-friendly iOS integration options available and kickstart 
 
 > 📘 Explore the SDK Project Example
 >
-> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
+> Yuno provides an example project of a running application using an SDK. You can see the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). You can also access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
