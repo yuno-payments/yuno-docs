@@ -14,11 +14,11 @@ metadata:
 next:
   description: ''
 ---
-Yuno's Android SDKs are specifically designed to simplify the integration of payment processing functionality in your Android applications. Developers can implement features more efficiently, reducing the need for extensive knowledge of payment protocols and infrastructure.
+This page provides information about Yuno's Android SDKs, which are specifically designed to simplify the integration of payment processing functionality in your Android applications. Developers can implement features more efficiently, reducing the need for extensive knowledge of payment protocols and infrastructure.
 
 ## Integrations
 
-Select one of the user-friendly Android integration options available and kickstart your journey toward efficient payment processing:
+Select one of the user-friendly Android integration options available and start your journey toward efficient payment processing:
 
 <Shelf classname="cards_container">
   <div class="first_row">
@@ -50,4 +50,4 @@ Select one of the user-friendly Android integration options available and kickst
 
 > 📘 Explore the SDK Project Example
 >
-> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
+> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). You can also access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
