@@ -3740,9 +3740,10 @@
                     "type": "string",
                     "enum": [
                       "PREVIOUSLY_ONBOARDED",
-                      "ONBOARD_ONTO_THE_PROVIDER"
+                      "ONE_STEP_ONBOARDING",
+                      "TWO_STEP_ONBOARDING"
                     ],
-                    "description": "Type of onboarding, if it's done by Yuno",
+                    "description": "Type of onboarding flow. PREVIOUSLY_ONBOARDED for pre-existing accounts, ONE_STEP_ONBOARDING for account creation + KYC in one step, TWO_STEP_ONBOARDING for account creation first then KYC later",
                     "example": "PREVIOUSLY_ONBOARDED"
                   },
                   "workflow": {
@@ -5096,6 +5097,204 @@
             "example": "104911d-5df9-429e-8488-ad41abea1a4b"
           }
         ]
+      }
+    },
+    "/recipients/{recipient_id}/onboardings/{onboarding_id}/continue": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "recipient_id",
+          "description": "ID of the recipient",
+          "schema": {
+            "type": "string"
+          },
+          "required": true,
+          "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+        },
+        {
+          "in": "path",
+          "name": "onboarding_id",
+          "description": "ID of the onboarding to continue",
+          "schema": {
+            "type": "string"
+          },
+          "required": true,
+          "example": "104911d-5df9-429e-8488-ad41abea1a4b"
+        }
+      ],
+      "post": {
+        "summary": "Continue Onboarding",
+        "description": "Continues the onboarding process for a recipient. This endpoint is used for two-step onboarding flows to execute the KYC step after account creation.",
+        "operationId": "continue-onboarding",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_id", "type", "workflow"],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "Unique id of the account in Yuno",
+                    "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["TWO_STEP_ONBOARDING"],
+                    "description": "Type of onboarding flow. Only TWO_STEP_ONBOARDING can be continued.",
+                    "example": "TWO_STEP_ONBOARDING"
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "enum": ["HOSTED_BY_PROVIDER", "DIRECT"],
+                    "description": "Workflow of the KYC process. HOSTED_BY_PROVIDER calls create KYC service and returns Yuno URL that redirects to provider. DIRECT calls create KYC service and processes KYC directly.",
+                    "example": "HOSTED_BY_PROVIDER"
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed.",
+                    "example": "https://www.google.com"
+                  },
+                  "provider": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Provider id",
+                        "example": "PAGARME"
+                      },
+                      "connection_id": {
+                        "type": "string",
+                        "description": "Id of the connection in Yuno",
+                        "example": "104911d-5df9-429e-8488-ad41abea1a4b"
+                      },
+                      "recipient_id": {
+                        "type": "string",
+                        "description": "The unique identifier of the provider's recipient.",
+                        "example": "AAAAA01"
+                      }
+                    }
+                  },
+                  "documentation": {
+                    "type": "array",
+                    "description": "Specifies the documentation object.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "file_name",
+                        "content_type",
+                        "content_category",
+                        "content"
+                      ],
+                      "properties": {
+                        "file_name": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 255,
+                          "description": "The name of the documentation sent (MAX 255; MIN 3).",
+                          "example": "PDF"
+                        },
+                        "content_type": {
+                          "type": "string",
+                          "enum": [
+                            "application/pdf",
+                            "image/jpeg",
+                            "image/png"
+                          ],
+                          "description": "The type of the documentation sent by the merchant",
+                          "example": "application/pdf"
+                        },
+                        "content_category": {
+                          "type": "string",
+                          "enum": [
+                            "ACCOUNT_REQUIREMENT",
+                            "BANK_STATEMENT",
+                            "BUSINESS_ICON",
+                            "BUSINESS_LOGO",
+                            "CANCEL_POLICY",
+                            "CUSTOMER_INTERACTION",
+                            "DRIVERS_LICENCE",
+                            "IDENTIFICATION_DOCUMENT",
+                            "IDENTIFICATION_DOCUMENT_BACK",
+                            "IDENTIFICATION_DOCUMENT_FRONT",
+                            "LEGAL_AGREEMENT",
+                            "OTHERS",
+                            "PASSPORT",
+                            "PAYMENT_DETAIL",
+                            "PROOF_OF_ADDRESS",
+                            "PROOF_OF_AUTHENTICITY",
+                            "PROOF_OF_DELIVERY",
+                            "PROOF_OF_DIRECTOR",
+                            "PROOF_OF_INDUSTRY",
+                            "PROOF_OF_NATIONAL_ID_NUMBER",
+                            "PROOF_OF_OWNERSHIP",
+                            "PROOF_OF_REGISTRATION",
+                            "PROOF_OF_RELATIONSHIP",
+                            "PROOF_OF_SERVICE",
+                            "PROOF_OF_SOURCE_OF_FUNDS",
+                            "PROOF_OF_SOURCE_OF_WEALTH",
+                            "PROOF_OF_TAX",
+                            "PROVIDER_IDENTITY_DOCUMENT",
+                            "RECEIPT",
+                            "REFUND_POLICY",
+                            "SELFIE",
+                            "SERVICE_AGREEMENT",
+                            "SIGNATURE",
+                            "TERMS_AND_CONDITIONS",
+                            "VAT_DOCUMENT"
+                          ],
+                          "description": "The category of the documentation sent by the merchant"
+                        },
+                        "content": {
+                          "type": "string",
+                          "format": "byte",
+                          "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB.",
+                          "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientResponse"
+                },
+                "examples": {
+                  "Successful": {
+                    "value": {
+                      "id": "61df26d9-3750-4206-baab-f2e20683f35b",
+                      "type": "TWO_STEP_ONBOARDING",
+                      "workflow": "HOSTED_BY_PROVIDER",
+                      "status": "PENDING",
+                      "provider": {
+                        "id": "STRIPE",
+                        "connection_id": "8fee3cc6-f3cb-455d-b139-973866111a03",
+                        "recipient_id": "acct_1RvpogA4Jk50vKRE",
+                        "redirect_url": "https://api.y.uno/redirect/kyc/stripe/session_12345"
+                      },
+                      "created_at": "2025-08-22T17:57:58.460711Z",
+                      "updated_at": "2025-08-22T18:15:22.123456Z"
+                    },
+                    "summary": "Successful"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipient not found"
+          }
+        }
       }
     }
   },

@@ -44,7 +44,7 @@ Yuno offers two onboarding flows for submerchants, providing flexibility based o
 
 1. **Pre-onboarded accounts**: If a submerchant has already completed the onboarding process with a specific provider (e.g., through an external dashboard or platform), the marketplace can supply the corresponding `recipient_id` during creation. In this scenario, no further onboarding is required, and the status will be immediately set to `SUCCEEDED` (`onboardings.type`=`PREVIOUSLY_ONBOARDED`).
 
-2. **Dynamic onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the chosen provider (`onboardings.type`=`ONBOARD_ONTO_PROVIDER`). This process may include:
+2. **Dynamic onboarding**: If no credentials are provided, Yuno will initiate the onboarding process for the chosen provider (`onboardings.type`=`ONE_STEP_ONBOARDING` or `TWO_STEP_ONBOARDING`). This process may include:
    1. Form submission or redirection to a hosted onboarding page.
    2. Uploading legal or financial documentation.
    3. Completing KYC/KYB validation steps.
@@ -496,6 +496,8 @@ In this section, we outline the necessary validations to ensure successful split
 This section lists the API endpoints involved in managing split payments.
 
 * **[Create recipients](ref:create-recipient-1)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
+* **[Create onboarding](ref:create-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings`
+* **[Continue onboarding](ref:continue-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/continue`
 * **[Create payment](ref:create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
 * **[Capture authorization](ref:capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
 * **[Refund payment](ref:refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
