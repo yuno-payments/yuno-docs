@@ -124,8 +124,6 @@ To implement the Lite SDK integration, follow the platform-specific guides below
   <YunoCard title="iOS" href="/docs/lite-checkout-ios" />
 
   <YunoCard title="Android" href="/docs/lite-checkout-android" />
-
-  <YunoCard title="Flutter" href="/docs/lite-sdk-payment-flutter" />
 </Shelf>
 
 ## Payment workflow using a vaulted token
@@ -198,7 +196,7 @@ With the **Lite SDK**, you can save credit or debit cards for future purchases w
 You can retrieve a vaulted token in two ways:
 
 * **Via API:** Set `vault_on_success = true` when using the [Create payment](ref:create-payment) endpoint. The response will return the `vaulted_token` for the customer's card.
-* **Via SDK settings:** Enable `cardSaveEnable = true` in the SDK settings for [Web](doc:lite-sdk-complementary-features), [iOS](doc:lite-checkout-ios), [Android](doc:lite-checkout-android), or [Flutter](https://docs.y.uno/docs/flutter-sdk-integration). The SDK will display a checkbox allowing users to save their card.
+* **Via SDK settings:** Enable `cardSaveEnable = true` in the SDK settings for [Web](doc:lite-sdk-complementary-features), [iOS](doc:lite-checkout-ios), or [Android](doc:lite-checkout-android). The SDK will display a checkbox allowing users to save their card.
 
 Use only one method to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](doc:enrollment-lite) page.
 
