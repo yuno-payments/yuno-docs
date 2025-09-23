@@ -85,7 +85,7 @@ class ViewController: YunoEnrollmentDelegate {
 
 `Yuno.enrollPayment()` presents a full-screen `UIViewController` modally using the `viewController` provided in your `delegate`. This works only in UIKit. In SwiftUI, wrap a `UIViewController` and return it via the `viewController` property. The `delegate` must expose a visible controller to allow the SDK to present the UI.
 
-The following table describes the protocol requirements:
+Parameters
 
 | Parameter                                      | Description                                                                                                                                                                                                                          |
 | :--------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -96,12 +96,16 @@ The following table describes the protocol requirements:
 
 The `showPaymentStatus` parameter determines whether the payment status should be displayed. Passing `true` shows the payment status, while passing `false` hides it.
 
+Parameters
+
 The `enrollPayment` method parameters are described below:
 
-- `delegate: YunoEnrollmentDelegate` : The delegate object that handles enrollment callbacks.
-- `showPaymentStatus: Bool`: A Boolean flag that determines whether to display status views during the payment enrollment process.
+| Parameter | Type | Description |
+| :-------- | :--- | :---------- |
+| `delegate` | `YunoEnrollmentDelegate` | The delegate object that handles enrollment callbacks. |
+| `showPaymentStatus` | `Bool` | A Boolean flag that determines whether to display status views during the payment enrollment process. |
 
-The method `enrollPayment` initiates the payment enrollment process. You should call It in response to user interactions, such as pressing a button. The method utilizes the provided `delegate `to manage enrollment events and, based on the parameter `showPaymentStatus `decides whether to show visual feedback about the enrollment status.
+The method `enrollPayment` initiates the payment enrollment process. You should call it in response to user interactions, such as pressing a button. The method utilizes the provided `delegate` to manage enrollment events and, based on the parameter `showPaymentStatus`, decides whether to show visual feedback about the enrollment status.
 
 ## Step 3: Enrollment status
 
