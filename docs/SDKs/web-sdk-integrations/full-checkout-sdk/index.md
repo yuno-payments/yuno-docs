@@ -136,4 +136,6 @@ After integrating the SDK using one of the methods described above, follow these
 
 ## What's New
 
-Track the latest Web SDK updates, new features, and breaking changes on the [Web SDK changelog](../web-sdk-changelog) page.
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
+
+<br />
