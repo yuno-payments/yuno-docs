@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-This option provides a flexible payment solution with pre-built UI components and customization options.
+This page provides a guide to the Yuno Headless SDK for Android enrollment.
 
 The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards.
 
@@ -34,10 +34,10 @@ For merchants requiring a pre-built UI solution or simpler integration, consider
 
 ## Requirements
 
-Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
+Before starting the Yuno Android SDK integration, ensure your project meets the [technical requirements](doc:requirements-android). Also, ensure the following prerequisites are in place:
 
 * You must have an active Yuno account
-* To perform the integration, you'll need your Yuno API credentials:
+* You need your Yuno API credentials:
   * `account_id`
   * `public-api-key`
   * `private-secret-key`
@@ -53,7 +53,7 @@ You can obtain these credentials from the [Developers section of the Yuno dashbo
 
 ## Step 1: Create a customer
 
-Before enrolling payment methods, you need to create a customer using the [Create Customer](ref:create-customer) endpoint.
+Create a customer using the [Create Customer](ref:create-customer) endpoint before enrolling payment methods.
 
 **Prerequisites:**
 
@@ -65,11 +65,11 @@ Before enrolling payment methods, you need to create a customer using the [Creat
 * Identifying the person enrolling the payment method
 * Enabling saved payment method functionality
 * Tracking enrollment history
-* Store the customer ID securely; you'll need it for the next step.
+* Store the customer ID securely for the next step.
 
 ## Step 2: Create a customer session
 
-Create a new `customer_session` using the [Create Customer Session](ref:create-customer-session) endpoint.
+Create a new `customer_session` using the [Create Customer Session](ref:create-customer-session) endpoint:
 
 **Prerequisites:**
 
@@ -80,7 +80,7 @@ Create a new `customer_session` using the [Create Customer Session](ref:create-c
 
 * Include the customer ID in the request
 * Store the returned `customer_session` ID
-* Generate a new `customer_session`  for each payment method enrollment.
+* Generate a new `customer_session` for each payment method enrollment.
 
 ## Step 3: Add the SDK to your project
 
@@ -111,9 +111,9 @@ dependencies {
 
 ## Step 4: Initialize Headless SDK with the public key
 
-First, retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
+Retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
 
-If you haven't implemented a custom application, create one. In the `onCreate()` method of your application class, call the initialize function (`Yuno.initialize`) as shown in the example below:
+If you haven't implemented a custom application, create one. In the `onCreate()` method of your application class, call the initialize function (`Yuno.initialize`):
 
 ```kotlin
 class CustomApplication : Application() {
@@ -122,7 +122,7 @@ class CustomApplication : Application() {
     Yuno.initialize(
       this,
       "your api key",
-      config: YunoConfig, // This is a data class to use custom configs in the SDK.
+      config: YunoConfig,
     )
   }
 }
@@ -130,7 +130,7 @@ class CustomApplication : Application() {
 
 ## Step 5: Create a customer session
 
-To start the enrollment process, you need to:
+To start the enrollment process:
 
 1. Create a customer using the [Create Customer](ref:create-customer) endpoint. The response will include the customer `id`.
 
@@ -146,7 +146,7 @@ The endpoint response will provide the `customer_session` value required for enr
 
 ## Step 6: Create an enrollment payment method object
 
-To set up the Headless SDK integration for enrollment, you need to create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. When creating this object, specify which payment method type your customer can enroll in. Currently, the Headless SDK only supports the CARD payment method type.
+Create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint to set up the Headless SDK integration for enrollment. When creating this object, specify which payment method type your customer can enroll in. Currently, the Headless SDK only supports the CARD payment method type.
 
 > 📘 Card Verification
 >
@@ -154,44 +154,35 @@ To set up the Headless SDK integration for enrollment, you need to create an enr
 
 ## Step 7: Start the enrollment process
 
-To start the enrollment process, use the `apiClientEnroll` function. This function requires configuration parameters that define how the enrollment will be processed. The following table describes the required parameters.
+Use the `apiClientEnroll` function to start the enrollment process. This function requires configuration parameters that define how the enrollment will be processed. The following table describes the required parameters:
 
 | Parameter          | Description                                                                                                                                                                                                                            |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
 | `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
 
-The following code block presents an example of the parameter configuration.
+The following code block shows an example of the parameter configuration:
 
 ```kotlin
 override fun onCreate(savedInstanceState: Bundle?) {
 	val apiClientEnroll = Yuno.apiClientEnroll(
-    // country can be one of the following: https://docs.y.uno/docs/country-coverage-yuno-sdk
   	country_code = "CO",
     
-		// The customer_session created in https://docs.y.uno/reference/create-customer-session
     customerSession = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
 
-    context = this ->  it´s the context of your activity 
+    context = this 
   )
  }
 ```
 
 ## Step 8: Generate a vaulted token
 
-After collecting all required customer information, create a `vaulted_token` using the `apiClientEnroll.continueEnrollment` function. Since this is an asynchronous function, use a `try/catch` block to handle any errors that may occur. The following example demonstrates how to create a `vaulted_token`:
+After collecting all required customer information, create a `vaulted_token` using the `apiClientEnroll.continueEnrollment` function. Since this is an asynchronous function, use a `try/catch` block to handle any errors that may occur. The following example shows how to create a `vaulted_token`:
 
 ```kotlin
-/**
- * Create Token
- * This function will trigger an error if there is missing data.
- * You can catch this error using a try/catch block.
- */
 apiClientEnroll.continueEnrollment( 
  collectedData = EnrollmentCollectedData(
-   	// The customer_session created in https://docs.y.uno/reference/create-customer-session
     customerSession = "customer_session",
-   	// The necessary info to use the payment method structure
     paymentMethod = EnrollmentMethod(
            type = "CARD",
            card = CardData(
@@ -202,16 +193,13 @@ apiClientEnroll.continueEnrollment(
                    number = "4111111111111111",
                    securityCode = "123",
                    holderName = "Firstname Lastname",
-                 	// Use `CardType.DEBIT` or `CardType.CREDIT` for the card type.
                    type = CardType.DEBIT
                ),
            customer = Customer(
-             	 // You can check the object here: https://docs.y.uno/reference/the-customer-object
-            	 // You create the customer using the following endpoint: https://docs.y.uno/reference/create-customer
                id = "id",
                merchantCustomerId = "merchant_customer_id",
                firstName = "firstName",
-             	  email = "email@email.com",
+               email = "email@email.com",
                country = "CO",
                document = Document(
                    documentType = "PAS",
@@ -243,7 +231,7 @@ The `apiClientEnroll.continueEnrollment` function returns an Observable type tha
 ```
 ```
 
-The code block below presents an example of observing the response:
+The following code block shows an example of observing the response:
 
 ```kotlin
 apiClientPayment.continueEnrollment(data, context).observe(context) { response ->
