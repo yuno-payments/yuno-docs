@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-The Yuno Seamless SDK for Android provides a flexible payment solution that combines pre-built UI components with customization options.
+This page provides a guide to the Yuno Seamless SDK for Android payments.
 
 > 👍 Recommended SDK
 >
@@ -35,21 +35,21 @@ For merchants requiring complete UI control or more advanced features, consider 
 
 ## Requirements
 
-Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
+Before starting the Yuno Android SDK integration, ensure your project meets the [technical requirements](doc:requirements-android). Also, ensure the following prerequisites are in place:
 
 * You must have an active Yuno account.
-* To perform the integration, you'll need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
+* You need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
   * Create a `customer`, which is required before initiating payments
   * Create a `checkout_session`, which initializes the payment flow
   * Create the payment associated with the session
 
 > 📘 Verify SDK Version
 >
-> Access the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the last SDK version available.
+> See the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
 
 ## Step 1: Create a customer
 
-Before initiating payments, you need to create a customer using the [Create customer endpoint](ref:create-customer). This step is required to:
+Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
 
 * Identify the person making the payment
 * Enable saved card functionality (if enabled)
@@ -59,7 +59,7 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 ## Step 2: Create a checkout session
 
-To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. Make sure to:
+Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
 
 * Include the customer ID obtained from the previous step
 * Store the returned `checkout_session` ID for use in Step 6 of the integration
@@ -70,13 +70,13 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 
 ## Step 3: Add SDK to your project
 
-Add the repository source using the following code:
+Add the repository source:
 
 ```groovy
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 ```
 
-After, include the code below in the file `build.gradle` to add the Yuno SDK dependency to the application.
+Include the following code in the `build.gradle` file to add the Yuno SDK dependency to the application:
 
 ```kotlin
 dependencies {
@@ -94,9 +94,9 @@ The Yuno SDK requires network permissions. Ensure the `INTERNET` permission is i
 
 ## Step 5: Initialize SDK
 
-First, you retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
+Retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
 
-If you haven't implemented a custom application, create one. In the `onCreate()` method of your application class, call the initialize function (`Yuno.initialize`) as shown in the example below:
+If you haven't implemented a custom application, create one. In the `onCreate()` method of your application class, call the initialize function (`Yuno.initialize`):
 
 ```kotlin
 class CustomApplication : Application() {
@@ -105,13 +105,13 @@ class CustomApplication : Application() {
         Yuno.initialize(
             this,
             "your api key",
-            config = YunoConfig() // Customize configurations if needed
+            config = YunoConfig()
         )
     }
 }
 ```
 
-Use the `YunoConfig` data class to set additional configurations for the SDK. The customization options are listed and described in the following table:
+Use the `YunoConfig` data class to set additional configurations for the SDK. The following table lists and describes the customization options:
 
 <Table>
   <thead>
@@ -199,7 +199,7 @@ Use the `YunoConfig` data class to set additional configurations for the SDK. Th
   </tbody>
 </Table>
 
-The following code block presents an example of `YunoConfig`:
+The following code block shows an example of `YunoConfig`:
 
 ```kotlin
 data class YunoConfig(
@@ -212,15 +212,14 @@ data class YunoConfig(
 
 ## Step 6: Start checkout
 
-To initiate a new payment process with the Seamless SDK, call the `startCheckout` method in the `onCreate()` function of the activity that integrates the SDK:
+Call the `startCheckout` method in the `onCreate()` function of the activity that integrates the SDK to initiate a new payment process with the Seamless SDK:
 
 ```kotlin
 startCheckout(
   checkoutSession: "checkout_session",
-  // Replace with your target country's ISO code (e.g., "US" for USA, "FR" for France). The complete list of country_codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk.
   country_code: "US",
   callbackPaymentState: ((String?) -> Unit)?,
-  merchantSessionId: String? = null //Optional - Default null
+  merchantSessionId: String? = null
 )
 ```
 
@@ -242,7 +241,7 @@ const val PAYMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
 const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED"
 ```
 
-The following table provide additional information about the possible states:
+The following table provides additional information about the possible states:
 
 | **State**        | **Description**                                                                                                                 | **Additional action required**                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
@@ -255,17 +254,17 @@ The following table provide additional information about the possible states:
 
 ## Step 7: Get payment one-time token (OTT)
 
-To start a payment process, you have to call the method `startPaymentSeamlessLite`.
+Call the method `startPaymentSeamlessLite` to start a payment process:
 
 ```kotlin
 startPaymentSeamlessLite(
     paymentSelected: PaymentSelected,
-    callbackPaymentState: ((String?) -> Unit)?, //Optional - Default null
-    showPaymentStatus: Boolean, //Optional - Default true - If you wish to use your own payment result screen set this param in false. The default shows the SDK's default result screen.
+    callbackPaymentState: ((String?) -> Unit)?,
+    showPaymentStatus: Boolean,
 )
 ```
 
-Below is a description of the parameters to start the payment:
+The following table describes the parameters to start the payment:
 
 | Parameter              | Description                                                                              |
 | :--------------------- | :--------------------------------------------------------------------------------------- |
@@ -277,13 +276,13 @@ You will receive the payment status via `callbackPaymentState`, which will indic
 
 ## Step 8: Create payment
 
-To complete the payment process, you need to call the method `startPaymentSeamlessLite` with the selected payment method.
+Call the method `startPaymentSeamlessLite` with the selected payment method to complete the payment process:
 
 ```kotlin
 startPaymentSeamlessLite(
     paymentSelected: PaymentSelected,
-    callbackPaymentState: ((String?) -> Unit)?, //Optional - Default null
-    showPaymentStatus: Boolean, //Optional - Default true - If you wish to use your own payment result screen set this param in false. The default shows the SDK's default result screen.
+    callbackPaymentState: ((String?) -> Unit)?,
+    showPaymentStatus: Boolean,
 )
 ```
 
@@ -293,7 +292,7 @@ Yuno Android SDK provides additional services and configurations you can use to 
 
 ### `styles`
 
-With the `styles` customization option, you can define global visual styles like through a `YunoStyles` object. It lets you apply consistent branding across the SDK by customizing button appearance and typography.
+With the `styles` customization option, you can define global visual styles through a `YunoStyles` object. It lets you apply consistent branding across the SDK by customizing button appearance and typography.
 
 ```kotlin
 data class YunoStyles(
@@ -322,7 +321,7 @@ data class YunoButtonStyles(
 )
 ```
 
-To use the `styles` customization option, you have to use the `YunoConfig` data class, described in Step 2.
+Use the `YunoConfig` data class, described in Step 5, to use the `styles` customization option.
 
 ### Loader
 
@@ -330,16 +329,16 @@ The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the 
 
 ### Save card for future payments
 
-In addition, you can display a checkbox to save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders:
+You can also display a checkbox to save or enroll cards using `cardSaveEnable: true`. The following examples show the checkbox for both card form renders:
 
 <Image align="center" src="https://files.readme.io/1c3d62f0307923298b22f18a1e58f86f8b6068a582315a0991ff8d802c475dbc-Card___save_for_future_payments.png" />
 
 ### Render options
 
-You can choose between two card form render options. The following screenshots demonstrate the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
+You can choose between two card form render options. The following screenshots show the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
 
 <Image align="center" src="https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png" />
 
 > 📘 Demo App Access
 >
-> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
+> In addition to the code examples provided, you can see the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
