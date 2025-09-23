@@ -5,11 +5,11 @@ hidden: false
 metadata:
   robots: index
 ---
-Welcome to the Yuno SDK changelog. Here you can find detailed information about changes, improvements, and new features in each version of our SDKs.
+This page provides detailed information about changes, improvements, and new features in each version of our SDKs.
 
 ## Web SDK Versions
 
-Below is a complete version history highlighting key updates and improvements to Yuno's Web SDK:
+The following is a complete version history highlighting key updates and improvements to Yuno's Web SDK:
 
 * [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/) - Latest version with enhanced UI grouping and multilingual support
 * [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/) - Enhanced `continuePayment` method and optional initialization parameters
@@ -18,11 +18,11 @@ Below is a complete version history highlighting key updates and improvements to
 
 > 📘 Latest Version
 >
-> For implementation instructions using the latest Web SDK version, visit the [Web SDK documentation](/docs/full-checkout-sdk).
+> For implementation instructions using the latest Web SDK version, see the [Web SDK documentation](/docs/full-checkout-sdk).
 
 ## How to Use This Changelog
 
-Structured information to help you understand version differences and plan migrations.
+This changelog provides structured information to help you understand version differences and plan migrations.
 
 Each version page includes:
 
@@ -33,4 +33,4 @@ Each version page includes:
 
 ### Getting Help
 
-Need help with a specific version? Contact our support team or refer to the main SDK documentation for the latest implementation guidance.
+Need help with a specific version? Contact our support team or see the main SDK documentation for the latest implementation guidance.
