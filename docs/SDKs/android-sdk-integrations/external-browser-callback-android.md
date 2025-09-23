@@ -13,7 +13,7 @@ next:
 ---
 ## Overview
 
-When a payment flow requires the user to complete an action in an external browser (e.g., 3DS challenge, bank redirect), it is essential to use the `callback_url` parameter to ensure the user returns to your app seamlessly.
+This page explains how to handle external browser returns in Android. When a payment flow requires the user to complete an action in an external browser (e.g., 3DS challenge, bank redirect), it is essential to use the `callback_url` parameter to ensure the user returns to your app seamlessly.
 
 ***
 
@@ -52,19 +52,17 @@ Add an `intent-filter` to your main activity in `AndroidManifest.xml`:
 
 ## 3. Handle the intent in your activity
 
-In your activity, handle the return intent:
+Handle the return intent in your activity:
 
 ```kotlin
 intent.data?.let { uri ->
     val url = uri.toString()
     if (url.contains("myapp://return")) {
-        // Handle the return, e.g., show a message or navigate
         Toast.makeText(this, "Returned from payment flow", Toast.LENGTH_SHORT).show()
     }
 }
 ```
 
-* Adapt this logic to your app's needs
 
 ## 4. Full example: integrating with Yuno SDK
 

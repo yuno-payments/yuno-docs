@@ -14,11 +14,11 @@ metadata:
 next:
   description: ''
 ---
-Yuno iOS SDK lets you modify styles by changing font, button, and color styles. To customize the iOS SDK appearance, set the appearance fields. This solution allows you to adapt the visual elements of the SDK to match your application brand, improving consistency and the UX.
+This page explains how to modify styles in the Yuno iOS SDK by changing font, button, and color styles. To customize the iOS SDK appearance, set the appearance fields. This solution allows you to adapt the visual elements of the SDK to match your application brand, improving consistency and the UX.
 
 ## Appearance configuration
 
-The following table presents all available fields you can use to customize the iOS SDK.
+The following table lists all available fields you can use to customize the iOS SDK:
 
 | Field                            | Description                                                                                                                            |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -37,10 +37,9 @@ The following table presents all available fields you can use to customize the i
 > 
 > Ensure all colors are specified as UIColor to maintain compatibility. Colors can be sourced from Xcode's predefined palette or the merchant's assets, but they must always be of type UIColor.
 
-To control the appearance, use the `Yuno.Appearance()` function to define a variable with all your customizations. Then inform it when initializing the SDK, as shown below:
+Use the `Yuno.Appearance()` function to define a variable with all your customizations to control the appearance. Then inform it when initializing the SDK:
 
 ```swift
-// Create an instance of Yuno.Appearance to customize the SDK's appearance
 let appearance = Yuno.Appearance(
     fontFamily: "Climate Crisis",
     accentColor: UIColor.orange, 
@@ -54,10 +53,9 @@ let appearance = Yuno.Appearance(
     disableButtonTitleColor: UIColor.black
 )
 
-// Initialize the Yuno SDK with the provided API key and configuration
 Yuno.initialize(
-    apiKey: apiKey, // Your API key for authenticating with the Yuno SDK
-    config: YunoConfig(appearance: appearance) // Pass the customized appearance configuration
+    apiKey: apiKey,
+    config: YunoConfig(appearance: appearance)
 )
 
 ```

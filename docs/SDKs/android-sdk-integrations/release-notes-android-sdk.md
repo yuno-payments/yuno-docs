@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-The Android SDK release notes provide a comprehensive overview of the updates, improvements, and fixes introduced in each version of the Android SDK.
+This page provides a comprehensive overview of the updates, improvements, and fixes introduced in each version of the Android SDK.
 
 | Version   | Changes                                                                                                                                                                     |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
