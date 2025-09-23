@@ -14,7 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields chec
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Secure Fields implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -26,11 +26,11 @@ Choose the integration method that best suits your development workflow and tech
 
 > 📘 TypeScript Library
 >
-> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
+> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods in the Yuno Web SDK.
 
 ## Step 2: Initialize secure fields with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`:
 
 ```javascript
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
@@ -42,7 +42,7 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 ## Step 3: Start the checkout process
 
-You will start the checkout process. To do it, use the `secureFields` function and provide the necessary configuration parameters.
+You will start the checkout process. To do it, use the `secureFields` function and provide the necessary configuration parameters:
 
 The essential parameters are the `country_code`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.
 
@@ -74,7 +74,7 @@ const secureFields = yuno.secureFields({
 
 After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
 
-The table below presents all configurations available:
+The following table shows all configurations available:
 
 | Parameters                      | Description                                                                                                                                                                         |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -93,7 +93,7 @@ The table below presents all configurations available:
 
 Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
-The following code block presents an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user.
+The following code block shows an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user:
 
 ### Secure Field Parameters
 
@@ -136,22 +136,18 @@ const secureNumber = secureFields.create({
           console.log('not_error_pan')
         }
       },
-      // Trigger when blurring from input
       onBlur() {
         console.log('blur_pan')
       },
-      // Trigger when focussing on input
       onFocus: () => {
         console.log('focus_pan')
       },
-      // Trigger when input has finished rendering 
       onRenderedSecureField: ()=> {
         console.log('render completed')
       }
     },
   })
 
-	// Renders into specified element
   secureNumber.render('#pan')
 
   const secureExpiration = secureFields.create({
@@ -162,7 +158,6 @@ const secureNumber = secureFields.create({
       label: 'Card Expiration',
       showError: true,
       errorMessage: "Custom Error",
-      // Indicates if the fields has error
       onChange: ({ error }) => {
         if (error) {
           console.log('error_expiration')
@@ -170,22 +165,18 @@ const secureNumber = secureFields.create({
           console.log('not_error_expiration')
         }
       },
-      // Trigger when blurring from input
       onBlur() {
         console.log('blur_expiration')
       },
-      // Trigger when focussing on input
       onFocus: () => {
         console.log('focus_expiration')
       },
-      // Trigger when input has finished rendering 
       onRenderedSecureField: ()=> {
         console.log('render completed')
       }
     },
   })
 
-  // Renders into specified element
   secureExpiration.render('#expiration')
 
 
@@ -197,7 +188,6 @@ const secureNumber = secureFields.create({
       label: 'CVV',
       showError: true,
       errorMessage: "Custom Error",
-      // Indicates if the fields has error
       onChange: ({ error }) => {
         if (error) {
           console.log('error_cvv')
@@ -205,26 +195,22 @@ const secureNumber = secureFields.create({
           console.log('not_error_cvv')
         }
       },
-      // Trigger when blurring from input
       onBlur() {
         console.log('blur_cvv')
       },
-      // Trigger when focussing on input
       onFocus: () => {
         console.log('focus_cvv')
       },
-      // Trigger when input has finished rendering 
       onRenderedSecureField: ()=> {
         console.log('render completed')
       }
     },
   })
 
-  // Renders into specified element
   secureCvv.render('#cvv')
 ```
 
-Below, you find a GIF showing how you can configure the Secure Fields.
+Below, you can see a GIF showing how you can configure the Secure Fields:
 
 <div
   style={{
@@ -242,7 +228,7 @@ Below, you find a GIF showing how you can configure the Secure Fields.
 
 ## Step 5: Generate an OTT (one-time token)
 
-With all user information in hand, you can start the payment. First, you need to create a One-Time Token using the function `secureFields.generateToken`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. Below is an example of creating an one-time token using **vaultedToken** information.
+With all user information in hand, you can start the payment. First, you need to create a One-Time Token using the function `secureFields.generateToken`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. The following example shows how to create a one-time token using **vaultedToken** information:
 
 > 📘 Benefits of Using a Vaulted Token
 >
@@ -264,7 +250,6 @@ const oneTimeToken = await secureFields.generateToken({
   cardHolderName: 'John Deer',
   saveCard: true,
   vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
-  // Optional: only neccessary if an installments plan is created for the account
   installment: {
             id: string,
             value: number,
@@ -274,9 +259,6 @@ const oneTimeToken = await secureFields.generateToken({
                 total_value: string,
             },
         },
-  // Check your card processor to know if you need to send 
-  // customer information
-  // full object here https://docs.y.uno/reference/the-customer-object
   customer: {
     document: {
       document_number: '1090209924',
@@ -290,20 +272,12 @@ const oneTimeToken = await secureFields.generateToken({
 You can also use `secureFields.generateTokenWithInformation` to receive any additional info the customer gives at checkout, such as installments or document type/number.
 
 ```javascript
-// Create one-time token
-// This will trigger an error if there are missing data
-// You can catch it using a try/catch
+Create a one-time token with error handling:
 const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformation({ 
-  // Optional: This parameter is used to indicate that a different checkout session is desired, 
-  //rather than the one initially generated.
-  //A use case is for the persistence of card data after a payment error.
   checkoutSession: '{{the checkout session id}}',
-  // Required: You can create an input to get this formation
   cardHolderName: 'John Deer',
-  // Optional: You can create an input to get this formation
   saveCard: true,
   vaultedToken: "aad8578e-ac2f-40a0-8065-25b5957f6555",
-  // Optional: only neccessary if an installments plan is created for the account
   installment: {
             id: string,
             value: number,
@@ -313,9 +287,6 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
                 total_value: string,
             },
         },
-  // Check your card processor to know if you need to send 
-  // customer information
-  // full object here https://docs.y.uno/reference/the-customer-object
   customer: {
     document: {
       document_number: '1090209924',
@@ -328,14 +299,14 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 
 ## Step 6: Create the Payment
 
-After receiving the one-time token, you can create the payment using one of the two following options:
+After receiving the one-time token, you can create the payment using one of the following options:
 
 * Create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
 * Use the `createPayment` function.
 
 Both options require you to provide the `oneTimeToken` and the `checkoutSession`. As creating the payment may raise errors, Yuno recommends you use a try/catch function here.
 
-After, you can check the payment status using the `yuno.mountStatusPayment`function. The following example uses the `createPayment` function to create the payment and the `mountStatusPayment` to display the payment status:
+After, you can check the payment status using the `yuno.mountStatusPayment` function. The following example uses the `createPayment` function to create the payment and the `mountStatusPayment` to display the payment status:
 
 ### Payment Creation Flow
 
@@ -398,13 +369,12 @@ After finishing the installation, include the type definitions in your TypeScrip
 ```json
 {
   "compilerOptions": {
-    // Other compiler options
     "types": ["@yuno-payments/sdk-web-types"]
   }
 }
 ```
 
-With the type definitions installed and configured, you can now use them in your code. The following code block presents an example of how to initialize Yuno and create an instance.
+With the type definitions installed and configured, you can now use them in your code. The following code block shows an example of how to initialize Yuno and create an instance:
 
 ```typescript
 import { YunoInstance } from '@yuno-payments/sdk-web-types/dist/types';
@@ -434,7 +404,7 @@ const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformat
 
 ### Clear the values entered in the card fields
 
-Related to the previous functionality, the merchant can configure to clear the information entered in any card field. To accomplish this, it is necessary to execute the method `secureFieldInstance.clearValue()`, for each field that you wish to clear or delete. Below is an example:
+Related to the previous functionality, the merchant can configure to clear the information entered in any card field. To accomplish this, it is necessary to execute the method `secureFieldInstance.clearValue()`, for each field that you wish to clear or delete. The following example shows how:
 
 ```javascript
 const secureFieldInstance = secureFields.create({...})
@@ -443,7 +413,7 @@ secureFieldInstance.clearValue()
 
 ### Input focus
 
-The merchant can set the focus on a particular input. To accomplish this, it is necessary to execute the method `secureFieldInstance.focus()`, for each field that you wish to focus on. The code block below presents an example:
+The merchant can set the focus on a particular input. To accomplish this, it is necessary to execute the method `secureFieldInstance.focus()`, for each field that you wish to focus on. The following code block shows an example:
 
 ```javascript
 const secureFieldInstance = secureFields.create({...})
@@ -452,7 +422,7 @@ secureFieldInstance.focus()
 
 ### Force validation
 
-The merchant can force the validation for a particular input. To accomplish this, it is necessary to execute the method `secureFieldInstance.validate()`, for each field that you wish to validate. The code block below presents an example:
+The merchant can force the validation for a particular input. To accomplish this, it is necessary to execute the method `secureFieldInstance.validate()`, for each field that you wish to validate. The following code block shows an example:
 
 ```javascript
 const secureFieldInstance = secureFields.create({...})
@@ -461,7 +431,7 @@ secureFieldInstance.validate()
 
 ### Set custom error message
 
-The merchant can define a custom error message after an input validation. To accomplish this, it is necessary to execute the method `secureFieldInstance.setError()`, for each field you wish to set a custom error message for. The code block below presents an example:
+The merchant can define a custom error message after an input validation. To accomplish this, it is necessary to execute the method `secureFieldInstance.setError()`, for each field you wish to set a custom error message for. The following code block shows an example:
 
 ```javascript
 const secureFieldInstance = secureFields.create({...})
@@ -470,7 +440,7 @@ secureFieldInstance.setError('Custom error')
 
 ### Set card type
 
-The merchant can define the card type the customer uses for the payment. To accomplish this, you need to execute the method `secureFieldInstance.setCardType()` and send either ´DEBIT´ or ´CREDIT´ for each scenario. This is useful for dual cards, where the same card can be used as credit or debit, such as in Brazil. The code block below presents an example:
+The merchant can define the card type the customer uses for the payment. To accomplish this, you need to execute the method `secureFieldInstance.setCardType()` and send either 'DEBIT' or 'CREDIT' for each scenario. This is useful for dual cards, where the same card can be used as credit or debit, such as in Brazil. The following code block shows an example:
 
 ```javascript
 const secureFieldInstance = secureFields.create({...})

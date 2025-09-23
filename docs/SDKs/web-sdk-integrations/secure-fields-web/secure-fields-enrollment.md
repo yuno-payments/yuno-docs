@@ -14,7 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields Enro
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Secure Fields implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -26,11 +26,11 @@ Choose the integration method that best suits your development workflow and tech
 
 > 📘 TypeScript Library
 >
-> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
+> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods in the Yuno Web SDK.
 
 ### Step 2: Initialize secure fields with the public key
 
-Get a `Yuno` instance class in your JavaScript application with a valid `PUBLIC_API_KEY`.
+Get a `Yuno` instance class in your JavaScript application with a valid `PUBLIC_API_KEY`:
 
 ```javascript
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
@@ -72,7 +72,7 @@ const secureFields = yuno.secureFields({
 
 After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
 
-The table below presents all configurations available:
+The following table shows all configurations available:
 
 | Parameters                      | Description                                                                                                                                                                         |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -90,19 +90,17 @@ The table below presents all configurations available:
 
 Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
-The next code block presents an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user.
+The following code block shows an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user:
 
 ```javascript
 const secureNumber = secureFields.create({
   name: 'pan',
-  // All options are optional
   options: {
     placeholder: '0000 0000 0000 0000',
     styles: ``,
     label: 'Card Number',
     showError: true,
     errorMessage: "Custom Error",
-    // Indicates if the field has an error
     validateOnBlur: false,
     onChange: ({ error, data }) => {
       if (error) {
@@ -111,33 +109,27 @@ const secureNumber = secureFields.create({
         console.log('not_error_pan')
       }
     },
-    // Triggered when blurring from input
     onBlur() {
       console.log('blur_pan')
     },
-    // Triggered when focusing on input
     onFocus: () => {
       console.log('focus_pan')
     },
-    // Trigger when input has finished rendering 
     onRenderedSecureField: ()=> {
       console.log('render completed')
     }
   },
 })
 
-// Render into desired element
 secureNumber.render('#pan')
 
 const secureExpiration = secureFields.create({
   name: 'expiration',
-  // All options are optional
   options: {
     placeholder: 'MM / YY',
     styles: ``,
     label: 'Card Expiration',
     showError: true,
-    // Indicates if the field has an error
     onChange: ({ error }) => {
       if (error) {
         console.log('error_expiration')
@@ -145,33 +137,27 @@ const secureExpiration = secureFields.create({
         console.log('not_error_expiration')
       }
     },
-    // Triggered when blurring from input
     onBlur() {
       console.log('blur_expiration')
     },
-    // Triggered when focusing on input
     onFocus: () => {
       console.log('focus_expiration')
     },
-    // Trigger when input has finished rendering 
     onRenderedSecureField: ()=> {
       console.log('render completed')
     }
   },
 })
 
-// Render into desired element
 secureExpiration.render('#expiration')
 
 const secureCvv = secureFields.create({
   name: 'cvv',
-  // All options are optional
   options: {
     placeholder: 'CVV',
     styles: ``,
     label: 'CVV',
     showError: true,
-    // Indicates if the field has an error
     onChange: ({ error }) => {
       if (error) {
         console.log('error_cvv')
@@ -179,22 +165,18 @@ const secureCvv = secureFields.create({
         console.log('not_error_cvv')
       }
     },
-    // Triggered when blurring from input
     onBlur() {
       console.log('blur_cvv')
     },
-    // Triggered when focusing on input
     onFocus: () => {
       console.log('focus_cvv')
     },
-    // Trigger when input has finished rendering 
     onRenderedSecureField: ()=> {
       console.log('render completed')
     }
   },
 })
 
-// Render into desired element
 secureCvv.render('#cvv')
 
 ```
@@ -203,11 +185,11 @@ secureCvv.render('#cvv')
 >
 > If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the `secureNumber` object before creating the vaulted_token and ignore the `secureExpiration` and `secureCvv` objects.
 
-After they are mounted, the three secure fields will be shown
+After they are mounted, the three secure fields will be shown:
 
 ### Step 6: Create Vaulted Token
 
-To enroll, create a Vaulted Token
+To enroll, create a Vaulted Token:
 
 ```javascript
 const vaultedToken = await secureFields.generateVaultedToken({
@@ -242,12 +224,11 @@ If you need the full response, you can use `secureFields.generateVaultedTokenWit
  *   updated_at: Date;
  *  }
  */ 
+Generate a vaulted token with customer information:
+
+```javascript
 const vaultedTokenWithInformation = await secureFields.generateVaultedTokenWithInformation({
-  // Required: You can create an input to get this formation
   cardHolderName: 'John Deer',
-  // Check your card processor to know if you need to send 
-  // customer information
-  // full object here https://docs.y.uno/reference/the-customer-object
   customer: {
     document: {
       document_number: '1090209924',
