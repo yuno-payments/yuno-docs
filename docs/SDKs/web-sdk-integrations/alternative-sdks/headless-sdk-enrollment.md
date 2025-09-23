@@ -32,7 +32,7 @@ To execute the enrollment process, you need to provide the `customer_session` to
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Headless SDK implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -44,7 +44,7 @@ Choose the integration method that best suits your development workflow and tech
 
 > 📘 TypeScript Library
 >
-> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
+> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods in the Yuno Web SDK.
 
 ## Step 2: Initialize Headless SDK with the public key
 
@@ -94,7 +94,7 @@ const apiClientEnroll = yuno.apiClientEnroll({
 
 ## Step 6: Generate a vaulted token
 
-After collecting all user information, you can start the enrollment. First, you need to create a `vaulted_token` using the function `apiClientEnroll.continueEnrollment`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. Below, you will find an example of creating a  `vaulted_token`:
+After collecting all user information, you can start the enrollment. First, you need to create a `vaulted_token` using the function `apiClientEnroll.continueEnrollment`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. The following example shows how to create a `vaulted_token`:
 
 ```javascript
 const vaultedTokenResponse = await apiClientEnroll.continueEnrollment({
@@ -118,7 +118,7 @@ const vaultedTokenResponse = await apiClientEnroll.continueEnrollment({
 });
 ```
 
-After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function.
+After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block shows an example of a response from the `apiClientEnroll.continueEnrollment` function:
 
 ```json
 {

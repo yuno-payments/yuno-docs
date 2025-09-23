@@ -14,11 +14,11 @@ metadata:
 next:
   description: ''
 ---
-To help you understand and check how the Yuno SDKs work, the Yuno team provides the Demo App. It provides implementation examples for all Yuno SDKs. Therefore, if you are having trouble running some SDK on your platform, you can check the working examples from the Demo App.
+To help you understand and check how the Yuno SDKs work, the Yuno team provides the Demo App. It provides implementation examples for all Yuno SDKs. Therefore, if you are having trouble running some SDK on your platform, you can see the working examples from the Demo App.
 
 > 🚧 Connect Payment Methods
 >
-> To ensure the Demo App will work properly, be sure to connect at least one payment method to your account through the [Dashboard](https://dashboard.y.uno/). Otherwise, when you access the Demo App, some features won't work. If you don't know how to connect a payment method to your account, check the following contents:
+> To ensure the Demo App will work properly, be sure to connect at least one payment method to your account through the [Dashboard](https://dashboard.y.uno/). Otherwise, when you access the Demo App, some features won't work. If you don't know how to connect a payment method to your account, see the following contents:
 >
 > * [Connections](/docs/connections)
 > * [Checkout Builder](/docs/checkout-builder)
@@ -73,6 +73,6 @@ You can also change the country by adding a query parameter named `country` to t
 http://localhost:8080?country=DE
 ```
 
-You will find a panel, as presented below, with all Yuno SDKs available by accessing the URL. Select the desired SDK to check its appearance and how it works.
+You will find a panel, as shown below, with all Yuno SDKs available by accessing the URL. Select the desired SDK to see its appearance and how it works.
 
 ![Demo App Screenshot](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true)
