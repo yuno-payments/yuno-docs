@@ -13,7 +13,7 @@ metadata:
 next:
   description: ''
 ---
-The Yuno Lite SDK for Android provides a pre-built UI solution focused on payment method enrollment. This SDK offers a streamlined integration process with essential enrollment functionality, making it ideal for merchants who:
+This page provides a guide to the Yuno Lite SDK for Android enrollment. This SDK offers a streamlined integration process with essential enrollment functionality, making it ideal for merchants who:
 
 * Need a quick implementation with minimal customization requirements
 * Want to focus primarily on payment method enrollment
@@ -30,31 +30,31 @@ For merchants requiring more advanced features like multiple payment methods, cu
 
 ## Requirements
 
-Before starting the Yuno Android SDK integration, make sure your project meets the [technical requirements](doc:requirements-android). In addition, ensure the following prerequisites are in place:
+Before starting the Yuno Android SDK integration, ensure your project meets the [technical requirements](doc:requirements-android). Also, ensure the following prerequisites are in place:
 
 * You must have an active Yuno account
-* To perform the integration, you'll need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
+* You need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
 * Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
 
 ## Step 1: Create a customer
 
-Before enrolling payment methods, you need to create a customer in Yuno's system. Use the [Create customer endpoint](ref:create-customer) to obtain a `customer_id`. This identifier will be used to associate enrolled payment methods with the specific customer.
+Create a customer in Yuno's system using the [Create customer endpoint](ref:create-customer) before enrolling payment methods. This endpoint will return a `customer_id` that you'll use to associate enrolled payment methods with the specific customer.
 
 The endpoint will return a `customer_session` that you'll need to use when calling the enrollment methods.
 
 ## Step 2: Include the library in your project
 
-Follow these steps to add the Yuno Lite SDK to your Android project:
+Add the Yuno Lite SDK to your Android project:
 
 ### Add the Repository
 
-First, add Yuno's Maven repository to your project's Gradle configuration:
+Add Yuno's Maven repository to your project's Gradle configuration:
 
 ```kotlin
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 ```
 
-After, include the code below in the file `build.gradle` to add the Yuno SDK dependency to the application.
+Include the following code in the `build.gradle` file to add the Yuno SDK dependency to the application:
 
 ```kotlin
 dependencies {
@@ -64,7 +64,7 @@ dependencies {
 
 ### Permissions
 
-Yuno SDK includes, by default, the `INTERNET` permission, which is required to make network requests.
+The Yuno SDK includes the `INTERNET` permission by default, which is required to make network requests.
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET" />
@@ -72,11 +72,11 @@ Yuno SDK includes, by default, the `INTERNET` permission, which is required to m
 
 ## Step 3: Initialize SDK with the public key
 
-To initialize the SDK, follow these steps:
+Initialize the SDK:
 
 1. Get your Public API Key from the [Yuno Dashboard](https://dashboard.y.uno/)
 2. Create a custom application class if you haven't already done so
-3. In the `onCreate()` method of your application class, call `Yuno.initialize()` with your API key as shown below:
+3. In the `onCreate()` method of your application class, call `Yuno.initialize()` with your API key:
 
 ```kotlin
 class CustomApplication : Application() {
@@ -85,26 +85,26 @@ class CustomApplication : Application() {
     Yuno.initialize(
       this,
       "your api key",
-      config: YunoConfig, // This is a data class to use custom configs in the SDK.
+      config: YunoConfig,
     )
   }
 }
 ```
 
-Use the data class `YunoConfig` to customize the SDK's behavior. You can include this configuration when calling `Yuno.initialize()`. The available options are:
+Use the data class `YunoConfig` to customize the SDK's behavior. Include this configuration when calling `Yuno.initialize()`. The available options are:
 
 ```kotlin
 data class YunoConfig(
-    val cardFlow: CardFormType = CardFormType.ONE_STEP, // Optional: Defines the card form flow type. ONE_STEP shows a single screen for card details, TWO_STEP splits it across multiple screens.
-    val saveCardEnabled: Boolean = false, // Determines whether to display the "Save card" checkbox on card flows.
-    val keepLoader: Boolean = false, // If true, keeps the Yuno loading screen visible until payment creation and continuation. Requires an additional step described later.
-    val cardFormDeployed: Boolean = false, // Full SDK only: If true, displays the card form within the payment methods list. If false, shows the card form on a separate screen.
-    val language: YunoLanguage? = null, // Sets the SDK language. If null or not provided, defaults to the device language.
-    val styles: YunoStyles? = null // Enables SDK-wide UI customization.
+    val cardFlow: CardFormType = CardFormType.ONE_STEP,
+    val saveCardEnabled: Boolean = false,
+    val keepLoader: Boolean = false,
+    val cardFormDeployed: Boolean = false,
+    val language: YunoLanguage? = null,
+    val styles: YunoStyles? = null
 )
 ```
 
-The following table includes descriptions for each customization available.
+The following table describes each customization option:
 
 <Table>
   <thead>
@@ -126,7 +126,7 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the section [Render options](#render-options) for more information.
+        This optional configuration defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. See the [Render options](#render-options) section for more information.
       </td>
     </tr>
 
@@ -136,7 +136,7 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Enables the **Save card checkbox** on card flows. Check the [Save card](#save-card-for-future-payments) section for more information.
+        Enables the **Save card checkbox** on card flows. See the [Save card](#save-card-for-future-payments) section for more information.
       </td>
     </tr>
 
@@ -146,7 +146,7 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Keep Yuno's loading screen until you create and continue with payment. To use this feature, you need to use the function `startCompletePaymentFlow()`, described in the next sections. Check the [Loader](#loader) for additional information.
+        Keep Yuno's loading screen until you create and continue with payment. To use this feature, use the function `startCompletePaymentFlow()`, described in the next sections. See the [Loader](#loader) for additional information.
       </td>
     </tr>
 
@@ -196,7 +196,7 @@ The following table includes descriptions for each customization available.
       </td>
 
       <td>
-        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, see the [`styles`](/docs/full-checkout-android#styles) section.
       </td>
     </tr>
   </tbody>
@@ -210,33 +210,33 @@ You also need to update your manifest to use your application:
 
 ## Step 4: Enroll a new payment method
 
-The enrollment process is a two-step flow. First, you initialize the process to set up the necessary components. Then, you start the UI flow to allow the user to enroll a payment method.
+The enrollment process is a two-step flow. First, initialize the process to set up the necessary components. Then, start the UI flow to allow the user to enroll a payment method.
 
 ### 4.1 Initialize the enrollment process
 
-To prepare your app to handle the enrollment flow, you must call the `initEnrollment` method within your activity's `onCreate` method. This is a mandatory setup step required by the Android operating system to register the contract that allows the SDK to send the final enrollment status back to your app.
+Call the `initEnrollment` method within your activity's `onCreate` method to prepare your app to handle the enrollment flow. This is a mandatory setup step required by the Android operating system to register the contract that allows the SDK to send the final enrollment status back to your app.
 
 ```kotlin
 fun ComponentActivity.initEnrollment(
-    callbackEnrollmentState: ((String?) -> Unit)? = null // Optional – To get the enrollment state, you must register this callback here.
+    callbackEnrollmentState: ((String?) -> Unit)? = null
 )
 ```
 
 ### 4.2 Start the enrollment flow
 
-To launch the user interface and begin the enrollment of a new payment method, you call the `startEnrollment` method. You can call this method at any point after `initEnrollment` has been executed, such as when a user taps an "Enroll New Payment Method" button.
+Call the `startEnrollment` method to launch the user interface and begin the enrollment of a new payment method. You can call this method at any point after `initEnrollment` has been executed, such as when a user taps an "Enroll New Payment Method" button.
 
 ```kotlin
 fun Activity.startEnrollment(
     customerSession: String,
     countryCode: String,
-    showEnrollmentStatus: Boolean = true, // Optional – Default true
-    callbackEnrollmentState: ((String?) -> Unit)? = null, // Default null – You must register this callback in `initEnrollment` to get the enrollment state.
-    requestCode: Int // Optional. Use this to capture the status when using `onActivityResult`.
+    showEnrollmentStatus: Boolean = true,
+    callbackEnrollmentState: ((String?) -> Unit)? = null,
+    requestCode: Int
 )
 ```
 
-Below is a description of the `startEnrollment` parameters.
+The following table describes the `startEnrollment` parameters:
 
 | Parameter                 | Description                                                                                                                                                                                                                                                                                                      |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -248,16 +248,16 @@ Below is a description of the `startEnrollment` parameters.
 
 ### Callback Enrollment State
 
-The `callbackEnrollmentState` parameter is a function that returns the current enrollment process status. You only need to provide this function if you want to track the enrollment status.
+The `callbackEnrollmentState` parameter is a function that returns the current enrollment process status. Provide this function only if you want to track the enrollment status.
 
-To check the current enrollment state at any time, use the `AppCompatActivity.enrollmentStatus()` function. This function is optional and accepts the same parameters as `startEnrollment`. The following code block shows the function signature:
+Use the `AppCompatActivity.enrollmentStatus()` function to check the current enrollment state at any time. This function is optional and accepts the same parameters as `startEnrollment`. The following code block shows the function signature:
 
 ```kotlin
 fun AppCompatActivity.enrollmentStatus(
     customerSession: String,
     countryCode: String,
-    showEnrollmentStatus: Boolean = false, //Optional - Default false
-    callbackEnrollmentState: ((String?) -> Unit)? = null, //Optional - You can send again another callback that is gonna override the one you sent on initEnrollment function.
+    showEnrollmentStatus: Boolean = false,
+    callbackEnrollmentState: ((String?) -> Unit)? = null,
 )
 ```
 
@@ -269,7 +269,7 @@ fun AppCompatActivity.enrollmentStatus(
 >
 > If you provide a new callback when calling the function `enrollmentStatus`, it will override the callback you set when calling the function `initEnrollment`.
 
-The possible states are presented in the following code block:
+The following code block shows the possible states:
 
 ```kotlin
 const val ENROLLMENT_STATE_SUCCEEDED = "SUCCEEDED"
@@ -280,7 +280,7 @@ const val ENROLLMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
 const val ENROLLMENT_STATE_CANCELED_BY_USER = "CANCELED"
 ```
 
-The following table provide additional information about the possible states:
+The following table provides additional information about the possible states:
 
 | **State**        | **Description**                                                                                                                | **Additional action required**                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
@@ -297,13 +297,13 @@ The following table provide additional information about the possible states:
 >
 > The `onActivityResult` method is a deprecated solution. If you are performing a new Android integration, Yuno recommends using the `initEnrollment()` contract, which follows Google's best practices.
 
-The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes. To process the enrollment result, follow these steps:
+The **onActivityResult** method is automatically invoked when an activity returns a result. You can use this option to execute actions whenever the enrollment status changes. Follow these steps to process the enrollment result:
 
 > 📘 Using Default Request Code
 >
 > If you are using the `onActivityResult` method but did not inform a `requestCode` when calling the `startEnrollment` in [Step 3](#step-3-enroll-a-new-payment-method), you must use the `YUNO_ENROLLMENT_REQUEST_CODE` provided by Yuno.
 
-1. First, override the `onActivityResult` method. It ensures that the hierarchy calls are respected.
+1. Override the `onActivityResult` method. This ensures that the hierarchy calls are respected.
 
 ```kotlin kotl
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -311,7 +311,7 @@ override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) 
 }
 ```
 
-2. After, check if the `requestCode` to verify if it corresponds to `YUNO_ENROLLMENT_REQUEST_CODE`. Since you are running `Yuno` in your app, you can import the `YUNO_ENROLLMENT_REQUEST_CODE` to use it.
+2. Check if the `requestCode` corresponds to `YUNO_ENROLLMENT_REQUEST_CODE`. Since you are running `Yuno` in your app, you can import the `YUNO_ENROLLMENT_REQUEST_CODE` to use it.
 
 ```kotlin
 if (requestCode == YUNO_ENROLLMENT_REQUEST_CODE) {
@@ -319,13 +319,13 @@ if (requestCode == YUNO_ENROLLMENT_REQUEST_CODE) {
 }
 ```
 
-3. If the `requestCode` matches, you can handle the enrollment result. In this case, you can extract the enrollment state using the `YUNO_ENROLLMENT_RESULT` key provided by the Yuno library. You can create a `onEnrollmentStateChange`function to handle the state changes.
+3. If the `requestCode` matches, handle the enrollment result. Extract the enrollment state using the `YUNO_ENROLLMENT_RESULT` key provided by the Yuno library. Create an `onEnrollmentStateChange` function to handle the state changes.
 
 ```kotlin
 onEnrollmentStateChange(data?.getStringExtra(YUNO_ENROLLMENT_RESULT))
 ```
 
-The following code block presents an example of code to use the `OnActivityResult` method to execute functions when the enrollment status changes.
+The following code block shows an example of code to use the `OnActivityResult` method to execute functions when the enrollment status changes:
 
 ```kotlin
 override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -354,7 +354,7 @@ fun onEnrollmentStateChange(enrollmentState: String?) {
 
 ## Step 5: Get enrollment status
 
-To register a callback to get the final enrollment state, it is necessary to call the `initEnrollment` method on the `onCreate` method of activity.
+Call the `initEnrollment` method in the `onCreate` method of activity to register a callback to get the final enrollment state.
 
 ## Complementary features
 
@@ -362,7 +362,7 @@ Yuno Android SDK provides additional services and configurations you can use to 
 
 ### `styles`
 
-With the `styles` customization option, you can define global visual styles like through a `YunoStyles` object. It lets you apply consistent branding across the SDK by customizing button appearance and typography.
+With the `styles` customization option, you can define global visual styles through a `YunoStyles` object. It lets you apply consistent branding across the SDK by customizing button appearance and typography.
 
 ```kotlin
 data class YunoStyles(
@@ -391,7 +391,7 @@ data class YunoButtonStyles(
 )
 ```
 
-To use the `styles` customization option, you have to use the `YunoConfig` data class, described in Step 2.
+Use the `YunoConfig` data class, described in Step 3, to use the `styles` customization option.
 
 ### Loader
 
@@ -399,17 +399,17 @@ The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the 
 
 ### Render options
 
-You can choose between two card form render options. The following screenshots demonstrate the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
+You can choose between two card form render options. The following screenshots show the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
 
 <Image align="center" src="https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png" />
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, access the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
+> In addition to the code examples provided, you can see the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
 
 ## Render mode (enrollment)
 
