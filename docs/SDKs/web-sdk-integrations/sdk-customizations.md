@@ -1340,4 +1340,4 @@ The following sections detail the elements that make up the Card and APM forms, 
 
 ## What's New
 
-Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../docs/web-sdk-changelog) page.
