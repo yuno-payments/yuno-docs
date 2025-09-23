@@ -27,7 +27,7 @@ The following steps describe creating a payment using Yuno's Headless SDK.
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Headless SDK implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -39,7 +39,7 @@ Choose the integration method that best suits your development workflow and tech
 
 > 📘 TypeScript Library
 >
-> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
+> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods in the Yuno Web SDK.
 
 ## Step 2: Initialize Headless SDK with the public key
 
@@ -75,7 +75,7 @@ const apiClientPayment = yuno.apiClientPayment({
 
 ## Step 4: Generate token
 
-After collecting all user information, you can start the payment. First, you need to create a one-time token (OTT) using the function `apiClientpayment.generateToken`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. Below, you will find two examples of different scenarios to create the one-time token:
+After collecting all user information, you can start the payment. First, you need to create a one-time token (OTT) using the function `apiClientpayment.generateToken`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. The following examples show different scenarios to create the one-time token:
 
 1. **Example 1**: Create a one-time token utilizing a card as the payment method and including all requisite card information.
 2. **Example 2**: Create a one-time token using the `vaulted_token` information.
@@ -156,7 +156,7 @@ const oneTimeToken = await apiClientPayment.generateToken({
 | `card.detail.security_code`    | Security code for the enrolled card                                     |
 | `card.installment`             | Optional: Required only if an installment plan is configured            |
 
-The following code block presents the `apiClientPayment.generateToken` function responses for both examples above.
+The following code block shows the `apiClientPayment.generateToken` function responses for both examples above:
 
 ```json Example 1
 {
@@ -253,7 +253,7 @@ The following code block presents the `apiClientPayment.generateToken` function 
 
 ## Step 5: Create the Payment
 
-After receiving the one-time token, you can create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment) to get the final payment result. You will inform the one-time token received in [Step 4](doc:headless-sdk-payment#step-4-generate-an-ott-one-time-token) through the request's `payment_method.token` parameter. The following code block presents a request example for creating a payment.
+After receiving the one-time token, you can create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment) to get the final payment result. You will inform the one-time token received in [Step 4](doc:headless-sdk-payment#step-4-generate-an-ott-one-time-token) through the request's `payment_method.token` parameter. The following code block shows a request example for creating a payment:
 
 ```json
 {
@@ -300,7 +300,7 @@ const data = await apiClientPayment.getThreeDSecureChallenge(checkoutSession?: s
 
 If the card does not require a challenge to verify the customer's identity, the `url` will return `null`.
 
-In a web browser, you can open the URL in a new tab or an IFrame. To open the URL in an iframe, you must set the param `embedded = true`. If not, you can omit this parameter, whose default value is `false`. The next code block presents an example of displaying the 3DS challenge content in an IFrame.
+In a web browser, you can open the URL in a new tab or an IFrame. To open the URL in an iframe, you must set the param `embedded = true`. If not, you can omit this parameter, whose default value is `false`. The following code block shows an example of displaying the 3DS challenge content in an IFrame:
 
 ```javascript
 document.querySelector('#element').innerHTML = `
