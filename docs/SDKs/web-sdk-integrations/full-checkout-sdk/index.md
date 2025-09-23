@@ -22,9 +22,9 @@ next:
 
 Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
 
-> 📘 Web SDK Release
+> 📘 Web SDK v1.3
 >
-> This guide covers the current Web SDK version. To read about previous versions, visit the [related links](#related-links) below.
+> This guide covers Web SDK v1.3. To read about previous versions, explore the [related links](#related-links) or visit the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog#/).
 
 ## Choose your integration method
 
@@ -138,3 +138,4 @@ After integrating the SDK using one of the methods described above, follow these
 
 Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
 
+<br />
