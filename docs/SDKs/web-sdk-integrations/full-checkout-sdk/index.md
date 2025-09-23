@@ -133,3 +133,8 @@ After integrating the SDK using one of the methods described above, follow these
 <Shelf classname="link_cards_container">
   <YunoCard title="Full SDK implementation" href="../docs/full-sdk-implementation" titleSize="h4" />
 </Shelf>
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
+

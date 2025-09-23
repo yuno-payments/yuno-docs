@@ -18,4 +18,6 @@ This section contains alternative SDK integration approaches for developers who 
 * [Headless SDK Payment](doc:headless-sdk-payment): Create custom payment flows with full control over the user interface
 * [Seamless SDK Payment Web](doc:seamless-sdk-payment-web): Integrate payments with minimal UI changes to your existing checkout flow
 
-<br />
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.

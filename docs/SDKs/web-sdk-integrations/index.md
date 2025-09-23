@@ -69,3 +69,7 @@ Select one of the user-friendly Web integration options available and start your
 > * `yuno`: Required for logging and analytics
 >
 > Third-party fraud prevention SDKs integrated within Yuno may set additional cookies. These cookies are managed by the respective providers and are outside of Yuno's control. For details about third-party cookies and their usage, please consult the documentation of your specific fraud prevention vendor.
+
+## What's New
+
+Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../web-sdk-changelog) page.
