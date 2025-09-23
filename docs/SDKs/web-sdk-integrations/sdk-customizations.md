@@ -109,8 +109,7 @@ The following sections detail the elements that make up the Card and APM forms, 
 
     <h3 id="default-input">Input</h3>
 
-    <p>The classes available for customizing the input element while using the Default Design are listed in the
-      following table.</p>
+    <p>The following table lists the classes available for customizing the input element while using the Default Design:</p>
     <table>
       <thead>
         <tr>
@@ -137,12 +136,11 @@ The following sections detail the elements that make up the Card and APM forms, 
         </tr>
       </tbody>
     </table>
-    <p>The images below present how each class will affect the input element.</p>
+    <p>The images below show how each class will affect the input element.</p>
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-1.png">
 
-    <p>You can also customize the error warnings flagged by the interface. The classes related to error warnings are
-      presented in the table below.</p>
+    <p>You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:</p>
 
     <table>
       <thead>
@@ -171,13 +169,13 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The images below present how each class will affect the input element.</p>
+    <p>The images below show how each class will affect the input element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-2.png">
 
-    <p>The code block below presents an example of how you can customize the input element. To use the following code,
-      you need to add it to <code>card</code> when starting the SDK with <code>yuno.startCheckout</code>.</p>
+    <p>The following code block shows an example of how you can customize the input element. To use the following code,
+      you need to add it to <code>card</code> when starting the SDK with <code>yuno.startCheckout</code>:</p>
 
     <div class="CodeTabs CodeTabs_initial theme-light">
       <div class="CodeTabs-toolbar" role="tablist">
@@ -204,13 +202,12 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true">
     <h3 id="default-dropdown">Dropdown</h3>
-    <p>The classes available for customizing the dropdown element while using the Default Design are listed in the
-      following table.</p>
+    <p>The following table lists the classes available for customizing the dropdown element while using the Default Design:</p>
 
     <table>
       <thead>
@@ -256,13 +253,12 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The images below present how each class will affect the dropdown element.</p>
+    <p>The images below show how each class will affect the dropdown element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-1.png?raw=true">
 
-    <p>You can also customize the error warnings flagged by the interface. The classes related to error warnings are
-      presented in the table below.</p>
+    <p>You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:</p>
 
     <table>
       <thead>
@@ -295,12 +291,12 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The images below present how each class will affect the dropdown element.</p>
+    <p>The images below show how each class will affect the dropdown element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-2.png">
 
-    <p>The code block below presents an example of how you can customize the dropdown element.</p>
+    <p>The following code block shows an example of how you can customize the dropdown element:</p>
 
     <div class="CodeTabs CodeTabs_initial theme-light">
       <div class="CodeTabs-toolbar" role="tablist">
@@ -325,15 +321,14 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-3.png">
 
     <h3 id="default-checkbox">Checkbox</h3>
 
-    <p>The classes available for customizing the checkbox element while using the Default Design are listed in the
-      following table.</p>
+    <p>The following table lists the classes available for customizing the checkbox element while using the Default Design:</p>
 
     <table>
       <thead>
@@ -359,12 +354,12 @@ The following sections detail the elements that make up the Card and APM forms, 
     </table>
 
 
-    <p>The image below present how each class will affect the checkbox element.</p>
+    <p>The image below shows how each class will affect the checkbox element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-1.png">
 
-    <p>The code block below presents an example of how you can customize the checkbox element. </p>
+    <p>The following code block shows an example of how you can customize the checkbox element:</p>
 
     <div class="CodeTabs CodeTabs_initial theme-light">
       <div class="CodeTabs-toolbar" role="tablist">
@@ -380,15 +375,14 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-2.png">
 
     <h3 id="default-button">Button</h3>
 
-    <p>The classes available for customizing the button element while using the Default Design are listed in the
-      following table.</p>
+    <p>The following table lists the classes available for customizing the button element while using the Default Design:</p>
 
     <table>
       <thead>
@@ -405,12 +399,12 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The image below present how each class will affect the button element.</p>
+    <p>The image below shows how each class will affect the button element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-1.png">
 
-    <p>The code block below presents an example of how you can customize the button element. </p>
+    <p>The following code block shows an example of how you can customize the button element:</p>
 
     <div class="CodeTabs CodeTabs_initial theme-light">
       <div class="CodeTabs-toolbar" role="tablist">
@@ -424,7 +418,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-2.png">
@@ -432,8 +426,7 @@ The following sections detail the elements that make up the Card and APM forms, 
 
     <h3 id="default-card">Card</h3>
 
-    <p>The classes available for customizing the card element while using the Default Design are listed in the
-      following table.</p>
+    <p>The following table lists the classes available for customizing the card element while using the Default Design:</p>
 
     <table>
       <thead>
@@ -450,7 +443,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The image below present how each class will affect the card element.</p>
+    <p>The image below shows how each class will affect the card element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-1.png">
@@ -474,15 +467,14 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-2.png">
 
     <h3 id="default-alert">Alert</h3>
 
-    <p>The classes available for customizing the alert element while using the Default Design are listed in the
-      following table.</p>
+    <p>The following table lists the classes available for customizing the alert element while using the Default Design:</p>
 
     <table>
       <thead>
@@ -507,12 +499,12 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The image below present how each class will affect the alert element.</p>
+    <p>The image below shows how each class will affect the alert element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-1.png?raw=true">
 
-    <p>The code block below presents an example of how you can customize the alert element.</p>
+    <p>The following code block shows an example of how you can customize the alert element:</p>
 
     <div class="CodeTabs CodeTabs_initial theme-light">
       <div class="CodeTabs-toolbar" role="tablist">
@@ -531,14 +523,14 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-2.png">
 
     <h3 id="default-modal">Modal</h3>
 
-    <p>The modal element provides two option you can customize:</p>
+    <p>The modal element provides two options you can customize:</p>
     <ul>
       <li><b>Form Card Modal</b></li>
       <li><b>APM Modal</b></li>
@@ -633,7 +625,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-2.png?raw=true">
@@ -755,7 +747,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-2-v2.png">
@@ -808,12 +800,11 @@ The following sections detail the elements that make up the Card and APM forms, 
         </tr>
       </tbody>
     </table>
-    <p>The images below present how each class will affect the input element.</p>
+    <p>The images below show how each class will affect the input element.</p>
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-1.png">
 
-    <p>You can also customize the error warnings flagged by the interface. The classes related to error warnings are
-      presented in the table below.</p>
+    <p>You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:</p>
 
     <table>
       <thead>
@@ -842,13 +833,13 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The images below present how each class will affect the input element.</p>
+    <p>The images below show how each class will affect the input element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-2.png">
 
-    <p>The code block below presents an example of how you can customize the input element. To use the following code,
-      you need to add it to <code>card</code> when starting the SDK with <code>yuno.startCheckout</code>.</p>
+    <p>The following code block shows an example of how you can customize the input element. To use the following code,
+      you need to add it to <code>card</code> when starting the SDK with <code>yuno.startCheckout</code>:</p>
 
     <div class="CodeTabs CodeTabs_initial theme-light">
       <div class="CodeTabs-toolbar" role="tablist">
@@ -879,7 +870,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-3.png">
@@ -927,13 +918,12 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The images below present how each class will affect the dropdown element.</p>
+    <p>The images below show how each class will affect the dropdown element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-1.png">
 
-    <p>You can also customize the error warnings flagged by the interface. The classes related to error warnings are
-      presented in the table below.</p>
+    <p>You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:</p>
 
     <table>
       <thead>
@@ -962,7 +952,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </tbody>
     </table>
 
-    <p>The images below present how each class will affect the dropdown element.</p>
+    <p>The images below show how each class will affect the dropdown element.</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-2.png">
@@ -997,7 +987,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-3.png">
@@ -1050,7 +1040,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/button-depricated-2.png">
@@ -1099,7 +1089,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/card-depricated-2.png">
@@ -1157,14 +1147,14 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/alert-depricated-2.png">
 
     <h3 id="deprecated-modal">Modal</h3>
 
-    <p>The modal element provides two option you can customize:</p>
+    <p>The modal element provides two options you can customize:</p>
     <ul>
       <li><b>Form Card Modal</b></li>
       <li><b>APM Modal</b></li>
@@ -1233,7 +1223,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/form-card-modal-depricated-2.png">
@@ -1337,7 +1327,7 @@ The following sections detail the elements that make up the Card and APM forms, 
       </div>
     </div>
 
-    <p>The following image presents the result of the customization.</p>
+    <p>The following image shows the result of the customization:</p>
 
     <img style="width:100%;margin-top:20px;margin-bottom:28px;"
       src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-depricated/form-apm-modal-depricated-2-v2.png?raw=true">
