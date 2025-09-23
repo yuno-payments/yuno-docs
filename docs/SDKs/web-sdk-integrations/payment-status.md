@@ -12,16 +12,16 @@ metadata:
 next:
   description: ''
 ---
-To monitor payments, you can use one of the monitoring status solutions provided by Yuno. You can use on of two options:
+To monitor payments, you can use one of the monitoring status solutions provided by Yuno. You can use one of two options:
 
 * **Status**: You can use the Status SDK to update the user about the payment process. It provides visual information for customers.
 * **Status Lite**: You can use the Status Lite SDK to get info about the current payment status. However, the Status Lite does not mount any element.
 
-Both solutions initialize the same way. After adding the Yuno SDK to your system and creating an instance, check the desired status solution to learn how to use it.
+Both solutions initialize the same way. After adding the Yuno SDK to your system and creating an instance, see the desired status solution to learn how to use it.
 
 ## Step 1: Include the library in your project.
 
-Ensure the Yuno SDK file is included in your webpage before closing the `<body>` tag. Refer to the example below:
+Ensure the Yuno SDK file is included in your webpage before closing the `<body>` tag. See the example below:
 
 ```html
 <script src="https://sdk-web.y.uno/v1.1/main.js"></script>
@@ -29,21 +29,21 @@ Ensure the Yuno SDK file is included in your webpage before closing the `<body>`
 
 ## Step 2: Initialize SDK with the public key
 
-In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](ref:developers-credentials) guide.
+In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. See the [Get your API credentials](ref:developers-credentials) guide.
 
-Like the example below, use the initialized class that is attributed to the `yuno` constant.
+Like the example below, use the initialized class that is attributed to the `yuno` constant:
 
 ```html
 <script src="https://sdk-web.y.uno/v1.1/main.js"></script>
 ```
 
-Once you create the instance, choose between using the Status o Status Lite solutions to access the payment status.
+Once you create the instance, choose between using the Status or Status Lite solutions to access the payment status.
 
 ## Step 3: Use Status
 
 To use the Status, you need to mount it. Use the `mountStatusPayment` function to define the `checkoutSession` related to the payment, the `countryCode`, the `language`, and the callback `yunoPaymentResult`.
 
-The callback will be executed when the status is received, informing the user. Defining the element to mount the Status is unnecessary since it will cover the entire screen. The next code block presents an example of the parameter configuration.
+The callback will be executed when the status is received, informing the user. Defining the element to mount the Status is unnecessary since it will cover the entire screen. The following code block shows an example of the parameter configuration:
 
 ```javascript
 yuno.mountStatusPayment({

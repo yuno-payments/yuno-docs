@@ -13,7 +13,7 @@ The 3DS Setup SDK enables you to collect the user's device information. This inf
 
 ## Requirements
 
-Before integrating the 3DS into your system, be sure to enable 3DS in your [Yuno Dashboard](https://dashboard.y.uno/) and specify the scenarios in which you want your customers to be able to use it. For additional information, access the [Direct Workflow](doc:direct-workflow#requirements) page.
+Before integrating the 3DS into your system, be sure to enable 3DS in your [Yuno Dashboard](https://dashboard.y.uno/) and specify the scenarios in which you want your customers to be able to use it. For additional information, see the [Direct Workflow](doc:direct-workflow#requirements) page.
 
 ## Step 1: Add Yuno SDK
 
@@ -25,7 +25,7 @@ With the `three_d_secure_setup_id` in hand, you need to include the Yuno SDK fil
 
 ## Step 2: Get the Setup Id
 
-Before starting the payment flow,  you have to request a setup Id (`three_d_secure_setup_id`). For each payment, you need to generate a new `three_d_secure_setup_id`. Use the [3DS Setup](ref:3ds-setup) endpoint to get the `three_d_secure_setup_id`. You need to inform your Yuno `account_id` and the card information used in the payment.
+Before starting the payment flow, you have to request a setup Id (`three_d_secure_setup_id`). For each payment, you need to generate a new `three_d_secure_setup_id`. Use the [3DS Setup](ref:3ds-setup) endpoint to get the `three_d_secure_setup_id`. You need to inform your Yuno `account_id` and the card information used in the payment.
 
 > ❗️ Availability
 >
@@ -33,7 +33,7 @@ Before starting the payment flow,  you have to request a setup Id (`three_d_secu
 
 ## Step 3: Start the data collection
 
-To initiate the data collection necessary for the 3DS payment flow, you will use the `Yuno.threeDSecure.setup()` function. The following table lists all the required parameters for initializing the `setup()` function.
+To initiate the data collection necessary for the 3DS payment flow, you will use the `Yuno.threeDSecure.setup()` function. The following table lists all the required parameters for initializing the `setup()` function:
 
 | Required Parameter | Description                                                                                            |
 | :----------------- | :----------------------------------------------------------------------------------------------------- |
@@ -45,7 +45,7 @@ To initiate the data collection necessary for the 3DS payment flow, you will use
 >
 > Improper configuration of the `acquirerBin`, `acquireCountryCode`, `merchantID`, and `mcc` parameters can lead to issues in the transaction liability shift.
 
-The next code block presents an example of initialization.
+The following code block shows an example of initialization:
 
 ```javascript javasc
 Yuno.threeDSecure.setup({
@@ -57,4 +57,4 @@ Yuno.threeDSecure.setup({
     })
 ```
 
-After executing the `setup()` service, the Yuno system will receive the necessary device information. Thus, you can continue with the payment. Remember always to use the`three_d_secure_setup_id` to identify the device where the payment is being made.
+After executing the `setup()` service, the Yuno system will receive the necessary device information. Thus, you can continue with the payment. Remember always to use the `three_d_secure_setup_id` to identify the device where the payment is being made.
