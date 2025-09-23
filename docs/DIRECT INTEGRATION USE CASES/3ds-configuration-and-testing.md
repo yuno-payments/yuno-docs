@@ -539,6 +539,8 @@ Use the scheme-specific cards below to validate 3DS in sandbox. In the preview e
 
 First, we'll set up a 3DS-enabled connection in the Yuno dashboard. Log into your dashboard and navigate to Connections. In this case, we'll use Yuno Test Payment Gateway as our provider, so we'll look for it and click **Connect**.
 
+![](https://files.readme.io/ccc4b146d14332173c06a72ea8ed59cb6df0bdcf72785b1774553ee89f4bcd48-Screenshot_2025-09-22_at_6.58.21_PM.png)
+
 Name the connection and enable the 3D Secure credentials checkbox. Provide the following details. If you need test credentials, contact us and we'll provide them:
 
 * Merchant Name
@@ -553,7 +555,7 @@ Name the connection and enable the 3D Secure credentials checkbox. Provide the f
 * Acquirer Country Code
 * SIRET (optional)
 
-Click **Next** to save your connection.
+Click **Next** to complete all steps and **Save** your connection.
 
 Next, configure your 3DS provider (we'll use Cybersource 3DS in this example). In Connections, select the provider and click **Connect**.
 
@@ -565,6 +567,8 @@ Name the connection and select **3D Secure** under Integration type. Using the i
 * Transaction identification from
 * Transactions expire time (minutes) (optional)
 
+![](https://files.readme.io/4ec53ccbcaec7a23524f85b83592f06a290395d2a6edca47a6ffc03065cbea0b-Screenshot_2025-09-22_at_6.56.50_PM.png)
+
 ## Configure routing
 
 * Navigate to Routing and find the Card route in either the Published or Not Published tab. Click **View** or **Set Up**, then **Create new route**.
@@ -572,9 +576,15 @@ Name the connection and select **3D Secure** under Integration type. Using the i
 * Then, for the "Succeeded" path, add **Yuno Test Payment Gateway** and click **Select**.
 * Click **Publish** to save your changes.
 
+![](https://files.readme.io/48c6e666c7f9bad95b933a313c3f5b84445cb1b73fba60463c7ff8660d58aa25-Screenshot_2025-09-22_at_6.48.52_PM.png)
+
 ## Configure Checkout Builder
 
 Navigate to Checkout Builder, enable the Card payment method, then click **Publish settings** to save your changes.
+
+![](https://files.readme.io/fe06394e99174779ad5234e34178afd2fc2749c667cec3e7c925337d00b0ae4b-Screenshot_2025-09-22_at_6.47.38_PM.png)
+
+## Testing 3DS with Yuno
 
 You can test 3D Secure in three ways:
 
