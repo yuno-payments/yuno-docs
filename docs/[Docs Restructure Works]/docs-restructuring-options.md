@@ -1,5 +1,5 @@
 ---
-title: Docs Restructuring Options
+title: Docs Menu Structure Options
 deprecated: false
 hidden: false
 metadata:
