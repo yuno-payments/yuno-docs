@@ -64,11 +64,10 @@ To start running the Yuno iOS Full checkout, first get your Yuno app ID and Publ
 import YunoSDK
 
 Yuno.initialize(
-    apiKey: "<Public API Key>",
-    config: YunoConfig() // This is optional, by default it configures .oneStep card form and disables save card checkbox.,
-    callback: { (value: Bool) in }  // Optional callback to be notified when the SDK has completed initialization
+    apiKey: "PUBLIC_API_KEY",
+    config: YunoConfig(),
+    callback: { (value: Bool) in }
 )
-
 ```
 
 > 📘 Credentials
@@ -90,14 +89,14 @@ final class YunoConfig {
 }
 ```
 
-The following table describes each configuration variable available:
+Configure the SDK with the following options:
 
 | Parameter         | Description                                                                                                                                                                           |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `cardFormType`    | This field can be used to choose Payment and Enrollment Card flow. It's an optional property and considers **.oneStep** by default.                                                   |
 | `appearance`      | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                          |
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
-| `keepLoadere`     | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
+| `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
 
 > 📘 Access Your API Key
 >
@@ -134,13 +133,13 @@ class ViewController: YunoPaymentDelegate {
 }
 ```
 
-The following table describes all the protocol requirements you need to provide:
+Parameters
 
 | Parameter | Description |
 | :-------- | :---------- |
 | `checkoutSession` | Refers to the current payment's checkout session. |
 | `countryCode` | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
-| `language` | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
+| `language` | Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), pt (Portuguese), fil (Filipino), id (Indonesian), ms (Malay), th (Thai), zh-TW (Chinese (Traditional, Taiwan)), zh-CN (Chinese (Simplified, China)), vi (Vietnamese), fr (French), pl (Polish), it (Italian), de (German), ru (Russian), tr (Turkish), nl (Dutch), sv (Swedish), ko (Korean), ja (Japanese). |
 | `navigationController` | This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance. |
 | `yunoCreatePayment(with token: String)` | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token. |
 | `yunoCreatePayment(with token: String, information: [String: Any])` | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary. |
@@ -168,12 +167,12 @@ protocol YunoPaymentFullDelegate: YunoPaymentDelegate {
 }
 ```
 
-The following table describes the functions available:
+Parameters
 
 | Function                                                      | Description                                                                                            |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)` | Called when the user selects a payment method. <br />- `paymentMethod`: The method the user chose.     |
-| `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br />- `success`: `true` if it worked, `false` if it didn’t. |
+| `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br />- `success`: `true` if it worked, `false` if it didn't. |
 | `yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)`       | Called when `getPaymentMethodViewAsync()` is invoked and whenever the view's height changes.           |
 
 To display the payment methods, call the following method and pass your view model or controller as the delegate.
@@ -315,9 +314,9 @@ The syntax section provides the method signature for the `startPaymentRender` fu
 ) async -> some YunoPaymentRenderFlowProtocol
 ```
 
-#### Parameters
+Parameters
 
-The `startPaymentRender` function requires specific parameters to operate effectively. These parameters are essential for defining the payment method and handling the payment process responses. Below is a detailed description of each parameter:
+The `startPaymentRender` function requires specific parameters to operate effectively. These parameters are essential for defining the payment method and handling the payment process responses.
 
 | Parameter               | Type                    | Description                                                                                                      |
 | ----------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
