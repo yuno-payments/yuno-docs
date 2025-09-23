@@ -24,7 +24,7 @@ Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started w
 
 > 📘 Web SDK v1.3
 >
-> This guide covers Web SDK v1.3. To read about previous versions, visit the [related links](#related-links) below.
+> This guide covers Web SDK v1.3. To read about previous versions, explore the [related links](#related-links) or visit the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog#/).
 
 ## Choose your integration method
 
@@ -133,3 +133,8 @@ After integrating the SDK using one of the methods described above, follow these
 <Shelf classname="link_cards_container">
   <YunoCard title="Full SDK implementation" href="../docs/full-sdk-implementation" titleSize="h4" />
 </Shelf>
+
+## Related Links
+
+* Web SDK [v1.2 changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/)
+* Web SDK v1.1 [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v11-changelog#/)
