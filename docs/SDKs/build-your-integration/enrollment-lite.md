@@ -97,6 +97,4 @@ To implement the Full SDK integration, follow the platform-specific guides below
   <YunoCard title="iOS" href="/docs/enrollment-ios" />
 
   <YunoCard title="Android" href="/docs/enrollment-android" />
-
-  <YunoCard title="Flutter" href="/docs/lite-sdk-enrollment-flutter" />
 </Shelf>
