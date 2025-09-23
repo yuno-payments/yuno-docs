@@ -54,9 +54,9 @@ To start running the Yuno iOS Lite checkout, you first need to get your Yuno app
 import YunoSDK
 
 Yuno.initialize(
-    apiKey: "<Public API Key>",
-    config: YunoConfig() // This is optional, by default it configures .oneStep card form and disables save card checkbox.,
-    callback: { (value: Bool) in } // Optional callback to be notified when the SDK has completed initialization
+    apiKey: "PUBLIC_API_KEY",
+    config: YunoConfig(),
+    callback: { (value: Bool) in }
 )
 ```
 
@@ -75,7 +75,7 @@ final class YunoConfig {
 }
 ```
 
-Below, you find a description of each configuration variable available.
+Configure the SDK with the following options:
 
 | Parameter         | Description                                                                                                                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -130,7 +130,9 @@ class SeamlessParams {
 }
 ```
 
-Below, you will find a description of each parameter from `SeamlessParams`:
+Parameters
+
+The following table describes each parameter from `SeamlessParams`:
 
 | Parameter         | Description                                                                                                                                                                                                                                              |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
