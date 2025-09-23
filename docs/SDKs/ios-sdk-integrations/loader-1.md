@@ -13,9 +13,9 @@ metadata:
 next:
   description: ''
 ---
-## Keep Loader
+## Keep loader
 
-By default, Yuno automatically stops the loading spinner after processing transaction operations. You can configure the loader to persist by setting `keepLoader: true` in the `YunoConfig`.
+By default, Yuno stops the loading after processing transaction operations. You can make it persist via YunoConfig by setting `keepLoader: true`.
 
 ```swift
 Yuno.initialize(
@@ -24,11 +24,13 @@ Yuno.initialize(
 )
 ```
 
-When `keepLoader: true` is set, the loader will persist until you explicitly call one of these functions (applies only to payment flow):
+This makes the loader persist until you call either of the following functions (this only applies to payment flow):
 
 ```swift
 Yuno.hideLoader()
 ```
+
+or
 
 ```swift
 Yuno.continuePayment(showPaymentStatus: Bool)

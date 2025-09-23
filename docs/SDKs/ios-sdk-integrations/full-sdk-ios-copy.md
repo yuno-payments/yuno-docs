@@ -1,8 +1,7 @@
 ---
-title: Full SDK (iOS)
-excerpt: ""
+title: Full SDK (iOS) [Add Swift 6 concurrency note]
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Full SDK
   description: >-
@@ -10,22 +9,19 @@ metadata:
     application, enabling efficient and secure payment processing for your
     mobile platform.
   robots: index
-next:
-  description: ""
 ---
-
 > 👍 Recommended SDK
 >
 > We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-This page provides all the steps to add, configure, and use the Full iOS SDK in your project.
+On this page, you will find all the steps to add, configure, and use the Lite iOS SDK to enroll payment methods in your iOS project.
 
 ## Requirements
 
-To implement the Yuno iOS SDK, you need to meet the following requirements:
+In order to implement the Yuno iOS SDK, first, you need to address the following requirements:
 
-- Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
-- Use iOS version 14.0 or above.
+* Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
+* Use iOS version 14.0 or above.
 
 ## Step 1: Include the library in your project
 
@@ -58,7 +54,7 @@ dependencies: [
 
 ## Step 2: Initialize SDK with the public key
 
-To start running the Yuno iOS Full checkout, first get your Yuno app ID and Public API Key. Then, import and initialize Yuno as shown below:
+To start running the Yuno iOS Full checkout, you first need to get your Yuno app ID and Public API Key. Then, import and initialize Yuno as presented in the following code snippet:
 
 ```swift
 import YunoSDK
@@ -71,26 +67,22 @@ Yuno.initialize(
 
 ```
 
-> 📘 Credentials
->
-> See the credentials page for more information: https://docs.y.uno/reference/authentication
-
 > 🚧 UISceneDelegate Usage
 >
 > If your app is using a UISceneDelegate, ensure to place your Yuno initialization code within your SceneDelegate.
 
-The Full checkout enables you to configure the appearance and process. This is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block shows the elements that can be configured:
+The Full checkout enables you to configure the appearance and process. It is an optional step that you configure through the class `YunoConfig`. If you want to set up the configurations, the following code block presents the elements that can be configured:
 
 ```swift
 final class YunoConfig {
-    let cardFormType: CardFormType,
+    let cardFormType: CardFormType, 
     let appearance: Yuno.Appearance,
-    let saveCardEnabled: Bool,
+    let saveCardEnabled: Bool, 
     let keepLoader: Bool
 }
 ```
 
-The following table describes each configuration variable available:
+Below, you find a description of each configuration variable available.
 
 | Parameter         | Description                                                                                                                                                                           |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -105,23 +97,19 @@ The following table describes each configuration variable available:
 
 ## Step 3: Start the checkout process
 
-The ViewController class is defined as a subclass of `UIViewController` and also adopts the `YunoPaymentDelegate` protocol.
-
-> ❗️ Deprecation
->
-> The `startCheckout` method has been deprecated since iOS SDK version 2.4.
+The ViewController class is defined as a subclass of `UIViewController` and also adopts the `YunoPaymentDelegate` protocol. It overrides the `viewDidLoad()` method and calls `Yuno.startCheckout(with: self)`. The `Yuno.startCheckout(with:)` function is a function provided by the Yuno library, and it takes an instance of a class that conforms to the `YunoPaymentDelegate` protocol as an argument. By passing `self` (the current instance of `ViewController`) as the argument, the `ViewController` becomes the delegate.
 
 ```swift
 protocol YunoPaymentDelegate: AnyObject {
 
     var checkoutSession: String { get }
   	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-    var countryCode: String { get }
+    var country_code: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
 
     func yunoCreatePayment(with token: String)
-    func yunoCreatePayment(with token: String, information: [String: Any])
+    func yunoCreatePayment(with token: String, information: [String: Any]) 
     func yunoPaymentResult(_ result: Yuno.Result)
 }
 
@@ -130,25 +118,134 @@ class ViewController: YunoPaymentDelegate {
 
     func viewDidLoad() {
         super.viewDidLoad()
+        Yuno.startCheckout(with: self)
     }
 }
 ```
 
-The following table describes all the protocol requirements you need to provide:
+The following table presents all the protocol requirements you have to provide and their descriptions.
 
-| Parameter | Description |
-| :-------- | :---------- |
-| `checkoutSession` | Refers to the current payment's checkout session. |
-| `countryCode` | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
-| `language` | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
-| `navigationController` | This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance. |
-| `yunoCreatePayment(with token: String)` | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token. |
-| `yunoCreatePayment(with token: String, information: [String: Any])` | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary. |
-| `yunoPaymentResult(_ result: Yuno.Result)` | This method is called when the payment process is completed, providing the result of the payment as a parameter of type `Yuno.Result`. |
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `checkoutSession`
+      </td>
+
+      <td>
+        Refers to the current payment's checkout session.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `country_code`
+      </td>
+
+      <td>
+        This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `language`
+      </td>
+
+      <td>
+        Defines the language to be used in the payment forms. You can set it to one of the available language options:
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `en` (English)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `es` (Spanish)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * `pt` (Portuguese)
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `navigationController`
+      </td>
+
+      <td>
+        This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoCreatePayment(with token: String)`
+      </td>
+
+      <td>
+        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoCreatePayment(with token: String, information: [String: Any])`
+      </td>
+
+      <td>
+        This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        `yunoPaymentResult(_ result: Yuno.Result)`
+      </td>
+
+      <td>
+        This method is called when the payment process is completed, providing the result of the payment as a parameter of type `Yuno.Result`.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 > ❗️ Important Note on yunoCreatePayment
 >
 > You can call `yunoCreatePayment` with or without the `information` parameter based on your needs. However, use only one version in your code, as calling both is not required and may cause issues.
+
+<br />
 
 > 🚧 Swift 6 Concurrency Requirements
 >
@@ -156,7 +253,7 @@ The following table describes all the protocol requirements you need to provide:
 
 ## Step 4: Add the SDK view to the checkout
 
-Your view needs to adopt the `YunoPaymentFullDelegate` protocol. This allows your app to respond to payment-related actions, such as when the user selects a payment method.
+After calling the `startCheckout()` function, your view needs to adopt the `YunoPaymentFullDelegate` protocol. This allows your app to respond to payment-related actions, such as when the user selects a payment method.
 
 Here is how to define the delegate:
 
@@ -174,24 +271,24 @@ The following table describes the functions available:
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)` | Called when the user selects a payment method. <br />- `paymentMethod`: The method the user chose.     |
 | `yunoDidUnenrollSuccessfully(_ success: Bool)`                | Called when an unenroll action finishes. <br />- `success`: `true` if it worked, `false` if it didn’t. |
-| `yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)`       | Called when `getPaymentMethodViewAsync()` is invoked and whenever the view's height changes.           |
+| `yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)`       | Called when `getPaymentMethodView()` is invoked and whenever the view's height changes.                |
 
 To display the payment methods, call the following method and pass your view model or controller as the delegate.
 
 ```swift
-await Yuno.getPaymentMethodViewAsync(delegate:)
+Yuno.getPaymentMethodView(delegate:)
 ```
 
 This method will automatically return the correct type of view depending on the UI framework you are using:
 
-- If you're using **UIKit**, it returns a `UIView`.
-- If you're using **SwiftUI**, it returns a `some View`.
+* If you're using **UIKit**, it returns a `UIView`.
+* If you're using **SwiftUI**, it returns a `some View`.
 
 This makes it easy to integrate the SDK into any iOS project, no matter which UI framework you use.
 
 ## Step 5: Initiate the payment process
 
-To start a payment after displaying the payment methods, call the `startPayment` method:
+To effectively start a payment after displaying the payment methods, you have to call the method `startPayment`, as presented in the code snippet below:
 
 ```swift
 Yuno.startPayment(showPaymentStatus:Bool)
@@ -199,7 +296,7 @@ Yuno.startPayment(showPaymentStatus:Bool)
 
 ## Step 6: Get the OTT (one-time token)
 
-You can obtain the one-time token to create the payment back-to-back at the end of this process. You will get the one-time token in the function `yunoCreatePayment()` that you implement when adopting the `YunoPaymentDelegate`. An example of retrieving the one-time token is shown below:
+You can obtain the one-time token to create the payment back-to-back at the end of this process. You will get the one-time token in the function `yunoCreatePayment()` that you get when implementing the `YunoPaymentDelegate`. An example of retrieving the one-time token is presented below:
 
 ```swift
 func yunoCreatePayment(with token: String) { ... }
@@ -207,19 +304,25 @@ func yunoCreatePayment(with token: String) { ... }
 
 ## Step 7: Create the Payment
 
-Once you have completed the steps described above, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
+Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
 > 📘 Continue Payment Method
 >
 > To ensure a seamless payment experience, it's crucial to integrate the `continuePayment` method after creating a payment. This step is particularly important for asynchronous payment methods that require additional customer actions. Here's what you need to know:
 >
-> - **Asynchronous Payment Handling**: The API will signal the need for further action with the `sdk_action_required` field set to true.
-> - **Functionality**: The `yuno.continuePayment()` function is designed to manage and display any additional screens necessary for the customer to complete the payment.
-> - **Process Simplification**: By using this method, you can streamline the payment process, as it automatically handles various scenarios for you.
+> * **Asynchronous Payment Handling**: The API will signal the need for further action with the `sdk_action_required` field set to true.
+> * **Functionality**: The `yuno.continuePayment()` function is designed to manage and display any additional screens necessary for the customer to complete the payment.
+> * **Process Simplification**: By using this method, you can streamline the payment process, as it automatically handles various scenarios for you.
 
 ```swift
-Yuno.continuePayment()
+Yuno.continuePayment(showPaymentStatus: Bool)
 ```
+
+The `showPaymentStatus` parameter is used to determine whether the payment status should be displayed or not. By passing `true` as an argument, the payment status might be shown, while passing `false` could indicate that the payment status should not be displayed.
+
+> ❗️ Default Payment Status Display
+>
+> In Yuno's iOS Full SDK, the default value for `showPaymentStatus` is `true`.
 
 ## Step 8: Handle Payment Status (Optional)
 
@@ -240,17 +343,17 @@ func application(_ app: UIApplication,
   guard url.scheme == "yunoexample" else { return false }
 
   // Let Yuno handle the deep link and show the payment status screen
-  return Yuno.receiveDeeplink(url)
+  return Yuno.receiveDeeplink(url, showStatusView: true)
 }
 ```
 
-This code listens for deep links that open your app. When a URL is received, it checks if the scheme matches the one you used in the `callback_url` during checkout session setup. If it matches, the URL is passed to the Yuno SDK using `Yuno.receiveDeeplink(...)`. The SDK then reads the payment result and shows the appropriate status screen to the user.
+This code listens for deep links that open your app. When a URL is received, it checks if the scheme matches the one you used in the `callback_url` during checkout session setup. If it matches, the URL is passed to the Yuno SDK using `Yuno.receiveDeeplink(...)`. The SDK then reads the payment result and, if `showStatusView` is set to `true`, shows the appropriate status screen to the user.
 
 Make sure the `url.scheme` in this code matches the `callback_url` you provided when creating the `checkout_session`.
 
 ## Callback
 
-After the payment is completed, the SDK can return different transaction states: `success`, `fail`, `processing`, `reject`, `internalError`, and `userCancell`. The descriptions of each transaction state is presented in the table below.
+After the payment is completed, the SDK can return different transaction states: `success`, `fail`, `processing`, `reject`, `internalError`, and `userCancell`.  The descriptions of each transaction state is presented in the table below.
 
 | Transaction state | Description                                                                                                                                                                                                                         |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -276,22 +379,22 @@ func yunoEnrollmentResult(_ result: Yuno.Result) { ... }
 
 Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand or to configure the loader.
 
-- [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
-- **Save card for future payments**: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below you can find examples of the checkbox for both card form renders.
+* [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
+* **Save card for future payments**: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below you can find examples of the checkbox for both card form renders.
 
 <Image align="center" src="https://files.readme.io/ae235ca04eda2c260442c375617e64950bed2a0564578771fcc3403de7ca965e-Card___save_for_future_payments.png" />
 
-- You also can choose one of the render options for the card form. Below you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
+* You also can choose one of the render options for the card form. Below you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
 
 <Image align="center" src="https://files.readme.io/0a1e67430bc9765920c9252731b79626f3777c96322a66a760f682dafc72c637-Full_SDK_ios.png" />
 
-- [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
+* [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
 ## Render mode integration
 
 The render mode in the Yuno SDK offers enhanced UI flexibility, enabling developers to integrate payment flows with complete control over the user interface while retaining full SDK functionality. This mode provides SwiftUI views that can be seamlessly incorporated into your existing UI.
 
-### Main function: `startPaymentRenderFlow`
+### Main function: `startPaymentRender`
 
 The `startPaymentRender` function is a feature of the Yuno SDK that allows merchants to integrate the payment process in a more detailed and customizable manner. This function grants full control over when and how payment forms are displayed, facilitating smoother integration with the merchant's existing application UI.
 
@@ -299,20 +402,20 @@ The `startPaymentRender` function is a feature of the Yuno SDK that allows merch
 
 This function is designed to offer greater control over the payment flow, allowing merchants to:
 
-- Integrate payment forms in a customized manner within their own UI.
-- Precisely control when payment data forms are displayed.
-- Gain detailed control over the payment confirmation process.
-- Provide a more fluid and consistent user experience within the merchant's application.
+* Integrate payment forms in a customized manner within their own UI.
+* Precisely control when payment data forms are displayed.
+* Gain detailed control over the payment confirmation process.
+* Provide a more fluid and consistent user experience within the merchant's application.
 
 #### Syntax
 
 The syntax section provides the method signature for the `startPaymentRender` function. This function is central to integrating the payment process within your application, offering a customizable and detailed approach to handling payment forms and flows.
 
 ```swift
-@MainActor static func startPaymentRenderFlow(
+@MainActor static func startPaymentRender(
     paymentMethodSelected: PaymentMethodSelected,
     with delegate: YunoPaymentDelegate
-) async -> some YunoPaymentRenderFlowProtocol
+) -> some YunoPaymentRenderFlowProtocol
 ```
 
 #### Parameters
@@ -341,11 +444,11 @@ func formView(
 ) async -> AnyView?
 ```
 
-- **Purpose**: Gets the form view to capture payment data
-- **Behavior**:
-  - If the payment method requires showing a form, returns an `AnyView` with the corresponding form
-  - If the payment method doesn't need to show any form (e.g., already configured methods), returns `nil`
-- **When to use**: Call immediately after creating the payment flow instance
+* **Purpose**: Gets the form view to capture payment data
+* **Behavior**:
+  * If the payment method requires showing a form, returns an `AnyView` with the corresponding form
+  * If the payment method doesn't need to show any form (e.g., already configured methods), returns `nil`
+* **When to use**: Call immediately after creating the payment flow instance
 
 #### submitForm()
 
@@ -353,9 +456,9 @@ func formView(
 func submitForm()
 ```
 
-- **Purpose**: Submits form data for validation
-- **Behavior**: Executes all necessary validations and, if successful, proceeds to generate a new one-time token
-- **When to use**: When the user executes the "pay" action in the merchant's application
+* **Purpose**: Submits form data for validation
+* **Behavior**: Executes all necessary validations and, if successful, proceeds to generate a new one-time token
+* **When to use**: When the user executes the "pay" action in the merchant's application
 
 #### continuePayment()
 
@@ -363,11 +466,11 @@ func submitForm()
 func continuePayment() async -> AnyView?
 ```
 
-- **Purpose**: Continues the payment process after the one-time token has been generated
-- **Behavior**:
-  - If it's necessary to show any additional view (e.g., 3DS authentication), returns an `AnyView`
-  - If no additional view is required, returns `nil`
-- **When to use**: After receiving the one-time token through the delegate and creating the payment
+* **Purpose**: Continues the payment process after the one-time token has been generated
+* **Behavior**:
+  * If it's necessary to show any additional view (e.g., 3DS authentication), returns an `AnyView`
+  * If no additional view is required, returns `nil`
+* **When to use**: After receiving the one-time token through the delegate and creating the payment
 
 ### Implementation flow
 
@@ -380,6 +483,9 @@ To begin using `startPaymentRender`, make sure the SDK is properly initialized a
 ```swift
 // Initialize the SDK
 await Yuno.initialize(apiKey: "your_api_key")
+
+// Start checkout to get the configured delegate
+Yuno.startCheckout(with: self) // where self conforms to YunoPaymentDelegate
 ```
 
 #### Step 2: Create payment flow instance
@@ -388,7 +494,7 @@ Create a payment flow instance to manage and render the payment process using th
 
 ```swift
 // Create the render flow instance
-let paymentFlow = await Yuno.startPaymentRenderFlow(
+let paymentFlow = Yuno.startPaymentRender(
     paymentMethodSelected: selectedPaymentMethod,
     with: self // YunoPaymentDelegate
 )
@@ -550,11 +656,11 @@ struct PaymentRenderView: View {
     }
 
     private func setupPaymentFlow() {
-// Create the payment flow
-paymentFlow = await Yuno.startPaymentRenderFlow(
-    paymentMethodSelected: selectedPaymentMethod,
-    with: delegate
-)
+        // Create the payment flow
+        paymentFlow = Yuno.startPaymentRender(
+            paymentMethodSelected: selectedPaymentMethod,
+            with: delegate
+        )
 
         // Get the form view
         Task {
@@ -674,27 +780,27 @@ This section highlights key points for integrating the Yuno SDK effectively, ens
 
 #### Prerequisites
 
-- Ensure the SDK is initialized before using `startPaymentRender`
-- The delegate must implement all required methods of `YunoPaymentDelegate`
-- The `checkoutSession` must be valid and active
+* Make sure to call `Yuno.startCheckout(with:)` before using `startPaymentRender`
+* The delegate must implement all required methods of `YunoPaymentDelegate`
+* The `checkoutSession` must be valid and active
 
 #### State management
 
-- Always check if `formView()` returns `nil` before displaying the view
-- Properly handle the case where `continuePayment()` returns `nil`
-- Implement loading states during asynchronous operations
+* Always check if `formView()` returns `nil` before displaying the view
+* Properly handle the case where `continuePayment()` returns `nil`
+* Implement loading states during asynchronous operations
 
 #### Security
 
-- Never store one-time tokens - use them immediately
-- Always validate payment results in your backend
-- Implement appropriate timeouts for network operations
+* Never store one-time tokens - use them immediately
+* Always validate payment results in your backend
+* Implement appropriate timeouts for network operations
 
 #### Performance
 
-- Calls to `formView()` and `continuePayment()` are asynchronous
-- Consider showing loading indicators during these operations
-- Reuse the payment flow instance when possible
+* Calls to `formView()` and `continuePayment()` are asynchronous
+* Consider showing loading indicators during these operations
+* Reuse the payment flow instance when possible
 
 ### Troubleshooting
 
@@ -703,18 +809,16 @@ This section offers quick solutions to common issues encountered during Yuno SDK
 #### Common issues
 
 1. **`formView()`always returns`nil`**
-
-   - Verify that the selected payment method requires a form
-   - Ensure the SDK is initialized correctly
+   * Verify that the selected payment method requires a form
+   * Ensure the SDK is initialized correctly
 
 2. **Delegate doesn't receive`yunoCreatePayment`**
-
-   - Verify that `submitForm()` is being called correctly
-   - Confirm that the form has valid data
+   * Verify that `submitForm()` is being called correctly
+   * Confirm that the form has valid data
 
 3. **`continuePayment()`doesn't return view when expected**
-   - Some payment methods don't require additional views
-   - Check the payment method configuration in your Yuno dashboard
+   * Some payment methods don't require additional views
+   * Check the payment method configuration in your Yuno dashboard
 
 #### Debugging logs
 
@@ -761,9 +865,9 @@ Thread-safe means your code can be safely called from multiple threads without c
 
 We do not mark protocols as `@MainActor` because:
 
-- It would force all implementations to be MainActor-compatible
-- It would reduce flexibility for merchants who don't use MainActor
-- Each implementation has different concurrency needs
+* It would force all implementations to be MainActor-compatible
+* It would reduce flexibility for merchants who don't use MainActor
+* Each implementation has different concurrency needs
 
 ### Merchant's responsibility
 
@@ -776,15 +880,15 @@ This approach uses immutable properties that are automatically thread-safe, maki
 ```swift
 @MainActor
 class MyViewController: UIViewController, YunoPaymentDelegate {
-
+    
     // Immutable properties - automatically thread-safe
     private let _countryCode = "CO"
     private let _language = "EN"
-
+    
     nonisolated var countryCode: String { _countryCode }
     nonisolated var language: String? { _language }
     nonisolated var checkoutSession: String { _checkoutSession }
-
+    
     nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
         Task { @MainActor in
             // Handle result on MainActor
@@ -800,15 +904,15 @@ This approach, best for apps where configuration values might change during runt
 ```swift
 @MainActor
 class MyViewController: UIViewController, YunoPaymentDelegate {
-
+    
     @Published var configLanguage: String = "EN"
     @Published var configCountryCode: String = "CO"
-
+    
     nonisolated var language: String? {
         // ⚠️ Only works if called from MainActor
         MainActor.assumeIsolated { configLanguage }
     }
-
+    
     nonisolated var countryCode: String {
         MainActor.assumeIsolated { configCountryCode }
     }
@@ -821,20 +925,20 @@ This approach is suitable for service classes that don't require MainActor isola
 
 ```swift
 class MyService: YunoPaymentDelegate {
-
+    
     // Thread-safe because they are immutable
     let countryCode: String
     let language: String?
     let checkoutSession: String
     let viewController: UIViewController?
-
+    
     init(countryCode: String, language: String?, checkoutSession: String, viewController: UIViewController?) {
         self.countryCode = countryCode
         self.language = language
         self.checkoutSession = checkoutSession
         self.viewController = viewController
     }
-
+    
     func yunoPaymentResult(_ result: Yuno.Result) {
         // Already thread-safe
     }
@@ -845,6 +949,6 @@ class MyService: YunoPaymentDelegate {
 
 When implementing concurrency in your delegate, keep these key points in mind:
 
-- **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
-- **nonisolated**: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
-- **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
+* **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
+* **nonisolated**: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
+* **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
