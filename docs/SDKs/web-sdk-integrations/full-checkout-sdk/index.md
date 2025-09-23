@@ -134,42 +134,6 @@ After integrating the SDK using one of the methods described above, follow these
   <YunoCard title="Full SDK implementation" href="../docs/full-sdk-implementation" titleSize="h4" />
 </Shelf>
 
-## Related Links
-
-* Web SDK [v1.2 changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/)
-* Web SDK v1.1 [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v11-changelog#/)
-
-<br />
-
-***
-
-## Option 1: What's New
+## What's New
 
 Track the latest Web SDK updates, new features, and breaking changes on the [Web SDK changelog](../web-sdk-changelog) page.
-
-***
-
-## Option 2: Recent Updates
-
-Keep your integration current by reviewing the [Web SDK changelog](../web-sdk-changelog) for:
-
-* Latest features and improvements
-* Breaking changes and migration paths
-* Bug fixes and performance updates
-
-***
-
-## Option 3: Stay Updated
-
-Stay up to date with the latest Web SDK improvements and new features. The [Web SDK changelog](../web-sdk-changelog) provides detailed information about:
-
-* **New features** and capabilities added in recent releases
-* **Bug fixes** and performance improvements
-* **Breaking changes** and migration guides
-* **Deprecation notices** for outdated methods
-
-Visit the [Web SDK changelog](../web-sdk-changelog) to see what's new and plan your updates accordingly.
-
-***
-
-<br />
