@@ -16,4 +16,3 @@ This endpoint updates an existing onboarding for a recipient, allowing you to mo
 ## Prerequisites
 
 This endpoint requires an existing onboarding created via [Create Onboarding](ref:create-onboarding)
-
