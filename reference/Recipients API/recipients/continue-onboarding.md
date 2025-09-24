@@ -1,5 +1,5 @@
 ---
-title: Continue onboarding
+title: Continue Onboarding
 api:
   file: openapi.json
   operationId: continue-onboarding
@@ -21,5 +21,3 @@ The continue process supports two workflow types:
 
 - **HOSTED_BY_PROVIDER**: Returns a Yuno redirect URL that logs activity and redirects to the provider's KYC interface. Use `workflow: "HOSTED_BY_PROVIDER"`.
 - **DIRECT**: Processes KYC validation directly without external redirects. Use `workflow: "DIRECT"`.
-
-
