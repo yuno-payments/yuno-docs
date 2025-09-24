@@ -242,6 +242,8 @@ const vaultedTokenWithInformation = await secureFields.generateVaultedTokenWithI
 
 In addition to the code examples provided, you can access the [Demo App](ref:demo-app) for a complete implementation of Yuno Secure Fields or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js) Secure Fields checkout demos available on GitHub.
 
-## What's New
+## Related Links
 
-Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../docs/web-sdk-changelog) page.
+Find more information and version history for the Web SDK below:
+* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.

@@ -70,6 +70,8 @@ Select one of the user-friendly Web integration options available and start your
 >
 > Third-party fraud prevention SDKs integrated within Yuno may set additional cookies. These cookies are managed by the respective providers and are outside of Yuno's control. For details about third-party cookies and their usage, please consult the documentation of your specific fraud prevention vendor.
 
-## What's New
+## Related Links
 
-Track the latest Web SDK updates, new features, and breaking changes on the [changelog](../docs/web-sdk-changelog) page.
+Find more information and version history for the Web SDK below:
+* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
