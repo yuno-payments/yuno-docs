@@ -19,10 +19,6 @@ Yuno provides three C2P implementation options:
 
 Each flow is designed for different merchant needs and user preferences, providing varying levels of security, convenience, and user control.
 
-> 📘 Prerequisites
->
-> Before implementing these flows, ensure you have completed the basic [Click to Pay setup](../Wallets/click-to-pay) in your Yuno dashboard.
-
 ## Standard C2P
 
 ### User without previous authorization
