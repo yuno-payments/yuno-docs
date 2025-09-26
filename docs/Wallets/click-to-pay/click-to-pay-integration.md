@@ -5,9 +5,23 @@ hidden: true
 metadata:
   robots: index
 ---
-This document covers the **Click to Pay (C2P) flows** in Yuno, including security features with passkey authentication and flexible user experiences.
+Click to Pay (C2P) in Yuno offers **three distinct payment flows** that provide merchants with flexible options for implementing secure, frictionless payments. These flows build upon the standard [Click to Pay integration](doc:click-to-pay) to offer enhanced user experiences with biometric authentication and flexible processing options.
 
-**Click to Pay** is based on the EMVCo secure payment standard and enables secure, frictionless payments with biometric authentication and flexible processing options.
+**Click to Pay** is based on the EMVCo secure payment standard and enables secure payments with reduced friction through saved payment methods and biometric authentication.
+
+### Available C2P Flows
+
+Yuno provides three C2P implementation options:
+
+* **Standard C2P**: Traditional flow with email/OTP authentication
+* **C2P with Passkey**: Enhanced security using biometric authentication (Mastercard only)
+* **Golden C2P**: Flexible flow allowing users to opt in/out of C2P processing
+
+Each flow is designed for different merchant needs and user preferences, providing varying levels of security, convenience, and user control.
+
+> 📘 Prerequisites
+>
+> Before implementing these flows, ensure you have completed the basic [Click to Pay setup](../Wallets/click-to-pay) in your Yuno dashboard.
 
 ## Standard C2P
 
