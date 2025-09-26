@@ -40,7 +40,7 @@ Choose the integration method that best suits your development workflow and tech
 
 Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`. You can find your API credentials in the [Get your API credentials](https://docs.y.uno/reference/authentication) guide.
 
-```javascript java
+```javascript
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
@@ -53,9 +53,9 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 * First, [create a customer](ref:create-customer) or retrieve an existing customer ID
 * Include the customer ID when creating the `checkout_session`
 
-> 📘 `onPaymentMethodSelect` Event
+> 📘 Payment method selection event
 >
-> For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startSeamlessCheckout` before `mountSeamlessCheckout`.
+> For all APMs, including Google Pay, Apple Pay, and PayPal, `yunoPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `yunoPaymentMethodSelected` in `startSeamlessCheckout` before mounting.
 
 ## Step 4: Start the checkout process
 
@@ -103,7 +103,7 @@ yuno.startSeamlessCheckout({
 });
 ```
 
-Notice that when using the `startCheckout` you already have to specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
+Notice that when using `startSeamlessCheckout` you must specify the callbacks to handle the payments. In addition, you can customize the checkout interface using the `texts` objects. The following table lists all required parameters and their descriptions.
 
 | Parameter                   | Description                                                                                                                                                                                                                                                                                   |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -129,7 +129,7 @@ Notice that when using the `startCheckout` you already have to specify the callb
 |                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                             |
 | `card`                      | Defines the configuration for the card form. It contains settings like render mode, custom styles, and save card option.                                                                                                                                                                      |
 | `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                    |
-| `yunoCreatePayment`         | Placeholder function for creating a payment. This function will not be called but should be implemented.                                                                                                                                                                                      |
+| `yunoCreatePayment`         | Function invoked to create the payment after tokenization in card flows. For external APM buttons (PayPal, Google Pay, Apple Pay), the flow is handled by the SDK/provider and this callback may not be used.                                                                               |
 | `yunoPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                    |
 | `yunoPaymentResult`         | Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`).                                                                                                                                                                                         |
 | `yunoError`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                             |
@@ -190,4 +190,128 @@ payButton.addEventListener('click', () => {
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
+> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs.
+
+## Seamless external buttons (PayPal, Google Pay, Apple Pay)
+
+Follow this step-by-step guide to implement and enable Yuno's seamless external buttons in your web application.
+
+> 📘 Requirements
+> * `@yuno-payments/sdk-web` ≥ 2.2.0
+>
+> * `@yuno-payments/sdk-web-types` ≥ 4.4.0
+
+### Step 1: Include the library in your project
+
+Use any of the [three integration methods](https://docs.y.uno/docs/full-checkout-sdk#/choose-your-integration-method):
+
+1. Direct HTML script inclusion
+2. Dynamic JavaScript injection
+3. NPM module installation
+
+If you're using TypeScript, you can install the types package for full method support.
+
+### Step 2: Initialize SDK with the public key
+
+Initialize the SDK with your `PUBLIC_API_KEY`:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+### Step 3: Create a checkout session
+
+Create a `checkout_session` and associate it with a customer:
+
+- [Create](ref:create-customer) or [retrieve](ref:retrieve-customer) a customer (`customer_id`)
+- Use the [Create checkout session](ref:create-checkout-session) endpoint
+
+> 📘 Payment method selection event
+>
+> For APMs (Google Pay, Apple Pay, PayPal), the `yunoPaymentMethodSelected` callback is triggered as soon as the customer chooses a payment method (before the flow begins). Define it in `startSeamlessCheckout` before mounting external buttons.
+
+### Step 4: Start the checkout process
+
+Configure and start the Seamless checkout. Ensure you include the `yunoPaymentMethodSelected` callback.
+
+```javascript
+yuno.startSeamlessCheckout({
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  countryCode: "US",
+  language: "en",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  onLoading: (args) => console.log(args),
+  renderMode: {
+    type: "modal",
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element",
+    },
+  },
+  card: {
+    type: "extends",
+    styles: "",
+    cardSaveEnable: false,
+    texts: {},
+  },
+  texts: {},
+  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+    await createPayment({ oneTimeToken, checkoutSession });
+    yuno.continuePayment({ showPaymentStatus: true });
+  },
+  yunoPaymentMethodSelected(data) {
+    console.log("Payment method selected:", data);
+  },
+  yunoPaymentResult(data) {
+    console.log("Payment result:", data);
+    yuno.hideLoader();
+  },
+  yunoError(error, data) {
+    console.error("An error occurred:", error);
+    yuno.hideLoader();
+  },
+});
+```
+
+Refer to the parameter table above for details on each configuration option.
+
+### Step 5: Mount the external buttons
+
+Mount the external payment buttons. Each button can optionally use its own `checkoutSession`; if omitted, the session from `startSeamlessCheckout` is used.
+
+```javascript
+yuno.mountSeamlessExternalButtons([
+  {
+    paymentMethodType: 'PAYPAL',
+    elementSelector: '#paypal',
+    checkoutSession: 'e626440e-aea5-468b-ac21-216801f8cd84', // optional
+  },
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+    checkoutSession: '6881546e-691a-415a-a03d-9880b32ddcb1', // optional
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+    checkoutSession: 'db49c6a8-85ee-4493-8fd3-113403ab856f', // optional
+  },
+]);
+```
+
+Each payment method can have its own `checkoutSession`.
+
+### Step 6: Unmount the external buttons
+
+You can unmount all buttons at once, or a specific one by its type:
+
+```javascript
+// Unmount all external buttons
+yuno.unmountSeamlessExternalButtons();
+
+// Unmount a specific external button
+yuno.unmountSeamlessExternalButton('GOOGLE_PAY');
+```
