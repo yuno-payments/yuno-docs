@@ -18,7 +18,7 @@ Capture transactions can encounter various statuses during and after the retry p
 
 | Payment while retry is ongoing          | Payment after successful retries                                      | Payment after failed retries                |
 | :-------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------ |
-| SUCCEEDED / CAPTURE\_RETRY\_IN\_PROCESS | SUCCEEDED / CAPTURED or PARTIALLY\_CAPTURED depending on the amount. | SUCCEEDED / CAPTURE\_RETRY\_PROCESS\_FAILED |
+| `SUCCEEDED` / `CAPTURE_RETRY_IN_PROCESS` | `SUCCEEDED` / `CAPTURED` or `PARTIALLY_CAPTURED` depending on the amount. | `SUCCEEDED` / `CAPTURE_RETRY_PROCESS_FAILED` |
 
 #### Refund transactions
 
@@ -26,7 +26,7 @@ Refund transactions also have specific statuses during and after the retry proce
 
 | Payment while retry is ongoing         | Payment after successful retries                                                 | Payment after failed retries |
 | :------------------------------------- | :------------------------------------------------------------------------------ | :--------------------------- |
-| SUCCEEDED / REFUND\_RETRY\_IN\_PROCESS | REFUNDED / REFUNDED or SUCCEEDED / PARTIALLY\_REFUNDED depending on the amount. | SUCCEEDED / APPROVED         |
+| `SUCCEEDED` / `REFUND_RETRY_IN_PROCESS` | `REFUNDED` / `REFUNDED` or `SUCCEEDED` / `PARTIALLY_REFUNDED` depending on the amount. | `SUCCEEDED` / `APPROVED`         |
 
 ## Benefits
 
@@ -44,13 +44,13 @@ The table below describes the intervals between each retry. Note that each retry
 
 | Event       | Deadline after the first try |
 | :---------- | :--------------------------- |
-| First try   | \-                           |
-| Second try  | 5 minutes                    |
-| Third try   | 50 minutes                   |
-| Fourth try  | 6 hours                      |
-| Fifth try   | 24 hours                     |
-| Sixth try   | 48 hours                     |
-| Seventh try | 96 hours                     |
+| `First try`   | \-                           |
+| `Second try`  | 5 minutes                    |
+| `Third try`   | 50 minutes                   |
+| `Fourth try`  | 6 hours                      |
+| `Fifth try`   | 24 hours                     |
+| `Sixth try`   | 48 hours                     |
+| `Seventh try` | 96 hours                     |
 
 This table illustrates that each retry is performed based on the time elapsed since the previous attempt, not the initial attempt. For example, the fourth retry occurs 6 hours after the third retry rather than 6 hours after the first attempt. The entire schedule spans 7 days and 7 hours in total.
 
