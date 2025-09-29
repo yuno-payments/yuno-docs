@@ -62,7 +62,9 @@ Use [Retrieve Enrolled Payment Method by id](ref:retrieve-enrolled-payment-metho
 * **status**: `ENROLLED`
 * **sub_status**: `ENROLLED`
 
-> ⚠️ The enrollment is only complete after Yuno receives Nu’s confirmation.
+<Callout icon="⚠️" theme="warn">
+  The enrollment is only complete after Yuno receives Nu’s confirmation.
+</Callout>
 
 ## Payments with payment conditions (installments)
 
