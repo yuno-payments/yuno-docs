@@ -30,13 +30,13 @@ Yuno uses a personalized approach for each unsuccessful payment, guided by conti
 
 | Event       | Deadline after the first attempt |
 | :---------- | :------------------------------- |
-| First try   | -                                |
-| Second try  | 5 minutes                        |
-| Third try   | 60 minutes                       |
-| Fourth try  | 5 hours                          |
-| Fifth try   | 24 hours                         |
-| Sixth try   | 48 hours                         |
-| Seventh try | 96 hours                         |
+| `First try`   | -                                |
+| `Second try`  | 5 minutes                        |
+| `Third try`   | 60 minutes                       |
+| `Fourth try`  | 5 hours                          |
+| `Fifth try`   | 24 hours                         |
+| `Sixth try`   | 48 hours                         |
+| `Seventh try` | 96 hours                         |
 
 ### Customization
 
@@ -44,5 +44,5 @@ Every business model is unique, so we allow merchants to define specific rules t
 
 | Parameter          | Type   | Description                                                                                                                                    | Example |
 | :----------------- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------------- | :------ |
-| retry\_on\_decline | bool   | Indicates whether to retry a payment after a first decline. Defaults to false.                                                                 | TRUE    |
-| amount             | number | Specifies the number of retries the subscription plan will have to completion. If not set, or if higher than 7, the default is 7. Max: 7       | 4       |
+| `retry_on_decline` | bool   | Indicates whether to retry a payment after a first decline. Defaults to false.                                                                 | `TRUE`    |
+| `amount`             | number | Specifies the number of retries the subscription plan will have to completion. If not set, or if higher than 7, the default is 7. Max: 7       | `4`       |
