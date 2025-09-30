@@ -13,21 +13,10 @@ metadata:
 next:
   description: ''
 ---
-
 > ❗️ This endpoint is for PCI compliant merchants only
 
-This request creates a one-time use token using the credit card information from the customer.
+Create a one-time-use token from the customer's card data as part of the `DIRECT` workflow.
 
-In a regular workflow, the merchant needs to create a `checkout_session`, use Yuno's SDK to generate a one-time use token, and then use that token to create the payment. This endpoint is designed for merchants with complex integrations who cannot use Yuno's SDK but still want to leverage Yuno's tokenization service to ensure security throughout the payment process.
+In the regular workflow, you create a `checkout_session`, use Yuno's SDK to generate a one‑time use token, and then use that token to create the payment. For `DIRECT` workflow integrations where you prefer **not** to use the SDK, this endpoint lets PCI merchants tokenize card data directly while maintaining security throughout the process.
 
-In order to create the payment using this endpoint, you will need to create the one time use token and then use it to [create the payment ](ref:create-payment)directly with workflow `DIRECT`.
-
-```json Example
-[...]
-"workflow": "DIRECT",
-    "payment_method": {
-        "type": "CARD",
-        "token": "73378020-49ab-4c18-b340-70afa2cfd462"
-    }
-[...]
-```
+Use the returned token to [create a payment](ref:create-payment) with workflow `DIRECT` by setting `payment_method.type = "CARD"` and `payment_method.token` to the token.
