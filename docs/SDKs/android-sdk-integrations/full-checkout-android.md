@@ -108,7 +108,7 @@ The following table includes descriptions for each customization available.
   <tbody>
     <tr>
       <td>
-        **cardFlow**
+        `cardFlow`
       </td>
 
       <td>
@@ -122,7 +122,7 @@ The following table includes descriptions for each customization available.
 
     <tr>
       <td>
-        **saveCardEnabled**
+        `saveCardEnabled`
       </td>
 
       <td>
@@ -136,7 +136,7 @@ The following table includes descriptions for each customization available.
 
     <tr>
       <td>
-        **cardFormDeployed**
+        `cardFormDeployed`
       </td>
 
       <td>
@@ -146,7 +146,7 @@ The following table includes descriptions for each customization available.
 
     <tr>
       <td>
-        **language**
+        `language`
       </td>
 
       <td>
@@ -160,7 +160,7 @@ The following table includes descriptions for each customization available.
 
     <tr>
       <td>
-        **styles**
+        `styles`
       </td>
 
       <td>
