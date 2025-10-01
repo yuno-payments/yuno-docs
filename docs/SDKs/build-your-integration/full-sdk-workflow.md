@@ -41,7 +41,7 @@ Follow the step-by-step guides below to integrate the Full SDK:
 
 The Full SDK provides a **unified payment experience**, allowing customers to complete transactions using multiple payment methods within a single integration. The diagram below illustrates the complete process:
 
-![Full SDK Integration Flow](https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png)
+<Image alt="Full SDK Integration Flow" border={false} src="https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png" />
 
 ### Full SDK Integration Flow
 
@@ -120,15 +120,13 @@ To implement the Full SDK integration, follow the platform-specific guides below
   <YunoCard title="iOS" href="/docs/full-checkout-ios" />
 
   <YunoCard title="Android" href="/docs/full-checkout-android" />
-
-  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
 </Shelf>
 
 ## Payment workflow using a vaulted token
 
 If a customer has an enrolled payment method, they can use a **vaulted token** from the enrollment process to complete transactions **without** entering payment details again.
 
-![](https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png)
+<Image border={false} src="https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png" />
 
 ### Vaulted Token Full Diagram
 
