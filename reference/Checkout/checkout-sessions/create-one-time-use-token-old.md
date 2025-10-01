@@ -1,11 +1,11 @@
 ---
-title: Create One Time Use Token
+title: Create One Time Use Token (old)
 excerpt: ''
 api:
   file: tokens.json
-  operationId: post_tokens
+  operationId: post_tokens1
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
