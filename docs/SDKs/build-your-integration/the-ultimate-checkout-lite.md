@@ -38,7 +38,7 @@ Use the following guides to implement each process:
 
 The diagram below illustrates the complete payment workflow:
 
-![](https://files.readme.io/4e2b909-Diagrama_-_SDK_Lite.png)
+<Image border={false} src="https://files.readme.io/4e2b909-Diagrama_-_SDK_Lite.png" />
 
 ### SDK Lite Payment Flow
 
@@ -116,7 +116,7 @@ The following steps outline the complete interaction flow between all components
 
 ## Platform-specific SDK setup
 
-To implement the Full SDK integration, follow the platform-specific guides below:
+To implement the Lite SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
   <YunoCard title="Web" href="/docs/lite-checkout-sdk" />
@@ -124,17 +124,15 @@ To implement the Full SDK integration, follow the platform-specific guides below
   <YunoCard title="iOS" href="/docs/lite-checkout-ios" />
 
   <YunoCard title="Android" href="/docs/lite-checkout-android" />
-
-  <YunoCard title="Flutter" href="/docs/lite-sdk-payment-flutter" />
 </Shelf>
 
 ## Payment workflow using a vaulted token
 
-If your customer has enrolled in one of the available payment methods, the payment can be made back to back using the [Vaulted token](doc:tokens) from the enrollment process. With this approach, you don't need to request additional information about the payment method.
+If your customer has enrolled in one of the available payment methods, the payment can be made back-to-back using the [Vaulted token](doc:tokens) from the enrollment process. With this approach, you don't need to request additional information about the payment method.
 
 The following image describes the complete workflow:
 
-![](https://files.readme.io/45a2289-Diagrama_-_Vaulted_token_Lite.png)
+<Image border={false} src="https://files.readme.io/45a2289-Diagrama_-_Vaulted_token_Lite.png" />
 
 ### Vaulted Token Lite Flow
 
@@ -185,7 +183,7 @@ The following steps outline the detailed sequence of interactions between the di
 8. Merchant Client: Shows payment results --> Merchant Server: Receive payment result
 9. Merchant Server: Receive payment result --> Yuno Server: Provides payment results
 
-Unlike the [Payment workflow](), for payments using the vaulted token, you'll use information from an existing customer who has previously enrolled in the payment method.
+Unlike the [Payment workflow](#payment-workflow), for payments using the vaulted token, you'll use information from an existing customer who has previously enrolled in the payment method.
 
 This workflow follows the same steps as the Payment workflow, but instead of collecting new payment details, the SDK retrieves the stored vaulted token. For detailed implementation steps, refer to the platform-specific guides above.
 
@@ -198,7 +196,7 @@ With the **Lite SDK**, you can save credit or debit cards for future purchases w
 You can retrieve a vaulted token in two ways:
 
 * **Via API:** Set `vault_on_success = true` when using the [Create payment](ref:create-payment) endpoint. The response will return the `vaulted_token` for the customer's card.
-* **Via SDK settings:** Enable `cardSaveEnable = true` in the SDK settings for [Web](doc:lite-sdk-complementary-features), [iOS](doc:lite-checkout-ios), [Android](doc:lite-checkout-android), or [Flutter](https://docs.y.uno/docs/flutter-sdk-integration). The SDK will display a checkbox allowing users to save their card.
+* **Via SDK settings:** Enable `cardSaveEnable = true` in the SDK settings for [Web](doc:lite-sdk-complementary-features), [iOS](doc:lite-checkout-ios), or [Android](doc:lite-checkout-android). The SDK will display a checkbox allowing users to save their card.
 
 Use only one method to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](doc:enrollment-lite) page.
 
@@ -206,7 +204,7 @@ Use only one method to enroll a card. To enroll alternative payment methods, see
 >
 > You should only use one option to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](enrollment-lite) page.
 
-After enrolling in a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
+After enrolling in a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, use one of the following endpoints:
 
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
 * [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api).
