@@ -1,5 +1,5 @@
 ---
-title: Manage Payouts
+title: Payouts
 excerpt: ''
 deprecated: false
 hidden: false
