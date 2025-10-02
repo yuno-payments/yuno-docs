@@ -10,6 +10,8 @@ metadata:
 next:
   description: ''
 ---
+<br />
+
 > 👍 Recommended SDK
 >
 > We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
@@ -58,7 +60,7 @@ The code block below presents an example of importing and initializing the `Yuno
 import YunoSDK
 
 Yuno.initialize(
-    apiKey: "<Public API Key>"
+    apiKey: "PUBLIC_API_KEY"
 )
 ```
 
@@ -66,29 +68,24 @@ Yuno.initialize(
 
 Next, you will start the checkout process using the `apiClientPayment` function, providing the necessary configuration parameters. You need to call this function once your customer selects the payment method. As a result, the SDK will start collecting relevant information for 3DS and fraud prevention tools you have configured in your [routing](doc:routing).
 
+Parameters
+
 The following table lists all required parameters and their descriptions.
 
-| Parameter          | Description                                                                                                                                                                                                                            |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk)  page. |
-| `checkout_session` | Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session)   endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                                                  |
+| Parameter          | Description                                                                                                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `checkout_session` | Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                                                   |
 
 The following code block presents an example of the parameter configuration.
 
 ```swift
 var apiClientPayment: YunoPaymentHeadless?
 
-
 apiClientPayment = Yuno.apiClientPayment(
-    /**
-     * The complete list of countryCodes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-    */
-  	countryCode: "CO",
-     /**
-		 * The checkout_session created using the following endpoint https://docs.y.uno/reference/create-checkout-session
-     */
-  	checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638"
-  )
+    countryCode: "CO",
+    checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638"
+)
 ```
 
 ## Step 4: Generate token
@@ -102,28 +99,13 @@ After collecting all user information, you can start the payment. First, you nee
 >
 > Utilizing a vaulted token with the SDK ensures that all fraud information from your configured providers is collected and attached to the one-time token. Additionally, you can include installment details and a security code if required by the provider.
 
-```javascript Example 1
-/**
- * Create One Time Use Token
- * This will trigger an error if there is missing data
- * You can catch it using a do/catch
- */
-
-// CollectedData is a public data type with the necessary info for the payment structure
-
+```swift
 let tokenCollectedData: TokenCollectedData = TokenCollectedData(
-  	// The checkout_session created using the following endpoint https://docs.y.uno/reference/create-checkout-session
     checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
-		// collectedData: The necessary info to use the payment method structure
-  	paymentMethod: CollectedData(
+    paymentMethod: CollectedData(
         type: "CARD",
-        // Optional
- 				// Send this value if you already have a registered or enrolled payment method.
-        // Other fields like card and customer are optional unless your provider requires them.
         vaultedToken: nil,
         card: CardData(
-            // Optional
-            // Set this value to “true” if you want to generate a vaulted_token (tokenize) the card.
             save: true,
             detail: CardData.Detail(
                 number: "4111111111111111",
@@ -131,71 +113,40 @@ let tokenCollectedData: TokenCollectedData = TokenCollectedData(
                 expirationYear: 25,
                 securityCode: "123",
                 holderName: "Andrea",
-                // .debit or .credit
                 type: .credit
             ),
-            // Optional
-            // Only necessary if an installments plan is created for the account.
             installment: CardData.Installment(
                 id: "64ceacef-0886-4c81-9779-b2b3029c4e8b",
                 value: 1
             )
         ),
-      
-        customer: Customer(
-            // Add the complete customer object here.
-      			// You can check the object here: https://docs.y.uno/reference/the-customer-object
-      			// You create the customer using the following endpoint: https://docs.y.uno/reference/create-customer
-        )
+        customer: Customer()
     )
 )
 
 let result = try await apiClientPayment.generateToken(
     data: tokenCollectedData
 )
-
 ```
-```javascript Example 2
-/**
- * Create One Time Use Token
- * This will trigger an error if there is missing data
- * You can catch it using a do/catch
- */
-
-// CollectedData is a public data type with the necessary info for the payment structure
+```swift
 let tokenCollectedData: TokenCollectedData = TokenCollectedData(
-    // The checkout_session created using the following endpoint https://docs.y.uno/reference/create-checkout-session
     checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
-		// collectedData: The necessary info to use the payment method structure
     paymentMethod: CollectedData(
         type: "CARD",
-        // Optional
-        // Optional
- 				// Send this value if you already have a registered or enrolled payment method.
-        // Other fields like card and customer are optional unless your provider requires them.
         vaultedToken: "c8bb2bd8-8abf-4265-b478-0ec4e3c10cd5",
         card: CardData(
-            // Optional
-            // Only necessary if an installments plan is created for the account.
             installment: CardData.Installment(
                 id: "64ceacef-0886-4c81-9779-b2b3029c4e8b",
                 value: 1
             )
         ),
-        customer: Customer(
-            // Add the complete customer object here.
-      			// You can check the object here: https://docs.y.uno/reference/the-customer-object
-      			// You create the customer using the following endpoint: https://docs.y.uno/reference/create-customer
-        )
+        customer: Customer()
     )
 )
 
-///   - checkoutSession: The optional checkout_session created using the following endpoint https://docs.y.uno/reference/create-checkout-session
-///   - collectedData: The necessary info to use the payment method structure
 let result = try await apiClientPayment.generateToken(
     data: tokenCollectedData
 )
-
 ```
 
 The following code block presents the `apiClientPayment.generateToken` function responses for both examples above. The response is a dictionary of type `[String: Any]`.
@@ -363,13 +314,10 @@ class HeadlessWebView: UIViewController, WKScriptMessageHandler, WKNavigationDel
         let request = URLRequest(url: url)
         webView.load(request)
 
-        // Add the webview, and set constraints
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == "messageFromWeb", let messageBody = message.body as? String {
-            // Handle response 'messageBody'
-            // Possible responses from the webview
             self.dismiss(animated: true)
 
         }
@@ -386,7 +334,6 @@ class HeadlessWebView: UIViewController, WKScriptMessageHandler, WKNavigationDel
 The response will inform the challenge status, which can be `COMPLETED` or `ERROR`. The next code block presents examples for each possible option.
 
 ```swift COMPLETED
-// Challenge completed
 {
    "origin":"CHALLENGE",
    "status":"COMPLETED",
@@ -394,7 +341,6 @@ The response will inform the challenge status, which can be `COMPLETED` or `ERRO
 }
 ```
 ```swift ERROR
-// Challenge error
 {
    "origin":"CHALLENGE",
    "status":"ERROR",
@@ -422,10 +368,8 @@ func application(_ app: UIApplication,
                  open url: URL,
                  options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
 
-  // Make sure the scheme matches the one you used in the checkout_session
   guard url.scheme == "yunoexample" else { return false }
 
-  // Let Yuno handle the deep link and show the payment status screen
   return Yuno.receiveDeeplink(url, showStatusView: true)
 }
 ```
