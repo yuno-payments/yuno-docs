@@ -24,7 +24,7 @@ Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started w
 
 > 📘 Web SDK v1.3
 >
-> This guide covers Web SDK v1.3. To read about previous versions, explore the [related links](#related-links) or visit the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog#/).
+> This guide covers Web SDK v1.3. To read about previous versions, explore the [related links](#related-links) or visit the [changelog](../changelog#/).
 
 ## Choose your integration method
 
