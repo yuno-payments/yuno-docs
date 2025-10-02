@@ -13,8 +13,6 @@ metadata:
 next:
   description: ''
 ---
-<br />
-
 The **Lite SDK** provides full control over your payment experience. It allows you to:
 
 * Control the payment methods displayed to your customers.
