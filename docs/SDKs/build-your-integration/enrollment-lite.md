@@ -92,9 +92,9 @@ The following steps outline the complete interaction flow between all components
 To implement the Full SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web" href="/docs/enrollment-lite-sdk" />
+  <YunoCard title="Web" href="../docs/enrollment-lite-sdk" />
 
-  <YunoCard title="iOS" href="/docs/enrollment-ios" />
+  <YunoCard title="iOS" href="../docs/enrollment-ios" />
 
-  <YunoCard title="Android" href="/docs/enrollment-android" />
+  <YunoCard title="Android" href="../docs/enrollment-android" />
 </Shelf>
