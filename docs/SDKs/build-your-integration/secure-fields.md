@@ -40,7 +40,7 @@ The Secure Fields SDK enhances your checkout experience by simplifying payment c
 To implement the Secure Fields SDK integration, follow the platform-specific guide below:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web" href="/docs/secure-fields-payment" />
+  <YunoCard title="Web" href="../docs/secure-fields-payment" />
 </Shelf>
 
 > 📘 Choose your integration
