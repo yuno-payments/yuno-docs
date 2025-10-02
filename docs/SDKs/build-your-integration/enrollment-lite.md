@@ -13,6 +13,8 @@ metadata:
 next:
   description: ''
 ---
+<br />
+
 The **Lite SDK** provides full control over your payment experience. It allows you to:
 
 * Control the payment methods displayed to your customers.
@@ -26,7 +28,7 @@ If you wish to save cards during the payment, you can do so while the customer p
 
 The following diagram describes the complete enrollment workflow. Each step is explained in detail below:
 
-![](https://files.readme.io/deacb45-Diagrama_-_SDK_Lite_enrollment.png)
+<Image border={false} src="https://files.readme.io/deacb45-Diagrama_-_SDK_Lite_enrollment.png" />
 
 ### SDK Lite Enrollment Flow
 
@@ -97,6 +99,4 @@ To implement the Full SDK integration, follow the platform-specific guides below
   <YunoCard title="iOS" href="/docs/enrollment-ios" />
 
   <YunoCard title="Android" href="/docs/enrollment-android" />
-
-  <YunoCard title="Flutter" href="/docs/lite-sdk-enrollment-flutter" />
 </Shelf>
