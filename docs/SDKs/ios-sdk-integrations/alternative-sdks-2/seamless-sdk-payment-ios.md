@@ -16,7 +16,7 @@ On this page, you will find all the steps to add, configure, and use the Seamles
 >
 > We recommend using the **iOS Seamless SDK** for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-<Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+<Image align="center" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
 ## Step 1: Include the library in your project
 
@@ -54,9 +54,9 @@ To start running the Yuno iOS Lite checkout, you first need to get your Yuno app
 import YunoSDK
 
 Yuno.initialize(
-    apiKey: "<Public API Key>",
-    config: YunoConfig() // This is optional, by default it configures .oneStep card form and disables save card checkbox.,
-    callback: { (value: Bool) in } // Optional callback to be notified when the SDK has completed initialization
+    apiKey: "PUBLIC_API_KEY",
+    config: YunoConfig(),
+    callback: { (value: Bool) in }
 )
 ```
 
@@ -75,7 +75,7 @@ final class YunoConfig {
 }
 ```
 
-Below, you find a description of each configuration variable available.
+Configure the SDK with the following options:
 
 | Parameter         | Description                                                                                                                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -130,14 +130,16 @@ class SeamlessParams {
 }
 ```
 
-Below, you will find a description of each parameter from `SeamlessParams`:
+Parameters
 
-| Parameter         | Description                                                                                                                                                                                                                                              |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkoutSession` | Refers to the current payment's checkout session.                                                                                                                                                                                                        |
-| `country_code`    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page. |
-| `language`        | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en` (English), `es` (Spanish), `pt` (Portuguese).                                                                                        |
-| `viewController`  | This parameter is of type `UIViewController` and represents the merchant's view where Yuno's payment flow will be presented.                                                                                                                             |
+The following table describes each parameter from `SeamlessParams`:
+
+| Parameter         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession` | Refers to the current payment's checkout session.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `country_code`    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                      |
+| `language`        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
+| `viewController`  | This parameter is of type `UIViewController` and represents the merchant's view where Yuno's payment flow will be presented.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 > 🚧 Swift 6 Concurrency Requirements
 >
@@ -158,10 +160,8 @@ func application(_ app: UIApplication,
                  open url: URL,
                  options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
 
-  // Make sure the scheme matches the one you used in the checkout_session
   guard url.scheme == "yunoexample" else { return false }
 
-  // Let Yuno handle the deep link and show the payment status screen
   return Yuno.receiveDeeplink(url, showStatusView: true)
 }
 ```
@@ -203,11 +203,11 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 * [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
 * Save card for future payments: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders.
 
-![Example Checkbox](https://lh7-rt.googleusercontent.com/docsz/AD_4nXe9dPjXE9Y8Uq3EKpmzUrsBpXHCHtspu98NLo41GsszFV1lCCGNsiXvB-9dmQRtPTExcDWQ7S-Qqoq0iFXaeogBZPpONcLy8Ep55cqog0KHHasbstgeCgSTR00BiFmIbcWd4NwHkO7LrLUOsQXnFV1_gT45?key=-31QL7MEbUE8QLWSURQp1jZt)
+<Image alt="Example Checkbox" border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXe9dPjXE9Y8Uq3EKpmzUrsBpXHCHtspu98NLo41GsszFV1lCCGNsiXvB-9dmQRtPTExcDWQ7S-Qqoq0iFXaeogBZPpONcLy8Ep55cqog0KHHasbstgeCgSTR00BiFmIbcWd4NwHkO7LrLUOsQXnFV1_gT45?key=-31QL7MEbUE8QLWSURQp1jZt" />
 
 * You also can choose one of the render options for the card form. Below, you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
 
-![Render Options](https://lh7-rt.googleusercontent.com/docsz/AD_4nXcf2gb-FB3sHbyzXYhwBcio9JJ7i0Vh-WBwHQC1dLul3k5XKGExvmYCApNNdx7DfwZcNgK-ARnQgncc3lE-3ln0chmnKstQL7NBKXXjgM8OHk4JpAeCneddETCFUAIF6xpCGMSDrrsBy7N4lHPcgYncIu7J?key=-31QL7MEbUE8QLWSURQp1jZt)
+<Image alt="Render Options" border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXcf2gb-FB3sHbyzXYhwBcio9JJ7i0Vh-WBwHQC1dLul3k5XKGExvmYCApNNdx7DfwZcNgK-ARnQgncc3lE-3ln0chmnKstQL7NBKXXjgM8OHk4JpAeCneddETCFUAIF6xpCGMSDrrsBy7N4lHPcgYncIu7J?key=-31QL7MEbUE8QLWSURQp1jZt" />
 
 * [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
@@ -245,7 +245,6 @@ This approach uses immutable properties that are automatically thread-safe, maki
 @MainActor
 class MyViewController: UIViewController, YunoPaymentDelegate {
     
-    // Immutable properties - automatically thread-safe
     private let _countryCode = "CO"
     private let _language = "EN"
     
@@ -255,7 +254,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
     
     nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
         Task { @MainActor in
-            // Handle result on MainActor
         }
     }
 }
@@ -273,7 +271,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
     @Published var configCountryCode: String = "CO"
     
     nonisolated var language: String? {
-        // ⚠️ Only works if called from MainActor
         MainActor.assumeIsolated { configLanguage }
     }
     
@@ -290,7 +287,6 @@ This approach is suitable for service classes that don't require MainActor isola
 ```swift
 class MyService: YunoPaymentDelegate {
     
-    // Thread-safe because they are immutable
     let countryCode: String
     let language: String?
     let checkoutSession: String
@@ -304,7 +300,6 @@ class MyService: YunoPaymentDelegate {
     }
     
     func yunoPaymentResult(_ result: Yuno.Result) {
-        // Already thread-safe
     }
 }
 ```
