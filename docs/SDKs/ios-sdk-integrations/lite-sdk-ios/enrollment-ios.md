@@ -1,6 +1,6 @@
 ---
 title: Lite SDK (Enrollment iOS)
-excerpt: ""
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
@@ -11,21 +11,22 @@ metadata:
     for your mobile platform.
   robots: index
 next:
-  description: ""
+  description: ''
 ---
+<br />
 
 > 👍 Recommended SDK
 >
 > We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-On this page, you will find all the steps to add, configure, and use the Lite iOS SDK to enroll payment methods in your iOS project.
+This guide walks you through integrating Yuno's Lite iOS SDK for enrollment into your project.
 
 ## Requirements
 
-In order to implement the Yuno iOS SDK, first, you need to address the following requirements:
+Before implementing the Yuno iOS SDK, ensure you meet these requirements:
 
-- Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
-- Use iOS version 14.0 or above.
+* Add [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/) to your project.
+* Use iOS version 14.0 or above.
 
 ## Step 1: Include the library in your project
 
@@ -33,13 +34,13 @@ You can add the library using CocoaPods or Swift Package Manager.
 
 ### CocoaPods
 
-To add the Yuno SDK to your iOS project, you need to install the Yuno SDK. If you do not have a Podfile, follow the [CocoaPods guide](https://guides.cocoapods.org/using/using-cocoapods.html) to create one. After creating the Podfile, you will integrate the Yuno SDK with Cocoapods by adding the line below to your Podfile.
+Add the Yuno SDK to your iOS project using CocoaPods. If you don't have a Podfile, follow the [CocoaPods guide](https://guides.cocoapods.org/using/using-cocoapods.html) to create one. Then add the following line to your Podfile:
 
 ```ruby
 pod 'YunoSDK', '~> 1.1.22'
 ```
 
-After, you need to run the installation:
+Then run the installation:
 
 ```ruby
 pod install
@@ -48,7 +49,7 @@ pod install
 
 ### Swift Package Manager
 
-To add the Yuno SDK to your iOS project, you need to install the [Swift Package Manager](https://www.swift.org/package-manager/). With the Swift package set up, add Yuno SDK as a dependency, as presented in the following code block:
+Add the Yuno SDK using Swift Package Manager. Add YunoSDK as a dependency in your Package.swift file:
 
 ```swift
 dependencies: [
@@ -58,17 +59,15 @@ dependencies: [
 
 ## Step 2: Enroll a new payment method
 
-> 📘
->
-> Before calling `Yuno.enrollPayment()`, make sure you’ve initialized the SDK with `Yuno.initialize()`.
+<Callout icon="📘" theme="info">
+  Before calling `Yuno.enrollPayment()`, make sure you’ve initialized the SDK with `Yuno.initialize()`.
+</Callout>
 
-Yuno's iOS SDK provides an enrollment feature for payment methods integrated into Yuno. To display a view controller with the flow for integrating a new payment method, call the method presented in the following code snippet:
+Yuno's iOS SDK provides an enrollment feature for payment methods. To display the enrollment flow, implement the delegate and call the enrollment method:
 
 ```swift
 protocol YunoEnrollmentDelegate: AnyObject {
-
     var customerSession: String { get }
-  	// The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
     var countryCode: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
@@ -87,23 +86,27 @@ class ViewController: YunoEnrollmentDelegate {
 
 `Yuno.enrollPayment()` presents a full-screen `UIViewController` modally using the `viewController` provided in your `delegate`. This works only in UIKit. In SwiftUI, wrap a `UIViewController` and return it via the `viewController` property. The `delegate` must expose a visible controller to allow the SDK to present the UI.
 
-The following table presents all the protocol requirements you have to provide and their descriptions.
+Parameters
 
-| Parameter                                      | Description                                                                                                                                                                                                                          |
-| :--------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `customerSession`                              | Refers to the current payment's customer session.                                                                                                                                                                                    |
-| `countryCode`                                  | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
-| `language`                                     | Defines the language to be used in the payment forms. You can set it to one of the available language options: es (Spanish), en (English), or pt (Portuguese).                                                                       |
-| `yunoEnrollmentResult(\_ result: Yuno.Result)` | This method is called when the enrollment process is completed, providing the result of the enrollment as a parameter of type `Yuno.Result`.                                                                                         |
+| Parameter                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `customerSession`                              | Refers to the current payment's customer session.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `countryCode`                                  | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                                          |
+| `language`                                     | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
+| `yunoEnrollmentResult(\_ result: Yuno.Result)` | This method is called when the enrollment process is completed, providing the result of the enrollment as a parameter of type `Yuno.Result`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
-The parameter`showPaymentStatus`is used to determine whether the payment status should be displayed. Passing `true`as an argument will show the payment status while passing `false` indicates that the payment status should not be displayed.
+The `showPaymentStatus` parameter determines whether the payment status should be displayed. Passing `true` shows the payment status, while passing `false` hides it.
 
-The class `ViewController ` is a subclass of `UIViewController `and conforms to the `YunoEnrollmentDelegate `protocol. It includes a function called` enrollPayment(with delegate: YunoEnrollmentDelegate, showPaymentStatus: Bool)`, which parameters are described below:
+Parameters
 
-- `delegate: YunoEnrollmentDelegate` : The delegate object that handles enrollment callbacks.
-- `showPaymentStatus: Bool`: A Boolean flag that determines whether to display status views during the payment enrollment process.
+The `enrollPayment` method parameters are described below:
 
-The method `enrollPayment` initiates the payment enrollment process. You should call It in response to user interactions, such as pressing a button. The method utilizes the provided `delegate `to manage enrollment events and, based on the parameter `showPaymentStatus `decides whether to show visual feedback about the enrollment status.
+| Parameter           | Type                     | Description                                                                                           |
+| :------------------ | :----------------------- | :---------------------------------------------------------------------------------------------------- |
+| `delegate`          | `YunoEnrollmentDelegate` | The delegate object that handles enrollment callbacks.                                                |
+| `showPaymentStatus` | `Bool`                   | A Boolean flag that determines whether to display status views during the payment enrollment process. |
+
+The method `enrollPayment` initiates the payment enrollment process. You should call it in response to user interactions, such as pressing a button. The method utilizes the provided `delegate` to manage enrollment events and, based on the parameter `showPaymentStatus`, decides whether to show visual feedback about the enrollment status.
 
 ## Step 3: Enrollment status
 
@@ -115,8 +118,6 @@ If you use a payment method that requires a deep link to return to your app, use
 
 ```swift
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-
-  // Here your scheme URL should be the same as the callback_url you set in the customer session
 
   guard url.scheme == "yunoexample" else { return false }
   return Yuno.receiveDeeplink(url, showStatusView: true)
@@ -152,7 +153,7 @@ enum Result {
 You can use a switch to handle each result case:
 
 ```swift
-`func yunoEnrollmentResult(_ result: Yuno.Result) {
+func yunoEnrollmentResult(_ result: Yuno.Result) {
     switch result {
     case .success:
         print("Enrollment successful")
@@ -170,9 +171,9 @@ You can use a switch to handle each result case:
 }
 ```
 
-> 📘
->
-> `Yuno.Result` does not include tokens or error messages. You’ll only get a high-level status to help you guide the user experience.
+<Callout icon="📘" theme="info">
+  `Yuno.Result` does not include tokens or error messages. You’ll only get a high-level status to help you guide the user experience.
+</Callout>
 
 ## Render mode integration (enrollment)
 
@@ -198,26 +199,23 @@ func submitForm()
 var needSubmit: Bool { get }
 ```
 
-- **formView**: Returns an `AnyView` with the enrollment form (cards/APMs) if UI is required; otherwise `nil`.
-- **submitForm**: Triggers validations and proceeds with enrollment when applicable.
-- **needSubmit**: Indicates whether you should render a submit button.
+* **formView**: Returns an `AnyView` with the enrollment form (cards/APMs) if UI is required; otherwise `nil`.
+* **submitForm**: Triggers validations and proceeds with enrollment when applicable.
+* **needSubmit**: Indicates whether you should render a submit button.
 
 ### Implementation flow
 
 #### Step 1: Create enrollment flow instance
 
 ```swift
-// Create the render flow instance
-let enrollmentFlow = await Yuno.startEnrollmentRenderFlow(with: self) // YunoEnrollmentDelegate
+let enrollmentFlow = await Yuno.startEnrollmentRenderFlow(with: self)
 ```
 
 #### Step 2: Get and display the form
 
 ```swift
-// Get the form view
 let formView = await enrollmentFlow.formView(with: self)
 
-// Display the view if it exists (SwiftUI example)
 if let formView = formView {
     VStack {
         Text("Enroll Payment Method")
@@ -242,7 +240,7 @@ extension MyViewController: YunoEnrollmentDelegate {
     var viewController: UIViewController? { self }
 
     func yunoEnrollmentResult(_ result: Yuno.Result) {
-        // Handle final enrollment status based on your existing Result mapping
+        // Handle enrollment result
     }
 }
 ```
@@ -255,12 +253,12 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 
 When presenting the enrollment, you can also choose one of the render options for the card form. You have the following options:
 
-- `ONE_STEP`
-- `STEP_BY_STEP`
+* `ONE_STEP`
+* `STEP_BY_STEP`
 
 To change the render option, set the `cardFormType` equal one of the available options. Each option is presented below.
 
-<Image align="center" src="https://files.readme.io/ff9a74d50d3a8d3a4e550be1b917832bd6b8daa28cc4249d9ec22edef2f410bc-Full_SDK_ios.png" />
+<Image align="center" border={false} src="https://files.readme.io/ff9a74d50d3a8d3a4e550be1b917832bd6b8daa28cc4249d9ec22edef2f410bc-Full_SDK_ios.png" />
 
 ### Loader
 
@@ -292,9 +290,9 @@ Thread-safe means your code can be safely called from multiple threads without c
 
 We do not mark protocols as `@MainActor` because:
 
-- It would force all implementations to be MainActor-compatible
-- It would reduce flexibility for merchants who don't use MainActor
-- Each implementation has different concurrency needs
+* It would force all implementations to be MainActor-compatible
+* It would reduce flexibility for merchants who don't use MainActor
+* Each implementation has different concurrency needs
 
 ### Merchant's responsibility
 
@@ -308,7 +306,6 @@ This approach uses immutable properties that are automatically thread-safe, maki
 @MainActor
 class MyViewController: UIViewController, YunoPaymentDelegate {
 
-    // Immutable properties - automatically thread-safe
     private let _countryCode = "CO"
     private let _language = "EN"
 
@@ -318,7 +315,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 
     nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
         Task { @MainActor in
-            // Handle result on MainActor
+            // Handle result
         }
     }
 }
@@ -336,7 +333,6 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
     @Published var configCountryCode: String = "CO"
 
     nonisolated var language: String? {
-        // ⚠️ Only works if called from MainActor
         MainActor.assumeIsolated { configLanguage }
     }
 
@@ -353,7 +349,6 @@ This approach is suitable for service classes that don't require MainActor isola
 ```swift
 class MyService: YunoPaymentDelegate {
 
-    // Thread-safe because they are immutable
     let countryCode: String
     let language: String?
     let checkoutSession: String
@@ -367,7 +362,7 @@ class MyService: YunoPaymentDelegate {
     }
 
     func yunoPaymentResult(_ result: Yuno.Result) {
-        // Already thread-safe
+        // Handle result
     }
 }
 ```
@@ -376,6 +371,6 @@ class MyService: YunoPaymentDelegate {
 
 When implementing concurrency in your delegate, keep these key points in mind:
 
-- **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
-- **nonisolated**: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
-- **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
+* **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
+* **nonisolated**: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
+* **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
