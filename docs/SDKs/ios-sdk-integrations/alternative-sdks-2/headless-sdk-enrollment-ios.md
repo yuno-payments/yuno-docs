@@ -10,6 +10,8 @@ metadata:
 next:
   description: ''
 ---
+<br />
+
 > 👍 Recommended SDK
 >
 > We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
@@ -66,9 +68,8 @@ The code block below presents an example of importing and initializing the `Yuno
 import Yuno
 
 Yuno.initialize(
-    apiKey: "<Your PUBLIC_API_KEY>"
+    apiKey: "PUBLIC_API_KEY"
 )
-
 ```
 
 ## Step 3: Create a customer session
@@ -87,12 +88,14 @@ You need an enrollment payment method object to set Headless SDK integration for
 
 ## Step 5: Start the enrollment process
 
-Next, you will start the checkout process using the `apiClientEnroll` function, providing the necessary configuration parameters. The following table lists all required parameters and their descriptions.
+Next, you will start the checkout process using the `apiClientEnroll` function, providing the necessary configuration parameters. Parameters
 
-| Parameter          | Description                                                                                                                                                                                                                            |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk)  page. |
-| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions)   received as a response to the [Create Customer Session](ref:create-customer-session)   endpoint.\<br>Example: '438413b7-4921-41e4-b8f3-28a5a0141638'             |
+The following table lists all required parameters and their descriptions.
+
+| Parameter          | Description                                                                                                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                    |
 
 The next code block presents an example of the parameter configuration.
 
@@ -100,16 +103,9 @@ The next code block presents an example of the parameter configuration.
 var apiClientEnroll: YunoEnrollHeadless?
 
 apiClientEnroll = Yuno.apiClientEnroll(
-
-  /**
-     * country can be one of the following: https://docs.y.uno/docs/country-coverage-yuno-sdk
-     */
     countryCode: "CO",
-     /**
-     * The customer_session created in https://docs.y.uno/reference/create-customer-session
-     */
     customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
-  )
+)
 ```
 
 ## Step 6: Generate a vaulted token
@@ -117,16 +113,8 @@ apiClientEnroll = Yuno.apiClientEnroll(
 After collecting all user information, you can start the enrollment. First, you need to create a `vaulted_token` using the function `apiClientEnroll.continueEnrollment`. As it is an asynchronous function, you can use `do/catch` to ensure you will correctly handle triggered errors. Below, you will find an example of creating a  `vaulted_token`:
 
 ```swift
-/**
- * Create Token
- * This function will trigger an error if there is missing data.
- * You can catch this error using a do/catch block.
- */
-// `EnrollmentCollectedData` is a public data type that contains the necessary information for the payment structure.
 let enrollmentCollectedData: EnrollmentCollectedData = EnrollmentCollectedData(
-    // The customer_session created in https://docs.y.uno/reference/create-customer-session
     customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
-    // The necessary info to use the payment method structure
     paymentMethod: CollectedData(
         type: "CARD",
         card: CardData(
@@ -136,15 +124,10 @@ let enrollmentCollectedData: EnrollmentCollectedData = EnrollmentCollectedData(
                 expirationYear: 25,
                 securityCode: "123",
                 holderName: "Andrea",
-                // Use `.debit` or `.credit` for the card type.
                 type: .credit
             )
         ),
-        customer: Customer(
-            // Add the complete customer object here.
-            // You can check the object here: https://docs.y.uno/reference/the-customer-object
-            // You create the customer using the following endpoint: https://docs.y.uno/reference/create-customer
-        )
+        customer: Customer()
     )
 )
 
@@ -158,7 +141,6 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
  vaulted_token: "9104911d-5df9-429e-8488-ad41abea1a4b",
  status: "ENROLLED",
 
-//Same status for all SDKs: CREATED,
     EXPIRED,
     REJECTED,
    
