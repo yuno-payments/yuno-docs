@@ -1,5 +1,5 @@
 ---
-title: Manage Payments
+title: Payments
 excerpt: ''
 deprecated: false
 hidden: false
