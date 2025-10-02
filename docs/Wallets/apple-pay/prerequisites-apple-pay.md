@@ -26,11 +26,11 @@ In the Apple Developer dashboard:
 2. Go to **Certificates, Identifiers & Profiles**, then select **Register a new identifier**.
 3. Choose **Merchant IDs** and click **Continue**.
 
-<Image align="center" src="https://files.readme.io/ab500a4-image-1.png" />
+<Image align="center" border={false} src="https://files.readme.io/ab500a4-image-1.png" />
 
 4. Enter a **Description** (e.g., `Apple Pay Integration`) and an **Identifier** in the format `merchant.com.y.uno.YourBusinessName`.
 
-<Image align="center" src="https://files.readme.io/52f4ba5-image-2.png" />
+<Image align="center" border={false} src="https://files.readme.io/52f4ba5-image-2.png" />
 
 5. Click **Continue** and follow the steps to register.
 
@@ -40,7 +40,7 @@ In the Apple Developer dashboard:
 2. Open **Keychain Access** on your Mac.
 3. Go to **Keychain Access > Certificate Assistant > Request a Certificate From a Certificate Authority**.
 
-<Image align="center" src="https://files.readme.io/e8dc051-image_1.png" />
+<Image align="center" border={false} src="https://files.readme.io/e8dc051-image_1.png" />
 
 4. Fill out the form:
    * **Email Address**: your email address
@@ -64,13 +64,13 @@ In the Apple Developer dashboard:
 1. Go to the [Apple Developer Merchant ID list](https://developer.apple.com/account/resources/identifiers/list/merchant).
 2. Select your Merchant ID and click **Create Certificate** under **Apple Pay Payment Processing Certificate**.
 
-<Image align="center" src="https://files.readme.io/f3dbeec-Picture1.png" />
+<Image align="center" border={false} src="https://files.readme.io/f3dbeec-Picture1.png" />
 
 3. When prompted, answer **No** to "Will payments... be processed exclusively in China mainland?"
 4. Upload the file `CertificateSigningRequestPaymentProcessingCertificate.certSigningRequest`.
 5. Download the signed certificate as `apple_pay.cer` and save it to your directory.
 
-<Image align="center" src="https://files.readme.io/6a03caf-Picture2.png" />
+<Image align="center" border={false} src="https://files.readme.io/6a03caf-Picture2.png" />
 
 6. Convert the certificate to PEM format:
 
@@ -98,7 +98,7 @@ The private key will be stored in `ProcessingCertificatePrivateKey.pem`.
 2. Enter the contents of `ProcessingCertificatePrivateKey.pem` to the **Payment processing key** field.
 3. Enter the contents of `apple_pay.pem` into the **Payment processing certificate** field.
 
-<Image align="center" src="https://files.readme.io/abab730-image_3.png" />
+<Image align="center" border={false} src="https://files.readme.io/abab730-image_3.png" />
 
 ## Step 6: Generate a merchant identity certificate
 
@@ -143,7 +143,7 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 2. Copy the contents of `MerchantIdentityCertificatePrivateKey.pem` and paste them into the **Merchant Identity key** field.
 3. Paste the contents of `merchant_id.pem` into the **Merchant Identity certificate** field.
 
-<Image align="center" src="https://files.readme.io/abab730-image_3.png" />
+<Image align="center" border={false} src="https://files.readme.io/abab730-image_3.png" />
 
 ## Step 10: Register your merchant domains
 
@@ -169,7 +169,70 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 
 When implementing Apple Pay, ensure your integration supports both Safari and third-party browser flows to maximize payment conversion.
 
-Once all steps are complete, your Apple Pay integration with Yuno is ready. You can now proceed with:
+Once all steps are complete, you can proceed with the Dashboard setup.
 
-* [SDK Integration](doc:sdk-integration-apple)
-* [Direct Integration](doc:direct-integration)
+## Apple Pay Dashboard setup
+
+Let's go through the dashboard configuration steps for Apple Pay integrations with Yuno.
+
+## Step 1: Add the Apple Pay connection
+
+1. Log in to your [Yuno Dashboard](https://dashboard.y.uno/connections).
+2. Navigate to the **Connections** section.
+3. Locate and select the **Apple Pay** option and click **Connect**.
+4. Provide a **Name** for the connection, select **Apple Pay** as **Payment method**, and provide the information you acquired when following the [Prerequisites](doc:prerequisites-apple-pay) process, click **Next**.
+5. Configure set up costs (optional) and accounts in the following two steps.
+6. Click **Save**. Apple Pay will be added to your connections.
+
+<Image align="center" border={false} width="700px" src="https://files.readme.io/6d674dd-Screenshot_2024-07-02_at_2.27.47_PM.png" />
+
+## Step 2: Configure routing
+
+Set up a new route to control how payments are processed through Apple Pay.
+
+> 📘 Understanding Routing
+>
+> Visit the [Routing](doc:routing) page for additional information on this step.
+
+1. In the [Yuno Dashboard](https://dashboard.y.uno/), navigate to the **Routing** section.
+2. Find the **Apple Pay** connection. If you have not created a route for Apple Pay yet, it will be on the **Not published** tab.
+3. Set up a new route by pressing **Setup** on your **Apple Pay** module (or **View** if the route is published) and then clicking on **Create new route**. Give the connection a name and click **Save**.
+4. Add conditions to specify how payments should be routed through Apple Pay.
+5. Add Apple Pay as the payment processor for this route to ensure that payments meeting the defined conditions are processed through Apple Pay.
+6. **Publish** the route once all configurations are defined.
+
+Here's a simple route processing all payments through Apple Pay.
+
+<Image align="center" border={false} width="600px" src="https://files.readme.io/d5b9a8c-Screenshot_2024-07-02_at_2.30.09_PM.png" />
+
+## Step 3: Enable Apple Pay in Checkout Builder
+
+> 📘 Learn More About Checkout Builder
+>
+> Visit the [Checkout Builder](doc:checkout-builder) page for additional information on this step.
+
+To make Apple Pay available to your end users, you have to enable it on the Checkout Builder:
+
+1. In the [Yuno Dashboard](https://dashboard.y.uno/), navigate to the **Checkout Builder** section.
+2. Locate the available **Payment methods** and enable **Apple Pay**. Click the three dots next to each method for additional options.
+3. Click **Publish settings** to make Apple Pay available as a payment option for all transactions that meet the defined routing criteria.
+
+<Image align="center" border={false} src="https://files.readme.io/52781326ea260052f9a62e98d5cd6a1bbfdaa39f50062912f15f3bdb310aa019-4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png" />
+
+## Next steps
+
+After completing the Dashboard setup, you can proceed with your preferred integration method:
+
+### One-time payments
+
+* [Direct integration](doc:direct-integration) - Integrate directly with Yuno's API
+* [SDK integration](doc:sdk-integration-apple) - Use Yuno's SDK for easier implementation
+
+### Recurring payments
+
+* [Recurring direct integration](doc:apple-pay-recurring-direct) - Handle recurring payments with direct API calls
+* [Recurring SDK integration](doc:apple-pay-recurring-sdk) - Implement recurring payments using Yuno's SDK
+
+> 📘 Additional Configuration for Recurring Payments
+>
+> If you plan to implement recurring payments, you will need to configure an additional URL in your Apple Pay connection where customers can manage their subscriptions (cancel, modify, etc.). This URL must be created and hosted by your merchant platform.
