@@ -1,5 +1,5 @@
 ---
-title: Manage Subscriptions
+title: Subscriptions
 excerpt: ''
 deprecated: false
 hidden: false
