@@ -1,5 +1,5 @@
 ---
-title: Manage Customers
+title: Customers
 excerpt: ''
 deprecated: false
 hidden: false
