@@ -1,4 +1,4 @@
 ---
-title: Manage Recipients for Marketplace
+title: Recipients for Marketplace
 hidden: false
 ---
