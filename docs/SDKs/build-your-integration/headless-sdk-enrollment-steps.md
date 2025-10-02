@@ -17,16 +17,16 @@ Yuno's **Headless SDK** provides complete control over the checkout UX and UI, a
 The diagram below illustrates the complete enrollment workflow. Each step is explained in detail in the following sections. For platform-specific implementation details, refer to the corresponding guide:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web" href="/docs/headless-sdk-enrollment" />
+  <YunoCard title="Web" href="../docs/headless-sdk-enrollment" />
 
-  <YunoCard title="iOS" href="/docs/headless-sdk-enrollment-ios" />
+  <YunoCard title="iOS" href="../docs/headless-sdk-enrollment-ios" />
 
-  <YunoCard title="Android" href="/docs/headless-sdk-enrollment-android" />
+  <YunoCard title="Android" href="../docs/headless-sdk-enrollment-android" />
 </Shelf>
 
 <br />
 
-<Image align="center" src="https://files.readme.io/e46babd-Diagrama_-_SDK_Headless_Enroll.png" />
+<Image align="center" border={false} src="https://files.readme.io/e46babd-Diagrama_-_SDK_Headless_Enroll.png" />
 
 ### SDK Headless Enrollment Flow
 
