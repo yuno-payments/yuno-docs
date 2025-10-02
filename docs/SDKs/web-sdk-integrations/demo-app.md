@@ -14,11 +14,11 @@ metadata:
 next:
   description: ''
 ---
-To help you understand and check how the Yuno SDKs work, the Yuno team provides the Demo App. It provides implementation examples for all Yuno SDKs. Therefore, if you are having trouble running some SDK on your platform, you can check the working examples from the Demo App.
+To help you understand and check how the Yuno SDKs work, the Yuno team provides the Demo App. It provides implementation examples for all Yuno SDKs. Therefore, if you are having trouble running some SDK on your platform, you can see the working examples from the Demo App.
 
 > 🚧 Connect Payment Methods
 >
-> To ensure the Demo App will work properly, be sure to connect at least one payment method to your account through the [Dashboard](https://dashboard.y.uno/). Otherwise, when you access the Demo App, some features won't work. If you don't know how to connect a payment method to your account, check the following contents:
+> To ensure the Demo App will work properly, be sure to connect at least one payment method to your account through the [Dashboard](https://dashboard.y.uno/). Otherwise, when you access the Demo App, some features won't work. If you don't know how to connect a payment method to your account, see the following contents:
 >
 > * [Connections](/docs/connections)
 > * [Checkout Builder](/docs/checkout-builder)
@@ -43,7 +43,7 @@ YUNO_PUBLIC_API_KEY=your_public_api_key
 YUNO_PRIVATE_SECRET_KEY=your_private_secret_key
 ```
 
-You can find `account_code`, `public_apy_key`, and `private_secrete_key` in [Yuno Merchant Dashboard](https://docs.y.uno/reference/authentication).
+You can find `account_code`, `public_api_key`, and `private_secret_key` in the [Yuno Merchant Dashboard](https://docs.y.uno/reference/authentication).
 
 ### Step 3: Start the Demo App
 
@@ -73,6 +73,13 @@ You can also change the country by adding a query parameter named `country` to t
 http://localhost:8080?country=DE
 ```
 
-You will find a panel, as presented below, with all Yuno SDKs available by accessing the URL. Select the desired SDK to check its appearance and how it works.
+You will find a panel, as shown below, with all Yuno SDKs available by accessing the URL. Select the desired SDK to see its appearance and how it works.
 
-![Demo App Screenshot](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true)
+<Image alt="Demo App Screenshot" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true" />
+
+## Related Links
+
+Find more information and version history for the Web SDK below:
+
+* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
