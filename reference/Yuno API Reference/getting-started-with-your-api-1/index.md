@@ -1,6 +1,5 @@
 ---
-title: Manage Installments
-excerpt: This page will help you get started with Installments.
+title: Installments
 deprecated: false
 hidden: false
 metadata:
