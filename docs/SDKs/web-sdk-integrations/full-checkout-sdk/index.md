@@ -24,7 +24,7 @@ Welcome to the Yuno Full SDK (Web) guide. This guide will help you get started w
 
 > 📘 Web SDK v1.3
 >
-> This guide covers Web SDK v1.3. To read about previous versions, explore the [related links](#related-links) or visit the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog#/).
+> This guide covers Web SDK v1.3. To read about previous versions, explore the [related links](#related-links) or visit the [changelog](../changelog#/).
 
 ## Choose your integration method
 
@@ -138,5 +138,5 @@ After integrating the SDK using one of the methods described above, follow these
 
 Find more information and version history for the Web SDK below:
 
-* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
-* [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
+* [Web SDK v1.3](../changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](../changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
