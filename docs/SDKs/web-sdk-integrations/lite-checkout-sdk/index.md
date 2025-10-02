@@ -10,19 +10,21 @@ metadata:
 next:
   description: ''
 ---
+<br />
+
 > 👍 Recommended SDK
 >
 > We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-Welcome to the Yuno Lite SDK (Web) guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
+This page provides a guide to get started with Yuno's Lite SDK (Web) payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
 
-> 📘 Web SDK v1.1 Release
+> 📘 Web SDK Release
 >
-> v1.1 introduces enhancements to 3DS, performance, security, and user experience. To learn more, [visit the Web SDK v1.1 page](https://docs.y.uno/docs/yuno-web-sdk-v11).
+> This is the latest version with enhanced UI grouping and multilingual support. To learn more, [visit the Web SDK changelog](doc:web-sdk-changelog).
 
 ## Choose your integration method
 
-Let's help you choose the integration method that best fits your needs. Each approach has specific advantages, and selecting the right one depends on your development environment, technical requirements, and preferences.
+Choose the integration method that best fits your needs. Each approach has specific advantages, and selecting the right one depends on your development environment, technical requirements, and preferences.
 
 * **[Method 1 (HTML)](#1-add-the-sdk-script-directly-in-html)**: Add a single script tag to your HTML file. This is the simplest method, ideal for basic implementations and quick prototypes
 * **[Method 2 (Dynamic JavaScript)](#2-inject-the-sdk-dynamically-using-javascript)**: Load the SDK programmatically with custom error handling and loading states. Best for applications needing more control over the integration
@@ -30,22 +32,20 @@ Let's help you choose the integration method that best fits your needs. Each app
 
 ### 1. Add the SDK script directly in HTML
 
-The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your HTML file. This method provides a quick implementation while maintaining proper asynchronous loading. The SDK exposes an event that notifies when it's fully loaded, ensuring you can safely initialize and use its features at the right time.
+Add a `<script>` tag to your HTML file to integrate the Yuno SDK. This method provides a quick implementation while maintaining proper asynchronous loading. The SDK exposes an event that notifies when it's fully loaded, ensuring you can safely initialize and use its features at the right time.
 
 > 📘 Event Listener Timing
 >
 > While the `defer` attribute ensures the script is executed after the HTML is parsed, it doesn't guarantee that the SDK script will always load last. In some cases, if the SDK loads faster than expected and the event listener is declared afterward, the `yuno-sdk-ready` event may have already fired — and your listener won't catch it. To prevent this, always define the listener before loading the SDK script.
 
 ```html
-<!-- First, set up the event listener -->
 <script>
   window.addEventListener('yuno-sdk-ready', () => {
-    console.log('SDK loaded'); // The SDK is ready to use
+    console.log('SDK loaded');
     await yuno.initialize('publicKey');
   });
 </script>
 
-<!-- Then load the SDK -->
 <script defer src="https://sdk-web.y.uno/v1.1/main.js"></script>
 ```
 
@@ -61,67 +61,60 @@ The dynamic JavaScript injection method provides enhanced control over SDK loadi
 
 This method is ideal when you need granular control over the SDK's loading process and want to handle various scenarios with precision.
 
-**file.js**
+Create a function to inject the SDK dynamically:
 
 ```javascript
-// Function to inject the SDK dynamically
 export const injectScript = async (): Promise<boolean> => {
   const head = document.getElementsByTagName('head')[0];
   const js = document.createElement('script');
   js.src = "https://sdk-web.y.uno/v1.1/main.js";
   js.defer = true;
 
-  // Return a promise that resolves when the SDK is ready
   return new Promise((resolve, reject) => {
     window.addEventListener('yuno-sdk-ready', () => {
-      resolve(true); // SDK loaded successfully
+      resolve(true);
     });
 
     js.onerror = (error) => {
-      // Create a custom event in case of loading error
       const event = new CustomEvent('yuno-sdk-error', { detail: error });
       window.dispatchEvent(event);
-
       reject(new Error(`Failed to load script: ${js.src} - ${error.message}`));
     };
 
-    head.appendChild(js); // Add the script to the document
+    head.appendChild(js);
   });
 };
+```
 
-// Using the function to inject the SDK
+Use the function to inject the SDK:
+
+```javascript
 await injectScript();
-// SDK is ready to use
 await yuno.initialize('publicKey');
 ```
 
 ### 3. Use the NPM module
 
-For projects using NPM package management, you can install the SDK as a module through NPM. This approach provides better dependency management, version control, and seamless integration with modern JavaScript build tools and frameworks. It's particularly beneficial for applications using bundlers like webpack, Rollup, or Vite.
+Install the SDK as a module through NPM for projects using NPM package management. This approach provides better dependency management, version control, and seamless integration with modern JavaScript build tools and frameworks. It's particularly beneficial for applications using bundlers like webpack, Rollup, or Vite.
 
 ```bash
 npm install @yuno-payments/sdk-web
 ```
 
-Then, load and initialize the SDK as follows:
+Then, load and initialize the SDK:
 
 ```javascript
-// Import the SDK module from npm
 import { loadScript } from '@yuno-payments/sdk-web';
 
-// Load and initialize the SDK
 const yuno = await loadScript();
-
-// Initialize the SDK with the public key
 await yuno.initialize('publicKey');
 ```
 
 ## Improve performance using `preconnect`
 
-To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the `<head>` tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
+Add `preconnect` links as early as possible within the `<head>` tag of your HTML document to optimize performance and reduce latency. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
 
 ```html
-<!-- Improve performance with preconnect -->
 <link rel="preconnect" href="https://sdk-web.y.uno" />
 <link rel="preconnect" href="https://api.y.uno" />
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
@@ -132,9 +125,12 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 After integrating the SDK using one of the methods described above, follow these steps to implement the Lite Checkout functionality:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Lite Web SDK v1.2 (Payment)" href="/docs/lite-checkout-sdk-v12" titleSize="h4" />
-
-  <YunoCard title="Lite Web SDK v1.1 (Payment)" href="/docs/lite-checkout-sdk-v11" titleSize="h4" />
-
-  <YunoCard title="Lite Web SDK (Enrollment)" href="/docs/enrollment-lite-sdk" titleSize="h4" />
+  <YunoCard title="Lite SDK implementation" href="../docs/lite-sdk-implementation" titleSize="h4" />
 </Shelf>
+
+## Related Links
+
+Find more information and version history for the Web SDK below:
+
+* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
