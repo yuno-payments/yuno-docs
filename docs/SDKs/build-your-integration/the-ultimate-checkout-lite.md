@@ -119,11 +119,11 @@ The following steps outline the complete interaction flow between all components
 To implement the Lite SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web" href="/docs/lite-checkout-sdk" />
+  <YunoCard title="Web" href="../docs/lite-checkout-sdk" />
 
-  <YunoCard title="iOS" href="/docs/lite-checkout-ios" />
+  <YunoCard title="iOS" href="../docs/lite-checkout-ios" />
 
-  <YunoCard title="Android" href="/docs/lite-checkout-android" />
+  <YunoCard title="Android" href="../docs/lite-checkout-android" />
 </Shelf>
 
 ## Payment workflow using a vaulted token
