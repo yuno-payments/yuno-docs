@@ -1,5 +1,5 @@
 ---
-title: Manage Reports
+title: Reports
 excerpt: ''
 deprecated: false
 hidden: false
