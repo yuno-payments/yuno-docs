@@ -17,14 +17,14 @@ Yuno's **Headless SDK** gives you full control over the checkout UX and UI witho
 The diagram below illustrates the complete payment workflow. Each step is explained in detail in the following sections. For platform-specific implementation details, refer to the corresponding guide:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web" href="/docs/headless-sdk-payment" />
+  <YunoCard title="Web" href="../docs/headless-sdk-payment" />
 
-  <YunoCard title="iOS" href="/docs/headless-sdk-payment-ios" />
+  <YunoCard title="iOS" href="../docs/headless-sdk-payment-ios" />
 
-  <YunoCard title="Android" href="/docs/headless-sdk-payment-android" />
+  <YunoCard title="Android" href="../docs/headless-sdk-payment-android" />
 </Shelf>
 
-<Image align="center" src="https://files.readme.io/a17409c-Diagrama_-_SDK_Headless_pago.png" />
+<Image align="center" border={false} src="https://files.readme.io/a17409c-Diagrama_-_SDK_Headless_pago.png" />
 
 ### SDK Headless Payment Flow
 
