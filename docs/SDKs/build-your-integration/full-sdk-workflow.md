@@ -27,7 +27,7 @@ With Yuno Full SDK, you can seamlessly integrate Yuno into your system. This app
 2. Enroll a credit card while processing a payment.
 3. Use a vaulted token from an enrolled payment method.
 
-Follow the step-by-step guides below to integrate the full SDK:
+Follow the step-by-step guides below to integrate the Full SDK:
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Payment workflow" href="#payment-workflow" titleSize="h4" />
@@ -41,7 +41,7 @@ Follow the step-by-step guides below to integrate the full SDK:
 
 The Full SDK provides a **unified payment experience**, allowing customers to complete transactions using multiple payment methods within a single integration. The diagram below illustrates the complete process:
 
-![Full SDK Integration Flow](https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png)
+<Image alt="Full SDK Integration Flow" border={false} src="https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png" />
 
 ### Full SDK Integration Flow
 
@@ -128,7 +128,7 @@ To implement the Full SDK integration, follow the platform-specific guides below
 
 If a customer has an enrolled payment method, they can use a **vaulted token** from the enrollment process to complete transactions **without** entering payment details again.
 
-![](https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png)
+<Image border={false} src="https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png" />
 
 ### Vaulted Token Full Diagram
 
@@ -195,7 +195,7 @@ With the Full SDK, you can save credit/debit cards for future purchases with the
 >
 > You should only use one option to enroll a card. To enroll alternative payment methods, you have to use the [Lite SDK](enrollment-lite).
 
-After enrolling a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, you can use one of the following endpoints:
+After enrolling a payment method, you can use the vaulted token to perform payments. To access information about the payment methods enrolled by each user, use one of the following endpoints:
 
 * [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout).
 * [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api).
