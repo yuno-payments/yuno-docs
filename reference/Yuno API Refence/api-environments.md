@@ -48,4 +48,3 @@ https://api.y.uno
 > 🚧 Timeout
 >
 > Yuno uses a timeout value of 60 seconds for all endpoints. Therefore, the total time available for a request to be processed and answered by our APIs is 60 seconds. The timeout value of 60 seconds is used to cover all cases from the processor/acquirer since their response time varies. **Important**: The response time will usually be a fraction of the timeout.
-
