@@ -1,5 +1,5 @@
 ---
-title: Customer Sessions
+title: Customer Sessions (Enrollment)
 excerpt: ''
 deprecated: false
 hidden: false
