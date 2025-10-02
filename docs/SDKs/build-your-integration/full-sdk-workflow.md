@@ -120,8 +120,6 @@ To implement the Full SDK integration, follow the platform-specific guides below
   <YunoCard title="iOS" href="/docs/full-checkout-ios" />
 
   <YunoCard title="Android" href="/docs/full-checkout-android" />
-
-  <YunoCard title="Flutter" href="/docs/flutter-sdk-integration" />
 </Shelf>
 
 ## Payment workflow using a vaulted token
@@ -189,7 +187,7 @@ The following steps outline the detailed sequence of interactions between the di
 With the Full SDK, you can save credit/debit cards for future purchases with the same payment request without the enrollment [integration](enrollment-lite). You can obtain the [vaulted token](doc:tokens) in two ways:
 
 * **Via API**: Set `vault_on_success = true` when using the [Create payment](ref:create-payment) endpoint. You will receive the `vaulted_token` that corresponds to the card used by the customer payer in the response.
-* **Via SDK settings**: Set `cardSaveEnable = true` in the SDK complementary features ([Web](doc:complementary-features-full-sdk), [iOS](doc:full-checkout-ios), [Android](doc:full-checkout-android), and [Flutter](https://docs.y.uno/docs/flutter-sdk-integration)). The SDK will display a checkbox for users to select if they want to save the card for future purchases. If the user checks the box, you will receive the `vaulted_token`.
+* **Via SDK settings**: Set `cardSaveEnable = true` in the SDK complementary features ([Web](doc:complementary-features-full-sdk), [iOS](doc:full-checkout-ios), and [Android](doc:full-checkout-android). The SDK will display a checkbox for users to select if they want to save the card for future purchases. If the user checks the box, you will receive the `vaulted_token`.
 
 > 📘 Card Enrollment Options
 >
