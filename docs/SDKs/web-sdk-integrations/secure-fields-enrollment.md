@@ -14,7 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields Enro
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Secure Fields implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Secure Fields implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -26,15 +26,19 @@ Choose the integration method that best suits your development workflow and tech
 
 > 📘 TypeScript Library
 >
-> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
+> If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods in the Yuno Web SDK.
 
 ### Step 2: Initialize secure fields with the public key
 
-Get a `Yuno` instance class in your `JS` app with a valid **PUBLIC\_API\_KEY**
+Get a `Yuno` instance class in your JavaScript application with a valid `PUBLIC_API_KEY`:
 
 ```javascript
-const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
+
+> 📘 Credentials
+>
+> See the credentials page for more information: [https://docs.y.uno/reference/authentication](https://docs.y.uno/reference/authentication)
 
 ### Step 3: Create a customer session and an enrollment payment method object
 
@@ -46,9 +50,11 @@ Before continuing with the process, you will need to create a [customer session]
 
 ### Step 4: Start the enrollment process
 
-Next, you have to create a configuration object. The essential parameters are the `countryCode`, which determines the country for which the enrollment process is configured, and `customerSession`, which refers to the current enrollment's customer session.  The next code block presents an example of the parameter configuration.
+Next, you have to create a configuration object. The essential parameters are the `countryCode`, which determines the country for which the enrollment process is configured, and `customerSession`, which refers to the current enrollment's customer session.
 
-The following table lists all required parameters and their descriptions.
+### Parameters
+
+Configure the secure fields with the following options:
 
 | Parameter         | Description                                                                                                                                                                                                                                                                                   |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -57,22 +63,16 @@ The following table lists all required parameters and their descriptions.
 
 ```javascript
 const secureFields = yuno.secureFields({
-    /**
-     * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
-    */
-    countryCode: "CO",
-     /**
-		 * The customer session created using the following endpoint https://docs.y.uno/reference/create-customer-session
-     */
-    customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
-  })
+  countryCode: "CO",
+  customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+});
 ```
 
 ### Step 5: Mount the Secure Fields
 
 After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
 
-The table below presents all configurations available:
+The following table shows all configurations available:
 
 | Parameters                      | Description                                                                                                                                                                         |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -90,114 +90,46 @@ The table below presents all configurations available:
 
 Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
-The next code block presents an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user.
+The following code block shows an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user:
 
 ```javascript
 const secureNumber = secureFields.create({
-  /**
-   * Field name, can be 'cvv', 'pan', or 'expiration'.
-   */
   name: 'pan',
-  // All options are optional
   options: {
     placeholder: '0000 0000 0000 0000',
-    /**
-     * You can edit card form styles.
-     * Simply write CSS, and it will be injected into the iframe.
-     * Example: 
-     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-     *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-     *    color: red;
-     *    font-family: 'Luckiest Guy' !important;
-     *  }`
-     */
     styles: ``,
     label: 'Card Number',
     showError: true,
     errorMessage: "Custom Error",
-    // Indicates if the field has an error
     validateOnBlur: false,
     onChange: ({ error, data }) => {
-      /**
-       * In data.cardIIN, you can receive card data:
-       * [{
-       *   "id": "436c457c-1234-4e5e-b51d-1814e67d696a",
-       *   "iin": "411111",
-       *   "scheme": "VISA",
-       *   "issuer_name": "JPMORGAN CHASE BANK N.A.",
-       *   "issuer_code": null,
-       *   "brand": "VISA",
-       *   "type": "CREDIT",
-       *   "category": "CREDIT",
-       *   "country_code": "US",
-       *   "country_name": "United States of America",
-       *   "website": "https://www.chase.com",
-       *   "phone": {
-       *       "country_code": null,
-       *       "number": "+1 212-270-6000"
-       *   },
-       *   "address": {
-       *       "address_line_1": null,
-       *       "address_line_2": null,
-       *       "city": null,
-       *       "country": null,
-       *       "state": null,
-       *       "zip_code": null
-       *   }
-       * }]
-       */
-      /**
-       * In data.isCardIINLoading, you can receive a true or false indicating if the card IIN search is being executed.
-       */
-      /**
-       * In data.isInstallmentLoading, you can receive a true or false indicating if the installments search is being executed.
-       */
       if (error) {
         console.log('error_pan')
       } else {
         console.log('not_error_pan')
       }
     },
-    // Triggered when blurring from input
     onBlur() {
       console.log('blur_pan')
     },
-    // Triggered when focusing on input
     onFocus: () => {
       console.log('focus_pan')
     },
-    // Trigger when input has finished rendering 
     onRenderedSecureField: ()=> {
       console.log('render completed')
     }
   },
 })
 
-// Render into desired element
 secureNumber.render('#pan')
 
 const secureExpiration = secureFields.create({
-  /**
-   * Field name, can be 'cvv', 'pan', or 'expiration'.
-   */
   name: 'expiration',
-  // All options are optional
   options: {
     placeholder: 'MM / YY',
-    /**
-     * You can edit card form styles.
-     * Simply write CSS, and it will be injected into the iframe.
-     * Example: 
-     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-     *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-     *    color: red;
-     *    font-family: 'Luckiest Guy' !important;
-     *  }`
-     */
     styles: ``,
     label: 'Card Expiration',
     showError: true,
-    // Indicates if the field has an error
     onChange: ({ error }) => {
       if (error) {
         console.log('error_expiration')
@@ -205,46 +137,27 @@ const secureExpiration = secureFields.create({
         console.log('not_error_expiration')
       }
     },
-    // Triggered when blurring from input
     onBlur() {
       console.log('blur_expiration')
     },
-    // Triggered when focusing on input
     onFocus: () => {
       console.log('focus_expiration')
     },
-    // Trigger when input has finished rendering 
     onRenderedSecureField: ()=> {
       console.log('render completed')
     }
   },
 })
 
-// Render into desired element
 secureExpiration.render('#expiration')
 
 const secureCvv = secureFields.create({
-  /**
-   * Field name, can be 'cvv', 'pan', or 'expiration'.
-   */
   name: 'cvv',
-  // All options are optional
   options: {
     placeholder: 'CVV',
-        /**
-     * You can edit card form styles.
-     * Simply write CSS, and it will be injected into the iframe.
-     * Example: 
-     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-     *  .Yuno-text-field__content.focus label.Yuno-text-field__label {
-     *    color: red;
-     *    font-family: 'Luckiest Guy' !important;
-     *  }`
-     */
     styles: ``,
     label: 'CVV',
     showError: true,
-    // Indicates if the field has an error
     onChange: ({ error }) => {
       if (error) {
         console.log('error_cvv')
@@ -252,69 +165,47 @@ const secureCvv = secureFields.create({
         console.log('not_error_cvv')
       }
     },
-    // Triggered when blurring from input
     onBlur() {
       console.log('blur_cvv')
     },
-    // Triggered when focusing on input
     onFocus: () => {
       console.log('focus_cvv')
     },
-    // Trigger when input has finished rendering 
     onRenderedSecureField: ()=> {
       console.log('render completed')
     }
   },
 })
 
-// Render into desired element
 secureCvv.render('#cvv')
 
 ```
 
 > 📘 Enrollment for Payouts
 >
-> If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the `secureNumber` object before creating the vaulted\_token and ignore the `secureExpiration` and `secureCvv` objects.
+> If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the `secureNumber` object before creating the vaulted_token and ignore the `secureExpiration` and `secureCvv` objects.
 
-After they are mounted, the three secure fields will be shown
+After they are mounted, the three secure fields will be shown:
 
 ### Step 6: Create Vaulted Token
 
-To enroll, create a Vaulted Token
+To enroll, create a Vaulted Token:
 
 ```javascript
-// Create Vaulted Token
-// This will trigger an error if there are missing data
-// You can catch it using a try/catch
 const vaultedToken = await secureFields.generateVaultedToken({
-  // Required: You can create an input to get this formation
   cardHolderName: 'John Deer',
-  // Check your card processor to know if you need to send 
-  // customer information
-  // full object here https://docs.y.uno/reference/the-customer-object
   customer: {
     document: {
       document_number: '1090209924',
       document_type: 'CC',
     },
   },
-})
+});
 ```
 
 If you need the full response, you can use `secureFields.generateVaultedTokenWithInformation`
 
-```javascript
-/**
- *  Create one-time token
- *  This will trigger an error if there are missing data
- *  You can catch it using a try/catch
- *  Returns an object with the full response
- *  {
- *   code: string;
- *   idempotency_key: string;
- *   organization_code: string;
- *   account_code: string;
- *   customer_session: string;
+````javascript
  *   name: string;
  *   description: string;
  *   status: Enrollment.Status;
@@ -333,12 +224,11 @@ If you need the full response, you can use `secureFields.generateVaultedTokenWit
  *   updated_at: Date;
  *  }
  */ 
+Generate a vaulted token with customer information:
+
+```javascript
 const vaultedTokenWithInformation = await secureFields.generateVaultedTokenWithInformation({
-  // Required: You can create an input to get this formation
   cardHolderName: 'John Deer',
-  // Check your card processor to know if you need to send 
-  // customer information
-  // full object here https://docs.y.uno/reference/the-customer-object
   customer: {
     document: {
       document_number: '1090209924',
@@ -346,8 +236,15 @@ const vaultedTokenWithInformation = await secureFields.generateVaultedTokenWithI
     },
   },
 })
-```
+````
 
 ## Demo
 
 In addition to the code examples provided, you can access the [Demo App](ref:demo-app) for a complete implementation of Yuno Secure Fields or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js) Secure Fields checkout demos available on GitHub.
+
+## Related Links
+
+Find more information and version history for the Web SDK below:
+
+* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
