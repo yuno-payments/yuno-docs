@@ -2,7 +2,7 @@
 title: Apple Pay Setup and Configuration
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
