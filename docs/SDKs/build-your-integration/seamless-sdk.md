@@ -20,13 +20,13 @@ When using the Seamless SDK, you can:
 
 Use the following guides to implement each process.
 
-<Image align="center" src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+<Image align="center" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
 ## Payment workflow
 
 The diagram below illustrates the complete payment workflow:
 
-![](https://files.readme.io/aa0edc30b1470562f8cc1380856aacb410d41aa6417d863e2c65476d26481fa4-image1.png)
+<Image border={false} src="https://files.readme.io/aa0edc30b1470562f8cc1380856aacb410d41aa6417d863e2c65476d26481fa4-image1.png" />
 
 ### SDK Headless Payment Flow
 
@@ -78,9 +78,9 @@ The following steps outline the complete interaction flow between all components
 To implement the Full SDK integration, follow the platform-specific guides below:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web" href="/docs/seamless-sdk-payment-web" />
+  <YunoCard title="Web" href="../docs/seamless-sdk-payment-web" />
 
-  <YunoCard title="iOS" href="/docs/seamless-sdk-payment-ios" />
+  <YunoCard title="iOS" href="../docs/seamless-sdk-payment-ios" />
 
-  <YunoCard title="Android" href="/docs/seamless-sdk-payment-android" />
+  <YunoCard title="Android" href="../docs/seamless-sdk-payment-android" />
 </Shelf>
