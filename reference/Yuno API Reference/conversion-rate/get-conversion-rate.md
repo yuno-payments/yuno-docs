@@ -13,4 +13,4 @@ metadata:
 next:
   description: ''
 ---
-For more information on how to use the currency conversion service, please refer to the [Currency conversion page](doc:currency-conversion-copy#introduction) in the guides section.
+For more information on how to use the currency conversion service, please refer to the [Currency conversion page](ref:currency-conversion)  in the guides section.
