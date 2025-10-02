@@ -9,7 +9,7 @@ This page provides a step-by-step guide to implement and enable Yuno's Lite Web 
 
 > 📘 Changelog Reference:
 >
-> This guide covers the current SDK version. For details on previous versions, see the [changelog](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/docs/web-sdk-changelog).
+> This guide covers the current SDK version. For details on previous versions, see the [changelog](../docs/web-sdk-changelog).
 
 ## Step 1: Include the library in your project
 
@@ -506,5 +506,5 @@ Learn about the additional configurations from the Lite SDK by accessing [Comple
 
 Find more information and version history for the Web SDK below:
 
-* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
-* [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
+* [Web SDK v1.3](../changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](../changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
