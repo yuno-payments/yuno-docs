@@ -1,5 +1,5 @@
 ---
-title: Manage Payment Links
+title: Payment Links
 excerpt: ''
 deprecated: false
 hidden: false
