@@ -212,10 +212,10 @@ MIT transactions are processed automatically for recurring billing using the `va
 
 ## Troubleshooting
 
-* Merchant validation failed: verify Apple Pay certificates and merchant ID configuration
-* Invalid or expired Apple token: obtain a fresh token from Apple SDK and ensure it is stringified
-* Unsupported network or country: confirm your provider supports Apple Pay for the requested currency/country
-* Duplicate charges: always send an `Idempotency-Key` with create payment calls
+* **Merchant validation failed**: verify Apple Pay certificates and merchant ID configuration
+* **Invalid or expired Apple token**: obtain a fresh token from Apple SDK and ensure it is stringified
+* **Unsupported network or country**: confirm your provider supports Apple Pay for the requested currency/country
+* **Duplicate charges**: always send an `Idempotency-Key` with create payment calls
 
 ## Related documentation
 
