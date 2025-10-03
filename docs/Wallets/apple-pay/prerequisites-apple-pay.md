@@ -151,7 +151,9 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 2. Select your **Merchant ID** and click **Add Domain** under **Merchant Domains**.
 3. Enter the domain (e.g., `demo.y.uno`) and click **Save**.
 
-> ⚠️ Note: You must also host Apple’s `apple-developer-merchantid-domain-association` file at:
+> ⚠️ Note
+>
+> You must also host Apple’s `apple-developer-merchantid-domain-association` file at:
 >
 > ```
 > https://yourdomain.com/.well-known/apple-developer-merchantid-domain-association
