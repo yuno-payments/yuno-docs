@@ -1,7 +1,7 @@
 ---
 title: Direct Integration (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
