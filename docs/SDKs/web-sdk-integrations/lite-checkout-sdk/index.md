@@ -132,5 +132,7 @@ After integrating the SDK using one of the methods described above, follow these
 
 Find more information and version history for the Web SDK below:
 
-* [Web SDK v1.3](../changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
-* [Web SDK v1.2](../changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
+* [Lite Web SDK v1.2](../changelog/lite-web-sdk-v1.2-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
+* [Lite Web SDK v1.1](../changelog/lite-web-sdk-v1.1-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
+
+<br />
