@@ -44,7 +44,7 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 You will start the checkout process. To do it, use the `secureFields` function and provide the necessary configuration parameters:
 
-The essential parameters are the `country_code`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.
+The essential parameters are the `countrycode`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.
 
 ### Parameters
 
@@ -52,13 +52,13 @@ Configure the secure fields with the following options:
 
 | Parameter            | Description                                                                                                                                                                                                                                                                                   |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `country_code`       | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `countrycode`        | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
 | `checkoutSession`    | Refers to the current payment's [checkout session](ref:create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                            |
 | `installmentsEnable` | This parameter is optional and is set false by default. If set True, the installments set for the account will be shown as a secure field.                                                                                                                                                    |
 
 ```javascript
 const secureFields = yuno.secureFields({
-  country_code: country,
+  countrycode: country,
   checkoutSession,
   installmentsEnable: false
 });
@@ -319,7 +319,7 @@ After, you can check the payment status using the `yuno.mountStatusPayment` func
 | Parameter           | Description                                            |
 | ------------------- | ------------------------------------------------------ |
 | `checkoutSession`   | The checkout session ID for the payment                |
-| `country_code`      | Country code for the payment process                   |
+| `countrycode`       | Country code for the payment process                   |
 | `language`          | Language for the status display                        |
 | `yunoPaymentResult` | Callback function that receives payment status updates |
 
@@ -331,7 +331,7 @@ if (payment.checkout.sdk_action_required) {
 } else {
   yuno.mountStatusPayment({
     checkoutSession: checkoutSession,
-    country_code: 'US',
+    countrycode: 'US',
     language: 'en',
     yunoPaymentResult(data) {
       console.log('yunoPaymentResult', data)
