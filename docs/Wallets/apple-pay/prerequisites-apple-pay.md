@@ -10,6 +10,13 @@ metadata:
 next:
   description: ''
 ---
+> 📘 Third-party browser integration (iOS 18+)
+>
+> Apple Pay can be offered in third-party browsers such as Google Chrome. Requirements include:
+>
+> * Users must have iOS 18 or higher on their iPhone
+> * Apple Pay works in browsers like Google Chrome, not just Safari
+
 Use this guide to prepare and configure Apple Pay with Yuno.
 
 * [**Apple Developer prerequisites**](#step-1-register-a-merchant-identifier): Create a merchant identifier, generate and convert the required certificates/keys, and verify your merchant domains.
@@ -22,22 +29,14 @@ When finished, you'll be ready to [choose your integration path](#next-steps)  (
 <Callout icon="📘" theme="info">
   **Setting up Merchant ID for Apple Pay**
 
-  If you're using VTEX as your e-commerce platform, you'll need to configure your Apple Pay Merchant ID. For detailed instructions, check out the official VTEX documentation: [Setting up Merchant ID in Apple Pay - VTEX Documentation](https://developers.vtex.com/docs/guides/setting-up-merchant-id-in-apple-pay).
+  If you're using VTEX as your e-commerce platform, you'll need to configure your Apple Pay Merchant ID. For detailed instructions, check out the [official VTEX documentation](https://developers.vtex.com/docs/guides/setting-up-merchant-id-in-apple-pay).
 </Callout>
 
 In the Apple Developer dashboard:
 
-1. Log in to [Apple Developer](https://idmsa.apple.com/IDMSWebAuth/signin?appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757\&path=%2Faccount%2F\&rv=1).
-2. Go to **Certificates, Identifiers & Profiles**, then select **Register a new identifier**.
-3. Choose **Merchant IDs** and click **Continue**.
-
-<Image align="center" border={false} src="https://files.readme.io/ab500a4-image-1.png" />
-
-4. Enter a **Description** (e.g., `Apple Pay Integration`) and an **Identifier** in the format `merchant.com.y.uno.YourBusinessName`.
-
-<Image align="center" border={false} src="https://files.readme.io/52f4ba5-image-2.png" />
-
-5. Click **Continue** and follow the steps to register.
+1. Log in to [Apple Developer](https://idmsa.apple.com/IDMSWebAuth/signin?appIdKey=891bd3417a7776362562d2197f89480a8547b108fd934911bcbea0110d07f757\&path=%2Faccount%2F\&rv=1), go to **Certificates, Identifiers & Profiles**, then select **Register a new identifier**.
+2. Choose **Merchant IDs**.
+3. Enter a **Description** (e.g., `Apple Pay Integration`) and an **Identifier** in the format `merchant.com.y.uno.YourBusinessName`.
 
 ## Step 2: Generate a payment processing certificate
 
@@ -62,21 +61,13 @@ In the Apple Developer dashboard:
    * **Key Size**: 256-bit
    * **Algorithm**: ECDSA
 
-7. Click **Continue** to generate the CSR.
-
 ## Step 3: Retrieve and convert the payment processing certificate
 
 1. Go to the [Apple Developer Merchant ID list](https://developer.apple.com/account/resources/identifiers/list/merchant).
 2. Select your Merchant ID and click **Create Certificate** under **Apple Pay Payment Processing Certificate**.
-
-<Image align="center" border={false} src="https://files.readme.io/f3dbeec-Picture1.png" />
-
 3. When prompted, answer **No** to "Will payments... be processed exclusively in China mainland?"
 4. Upload the file `CertificateSigningRequestPaymentProcessingCertificate.certSigningRequest`.
 5. Download the signed certificate as `apple_pay.cer` and save it to your directory.
-
-<Image align="center" border={false} src="https://files.readme.io/6a03caf-Picture2.png" />
-
 6. Convert the certificate to PEM format:
 
 ```bash
@@ -164,25 +155,9 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 > https://yourdomain.com/.well-known/apple-developer-merchantid-domain-association
 > ```
 
-## Third-party browser integration (iOS 18+)
-
-> Since iOS 18, Apple Pay can be offered in third-party browsers such as Google Chrome.
-
-**Key requirements**
-
-* Users must have iOS 18 or higher on their iPhone
-* Apple Pay works in browsers like Google Chrome, not just Safari
-* This expands payment options for customers who prefer alternative browsers
-
-When implementing Apple Pay, ensure your integration supports both Safari and third-party browser flows to maximize payment conversion.
-
 Once all steps are complete, you can proceed with the Dashboard setup.
 
-## Apple Pay Dashboard setup
-
-Let's go through the dashboard configuration steps for Apple Pay integrations with Yuno.
-
-## Step 1: Add the Apple Pay connection
+## Step 11: Apple Pay Dashboard connection
 
 1. Log in to your [Yuno Dashboard](https://dashboard.y.uno/connections).
 2. Navigate to the **Connections** section.
@@ -193,7 +168,7 @@ Let's go through the dashboard configuration steps for Apple Pay integrations wi
 
 <Image align="center" border={false} width="700px" src="https://files.readme.io/6d674dd-Screenshot_2024-07-02_at_2.27.47_PM.png" />
 
-## Step 2: Configure routing
+## Step 12: Configure Dashboard routing
 
 Set up a new route to control how payments are processed through Apple Pay.
 
@@ -212,7 +187,7 @@ Here's a simple route processing all payments through Apple Pay.
 
 <Image align="center" border={false} width="600px" src="https://files.readme.io/d5b9a8c-Screenshot_2024-07-02_at_2.30.09_PM.png" />
 
-## Step 3: Enable Apple Pay in Checkout Builder
+## Step 13: Enable Apple Pay in Checkout Builder
 
 > 📘 Learn More About Checkout Builder
 >
