@@ -234,5 +234,7 @@ To make Apple Pay available to your end users, you have to enable it on the Chec
 
 After completing the Dashboard setup, choose your path to integrate via SDK or Direct:
 
-* **SDK Integration**: [one-time](doc:apple-pay-sdk-integration#one-time-payments-with-sdk) and [recurring](doc:apple-pay-sdk-integration#/recurring-payments-with-sdk)
-* **Direct integration**: [one-time](doc:apple-pay-direct-integration#/one-time-payments-with-direct-api)  and [recurring](doc:apple-pay-direct-integration#/recurring-payments-with-direct-api)
+* **SDK Integration**: [one-time](doc:apple-pay-sdk-integration#one-time-payments-with-sdk) and [recurring](doc:apple-pay-sdk-integration#recurring-payments-with-sdk)
+* **Direct integration**: [one-time](doc:apple-pay-direct-integration#one-time-payments-with-direct-api)  and [recurring](doc:apple-pay-direct-integration#recurring-payments-with-direct-api)
+
+<br />
