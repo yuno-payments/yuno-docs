@@ -176,7 +176,7 @@ The following table describes each customization option:
       </td>
 
       <td>
-        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, see the [`styles`](/docs/full-checkout-android#styles) section.
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, see the [`styles`](../docs/full-checkout-android#styles) section.
       </td>
     </tr>
   </tbody>

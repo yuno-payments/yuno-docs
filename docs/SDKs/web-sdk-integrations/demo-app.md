@@ -20,9 +20,9 @@ To help you understand and check how the Yuno SDKs work, the Yuno team provides 
 >
 > To ensure the Demo App will work properly, be sure to connect at least one payment method to your account through the [Dashboard](https://dashboard.y.uno/). Otherwise, when you access the Demo App, some features won't work. If you don't know how to connect a payment method to your account, see the following contents:
 >
-> * [Connections](/docs/connections)
-> * [Checkout Builder](/docs/checkout-builder)
-> * [Routing](/docs/routing)
+> * [Connections](../docs/connections)
+> * [Checkout Builder](../docs/checkout-builder)
+> * [Routing](../docs/routing)
 
 ### Step 1: Clone the repository
 

@@ -35,7 +35,7 @@ Let's walk through the process of adding, creating, and managing connections to 
 
 > 📘 Set up costs for new connections
 >
-> When you add a new connection, you can set up its costs. This optional step allows you to set different costs for successful and unsuccessful payments to help manage fees using the [Smart Routing feature](/docs/routing#smart-routing).
+> When you add a new connection, you can set up its costs. This optional step allows you to set different costs for successful and unsuccessful payments to help manage fees using the [Smart Routing feature](../docs/routing#smart-routing).
 >
 > You can set default costs for all payments and add specific conditions for different situations, like setting a unique cost when a customer uses Visa.
 >

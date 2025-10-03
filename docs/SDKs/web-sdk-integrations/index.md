@@ -48,7 +48,7 @@ Select one of the user-friendly Web integration options available and start your
 
 > 📘 Explore the SDK Project Example
 >
-> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). You can also access the [Create Your First Payment With SDK](/docs/step-2-your-first-payment) guide available in the documentation.
+> Yuno provides an example project of a running application using an SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). You can also access the [Create Your First Payment With SDK](../docs/step-2-your-first-payment) guide available in the documentation.
 
 > 🚧 Android WebView Configuration
 >

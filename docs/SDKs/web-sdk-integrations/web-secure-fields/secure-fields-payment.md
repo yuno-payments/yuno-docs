@@ -66,7 +66,7 @@ const secureFields = yuno.secureFields({
 
 > 📘 Customer and Merchant-Initiated Transactions
 >
-> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](/docs/stored-credentials).
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](../docs/stored-credentials).
 >
 > The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
@@ -342,7 +342,7 @@ if (payment.checkout.sdk_action_required) {
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js) checkout demos available on GitHub.
+> In addition to the code examples provided, you can access the [Demo App](../docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js) checkout demos available on GitHub.
 
 ## Complementary features
 

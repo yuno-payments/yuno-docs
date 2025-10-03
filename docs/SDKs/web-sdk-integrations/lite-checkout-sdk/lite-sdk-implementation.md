@@ -86,7 +86,7 @@ yuno.startCheckout({
 
 > 📘 Transaction Types
 >
-> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You can find more information about their characteristics in [Stored credentials](/docs/stored-credentials).
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You can find more information about their characteristics in [Stored credentials](../docs/stored-credentials).
 >
 > The step-by-step on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
