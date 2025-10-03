@@ -5,45 +5,29 @@ hidden: false
 metadata:
   robots: index
 ---
-This guide provides a comprehensive process to integrate Apple Pay directly with Yuno's API for both one-time and recurring payments. Direct integration offers full control over the payment flow and is ideal for merchants who need custom implementation logic or have existing payment systems.
+This guide provides a comprehensive process to integrate Apple Pay directly with Yuno's API. Direct integration offers full control over the payment flow and is ideal for merchants who need custom implementations or have existing payment systems.
 
-> 📘 Setup Required
->
-> Before implementing Apple Pay payments, ensure you have completed the [dashboard setup and configuration](doc:apple-pay-setup-configuration) process.
+Our Apple Pay Direct integration supports one-time and recurring payments (useful for subscriptions and other regular transactions).
 
-## Direct integration overview
+<Callout icon="📘" theme="info">
+  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerrequisites](doc:prerrequisites-apple-pay).
+</Callout>
 
-The direct API integration method provides complete control over Apple Pay payment flows for both immediate and subscription-based transactions:
+## Apple Pay overview
 
-* [**One-time payments**](#one-time-payments-with-direct-api) - Implement immediate Apple Pay transactions with full control over payment timing, custom validation logic, and direct API communication
+1. Customer initiates payment on their iOS device
+2. Receive payment token via Apple SDK
+3. [Create a payment](ref:create-payment) with Yuno including the stringified token
+4. Yuno processes with your configured provider(s) and returns a response
+5. Monitor response status via webhooks
 
-  * [Create the payment](#step-1-create-the-payment) - Use create payment endpoint with Apple Pay payment token
-  * [Apple Pay wallet response object](#apple-pay-wallet-response-object) - Understanding the token structure from Apple Pay SDK
-  * [One-time payment request example](#one-time-payment-request-example) - Complete JSON request structure for immediate payments
-  * [Handle payment response](#step-2-handle-payment-response) - Process responses and implement webhook monitoring
+## One-time payments
 
-* [**Recurring payments**](#recurring-payments-with-direct-api) - Build subscription-based payments with manual CIT/MIT implementation, custom token management, and flexible subscription logic tailored to your business needs
-  * [Understanding CIT and MIT](#understanding-cit-and-mit) - Learn the difference between customer and merchant initiated transactions
-  * [Customer Initiated Transaction](#customer-initiated-transaction-cit---first-payment) - Initial payment setup with token generation and storage
-  * [Merchant Initiated Transaction](#merchant-initiated-transaction-mit---subsequent-payments) - Automated payments using stored tokens
-  * [Token management](#token-management) - Secure storage, lifecycle management, and retry logic implementation
-  * [Custom subscription flow](#custom-subscription-flow-implementation) - Build scheduling, billing cycles, and customer notifications
+To integrate a single transaction, such as an online purchase, use Yuno's API to [create a payment](ref:create-payment). This requires you to obtain certain information from the Apple SDK's response, which is generated when the customer authorizes the payment.
 
-## One-time payments with direct API
+### Example Apple Pay response
 
-One-time Apple Pay payments using direct API integration provide full control over the payment process.
-
-### Step 1: Create the payment
-
-Use the [create payment](ref:create-payment) endpoint to create a payment sending the Apple Pay `payment_token` returned by Apple Pay SDK. If you haven't integrated Apple's SDK, we recommend using [our SDKs](doc:sdk-integration-apple) so you don't have to worry about the integration.
-
-> 📘 Pass Apple Pay payment token in request
->
-> When you initiate a transaction with Apple Pay, a payment token containing a JSON-formatted `paymentData` string is sent. Pass the complete token received from Apple Pay in the `payment_method.detail.wallet.payment_token` field as a JSON string in your payment request.
-
-#### Apple Pay wallet response object
-
-The Apple Pay SDK returns the following object structure, which must be passed as the complete `payment_token` value:
+The Apple Pay SDK returns an object like the example below, we call this response the `payment_token`.
 
 ```json
 {
@@ -66,7 +50,9 @@ The Apple Pay SDK returns the following object structure, which must be passed a
 }
 ```
 
-#### One-time payment request example
+### Example one-time payment request
+
+Here is an example of a one-time Apple Pay payment request using Yuno's Direct API. The request includes the **stringified** Apple Pay response inside `payment_token`, as received from the Apple Pay SDK, along with required fields such as amount, currency, and account information. Adjust the values as needed for your integration.
 
 ```json
 {
@@ -97,25 +83,27 @@ The Apple Pay SDK returns the following object structure, which must be passed a
 }
 ```
 
-### Step 2: Handle payment response
+### Example cURL request:
 
-Process the payment response and handle various status codes. Use [webhooks](doc:webhooks) to receive real-time payment status updates.
+```bash
+curl -X POST https://api.y.uno/payments \
+  -H "Authorization: Bearer <api_key>" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: <unique-key>" \
+  -d '{ /* one-time payment body as above */ }'
+```
 
-## Recurring payments with direct API
+## Recurring payments with Direct API
 
-Recurring Apple Pay payments with direct integration require manual implementation of the Customer Initiated Transaction (CIT) and Merchant Initiated Transaction (MIT) flow.
+Recurring Apple Pay payments with Direct integration require implementation of Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT).
 
-### Understanding CIT and MIT
+* **Customer Initiated Transaction (CIT):** The first transaction where the customer authorizes recurring payments. This generates a `vaulted_token` for future use.
 
-**Customer Initiated Transaction (CIT):** The first transaction where the customer authorizes recurring payments. This generates a payment token for future use.
+* **Merchant Initiated Transaction (MIT):** Subsequent automated transactions using the `vaulted_token` without customer interaction.
 
-**Merchant Initiated Transaction (MIT):** Subsequent automated transactions using the stored token without customer interaction.
+### Customer Initiated Transaction (CIT)
 
-### Customer Initiated Transaction (CIT) - First payment
-
-The CIT establishes the recurring payment relationship and generates a token for future MIT transactions.
-
-#### CIT request example
+When a customer authorizes the subscription and you have a response from the Apple SDK, use the stringified `payment_token` in Yuno's [create payment API](ref:create-payment) to create the CIT.
 
 ```json
 {
@@ -135,23 +123,14 @@ The CIT establishes the recurring payment relationship and generates a token for
     "vault_on_success": true,
     "detail": {
       "wallet": {
-        "payment_token": "{Apple Pay token}"
+        "payment_token": "{Apple Pay token}",
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "FIRST"
+        }
       }
     },
-    "type": "APPLE_PAY",
-    "stored_credentials": {
-      "reason": "SUBSCRIPTION",
-      "usage": "FIRST",
-      "subscription_agreement_id": "",
-      "network_transaction_id": ""
-    }
-  },
-  "subscription": {
-    "id": "d67a4295-7bb3-4183-99ce-9f5d26d92709",
-    "billing_date": {
-      "type": "fixed_day",
-      "day": 18
-    }
+    "type": "APPLE_PAY"
   },
   "account_id": "account-id",
   "description": "Apple Pay recurring setup",
@@ -159,15 +138,25 @@ The CIT establishes the recurring payment relationship and generates a token for
 }
 ```
 
+### Example cURL (CIT):
+
+```bash
+curl -X POST https://api.y.uno/payments \
+  -H "Authorization: Bearer <api_key>" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: <unique-key>" \
+  -d '{ /* CIT request body as above */ }'
+```
+
 **Key parameters for CIT:**
 
-* `vault_on_success: true` - This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
-* `stored_credentials.usage: "FIRST"` - Indicates this is the initial transaction in a recurring series
-* `subscription` - Required object containing subscription details for Apple Pay recurrence
+* **`vault_on_success: true`**: Indicates this is a recurring payment setup and generates the vaulted token for future MIT transactions
+* **`detail.wallet.stored_credentials.usage: FIRST`**: Indicates this is the initial transaction in a recurring series
+* **`detail.wallet.payment_token`**: Must be the stringified Apple SDK response, the `payment_token`
 
-#### CIT response handling
+### CIT response handling
 
-When the CIT is successful, you'll receive a response containing the `payment_token` that must be stored securely for future MIT transactions:
+When the CIT is successful, you'll receive a response containing the `vaulted_token`. It can be used for subsequent transactions. Exercise extreme caution storing this value.
 
 ```json
 {
@@ -175,18 +164,16 @@ When the CIT is successful, you'll receive a response containing the `payment_to
   "status": "SUCCEEDED",
   "payment_method": {
     "id": "payment-method-id",
-    "token": "generated-token-for-mit"
+    "vaulted_token": "token-from-CIT"
   }
 }
 ```
 
-Store the `token` value securely for use in subsequent MIT transactions.
+### Merchant Initiated Transaction (MIT)
 
-### Merchant Initiated Transaction (MIT) - Subsequent payments
+MIT transactions are processed automatically for recurring billing using the `vaulted_token` from the CIT.
 
-MIT transactions are processed automatically for recurring billing using the token from the CIT.
-
-#### MIT request example
+#### Example MIT request
 
 ```json
 {
@@ -200,17 +187,16 @@ MIT transactions are processed automatically for recurring billing using the tok
   },
   "workflow": "DIRECT",
   "payment_method": {
-    "token": "token-from-CIT",
+    "vaulted_token": "token-from-CIT",
     "detail": {
-      "wallet": {}
+      "card": {
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
     },
-    "type": "APPLE_PAY",
-    "stored_credentials": {
-      "reason": "SUBSCRIPTION",
-      "usage": "USED",
-      "subscription_agreement_id": "",
-      "network_transaction_id": ""
-    }
+    "type": "APPLE_PAY"
   },
   "account_id": "account-id",
   "description": "Apple Pay recurring payment",
@@ -220,53 +206,19 @@ MIT transactions are processed automatically for recurring billing using the tok
 
 **Key parameters for MIT:**
 
-* `token` - The payment token generated during the CIT
-* `stored_credentials.usage: "USED"` - Indicates this is a subsequent transaction in a recurring series
-* No `payment_token` required - Uses the stored token instead
-* `detail.wallet` - Empty object for MIT transactions
+* **`vaulted_token`**: The vaulted token generated during the CIT
+* **`detail.card.stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
+* **No `payment_token` required**: Uses the stored `vaulted_token` instead
 
-### Token management
+## Troubleshooting
 
-With direct integration, you are responsible for:
-
-* **Securely storing** the payment token from the CIT response
-* **Managing token lifecycle** including expiration handling
-* **Implementing retry logic** for failed MIT transactions
-* **Handling token invalidation** scenarios
-
-### Custom subscription flow implementation
-
-Direct integration requires you to implement:
-
-1. **Subscription scheduling** - Determine when to execute MIT transactions
-2. **Billing cycle management** - Track billing dates and frequencies
-3. **Payment retry logic** - Handle failed payments with appropriate retry strategies
-4. **Customer notifications** - Inform customers of successful/failed payments
-5. **Subscription modifications** - Handle plan changes, cancellations, and updates
-
-### Error handling and retries
-
-Implement robust error handling for:
-
-* **Token expiration** - Re-authenticate customers when tokens expire
-* **Payment failures** - Implement retry logic with exponential backoff
-* **Network issues** - Handle timeouts and connection failures
-* **Card issues** - Manage declined payments and insufficient funds
-
-Monitor payment status through [webhooks](doc:webhooks) for real-time updates and automated retry mechanisms.
-
-## Testing your integration
-
-1. **Use Apple's sandbox environment** for initial testing
-2. **Test both one-time and recurring flows** with different scenarios
-3. **Verify token generation and storage** for recurring payments
-4. **Test error scenarios** including failures and edge cases
-5. **Validate webhook handling** for payment status monitoring
-6. **Test MIT automation** and scheduling logic
+* Merchant validation failed: verify Apple Pay certificates and merchant ID configuration
+* Invalid or expired Apple token: obtain a fresh token from Apple SDK and ensure it is stringified
+* Unsupported network or country: confirm your provider supports Apple Pay for the requested currency/country
+* Duplicate charges: always send an `Idempotency-Key` with create payment calls
 
 ## Related documentation
 
-* [Dashboard setup and configuration](doc:apple-pay-setup-configuration) - Required setup steps
 * [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements
 * [Apple Pay SDK integration](doc:apple-pay-sdk-integration) - SDK-based integration
 * [Create payment API](ref:create-payment) - Payment creation endpoint
