@@ -97,9 +97,9 @@ curl -X POST https://api.y.uno/payments \
 
 Recurring Apple Pay payments with Direct integration require implementation of Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT).
 
-* **Customer Initiated Transaction (CIT):** The first transaction where the customer authorizes recurring payments. This generates a `vaulted_token` for future use.
+* **Customer Initiated Transaction (CIT)**: The first transaction where the customer authorizes recurring payments. This generates a `vaulted_token` for future use.
 
-* **Merchant Initiated Transaction (MIT):** Subsequent automated transactions using the `vaulted_token` without customer interaction.
+* **Merchant Initiated Transaction (MIT)**: Subsequent automated transactions using the `vaulted_token` without customer interaction.
 
 ### Customer Initiated Transaction (CIT)
 
