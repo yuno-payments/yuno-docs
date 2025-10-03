@@ -187,6 +187,8 @@ MIT transactions are processed automatically for subsequent billing cycles using
 * `stored_credentials.usage: "USED"` - Indicates this is a subsequent transaction in a recurring series
 * No `payment_token` required - Uses the stored token instead
 
+Monitor payment status through [webhooks](doc:webhooks) to handle edge cases and provide customer notifications.
+
 ### Subscription management URL
 
 For SDK recurring payments, you must provide a subscription management URL where customers can:
@@ -206,7 +208,7 @@ The SDK provides built-in error handling for common scenarios:
 * **Payment failures**: Built-in retry logic for temporary issues
 * **Network issues**: Connection retry mechanisms
 
-Monitor payment status through [webhooks](doc:webhooks) to handle edge cases and provide customer notifications.
+<br />
 
 ## Testing your integration
 
