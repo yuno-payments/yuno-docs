@@ -74,11 +74,11 @@ The SDK handles the Apple Pay flow automatically. When the customer completes th
 
 ## Recurring payments with SDK
 
-The SDK simplifies recurring payment flows by handling both Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT). It also manages payment tokens securely, provides built-in subscription support.
+The SDK streamlines recurring payments by managing both Customer‑Initiated (CIT) and Merchant‑Initiated (MIT) transactions while securely handling payment tokens.
 
 ### Customer Initiated Transaction (CIT) - First payment
 
-The CIT is the initial transaction where the customer authorizes recurring payments. This transaction requires customer interaction and generates a token for future MIT transactions.
+The CIT is the initial transaction where the customer authorizes recurring payments, such as when they subscribe to a monthly service. This transaction requires customer interaction and generates a token for future MIT transactions.
 
 #### CIT request example
 
@@ -139,11 +139,11 @@ The CIT is the initial transaction where the customer authorizes recurring payme
 }
 ```
 
-**Key parameters for CIT:**
+#### Key parameters for CIT
 
-* `vault_on_success: true` - This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
-* `stored_credentials.usage: "FIRST"` - Indicates this is the initial transaction in a recurring series
-* `subscription` - Required object containing subscription details for Apple Pay recurrence
+* **`vault_on_success: true`**: This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
+* **`stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
+* **`subscription`**: Required object containing subscription details for Apple Pay recurrence
 
 ### Merchant Initiated Transaction (MIT) - Subsequent payments
 
@@ -181,11 +181,11 @@ MIT transactions are processed automatically for subsequent billing cycles using
 }
 ```
 
-**Key parameters for MIT:**
+#### Key parameters for MIT
 
-* `token` - The payment token generated during the CIT
-* `stored_credentials.usage: "USED"` - Indicates this is a subsequent transaction in a recurring series
-* No `payment_token` required - Uses the stored token instead
+* **`token`**: The payment token generated during the CIT
+* **`stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
+* **No `payment_token` required**: Uses the stored token instead
 
 Monitor payment status through [webhooks](doc:webhooks) to handle edge cases and provide customer notifications.
 
@@ -200,28 +200,9 @@ For SDK recurring payments, you must provide a subscription management URL where
 
 This URL should be included in your subscription configuration and customer communications.
 
-### Error handling
-
-The SDK provides built-in error handling for common scenarios:
-
-* **Token expiration**: Automatic retry with fresh token generation
-* **Payment failures**: Built-in retry logic for temporary issues
-* **Network issues**: Connection retry mechanisms
-
-<br />
-
-## Testing your integration
-
-1. **Use Apple's sandbox environment** for initial testing
-2. **Test both one-time and recurring flows** with different payment scenarios
-3. **Verify token generation** for recurring payments works correctly
-4. **Test error scenarios** including payment failures and network issues
-5. **Validate webhook handling** for payment status updates
-
 ## Related documentation
 
-* [Dashboard setup and configuration](doc:apple-pay-setup-configuration)
 * [Prerequisites for Apple Pay](doc:prerequisites-apple-pay)
-* [Apple Pay direct integration](doc:apple-pay-direct-integration)
+* [Apple Pay Direct integration](doc:apple-pay-direct-integration)
 * [Subscription management](doc:subscriptions)
 * [Webhooks](doc:webhooks)
