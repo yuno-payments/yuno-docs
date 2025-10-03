@@ -44,9 +44,7 @@ An [OTT](doc:how-yuno-payment-flow-works#step-3-create-a-one-time-token) is a un
 
 One-time Apple Pay payments using the Yuno SDK provide a streamlined integration experience for immediate transactions.
 
-<br />
-
-### Step 3: Create the payment
+### Create the payment
 
 Use the [create checkout session](ref:create-checkout-session) endpoint to create a payment session for one-time Apple Pay transactions:
 
@@ -63,7 +61,7 @@ Use the [create checkout session](ref:create-checkout-session) endpoint to creat
 }
 ```
 
-### Step 4: Process the payment
+### Process the payment
 
 The SDK handles the Apple Pay flow automatically. When the customer completes the Apple Pay authorization, the payment is processed immediately.
 
