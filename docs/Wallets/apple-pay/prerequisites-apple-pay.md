@@ -219,20 +219,13 @@ To make Apple Pay available to your end users, you have to enable it on the Chec
 
 <Image align="center" border={false} src="https://files.readme.io/52781326ea260052f9a62e98d5cd6a1bbfdaa39f50062912f15f3bdb310aa019-4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png" />
 
-## Next steps
-
-After completing the Dashboard setup, you can proceed with your preferred integration method:
-
-### One-time payments
-
-* [Direct integration](doc:direct-integration) - Integrate directly with Yuno's API
-* [SDK integration](doc:sdk-integration-apple) - Use Yuno's SDK for easier implementation
-
-### Recurring payments
-
-* [Recurring direct integration](doc:apple-pay-recurring-direct) - Handle recurring payments with direct API calls
-* [Recurring SDK integration](doc:apple-pay-recurring-sdk) - Implement recurring payments using Yuno's SDK
-
 > 📘 Additional Configuration for Recurring Payments
 >
 > If you plan to implement recurring payments, you will need to configure an additional URL in your Apple Pay connection where customers can manage their subscriptions (cancel, modify, etc.). This URL must be created and hosted by your merchant platform.
+
+## Next steps
+
+After completing the Dashboard setup, choose your path to integrate via SDK or Direct:
+
+* **SDK Integration**: [one-time](doc:apple-pay-sdk-integration#/one-time-payments-with-sdk) and [recurring](doc:apple-pay-sdk-integration#/recurring-payments-with-sdk)
+* **Direct integration**: [one-time](doc:apple-pay-direct-integration#/one-time-payments-with-direct-api)  and [recurring](doc:apple-pay-direct-integration#/recurring-payments-with-direct-api)
