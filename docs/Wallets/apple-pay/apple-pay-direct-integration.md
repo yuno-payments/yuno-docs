@@ -219,8 +219,8 @@ MIT transactions are processed automatically for recurring billing using the `va
 
 ## Related documentation
 
-* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements
-* [Apple Pay SDK integration](doc:apple-pay-sdk-integration) - SDK-based integration
-* [Create payment API](ref:create-payment) - Payment creation endpoint
-* [Subscription management](doc:subscriptions) - General subscription documentation
-* [Webhooks](doc:webhooks) - Payment monitoring and status updates
+* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay)
+* [Apple Pay SDK integration](doc:apple-pay-sdk-integration)
+* [Create payment API](ref:create-payment)
+* [Subscription management](doc:subscriptions)
+* [Webhooks](doc:webhooks)
