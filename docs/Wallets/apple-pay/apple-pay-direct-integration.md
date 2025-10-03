@@ -138,7 +138,7 @@ When a customer authorizes the subscription and you have a response from the App
 }
 ```
 
-### Example cURL (CIT):
+### Example cURL (CIT)
 
 ```bash
 curl -X POST https://api.y.uno/payments \
