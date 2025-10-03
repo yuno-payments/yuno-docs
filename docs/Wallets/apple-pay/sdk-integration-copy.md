@@ -11,30 +11,19 @@ This guide provides a comprehensive process to integrate Apple Pay with Yuno SDK
 >
 > Before implementing Apple Pay payments, ensure you have completed the [prerequisites](doc:prerequisites-apple-pay).
 
-## SDK integration overview
+## Apple Pay overview
 
-The Yuno SDK integration method provides a streamlined approach for both immediate and subscription-based Apple Pay payments:
+1. Customer initiates payment on their iOS device
+2. Receive `payment_token` via Apple SDK
+3. Create a payment with Yuno
+4. Yuno processes with your configured provider(s) and returns a response
+5. Monitor response status via webhooks
 
-* [**One-time payments**](#one-time-payments-with-sdk) - Implement immediate Apple Pay transactions with simplified SDK integration, automated token handling, and built-in security
+## Setup
 
-  * [Add Apple Pay capability](#step-1-add-apple-pay-capability) - Set up Xcode capabilities and Merchant ID configuration
-  * [Generate one-time token](#step-2-generate-one-time-token-ott) - Create OTT for privacy and security using Yuno SDK
-  * [Create the payment](#step-3-create-the-payment) - Use checkout session endpoint for immediate transactions
-  * [Process the payment](#step-4-process-the-payment) - Handle automatic Apple Pay flow completion
+### Add Apple Pay capability
 
-* [**Recurring payments**](#recurring-payments-with-sdk) - Set up subscription-based payments with automatic CIT/MIT flow management, built-in scheduling, and subscription management capabilities
-  * [Customer Initiated Transaction](#customer-initiated-transaction-cit---first-payment) - Initial payment setup with customer authorization and token generation
-  * [Merchant Initiated Transaction](#merchant-initiated-transaction-mit---subsequent-payments) - Automated subsequent payments using stored tokens
-  * [Subscription management URL](#subscription-management-url) - Customer portal for subscription management and updates
-  * [Error handling](#error-handling) - Built-in retry logic and automatic error management
-
-## One-time payments with SDK
-
-One-time Apple Pay payments using the Yuno SDK provide a streamlined integration experience for immediate transactions.
-
-### Step 1: Add Apple Pay capability
-
-Add the Apple Pay capability to your iOS app:
+To add Apple Pay capability to your iOS app:
 
 1. In Xcode, select your project in the navigator
 2. Select your app target
@@ -47,9 +36,15 @@ Add the Apple Pay capability to your iOS app:
 >
 > Ensure your Apple Pay Merchant ID matches the one configured in your Yuno Dashboard provider connections.
 
-### Step 2: Generate one-time token (OTT)
+### Generate one-time token (OTT)
 
 An [OTT](doc:how-yuno-payment-flow-works#step-3-create-a-one-time-token) is a unique identifier Yuno generates to protect your customer's privacy and security. You will obtain the OTT from the Yuno SDK, which handles various payment method scenarios. Use `payment_method_type = APPLE_PAY`. For a list of all available options, see the [Payment types](ref:payment-type-list) page.
+
+## One-time payments with SDK
+
+One-time Apple Pay payments using the Yuno SDK provide a streamlined integration experience for immediate transactions.
+
+<br />
 
 ### Step 3: Create the payment
 
