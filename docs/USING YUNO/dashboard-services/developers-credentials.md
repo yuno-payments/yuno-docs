@@ -21,7 +21,7 @@ Yuno implements a two-tier authentication hierarchy:
 
 1. **Organization keys**
    * Primary authentication layer providing a gateway to your overarching operations
-   * Grant access to all [accounts](https://docs.y.uno/docs/account-management) associated to your organization
+   * Grant access to all [accounts](../docs/account-management) associated to your organization
    * Assigned to your organization after registering with Yuno
 
 2. **Account keys**

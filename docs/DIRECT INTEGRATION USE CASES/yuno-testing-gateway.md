@@ -216,7 +216,7 @@ To test Card payments in general, Yuno provides the **Yuno Test Payment Gateway*
         <div class="detail-psp-card-content">
           <p class="label"><b>Test data</b>:</p>
           <div class="content">
-						<a href="https://docs.y.uno/docs/yuno-testing-gateway#44-provide-the-payment-method-information">Card information</a> to complete payments in test mode.          
+						<a href="../docs/yuno-testing-gateway#44-provide-the-payment-method-information">Card information</a> to complete payments in test mode.          
           </div>
         </div>
         

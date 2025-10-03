@@ -54,8 +54,8 @@ The Yuno Payouts feature is available through Yuno API. You can use the API to c
 
  To use the Payouts solution, you'll need to follow the steps below:
 
-1. Configure the provider credentials in the [Connections section](https://docs.y.uno/docs/connections) in your Yuno dashboard. 
-   1. [Optional] - And a [Webhook URL](https://docs.y.uno/docs/configure-webhooks) to get notifications about updates with the payout transactions. 
+1. Configure the provider credentials in the [Connections section](../docs/connections) in your Yuno dashboard. 
+   1. [Optional] - And a [Webhook URL](../docs/configure-webhooks) to get notifications about updates with the payout transactions. 
 2. Create the payout using the [Create Payout](ref:create-payout) endpoint. You need to provide the beneficiary information, the amount, and the withdrawal method to make the payout.
 3. Yuno will verify the information and then send the payout request to the provider. The provider will analyze the available funds to authorize the payment.
 4. To check the current status of payouts, you can use one of the following options:

@@ -16,7 +16,7 @@ In this guide, you will find step-by-step instructions on capturing a previously
 
 > 🚧 Which payments can you capture
 > 
-> Only payments with **PENDING** status can be captured. Check the [Payment status](https://docs.y.uno/docs/payment-status) page for further details regarding the possible payment status.
+> Only payments with **PENDING** status can be captured. Check the [Payment status](../docs/payment-status) page for further details regarding the possible payment status.
 
 
 ## Requirements
