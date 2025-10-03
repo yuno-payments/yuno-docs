@@ -33,7 +33,7 @@ The Apple Pay SDK returns an object like the example below, we call this respons
 {
   "paymentMethod": {
     "type": "credit",
-    "displayName": "Visa 1234",
+    "displayName": "Visa 3748",
     "network": "Visa"
   },
   "paymentData": {
@@ -107,46 +107,43 @@ Recurring Apple Pay payments with Direct integration require implementation of C
 When a customer authorizes the subscription and you have a response from the Apple SDK, use the stringified `payment_token` in Yuno's [create payment API](ref:create-payment) to create the CIT.
 
 ```json
-{
-  "country": "US",
-  "amount": {
-    "currency": "USD",
-    "value": 100
-  },
-  "customer_payer": {
-    "id": "customer-unique-id",
-    "email": "customer@example.com",
-    "first_name": "John",
-    "last_name": "Doe"
-  },
-  "workflow": "DIRECT",
-  "payment_method": {
-    "vault_on_success": true,
-    "detail": {
-      "wallet": {
-        "payment_token": "{Apple Pay token}",
-        "stored_credentials": {
-          "reason": "SUBSCRIPTION",
-          "usage": "FIRST"
-        }
-      }
+curl --location 'https://api-staging.y.uno/v1/payments' \
+--header 'X-idempotency-key: 4793a6aa-b2b3-4296-8477-37316f27c287' \
+--header 'public-api-key: staging_gAAAAABl085gLugtlJCYZi13wpzIrCWMMkYGZSTecgkjQ19M-dTpWut24D-4_w2HVUBSEMpUB2q_OunKYFr-W1aEppV-0HsGcWkhQo_mrak2GNXQPjaQZVN2d4qJzbvymyMOEXGXgzNSgIqe7T-bXLuP4h1Eim2iQnAFijnDrYCPAnLS_-afYQI=' \
+--header 'private-secret-key: gAAAAABl085ge0WX58k3IDAjZxlfA-Fx3ggMXrouqvGSdaXntV95bALLRVGNVZKrtTqD8WIRKM7mUIS3H6Lmx2ADm8jcLGgQjNROa4AeNxyGiNENNVJJwRg-cqj3gwzBzJSP5oTqz2PqFryTVoKgLgLfxnEz9CD3W0kAFyIWO7_EA7481ZLKV6g=' \
+--header 'Keep-Alive: timeout=5, max=1000' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "country": "US",
+    "amount": {
+        "currency": "USD",
+        "value": 2000
     },
-    "type": "APPLE_PAY"
-  },
-  "account_id": "account-id",
-  "description": "Apple Pay recurring setup",
-  "merchant_order_id": "recurring-setup-123"
-}
-```
-
-### Example cURL (CIT)
-
-```bash
-curl -X POST https://api.y.uno/payments \
-  -H "Authorization: Bearer <api_key>" \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: <unique-key>" \
-  -d '{ /* CIT request body as above */ }'
+    "customer_payer": {
+        "id": "24e25748-6ab3-4d43-bb8b-eb0204bb0951",
+        "email": "customer@example.com",
+        "first_name": "John",
+        "last_name": "Doe"
+    },
+    "workflow": "DIRECT",
+    "payment_method": {
+        "vault_on_success": true,
+        "vaulted_token": "98c16e23-ebdd-4d0f-85bd-e0ba7d2fedf6",
+        "type": "APPLE_PAY",
+        "detail": {
+            "card": {
+                "soft_descriptor": "TEST*TEST",
+                "stored_credentials": {
+                    "reason": "SUBSCRIPTION",
+                    "usage": "USED"
+                }
+            }
+        }
+    },
+    "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+    "description": "Apple Pay recurring setup",
+    "merchant_order_id": "recurring-setup-123"
+}'
 ```
 
 #### Key parameters for CIT
