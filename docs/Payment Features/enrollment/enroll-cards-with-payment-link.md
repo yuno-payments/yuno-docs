@@ -1,5 +1,5 @@
 ---
-title: Enroll cards with payment links
+title: Enroll Cards with Payment Links
 excerpt: ''
 deprecated: false
 hidden: false
