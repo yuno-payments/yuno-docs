@@ -24,7 +24,7 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
 
 ## Step 1: Include the library in your project
 
-The integration guide provides [three flexible methods](https://docs.y.uno/docs/full-checkout-sdk#/choose-your-integration-method):
+The integration guide provides [three flexible methods](../docs/full-checkout-sdk#/choose-your-integration-method):
 
 1. Direct HTML script inclusion
 2. Dynamic JavaScript injection

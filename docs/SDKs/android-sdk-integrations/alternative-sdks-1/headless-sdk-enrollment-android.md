@@ -42,7 +42,7 @@ Before starting the Yuno Android SDK integration, ensure your project meets the 
   * `public-api-key`
   * `private-secret-key`
 
-You can obtain these credentials from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). They are required to:
+You can obtain these credentials from the [Developers section of the Yuno dashboard](../docs/developers-credentials). They are required to:
 
 * Create a `customer`, which is required before enrolling payment methods
 * Create a `customer_session`, which initializes the enrollment flow

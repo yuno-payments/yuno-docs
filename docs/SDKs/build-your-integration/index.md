@@ -23,15 +23,15 @@ Before proceeding, choose the integration method that best suits your needs. For
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Full SDK" href="https://docs.y.uno/docs/full-checkout-sdk" titleSize="h4" />
+  <YunoCard title="Full SDK" href="../docs/full-checkout-sdk" titleSize="h4" />
 
-  <YunoCard title="Lite SDK" href="https://docs.y.uno/docs/lite-checkout-sdk" titleSize="h4" />
+  <YunoCard title="Lite SDK" href="../docs/lite-checkout-sdk" titleSize="h4" />
 
-  <YunoCard title="Secure Fields (Payment)" href="https://docs.y.uno/docs/secure-fields-payment" titleSize="h4" />
+  <YunoCard title="Secure Fields (Payment)" href="../docs/secure-fields-payment" titleSize="h4" />
 
-  <YunoCard title="Headless SDK (Payment)" href="https://docs.y.uno/docs/headless-sdk-payment" titleSize="h4" />
+  <YunoCard title="Headless SDK (Payment)" href="../docs/headless-sdk-payment" titleSize="h4" />
 
-  <YunoCard title="Headless SDK (Enrollment)" href="https://docs.y.uno/docs/headless-sdk-enrollment" titleSize="h4" />
+  <YunoCard title="Headless SDK (Enrollment)" href="../docs/headless-sdk-enrollment" titleSize="h4" />
 
-  <YunoCard title="Direct Workflow" href="https://docs.y.uno/docs/direct-flow" titleSize="h4" />
+  <YunoCard title="Direct Workflow" href="../docs/direct-flow" titleSize="h4" />
 </Shelf>

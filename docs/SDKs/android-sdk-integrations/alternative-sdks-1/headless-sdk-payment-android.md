@@ -38,7 +38,7 @@ For merchants preferring a pre-built UI solution, consider using our [Full SDK](
 Before starting the Yuno Android SDK integration, ensure your project meets the [technical requirements](doc:requirements-android). Also, ensure the following prerequisites are in place:
 
 * You must have an active Yuno account.
-* You need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
+* You need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](../docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
   * Create a `customer`, which is required before initiating payments
   * Create a `checkout_session`, which initializes the payment flow
   * Create the payment associated with the session
@@ -481,11 +481,11 @@ Yuno Android SDK provides additional services and configurations you can use to 
 
 ### Loader
 
-The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the use of the loader component.
+The [Loader](../docs/loader-android) enables you to control the use of the loader component.
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../docs/sdk-customizations-android) page.
 
 > 📘 Access the Demo App
 >

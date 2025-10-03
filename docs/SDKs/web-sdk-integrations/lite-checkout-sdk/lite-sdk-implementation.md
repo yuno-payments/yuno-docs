@@ -33,7 +33,7 @@ After completing the SDK integration, proceed with the following steps to implem
 
 ## Step 2: Initialize SDK with the public key
 
-Create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](https://docs.y.uno/docs/developers-credentials) page for more information.
+Create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](../docs/developers-credentials) page for more information.
 
 Initialize the SDK with your public API key:
 
