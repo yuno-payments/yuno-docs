@@ -1,5 +1,5 @@
 ---
-title: Headless SDKs
+title: Headless SDK
 deprecated: false
 hidden: false
 metadata:
