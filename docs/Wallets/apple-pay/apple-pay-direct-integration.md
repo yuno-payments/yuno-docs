@@ -5,12 +5,12 @@ hidden: false
 metadata:
   robots: index
 ---
-This guide provides a comprehensive process to integrate Apple Pay directly with Yuno's API. Direct integration offers full control over the payment flow and is ideal for merchants who need custom implementations or have existing payment systems.
+This guide describes how to integrate Apple Pay directly with Yuno's API. Direct integration offers full control over the payment flow and is ideal for merchants who need custom implementations or have existing payment systems.
 
 Our Apple Pay Direct integration supports one-time and recurring payments (useful for subscriptions and other regular transactions).
 
 <Callout icon="📘" theme="info">
-  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerrequisites](doc:prerrequisites-apple-pay).
+  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerequisites](doc:prerequisites-apple-pay).
 </Callout>
 
 ## Apple Pay overview
@@ -19,7 +19,7 @@ Our Apple Pay Direct integration supports one-time and recurring payments (usefu
 2. Receive `payment_token` via Apple SDK
 3. [Create a payment](ref:create-payment) with Yuno including the stringified token
 4. Yuno processes with your configured provider(s) and returns a response
-5. Monitor response status via webhooks
+5. Monitor response status via [webhooks](doc:webhooks)
 
 ## One-time payments
 
@@ -83,7 +83,7 @@ Here is an example of a one-time Apple Pay payment request using Yuno's Direct A
 }
 ```
 
-### Example cURL request:
+### Example cURL request
 
 ```bash
 curl -X POST https://api.y.uno/payments \
@@ -97,9 +97,9 @@ curl -X POST https://api.y.uno/payments \
 
 Recurring Apple Pay payments with Direct integration require implementation of Customer Initiated Transactions (CIT) and Merchant Initiated Transactions (MIT).
 
-* **Customer Initiated Transaction (CIT)**: The first transaction where the customer authorizes recurring payments. This generates a `vaulted_token` for future use.
+* **Customer Initiated Transaction (CIT):** The first transaction where the customer authorizes recurring payments. This generates a `vaulted_token` for future use.
 
-* **Merchant Initiated Transaction (MIT)**: Subsequent automated transactions using the `vaulted_token` without customer interaction.
+* **Merchant Initiated Transaction (MIT):** Subsequent automated transactions using the `vaulted_token` without customer interaction.
 
 ### Customer Initiated Transaction (CIT)
 
@@ -138,7 +138,7 @@ When a customer authorizes the subscription and you have a response from the App
 }
 ```
 
-### Example cURL (CIT):
+### Example cURL (CIT)
 
 ```bash
 curl -X POST https://api.y.uno/payments \
@@ -148,7 +148,7 @@ curl -X POST https://api.y.uno/payments \
   -d '{ /* CIT request body as above */ }'
 ```
 
-**Key parameters for CIT:**
+#### Key parameters for CIT
 
 * **`vault_on_success: true`**: Indicates this is a recurring payment setup and generates the vaulted token for future MIT transactions
 * **`detail.wallet.stored_credentials.usage: FIRST`**: Indicates this is the initial transaction in a recurring series
@@ -204,7 +204,7 @@ MIT transactions are processed automatically for recurring billing using the `va
 }
 ```
 
-**Key parameters for MIT:**
+#### Key parameters for MIT
 
 * **`vaulted_token`**: The vaulted token generated during the CIT
 * **`detail.card.stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
@@ -212,15 +212,15 @@ MIT transactions are processed automatically for recurring billing using the `va
 
 ## Troubleshooting
 
-* Merchant validation failed: verify Apple Pay certificates and merchant ID configuration
-* Invalid or expired Apple token: obtain a fresh token from Apple SDK and ensure it is stringified
-* Unsupported network or country: confirm your provider supports Apple Pay for the requested currency/country
-* Duplicate charges: always send an `Idempotency-Key` with create payment calls
+* **Merchant validation failed**: verify Apple Pay certificates and merchant ID configuration
+* **Invalid or expired Apple token**: obtain a fresh token from Apple SDK and ensure it is stringified
+* **Unsupported network or country**: confirm your provider supports Apple Pay for the requested currency/country
+* **Duplicate charges**: always send an `Idempotency-Key` with create payment calls
 
 ## Related documentation
 
-* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements
-* [Apple Pay SDK integration](doc:apple-pay-sdk-integration) - SDK-based integration
-* [Create payment API](ref:create-payment) - Payment creation endpoint
-* [Subscription management](doc:subscriptions) - General subscription documentation
-* [Webhooks](doc:webhooks) - Payment monitoring and status updates
+* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay)
+* [Apple Pay SDK integration](doc:apple-pay-sdk-integration)
+* [Create payment API](ref:create-payment)
+* [Subscription management](doc:subscriptions)
+* [Webhooks](doc:webhooks)
