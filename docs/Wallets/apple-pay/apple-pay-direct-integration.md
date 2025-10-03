@@ -10,13 +10,13 @@ This guide provides a comprehensive process to integrate Apple Pay directly with
 Our Apple Pay Direct integration supports one-time and recurring payments (useful for subscriptions and other regular transactions).
 
 <Callout icon="📘" theme="info">
-  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerequisites](doc:prerequisites-apple-pay).
+  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerrequisites](doc:prerrequisites-apple-pay).
 </Callout>
 
 ## Apple Pay overview
 
 1. Customer initiates payment on their iOS device
-2. Receive payment token via Apple SDK
+2. Receive `payment_token` via Apple SDK
 3. [Create a payment](ref:create-payment) with Yuno including the stringified token
 4. Yuno processes with your configured provider(s) and returns a response
 5. Monitor response status via webhooks
@@ -83,7 +83,7 @@ Here is an example of a one-time Apple Pay payment request using Yuno's Direct A
 }
 ```
 
-### Example cURL request
+### Example cURL request:
 
 ```bash
 curl -X POST https://api.y.uno/payments \
@@ -138,7 +138,7 @@ When a customer authorizes the subscription and you have a response from the App
 }
 ```
 
-### Example cURL (CIT)
+### Example cURL (CIT):
 
 ```bash
 curl -X POST https://api.y.uno/payments \
@@ -148,7 +148,7 @@ curl -X POST https://api.y.uno/payments \
   -d '{ /* CIT request body as above */ }'
 ```
 
-#### Key parameters for CIT
+**Key parameters for CIT:**
 
 * **`vault_on_success: true`**: Indicates this is a recurring payment setup and generates the vaulted token for future MIT transactions
 * **`detail.wallet.stored_credentials.usage: FIRST`**: Indicates this is the initial transaction in a recurring series
@@ -204,7 +204,7 @@ MIT transactions are processed automatically for recurring billing using the `va
 }
 ```
 
-#### Key parameters for MIT
+**Key parameters for MIT:**
 
 * **`vaulted_token`**: The vaulted token generated during the CIT
 * **`detail.card.stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
@@ -212,15 +212,15 @@ MIT transactions are processed automatically for recurring billing using the `va
 
 ## Troubleshooting
 
-* **Merchant validation failed**: verify Apple Pay certificates and merchant ID configuration
-* **Invalid or expired Apple token**: obtain a fresh token from Apple SDK and ensure it is stringified
-* **Unsupported network or country**: confirm your provider supports Apple Pay for the requested currency/country
-* **Duplicate charges**: always send an `Idempotency-Key` with create payment calls
+* Merchant validation failed: verify Apple Pay certificates and merchant ID configuration
+* Invalid or expired Apple token: obtain a fresh token from Apple SDK and ensure it is stringified
+* Unsupported network or country: confirm your provider supports Apple Pay for the requested currency/country
+* Duplicate charges: always send an `Idempotency-Key` with create payment calls
 
 ## Related documentation
 
-* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay)
-* [Apple Pay SDK integration](doc:apple-pay-sdk-integration)
-* [Create payment API](ref:create-payment)
-* [Subscription management](doc:subscriptions)
-* [Webhooks](doc:webhooks)
+* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements
+* [Apple Pay SDK integration](doc:apple-pay-sdk-integration) - SDK-based integration
+* [Create payment API](ref:create-payment) - Payment creation endpoint
+* [Subscription management](doc:subscriptions) - General subscription documentation
+* [Webhooks](doc:webhooks) - Payment monitoring and status updates
