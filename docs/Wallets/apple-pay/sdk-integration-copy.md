@@ -9,7 +9,7 @@ This guide provides a comprehensive process to integrate Apple Pay with Yuno SDK
 
 > 📘 Setup Required
 >
-> Before implementing Apple Pay payments, ensure you have completed the [dashboard setup and configuration](doc:apple-pay-setup-configuration) process.
+> Before implementing Apple Pay payments, ensure you have completed the [prerequisites](doc:prerequisites-apple-pay).
 
 ## SDK integration overview
 
