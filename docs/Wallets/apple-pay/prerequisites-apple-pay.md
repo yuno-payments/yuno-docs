@@ -16,8 +16,8 @@ next:
 
 Use this guide to prepare and configure Apple Pay with Yuno.
 
-* [**Apple Developer prerequisites**](#step-1-register-a-merchant-identifier): Create a merchant identifier, generate and convert the required certificates/keys, and verify your merchant domains.
-* [**Yuno Dashboard setup**](#apple-pay-dashboard-setup): Add the Apple Pay connection, set up routing, and enable Apple Pay in Checkout Builder.
+* [**Apple Developer prerequisites**](#step-1-register-a-merchant-identifier): Create a merchant ID, generate and convert the required certificates/keys, and verify your merchant domains.
+* [**Yuno Dashboard setup**](#Step-11-apple-pay-dashboard-connection): Add the Apple Pay connection, set up routing, and enable Apple Pay in Checkout Builder.
 
 When finished, you'll be ready to [choose your integration path](#next-steps)  (SDK or Direct) for one-time and recurring payments.
 
