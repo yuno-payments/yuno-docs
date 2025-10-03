@@ -655,6 +655,11 @@ yuno.startCheckout({
 
 Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand.
 
-## What's next?
+## Related Links
 
-You can check the additional configurations from the Lite SDK by accessing the [Complementary Features](doc:enrollment-lite-sdk-complementary-features) or the [SDK Customizations](doc:sdk-customizations), which enable you to change the SDK appearance to match your brand.
+Find more information and version history for the Web SDK below:
+
+* [Lite Web SDK v1.2](../changelog/lite-web-sdk-v1.2-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
+* [Lite Web SDK v1.1](../changelog/lite-web-sdk-v1.1-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
+
+<br />
