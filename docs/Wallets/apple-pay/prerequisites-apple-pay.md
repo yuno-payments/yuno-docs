@@ -10,15 +10,21 @@ metadata:
 next:
   description: ''
 ---
-To integrate Apple Pay into the Yuno solution, you must complete some steps covered on this page. Follow the steps described below before configuring Apple Pay in the [Yuno Dashboard](https://auth.y.uno/u/login?).
+Use this guide to prepare and configure Apple Pay with Yuno.
+
+**[Apple Developer prerequisites](#step-1-register-a-merchant-identifier) **: Create a merchant identifier, generate and convert the required certificates/keys, and verify your merchant domains.
+
+**[Yuno Dashboard setup](#apple-pay-dashboard-setup) **: Add the Apple Pay connection, set up routing, and enable Apple Pay in Checkout Builder.
+
+When finished, you'll be ready to [choose your integration path](#next-steps)  (SDK or Direct) for one-time and recurring payments.
+
+## Step 1: Register a merchant identifier
 
 <Callout icon="📘" theme="info">
   **Setting up Merchant ID for Apple Pay**
 
   If you're using VTEX as your e-commerce platform, you'll need to configure your Apple Pay Merchant ID. For detailed instructions, check out the official VTEX documentation: [Setting up Merchant ID in Apple Pay - VTEX Documentation](https://developers.vtex.com/docs/guides/setting-up-merchant-id-in-apple-pay).
 </Callout>
-
-## Step 1: Register a merchant identifier
 
 In the Apple Developer dashboard:
 
