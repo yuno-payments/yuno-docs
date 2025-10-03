@@ -93,15 +93,14 @@ The private key will be stored in `ProcessingCertificatePrivateKey.pem`.
 
 ## Step 6: Generate a merchant identity certificate
 
-1. Open **Keychain Access** and navigate to **Certificate Assistant > Request a Certificate From a Certificate Authority**.
+1. Open **Keychain Access**, navigate to **Certificate Assistant > Request a Certificate From a Certificate Authority**, and enter:
 
-2. Enter:
-   * **Email Address**: your email
-   * **Common Name**: e.g., `John Doe MerchantIdentityCertificate`
-   * Leave **CA Email Address** blank
-   * Select **Saved to disk**
+* **Email Address**: your email
+* **Common Name**: e.g., `John Doe MerchantIdentityCertificate`
+* Leave **CA Email Address** blank
+* Select **Saved to disk**
 
-3. Save as `CertificateSigningRequestMerchantIdentityCertificate.certSigningRequest`.
+2. Save as `CertificateSigningRequestMerchantIdentityCertificate.certSigningRequest`.
 
 ## Step 7: Retrieve and convert the merchant identity certificate
 
