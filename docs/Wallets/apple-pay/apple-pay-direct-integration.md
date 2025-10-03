@@ -148,7 +148,7 @@ curl -X POST https://api.y.uno/payments \
   -d '{ /* CIT request body as above */ }'
 ```
 
-**Key parameters for CIT:**
+#### Key parameters for CIT
 
 * **`vault_on_success: true`**: Indicates this is a recurring payment setup and generates the vaulted token for future MIT transactions
 * **`detail.wallet.stored_credentials.usage: FIRST`**: Indicates this is the initial transaction in a recurring series
@@ -204,7 +204,7 @@ MIT transactions are processed automatically for recurring billing using the `va
 }
 ```
 
-**Key parameters for MIT:**
+#### Key parameters for MIT
 
 * **`vaulted_token`**: The vaulted token generated during the CIT
 * **`detail.card.stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
