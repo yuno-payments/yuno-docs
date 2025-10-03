@@ -172,8 +172,8 @@ MIT transactions are processed automatically for recurring billing using the `va
 ```json
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
 --header 'X-idempotency-key: 4793b6aa-b2b3-4296-8477-37316f27c287' \
---header 'public-api-key: sandbox_gAABCABl085gLugtlJCYZi13wpzIrCWMMkYGZSTecgkjQ19M-dTpWut24D-4_w2HVUBSEMpUB2q_OunKYFr-W1aEppA-0HsGcWkhQo_mrak2GNXQPjaQZVN2d4qJzbvymyMOEXGXgzNSgIqe7T-bXLuP4h1Eim2iQnAFijnDrYCPAnLS_-afYQI=' \
---header 'private-secret-key: gAAAAABl085ge0WX58k3IDAjZxlfA-Fx3ggMXrouqvGSdaXntV95bALLRVGNVZKrtTqD8WIRKM7mUIS3H6Lmx2ADm8jcLGgQjNROa4AeNxyGiNENNVJJwRg-cqj3gwzBzJSP5oTqz2PqFryTVoKgLgLfxnEz9CD3W0kAFyIWO7_EA7481ZLKV6g=' \
+--header 'public-api-key: ' \
+--header 'private-secret-key: ' \
 --header 'Keep-Alive: timeout=5, max=1000' \
 --header 'Content-Type: application/json' \
 --data-raw '{
