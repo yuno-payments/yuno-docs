@@ -75,10 +75,11 @@ http://localhost:8080?country=DE
 
 You will find a panel, as shown below, with all Yuno SDKs available by accessing the URL. Select the desired SDK to see its appearance and how it works.
 
-![Demo App Screenshot](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true)
+<Image alt="Demo App Screenshot" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true" />
 
 ## Related Links
 
 Find more information and version history for the Web SDK below:
-* [Web SDK v1.3](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+
+* [Web SDK v1.3](../changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
 * [Web SDK v1.2](https://docs.y.uno/v1.0.2_add-sdk-changelog-pages/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
