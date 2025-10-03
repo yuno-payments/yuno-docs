@@ -10,7 +10,7 @@ This guide provides a comprehensive process to integrate Apple Pay directly with
 Our Apple Pay Direct integration supports one-time and recurring payments (useful for subscriptions and other regular transactions).
 
 <Callout icon="📘" theme="info">
-  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerrequisites](doc:prerrequisites-apple-pay).
+  Before implementing Apple Pay payments, ensure you have completed the [Apple Pay prerequisites](doc:prerequisites-apple-pay).
 </Callout>
 
 ## Apple Pay overview
