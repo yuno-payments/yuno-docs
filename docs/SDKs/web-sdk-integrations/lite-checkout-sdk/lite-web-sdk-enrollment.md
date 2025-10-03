@@ -1,5 +1,5 @@
 ---
-title: Lite Web SDK (Enrollment)
+title: Lite SDK (Enrollment Web)
 deprecated: false
 hidden: false
 metadata:
