@@ -229,7 +229,3 @@ curl --location 'https://api-staging.y.uno/v1/payments' \
 * [Create payment API](ref:create-payment)
 * [Subscription management](doc:subscriptions)
 * [Webhooks](doc:webhooks)
-
-<br />
-
-*
