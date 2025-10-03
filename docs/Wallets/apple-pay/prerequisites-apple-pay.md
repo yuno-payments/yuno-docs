@@ -11,12 +11,7 @@ next:
   description: ''
 ---
 <Callout icon="📘" theme="info">
-
-
-  Apple Pay can be offered in third-party browsers such as Google Chrome. Requirements include:
-
-  * Users must have iOS 18 or higher on their iPhone
-  * Apple Pay works in browsers like Google Chrome, not just Safari
+  Apple Pay supports third-party browsers such as Google Chrome for users with iOS 18 or higher.
 </Callout>
 
 Use this guide to prepare and configure Apple Pay with Yuno.
@@ -29,8 +24,6 @@ When finished, you'll be ready to [choose your integration path](#next-steps)  (
 ## Step 1: Register a merchant identifier
 
 <Callout icon="📘" theme="info">
-
-
   If you're using VTEX as your e-commerce platform, you'll need to configure your Apple Pay Merchant ID. For detailed instructions, check out the [official VTEX documentation](https://developers.vtex.com/docs/guides/setting-up-merchant-id-in-apple-pay).
 </Callout>
 
@@ -175,8 +168,6 @@ Once all steps are complete, you can proceed with the Dashboard setup.
 Set up a new route to control how payments are processed through Apple Pay.
 
 <Callout icon="📘" theme="info">
-
-
   Visit the [Routing](doc:routing) page for additional information on this step.
 </Callout>
 
@@ -194,8 +185,6 @@ Here's a simple route processing all payments through Apple Pay.
 ## Step 13: Enable Apple Pay in Checkout Builder
 
 <Callout icon="📘" theme="info">
-
-
   Visit the [Checkout Builder](doc:checkout-builder) page for additional information on this step.
 </Callout>
 
@@ -208,8 +197,6 @@ To make Apple Pay available to your end users, you have to enable it on the Chec
 <Image align="center" border={false} src="https://files.readme.io/52781326ea260052f9a62e98d5cd6a1bbfdaa39f50062912f15f3bdb310aa019-4eb043c-Screenshot_2024-08-07_at_4.57.16_PM.png" />
 
 <Callout icon="📘" theme="info">
-
-
   If you plan to implement recurring payments, you will need to configure an additional URL in your Apple Pay connection where customers can manage their subscriptions (cancel, modify, etc.). This URL must be created and hosted by your merchant platform.
 </Callout>
 
