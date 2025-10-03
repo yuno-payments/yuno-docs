@@ -218,8 +218,8 @@ Monitor payment status through [webhooks](doc:webhooks) to handle edge cases and
 
 ## Related documentation
 
-* [Dashboard setup and configuration](doc:apple-pay-setup-configuration) - Required setup steps
-* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay) - Initial requirements
-* [Apple Pay direct integration](doc:apple-pay-direct-integration) - API-only integration
-* [Subscription management](doc:subscriptions) - General subscription documentation
-* [Webhooks](doc:webhooks) - Payment monitoring and status updates
+* [Dashboard setup and configuration](doc:apple-pay-setup-configuration)
+* [Prerequisites for Apple Pay](doc:prerequisites-apple-pay)
+* [Apple Pay direct integration](doc:apple-pay-direct-integration)
+* [Subscription management](doc:subscriptions)
+* [Webhooks](doc:webhooks)
