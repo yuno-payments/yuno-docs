@@ -83,7 +83,7 @@ Here is an example of a one-time Apple Pay payment request using Yuno's Direct A
 }
 ```
 
-### Example cURL request:
+### Example cURL request
 
 ```bash
 curl -X POST https://api.y.uno/payments \
