@@ -262,7 +262,7 @@ To change the render option, set the `cardFormType` equal one of the available o
 
 ### Loader
 
-Control the use of the [Loader](../docs/loader-1).
+Control the use of the loader through the SDK configuration options.
 
 ### SDK Customizations
 
