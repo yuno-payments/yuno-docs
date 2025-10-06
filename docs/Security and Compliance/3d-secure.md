@@ -90,7 +90,7 @@ Adding the 3DS2 verification step to the checkout process changes the normal wor
 
 > 📘 SDK v1.1 Enhancement
 >
-> With SDK v1.1, 3DS logic is handled automatically using the `continuePayment()` method - no separate 3DS setup is required. For more information, see the [Yuno Web SDK v1.1 documentation](doc:yuno-web-sdk-v11).
+> With SDK v1.1, 3DS logic is handled automatically using the `continuePayment()` method - no separate 3DS setup is required. For more information, see the [Yuno Web SDK documentation](doc:seamless-sdk-payment-web).
 
 You decide if your system will implement the 3DS2 or not. The 3DS2 verification step is added while defining your cards [dynamic routing](doc:routing#configuring-the-dynamic-routing). When starting your card routes, you can add the 3DS2 step before defining the payment provider. When adding the 3DS2 verification step, when a payment using a card is initialized, the Yuno system will analyze if the card needs an extra challenge. If an extra challenge is necessary, the user will be redirected to the bank environment to complete the authorization. On the other hand, the payment process will proceed normally.
 
