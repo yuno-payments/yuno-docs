@@ -97,7 +97,7 @@ Configure the SDK with the following options:
 
 > 📘 Accessing Your API Key
 >
-> You can retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
+> You can retrieve your API Key from the [Developers section](../docs/developers-credentials) in the Yuno Dashboard.
 
 ## Step 3: Start the checkout process
 
@@ -242,9 +242,9 @@ func yunoEnrollmentResult(_ result: Yuno.Result) { ... }
 
 ## Complementary Features
 
-The Yuno iOS SDK provides additional features to enhance the customer experience. Use [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to match your brand appearance or configure the loader.
+The Yuno iOS SDK provides additional features to enhance the customer experience. Use [SDK Customizations](../docs/sdk-customizations-ios) to match your brand appearance or configure the loader.
 
-* [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
+* [Loader](../docs/loader-1): Control the use of the loader.
 * **Save card for future payments**: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders.
 
 <Image align="center" border={false} src="https://files.readme.io/89c94f120736a724c6b46a05f82ee8b95d3e892046d11a119635f5ab0d1d59a4-Card___save_for_future_payments.png" />
@@ -253,7 +253,7 @@ The Yuno iOS SDK provides additional features to enhance the customer experience
 
 <Image align="center" border={false} src="https://files.readme.io/602fa6e31d55d6e71826ec7b429fc6842e06b3cccbf2d00339e485f97d97a841-Full_SDK_ios.png" />
 
-* [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
+* [SDK Customizations](../docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
 ## Render mode integration
 

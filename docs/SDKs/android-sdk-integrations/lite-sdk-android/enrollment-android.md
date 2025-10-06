@@ -33,7 +33,7 @@ For merchants requiring more advanced features like multiple payment methods, cu
 Before starting the Yuno Android SDK integration, ensure your project meets the [technical requirements](doc:requirements-android). Also, ensure the following prerequisites are in place:
 
 * You must have an active Yuno account
-* You need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials)
+* You need your Yuno API credentials (`public-api-key`), which you can obtain from the [Developers section of the Yuno dashboard](../docs/developers-credentials)
 * Before enrolling a payment method, you must first create a customer using the [Create customer endpoint](ref:create-customer)
 
 ## Step 1: Create a customer
@@ -176,7 +176,7 @@ The following table describes each customization option:
       </td>
 
       <td>
-        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, see the [`styles`](/docs/full-checkout-android#styles) section.
+        Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, see the [`styles`](../docs/full-checkout-android#styles) section.
       </td>
     </tr>
   </tbody>
@@ -369,7 +369,7 @@ Use the `YunoConfig` data class, described in Step 3, to use the `styles` custom
 
 ### Loader
 
-The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the use of the loader component.
+The [Loader](../docs/loader-android) enables you to control the use of the loader component.
 
 ### Render options
 
@@ -379,7 +379,7 @@ You can choose between two card form render options. The following screenshots s
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customization](https://docs.y.uno/docs/sdk-customizations-android) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../docs/sdk-customizations-android) page.
 
 > 📘 Demo App
 >

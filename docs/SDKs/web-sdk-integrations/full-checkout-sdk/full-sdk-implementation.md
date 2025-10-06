@@ -33,7 +33,7 @@ After completing the SDK integration, proceed with the following steps to implem
 
 ## Step 2: Initialize SDK with the public key
 
-Create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](https://docs.y.uno/docs/developers-credentials) page for more information.
+Create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](../docs/developers-credentials) page for more information.
 
 Initialize the SDK with your public API key:
 
@@ -183,7 +183,7 @@ When the method returns an object, you can handle your application's payment flo
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](https://docs.y.uno/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js) checkout demos available on GitHub.
+> In addition to the code examples provided, you can access the [Demo App](../docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js) checkout demos available on GitHub.
 
 ## Complementary features
 

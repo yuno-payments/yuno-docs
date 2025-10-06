@@ -38,7 +38,7 @@ For merchants requiring complete UI control or more advanced features, consider 
 Before starting the Yuno Android SDK integration, ensure your project meets the [technical requirements](doc:requirements-android). Also, ensure the following prerequisites are in place:
 
 * You must have an active Yuno account.
-* You need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](https://docs.y.uno/docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
+* You need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](../docs/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
   * Create a `customer`, which is required before initiating payments
   * Create a `checkout_session`, which initializes the payment flow
   * Create the payment associated with the session
@@ -118,7 +118,7 @@ Use the `YunoConfig` data class to set additional configurations for the SDK. Th
 | **cardFlow**        | Defines the card form flow. The default option is `CardFormType.ONE_STEP`. Check the section [Render options](#render-options) for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | **saveCardEnabled** | Enables the save card checkbox for card flows. Check the [Save card](#save-card-for-future-payments) section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | **language**        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
-| **styles**          | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](/docs/full-checkout-android#styles) section.                                                                                                                                                                                                                                                                                                                                   |
+| **styles**          | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the [`styles`](../docs/full-checkout-android#styles) section.                                                                                                                                                                                                                                                                                                                                   |
 
 The following code block shows an example of `YunoConfig`:
 
@@ -246,7 +246,7 @@ Use the `YunoConfig` data class, described in Step 5, to use the `styles` custom
 
 ### Loader
 
-The [Loader](https://docs.y.uno/docs/loader-android) enables you to control the use of the loader component.
+The [Loader](../docs/loader-android) enables you to control the use of the loader component.
 
 ### Save card for future payments
 

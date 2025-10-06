@@ -133,7 +133,7 @@ Therefore, depending on your Yuno integration, you have three different options:
 
 You are responsible for redirecting your customers to the URL provided by the `redirect_url` so we can gather device information and present the challenge to the customer if necessary. Once the customer successfully completes the 3DS challenge, they will be automatically redirected to the `callback_url`, which you provided when creating the payment with the Create Payment endpoint.
 
-For every scenario the Yuno [webhooks](doc:configuring-yuno-webhooks) will promptly notify you about the outcome of the 3DS challenge and the final payment status. This ensures that you receive real-time updates on the progress and completion of the payment transaction. Also, you can always get the payment information by using our [get payment service](ref:retrieve-payment-by-id).
+For every scenario the Yuno [webhooks](doc:configure-webhooks) will promptly notify you about the outcome of the 3DS challenge and the final payment status. This ensures that you receive real-time updates on the progress and completion of the payment transaction. Also, you can always get the payment information by using our [get payment service](ref:retrieve-payment-by-id).
 
 After executing the 3DS for each scenario, you'll receive all the necessary information in the payment's response inside the `payment_method.detail.card.card_data.three_d_secure` object:
 

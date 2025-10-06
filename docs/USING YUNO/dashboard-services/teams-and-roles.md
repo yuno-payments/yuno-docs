@@ -29,7 +29,7 @@ The **Team members** tab allows you to invite new members and manage existing on
 * **Invite members**: Send one or more invitations via email and assign roles to new members.
 * **Member management**: Click the three-dot icon next to a member's name to edit their role or delete them from the team.
 
-Use **Add filters** to sort between your [accounts](https://docs.y.uno/docs/account-management).
+Use **Add filters** to sort between your [accounts](../docs/account-management).
 
 > 📘 Team for each account
 >

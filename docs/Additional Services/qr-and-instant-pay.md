@@ -21,7 +21,7 @@ You can define the frequency, availability window, and the amount type (fixed or
 | Availability             | The start and end dates of the subscription.                                                                                                                                       |
 | Amount                   | Define the value you will use for future payments of the subscription. Could be `FIXED` with a minimum value defined, or `VARIABLE` without an amount defined for future payments. |
 
-As [mentioned before](https://docs.y.uno/docs/pix-automatico#/key-features), have in mind that the information defined in the subscription creation will restrict the dates and values to be used for future payments.
+As [mentioned before](../docs/pix-automatico#/key-features), have in mind that the information defined in the subscription creation will restrict the dates and values to be used for future payments.
 
 ```json Example
 {

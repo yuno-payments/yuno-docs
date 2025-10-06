@@ -29,4 +29,4 @@ To start using Yuno’s webhooks, you need to build a public REST API to receive
 
 Yuno webhooks expects to receive an **HTTP 200 OK** status as a response to confirm the webhook was successfully received. The merchant system does not need to include any information in the response's body. Only the HTTP 200 status is required.
 
-If no response is received within the specified time, Yuno will retry sending the event notification up to seven times to ensure no information is lost. Refer to the [Receipt Confirmation Process](https://docs.y.uno/docs/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.
+If no response is received within the specified time, Yuno will retry sending the event notification up to seven times to ensure no information is lost. Refer to the [Receipt Confirmation Process](../docs/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.

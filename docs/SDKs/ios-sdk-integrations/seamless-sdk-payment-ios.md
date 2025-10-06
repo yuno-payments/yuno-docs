@@ -86,7 +86,7 @@ Configure the SDK with the following options:
 
 > 📘 Accessing Your API Key
 >
-> You can retrieve your API Key from the [Developers section](https://docs.y.uno/docs/developers-credentials) in the Yuno Dashboard.
+> You can retrieve your API Key from the [Developers section](../docs/developers-credentials) in the Yuno Dashboard.
 
 ## Step 3: Start the checkout and Payment process
 
@@ -137,7 +137,7 @@ The following table describes each parameter from `SeamlessParams`:
 | Parameter         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession` | Refers to the current payment's checkout session.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `country_code`    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](https://docs.y.uno/docs/country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                      |
+| `country_code`    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](../docs/country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                      |
 | `language`        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
 | `viewController`  | This parameter is of type `UIViewController` and represents the merchant's view where Yuno's payment flow will be presented.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
@@ -198,9 +198,9 @@ enum Result {
 
 ## Complementary Features
 
-Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand or to configure the loader.
+Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK Customizations](../docs/sdk-customizations-ios) to change the SDK appearance to match your brand or to configure the loader.
 
-* [Loader](https://docs.y.uno/docs/loader-1): Control the use of the loader.
+* [Loader](../docs/loader-1): Control the use of the loader.
 * Save card for future payments: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders.
 
 <Image alt="Example Checkbox" border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXe9dPjXE9Y8Uq3EKpmzUrsBpXHCHtspu98NLo41GsszFV1lCCGNsiXvB-9dmQRtPTExcDWQ7S-Qqoq0iFXaeogBZPpONcLy8Ep55cqog0KHHasbstgeCgSTR00BiFmIbcWd4NwHkO7LrLUOsQXnFV1_gT45?key=-31QL7MEbUE8QLWSURQp1jZt" />
@@ -209,7 +209,7 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 
 <Image alt="Render Options" border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXcf2gb-FB3sHbyzXYhwBcio9JJ7i0Vh-WBwHQC1dLul3k5XKGExvmYCApNNdx7DfwZcNgK-ARnQgncc3lE-3ln0chmnKstQL7NBKXXjgM8OHk4JpAeCneddETCFUAIF6xpCGMSDrrsBy7N4lHPcgYncIu7J?key=-31QL7MEbUE8QLWSURQp1jZt" />
 
-* [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
+* [SDK Customizations](../docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
 ## Implementing `YunoPaymentDelegate` with Swift 6 Concurrency
 

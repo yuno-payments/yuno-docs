@@ -262,11 +262,11 @@ To change the render option, set the `cardFormType` equal one of the available o
 
 ### Loader
 
-Control the use of the [Loader](https://docs.y.uno/docs/loader-1).
+Control the use of the [Loader](../docs/loader-1).
 
 ### SDK Customizations
 
-Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand.
+Use the [SDK Customizations](../docs/sdk-customizations-ios) to change the SDK appearance to match your brand.
 
 > 📘 Demo App
 >

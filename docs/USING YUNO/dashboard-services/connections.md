@@ -31,11 +31,11 @@ Let's walk through the process of adding, creating, and managing connections to 
 
 4. **Set up accounts** lets you select the accounts that will be affected by the changes. Check specific accounts or **Current account only** and click **Save** to finish. The system will confirm the connection has been created, establishing a bridge between your Yuno account and the chosen provider.
 
-5. With your connections set, you can proceed to the [Routing](https://docs.y.uno/docs/routing) section to configure payment processing routes using the provider and payment methods you have available within Yuno.
+5. With your connections set, you can proceed to the [Routing](../docs/routing) section to configure payment processing routes using the provider and payment methods you have available within Yuno.
 
 > 📘 Set up costs for new connections
 >
-> When you add a new connection, you can set up its costs. This optional step allows you to set different costs for successful and unsuccessful payments to help manage fees using the [Smart Routing feature](/docs/routing#smart-routing).
+> When you add a new connection, you can set up its costs. This optional step allows you to set different costs for successful and unsuccessful payments to help manage fees using the [Smart Routing feature](../docs/routing#smart-routing).
 >
 > You can set default costs for all payments and add specific conditions for different situations, like setting a unique cost when a customer uses Visa.
 >

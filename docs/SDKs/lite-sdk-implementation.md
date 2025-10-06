@@ -33,7 +33,7 @@ After completing the SDK integration, proceed with the following steps to implem
 
 ## Step 2: Initialize SDK with the public key
 
-Create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](https://docs.y.uno/docs/developers-credentials) page for more information.
+Create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](../docs/developers-credentials) page for more information.
 
 Initialize the SDK with your public API key:
 
@@ -86,7 +86,7 @@ yuno.startCheckout({
 
 > 📘 Transaction Types
 >
-> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You can find more information about their characteristics in [Stored credentials](/docs/stored-credentials).
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You can find more information about their characteristics in [Stored credentials](../docs/stored-credentials).
 >
 > The step-by-step on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 

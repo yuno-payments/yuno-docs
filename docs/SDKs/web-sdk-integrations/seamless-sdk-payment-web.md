@@ -24,7 +24,7 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
 
 ## Step 1: Include the library in your project
 
-The integration guide provides [three flexible methods](https://docs.y.uno/docs/full-checkout-sdk#/choose-your-integration-method):
+The integration guide provides [three flexible methods](../docs/full-checkout-sdk#/choose-your-integration-method):
 
 1. Direct HTML script inclusion
 2. Dynamic JavaScript injection
@@ -134,7 +134,7 @@ Configure the seamless checkout with the following options:
 
 > 📘 Customer and Merchant-Initiated Transactions
 >
-> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](/docs/stored-credentials).
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](../docs/stored-credentials).
 >
 > The step-by-step on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
@@ -179,7 +179,7 @@ payButton.addEventListener('click', () => {
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](/docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
+> In addition to the code examples provided, you can access the [Demo App](../docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-seamless-lite.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-seamless-lite.js) checkout demos available on GitHub.
 
 ## Related Links
 

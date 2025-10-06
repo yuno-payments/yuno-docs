@@ -216,7 +216,7 @@ To test Card payments in general, Yuno provides the **Yuno Test Payment Gateway*
         <div class="detail-psp-card-content">
           <p class="label"><b>Test data</b>:</p>
           <div class="content">
-						<a href="https://docs.y.uno/docs/yuno-testing-gateway#44-provide-the-payment-method-information">Card information</a> to complete payments in test mode.          
+						<a href="../docs/yuno-testing-gateway#44-provide-the-payment-method-information">Card information</a> to complete payments in test mode.          
           </div>
         </div>
         
@@ -277,7 +277,7 @@ To test Card payments in general, Yuno provides the **Yuno Test Payment Gateway*
 
 <Image align="center" width="400px" src="https://files.readme.io/c556c04-image.png" />
 
-3. Create a new route for **Card**. If you are unsure how to create it, check the [Configure dynamic routing](doc:configure-dynamic-routing).
+3. Create a new route for **Card**. If you are unsure how to create it, check the [Configure dynamic routing](doc:routing#configuring-the-dynamic-routing).
    1. On the Routing dashboard, add conditions to trigger the card payment. You can use card brand or country as trigger conditions, for example.
    2. For the created condition, add the Yuno Test Payment Gateway.
    3. For the **All other payments** options, select the **Cancel** option. The below image presents an example of a routing configuration where the card brand condition was used, accepting payments with Visa and Mastercard brands.
@@ -305,8 +305,8 @@ Before starting following the steps described in this guide, you need to:
   * `private-secret-key`
   * `account_id`
 * Set up the Yuno Testing Gateway connection on your Yuno Dashboard account. You find a step-by-step guide on connecting it in the [Integration configuration section](doc:yuno-testing-gateway#integration-configuration).
-* [Build a route](doc:configure-dynamic-routing) for the Yuno Testing Gateway to define it as your card payment provider. You find a step-by-step guide on how to do it in the Set up the [Yuno Testing Gateway section](doc:yuno-testing-gateway#set-up-the-yuno-test-payment-gateway).
-* [Configure the checkout builder](ref:manage-your-checkout) to make the Yuno Testing Gateway available.
+* [Build a route](doc:routing#configuring-the-dynamic-routing) for the Yuno Testing Gateway to define it as your card payment provider. You find a step-by-step guide on how to do it in the Set up the [Yuno Testing Gateway section](doc:yuno-testing-gateway#set-up-the-yuno-test-payment-gateway).
+* [Configure the checkout builder](doc:checkout-builder) to make the Yuno Testing Gateway available.
 
 ### Steps summary
 
@@ -1558,4 +1558,4 @@ Use these cards and OTP codes to test 3DS flows through our preview environment 
 
 After performing the request to the [Create Payment](ref:create-payment), you can check the payment status by analyzing the `status` and `sub_status` from the response. Check the [Payment Status](ref:payment) page to see all the options you can receive in response to the payment creation request.
 
-Depending on the processor and payment method, the status may take some time to update. Therefore, you may need to use endpoints to recover the payment status. To perform this task, you can use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant_order_id) endpoints. Another option is to use webhooks to receive notifications after each event. Yuno recommends you use webhooks to monitor asynchronous payments better. Check the [Webhooks](doc:configuring-yuno-webhooks) guide to learn how to configure the webhooks solution provided by Yuno.
+Depending on the processor and payment method, the status may take some time to update. Therefore, you may need to use endpoints to recover the payment status. To perform this task, you can use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant-order-id) endpoints. Another option is to use webhooks to receive notifications after each event. Yuno recommends you use webhooks to monitor asynchronous payments better. Check the [Webhooks](doc:configure-webhooks) guide to learn how to configure the webhooks solution provided by Yuno.

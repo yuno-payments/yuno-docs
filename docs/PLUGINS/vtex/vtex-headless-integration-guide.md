@@ -47,7 +47,7 @@ Follow these steps to install `yunopartnerbr.yuno` in **VTEX Admin**:
 
 ![](https://files.readme.io/8b9a136e600a017bac069f269c13f2e2d13c5510c81327a33e18db3eac49ce84-image.png)
 
-For more details, refer to the [Configure Yuno as Provider](https://docs.y.uno/docs/configure-yuno-as-provider) page.
+For more details, refer to the [Configure Yuno as Provider](../docs/configure-yuno-as-provider) page.
 
 ### Install `yunopartnerbr.yuno-app`
 

@@ -47,6 +47,6 @@ To implement the Secure Fields SDK integration, follow the platform-specific gui
 >
 > The Secure Fields SDK is designed to accept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose another Yuno integration:
 >
-> * [Full SDK](/docs/secure-fields-payment)
-> * [Lite SDK](/docs/secure-fields-payment)
-> * [Direct Flow](/docs/secure-fields-payment)
+> * [Full SDK](../docs/secure-fields-payment)
+> * [Lite SDK](../docs/secure-fields-payment)
+> * [Direct Flow](../docs/secure-fields-payment)

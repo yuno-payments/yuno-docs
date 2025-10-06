@@ -67,7 +67,7 @@ Smart Routing is a solution designed to intelligently optimize payment performan
 Smart Routing can optimize your payments in two ways:
 
 * **Conversion rate and latency**: Make intelligent decisions to optimize processing time while also achieving the highest conversion rate.
-* **Conversion rate and costs**: Make smart decisions to optimize costs while also achieving the highest conversion rate. Input the costs associated with each provider through the [Connections](https://docs.y.uno/docs/connections) section. Smart Routing uses the costs you set up on the connection page to optimize your costs.
+* **Conversion rate and costs**: Make smart decisions to optimize costs while also achieving the highest conversion rate. Input the costs associated with each provider through the [Connections](../docs/connections) section. Smart Routing uses the costs you set up on the connection page to optimize your costs.
 
 You only need to specify which providers you want to work with and which variable you want to optimize, and Smart Routing will route each payment through the optimal path.
 
