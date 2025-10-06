@@ -65,7 +65,7 @@ To access the running application, open your browser and go to:
 http://localhost:YOUR-PORT
 ```
 
-If you don't change the code, the application will be available at [http://localhost:8080/](http://localhost:8080/).
+If you don't change the code, the application will be available at `http://localhost:8080/` (for local development).
 
 You can also change the country by adding a query parameter named `country` to the URL with one of the country codes `US`, `GB`, `FR`, `DE`, `IT`, `JP`, `CN`. The following example defines the URL to access an application running on the 8080 port and with Deutschland as the country selected:
 
