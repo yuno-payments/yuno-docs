@@ -15,7 +15,7 @@ Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK enrol
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Lite SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Lite SDK implementation, please refer to the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -440,7 +440,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 ### Loader
 
-Control the use of the [loader](doc:loader).
+Control the use of the loader.
 
 | Parameter     | Description                                                                                                                                                                                                                         |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

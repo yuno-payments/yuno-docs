@@ -153,7 +153,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 ### Loader
 
-Control the use of the [loader](doc:loader).
+Control the use of the loader.
 
 | Parameter     | Description                                                                                                                                                                                                                         |
 | :------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -27,7 +27,7 @@ The following steps describe creating a payment using Yuno's Headless SDK.
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Headless SDK implementation, see the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
