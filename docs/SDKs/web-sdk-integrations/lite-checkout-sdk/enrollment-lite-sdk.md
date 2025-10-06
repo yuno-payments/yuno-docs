@@ -659,7 +659,7 @@ Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to 
 
 Find more information and version history for the Web SDK below:
 
-* [Lite Web SDK v1.2](https://docs.y.uno/changelog/lite-web-sdk-v1.2-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
-* [Lite Web SDK v1.1](https://docs.y.uno/changelog/lite-web-sdk-v1.1-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
+* [Lite Web SDK v1.2](https://docs.y.uno/changelog/lite-web-sdk-v12-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
+* [Lite Web SDK v1.1](https://docs.y.uno/changelog/lite-web-sdk-v11-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
 
 <br />
