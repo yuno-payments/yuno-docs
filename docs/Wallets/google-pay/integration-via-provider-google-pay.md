@@ -46,7 +46,7 @@ You need to cover some steps to integrate Google Pay into your system using Yuno
 
 <Image align="center" width="700px" src="https://files.readme.io/b3b39cd-Group_2.png" />
 
-4. Create a route in Yuno's dashboard using the gateway you have connected. Access the [Configure dynamic routing](ref:configure-dynamic-routing) guide page for further information on creating routes.
+4. Create a route in Yuno's dashboard using the gateway you have connected. Access the [Configure dynamic routing](doc:routing#configuring-the-dynamic-routing) guide page for further information on creating routes.
 
 ## Enable and test Google Pay with Yuno
 

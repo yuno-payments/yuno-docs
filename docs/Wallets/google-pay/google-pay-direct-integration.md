@@ -44,7 +44,7 @@ To integrate Google Pay with Yuno, follow these steps:
 
 <Image align="center" src="https://files.readme.io/2fee3d1-google-pay1.png" />
 
-2. Create a route in Yuno's dashboard using the processor you want for Google Pay payments. See the [Configure dynamic routing](ref:configure-dynamic-routing) guide for more information.
+2. Create a route in Yuno's dashboard using the processor you want for Google Pay payments. See the [Configure dynamic routing](doc:routing#configuring-the-dynamic-routing) guide for more information.
 3. Integrate [Yuno's SDK](../docs/android-sdk-integrations) into your app to ensure a smooth connection between your application and Yuno's platform. [Example](https://github.com/yuno-payments/yuno-sdk-android).
    1. **Authorization methods available**: Yuno supports all authorization methods (purchase, authorization, capture), but availability depends on each provider.
 4. Enable Google Pay as a payment method in your [Yuno Checkout builder](../docs/checkout-builder) so customers can use it during checkout.

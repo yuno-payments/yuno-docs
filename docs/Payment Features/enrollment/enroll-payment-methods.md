@@ -36,7 +36,7 @@ Before starting the enrollment process, you need to:
   * `private-secrete-key`
   * `account_id`
 * [Set up your connections](doc:set-up-initial-connections) on your Yuno Dashboard account. Add a payment method that requires enrollment.
-* [Build a route](doc:configure-dynamic-routing) for the payment method to define how it will be processed.
+* [Build a route](doc:routing#configuring-the-dynamic-routing) for the payment method to define how it will be processed.
 * [Configure the checkout builder](ref:manage-your-checkout) to make your connected payments available.
 
 ## Steps summary
