@@ -20,7 +20,7 @@ Yuno reports provides a practical way to acquire information regarding different
 * Transaction Reconciliation
 * Settlement
 
-You can check the detailed description for each one by accessing the [Reports page](ref:introduction-reports). The Transaction Reconciliation and Settlement reports provide information related to reconciliation. To examine all fields available on each report and their description, access the [Reports Fields page](ref:reports-fields).
+You can check the detailed description for each one by accessing the [Reports Fields](ref:reports-fields) documentation. The Transaction Reconciliation and Settlement reports provide information related to reconciliation. To examine all fields available on each report and their description, access the [Reports Fields page](ref:reports-fields).
 
 ## Requirements
 
