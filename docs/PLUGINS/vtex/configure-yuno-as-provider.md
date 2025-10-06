@@ -101,7 +101,7 @@ For example, if you configure Visa, when your customers select credit card at ch
 
 <Image align="center" src="https://files.readme.io/a17a02d-vtex.png" />
 
-Once you start receiving payments in VTEX with Yuno, you will be able to see all the information related to the transactions in your [Yuno dashboard](doc:payments-2) as a regular payment.
+Once you start receiving payments in VTEX with Yuno, you will be able to see all the information related to the transactions in your [Yuno dashboard](doc:payments) as a regular payment.
 
 * As additional info in the payment detail, particularly inside the metadata struct, you will also be able to identify the VTEX account related to the payment creation.
 
