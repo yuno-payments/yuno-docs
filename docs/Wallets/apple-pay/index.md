@@ -28,8 +28,8 @@ Yuno streamlines the process of accepting Apple Pay payments and provides the fl
 
 To integrate Apple Pay using Yuno, you must first complete the [Prerequisites ](doc:prerequisites-apple-pay) process. After, choose the integration option that best fits you and access the respective integration documentation:
 
-* [SDK Integration](doc:sdk-integration-apple)
-* [Direct Integration](doc:direct-integration)
+* [SDK Integration](doc:apple-pay-sdk-integration)
+* [Direct Integration](doc:apple-pay-direct-integration)
 
 <Callout icon="📘" theme="info">
   **Setting up Merchant ID for Apple Pay**
