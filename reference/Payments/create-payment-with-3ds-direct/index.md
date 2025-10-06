@@ -28,7 +28,7 @@ next:
    3. Browser info
 3. If a **3DS verification challenge** is necessary, we will return a `required_action` set as `redirect` and provide an `init_url`. You should redirect your customers to this URL to complete the challenge. If more than one card is used in the payment, more than one 3DS challenge may be necessary, and consequently, you may receive more than one redirect URL.
 4. After completing the 3DS challenge, the user will be redirected to the callback URL specified in the payment.
-5. Finally, through [webhooks](https://docs.y.uno/v2.0/docs/configuring-yuno-webhooks), you will receive the result of the 3DS challenge and the final payment outcome.
+5. Finally, through [webhooks](doc:configure-webhooks), you will receive the result of the 3DS challenge and the final payment outcome.
 
 ## Workflow
 

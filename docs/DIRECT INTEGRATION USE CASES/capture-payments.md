@@ -56,4 +56,4 @@ If the response contains the above values, the capture was successful.
 If, for some reason, you need to confirm the payment cancelation:
 
 * Use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) or [Retrieve Payment by merchant\_order\_id](ref:retrieve-payment-by-merchant-order-id) to get detailed information about the payment.
-* Alternatively, set up webhooks to receive notifications for each event. Refer to the [Webhooks](doc:configuring-yuno-webhooks) guide to learn how to configure webhooks in Yuno.
+* Alternatively, set up webhooks to receive notifications for each event. Refer to the [Webhooks](doc:configure-webhooks) guide to learn how to configure webhooks in Yuno.
