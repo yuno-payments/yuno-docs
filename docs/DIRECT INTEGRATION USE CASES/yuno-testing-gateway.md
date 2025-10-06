@@ -306,7 +306,7 @@ Before starting following the steps described in this guide, you need to:
   * `account_id`
 * Set up the Yuno Testing Gateway connection on your Yuno Dashboard account. You find a step-by-step guide on connecting it in the [Integration configuration section](doc:yuno-testing-gateway#integration-configuration).
 * [Build a route](doc:routing#configuring-the-dynamic-routing) for the Yuno Testing Gateway to define it as your card payment provider. You find a step-by-step guide on how to do it in the Set up the [Yuno Testing Gateway section](doc:yuno-testing-gateway#set-up-the-yuno-test-payment-gateway).
-* [Configure the checkout builder](ref:manage-your-checkout) to make the Yuno Testing Gateway available.
+* [Configure the checkout builder](doc:checkout-builder) to make the Yuno Testing Gateway available.
 
 ### Steps summary
 
