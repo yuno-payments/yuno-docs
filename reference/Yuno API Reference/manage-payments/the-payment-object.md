@@ -2349,7 +2349,7 @@ This object represents the payment created after generating the checkout session
           </p>
 
           <p><strong><code>parent_payment_method_type</code></strong> <small>enum</small>
-            <br />When using a wallet for payments through a <a href="https://docs.y.uno/docs/direct-integration">direct integration</a>, this field indicates the provider from which the card information was obtained.
+            <br />When using a wallet for payments through a <a href="https://docs.y.uno/docs/direct-flow">direct integration</a>, this field indicates the provider from which the card information was obtained.
             <br /><small> Example: APPLE_PAY </small>
           </p>
 
