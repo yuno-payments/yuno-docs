@@ -15,7 +15,7 @@ Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK enrol
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Lite SDK implementation, please refer to the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Lite SDK implementation, please refer to the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -426,7 +426,7 @@ When the method returns an object, it allows you to handle your application's pa
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](#test) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout.js) checkout demos available on GitHub.
+> In addition to the code examples provided, you can access the [Demo App](doc:demo-app) for a complete implementation of Yuno SDKs. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
 
 ## Complementary features
 
@@ -440,7 +440,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 ### Loader
 
-Control the use of the [loader](doc:loader).
+Control the use of the loader.
 
 | Parameter     | Description                                                                                                                                                                                                                         |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -659,7 +659,7 @@ Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to 
 
 Find more information and version history for the Web SDK below:
 
-* [Lite Web SDK v1.2](../changelog/lite-web-sdk-v1.2-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
-* [Lite Web SDK v1.1](../changelog/lite-web-sdk-v1.1-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
+* [Lite Web SDK v1.2](https://docs.y.uno/changelog/lite-web-sdk-v1.2-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
+* [Lite Web SDK v1.1](https://docs.y.uno/changelog/lite-web-sdk-v1.1-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
 
 <br />

@@ -20,7 +20,7 @@ This page provides a guide to get started with Yuno's Lite SDK (Web) payment sol
 
 > 📘 Web SDK Release
 >
-> This is the latest version with enhanced UI grouping and multilingual support. To learn more, [visit the Web SDK changelog](doc:web-sdk-changelog).
+> This is the latest version with enhanced UI grouping and multilingual support.
 
 ## Choose your integration method
 
@@ -134,7 +134,7 @@ After integrating the SDK using one of the methods described above, follow these
 
 Find more information and version history for the Web SDK below:
 
-* [Lite Web SDK v1.2](../changelog/lite-web-sdk-v1.2-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
-* [Lite Web SDK v1.1](../changelog/lite-web-sdk-v1.1-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
+* [Lite Web SDK v1.2](https://docs.y.uno/changelog/lite-web-sdk-v1.2-changelog#/): Enhanced `continuePayment` method and expanded language support for streamlined implementations.
+* [Lite Web SDK v1.1](https://docs.y.uno/changelog/lite-web-sdk-v1.1-changelog#/): Initial release of Lite Web SDK with essential payment functionality and simplified integration.
 
 <br />

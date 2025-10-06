@@ -23,9 +23,9 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 * [Mercado Pago Checkout Pro webview handling](doc:complementary-features-full-sdk#mercado-pago-checkout-pro-webview-handling)
 * [Optional initialization `options` parameter](doc:complementary-features-full-sdk#optional-initialization-options-parameter)
 
-## [Form loader](doc:loader)
+## Form loader
 
-Control the use of the [loader](doc:loader).
+Control the use of the loader.
 
 <Table>
   <thead>

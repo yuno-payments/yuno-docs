@@ -14,7 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields chec
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Secure Fields implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Secure Fields implementation, see the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -342,7 +342,7 @@ if (payment.checkout.sdk_action_required) {
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](../docs/demo-app) for a complete implementation of Yuno SDKs or go directly to the [HTML](https://github.com/yuno-payments/yuno-sdk-web/blob/main/checkout-secure-fields.html) and [JavaScript](https://github.com/yuno-payments/yuno-sdk-web/blob/main/static/checkout-secure-fields.js) checkout demos available on GitHub.
+> In addition to the code examples provided, you can access the [Demo App](doc:demo-app) for a complete implementation of Yuno SDKs. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
 
 ## Complementary features
 
@@ -458,5 +458,5 @@ You can access other functions available on the Yuno Web SDK:
 
 Find more information and version history for the Web SDK below:
 
-* [Web SDK v1.3](../changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
-* [Web SDK v1.2](../changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
+* [Web SDK v1.3](https://docs.y.uno/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.

@@ -200,7 +200,7 @@ enum Result {
 
 Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK Customizations](../docs/sdk-customizations-ios) to change the SDK appearance to match your brand or to configure the loader.
 
-* [Loader](../docs/loader-1): Control the use of the loader.
+* **Loader**: Control the use of the loader through the SDK configuration options.
 * Save card for future payments: In addition, you can display a checkbox for save or enroll cards using `cardSaveEnable: true`. Below, you can find examples of the checkbox for both card form renders.
 
 <Image alt="Example Checkbox" border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXe9dPjXE9Y8Uq3EKpmzUrsBpXHCHtspu98NLo41GsszFV1lCCGNsiXvB-9dmQRtPTExcDWQ7S-Qqoq0iFXaeogBZPpONcLy8Ep55cqog0KHHasbstgeCgSTR00BiFmIbcWd4NwHkO7LrLUOsQXnFV1_gT45?key=-31QL7MEbUE8QLWSURQp1jZt" />

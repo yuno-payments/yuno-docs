@@ -65,7 +65,7 @@ To access the running application, open your browser and go to:
 http://localhost:YOUR-PORT
 ```
 
-If you don't change the code, the application will be available at [http://localhost:8080/](http://localhost:8080/).
+If you don't change the code, the application will be available at `http://localhost:8080/` (for local development).
 
 You can also change the country by adding a query parameter named `country` to the URL with one of the country codes `US`, `GB`, `FR`, `DE`, `IT`, `JP`, `CN`. The following example defines the URL to access an application running on the 8080 port and with Deutschland as the country selected:
 
@@ -81,5 +81,5 @@ You will find a panel, as shown below, with all Yuno SDKs available by accessing
 
 Find more information and version history for the Web SDK below:
 
-* [Web SDK v1.3](../changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
-* [Web SDK v1.2](../changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
+* [Web SDK v1.3](https://docs.y.uno/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.

@@ -27,7 +27,7 @@ The following steps describe creating a payment using Yuno's Headless SDK.
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, see the [Yuno SDK Integration Guide](doc:yuno-sdk-integration-guide) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Headless SDK implementation, see the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -562,5 +562,5 @@ Each action type requires specific handling based on the data provided:
 
 Find more information and version history for the Web SDK below:
 
-* [Web SDK v1.3](../changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
-* [Web SDK v1.2](../changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
+* [Web SDK v1.3](https://docs.y.uno/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
+* [Web SDK v1.2](https://docs.y.uno/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.

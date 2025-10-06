@@ -29,7 +29,7 @@ The Seamless SDK includes features like:
 * Advanced payment status handling
 * Comprehensive error management
 
-For merchants requiring complete UI control or more advanced features, consider using our [Full SDK](doc:full-sdk-android) instead.
+For merchants requiring complete UI control or more advanced features, consider using our [Full SDK](doc:full-checkout-android) instead.
 
 <Image align="center" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
@@ -246,7 +246,7 @@ Use the `YunoConfig` data class, described in Step 5, to use the `styles` custom
 
 ### Loader
 
-The [Loader](../docs/loader-android) enables you to control the use of the loader component.
+The loader functionality is controlled through the `keepLoader` parameter in the `YunoConfig` data class, which is documented inline in the SDK configuration section above.
 
 ### Save card for future payments
 

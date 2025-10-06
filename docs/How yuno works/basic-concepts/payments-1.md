@@ -28,6 +28,6 @@ For more details on status codes and messages, refer to the [Payments API refere
 
 A payment consists of multiple transactions that determine its final outcome. If you enable different connections for your payment method route, such as fraud prevention, 3D Secure, or provider fallbacks, these transactions become part of the payment lifecycle.
 
-In the [Payments](doc:payments-2) section of your Yuno dashboard, you can view and export all payment and transaction details.
+In the [Payments](doc:payments) section of your Yuno dashboard, you can view and export all payment and transaction details.
 
 For more details on how transactions impact payment outcomes, refer to the [Transactions](doc:transactions) section.

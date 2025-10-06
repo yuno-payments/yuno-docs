@@ -57,7 +57,7 @@ Example:
 
 #### Yuno's rate service
 
-Also, the merchant can use directly the [currency conversion service of Yuno](ref:getting-started-with-your-api-4) that gets the information from the provider of their choosing and send in the creation of the payment the id of the conversion rate query and the amount data accordingly. In case of using this service, you will also need to send the id obtained in the payment request so we can link the information. Example:
+Also, the merchant can use directly the [currency conversion service of Yuno](ref:currency-conversion) that gets the information from the provider of their choosing and send in the creation of the payment the id of the conversion rate query and the amount data accordingly. In case of using this service, you will also need to send the id obtained in the payment request so we can link the information. Example:
 
 ```json Rate service
 {

@@ -397,7 +397,7 @@ The endpoint response includes the `sdk_action_required` parameter that indicate
 
 ## Step 8: Get the 3DS challenge URL (if required)
 
-When a payment requires 3DS authentication, an additional challenge may be needed to verify the customer's identity. For more details about this process, see the [3DS Card Verification (old version)](doc:3ds-card-verification-copy) page. If a 3DS verification challenge is required, the Create Payment endpoint response will include the following:
+When a payment requires 3DS authentication, an additional challenge may be needed to verify the customer's identity. For more details about this process, see the [3D Secure](doc:3d-secure) page. If a 3DS verification challenge is required, the Create Payment endpoint response will include the following:
 
 * A `THREE_D_SECURE `transaction type
 * Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
@@ -481,7 +481,7 @@ Yuno Android SDK provides additional services and configurations you can use to 
 
 ### Loader
 
-The [Loader](../docs/loader-android) enables you to control the use of the loader component.
+The loader functionality is controlled through the `keepLoader` parameter in the `YunoConfig` data class, which is documented inline in the SDK configuration section above.
 
 ### SDK customization
 

@@ -81,6 +81,7 @@ To access the running application, open your browser and go to:
 ```shell
 http://localhost:8080
 ```
+(Note: This is a local development URL that will only work when running the demo app locally)
 
 ### Step 5: Make your first payment
 

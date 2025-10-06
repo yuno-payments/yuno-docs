@@ -72,7 +72,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
    2. Select the **Webhooks** tab.
    3. Click **add webhook**. The webhook  form will show up, where you should provide the following information:
       1. **Name**: Define a name for the VTEX webhook.
-      2. **Endpoint URL**: You should inform the following URL **[https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook](https://store_name.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook)**.
+      2. **Endpoint URL**: You should inform the following URL **`https://{store_name}.myvtex.com/_v/yunopartnerbr.yuno/v4/webhook`** (replace `{store_name}` with your actual store name).
       3. **x-api-key** and **x-secret**: You can set any information here. For example, you can add **VTEX** for both fields.
    4. For **Trigger on**, check all events that should notify you through the webhooks. Yuno recommends checking all options.
    5. Click **Add**.
@@ -101,7 +101,7 @@ For example, if you configure Visa, when your customers select credit card at ch
 
 <Image align="center" src="https://files.readme.io/a17a02d-vtex.png" />
 
-Once you start receiving payments in VTEX with Yuno, you will be able to see all the information related to the transactions in your [Yuno dashboard](doc:payments-2) as a regular payment.
+Once you start receiving payments in VTEX with Yuno, you will be able to see all the information related to the transactions in your [Yuno dashboard](doc:payments) as a regular payment.
 
 * As additional info in the payment detail, particularly inside the metadata struct, you will also be able to identify the VTEX account related to the payment creation.
 

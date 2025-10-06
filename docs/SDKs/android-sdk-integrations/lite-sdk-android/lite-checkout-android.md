@@ -32,7 +32,7 @@ The Lite SDK includes core features like:
 * Basic payment status handling
 * Essential error management
 
-For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-sdk-android) instead.
+For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-checkout-android) instead.
 
 ## Requirements
 
@@ -370,7 +370,7 @@ Use the `YunoConfig` data class, described in Step 4, to use the `styles` custom
 
 ### Loader
 
-The [Loader](../docs/loader-android) enables you to control the use of the loader component.
+The loader functionality is controlled through the `keepLoader` parameter in the `YunoConfig` data class, which is documented inline in the SDK configuration section above.
 
 ### Save card for future payments
 

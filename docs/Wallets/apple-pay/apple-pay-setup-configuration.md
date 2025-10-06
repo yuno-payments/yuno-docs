@@ -71,8 +71,8 @@ After completing the dashboard setup, you can proceed with your preferred integr
 
 ### One-time payments
 
-- [Direct integration](doc:direct-integration) - Integrate directly with Yuno's API
-- [SDK integration](doc:sdk-integration-apple) - Use Yuno's SDK for easier implementation
+- [Direct integration](doc:apple-pay-direct-integration) - Integrate directly with Yuno's API
+- [SDK integration](doc:apple-pay-sdk-integration) - Use Yuno's SDK for easier implementation
 
 ### Recurring payments
 

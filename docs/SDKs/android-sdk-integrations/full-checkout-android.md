@@ -485,7 +485,7 @@ To use the `styles` customization option, use the `YunoConfig` data class, descr
 
 ### Loader
 
-The [Loader](../docs/loader-android) enables you to control the use of the loader component:
+The loader functionality is controlled through the `keepLoader` parameter in the `YunoConfig` data class, which is documented inline in the SDK configuration section above.
 
 ### Save card for future payments
 
