@@ -1,5 +1,5 @@
 ---
-title: Full SDK implementation
+title: Full SDK (Web) Implementation
 deprecated: false
 hidden: false
 metadata:
