@@ -9,7 +9,7 @@ This page provides a step-by-step guide to implement and enable Yuno's Lite Web 
 
 > 📘 Changelog Reference:
 >
-> This guide covers the current SDK version. For details on previous versions, see the [changelog](../docs/web-sdk-changelog).
+> This guide covers the current SDK version. For details on previous versions, see the [changelog](https://docs.y.uno/changelog/lite-web-sdk-v12-changelog).
 
 ## Step 1: Include the library in your project
 

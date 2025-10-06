@@ -9,7 +9,7 @@ This page provides a step-by-step guide to implement and enable Yuno's Full Web 
 
 > 📘 Changelog Reference:
 >
-> This guide covers the current SDK version. For details on previous versions, see the [changelog](../docs/web-sdk-changelog).
+> This guide covers the current SDK version. For details on previous versions, see the [changelog](https://docs.y.uno/changelog/web-sdk-v13-changelog).
 
 ## Step 1: Include the library in your project
 

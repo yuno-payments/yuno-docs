@@ -35,7 +35,7 @@ Select one of the user-friendly Web integration options available and start your
 
   <YunoCard title="Direct Workflow" href="../docs/direct-flow" titleSize="h4" description="Direct integration without SDK components" badge="Quick Setup" />
 
-  <YunoCard title="Web SDK Changelog" href="../docs/web-sdk-changelog" titleSize="h4" description="Check all updates, improvements and version history for the Web SDK" badge="Changelog" />
+  <YunoCard title="Web SDK Changelog" href="https://docs.y.uno/changelog/web-sdk-v13-changelog" titleSize="h4" description="Check all updates, improvements and version history for the Web SDK" badge="Changelog" />
 </Shelf>
 
 > ❗️ Browser Support
