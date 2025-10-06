@@ -162,7 +162,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 ### Form loader
 
-Control the use of the [loader](doc:loader):
+Control the use of the loader:
 
 | Parameter     | Description                                                                                                                                                                                                                         |
 | :------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

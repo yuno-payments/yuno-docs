@@ -32,7 +32,7 @@ The Lite SDK includes core features like:
 * Basic payment status handling
 * Essential error management
 
-For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-sdk-android) instead.
+For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-checkout-android) instead.
 
 ## Requirements
 

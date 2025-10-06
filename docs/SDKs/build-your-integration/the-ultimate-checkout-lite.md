@@ -196,7 +196,7 @@ With the **Lite SDK**, you can save credit or debit cards for future purchases w
 You can retrieve a vaulted token in two ways:
 
 * **Via API:** Set `vault_on_success = true` when using the [Create payment](ref:create-payment) endpoint. The response will return the `vaulted_token` for the customer's card.
-* **Via SDK settings:** Enable `cardSaveEnable = true` in the SDK settings for [Web](doc:lite-sdk-complementary-features), [iOS](doc:lite-checkout-ios), or [Android](doc:lite-checkout-android). The SDK will display a checkbox allowing users to save their card.
+* **Via SDK settings:** Enable `cardSaveEnable = true` in the SDK settings for [Web](doc:lite-checkout-sdk), [iOS](doc:lite-checkout-ios), or [Android](doc:lite-checkout-android). The SDK will display a checkbox allowing users to save their card.
 
 Use only one method to enroll a card. To enroll alternative payment methods, see the [Lite SDK (Enrollment)](doc:enrollment-lite) page.
 

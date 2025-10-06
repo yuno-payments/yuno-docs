@@ -200,7 +200,7 @@ Yuno Web SDK provides additional services and configurations you can use to impr
 
 ### Form loader
 
-Control the use of the [loader](doc:loader):
+Control the use of the loader:
 
 | Parameter     | Description                                                                                                                                                                                                                         |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -468,7 +468,7 @@ Learn about the additional configurations from the Full SDK by accessing [Comple
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
 * [Payment Status](doc:payment-status): Update the user about the payment process
-* [3DS Setup SDK](doc:3ds-setup-sdk): Integrate 3DS into your payment flow
+* [3DS Setup SDK](doc:3d-secure): Integrate 3DS into your payment flow
 
 ## Related Links
 
