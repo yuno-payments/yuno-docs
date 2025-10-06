@@ -137,7 +137,7 @@ Use [Create payment](ref:create-payment) with the Direct workflow and NuPay type
 
 ### Step 4: Retrieve payment
 
-Use [Retrieve payment by id](ref:retrieve-payment) to confirm final status.
+Use [Retrieve payment by id](ref:retrieve-payment-by-id) to confirm final status.
 
 ## Subscription flow
 
@@ -161,6 +161,6 @@ You can use NuPay for recurring charges.
 * [Enroll payment method (Direct)](ref:enroll-payment-method-api)
 * [Retrieve enrolled payment method by id](ref:retrieve-enrolled-payment-method-by-id-api)
 * [Create payment](ref:create-payment)
-* [Retrieve payment by id](ref:retrieve-payment)
+* [Retrieve payment by id](ref:retrieve-payment-by-id)
 * [Create subscription](ref:create-subscription)
 * [Retrieve subscription](ref:retrieve-subscription)

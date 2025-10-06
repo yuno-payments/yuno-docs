@@ -41,7 +41,7 @@ To start using the Yuno plugin on your VTEX store, you will need two essential e
    1. Application Key: a private key generated when the Yuno account became productive.
    2. Application Token: a productive public key generated when the Conekta account became productive.
 2. A Yuno account.\
-   If you don't have a Yuno account, sign up at the [Yuno Merchant Dashboard](https://auth.y.uno/u/signup). You will use your Account ID, Public API Key, and Private API Key from your Yuno account. Access the [Developers](doc:developers) tab on the Yuno dashboard to access your credentials.
+   If you don't have a Yuno account, sign up at the [Yuno Merchant Dashboard](https://auth.y.uno/u/signup). You will use your Account ID, Public API Key, and Private API Key from your Yuno account. Access the [Developers](doc:developers-credentials) tab on the Yuno dashboard to access your credentials.
 
 Once you have this information, you can register the Yuno plugin affiliation. Follow the steps outlined in the [Configure Yuno as Provider](doc:configure-yuno-as-provider) page. After completing the configuration processes, you'll enable your clients on VTEX to access the Yuno checkout to make payments on their orders.
 
