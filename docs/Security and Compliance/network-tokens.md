@@ -12,7 +12,7 @@ next:
 ---
 Network tokens represent a significant advancement in the payment processing industry, acting as digital surrogates for sensitive payment card details, including credit card numbers. Issued by payment networks such as Visa, Mastercard, and American Express, these tokens are at the forefront of enhancing transaction security within our evolving digital landscape.
 
-<Image align="center" src="https://files.readme.io/12b72d4-desktop_Network_token_2.png" />
+<Image align="center" border={false} src="https://files.readme.io/12b72d4-desktop_Network_token_2.png" />
 
 ### Benefits of network tokens
 
@@ -32,14 +32,14 @@ When the network tokens feature is enabled, Yuno generates network tokens for al
 
 Network tokens can have the statuses described in the section below.
 
-<Image align="center" src="https://files.readme.io/654f542-Image_-_nico2.png" />
+<Image align="center" border={false} src="https://files.readme.io/654f542-Image_-_nico2.png" />
 
-| Status    | Description                                                                                                                  |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Created   | The initial status of a network token that has been created.                                                                 |
-| Active    | The network token is active and can be used to make a payment.                                                               |
+| Status    | Description                                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Created   | The initial status of a network token that has been created.                                                                    |
+| Active    | The network token is active and can be used to make a payment.                                                                  |
 | Suspended | Tokens may be suspended if the cardholder contacts the issuer and requests that payments from a particular merchant be blocked. |
-| Canceled  | Tokens may be canceled for various reasons, such as the cardholder account associated with the token being closed.            |
+| Canceled  | Tokens may be canceled for various reasons, such as the cardholder account associated with the token being closed.              |
 
 ## Types of integration
 
@@ -106,9 +106,9 @@ During either the enrollment or payment creation, you will receive the basic inf
 
 After setting up the necessary credentials in your Yuno account and contacting our support team, you will be ready to execute tokenized transactions seamlessly.
 
-> ❗️
->
-> With this option, Yuno acts only as a passthrough for the network token information. The merchant must provide the necessary information about the network tokens so Yuno can share them with upstream payment partners.
+<Callout icon="❗️" theme="error">
+  With this option, Yuno acts only as a passthrough for the network token information. The merchant must provide the necessary information about the network tokens so Yuno can share them with upstream payment partners.
+</Callout>
 
 Network token transactions utilize existing payment transaction API requests. Similar to creating a payment with credit card details, when a merchant uses the Yuno API to finalize a payment, they can choose to include the "network_token" object to use a network token for the transaction.
 
@@ -116,15 +116,15 @@ Network token transactions utilize existing payment transaction API requests. Si
 
 Along with the `card_data` object, these fields should be added to the `payment_method.detail.card.network_token.token_data` object for sending payments using Yuno's API.
 
-| Field                           | Type   | Description                                                                                                                                                                                              |
-| ------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `number`                        | number | \[Mandatory] - Token's number without any separators. (MAX 19; MIN 8) - only available for PCI certified merchants                                                                                       |
-| `holder_name`                   | string | Cardholder's full name as it appears on the token (MAX 26; MIN 3) - only available for PCI certified merchants                                                                                           |
-| `expiration_month`              | number | \[Mandatory] - Token's expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants                                                                                                 |
-| `expiration_year`               | number | \[Mandatory] - Token's expiration year - YYYY (MAX 4; MIN 4) - only available for PCI certified merchants                                                                                                |
-| `cryptogram`                    | string | \[Mandatory] - The unique cryptogram generated by the issuer for the network token in use in the transaction. Optional for recurring transactions                                                        |
-| `electronic_commerce_indicator` | string | \[Only required for certain providers] - If the token has been authenticated by Mastercard, the field should be set to 02. For Visa or non-authenticated tokens, it is not necessary to send the field. |
-| `token_requestor_id`            | string | \[Only required for certain providers] - Token requestor ID of the merchant                                                                                                                              |
+| Field                           | Type    | Description                                                                                                                                                                                            |
+| ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `number`                        | number  | [Mandatory] - Token's number without any separators. (MAX 19; MIN 8) - only available for PCI certified merchants                                                                                      |
+| `holder_name`                   | string  | Cardholder's full name as it appears on the token (MAX 26; MIN 3) - only available for PCI certified merchants                                                                                         |
+| `expiration_month`              | integer | [Mandatory] - Token's expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants                                                                                                |
+| `expiration_year`               | integer | [Mandatory] - Token's expiration year - YYYY (MAX 4; MIN 4) - only available for PCI certified merchants                                                                                               |
+| `cryptogram`                    | string  | [Mandatory] - The unique cryptogram generated by the issuer for the network token in use in the transaction. Optional for recurring transactions                                                       |
+| `electronic_commerce_indicator` | string  | [Only required for certain providers] - If the token has been authenticated by Mastercard, the field should be set to 02. For Visa or non-authenticated tokens, it is not necessary to send the field. |
+| `token_requestor_id`            | string  | [Only required for certain providers] - Token requestor ID of the merchant                                                                                                                             |
 
 #### Request example
 
