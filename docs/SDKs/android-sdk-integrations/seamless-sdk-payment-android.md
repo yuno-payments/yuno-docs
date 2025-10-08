@@ -64,6 +64,13 @@ Create a new `checkout_session` using the [Create checkout session](ref:create-c
 * Include the customer ID obtained from the previous step
 * Store the returned `checkout_session` ID for use in Step 6 of the integration
 
+### Key Parameters
+
+| Parameter            | Required | Description                                                                                                                                                                                                                                      |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                      |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
+
 > 🚧 Checkout Session Usage
 >
 > The `checkout_session` is unique for each payment attempt and cannot be reused.

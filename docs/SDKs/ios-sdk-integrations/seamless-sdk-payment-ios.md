@@ -88,6 +88,17 @@ Configure the SDK with the following options:
 >
 > You can retrieve your API Key from the [Developers section](../docs/developers-credentials) in the Yuno Dashboard.
 
+### Create a checkout session
+
+Before starting the payment process, you need to create a `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. This session initializes the payment flow and will be used in the next step.
+
+#### Key Parameters
+
+| Parameter            | Required | Description                                                                                                                                                                                                                                      |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                      |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
+
 ## Step 3: Start the checkout and Payment process
 
 The seamless checkout and payment process is initiated with a single method `startPaymentSeamlessLite`. In the `ViewController`, where Yuno will be displayed, call the `Yuno.startPaymentSeamlessLite()` method. You can use the method with async/await or using callbacks:
