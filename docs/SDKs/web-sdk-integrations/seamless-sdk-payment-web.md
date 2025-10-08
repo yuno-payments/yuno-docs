@@ -50,10 +50,17 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 ## Step 3: Create a checkout session
 
-To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint:
+To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint.
 
-* First, [create a customer](ref:create-customer) or retrieve an existing customer ID
-* Include the customer ID when creating the `checkout_session`
+- First, [create a customer](ref:create-customer) or retrieve an existing customer ID
+- Include it when creating the `checkout_session`
+
+### Key Parameters
+
+| Parameter            | Required | Description                                                                                                                                                                                                                                      |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                      |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
 
 > 📘 `onPaymentMethodSelect` Event
 >
