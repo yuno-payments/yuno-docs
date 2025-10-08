@@ -28,8 +28,8 @@ The Yuno SDK enables you to integrate payment methods into your web application 
 
 Before getting started, ensure you have the following installed on your system:
 
-* Git - Required for downloading the project. If you haven't used Git before, follow the [Git installation guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-* Node.js - Required for running the project. If you haven't used Node.js before, download it from the [official Node.js website](https://nodejs.org/en/download)
+* Git: Required for downloading the project. If you haven't used Git before, follow the [Git installation guide](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
+* Node.js: Required for running the project. If you haven't used Node.js before, download it from the [official Node.js website](https://nodejs.org/en/download).
 
 ### Step 2: Download the project
 
