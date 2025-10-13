@@ -1,7 +1,7 @@
 ---
 title: Token Migration Process (COPY)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   description: >-
     Token migration is the process by which the card numbers stored in a
