@@ -105,8 +105,6 @@ To proceed with the migration process, you will need to provide the following:
   * **Card number**: The complete card number (PAN) that will be tokenized by Yuno.
   * **Card ID**: A unique identifier assigned to each card by the current provider, used by the client for referencing that card during transactions.
 
-<br />
-
 ### PGP public key
 
 Use our public key to encrypt the PCI-sensitive files you send to Yuno.
