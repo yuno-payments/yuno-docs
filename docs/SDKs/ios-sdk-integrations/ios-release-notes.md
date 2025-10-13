@@ -9,6 +9,8 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.7.0   | **NEW**: Added ClearSale with web integration.                                                                                                                                                                    |
+|         | **FIX**: Various bug fixes and improvements.                                                                                                                                                                      |
 | 2.6.0   | **NEW**: Added a navigation toolbar to forms when the keyboard is shown.                                                                                                                                          |
 |         | **FIX**: Various bug fixes and improvements.                                                                                                                                                                      |
 | 2.5.0   | **NEW**: Recurring Apple Pay support.                                                                                                                                                                             |
