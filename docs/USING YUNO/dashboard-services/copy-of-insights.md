@@ -1,7 +1,7 @@
 ---
 title: Copy of Insights
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Insights
   description: >-
