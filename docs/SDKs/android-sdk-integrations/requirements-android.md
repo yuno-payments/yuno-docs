@@ -20,3 +20,6 @@ To use the Yuno Android SDK, you need to meet the following requirements:
 * **Android Gradle Plugin**: Version 4.0.0 or above
 * **ProGuard**: Version 6.2.2 or above
 * **Kotlin Gradle Plugin**: Version 1.4.0 or above
+* **ELF Page Size Support**: Fully compliant with Google’s 16 KB ELF page alignment requirements (Android 15 / ARMv9 ready)
+
+<br />
