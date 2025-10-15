@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-This page presents examples of requests and responses for creating BNPL payments using the [Create Payment](https://docs.y.uno/reference/create-payment) endpoint with the REDIRECT workflow for back to back integrations. 
+This page presents examples of requests and responses for creating BNPL payments using the [Create Payment](https://docs.y.uno/reference/create-payment) endpoint with the REDIRECT workflow for back to back integrations.
 
 To test the creation of each payment, you can copy the content from the request code and use it on your machine or paste it on the [Create Payment](ref:create-payment) endpoint to test using Readme.
 
@@ -123,6 +123,17 @@ To test the creation of each payment, you can copy the content from the request 
           </div>
         </div>
         <span class='card-title'>Addi</span>
+      </div>
+    </div>
+    <div class="payment-card-button">
+      <div class="table-of-contents-btn table-of-contents-btn-on-click-effects"
+        onclick="window.location='/reference/bnpl-copy#klarna';">
+        <div class="card-logo">
+          <div>
+            <img src="https://icons.prod.y.uno/klarna_logosimbolo.png" alt="Klarna logo">
+          </div>
+        </div>
+        <span class='card-title'>Klarna</span>
       </div>
     </div>
     <div class="payment-card-button">
@@ -477,6 +488,99 @@ curl --request POST \
     "workflow": "REDIRECT",
     "metadata": [],
     "fraud_screening": null
+}
+```
+
+### Klarna
+
+Example of a request for a BNPL payment using Klarna. Below are examples of a request and the received response for successful payment creation. The request is presented using the cURL format, and the response is a JSON object.
+
+```curl Request (cURL)
+curl --request POST \
+     --url https://api-sandbox.y.uno/v1/payments \
+     --header 'X-Idempotency-Key: <your-X-idempotency-key>' \
+     --header 'accept: application/json' \
+     --header 'content-type: application/json' \
+     --header 'private-secret-key: <your-private-secret-key>' \
+     --header 'public-api-key: <your-public-api-key>' \
+     --data '
+{
+    "description": "Payment with Klarna",
+    "account_id": "<account_id>",
+    "merchant_order_id": "0000022",
+    "country": "GB",
+    "amount": {
+        "currency": "GBP",
+        "value": 1
+    },
+    "customer_payer": {
+        "merchant_customer_id": "1668863583",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com"
+    },
+    "workflow": "REDIRECT",
+    "callback_url": "https://www.y.uno",
+    "payment_method": {
+        "type": "KLARNA_PAY_OVER_TIME"
+    },
+    "additional_data": {
+        "order": {
+            "items": [
+                {
+                    "brand": "XYZ",
+                    "category": "Clothes",
+                    "id": "123AD",
+                    "manufacture_part_number": "XYZ123456",
+                    "name": "Skirt",
+                    "quantity": 1,
+                    "sku_code": "8765432109",
+                    "unit_amount": 3
+                }
+            ]
+        }
+    }
+}
+'
+```
+```json Response (JSON)
+{
+    "id": "example-payment-id",
+    "account_id": "example-account-id",
+    "description": "Payment with Klarna",
+    "country": "GB",
+    "status": "READY_TO_PAY",
+    "sub_status": "CREATED",
+    "merchant_order_id": "0000022",
+    "amount": {
+        "currency": "GBP",
+        "value": 1.00
+    },
+    "checkout": {
+        "session": "example-session-id",
+        "sdk_action_required": true
+    },
+    "payment_method": {
+        "vaulted_token": "",
+        "type": "KLARNA_PAY_OVER_TIME",
+        "vault_on_success": false,
+        "token": "",
+        "payment_method_detail": {
+            "bnpl": {
+                "installments": null,
+                "provider_image": null,
+                "redirect_url": "https://checkout.sandbox.y.uno/payment?session=example-session-id",
+                "customer_data": null
+            }
+        }
+    },
+    "customer_payer": {
+        "merchant_customer_id": "1668863583",
+        "first_name": "John",
+        "last_name": "Smith",
+        "email": "john.smith@example.com"
+    },
+    "workflow": "REDIRECT"
 }
 ```
 
