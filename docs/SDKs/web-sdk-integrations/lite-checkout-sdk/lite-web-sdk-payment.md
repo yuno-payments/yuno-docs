@@ -273,7 +273,7 @@ yuno.startCheckout({
       </td>
 
       <td>
-        * `actionForm`: Element for the Continue Payment button, which opens a modal for completing provider-specific payment steps.
+        * `actionForm`: Element for the **Continue Payment** button, which opens a modal for completing provider-specific payment steps.
       </td>
     </tr>
   </tbody>
@@ -409,7 +409,7 @@ If a transaction is rejected, you can use the credit card form to retry a paymen
 
 #### Hide Pay button
 
-You can hide the Pay button when presenting the Card or Customer Data Forms. To control this feature, you'll set `showPayButton` to `false` when starting the checkout with the `startCheckout` function. The code block below presents an example of how to hide the payment button:
+You can hide the **Pay** button when presenting the Card or Customer Data Forms. To control this feature, you'll set `showPayButton` to `false` when starting the checkout with the `startCheckout` function. The code block below presents an example of how to hide the payment button:
 
 ```javascript
 yuno.startCheckout({
@@ -426,11 +426,11 @@ The following images present examples of the Customer Data Form with and without
 
 <Image border={false} src="https://files.readme.io/f2fd10924004e11c3776699fe301afd21259eba255f9329f83e3276c19010b64-Card_boton.png" />
 
-The following images present examples of the Card Form with and without the Pay button:
+The following images present examples of the Card Form with and without the **Pay** button:
 
 <Image border={false} src="https://files.readme.io/87bfe55c56266fb1d8ffc7cd1f8648840b06353a960b7d2bb7d27cb174eaae53-Card_boton_1.png" />
 
-If you hide the Pay button, you will need to start the one-time token creation through your code. To create the one-time token and continue the payment in your backend, call the `submitOneTimeTokenForm` function. The code block below presents how to use the `submitOneTimeTokenForm` function.
+If you hide the **Pay** button, you will need to start the one-time token creation through your code. To create the one-time token and continue the payment in your backend, call the `submitOneTimeTokenForm` function. The code block below presents how to use the `submitOneTimeTokenForm` function.
 
 ```javascript
 /**
