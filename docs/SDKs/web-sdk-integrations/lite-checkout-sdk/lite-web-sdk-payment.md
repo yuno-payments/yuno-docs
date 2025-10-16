@@ -179,7 +179,7 @@ yuno.startCheckout({
 
 ### Mode of form rendering
 
-> 📘 Enhanced Render Mode in Lite SDK v2.0.0
+> 📘 Enhanced Render Mode in Lite SDK v2.0
 >
 > The enhanced Lite SDK v2.0 provides advanced render mode capabilities that embed Yuno's checkout forms directly within your interface. This gives you complete control over the checkout journey, including loading, status, and payment input screens, with full visual customization and seamless UX integration.
 
