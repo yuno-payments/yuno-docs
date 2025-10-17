@@ -200,13 +200,14 @@ This object represents a customer who will make payments using your service.
   <details class="yuno">
     <summary><strong><code>metadata</code></strong> <small>array of objects</small>
       <br />
-      <p>Specifies a list of metadata objects. You can add up to 50 metadata objects.</p>
+      <p>Specifies a list of custom key–value pairs associated with the customer (for internal references, segmentation, or workflow tags). You can add up to 50 metadata objects.</p>
     </summary>
     <div>
       <details class="yuno">
         <summary><strong><code>metadata object</code></strong> <small>object</small>
           <br />
           <p>Specifies a metadata key and the respective value.</p>
+          <p>Use to attach merchant-defined context (for example: <code>crm_id</code>, <code>segment</code>). Avoid sending sensitive or personal data.</p>
         </summary>
         <div>
           <p><strong><code>key</code></strong> <small>string</small>

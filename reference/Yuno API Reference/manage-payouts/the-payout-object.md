@@ -689,7 +689,7 @@ This object represents the payout created after generating a transaction to tran
   <details class="yuno">
     <summary><strong><code>metadata</code></strong> <small>array of objects</small>
       <br />
-      <p>Specifies a list of metadata objects. You can add up to 50 metadata objects.</p>
+      <p>Specifies a list of custom key–value pairs associated with the payout (for internal references, reconciliation, or workflow tags). You can add up to 50 metadata objects.</p>
     </summary>
     <div>
 
@@ -697,6 +697,7 @@ This object represents the payout created after generating a transaction to tran
         <summary><strong><code>metadata object</code></strong> <small>object</small>
           <br />
           <p>Specifies a metadata key and the respective value.</p>
+          <p>Use to attach merchant-defined context (for example: <code>batch_id</code>, <code>payout_reason</code>). Avoid sending sensitive or personal data.</p>
         </summary>
         <div>
 
