@@ -558,6 +558,6 @@ Each action type requires specific handling based on the data provided:
 >
 > In addition to the code examples provided, you can access the [Demo App](#demo-app) for a complete implementation of Yuno SDKs.
 
-## Related Links
+## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.

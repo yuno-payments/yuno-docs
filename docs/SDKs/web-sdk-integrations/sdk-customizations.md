@@ -1338,7 +1338,7 @@ The following sections detail the elements that make up the Card and APM forms, 
 </body>
 `}</HTMLBlock>
 
-## Related Links
+## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
 

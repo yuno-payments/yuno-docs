@@ -77,6 +77,6 @@ You will find a panel, as shown below, with all Yuno SDKs available by accessing
 
 <Image alt="Demo App Screenshot" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/new-images/demo-app-1.png?raw=true" />
 
-## Related Links
+## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.

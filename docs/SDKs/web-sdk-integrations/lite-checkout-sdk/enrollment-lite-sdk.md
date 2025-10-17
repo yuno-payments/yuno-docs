@@ -655,7 +655,7 @@ yuno.startCheckout({
 
 Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to change the SDK appearance to match your brand.
 
-## Related Links
+## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
 

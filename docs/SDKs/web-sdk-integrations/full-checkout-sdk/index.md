@@ -134,6 +134,6 @@ After integrating the SDK using one of the methods described above, follow these
   <YunoCard title="Full SDK implementation" href="../docs/full-sdk-implementation" titleSize="h4" />
 </Shelf>
 
-## Related Links
+## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.

@@ -24,6 +24,6 @@ Yuno's Secure Fields provide a way to securely collect sensitive payment informa
 * **Tokenization**: Convert sensitive data into secure tokens for processing
 * **Flexibility**: Integrate with your existing design system and user experience
 
-## Related Links
+## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.

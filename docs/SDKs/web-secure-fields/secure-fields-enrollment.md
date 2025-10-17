@@ -242,6 +242,6 @@ const vaultedTokenWithInformation = await secureFields.generateVaultedTokenWithI
 
 In addition to the code examples provided, you can access the [Demo App](doc:demo-app) for a complete implementation of Yuno Secure Fields. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
 
-## Related Links
+## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
