@@ -134,9 +134,6 @@ After integrating the SDK using one of the methods described above, follow these
   <YunoCard title="Full SDK implementation" href="../docs/full-sdk-implementation" titleSize="h4" />
 </Shelf>
 
-## Related Links
+## Stay Updated
 
-Find more information and version history for the Web SDK below:
-
-* [Web SDK v1.3](https://docs.y.uno/changelog/web-sdk-v13-changelog#/): The latest version with improved UI grouping and multilingual support.
-* [Web SDK v1.2](https://docs.y.uno/changelog/web-sdk-v12-changelog#/): Updated `continuePayment` method and optional initialization parameters.
+Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
