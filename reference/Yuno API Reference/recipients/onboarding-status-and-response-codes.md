@@ -9,8 +9,8 @@ Onboarding tracks the lifecycle of recipient (submerchant) registration with pro
 
 See also:
 
-* [Create Onboarding](ref:create-onboarding) 
-* [Continue Onboarding](ref:continue-onboarding) 
+* [Create Onboarding](ref:create-onboarding)
+* [Continue Onboarding](ref:continue-onboarding)
 
 ## Onboarding statuses
 
@@ -31,7 +31,6 @@ The onboarding flow can have the following statuses.
 
 <body>
   <div class="table-div">
-    <p><em>Note: Status values are provider-sourced and may vary. Always check <code>requirements[]</code> and <code>response_message</code> for next steps.</em></p>
     <table>
       <thead>
         <tr>
