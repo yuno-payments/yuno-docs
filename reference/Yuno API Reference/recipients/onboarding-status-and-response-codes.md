@@ -1,5 +1,5 @@
 ---
-title: Onboarding Status and Response Codes
+title: Onboarding Statuses
 deprecated: false
 hidden: false
 metadata:
