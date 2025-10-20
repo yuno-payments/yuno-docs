@@ -48,11 +48,11 @@ The onboarding flow can have the following statuses.
         <tr>
           <td class="status"><code>PENDING</code></td>
           <td>Under review by Yuno and/or the provider.</td>
-          <td class="action">No action unless <code>requirements[]</code> are returned.</td>
+          <td class="action">No action required.</td>
         </tr>
         <tr>
           <td class="status"><code>PENDING_ADDITIONAL_DOCUMENTATION</code></td>
-          <td>More documentation or clarifications required. See <code>requirements[].message</code>.</td>
+          <td>More documentation or clarifications required.</td>
           <td class="action">Upload the requested documents and resubmit.</td>
         </tr>
         <tr>
@@ -67,7 +67,7 @@ The onboarding flow can have the following statuses.
         </tr>
         <tr>
           <td class="status"><code>FAILED</code></td>
-          <td>Processing failed; the onboarding was not approved. See <code>response_message</code> for details.</td>
+          <td>Processing failed; the onboarding was not approved.</td>
           <td class="action">Review the reason and retry or create a new onboarding after fixing issues.</td>
         </tr>
         <tr>
