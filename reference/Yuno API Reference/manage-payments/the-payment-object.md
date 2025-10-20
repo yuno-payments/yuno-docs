@@ -3046,8 +3046,8 @@ This object represents the payment created after generating the checkout session
                       </p>
                       <p><strong><code>identification_type</code></strong> <small>string</small>
                         <br />The customer's document type (MAX 32, MIN 8).
-                        <br /><small> Possible values: Check the <a href="country-reference">
-                            Document type list</a>. Example: DNI </small>
+                        <br /><small> Possible values: Check the <a href="https://docs.y.uno/reference/country-reference">
+                            Country Reference</a>. Example: DNI </small>
                       </p>
                       <p><strong><code>identification_number</code></strong> <small>string</small>
                         <br />The customer's identification number (MAX 32, MIN 8).
