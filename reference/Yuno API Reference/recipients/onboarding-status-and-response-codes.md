@@ -12,7 +12,7 @@ See also:
 * [Create Onboarding](ref:create-onboarding)
 * [Continue Onboarding](ref:continue-onboarding)
 
-## Onboarding statuses
+## Onboarding status list 
 
 The onboarding flow can have the following statuses.
 
