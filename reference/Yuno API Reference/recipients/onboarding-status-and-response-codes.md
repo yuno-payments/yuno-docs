@@ -1,7 +1,7 @@
 ---
 title: Onboarding Status and Response Codes
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
