@@ -12,7 +12,7 @@ See also:
 * [Create Onboarding](ref:create-onboarding)
 * [Continue Onboarding](ref:continue-onboarding)
 
-## Onboarding status list 
+## Onboarding statuses
 
 The onboarding flow can have the following statuses.
 
@@ -104,7 +104,7 @@ The onboarding flow can have the following statuses.
     </table>
   </div>
 </body>
-\`
+\
 `}</HTMLBlock>
 
 <br />
