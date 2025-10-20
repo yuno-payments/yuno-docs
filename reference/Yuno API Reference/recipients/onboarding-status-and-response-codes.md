@@ -17,7 +17,7 @@ See also:
 The onboarding flow can have the following statuses.
 
 <HTMLBlock>{`
-\`
+\
 <style>
   .table-div .status {
     font-size: 12px;
