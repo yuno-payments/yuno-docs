@@ -1,5 +1,5 @@
 ---
-title: new delete customer
+title: delete
 api:
   file: delete-customer.json
   operationId: delete_customers{id}
