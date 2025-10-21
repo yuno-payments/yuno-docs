@@ -2,7 +2,7 @@
 title: Delete Customer test
 api:
   file: payment-api-create-payment-back-to-back.json
-  operationId: delete-customer
+  operationId: delete-customer-test
 deprecated: false
 hidden: true
 link:
