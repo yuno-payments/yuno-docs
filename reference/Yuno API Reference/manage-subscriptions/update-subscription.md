@@ -1,17 +1,17 @@
 ---
 title: Update Subscription
-excerpt: ""
+excerpt: ''
 api:
   file: subscription-secondary.json
   operationId: update-subscription
 deprecated: false
 hidden: false
 metadata:
-  title: ""
-  description: ""
+  title: ''
+  description: ''
   robots: index
 next:
-  description: ""
+  description: ''
 ---
 
 > 🚧 Subscription Transition
