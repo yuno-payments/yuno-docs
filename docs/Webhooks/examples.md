@@ -1489,172 +1489,136 @@ The next JSON object presents an example of a data structure related to a paymen
 
 ```json Example
 {
-  "type": "onboarding",
-  "type_event": "onboarding.declined",
-  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
-  "retry": 0,
-  "version": 2,
-  "data": {
-    "id": "c3ec4ea5-1873-4c7e-bab6-49611d9cf14d",
-    "type": "ONBOARD_ONTO_THE_PROVIDER",
-    "workflow": "DIRECT",
-    "status": "REJECTED",
-    "response_message": null,
-    "callback_url": "https://merchant.example.com/webhook/onboarding",
-    "provider": {
-      "id": "ALELO",
-      "connection_id": "f2a2b72f-3dae-47c5-8634-0d55c265e201",
-      "redirect_url": null,
-      "recipient_id": "1196387292"
-    },
-    "documentation": [
-      {
-        "file_name": "onboarding.pdf",
-        "content_type": "application/pdf",
-        "content_category": "IDENTIFICATION_DOCUMENT",
-        "content": "onboarding.pdf-773c5d26-fb66-4867-8d98-b0eb25e3bfbb"
-      }
-    ],
-    "legal_representatives": [
-      {
-        "merchant_reference": "REP_001",
-        "first_name": "María",
-        "last_name": "González",
-        "email": "maria.gonzalez@example.com",
-        "date_of_birth": "1985-05-20",
-        "country": "CO",
-        "nationality": "CO",
-        "title": "CEO",
-        "publicly_exposed_person": false,
-        "ultimate_beneficial_owner": true,
-        "document": {
-          "document_number": "0987654321",
-          "document_type": "CC"
+    "type": "onboarding",
+    "type_event": "onboarding.error",
+    "account_id": "c2721496-89c3-497a-8e24-0872c2e1386c",
+    "retry": 0,
+    "version": 2,
+    "data": {
+        "id": "d1fbb1d7-321d-4855-b603-135cd4f4ab82",
+        "type": "TWO_STEP_ONBOARDING",
+        "workflow": "DIRECT",
+        "description": null,
+        "status": "ERROR",
+        "response_message": null,
+        "callback_url": "https://merchant.example.com/webhook/onboarding",
+        "provider": {
+            "id": "STRIPE",
+            "connection_id": "caaeba00-05c8-4295-815f-1736c2b0b622",
+            "redirect_url": null,
+            "recipient_id": "",
+            "onboarding_url": "",
+            "legal_entity": null
         },
-        "phone": {
-          "country_code": "+57",
-          "number": "3109876543"
+        "documentation": [],
+        "legal_representatives": [],
+        "withdrawal_methods": {
+            "bank": {
+                "code": "002",
+                "branch": "002",
+                "branch_digit": null,
+                "account": "9876543210",
+                "account_digit": null,
+                "account_type": "CHECKINGS",
+                "routing": "021000022",
+                "country": "US",
+                "currency": "USD",
+                "payout_schedule": null
+            }
         },
-        "address": {
-          "address_line_1": "Calle 26 # 13-19",
-          "address_line_2": null,
-          "city": "Bogotá",
-          "country": "CO",
-          "state": "Cundinamarca",
-          "zip_code": "110311",
-          "neighborhood": null
-        }
-      }
-    ],
-    "withdrawal_methods": {
-      "bank": {
-        "code": "002",
-        "branch": "002",
-        "branch_digit": null,
-        "account": "9876543210",
-        "account_digit": null,
-        "account_type": "CHECKINGS",
-        "routing": "021000022",
-        "country": "US",
-        "currency": "USD"
-      }
-    },
-    "requirements": [],
-    "terms_of_service": {
-      "acceptance": true,
-      "date": "2025-07-21T20:43:54.786342Z",
-      "ip": "129.21.111.11"
-    },
-    "recipient": {
-      "id": "dc4608f7-38a0-484e-b301-39138c13ad5c",
-      "national_entity": "INDIVIDUAL",
-      "merchant_recipient_id": "MERCHANT_d020efbf-1b2f-4f7f-ab12-80e0e5009f34",
-      "entity_type": "PRIVATE",
-      "first_name": "Pedro",
-      "last_name": "Castro",
-      "legal_name": "Pedro Castro",
-      "email": "p.castro@example.com",
-      "date_of_birth": "1992-01-21",
-      "country": "CO",
-      "website": "https://pedro.com",
-      "industry": "Technology",
-      "merchant_category_code": "5740",
-      "document": {
-        "document_number": "1196387292",
-        "document_type": "CC"
-      },
-      "phone": {
-        "country_code": "57",
-        "number": "3001234567"
-      },
-      "address": {
-        "address_line_1": "Carrera 7 # 32-16",
-        "address_line_2": "Oficina 201",
-        "city": "Bogotá",
-        "country": "CO",
-        "state": "Cundinamarca",
-        "zip_code": "110311",
-        "neighborhood": "Centro"
-      },
-      "withdrawal_methods": {
-        "bank": {
-          "code": "001",
-          "branch": "004",
-          "branch_digit": "123",
-          "account": "1234567890",
-          "account_digit": "123",
-          "account_type": "SAVINGS",
-          "routing": "021000021",
-          "country": "CO",
-          "currency": "COP"
-        }
-      },
-      "documentation": [
-        {
-          "file_name": "recipient.pdf",
-          "content_type": "application/pdf",
-          "content_category": "IDENTIFICATION_DOCUMENT",
-          "content": "recipient.pdf-be7d472e-8faf-4615-b8a8-16221c86d393"
-        }
-      ],
-      "legal_representatives": [
-        {
-          "merchant_reference": "REP_001",
-          "first_name": "María",
-          "last_name": "González",
-          "email": "maria.gonzalez@example.com",
-          "date_of_birth": "1985-05-20",
-          "country": "CO",
-          "nationality": "CO",
-          "title": "CEO",
-          "publicly_exposed_person": false,
-          "ultimate_beneficial_owner": true,
-          "document": {
-            "document_number": "0987654321",
-            "document_type": "CC"
-          },
-          "phone": {
-            "country_code": "+57",
-            "number": "3109876543"
-          },
-          "address": {
-            "address_line_1": "Calle 26 # 13-19",
-            "address_line_2": null,
-            "city": "Bogotá",
+        "requirements": [
+            {
+                "field": "withdrawal_methods.bank.routing",
+                "message": "Invalid routing number",
+                "status": "REJECTED"
+            }
+        ],
+        "terms_of_service": null,
+        "metadata": [],
+        "recipient": {
+            "id": "c5e0d5d5-5346-4fea-9b3e-97e825b11b07",
+            "national_entity": "INDIVIDUAL",
+            "merchant_recipient_id": "12b2b154-3ac9-4255-848a-46c8e3a70476",
+            "entity_type": "PRIVATE",
+            "first_name": "Juan",
+            "last_name": "Pérez",
+            "legal_name": null,
+            "email": "juan.perez@example.com",
+            "date_of_birth": "1990-01-15",
             "country": "CO",
-            "state": "Cundinamarca",
-            "zip_code": "110311",
-            "neighborhood": null
-          }
-        }
-      ],
-      "created_at": "2025-09-04T15:57:56.115849Z",
-      "updated_at": "2025-09-04T15:57:56.115861Z"
-    },
-    "created_at": "2025-09-04T15:58:04.35936Z",
-    "updated_at": "2025-09-04T15:58:06.513176Z",
-    "expires_at": null
-  }
+            "website": "https://juanperez.com",
+            "industry": "Technology",
+            "merchant_category_code": "5734",
+            "document": {
+                "document_number": "1234567890",
+                "document_type": "CC"
+            },
+            "phone": {
+                "country_code": "57",
+                "number": "3001234567"
+            },
+            "address": {
+                "address_line_1": "Carrera 7 # 32-16",
+                "address_line_2": "Oficina 201",
+                "city": "Bogotá",
+                "country": "CO",
+                "state": "Cundinamarca",
+                "zip_code": "110311",
+                "neighborhood": "Centro"
+            },
+            "withdrawal_methods": {
+                "bank": {
+                    "code": "001",
+                    "branch": "004",
+                    "branch_digit": "123",
+                    "account": "1234567890",
+                    "account_digit": "123",
+                    "account_type": "SAVINGS",
+                    "routing": "021000021",
+                    "country": "CO",
+                    "currency": "COP",
+                    "payout_schedule": null
+                }
+            },
+            "documentation": [],
+            "legal_representatives": [
+                {
+                    "merchant_reference": "REP_001",
+                    "first_name": "María",
+                    "last_name": "González",
+                    "email": "maria.gonzalez@example.com",
+                    "date_of_birth": "1985-05-20",
+                    "country": "CO",
+                    "nationality": "CO",
+                    "title": "CEO",
+                    "publicly_exposed_person": false,
+                    "ultimate_beneficial_owner": true,
+                    "document": {
+                        "document_number": "0987654321",
+                        "document_type": "CC"
+                    },
+                    "phone": {
+                        "country_code": "+57",
+                        "number": "3109876543"
+                    },
+                    "address": {
+                        "address_line_1": "Calle 26 # 13-19",
+                        "address_line_2": null,
+                        "city": "Bogotá",
+                        "country": "CO",
+                        "state": "Cundinamarca",
+                        "zip_code": "110311",
+                        "neighborhood": null
+                    }
+                }
+            ],
+            "created_at": "2025-10-21T16:29:36.997492Z",
+            "updated_at": "2025-10-21T16:29:36.997505Z"
+        },
+        "created_at": "2025-10-21T16:29:41.88055Z",
+        "updated_at": "2025-10-21T16:29:42.571531Z",
+        "expires_at": null
+    }
 }
 ```
 
