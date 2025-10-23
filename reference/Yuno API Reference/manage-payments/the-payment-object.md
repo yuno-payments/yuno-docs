@@ -3128,7 +3128,7 @@ This object represents the payment created after generating the checkout session
 
       <p><strong><code>reason</code></strong> <small>string</small>
         <br />The reason for the transaction. Applies to secondary transactions, such as refunds or captures.
-        <br /><small> Possible values: CANCELLED, DISMISS, DUPLICATE, DUPLICATED, FRAUDULENT, MISSED, NOT_FOUND, ORDER_STOPPED, REFUNDED, REQUESTED_BY_CUSTOMER, RESOLVED, REVERSE, SERVICE_SUSPENDED </small>
+        <br /><small> Possible values: <code>CANCELLED</code>, <code>DISMISS</code>, <code>DUPLICATE</code>, <code>DUPLICATED</code>, <code>FRAUDULENT</code>, <code>MISSED</code>, <code>NOT_FOUND</code>, <code>ORDER_STOPPED</code>, <code>REFUNDED</code>, <code>REQUESTED_BY_CUSTOMER</code>, <code>RESOLVED</code>, <code>REVERSE</code>, <code>SERVICE_SUSPENDED</code> </small>
       </p>
 
       <p><strong><code>description</code></strong> <small>string</small>
