@@ -12,6 +12,11 @@ next:
 ---
 Subscriptions are essential components of a business model that enable your company to offer its products or services to customers on a recurring basis. Yuno's subscription service allows you to easily manage recurring payments, automate subscription billing, and provide seamless subscription experiences for your users. Whether running a SaaS application, a content platform, or an e-commerce store, Yuno's service can help you handle subscription-related tasks efficiently.
 
+> 📘 **Subscriptions vs Stored Credentials**
+>
+> * **Subscriptions** (this page): Creates automated recurring billing. Yuno automatically charges customers according to your defined schedule.
+> * **Stored Credentials**: Information added to payment requests including the payment type. Does not create subscriptions or automatic charges. See [Stored Credentials](doc:stored-credentials).
+
 ## Benefits of using Yuno subscriptions
 
 * **Recurring revenue**: Subscriptions provide a steady and predictable income stream, which can help stabilize cash flow and reduce financial uncertainties.
@@ -28,7 +33,7 @@ When the payment related to the subscription is confirmed, the subscription stat
 * **PAUSED**: At any moment, you can pause the subscription. Use this option in case your customer has delayed a payment, for example. You can always activate a paused subscription.
 * **CANCELLED**: If your customer decides to cancel the recurring payment, you can cancel the subscription. After canceling it, the subscription is terminated, and it is not possible to reactivate it.
 
-![](https://files.readme.io/47919b9-image.png)
+<Image border={false} src="https://files.readme.io/47919b9-image.png" />
 
 Learn more about the status of the subscription on the [Subscription Status](ref:status-subscriptions) page.
 
@@ -47,7 +52,7 @@ To start using the subscriptions feature, you need a Yuno account and integratio
 * **Subscriptions**: A subscription involves recurring charges directly tied to a customer and a particular payment method. When stopping or updating, the impact is solely on the same.
 * **Payment methods available**
   * **Enrolled**: Customers can pay with a previously enrolled payment method. Only the vaulted token is needed when creating the subscription to associate it with the charges.
-* **Capabilities**: 
+* **Capabilities**:
   * **Frequency**: Define the frequency at which subscription charges will occur, whether daily, weekly, or monthly, specifying the amount that needs to be charged for the next billing cycle.
   * **Billing cycles**: The number of billing cycles (following the frequency criterion) that will be completed to fulfill the subscription. If neither an end_date is sent nor defined, we will continue attempting charges until it is stopped.
   * **Billing date**: By specifying the billing_date object, the merchant can define the logic behind the exact date for the billing of the subscription. This is mutually exclusive with the frequency object.
@@ -73,13 +78,11 @@ To use the subscription solution, normally, you will follow the steps described 
    * The subscription availability to define the start and end date.
 
 > 📘 Available Payment Methods
-> 
+>
 > Currently, only Cards can be used as payment methods for subscriptions.
 
-
 > ❗️ Declined Payments
-> 
+>
 > If a payment from a subscription is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription. If you want to cancel a subscription, feel free to use the [cancel subscription endpoint](https://docs.y.uno/reference/cancel-subscription).
-
 
 In the response to the [Create Subscription](ref:Create-Subscription) endpoint, you receive an `id` which is used to identify the created subscription. You will use the `id` if you decide to pause, resume, or cancel the subscription.
