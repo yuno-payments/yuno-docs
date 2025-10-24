@@ -95,9 +95,9 @@ The response to the endpoint **Retrieve Payment Methods To Enroll** will contain
 
 After defining the payment method, you can perform the enrollment using one of the Enroll Payment Method endpoints:
 
-* [Checkout workflow](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`. Supported types include: `CARD`, `NU_PAY_ENROLLMENT`, `PAYPAL_ENROLLMENT`, `DAVIPLATA_ENROLLMENT`, `WALLET_CONNECT`, `YAPE_ENROLLMENT`, `SMART_PIX`, `ASTROPAY_ENROLLABLE` (with space), `PIX_BIOMETRICO`.
-* [Direct workflow](ref:enroll-payment-method-api): Provide the `type` related to the chosen payment method to the parameter `type`. (Only available for `CARD` payment methods for PCI compliant merchants)
-* **SDK workflow**: Payment methods like `NEQUI` and `BANCOLOMBIA_TOKENBOX` require SDK implementation. `WALLET_CONNECT` (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](doc:sdk-overview) for integration details.
+* [**Checkout workflow**](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`. Supported types include: `CARD`, `NU_PAY_ENROLLMENT`, `PAYPAL_ENROLLMENT`, `DAVIPLATA_ENROLLMENT`, `WALLET_CONNECT`, `YAPE_ENROLLMENT`, `SMART_PIX`, `ASTROPAY_ENROLLABLE` (with space), `PIX_BIOMETRICO`.
+* [**Direct workflow**](ref:enroll-payment-method-api): Provide the `type` related to the chosen payment method to the parameter `type`. (Only available for `CARD` payment methods for PCI compliant merchants)
+* [**SDK workflow**](doc:yuno-sdks): Payment methods like `NEQUI` and `BANCOLOMBIA_TOKENBOX` require SDK implementation. `WALLET_CONNECT` (MercadoPago) supports both SDK and Checkout workflows.
 
 The user must be redirected to the payment provider page to complete the enrollment process. You will receive this URL in Step 5.
 
