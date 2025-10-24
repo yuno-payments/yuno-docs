@@ -13,29 +13,23 @@ This page will walk you through enrolling a payment method into a customer accou
 
 Yuno's tokenization service and centralized vault enable you to handle recurring payments, fallbacks, and retries across processors without compromising UX. The following payment methods are available for enrollment in Yuno:
 
-## Available Payment Methods for Enrollment
+## Available payment methods for enrollment
 
-| Payment Method           | Type                   | Integration Support               |
-| ------------------------ | ---------------------- | --------------------------------- |
-| **Cards**                | `CARD`                 | Checkout & Direct (PCI compliant) |
-| **Nupay**                | `NU_PAY_ENROLLMENT`    | Checkout & Direct                 |
-| **PayPal**               | `PAYPAL_ENROLLMENT`    | Checkout & Direct                 |
-| **Daviplata**            | `DAVIPLATA_ENROLLMENT` | Checkout & Direct                 |
-| **MercadoPago Wallet**   | `WALLET_CONNECT`       | SDK & Checkout                    |
-| **dLocal Yape**          | `YAPE_ENROLLMENT`      | Checkout & Direct                 |
-| **dLocal Smart PIX**     | `SMART_PIX`            | Checkout & Direct                 |
-| **Astropay**             | `ASTROPAY_ENROLLABLE`  | Checkout & Direct                 |
-| **Nequi**                | `NEQUI`                | SDK only                          |
-| **Bancolombia Tokenbox** | `BANCOLOMBIA_TOKENBOX` | SDK only                          |
-| **Adyen PIX Biométrico** | `PIX_BIOMETRICO`       | Checkout & Direct                 |
+| Payment Method            | Type                   |
+| ------------------------- | ---------------------- |
+| **Cards**                 | `CARD`                 |
+| **Nupay**                 | `NU_PAY_ENROLLMENT`    |
+| **PayPal**                | `PAYPAL_ENROLLMENT`    |
+| **Daviplata**             | `DAVIPLATA_ENROLLMENT` |
+| **MercadoPago Wallet**    | `WALLET_CONNECT`       |
+| **dLocal Yape**           | `YAPE_ENROLLMENT`      |
+| **dLocal Smart PIX**      | `SMART_PIX`            |
+| **Astropay**              | `ASTROPAY_ENROLLABLE`  |
+| **Nequi***                | `NEQUI`                |
+| **Bancolombia Tokenbox*** | `BANCOLOMBIA_TOKENBOX` |
+| **Adyen PIX Biométrico**  | `PIX_BIOMETRICO`       |
 
-> 📘 Integration Notes
->
-> * **Checkout & Direct**: Available through API integration. Direct workflow requires PCI compliance for card payments.
-> * **SDK only**: Requires mobile/web SDK implementation. See [SDK documentation](doc:yuno-sdks) for integration details.
-> * **SDK & Checkout**: Available through both SDK and Checkout workflows.
->
-> Enrollment availability may vary by provider configuration and merchant setup. Contact your Yuno account manager for specific requirements.
+(*) SDK only. Consult the [SDK documentation](doc:yuno-sdks) for integration details.
 
 ## Requirements
 
