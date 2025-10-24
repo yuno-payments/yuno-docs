@@ -18,10 +18,10 @@ We have streamlined the process for you to comply with these scheme rules, enabl
 
 > ⚠️ **Important: This is not the same as Subscriptions**
 >
-> The `stored_credentials` object includes required information to comply with providers when using stored payment methods. It does **not** create subscriptions or automatic recurring charges.
+> Think of who's in control of recurrence:
 >
-> * **Use `stored_credentials`**: When manually creating payments and need to specify whether it's a customer or merchant-initiated transaction (CIT/MIT).
-> * **Use Subscription API**: When you want Yuno to automatically charge customers on a recurring schedule. See [Subscriptions](doc:subscriptions).
+> * **Stored Credentials**: You control recurrence and are responsible for sending each transaction according to your own schedule and recurrence logic.
+> * **Subscription API**: Yuno controls it. You provide instructions once, then Yuno automatically sends transactions on your behalf. See [Subscriptions](doc:subscriptions).
 
 * Categorization
 * General considerations
@@ -57,11 +57,11 @@ To specify a [payment](ref:create-payment) with a processing type, use the `stor
 
 Store credential reasons
 
-| Reason                     | Description                                                                                                                                                                                |
-| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CARD_ON_FILE`             | A customer-initiated payment using a previously enrolled credit card where the cardholder is present. Allows customers one-click payment for a frictionless payment experience.            |
-| `SUBSCRIPTION`             | Used for merchant-initiated payments as part of a subscription. This does not create a new subscription - use the [Subscription API](doc:subscriptions)  for automated recurring billing.  |
-| `UNSCHEDULED_CARD_ON_FILE` | A merchant-initiated payment using stored credit card details that is not related to a subscription schedule or amount. Payment can occur at any given time.                               |
+| Reason                     | Description                                                                                                                                                                               |
+| :------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CARD_ON_FILE`             | A customer-initiated payment using a previously enrolled credit card where the cardholder is present. Allows customers one-click payment for a frictionless payment experience.           |
+| `SUBSCRIPTION`             | Used for merchant-initiated payments as part of a subscription. This does not create a new subscription - use the [Subscription API](doc:subscriptions)  for automated recurring billing. |
+| `UNSCHEDULED_CARD_ON_FILE` | A merchant-initiated payment using stored credit card details that is not related to a subscription schedule or amount. Payment can occur at any given time.                              |
 
 ### Request example
 
