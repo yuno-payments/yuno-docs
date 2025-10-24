@@ -290,8 +290,8 @@ Thread-safe means your code can be safely called from multiple threads without c
 
 We do not mark protocols as `@MainActor` because:
 
-* It would force all implementations to be MainActor-compatible
-* It would reduce flexibility for merchants who don't use MainActor
+* It would force all implementations to be `MainActor` compatible
+* It would reduce flexibility for merchants who don't use `MainActor`
 * Each implementation has different concurrency needs
 
 ### Merchant's responsibility
@@ -342,7 +342,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 }
 ```
 
-#### Option 3: For non-MainActor classes
+#### Option 3: For non `MainActor` classes
 
 This approach is suitable for service classes that don't require `MainActor` isolation, making it best for background services or utility classes that don't interact with the UI.
 
