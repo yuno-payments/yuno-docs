@@ -14,8 +14,8 @@ Subscriptions are essential components of a business model that enable your comp
 
 > 📘 **Subscriptions vs Stored Credentials**
 >
-> * **Subscriptions** (this page): Creates automated recurring billing. Yuno automatically charges customers according to your defined schedule.
-> * **Stored Credentials**: Information added to payment requests including the payment type. Does not create subscriptions or automatic charges. See [Stored Credentials](doc:stored-credentials).
+> * **Subscriptions** (this page): Yuno's recurrence engine. You provide instructions and frequency once, then Yuno automatically sends transactions on your behalf.
+> * **Stored Credentials**: You control the recurrence. You're responsible for sending each transaction according to your own schedule. See [Stored Credentials](doc:stored-credentials).
 
 ## Benefits of using Yuno subscriptions
 
