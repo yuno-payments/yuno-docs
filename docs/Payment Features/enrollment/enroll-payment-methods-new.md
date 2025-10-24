@@ -32,7 +32,7 @@ Yuno's tokenization service and centralized vault enable you to handle recurring
 > 📘 Integration Notes
 >
 > * **Checkout & Direct**: Available through API integration. Direct workflow requires PCI compliance for card payments.
-> * **SDK only**: Requires mobile/web SDK implementation. See [SDK documentation](doc:sdk-overview) for integration details.
+> * **SDK only**: Requires mobile/web SDK implementation. See [SDK documentation](doc:yuno-sdks) for integration details.
 > * **SDK & Checkout**: Available through both SDK and Checkout workflows.
 >
 > Enrollment availability may vary by provider configuration and merchant setup. Contact your Yuno account manager for specific requirements.
