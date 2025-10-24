@@ -16,6 +16,13 @@ To ensure the responsible storage and use of cardholder information, Visa and Ma
 
 We have streamlined the process for you to comply with these scheme rules, enabling you to securely store card details in Yuno for future use while maintaining compliance.
 
+> ⚠️ **Important: This is not the same as Subscriptions**
+>
+> The `stored_credentials` object includes required information to comply with providers when using stored payment methods. It does **not** create subscriptions or automatic recurring charges.
+>
+> * **Use `stored_credentials`**: When manually creating payments and need to specify whether it's a customer or merchant-initiated transaction (CIT/MIT).
+> * **Use Subscription API**: When you want Yuno to automatically charge customers on a recurring schedule. See [Subscriptions](doc:subscriptions).
+
 * Categorization
 * General considerations
 * Create a payment
@@ -41,20 +48,20 @@ Determining whether a transaction is initiated by the merchant or the customer h
 
 To specify a [payment](ref:create-payment) with a processing type, use the `stored_credentials` structure inside the `payment_method.detail.card` when creating a payment.
 
-| Parameter                   | Type   | Description                                                                                                                                                                                                     |
-| --------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `reason`                    | enum   | Indicates the reason for storing credentials for the transaction. <br /> `CARD_ON_FILE` <br /> `SUBSCRIPTION` <br /> `UNSCHEDULED_CARD_ON_FILE`                                                                       |
+| Parameter                   | Type   | Description                                                                                                                                                                                    |
+| --------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reason`                    | enum   | Indicates the reason for storing credentials for the transaction. <br /> `CARD_ON_FILE` <br /> `SUBSCRIPTION` <br /> `UNSCHEDULED_CARD_ON_FILE`                                                |
 | `usage`                     | enum   | A credit card can be stored with or without an initial payment. This field indicates if this is the first time the vaulted_token/network_token is used or reused. <br /> `FIRST` <br /> `USED` |
-| `subscription_agreement_id` | string | The ID of the agreement with the customer, mandatory for certain markets (e.g., MX).                                                                                                                          |
-| `network_transaction_id`    | string | The ID provided by Visa/Mastercard in the response of the initial payment, which is highly recommended for future use in merchant-initiated transactions (MIT).                                                 |
+| `subscription_agreement_id` | string | The ID of the agreement with the customer, mandatory for certain markets (e.g., MX).                                                                                                           |
+| `network_transaction_id`    | string | The ID provided by Visa/Mastercard in the response of the initial payment, which is highly recommended for future use in merchant-initiated transactions (MIT).                                |
 
 Store credential reasons
 
-| Reason                     | Description                                                                                                                                                                    |
-| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CARD_ON_FILE`             | A customer-initiated payment using a previously enrolled credit card where the cardholder is present. Allows customers one-click payment for a frictionless payment experience. |
-| `SUBSCRIPTION`             | A merchant-initiated payment as part of a subscription schedule with a set amount. Payments are processed at regular intervals to which the user has given consent.        |
-| `UNSCHEDULED_CARD_ON_FILE` | A merchant-initiated payment using stored credit card details that is not related to a subscription schedule or amount. Payment can occur at any given time.           |
+| Reason                     | Description                                                                                                                                                                                |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CARD_ON_FILE`             | A customer-initiated payment using a previously enrolled credit card where the cardholder is present. Allows customers one-click payment for a frictionless payment experience.            |
+| `SUBSCRIPTION`             | Used for merchant-initiated payments as part of a subscription. This does not create a new subscription - use the [Subscription API](doc:subscriptions)  for automated recurring billing.  |
+| `UNSCHEDULED_CARD_ON_FILE` | A merchant-initiated payment using stored credit card details that is not related to a subscription schedule or amount. Payment can occur at any given time.                               |
 
 ### Request example
 
@@ -143,14 +150,14 @@ If the transaction is customer-initiated (CIT), the network transaction referenc
 
 We associate the `network_transaction_id` with the `vaulted_token` for future transactions, so you don't have to manage the logic for each case. We will perform the association when a payment is created with:
 
-* *Payment method*:
+* _Payment method_:
   * A card `vaulted_token`, or
   * Card data with `vault_on_success` set to `true`
-* *Stored credentials*:
+* _Stored credentials_:
   * `usage` set to `FIRST`
 
 If you already have the `network_transaction_id` for the card, you can include it in the payment in the corresponding field. If not, for MIT payments (with `stored_credentials.usage=USED`), we will send the `network_transaction_id` associated with the `vaulted_token` to the provider.
 
-> ❗️
->
-> Remember to specify the usage in the `stored_credentials` section, as we trigger the `network_transaction_id` logic based on those fields.
+<Callout icon="❗️" theme="error">
+  Remember to specify the usage in the `stored_credentials` section, as we trigger the `network_transaction_id` logic based on those fields.
+</Callout>
