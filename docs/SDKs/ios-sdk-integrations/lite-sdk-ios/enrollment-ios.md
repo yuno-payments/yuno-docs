@@ -344,7 +344,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 
 #### Option 3: For non-MainActor classes
 
-This approach is suitable for service classes that don't require MainActor isolation, making it best for background services or utility classes that don't interact with the UI.
+This approach is suitable for service classes that don't require `MainActor` isolation, making it best for background services or utility classes that don't interact with the UI.
 
 ```swift
 class MyService: YunoPaymentDelegate {
