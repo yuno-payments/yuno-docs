@@ -379,6 +379,16 @@ This object represents a recipient who will receive part of a [split payment](do
           <br/><small>Example: AAAAA01</small>
         </p>
       </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>balance_account_id</code></strong> <small>string</small>
+          <br/>The unique identifier of the provider's balance account.
+        </p>
+      </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>legal_entity_id</code></strong> <small>string</small>
+          <br/>The identifier of the provider's registered legal entity.
+        </p>
+      </div>
     </details>
 
     <!-- documentation array -->
