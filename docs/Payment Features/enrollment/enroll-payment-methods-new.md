@@ -1,11 +1,11 @@
 ---
 title: Enroll Payment Methods (New)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
-On this page, you will find a walk-through guide on enrolling a payment method into a customer account and get a `vaulted_token` for future purchases.
+This page will walk you through enrolling a payment method into a customer account and get a `vaulted_token` for future purchases.
 
 > 📘 Vaulted Token
 >
@@ -15,26 +15,27 @@ Yuno's tokenization service and centralized vault enable you to handle recurring
 
 ## Available Payment Methods for Enrollment
 
-| Payment Method           | Type                   | Integration Support               | Key Markets                                                                                                                               | Status         |
-| ------------------------ | ---------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| **Cards**                | `CARD`                 | Checkout & Direct (PCI compliant) | Global                                                                                                                                    | ✅ Production   |
-| **Nupay**                | `NU_PAY_ENROLLMENT`    | Checkout & Direct                 | Brazil                                                                                                                                    | ✅ Production   |
-| **PayPal**               | `PAYPAL_ENROLLMENT`    | Checkout & Direct                 | Australia, Belgium, Canada, Czech Republic, Denmark, France, Germany, Japan, Netherlands, Poland, Portugal, Spain, Sweden, UK, US, Mexico | ✅ Production   |
-| **Daviplata**            | `DAVIPLATA_ENROLLMENT` | Checkout & Direct                 | Colombia                                                                                                                                  | ✅ Production   |
-| **MercadoPago Wallet**   | `WALLET_CONNECT`       | SDK & Checkout                    | Argentina, Brazil, Chile, Colombia, Mexico, Peru, Uruguay                                                                                 | ✅ Production   |
-| **dLocal Yape**          | `YAPE_ENROLLMENT`      | Checkout & Direct                 | Peru                                                                                                                                      | 🔄 In Progress |
-| **dLocal Smart PIX**     | `SMART_PIX`            | Checkout & Direct                 | Brazil                                                                                                                                    | 🔄 In Progress |
-| **Astropay**             | `ASTROPAY_ENROLLABLE`  | Checkout & Direct                 | 100+ countries                                                                                                                            | 🔄 Coming Soon |
-| **Nequi**                | `NEQUI`                | May require SDK*                  | Colombia                                                                                                                                  | ✅ Production*  |
-| **Bancolombia Tokenbox** | `BANCOLOMBIA_TOKENBOX` | May require SDK*                  | Colombia                                                                                                                                  | ✅ Production*  |
-| **Adyen PIX Biométrico** | `PIX_BIOMETRICO`       | Checkout & Direct                 | Brazil                                                                                                                                    | ✅ Production   |
+| Payment Method           | Type                   | Integration Support               |
+| ------------------------ | ---------------------- | --------------------------------- |
+| **Cards**                | `CARD`                 | Checkout & Direct (PCI compliant) |
+| **Nupay**                | `NU_PAY_ENROLLMENT`    | Checkout & Direct                 |
+| **PayPal**               | `PAYPAL_ENROLLMENT`    | Checkout & Direct                 |
+| **Daviplata**            | `DAVIPLATA_ENROLLMENT` | Checkout & Direct                 |
+| **MercadoPago Wallet**   | `WALLET_CONNECT`       | SDK & Checkout                    |
+| **dLocal Yape**          | `YAPE_ENROLLMENT`      | Checkout & Direct                 |
+| **dLocal Smart PIX**     | `SMART_PIX`            | Checkout & Direct                 |
+| **Astropay**             | `ASTROPAY_ENROLLABLE`  | Checkout & Direct                 |
+| **Nequi**                | `NEQUI`                | SDK only                          |
+| **Bancolombia Tokenbox** | `BANCOLOMBIA_TOKENBOX` | SDK only                          |
+| **Adyen PIX Biométrico** | `PIX_BIOMETRICO`       | Checkout & Direct                 |
 
 > 📘 Integration Notes
 >
 > * **Checkout & Direct**: Available through API integration. Direct workflow requires PCI compliance for card payments.
-> * **May require SDK***: Some payment methods may require mobile/web SDK implementation. Contact your Yuno account manager to confirm integration requirements for your specific use case.
+> * **SDK only**: Requires mobile/web SDK implementation. See [SDK documentation](doc:sdk-overview) for integration details.
 > * **SDK & Checkout**: Available through both SDK and Checkout workflows.
-> * _**Production**_: Payment methods marked with * may have specific enrollment requirements or limitations. Verify availability with your Yuno account manager.
+>
+> Enrollment availability may vary by provider configuration and merchant setup. Contact your Yuno account manager for specific requirements.
 
 ## Requirements
 
@@ -72,9 +73,13 @@ At the end of the create a customer process, you will receive an `id`, which ide
 
 ### Step 2: Create a customer session
 
-> 🚧 Customer Session Requirement
+> 🚧 Workflow Requirements
 >
-> Only the Checkout workflow requires the utilization of a customer session. If you are using the Direct workflow (for Cards, only available for PCI compliant merchants), you may proceed directly to Step 3 since you will solely be using the `id` generated in Step 1.
+> The enrollment workflow varies by payment method type:
+>
+> * **Checkout workflow**: Requires customer session for most payment methods (Cards, Nupay, PayPal, Daviplata, dLocal methods, Astropay, Adyen PIX Biométrico)
+> * **Direct workflow**: Available for Cards only (PCI compliant merchants). Proceed directly to Step 3 using the customer `id` generated in Step 1.
+> * **SDK workflow**: Payment methods like Nequi and Bancolombia Tokenbox require SDK implementation. WALLET_CONNECT (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](doc:sdk-overview) for details.
 
 After creating the customer, you will create a customer session to identify and store customers' information regarding payment preferences. Use the endpoint [Create Customer Session](ref:create-customer-session) to perform the request. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](doc:enroll-payment-methods#step-1-create-a-customer).
 
@@ -96,9 +101,9 @@ The response to the endpoint **Retrieve Payment Methods To Enroll** will contain
 
 After defining the payment method, you can perform the enrollment using one of the Enroll Payment Method endpoints:
 
-* [Checkout workflow](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`. Supported types include: `CARD`, `NU_PAY_ENROLLMENT`, `PAYPAL_ENROLLMENT`, `DAVIPLATA_ENROLLMENT`, `WALLET_CONNECT`, `YAPE_ENROLLMENT`, `SMART_PIX`, `ASTROPAY ENROLLABLE`, `PIX_BIOMETRICO`.
+* [Checkout workflow](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`. Supported types include: `CARD`, `NU_PAY_ENROLLMENT`, `PAYPAL_ENROLLMENT`, `DAVIPLATA_ENROLLMENT`, `WALLET_CONNECT`, `YAPE_ENROLLMENT`, `SMART_PIX`, `ASTROPAY_ENROLLABLE` (with space), `PIX_BIOMETRICO`.
 * [Direct workflow](ref:enroll-payment-method-api): Provide the `type` related to the chosen payment method to the parameter `type`. (Only available for `CARD` payment methods for PCI compliant merchants)
-* **SDK workflow**: Some payment methods like `NEQUI`, `BANCOLOMBIA_TOKENBOX`, and `WALLET_CONNECT` may require SDK implementation. Consult the [SDK documentation](doc:sdk-overview) or contact your account manager for specific requirements.
+* **SDK workflow**: Payment methods like `NEQUI` and `BANCOLOMBIA_TOKENBOX` require SDK implementation. `WALLET_CONNECT` (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](doc:sdk-overview) for integration details.
 
 The user must be redirected to the payment provider page to complete the enrollment process. You will receive this URL in Step 5.
 
