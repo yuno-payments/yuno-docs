@@ -49,7 +49,7 @@ pod install
 
 ### Swift Package Manager
 
-To add the Yuno SDK to your iOS project, you need to install the [Swift Package Manager](https://www.swift.org/package-manager/). With the Swift package set up, add YunoSDK as a dependency, as presented in the following code block:
+To add the Yuno SDK to your iOS project, you need to install the [Swift Package Manager](https://www.swift.org/package-manager/). With the Swift package set up, add `YunoSDK` as a dependency, as presented in the following code block:
 
 ```swift
 dependencies: [

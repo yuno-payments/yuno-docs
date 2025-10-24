@@ -49,7 +49,7 @@ pod install
 
 ### Swift Package Manager
 
-Add the Yuno SDK using Swift Package Manager. Add YunoSDK as a dependency in your Package.swift file:
+Add the Yuno SDK using Swift Package Manager. Add `YunoSDK` as a dependency in your Package.swift file:
 
 ```swift
 dependencies: [
