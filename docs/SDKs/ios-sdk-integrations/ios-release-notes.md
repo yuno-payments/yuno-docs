@@ -9,6 +9,8 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.7.1   | **NEW**: Added support for Click to Pay (CTP) with Passkey.                                                                                                                                                       |
+|         | **NEW**: Notify pending status in enrollment when sending to deeplink.                                                                                                                                          |
 | 2.7.0   | **NEW**: Added ClearSale with web integration.                                                                                                                                                                    |
 |         | **FIX**: Various bug fixes and improvements.                                                                                                                                                                      |
 | 2.6.0   | **NEW**: Added a navigation toolbar to forms when the keyboard is shown.                                                                                                                                          |
