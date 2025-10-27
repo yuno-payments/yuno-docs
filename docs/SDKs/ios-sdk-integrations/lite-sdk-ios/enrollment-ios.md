@@ -114,7 +114,7 @@ The method `enrollPayment` initiates the payment enrollment process. You should 
 >
 > This feature is only used if you enroll in a payment method that executes deep links. If you are not enrolling in a payment method that executes deep links, you can ignore Step 3.
 
-If you use a payment method that requires a deep link to return to your app, use the method described in the following code block to obtain the enrollment status in your AppDelegate. The `url.scheme` should be the same as the `callback_url` used when creating the `customer_session`.
+If you use a payment method that requires a deep link to return to your app, use the method described in the following code block to obtain the enrollment status in your `AppDelegate`. The `url.scheme` should be the same as the `callback_url` used when creating the `customer_session`.
 
 ```swift
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
