@@ -137,7 +137,7 @@ When the enrollment process finishes, the SDK calls:
 func yunoEnrollmentResult(_ result: Yuno.Result)
 ```
 
-This result can reflect different final states for the enrollment. The Yuno.Result enum includes:
+This result can reflect different final states for the enrollment. The `Yuno.Result` enum includes:
 
 ```swift
 enum Result {
