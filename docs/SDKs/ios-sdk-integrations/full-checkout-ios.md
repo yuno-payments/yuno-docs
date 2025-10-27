@@ -245,6 +245,53 @@ This code listens for deep links that open your app. When a URL is received, it 
 
 Make sure the `url.scheme` in this code matches the `callback_url` you provided when creating the `checkout_session`.
 
+## Click to Pay (CTP) with Passkey
+
+The integration flow for Click to Pay Passkey requires specific handling of the response, which differs from the standard payment flow.
+
+### Handling the One-Time Token (OTT) and Deeplink
+
+Unlike other processes, when a user completes a payment using CTP Passkey, the *One-Time Token* (`OTT`) **will not be received** through the usual delegate methods.
+
+Instead, the transaction result (both successful and failed) will be communicated to your application via the **deeplink URL**.
+
+#### 1. Closing the External Browser
+
+When receiving the deeplink callback in your application, it is **essential** to immediately call the `receiveDeeplink` method:
+
+```swift
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    
+    Yuno.receiveDeeplink(url: url)
+    
+    // Parse the URL to extract parameters
+    // ...
+    
+    return true
+}
+```
+
+Calling this method allows the SDK to properly close the external web browser that was used for Passkey authentication.
+
+#### 2. Processing the Deeplink URL
+
+The deeplink URL will contain parameters in the query string that indicate the transaction status:
+
+* `has_error`: If this parameter is present, it indicates that an error occurred during the transaction. You should handle this error scenario.  
+* `one_time_token`: If the transaction was successful, the URL will contain this token.
+
+#### 3. Creating the Payment
+
+If you receive a `one_time_token` in the URL:
+
+1. Extract the value of the `one_time_token`.
+2. Use this token to create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
+3. Once the payment is created, proceed with the `continuePayment` flow in the SDK to finalize the transaction.
+
+> ⚠️ Important
+>
+> The OTT will **not** be received through the `yunoCreatePayment(with token: String)` delegate method for CTP Passkey payments. You must extract the token from the deeplink URL parameters instead.
+
 ## Callback
 
 After the payment is completed, the SDK can return different transaction states: `success`, `fail`, `processing`, `reject`, `internalError`, and `userCancell`. The descriptions of each transaction state is presented in the table below.
