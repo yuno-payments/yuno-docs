@@ -251,13 +251,13 @@ The integration flow for Click to Pay Passkey requires specific handling of the 
 
 ### Handling the One-Time Token (OTT) and Deeplink
 
-Unlike other processes, when a user completes a payment using CTP Passkey, the *One-Time Token* (`OTT`) **will not be received** through the usual delegate methods.
+Unlike other processes, when a user completes a payment using CTP Passkey, the _One-Time Token_ (`OTT`) will not be received through the usual delegate methods.
 
-Instead, the transaction result (both successful and failed) will be communicated to your application via the **deeplink URL**.
+Instead, the transaction result (successful or failed) will be communicated to your application via the **deeplink URL**.
 
 #### 1. Closing the External Browser
 
-When receiving the deeplink callback in your application, it is **essential** to immediately call the `receiveDeeplink` method:
+When receiving the deeplink callback in your application, it is essential to immediately call the `receiveDeeplink` method:
 
 ```swift
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
@@ -265,7 +265,6 @@ func application(_ app: UIApplication, open url: URL, options: [UIApplication.Op
     Yuno.receiveDeeplink(url: url)
     
     // Parse the URL to extract parameters
-    // ...
     
     return true
 }
@@ -277,7 +276,7 @@ Calling this method allows the SDK to properly close the external web browser th
 
 The deeplink URL will contain parameters in the query string that indicate the transaction status:
 
-* `has_error`: If this parameter is present, it indicates that an error occurred during the transaction. You should handle this error scenario.  
+* `has_error`: If this parameter is present, it indicates that an error occurred during the transaction. You should handle this error scenario.
 * `one_time_token`: If the transaction was successful, the URL will contain this token.
 
 #### 3. Creating the Payment
