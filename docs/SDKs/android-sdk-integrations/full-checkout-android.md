@@ -293,7 +293,7 @@ To show your payment status screens, send `FALSE` in the `showPaymentStatus` par
 
 ## Click to Pay (CTP) with Passkey
 
-Unlike other processes, when a user completes a payment using CTP Passkey, the *One-Time Token* (`OTT`) **will not be received** through the usual callback methods. The OTT will be delivered via the **deeplink URL** in the Intent. Your app must read it from the `Intent`, create the payment on your backend, and then **continue** the flow with the SDK.
+Unlike other processes, when a user completes a payment using CTP Passkey, the *One-Time Token* (`OTT`) will not be received through the usual callback methods. The OTT will be delivered via the **deeplink URL** in the Intent. Your app must read it from the `Intent`, create the payment on your backend, and then continue the flow with the SDK.
 
 ### 1. AndroidManifest (deeplink)
 
@@ -410,7 +410,7 @@ You can test the CTP Passkey flow using these sample deeplink URLs:
 Use this checklist to ensure proper CTP Passkey integration:
 
 * ✅ `intent-filter` configured correctly (scheme/host/path)
-* ✅ `handleDeeplink` implemented in both `onCreate()` **and** `onNewIntent()`
+* ✅ `handleDeeplink` implemented in both `onCreate()` and `onNewIntent()`
 * ✅ Extract both `one_time_token` and `checkout_session` parameters
 * ✅ Create payment on backend with **OTT** ➜ call `continuePayment(...)`
 * ✅ Handle `has_error` and `message` parameters for error scenarios
