@@ -236,7 +236,6 @@ func application(_ app: UIApplication, open url: URL, options: [UIApplication.Op
     Yuno.receiveDeeplink(url: url)
     
     // Parse the URL to extract parameters
-    // ...
     
     return true
 }
