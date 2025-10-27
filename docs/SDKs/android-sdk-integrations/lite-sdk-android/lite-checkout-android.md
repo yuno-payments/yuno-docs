@@ -264,6 +264,134 @@ continuePayment(
 
 Send `FALSE` in the `showPaymentStatus` parameter to show your payment status screens. Then, get the payment state by callback.
 
+## Click to Pay (CTP) with Passkey
+
+Unlike other processes, when a user completes a payment using CTP Passkey, the *One-Time Token* (`OTT`) **will not be received** through the usual callback methods. The OTT will be delivered via the **deeplink URL** in the Intent. Your app must read it from the `Intent`, create the payment on your backend, and then **continue** the flow with the SDK.
+
+### 1. AndroidManifest (deeplink)
+
+Add an `intent-filter` to your main activity in `AndroidManifest.xml`:
+
+```xml
+<activity android:name=".CheckoutActivity" android:exported="true">
+  <intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <!-- Adjust to your actual scheme/host -->
+    <data android:scheme="myapp" android:host="pay" android:pathPrefix="/ctp" />
+  </intent-filter>
+</activity>
+```
+
+Adjust the `scheme`, `host`, and `pathPrefix` to match your app's configuration.
+
+### 2. Handle the Intent
+
+In your activity, handle the Intent in both `onCreate()` and `onNewIntent()`:
+
+```kotlin
+class CheckoutActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        initYuno()
+        startCheckout()
+        // Initialize your SDK / UI
+        handleDeeplink(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeeplink(intent)
+    }
+
+    private fun handleDeeplink(intent: Intent?) {
+        val uri = intent?.data ?: return
+
+        when {
+            // Cancellation or error
+            uri.getBooleanQueryParameter("has_error", false) -> {
+                val message = uri.getQueryParameter("message") ?: "Operation canceled"
+                showError(message)
+            }
+
+            // Success: OTT received in URL
+            uri.getQueryParameter("one_time_token") != null -> {
+                val ott = extractOtt(uri) ?: return
+                val checkoutSession = extractCheckoutSession(uri)
+
+                // 1) Send the OTT to your backend to create the payment
+                createPaymentOnBackend(ott) { success ->
+                    if (success && checkoutSession != null) {
+                        // 2) Then continue the flow in the SDK
+                        continuePayment(
+                            checkoutSession = checkoutSession,
+                            countryCode = currentCountry
+                        ) { result ->
+                            // Handle payment state
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun extractOtt(uri: Uri): String? =
+        uri.getQueryParameter("one_time_token")
+
+    private fun extractCheckoutSession(uri: Uri): String? =
+        uri.getQueryParameter("checkout_session")
+            ?: uri.getQueryParameter("checkoutSession")
+}
+```
+
+### 3. Create the Payment (Backend)
+
+Once you extract the **OTT** from the deeplink, create the payment on your backend using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
+
+After receiving a successful response from your backend (payment created), continue the flow in the SDK by calling `continuePayment()`.
+
+### 4. Helper Functions
+
+Create helper functions to extract parameters from the Intent URI:
+
+```kotlin
+private fun extractOtt(uri: Uri): String? =
+    uri.getQueryParameter("one_time_token")
+
+private fun extractCheckoutSession(uri: Uri): String? =
+    uri.getQueryParameter("checkout_session")
+        ?: uri.getQueryParameter("checkoutSession")
+```
+
+> 💡 Tip
+>
+> In QA environments, log the complete URL to verify the parameter names.
+
+### 5. Quick Testing
+
+You can test the CTP Passkey flow using these sample deeplink URLs:
+
+* **Success:** `myapp://pay/ctp?one_time_token=OTT_123&checkout_session=CHK_456`
+* **Error:** `myapp://pay/ctp?has_error=true&message=User%20canceled`
+* **Continuation:** `myapp://pay/ctp`
+
+### 6. Checklist
+
+Use this checklist to ensure proper CTP Passkey integration:
+
+* ✅ `intent-filter` configured correctly (scheme/host/path)
+* ✅ `handleDeeplink` implemented in both `onCreate()` **and** `onNewIntent()`
+* ✅ Extract both `one_time_token` and `checkout_session` parameters
+* ✅ Create payment on backend with **OTT** ➜ call `continuePayment(...)`
+* ✅ Handle `has_error` and `message` parameters for error scenarios
+
+> ⚠️ Important
+>
+> The OTT will **not** be received through the `callbackOTT` function for CTP Passkey payments. You must extract the token from the Intent URI parameters instead.
+
 ## Render Mode (advanced integration)
 
 For developers requiring advanced UI control, the Lite SDK also supports render mode integration. This mode provides fragment-based UI components that you can integrate into custom layouts, offering more flexibility while maintaining the streamlined Lite SDK functionality.
