@@ -203,7 +203,7 @@ This object represents the payment created after generating the checkout session
       </p>
 
       <p><strong><code>type</code></strong> <small>enum</small>
-        <br /> Payment method type. Mandatory for <code>DIRECT</code> or <code>REDIRECT</code> workflow.
+        <br /> Payment method type. Mandatory for <code>DIRECT</code> or <code>REDIRECT</code> workflow. Required when integrating wallets, even when using the SDK.
         <br /><small> Possible enum values:</small>
         <br /><small> Possible enum values: check the <a href="payment-type-list">payment type reference</a>.</small>
       </p>
@@ -2331,7 +2331,7 @@ This object represents the payment created after generating the checkout session
           </p>
 
           <p><strong><code>type</code></strong> <small>string</small>
-            <br /> Type of the payment method. Mandatory for <code>DIRECT</code> or <code>REDIRECT</code> workflow.
+            <br /> Type of the payment method. Mandatory for <code>DIRECT</code> or <code>REDIRECT</code> workflow. Required when integrating wallets, even when using the SDK.
             <br /><small> Possible enum values:</small>
             <br /><small> Possible enum values: Check the <a href="payment-type-list">payment type reference</a>.</small>
           </p>
