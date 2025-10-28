@@ -34,62 +34,62 @@ Yuno is dedicated to expanding its coverage of solutions worldwide. Use the butt
 
 The table below lists all supported American countries and provides the respective country code.
 
-|              Country             | Country Code |
-| :------------------------------: | :----------: |
-|             Anguilla             |      AI      |
-|        Antigua and Barbuda       |      AG      |
-|             Argentina            |      AR      |
-|               Aruba              |      AW      |
-|              Bahamas             |      BS      |
-|             Barbados             |      BB      |
-|              Belize              |      BZ      |
-|              Bermuda             |      BM      |
-|              Bolivia             |      BO      |
-|              Bonaire             |      BQ      |
-|              Brazil              |      BR      |
-|              Canada              |      CA      |
-|          Cayman Islands          |      KY      |
-|               Chile              |      CL      |
-|             Colombia             |      CO      |
-|            Costa Rica            |      CR      |
-|               Cuba               |      CU      |
-|              Curaçao             |      CW      |
-|             Dominica             |      DM      |
-|        Dominican Republic        |      DO      |
-|              Ecuador             |      EC      |
-|            El Salvador           |      SV      |
-|         Falkland Islands         |      FK      |
-|           French Guiana          |      GF      |
-|              Grenada             |      GD      |
-|            Guadeloupe            |      GP      |
-|             Guatemala            |      GT      |
-|              Guyana              |      GY      |
-|               Haiti              |      HT      |
-|             Honduras             |      HN      |
-|              Jamaica             |      JM      |
-|            Martinique            |      MQ      |
-|              Mexico              |      MX      |
-|            Montserrat            |      MS      |
-|             Nicaragua            |      NI      |
-|              Panama              |      PA      |
-|             Paraguay             |      PY      |
-|               Peru               |      PE      |
-|            Puerto Rico           |      PR      |
-|         Saint Barthélemy         |      BL      |
-|       Saint Kitts and Nevis      |      KN      |
-|            Saint Lucia           |      LC      |
-|           Saint Martin           |      MF      |
-|     Saint Pierre and Miquelon    |      PM      |
+| Country                          | Country Code |
+| -------------------------------- | :----------: |
+| Anguilla                         |      AI      |
+| Antigua and Barbuda              |      AG      |
+| Argentina                        |      AR      |
+| Aruba                            |      AW      |
+| Bahamas                          |      BS      |
+| Barbados                         |      BB      |
+| Belize                           |      BZ      |
+| Bermuda                          |      BM      |
+| Bolivia                          |      BO      |
+| Bonaire                          |      BQ      |
+| Brazil                           |      BR      |
+| Canada                           |      CA      |
+| Cayman Islands                   |      KY      |
+| Chile                            |      CL      |
+| Colombia                         |      CO      |
+| Costa Rica                       |      CR      |
+| Cuba                             |      CU      |
+| Curaçao                          |      CW      |
+| Dominica                         |      DM      |
+| Dominican Republic               |      DO      |
+| Ecuador                          |      EC      |
+| El Salvador                      |      SV      |
+| Falkland Islands                 |      FK      |
+| French Guiana                    |      GF      |
+| Grenada                          |      GD      |
+| Guadeloupe                       |      GP      |
+| Guatemala                        |      GT      |
+| Guyana                           |      GY      |
+| Haiti                            |      HT      |
+| Honduras                         |      HN      |
+| Jamaica                          |      JM      |
+| Martinique                       |      MQ      |
+| Mexico                           |      MX      |
+| Montserrat                       |      MS      |
+| Nicaragua                        |      NI      |
+| Panama                           |      PA      |
+| Paraguay                         |      PY      |
+| Peru                             |      PE      |
+| Puerto Rico                      |      PR      |
+| Saint Barthélemy                 |      BL      |
+| Saint Kitts and Nevis            |      KN      |
+| Saint Lucia                      |      LC      |
+| Saint Martin                     |      MF      |
+| Saint Pierre and Miquelon        |      PM      |
 | Saint Vincent and the Grenadines |      VC      |
-|           Sint Maarten           |      SX      |
-|             Suriname             |      SR      |
-|        Trinidad and Tobago       |      TT      |
-|     Turks and Caicos Islands     |      TC      |
-|           United States          |      US      |
-|              Uruguay             |      UY      |
-|             Venezuela            |      VE      |
-|      Virgin Islands British      |      VG      |
-|         Virgin Islands US        |      VI      |
+| Sint Maarten                     |      SX      |
+| Suriname                         |      SR      |
+| Trinidad and Tobago              |      TT      |
+| Turks and Caicos Islands         |      TC      |
+| United States                    |      US      |
+| Uruguay                          |      UY      |
+| Venezuela                        |      VE      |
+| Virgin Islands British           |      VG      |
+| Virgin Islands US                |      VI      |
 
 For further information on standard codes for country identification, currencies, document types, and phone codes for each country, refer to the [Country reference](ref:country-reference) page.
 
