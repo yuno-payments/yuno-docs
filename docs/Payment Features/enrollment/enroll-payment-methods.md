@@ -13,19 +13,31 @@ metadata:
 next:
   description: ''
 ---
-On this page, you will find a walk-through guide on enrolling a payment method into a customer account and get a `vaulted_token` for future purchases.
+This page will walk you through enrolling a payment method into a customer account and get a `vaulted_token` for future purchases.
 
 > 📘 Vaulted Token
 >
 > A Vaulted Token is created once a payment method is enrolled and stored with the customer information. You can use the created Vaulted Token to identify the payment method in future payments.
 
-Yuno tokenization service and centralized vault enable you to handle recurring payments, fallbacks, and retries across processors without compromising UX. Today, the following payment methods are available for enrollment in Yuno:
+Yuno's tokenization service and centralized vault enable you to handle recurring payments, fallbacks, and retries across processors without compromising UX. The following payment methods are available for enrollment in Yuno:
 
-* **Cards** - Payment Method Type: `CARD`
-* **MercadoPago Wallet** - Payment Method Type: `MERCADO_PAGO_WALLET`(Only for SDK integrations)
-* **Nequi** - Payment Method Type: `NEQUI`(Only for SDK integrations)
-* **Nupay** - Payment Method Type: `NU_PAY_ENROLLMENT`
-* **Bancolombia Tokenbox** - Payment Method Type: `BANCOLOMBIA_TOKENBOX`(Only for SDK integrations)
+## Available payment methods for enrollment
+
+| Payment Method            | Type                   |
+| ------------------------- | ---------------------- |
+| **Cards**                 | `CARD`                 |
+| **Nupay**                 | `NU_PAY_ENROLLMENT`    |
+| **PayPal**                | `PAYPAL_ENROLLMENT`    |
+| **Daviplata**             | `DAVIPLATA_ENROLLMENT` |
+| **MercadoPago Wallet**    | `WALLET_CONNECT`       |
+| **dLocal Yape**           | `YAPE_ENROLLMENT`      |
+| **dLocal Smart PIX**      | `SMART_PIX`            |
+| **Astropay**              | `ASTROPAY_ENROLLABLE`  |
+| **Nequi***                | `NEQUI`                |
+| **Bancolombia Tokenbox*** | `BANCOLOMBIA_TOKENBOX` |
+| **Adyen PIX Biométrico**  | `PIX_BIOMETRICO`       |
+
+(*) SDK only. Consult the [SDK documentation](doc:yuno-sdks) for integration details.
 
 ## Requirements
 
@@ -63,9 +75,13 @@ At the end of the create a customer process, you will receive an `id`, which ide
 
 ### Step 2: Create a customer session
 
-> 🚧 Customer Session Requirement
+> 🚧 Workflow Requirements
 >
-> Only the Checkout workflow requires the utilization of a customer session. If you are using the Direct workflow (for Cards, only available for PCI compliant merchants), you may proceed directly to Step 3 since you will solely be using the `id` generated in Step 1.
+> The enrollment workflow varies by payment method type:
+>
+> * **Checkout workflow**: Requires customer session for most payment methods (Cards, Nupay, PayPal, Daviplata, dLocal methods, Astropay, Adyen PIX Biométrico)
+> * **Direct workflow**: Available for Cards only (PCI compliant merchants). Proceed directly to Step 3 using the customer `id` generated in Step 1.
+> * **SDK workflow**: Payment methods like Nequi and Bancolombia Tokenbox require SDK implementation. WALLET_CONNECT (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](doc:sdk-overview) for details.
 
 After creating the customer, you will create a customer session to identify and store customers' information regarding payment preferences. Use the endpoint [Create Customer Session](ref:create-customer-session) to perform the request. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](doc:enroll-payment-methods#step-1-create-a-customer).
 
@@ -87,8 +103,9 @@ The response to the endpoint **Retrieve Payment Methods To Enroll** will contain
 
 After defining the payment method, you can perform the enrollment using one of the Enroll Payment Method endpoints:
 
-* [Checkout workflow](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`.
-* [Direct workflow](ref:enroll-payment-method-api): Provide the `type` related to the chosen payment method to the parameter `type`. (Only available for Card payment methods for PCI compliant merchants)
+* [**Checkout workflow**](ref:enroll-payment-method-checkout): Provide the `type` related to the chosen payment method to the parameter `payment_method_type`. Supported types include: `CARD`, `NU_PAY_ENROLLMENT`, `PAYPAL_ENROLLMENT`, `DAVIPLATA_ENROLLMENT`, `WALLET_CONNECT`, `YAPE_ENROLLMENT`, `SMART_PIX`, `ASTROPAY_ENROLLABLE` (with space), `PIX_BIOMETRICO`.
+* [**Direct workflow**](ref:enroll-payment-method-api): Provide the `type` related to the chosen payment method to the parameter `type`. (Only available for `CARD` payment methods for PCI compliant merchants)
+* [**SDK workflow**](doc:yuno-sdks): Payment methods like `NEQUI` and `BANCOLOMBIA_TOKENBOX` require SDK implementation. `WALLET_CONNECT` (MercadoPago) supports both SDK and Checkout workflows.
 
 The user must be redirected to the payment provider page to complete the enrollment process. You will receive this URL in Step 5.
 
@@ -105,6 +122,6 @@ To confirm the enrollment, you can retrieve the enrolled payment methods. The `s
 
 > 📘 Fingerprint
 >
-> When a credit card is enrolled, you will also find the `fingerprint` in the API response. It is a field that represents your customer's card throughout your organization. When a customer enrolls a credit card multiple times related to one or many Yuno accounts, multiple vaulted\_tokens will be generated, but the fingerprint lets you identify when the same card is used across multiple scenarios.
+> When a credit card is enrolled, you will also find the `fingerprint` in the API response. It is a field that represents your customer's card throughout your organization. When a customer enrolls a credit card multiple times related to one or many Yuno accounts, multiple vaulted_tokens will be generated, but the fingerprint lets you identify when the same card is used across multiple scenarios.
 >
 > You will also find the fingerprint in the payment response when a transaction is made using an enrolled credit card.
