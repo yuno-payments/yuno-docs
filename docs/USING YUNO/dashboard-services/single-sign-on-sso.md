@@ -10,35 +10,15 @@ metadata:
 next:
   description: ''
 ---
-**Single sign-on (SSO)** allows users to access Yuno with a single set of credentials through a trusted Identity Provider (IdP). This simplifies user management, strengthens security, and enables teams to work more efficiently across platforms.
+**Single sign-on (SSO)** lets your team log in to the Yuno dashboard using your company’s existing accounts, instead of creating new credentials. SSO centralizes authentication, makes onboarding and offboarding team members easier, and ensures that only authorized users from your organization can access Yuno.
 
-Yuno supports SSO using the **SAML 2.0** (Security Assertion Markup Language) standard. This allows compatibility with identity providers that follow the protocol, such as Google and Okta.
-
-## Benefits of SSO in Yuno
-
-SSO streamlines access to Yuno while improving security and the user experience.
-
-* **Enhanced security**: Authentication is centralized through your identity provider, reducing the risks associated with multiple credentials.
-* **Simplified access**: Users can log into the Yuno dashboard without remembering separate credentials.
-
-## Compatible providers
-
-Yuno works with identity providers supporting the **SAML 2.0** standard:
-
-* Google
-* Okta
-
-For other providers, please contact support.
-
-## How to set up SSO in Yuno
-
-> 📘 SSO Activation Requirement
->
-> To activate SSO (Single Sign-On) in the dashboard, the user must have the Admin role in all accounts within the organization. If the user does not meet this requirement, they will not be able to configure SSO.
+Yuno supports Single Sign-On (SSO) using the **SAML 2.0** (Security Assertion Markup Language) standard, ensuring compatibility with a wide range of identity providers that adhere to this protocol. We have successfully tested SSO integration with **Google**, **Microsoft**, **Okta**, and **Keycloak**. The dashboard is also designed to accommodate other SAML 2.0-compliant providers. Contact support for details on implementing additional providers.
 
 ## Setting up SSO
 
-You can connect Yuno with your identity provider and give your team secure, centralized access in just a few steps:
+> 📘 Admin Status Required
+>
+> To activate SSO, you must have the Admin role in all accounts within the organization.
 
 **Step 1: Access the security section**
 
@@ -47,38 +27,42 @@ You can connect Yuno with your identity provider and give your team secure, cent
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/Video1.mov" />
 
-**Step 2: Select the identity provider**
+**Step 2: Set up SSO**
 
-1. Choose your identity provider from the list:
-   1. Google
-   2. Other providers compatible with SAML 2.0 (Okta enabled by default. Contact support for other providers).
-2. Copy the **Identifier (Entity ID)** and **Assertion Consumer Service URL** provided by Yuno.
+Click **Set up** to open the SSO configuration.
 
-![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXd7Obd6lURxHjloLWCT2JSJB_mCS0N0g_53H8mhUkqTw7Nu3RNW_cAjekMBx0gAH1wDQbhJXzhmVJQqSnCoQkbkO37anutvQLOH1dNtgW_DJP-KoGUXk2Xn0YBq2v4V2Ciw9dSf7A?key=2dldRk3J4b42VwoUCEVS3Lpu)
+1. Under **Identity provider**, select your desired option: **Google**, **Keycloack**, **Microsoft**, **Okta**, or **Other**.
+2. Copy the **Identifier (Entity ID)** and **Assertion consumer service URL** provided by Yuno.
+
+<Image border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXd7Obd6lURxHjloLWCT2JSJB_mCS0N0g_53H8mhUkqTw7Nu3RNW_cAjekMBx0gAH1wDQbhJXzhmVJQqSnCoQkbkO37anutvQLOH1dNtgW_DJP-KoGUXk2Xn0YBq2v4V2Ciw9dSf7A?key=2dldRk3J4b42VwoUCEVS3Lpu" />
 
 **Step 3: Configure the identity provider**
 
+Next, access the admin panel of your chosen identity provider. Here, you'll either generate a metadata XML file or obtain the necessary configuration details. Refer to your provider’s documentation for where to input Yuno’s information.
+
 1. Access your identity provider's admin panel.
 2. Paste the **Identifier (Entity ID)** and **Assertion Consumer Service URL** provided by Yuno into the relevant fields.
-3. Save the changes and generate the XML metadata file or required tokens.
+3. Save the changes and generate the **XML metadata file**. Alternatively, you can save the Entity ID (IDP), Sign In URL, and Certificate.
 
 **Step 4: Finalize the configuration in Yuno**
 
-1. In the Yuno dashboard, upload the XML file provided by the identity provider or manually paste the tokens.
-2. Click **Save** to confirm the configuration.
+Back in the dashboard, you have two options to finish the SSO setup:
+
+* **Option A**: Upload the metadata XML from the identity provider.
+* **Option B**: Manually enter Entity ID (IDP), Sign In URL, and Certificate.
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/Video2.mov" />
 
 **Managing SSO**
 
 * **Disable SSO**: Administrators can go to the **Login methods** tab of the Security section to toggle SSO on and off.
-* **View and edit configurations**: Admins may also modify the configuration in case of changes to the identity provider.
+* **View and edit configurations**: Admins may also modify the configuration in case of changes to the identity provider. Simply go back to the Single Sign-On (SSO) tab in the Security section.
 
 ## Using SSO as an end user
 
 Once configured, users will see a button to **Continue with SSO** on the Yuno login page:
 
-![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXe-Fk00i8svq7UugqGxp5DzQOxatdRuwIM2oFH_NnJqS7cqEVo8GbvJzh0NrnkF3QMMWqYBSy6vG8wtE1qXibVmPXpxYC7TPQFjwnOQY_GiueV_Vz5tKfFT0a-FjlNHalgnQUv3CQ?key=2dldRk3J4b42VwoUCEVS3Lpu)
+<Image border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXe-Fk00i8svq7UugqGxp5DzQOxatdRuwIM2oFH_NnJqS7cqEVo8GbvJzh0NrnkF3QMMWqYBSy6vG8wtE1qXibVmPXpxYC7TPQFjwnOQY_GiueV_Vz5tKfFT0a-FjlNHalgnQUv3CQ?key=2dldRk3J4b42VwoUCEVS3Lpu" />
 
 To access Yuno using SSO:
 
