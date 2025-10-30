@@ -1,7 +1,7 @@
 ---
 title: Network Token Migration Process
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
