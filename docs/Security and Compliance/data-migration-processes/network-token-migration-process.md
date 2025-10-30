@@ -90,6 +90,91 @@ Use our public key to encrypt the PCI-sensitive files you send to Yuno.
 
 ***
 
+Network Token migration is the process of transferring `network tokens` from an existing provider to Yuno's secure vault. During this process, a new token is generated for each `network token`, ensuring seamless continuity and security for payment processing. The `network token` migration process consists of three main steps:
+
+1. The merchant requests the `network token` migration process from their current payment processor.
+2. Yuno and the payment provider collaborate to securely import all `network token` data into the Yuno vault.
+3. The merchant uses Yuno's token migration API to map the `network tokens` from the payment provider to the `network vaulted_tokens` of Yuno.
+
+> 📘 First step
+>
+> To initiate the `network token` migration process, contact your business advisor at Yuno to assess the viability and schedule of the procedure.
+
+## Importing network token from a gateway account (steps 1 and 2)
+
+Importing `network token` data from a gateway account involves handling sensitive information, so strict security protocols must be followed. To import `network token` data into Yuno from an existing gateway, complete the following steps:
+
+1. **Coordinate with the current gateway**: Contact your current third-party vault or gateway and request an export of the payment method data. Ensure you follow their specified protocols.
+2. **Complete the formal request**: Submit a formal request to Yuno, ensuring all required details and processes are documented. The gateway's response time and procedures will determine the data transfer process.
+
+> 🚧 Your responsibilities when migrating tokens
+>
+> You are responsible for managing communication with your gateway provider throughout the migration process. The Yuno team will support and collaborate directly with the third-party vault/gateway to facilitate the importing process. Additionally, the customer subscription information, including amounts, dates, etc., must be obtained directly from the exporting entity, as Yuno will not extract this data from encrypted files.
+
+> 📘 Data transfer security
+>
+> All data throughout the migration process is encrypted using PGP keys and transferred using SFTP (Secure File Transfer Protocol).
+
+## Client-side requirements (step 3)
+
+To successfully complete the token migration process, it is essential to fulfill the client-side requirements outlined in step 3. This involves providing the necessary user data, including the buyers and their existing payment methods.
+
+You can execute the token migration process using the Yuno API, which is specifically designed for merchants. As a merchant, you will use this API to:
+
+1. **Add customers**: Register customers in the Yuno system.
+2. **Enroll payment methods**: Register payment methods obtained from payment processors for each customer in the Yuno system.
+
+For a detailed guide on performing token migration using the API, click the button below:
+
+<Shelf classname="link_cards_container">
+  <YunoCard title="Token migration via API" href="via-api" titleSize="h4" />
+</Shelf>
+
+## Gateway and payment provider requirements
+
+To proceed with the migration process, you will need to provide the following:
+
+* A public SSH key (you can provide one for production and another for testing). You can use the following command to generate it: `ssh-keygen -t rsa -b 4096 -C your_email@example.com`
+* The outbound IPs that will be used during the migration.
+* A template file of the data to be migrated to understand its structure. It must include the following mandatory data:
+  * **Cardholder name**: The full name of the cardholder as stored by the current provider.
+  * **Expiration date**: The expiry date of the token.
+  * **`Network token number`**: The complete `network token` number that will be tokenized by Yuno.
+  * **`FPAN/Card ldf`**: Last four digits from the FPAN associated to the card linked to the `network token`.
+  * **`Network token transaction id`**: Unique identifier assigned by the card network to a specific transaction made using a `network token`.
+  * **`Parent Payment method type`**: The underlying funding instrument from which a `network token` originates (such as Apple Pay, Google Pay).
+  * **`Provider network token`**: Unique identifier assigned to each `network token` by the current provider, used by the client for referencing that `network token` during transactions.
+
+> 🚧 Important notice
+>
+> In case of migration of multiple parent payment method types it is mandatory to send their corresponding `network tokens` in different files.
+
+### PGP public key
+
+Use our public key to encrypt the PCI-sensitive files you send to Yuno.
+
+**Email**: [security-migrations@y.uno](mailto:security-migrations@y.uno)
+
+**Comment**: For encrypting sensitive data. Environment: production
+
+**Created**: 22 Nov 2024
+
+**Expires**: 22 Nov 2026
+
+**Key ID**: 73D3D88A
+
+**Length**: 4096
+
+**Algorithm**: RSA
+
+**Fingerprint**: 5160 7134 4C00 D270 93FB C450 19ED AACD 73D3 D88A
+
+<Shelf classname="link_cards_container">
+  <YunoCard title="Public PGP Key" href="https://yuno-public-keys.prod.y.uno/generic-pgp-keys_public_key_production.asc" titleSize="h4" />
+</Shelf>
+
+***
+
 <Accordion title="Production Key" icon="fa-info-circle">
   ```
   -----BEGIN PGP PUBLIC KEY BLOCK-----
