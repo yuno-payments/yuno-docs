@@ -55,6 +55,11 @@ To specify a [payment](ref:create-payment) with a processing type, use the `stor
 | `subscription_agreement_id` | string | The ID of the agreement with the customer, mandatory for certain markets (e.g., MX).                                                                                                           |
 | `network_transaction_id`    | string | The ID provided by Visa/Mastercard in the response of the initial payment, which is highly recommended for future use in merchant-initiated transactions (MIT).                                |
 
+> ❗️ Critical: Complete All Required Fields
+>
+> * When working with CIT and MIT transactions, it's essential to correctly populate the `usage`, `reason`, and `network_transaction_id` fields. Failing to complete these fields properly can result in **decreased approval rates** and **loss of chargeback disputes**.
+> * Some providers (e.g., Adyen) require that the `reason` field remains consistent across the transaction lifecycle. If your first transaction (`usage=FIRST`) uses `reason=SUBSCRIPTION`, all subsequent transactions (`usage=USED`) must also use `reason=SUBSCRIPTION`.
+
 Store credential reasons
 
 | Reason                     | Description                                                                                                                                                                               |
@@ -95,7 +100,8 @@ curl --request POST \
            "card": {
                "stored_credentials":{
                   "reason":"CARD_ON_FILE",
-                  "usage": "USED"
+                  "usage": "USED",
+                  "network_transaction_id":"583103536844189"
               }
            }
         }
@@ -108,6 +114,10 @@ curl --request POST \
 
 For certain markets (MX for example) and payment processors, when a subscription-related payment is made, the ID of the agreement with the customer needs to be specified in the payment request to ensure correct processing. To facilitate this, we have enabled the `subscription_agreement_id` field inside the `stored_credentials` struct, allowing you to share the agreement made with the customer.
 
+> 📘 Note 
+>
+> The `subscription_agreement_id` and `network_transaction_id` are independent fields. Including a `subscription_agreement_id` does not replace the need for a `network_transaction_id`. Both should be provided when applicable to ensure optimal approval rates and chargeback protection.
+
 ```json
 "payment_method": {
         "type":"CARD",
@@ -117,7 +127,8 @@ For certain markets (MX for example) and payment processors, when a subscription
                "stored_credentials":{
                   "reason":"CARD_ON_FILE",
                   "usage": "USED",
-                  "subscription_agreement_id":"AA0001"
+                  "subscription_agreement_id":"AA0001",
+                  "network_transaction_id":"583103536844189"
               }
            }
         }
