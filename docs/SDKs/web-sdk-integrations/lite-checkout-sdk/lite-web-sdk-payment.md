@@ -301,11 +301,11 @@ yuno.startCheckout({
 | Parameter | Description                                                                                                       |
 | --------- | ----------------------------------------------------------------------------------------------------------------- |
 | `card`    | Define specific settings for the credit card form:                                                                |
-|           | **`type`**: `step` or `extends`                                                                                   |
-|           | **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
-|           | **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
-|           | **`texts`**: Custom texts in the Card forms buttons.                                                              |
-|           | **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method. |
+|           | - **`type`**: `step` or `extends`                                                                                   |
+|           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
+|           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
+|           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
+|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method. |
 
 ```javascript
 yuno.startCheckout({
