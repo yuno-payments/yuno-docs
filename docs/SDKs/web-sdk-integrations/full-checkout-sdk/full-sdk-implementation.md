@@ -76,6 +76,13 @@ yuno.startCheckout({
   showPaymentStatus: true,
   card: {
     isCreditCardProcessingOnly: true,
+    onChange: ({ error, data }) => {
+      if (error) {
+        console.log('Card form error:', error);
+      } else {
+        console.log('Card form data:', data);
+      }
+    },
   },
   onLoading: (args) => {
     console.log(args);
@@ -332,6 +339,7 @@ yuno.startCheckout({
     styles: "",
     cardSaveEnable: false,
     texts: {},
+    isCreditCardProcessingOnly: true,
     onChange: ({ error, data }) => {
       if (error) {
         console.log('Card form error:', error);
