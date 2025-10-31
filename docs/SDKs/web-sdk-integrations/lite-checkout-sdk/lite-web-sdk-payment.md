@@ -298,81 +298,14 @@ yuno.startCheckout({
 
 ### Card form configurations
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Define specific settings for the credit card form:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `type`: `step` or `extends`
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `styles`: Edit card form styles using your own CSS, injected into the iframe
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `cardSaveEnable`: Show checkbox for save/enroll card (default: false)
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `texts`: Custom texts for the Card form buttons
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `onChange`: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description                                                                                                       |
+| --------- | ----------------------------------------------------------------------------------------------------------------- |
+| `card`    | Define specific settings for the credit card form:                                                                |
+|           | **`type`**: `step` or `extends`                                                                                   |
+|           | **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
+|           | **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
+|           | **`texts`**: Custom texts in the Card forms buttons.                                                              |
+|           | **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method. |
 
 ```javascript
 yuno.startCheckout({
