@@ -10,6 +10,11 @@ metadata:
 next:
   description: ''
 ---
+
+> ❗️ **SDK Required**
+>
+> Google Pay Direct integration requires using one of Yuno's SDKs (Web, Android, or iOS) for implementation. This feature cannot be implemented without an SDK integration.
+
 This page provides instructions for connecting and offering Google Pay™ as a payment option to your customers using the Direct integration.
 
 ## Requirements
