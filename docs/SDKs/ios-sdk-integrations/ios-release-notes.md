@@ -9,6 +9,12 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.0    | **FIX**: Various bug fixes and improvements, including wrong notifications in payment full, double events in payment full, and double notifications to merchants. |
+|         | **NEW**: Change MM/YY format to Traditional Chinese. |
+|         | **NEW**: Migrate settings v1 to v2 and move logs from the Payment Methods service to the Settings v2 service. |
+|         | **NEW**: Support secondary background color in flexible actions. |
+|         | **NEW**: Add styling to payment full list. |
+|         | **NEW**: Add ACH fields enrollment. |
 | 2.7.1   | **NEW**: Added support for Click to Pay (CTP) with Passkey.                                                                                                                                                       |
 |         | **NEW**: Notify pending status in enrollment when sending to deeplink.                                                                                                                                          |
 | 2.7.0   | **NEW**: Added ClearSale with web integration.                                                                                                                                                                    |
