@@ -9,6 +9,12 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.0   | **FIX**: Various bug fixes and improvements.                                                                                                                                                                      |
+|         | **CHANGE**: Change MM/YY format to Traditional Chinese.                                                                                                                                                           |
+|         | **CHANGE**: Migrate settings from v1 to v2; move logs from the Payment Methods service to the Settings v2 service.                                                                                                |
+|         | **IMPROVE**: Support secondary background color in flexible actions.                                                                                                                                              |
+|         | **IMPROVE**: Add styling to the payment full list.                                                                                                                                                                |
+|         | **NEW**: Add ACH fields enrollment.                                                                                                                                                                               |
 | 2.7.1   | **NEW**: Added support for Click to Pay (CTP) with Passkey.                                                                                                                                                       |
 |         | **NEW**: Notify pending status in enrollment when sending to deeplink.                                                                                                                                          |
 | 2.7.0   | **NEW**: Added ClearSale with web integration.                                                                                                                                                                    |
