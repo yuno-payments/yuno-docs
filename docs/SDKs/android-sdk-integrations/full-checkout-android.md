@@ -291,8 +291,6 @@ continuePayment(
 
 To show your payment status screens, send `FALSE` in the `showPaymentStatus` parameter. Then, get the payment state by callback.
 
-<br />
-
 ## Render Mode integration
 
 The Yuno SDK render mode provides advanced UI flexibility, allowing developers to integrate payment flows with complete control over the user interface while maintaining full SDK functionality. This mode returns fragments that can be used with both Jetpack Compose and traditional XML views.
