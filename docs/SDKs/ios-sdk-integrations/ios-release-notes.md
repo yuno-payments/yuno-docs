@@ -9,6 +9,13 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.0    | **FIX**: Various bug fixes and improvements, including fixing wrong notifications in payment full and double notifications to merchants. |
+|         | **FIX**: Change MM/YY format to Traditional Chinese. |
+|         | **FIX**: Fix double events in payment full with unfolded. |
+|         | **NEW**: Migrate settings v1 to v2 and move logs from the Payment Methods service to the Settings v2 service. |
+|         | **NEW**: Support secondary background color in flexible actions. |
+|         | **NEW**: Add styling to payment full list. |
+|         | **NEW**: Add ACH fields enrollment. |
 | 2.8.0   | **FIX**: Various bug fixes and improvements.                                                                                                                                                                      |
 |         | **CHANGE**: Change MM/YY format to Traditional Chinese.                                                                                                                                                           |
 |         | **CHANGE**: Migrate settings from v1 to v2; move logs from the Payment Methods service to the Settings v2 service.                                                                                                |
