@@ -400,7 +400,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
         <tbody>
           <tr>
             <td><code>ACTION_REQUIRED</code></td>
-            <td>Chargeback or Inquiry received. Decision or documentation must be provided</td>
+            <td>Payment created but requires additional user action. This occurs in 3D Secure authentication flows, payment method redirections, Headless SDK flows requiring continuePayment, or async payment methods with additional steps. Check the <code>redirect_url</code> or <code>sdk_action_required</code> field for next steps.</td>
             <td>N/A</td>
             <td>-</td>
           </tr>
