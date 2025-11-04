@@ -245,52 +245,6 @@ This code listens for deep links that open your app. When a URL is received, it 
 
 Make sure the `url.scheme` in this code matches the `callback_url` you provided when creating the `checkout_session`.
 
-## Click to Pay (CTP) with Passkey
-
-The integration flow for Click to Pay Passkey requires specific handling of the response, which differs from the standard payment flow.
-
-### Handling the One-Time Token (OTT) and Deeplink
-
-Unlike other processes, when a user completes a payment using CTP Passkey, the _One-Time Token_ (`OTT`) will not be received through the usual delegate methods.
-
-Instead, the transaction result (successful or failed) will be communicated to your application via the **deeplink URL**.
-
-#### 1. Closing the External Browser
-
-When receiving the deeplink callback in your application, it is essential to immediately call the `receiveDeeplink` method:
-
-```swift
-func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    
-    Yuno.receiveDeeplink(url: url)
-    
-    // Parse the URL to extract parameters
-    
-    return true
-}
-```
-
-Calling this method allows the SDK to properly close the external web browser that was used for Passkey authentication.
-
-#### 2. Processing the Deeplink URL
-
-The deeplink URL will contain parameters in the query string that indicate the transaction status:
-
-* `has_error`: If this parameter is present, it indicates that an error occurred during the transaction. You should handle this error scenario.
-* `one_time_token`: If the transaction was successful, the URL will contain this token.
-
-#### 3. Creating the Payment
-
-If you receive a `one_time_token` in the URL:
-
-1. Extract the value of the `one_time_token`.
-2. Use this token to create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
-3. Once the payment is created, proceed with the `continuePayment` flow in the SDK to finalize the transaction.
-
-> ⚠️ Important
->
-> The OTT will **not** be received through the `yunoCreatePayment(with token: String)` delegate method for CTP Passkey payments. You must extract the token from the deeplink URL parameters instead.
-
 ## Callback
 
 After the payment is completed, the SDK can return different transaction states: `success`, `fail`, `processing`, `reject`, `internalError`, and `userCancell`. The descriptions of each transaction state is presented in the table below.
@@ -330,15 +284,59 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 
 * [SDK Customizations](../docs/sdk-customizations-ios): Change the SDK appearance to match your brand.
 
-## Render mode integration
+### Click to Pay (CTP) with Passkey
+
+The integration flow for Click to Pay Passkey requires specific handling of the response, which differs from the standard payment flow.
+
+#### Handling the One-Time Token (OTT) and Deeplink
+
+Unlike other processes, when a user completes a payment using CTP Passkey, the _One-Time Token_ (`OTT`) will not be received through the usual delegate methods.
+
+Instead, the transaction result (successful or failed) will be communicated to your application via the **deeplink URL**.
+
+1. **Closing the External Browser**:
+
+When receiving the deeplink callback in your application, it is essential to immediately call the `receiveDeeplink` method:
+
+```swift
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    
+    Yuno.receiveDeeplink(url: url)
+    
+    // Parse the URL to extract parameters
+    
+    return true
+}
+```
+
+Calling this method allows the SDK to properly close the external web browser that was used for Passkey authentication.
+
+2. **Processing the Deeplink URL**:
+
+The deeplink URL will contain parameters in the query string that indicate the transaction status:
+
+* `has_error`: If this parameter is present, it indicates that an error occurred during the transaction. You should handle this error scenario.
+* `one_time_token`: If the transaction was successful, the URL will contain this token.
+
+3. **Creating the Payment**:
+
+If you receive a `one_time_token` in the URL:
+
+1. Extract the value of the `one_time_token`.
+2. Use this token to create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
+3. Once the payment is created, proceed with the `continuePayment` flow in the SDK to finalize the transaction.
+
+> ⚠️ Important
+>
+> The OTT will **not** be received through the `yunoCreatePayment(with token: String)` delegate method for CTP Passkey payments. You must extract the token from the deeplink URL parameters instead.
+
+### Render mode integration
 
 The render mode in the Yuno SDK offers enhanced UI flexibility, enabling developers to integrate payment flows with complete control over the user interface while retaining full SDK functionality. This mode provides SwiftUI views that can be seamlessly incorporated into your existing UI.
 
-### Main function: `startPaymentRenderFlow`
+#### Main function: `startPaymentRenderFlow`
 
 The `startPaymentRender` function is a feature of the Yuno SDK that allows merchants to integrate the payment process in a more detailed and customizable manner. This function grants full control over when and how payment forms are displayed, facilitating smoother integration with the merchant's existing application UI.
-
-#### Purpose
 
 This function is designed to offer greater control over the payment flow, allowing merchants to:
 
@@ -371,7 +369,7 @@ The `startPaymentRender` function requires specific parameters to operate effect
 
 Returns an instance that conforms to `YunoPaymentRenderFlowProtocol`, which provides methods to handle the payment rendering flow.
 
-### YunoPaymentRenderFlowProtocol protocol
+#### YunoPaymentRenderFlowProtocol protocol
 
 The instance returned by `startPaymentRender` conforms to this protocol which includes the following methods:
 
@@ -412,11 +410,11 @@ func continuePayment() async -> AnyView?
   * If no additional view is required, returns `nil`
 * **When to use**: After receiving the one-time token through the delegate and creating the payment
 
-### Implementation flow
+#### Implementation flow
 
 This section outlines the sequence of steps required to implement the payment rendering process using the Yuno SDK.
 
-#### Step 1: Initial setup
+**Step 1: Initial setup**
 
 To begin using `startPaymentRender`, make sure the SDK is properly initialized and you possess a valid `checkoutSession`. Follow the steps below to set up your environment:
 
@@ -424,7 +422,7 @@ To begin using `startPaymentRender`, make sure the SDK is properly initialized a
 await Yuno.initialize(apiKey: "your_api_key")
 ```
 
-#### Step 2: Create payment flow instance
+**Step 2: Create payment flow instance**
 
 Create a payment flow instance to manage and render the payment process using the selected method.
 
@@ -435,7 +433,7 @@ let paymentFlow = await Yuno.startPaymentRenderFlow(
 )
 ```
 
-#### Step 3: Get and display the form
+**Step 3: Get and display the form**
 
 Retrieve and present the payment form to collect user payment information efficiently.
 
@@ -460,7 +458,7 @@ if let formView = formView {
 }
 ```
 
-#### Step 4: Handle the one time token
+**Step 4: Handle the one time token**
 
 Implement the delegate method to receive the token:
 
