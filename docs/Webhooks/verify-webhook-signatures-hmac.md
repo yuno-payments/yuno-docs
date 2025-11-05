@@ -19,15 +19,11 @@ While OAuth provides authentication (verifying who is sending the request), HMAC
 
 ## How HMAC signatures work
 
-<Callout icon="📘">
-  The name and location of the signature field (`hmacSignature` in this page) may differ in your integration. Confirm the exact details for your setup with Yuno's technical team.
-</Callout>
-
 When Yuno sends a webhook to your server:
 
-1. **Signature generation**: Yuno creates an HMAC signature by hashing specific webhook fields with your secret key using the SHA-256 algorithm
-2. **Payload inclusion**: The signature is included as a field within the webhook JSON payload (e.g. `hmacSignature`)
-3. **Verification**: Your server extracts the signature, recreates it using the same fields and secret key, then compares
+1. **Signature generation**: Yuno creates an HMAC signature by hashing the webhook payload with your client secret key using the SHA-256 algorithm
+2. **Header inclusion**: The signature is included in the `x-hmac-signature` HTTP header
+3. **Verification**: Your server extracts the signature from the header, recreates it using the same payload and secret key, then compares
 4. **Validation**: If the signatures match, the webhook is authentic and unaltered
 
 ## Configuration
@@ -38,37 +34,30 @@ See [Configure Webhooks](doc:configure-webhooks) for step-by-step instructions o
 
 ## What changes with HMAC
 
-When HMAC signature verification is enabled, Yuno webhooks include an additional signature field in the JSON payload. The webhook structure remains the same as documented in [Webhook Examples](doc:examples), with the signature field added.
+When HMAC signature verification is enabled, Yuno webhooks include an additional `x-hmac-signature` HTTP header. The webhook JSON payload remains unchanged.
 
-### Example authorization webhook with HMAC
+### Example webhook request with HMAC
 
-```json
+```http
+POST /your-webhook-endpoint HTTP/1.1
+Host: your-server.com
+Content-Type: application/json
+x-api-key: your-api-key
+x-secret: your-secret
+x-hmac-signature: K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols=
+
 {
-  "live": "false",
-  "notificationItems": [
-    {
-      "NotificationRequestItem": {
-        "additionalData": {
-          "expiryDate": "12/2012",
-          "authCode": "1234",
-          "cardSummary": "7777",
-          "totalFraudScore": "10",
-          "hmacSignature": "YwPQ1b2RcBkDGo32XvDS7R+/nMDuDIRjvQlsak72EMBY="
-        },
-        "amount": {
-          "currency": "EUR",
-          "value": 10100
-        },
-        "eventCode": "AUTHORISATION",
-        "eventDate": "2022-11-15T20:04:11+01:00",
-        "merchantAccountCode": "AcmeCorp",
-        "merchantReference": "2931874530016873",
-        "paymentMethod": "visa",
-        "pspReference": "CU4KVBAYAPFG0ZZKR",
-        "success": "true"
-      }
+  "type": "payment",
+  "type_event": "payment.purchase",
+  "account_id": "2c05976d-1234-1234-1234-6421883de48d",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "payment": {
+      "id": "a546c566-1703-4fba-b334-c46e89bc97f7",
+      "status": "SUCCEEDED"
     }
-  ]
+  }
 }
 ```
 
