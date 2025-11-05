@@ -105,7 +105,7 @@ Yuno provides several webhooks related to enrollment and payment notifications. 
 
   <YunoCard title="Refunds" href="/docs/examples#refunds" titleSize="h4" />
 
-  <YunoCard title="HMAC - Authorization" href="/docs/examples#hmac-authorization" titleSize="h4" />
+  <YunoCard title="HMAC - Authorization" href="/docs/examples#hmac---authorization" titleSize="h4" />
 </Shelf>
 
 ## Payment
