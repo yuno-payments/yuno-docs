@@ -50,6 +50,11 @@ The JSON attributes for Yuno webhooks are listed below:
           href="https://docs.y.uno/reference/the-payment-method-object-api">payment method object</a> (for enrollment and other objects).</p>
     </p>
   </div>
+  <div class="yuno">
+    <p><strong>hmacSignature</strong> <small>string (optional)</small>
+      <br />The HMAC-SHA256 signature for webhook verification when HMAC is enabled. The field name and location may vary depending on your configuration.
+    </p>
+  </div>
 </body>
 <style>
   :root {
@@ -99,6 +104,8 @@ Yuno provides several webhooks related to enrollment and payment notifications. 
   <YunoCard title="Onboardings" href="/docs/examples#onboardings" titleSize="h4" />
 
   <YunoCard title="Refunds" href="/docs/examples#refunds" titleSize="h4" />
+
+  <YunoCard title="HMAC - Authorization" href="/docs/examples#hmac-authorization" titleSize="h4" />
 </Shelf>
 
 ## Payment
@@ -1858,5 +1865,39 @@ The next JSON object presents an example of a data structure related to a paymen
       }
     }
   }
+}
+```
+
+## HMAC - Authorization
+
+The following example shows an authorization webhook with HMAC signature verification enabled:
+
+```json
+{
+  "live": "false",
+  "notificationItems": [
+    {
+      "NotificationRequestItem": {
+        "additionalData": {
+          "expiryDate": "12/2012",
+          "authCode": "1234",
+          "cardSummary": "7777",
+          "totalFraudScore": "10",
+          "hmacSignature": "YwPQ1b2RcBkDGo32XvDS7R+/nMDuDIRjvQlsak72EMBY="
+        },
+        "amount": {
+          "currency": "EUR",
+          "value": 10100
+        },
+        "eventCode": "AUTHORISATION",
+        "eventDate": "2022-11-15T20:04:11+01:00",
+        "merchantAccountCode": "AcmeCorp",
+        "merchantReference": "2931874530016873",
+        "paymentMethod": "visa",
+        "pspReference": "CU4KVBAYAPFG0ZZKR",
+        "success": "true"
+      }
+    }
+  ]
 }
 ```
