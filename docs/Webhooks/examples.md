@@ -12,6 +12,8 @@ metadata:
 next:
   description: ''
 ---
+<br />
+
 # Webhook attributes
 
 The JSON attributes for Yuno webhooks are listed below:
@@ -51,8 +53,8 @@ The JSON attributes for Yuno webhooks are listed below:
     </p>
   </div>
   <div class="yuno">
-    <p><strong>hmacSignature</strong> <small>string (optional)</small>
-      <br />The HMAC-SHA256 signature for webhook verification when HMAC is enabled. The field name and location may vary depending on your configuration.
+    <p><strong>x-hmac-signature</strong> <small>string (optional)</small>
+      <br />The HMAC-SHA256 signature sent in the HTTP header for webhook verification when HMAC authentication is enabled.
     </p>
   </div>
 </body>
@@ -1870,9 +1872,14 @@ The next JSON object presents an example of a data structure related to a paymen
 
 ## HMAC - Authorization
 
-The following example shows an authorization webhook with HMAC signature verification enabled:
+```http
+POST /your-webhook-endpoint HTTP/1.1
+Host: your-server.com
+Content-Type: application/json
+x-api-key: your-api-key
+x-secret: your-secret
+x-hmac-signature: YwPQ1b2RcBkDGo32XvDS7R+/nMDuDIRjvQlsak72EMBY=
 
-```json
 {
   "live": "false",
   "notificationItems": [
@@ -1882,8 +1889,7 @@ The following example shows an authorization webhook with HMAC signature verific
           "expiryDate": "12/2012",
           "authCode": "1234",
           "cardSummary": "7777",
-          "totalFraudScore": "10",
-          "hmacSignature": "YwPQ1b2RcBkDGo32XvDS7R+/nMDuDIRjvQlsak72EMBY="
+          "totalFraudScore": "10"
         },
         "amount": {
           "currency": "EUR",
