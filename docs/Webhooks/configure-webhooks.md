@@ -15,7 +15,7 @@ next:
 ---
 ## Setup
 
-To configure your Webhooks, you need to provide Yuno's  with:
+To configure your Webhooks, you need to provide Yuno's team with:
 
 1. URL to receive notifications
 2. `API_key` (x-api-key) and `API_secret` (x-secret) from your side (with no format restrictions) for us to send in the notification header so your dev team can identify Yuno Webhooks.
@@ -25,7 +25,7 @@ Once configured, you'll need to define which events you want to list for the ena
 
 You can configure different webhooks using the [Yuno Merchant Dashboard](https://dashboard.y.uno/). At the **Developers** tab, you can choose **Webhooks**. To create a new webhook, you need to name it, define the endpoint, and select the trigger event. The image below shows the side panel to add a webhook.
 
-<Image align="center" src="https://files.readme.io/8479b7aabbea3816f7139a2e2d22b2217a3451d1a35001bb30180e84a15e8866-Screenshot_2025-08-28_at_2.26.55_PM.png" />
+<Image align="center" border={false} src="https://files.readme.io/8479b7aabbea3816f7139a2e2d22b2217a3451d1a35001bb30180e84a15e8866-Screenshot_2025-08-28_at_2.26.55_PM.png" />
 
 In the [Yuno Merchant Dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button.
 
@@ -41,7 +41,7 @@ In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wi
   * Cliente Client_ID
 * `Grant type`: Type of grant for the authentication.
 
-<Image align="center" src="https://files.readme.io/3075c93d6bfd9bc1a786206a165768229231928441c12c919717ab38d89df995-Screenshot_2025-02-07_at_10.49.53_AM.png" />
+<Image align="center" border={false} src="https://files.readme.io/3075c93d6bfd9bc1a786206a165768229231928441c12c919717ab38d89df995-Screenshot_2025-02-07_at_10.49.53_AM.png" />
 
 ## Receipt confirmation process
 
