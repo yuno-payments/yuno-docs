@@ -32,14 +32,9 @@ When Yuno sends a webhook to your server:
 
 ## Configuration
 
-To enable HMAC signature verification for your webhooks, contact Yuno's technical team to provide:
+To enable HMAC signature verification, check **Use HMAC Authentication** when creating or editing a webhook in the [Yuno dashboard](https://dashboard.y.uno/).
 
-1. A **secret key** that Yuno will use to sign webhook requests
-2. The **webhook endpoints** where you want signatures enabled
-
-<Callout icon="🚧">
-  Store your secret key securely and never expose it in logs, error messages, or client-side code. Treat it like a password.
-</Callout>
+See [Configure Webhooks](doc:configure-webhooks) for step-by-step instructions on accessing the webhook configuration panel.
 
 ## What changes with HMAC
 
@@ -79,6 +74,6 @@ When HMAC signature verification is enabled, Yuno webhooks include an additional
 
 ## Related documentation
 
-* [Configure Webhooks](doc:configure-webhooks) - Set up webhook endpoints and enable HMAC
-* [Webhook Examples](doc:examples) - Complete webhook payload examples
-* [Webhooks Overview](doc:webhooks) - Learn about Yuno webhooks
+* [Configure Webhooks](doc:configure-webhooks)
+* [Webhook Examples](doc:examples)
+* [Webhooks Overview](doc:webhooks)
