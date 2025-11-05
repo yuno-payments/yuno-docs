@@ -38,13 +38,13 @@ Once configured, the webhook will send notifications whenever the selected event
 
 In the [Yuno dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button.
 
-Access the [Webhooks Examples](ref:examples) page to check examples for payment, enrollment, and many other notification events.
+Access the [Webhooks Examples](doc:examples) page to check examples for payment, enrollment, and many other notification events.
 
 ### HMAC authentication
 
-When you enable **Use HMAC Authentication** in the dashboard, you'll provide a client secret key. Yuno will use this key to include a signature field in your webhook payloads, allowing you to verify that webhooks genuinely come from Yuno and haven't been tampered with.
+When you enable **Use HMAC Authentication** in the dashboard, you'll provide a client secret key. Yuno will use this key to generate an HMAC signature and send it in the `x-hmac-signature` HTTP header with each webhook request, allowing you to verify that webhooks genuinely come from Yuno and haven't been tampered with.
 
-See the [Verify Webhook Signatures](doc:verify-webhook-signatures) guide for implementation details and the [HMAC - Authorization](doc:examples#hmac-authorization) example.
+See the [Verify Webhook Signatures (HMAC)](doc:verify-webhook-signatures-hmac) guide for implementation details.
 
 ### oAuth2
 
