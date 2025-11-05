@@ -15,25 +15,40 @@ next:
 ---
 ## Setup
 
-To configure your Webhooks, you need to provide Yuno's team with:
+You can configure webhooks using the [Yuno dashboard](https://dashboard.y.uno/):
 
-1. URL to receive notifications
-2. `API_key` (x-api-key) and `API_secret` (x-secret) from your side (with no format restrictions) for us to send in the notification header so your dev team can identify Yuno Webhooks.
-3. A name to identify each endpoint in the dashboard.
+1. Navigate to the **Developers** tab
+2. Click **Webhooks**
+3. Click **Add webhook**
 
-Once configured, you'll need to define which events you want to list for the enabled webhook. The webhook will be sent whenever one or more registered events occur, avoiding constant searches for answers.
+A sidebar will open where you'll configure:
 
-You can configure different webhooks using the [Yuno Merchant Dashboard](https://dashboard.y.uno/). At the **Developers** tab, you can choose **Webhooks**. To create a new webhook, you need to name it, define the endpoint, and select the trigger event. The image below shows the side panel to add a webhook.
+* **Name**: Identify your webhook
+* **Endpoint URL**: Your server URL to receive notifications
+* **x-api-key**: Your API key (sent in notification headers)
+* **x-secret**: Your secret (sent in notification headers)
+* **Use OAuth2 Authentication**: Optional checkbox for OAuth2
+* **Use HMAC Authentication**: Optional checkbox for HMAC signature verification
 
-<Image align="center" border={false} src="https://files.readme.io/8479b7aabbea3816f7139a2e2d22b2217a3451d1a35001bb30180e84a15e8866-Screenshot_2025-08-28_at_2.26.55_PM.png" />
+**Trigger on**: Select which events will trigger this webhook (enrollment, payment, subscription, etc.)
 
-In the [Yuno Merchant Dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button.
+Once configured, the webhook will send notifications whenever the selected events occur. The image below shows the side panel to add a webhook.
 
-Access the [Webhooks Examples](ref:examples) page to check examples for payment and enrollment notification events.
+<Image border={false} src="https://files.readme.io/d6c9cb749a295424c3ebbb241f29f8480d7df5f0df38e88c6c0c41688900f664-Screenshot_2025-11-04_at_8.25.21PM.png" />
+
+In the [Yuno dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button.
+
+Access the [Webhooks Examples](ref:examples) page to check examples for payment, enrollment, and many other notification events.
+
+### HMAC authentication
+
+When you enable **Use HMAC Authentication** in the dashboard, you'll provide a client secret key. Yuno will use this key to include a signature field in your webhook payloads, allowing you to verify that webhooks genuinely come from Yuno and haven't been tampered with.
+
+See the [Verify Webhook Signatures](doc:verify-webhook-signatures) guide for implementation details and the [HMAC - Authorization](doc:examples#hmac-authorization) example.
 
 ### oAuth2
 
-In case you use the [oAuth2 authentication protocol](https://en.wikipedia.org/wiki/OAuth) for your webhook reception, Yuno also offers the possibility to define the required parameters in the same dashboard section. You will need to configure the following fields so we can obtain the authorization token that will be sent in the headers of the webhooks.
+When you enable **Use OAuth2 Authentication** in the dashboard, you can configure the following parameters so Yuno can obtain the authorization token that will be sent in the webhook headers:
 
 * `Authentication_url`: url to use for authentication
 * `Credentials`: Necessary credentials to communicate with the authentication_url.
