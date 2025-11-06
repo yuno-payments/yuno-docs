@@ -14,14 +14,19 @@ This page provides an overview of voucher payment creation with Yuno. Although t
 
 Review the request body schema and examples below to understand the voucher payment creation. Yuno processes voucher cards (such as meal, food, or fuel vouchers) using the same endpoint as regular card payments, with the voucher type automatically identified and notified in the response via the `type = VOUCHER` field.
 
+<Callout icon="🚧" theme="warn">
+  Review the `status` on the response to ensure the voucher payment has gone through.
+</Callout>
+
 <Accordion title="Onboardings request" icon="fa-clipboard-check">
   ```json
   {
-  "type": "ONE_STEP_ONBOARDING",
-  "workflow": "DIRECT",
+  "type": "PREVIOUSLY_ONBOARDED",
+  "workflow": "HOSTED_BY_PROVIDER",
   "provider": {
-    "id": "PAGARME",
-    "connection_id": "a12f5a33-8c47-47e3-9d36-6e4f2c523af2"
+    "id": "ALELO",
+    "connection_id": "a12f5a33-8c47-47e3-9d36-6e4f2c523af2",
+    "recipient_id": "2d92e85a-c1d2-4b8c-9205-8f5a4a4ac149"
   },
   "terms_of_service": {
     "acceptance": true,
@@ -471,7 +476,3 @@ Review the request body schema and examples below to understand the voucher paym
 
   <br />
 </Accordion>
-
-<Callout icon="🚧" theme="warn">
-  Review the `status` on the response to ensure the voucher payment has gone through.
-</Callout>
