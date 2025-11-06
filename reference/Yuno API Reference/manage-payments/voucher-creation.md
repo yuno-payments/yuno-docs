@@ -1,5 +1,5 @@
 ---
-title: Voucher Creation
+title: post
 api:
   file: create-vouchers.json
   operationId: post_payments
