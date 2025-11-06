@@ -18,7 +18,7 @@ Review the request body schema and examples below to understand voucher payment 
 
 Yuno allows you to distribute transaction amounts across multiple submerchants through the [split payments marketplace](doc:split-payments-marketplace). Ideal for marketplace platforms, commissions, and multi-vendor transactions.
 
-First, onboard submerchants:
+First, [onboard](ref:create-onboarding) submerchants:
 
 <Accordion title="Onboardings request" icon="fa-clipboard-check">
   ```json
