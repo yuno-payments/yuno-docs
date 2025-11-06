@@ -50,7 +50,7 @@ First, onboard submerchants:
   ```
 </Accordion>
 
-Then, create recipients who can receive portions of payments. An `onboardings` object is available to do both steps at the same time.
+Then, [create recipients](ref:create-recipient-1) who can receive portions of payments. An `onboardings` object is available to do both steps at the same time.
 
 
 <Accordion title="Recipients request" icon="fa-users">
