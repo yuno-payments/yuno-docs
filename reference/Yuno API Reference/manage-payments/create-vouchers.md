@@ -2,7 +2,7 @@
 title: Create Vouchers
 api:
   file: vouchers.json
-  operationId: post_payments
+  operationId: create-vouchers
 deprecated: false
 hidden: true
 link:
