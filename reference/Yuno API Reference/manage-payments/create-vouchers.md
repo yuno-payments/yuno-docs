@@ -35,7 +35,7 @@ First, [onboard](ref:create-onboarding) submerchants:
     "ip": "192.168.1.100"
   },
   "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4"
-}
+  }
   ```
 </Accordion>
 
@@ -358,7 +358,7 @@ First, [onboard](ref:create-onboarding) submerchants:
   },
   "created_at": "2025-08-22T17:57:58.460711Z",
   "updated_at": "2025-08-22T17:57:58.460724Z"
-}
+  }
   ```
 </Accordion>
 
@@ -480,4 +480,8 @@ Then, [create recipients](ref:create-recipient-1) who can receive portions of pa
   <br />
 </Accordion>
 
-<br />
+<Callout icon="🚧">
+
+
+  Review the `status` on the response to ensure the voucher payment has gone through.
+</Callout>
