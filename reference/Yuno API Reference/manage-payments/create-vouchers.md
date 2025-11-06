@@ -1,5 +1,5 @@
 ---
-title: Create Vouchers
+title: Create Voucher Payment
 api:
   file: creating-vouchers.json
   operationId: post_payments
@@ -10,15 +10,9 @@ link:
 metadata:
   robots: index
 ---
-This page provides an overview of voucher payment creation with Yuno. Although voucher transactions flow through the standard [Create payment](ref:create-payment) endpoint, this guide reduces the amount of fields available for simplicity.
+This page provides an overview of voucher payment creation with Yuno. Although these type of transactions go through the standard [Create payment](ref:create-payment) endpoint, this guide reduces the amount of fields available for simplicity.
 
-Review the request body schema and examples below to understand voucher payment creation. Yuno processes voucher cards (such as meal, food, or fuel vouchers) using the same endpoint as regular card payments, with the voucher type automatically identified in the response via the `type = VOUCHER` field.
-
-## Split payments
-
-Yuno allows you to distribute transaction amounts across multiple submerchants through the [split payments marketplace](doc:split-payments-marketplace). Ideal for marketplace platforms, commissions, and multi-vendor transactions.
-
-First, [onboard](ref:create-onboarding) submerchants:
+Review the request body schema and examples below to understand the voucher payment creation. Yuno processes voucher cards (such as meal, food, or fuel vouchers) using the same endpoint as regular card payments, with the voucher type automatically identified and notified in the response via the `type = VOUCHER` field.
 
 <Accordion title="Onboardings request" icon="fa-clipboard-check">
   ```json
@@ -362,8 +356,6 @@ First, [onboard](ref:create-onboarding) submerchants:
   ```
 </Accordion>
 
-Then, [create recipients](ref:create-recipient-1) who can receive portions of payments. An `onboardings` object is available to do both steps at the same time.
-
 <Accordion title="Recipients request" icon="fa-users">
   ```json
   {
@@ -480,8 +472,6 @@ Then, [create recipients](ref:create-recipient-1) who can receive portions of pa
   <br />
 </Accordion>
 
-<Callout icon="🚧">
-
-
+<Callout icon="🚧" theme="warn">
   Review the `status` on the response to ensure the voucher payment has gone through.
 </Callout>
