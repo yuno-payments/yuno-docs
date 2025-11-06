@@ -23,30 +23,342 @@ First, [onboard](ref:create-onboarding) submerchants:
 <Accordion title="Onboardings request" icon="fa-clipboard-check">
   ```json
   {
-    "type": "PREVIOUSLY_ONBOARDED",
-    "workflow": "HOSTED_BY_PROVIDER",
-    "provider": {
-      "id": "ALELO",
-      "connection_id": "09ae0cfb-b1da-4101-a62c-d0dc3cf6e492",
-      "recipient_id": "42867246000105"
-    },
-    "terms_of_service": {
-      "acceptance": true,
-      "date": "2025-07-21T20:43:54Z"
-    },
-    "account_id": "52c456b4-93e2-42bc-91d8-969e1464fce3"
-  }
+  "type": "ONE_STEP_ONBOARDING",
+  "workflow": "DIRECT",
+  "provider": {
+    "id": "PAGARME",
+    "connection_id": "a12f5a33-8c47-47e3-9d36-6e4f2c523af2"
+  },
+  "terms_of_service": {
+    "acceptance": true,
+    "date": "2025-11-06T05:00:00Z",
+    "ip": "192.168.1.100"
+  },
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4"
+}
   ```
 </Accordion>
 
 <Accordion title="Onboardings response" icon="fa-clipboard-check">
   ```json
   {
-      "code": "ONBOARDING_ALREADY_EXISTS",
-      "messages": [
-          "Onboarding already exists for this recipient."
-      ]
-  }
+  "id": "61df26d9-3750-4206-baab-f2e20683f35b",
+  "type": "ONE_STEP_ONBOARDING",
+  "workflow": "DIRECT",
+  "status": "SUCCEEDED",
+  "callback_url": "https://merchant.example.com/webhook/onboarding",
+  "provider": {
+    "id": "PAGARME",
+    "connection_id": "a12f5a33-8c47-47e3-9d36-6e4f2c523af2",
+    "recipient_id": "re_cldlw3l0d0001mi0h5h5b0b0b",
+    "redirect_url": null,
+    "onboarding_url": null,
+    "legal_entity": null
+  },
+  "documentation": [
+    {
+      "file_name": "recipient.pdf",
+      "content_type": "application/pdf",
+      "content_category": "IDENTIFICATION_DOCUMENT",
+      "content": "recipient.pdf-20ac42c2-ef01-4a0c-80dd-0f9f71c9cde7"
+    }
+  ],
+  "legal_representatives": [
+    {
+      "merchant_reference": "ONB_001",
+      "first_name": "Tatiana",
+      "last_name": "González",
+      "email": "tatiana.gonzalez@example.com",
+      "date_of_birth": "1985-05-20",
+      "country": "BR",
+      "nationality": "BR",
+      "title": "CEO",
+      "publicly_exposed_person": false,
+      "ultimate_beneficial_owner": true,
+      "document": {
+        "document_type": "CC",
+        "document_number": "0987654321"
+      },
+      "phone": {
+        "number": "3109876543",
+        "country_code": "+57"
+      },
+      "address": {
+        "address_line_1": "Calle 26 # 13-19",
+        "address_line_2": null,
+        "country": "CO",
+        "state": "Cundinamarca",
+        "city": "Bogotá",
+        "zip_code": "110311"
+      }
+    }
+  ],
+  "requirements": [],
+  "withdrawal_methods": {
+    "bank": {
+      "code": "003",
+      "branch": "003",
+      "branch_digit": null,
+      "account": "9876543210",
+      "account_digit": null,
+      "account_type": "CHECKINGS",
+      "routing": "021000022",
+      "country": "US",
+      "currency": "USD"
+    }
+  },
+  "terms_of_service": {
+    "acceptance": true,
+    "date": "2025-11-06T05:00:00Z",
+    "ip": "192.168.1.100"
+  },
+  "recipient": {
+    "id": "5a37f0c0-7689-4065-8348-4b5ff5bf9cc7",
+    "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+    "merchant_recipient_id": "MERCHANT_85ac5f5d-a169-46b3-bd87-80c0df2e6591",
+    "national_entity": "INDIVIDUAL",
+    "entity_type": "PRIVATE",
+    "first_name": "Stebann",
+    "last_name": "Castro",
+    "legal_name": "Steban Castro",
+    "email": "juan.perez@example.com",
+    "date_of_birth": "1992-01-21",
+    "country": "CO",
+    "website": "https://juanperez.com",
+    "industry": "Technology",
+    "merchant_category_code": "5740",
+    "document": {
+      "document_number": "09082160000100",
+      "document_type": "CNPJ"
+    },
+    "phone": {
+      "country_code": "57",
+      "number": "3001234567"
+    },
+    "address": {
+      "address_line_1": "Carrera 7 # 32-16",
+      "address_line_2": "Oficina 201",
+      "city": "Bogotá",
+      "country": "CO",
+      "state": "Cundinamarca",
+      "zip_code": "110311",
+      "neighborhood": "Centro"
+    },
+    "legal_representatives": [
+      {
+        "merchant_reference": "REP_001",
+        "first_name": "María",
+        "last_name": "González",
+        "email": "maria.gonzalez@example.com",
+        "date_of_birth": "1985-05-20",
+        "country": "CO",
+        "nationality": "CO",
+        "title": "CEO",
+        "publicly_exposed_person": false,
+        "ultimate_beneficial_owner": true,
+        "document": {
+          "document_type": "CC",
+          "document_number": "0987654321"
+        },
+        "phone": {
+          "number": "3109876543",
+          "country_code": "+57"
+        },
+        "address": {
+          "address_line_1": "Calle 26 # 13-19",
+          "address_line_2": null,
+          "country": "CO",
+          "state": "Cundinamarca",
+          "city": "Bogotá",
+          "zip_code": "110311"
+        }
+      }
+    ],
+    "withdrawal_methods": {
+      "bank": {
+        "code": "001",
+        "branch": "004",
+        "branch_digit": "123",
+        "account": "1234567890",
+        "account_digit": "123",
+        "account_type": "SAVINGS",
+        "routing": "021000021",
+        "country": "CO",
+        "currency": "COP"
+      }
+    },
+    "documentation": [
+      {
+        "file_name": "recipient.pdf",
+        "content_type": "application/pdf",
+        "content_category": "IDENTIFICATION_DOCUMENT",
+        "content": "recipient.pdf-2bf73b44-33e3-49c7-b777-34a5178cfb45"
+      }
+    ],
+    "created_at": "2025-08-22T17:54:05.711545Z",
+    "updated_at": "2025-08-22T17:54:05.711561Z"
+  },
+  "history": {
+    "id": "61df26d9-3750-4206-baab-f2e20683f35b",
+    "type": "ONE_STEP_ONBOARDING",
+    "workflow": "DIRECT",
+    "status": "SUCCEEDED",
+    "callback_url": "https://merchant.example.com/webhook/onboarding",
+    "provider": {
+      "id": "PAGARME",
+      "connection_id": "a12f5a33-8c47-47e3-9d36-6e4f2c523af2",
+      "recipient_id": "re_cldlw3l0d0001mi0h5h5b0b0b",
+      "redirect_url": null
+    },
+    "documentation": [
+      {
+        "file_name": "recipient.pdf",
+        "content_type": "application/pdf",
+        "content_category": "IDENTIFICATION_DOCUMENT",
+        "content": "recipient.pdf-20ac42c2-ef01-4a0c-80dd-0f9f71c9cde7"
+      }
+    ],
+    "legal_representatives": [
+      {
+        "merchant_reference": "ONB_001",
+        "first_name": "Tatiana",
+        "last_name": "González",
+        "email": "tatiana.gonzalez@example.com",
+        "date_of_birth": "1985-05-20",
+        "country": "BR",
+        "nationality": "BR",
+        "title": "CEO",
+        "publicly_exposed_person": false,
+        "ultimate_beneficial_owner": true,
+        "document": {
+          "document_type": "CC",
+          "document_number": "0987654321"
+        },
+        "phone": {
+          "number": "3109876543",
+          "country_code": "+57"
+        },
+        "address": {
+          "address_line_1": "Calle 26 # 13-19",
+          "address_line_2": null,
+          "country": "CO",
+          "state": "Cundinamarca",
+          "city": "Bogotá",
+          "zip_code": "110311"
+        }
+      }
+    ],
+    "requirements": [],
+    "withdrawal_methods": {
+      "bank": {
+        "code": "003",
+        "branch": "003",
+        "branch_digit": null,
+        "account": "9876543210",
+        "account_digit": null,
+        "account_type": "CHECKINGS",
+        "routing": "021000022",
+        "country": "US",
+        "currency": "USD"
+      }
+    },
+    "terms_of_service": {
+      "acceptance": true,
+      "date": "2025-11-06T05:00:00Z",
+      "ip": "192.168.1.100"
+    },
+    "recipient": {
+      "id": "5a37f0c0-7689-4065-8348-4b5ff5bf9cc7",
+      "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_recipient_id": "MERCHANT_85ac5f5d-a169-46b3-bd87-80c0df2e6591",
+      "national_entity": "INDIVIDUAL",
+      "entity_type": "PRIVATE",
+      "first_name": "Stebann",
+      "last_name": "Castro",
+      "legal_name": "Steban Castro",
+      "email": "juan.perez@example.com",
+      "date_of_birth": "1992-01-21",
+      "country": "CO",
+      "website": "https://juanperez.com",
+      "industry": "Technology",
+      "merchant_category_code": "5740",
+      "document": {
+        "document_number": "09082160000100",
+        "document_type": "CNPJ"
+      },
+      "phone": {
+        "country_code": "57",
+        "number": "3001234567"
+      },
+      "address": {
+        "address_line_1": "Carrera 7 # 32-16",
+        "address_line_2": "Oficina 201",
+        "city": "Bogotá",
+        "country": "CO",
+        "state": "Cundinamarca",
+        "zip_code": "110311",
+        "neighborhood": "Centro"
+      },
+      "legal_representatives": [
+        {
+          "merchant_reference": "REP_001",
+          "first_name": "María",
+          "last_name": "González",
+          "email": "maria.gonzalez@example.com",
+          "date_of_birth": "1985-05-20",
+          "country": "CO",
+          "nationality": "CO",
+          "title": "CEO",
+          "publicly_exposed_person": false,
+          "ultimate_beneficial_owner": true,
+          "document": {
+            "document_type": "CC",
+            "document_number": "0987654321"
+          },
+          "phone": {
+            "number": "3109876543",
+            "country_code": "+57"
+          },
+          "address": {
+            "address_line_1": "Calle 26 # 13-19",
+            "address_line_2": null,
+            "country": "CO",
+            "state": "Cundinamarca",
+            "city": "Bogotá",
+            "zip_code": "110311"
+          }
+        }
+      ],
+      "withdrawal_methods": {
+        "bank": {
+          "code": "001",
+          "branch": "004",
+          "branch_digit": "123",
+          "account": "1234567890",
+          "account_digit": "123",
+          "account_type": "SAVINGS",
+          "routing": "021000021",
+          "country": "CO",
+          "currency": "COP"
+        }
+      },
+      "documentation": [
+        {
+          "file_name": "recipient.pdf",
+          "content_type": "application/pdf",
+          "content_category": "IDENTIFICATION_DOCUMENT",
+          "content": "recipient.pdf-2bf73b44-33e3-49c7-b777-34a5178cfb45"
+        }
+      ],
+      "created_at": "2025-08-22T17:54:05.711545Z",
+      "updated_at": "2025-08-22T17:54:05.711561Z"
+    },
+    "created_at": "2025-08-22T17:57:58.460711Z",
+    "updated_at": "2025-08-22T17:57:58.460724Z"
+  },
+  "created_at": "2025-08-22T17:57:58.460711Z",
+  "updated_at": "2025-08-22T17:57:58.460724Z"
+}
   ```
 </Accordion>
 
@@ -102,7 +414,7 @@ Then, [create recipients](ref:create-recipient-1) who can receive portions of pa
       "workflow": "HOSTED_BY_PROVIDER"
     }
   ]
-}
+  }
   ```
 </Accordion>
 
@@ -162,7 +474,7 @@ Then, [create recipients](ref:create-recipient-1) who can receive portions of pa
   ],
   "created_at": "2025-11-03T16:30:07.662664Z",
   "updated_at": "2025-11-03T16:30:07.662667Z"
-}
+  }
   ```
 
   <br />
