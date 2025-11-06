@@ -10,17 +10,15 @@ link:
 metadata:
   robots: index
 ---
-This page provides an overview of voucher payment creation with Yuno. Although voucher transactions flow through the standard [Create payment](ref:create-payment) endpoint, this guide reduces the amount of fields available for simplicity.  
+This page provides an overview of voucher payment creation with Yuno. Although voucher transactions flow through the standard [Create payment](ref:create-payment) endpoint, this guide reduces the amount of fields available for simplicity.
 
-Review the request body schema and examples below to understand voucher payment creation. Yuno processes voucher cards (such as meal, food, or fuel vouchers) using the same endpoint as regular card payments, with the voucher type automatically identified in the response via the `type` field.
+Review the request body schema and examples below to understand voucher payment creation. Yuno processes voucher cards (such as meal, food, or fuel vouchers) using the same endpoint as regular card payments, with the voucher type automatically identified in the response via the `type = VOUCHER` field.
 
-Have a look at the request body, as well as the examples we have created to understand how to create voucher payments. With Yuno, voucher transactions are processed just like any other flowing through the Create payments endpoint.
+## Split payments
 
-## Recipients and Onboardings
+Yuno allows you to distribute transaction amounts across multiple submerchants through the [split payments marketplace](doc:split-payments-marketplace). Ideal for marketplace platforms, commissions, and multi-vendor transactions.
 
-Yuno enables payment splitting with submerchants through the [split payments marketplace](doc:split-payments-marketplace). Create recipients to define the parties involved in split payments:
-
-<br />
+First, onboard submerchants:
 
 <Accordion title="Onboardings request" icon="fa-clipboard-check">
   ```json
@@ -51,6 +49,9 @@ Yuno enables payment splitting with submerchants through the [split payments mar
   }
   ```
 </Accordion>
+
+Then, create recipients who can receive portions of payments. An `onboardings` object is available to do both steps at the same time.
+
 
 <Accordion title="Recipients request" icon="fa-users">
   ```json
