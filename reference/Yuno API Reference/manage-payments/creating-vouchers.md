@@ -34,37 +34,32 @@ Yuno allows you to split payments with submerchants via the split marketplace. Y
   <br />
 </Accordion>
 
-<Accordion title="Onboardings" icon="fa-clipboard-check">
-
-```json
-{
-  "type": "PREVIOUSLY_ONBOARDED",
-  "workflow": "HOSTED_BY_PROVIDER",
-  "provider": {
-    "id": "ALELO",
-    "connection_id": "09ae0cfb-b1da-4101-a62c-d0dc3cf6e492",
-    "recipient_id": "42867246000105"
-  },
-  "terms_of_service": {
-    "acceptance": true,
-    "date": "2025-07-21T20:43:54Z"
-  },
-  "account_id": "52c456b4-93e2-42bc-91d8-969e1464fce3"
-}
-```
-
+<Accordion title="Onboardings request" icon="fa-clipboard-check">
+  ```json
+  {
+    "type": "PREVIOUSLY_ONBOARDED",
+    "workflow": "HOSTED_BY_PROVIDER",
+    "provider": {
+      "id": "ALELO",
+      "connection_id": "09ae0cfb-b1da-4101-a62c-d0dc3cf6e492",
+      "recipient_id": "42867246000105"
+    },
+    "terms_of_service": {
+      "acceptance": true,
+      "date": "2025-07-21T20:43:54Z"
+    },
+    "account_id": "52c456b4-93e2-42bc-91d8-969e1464fce3"
+  }
+  ```
 </Accordion>
 
-<Accordion title="Onboardings" icon="fa-clipboard-check">
-
-```json
-{
-    "code": "ONBOARDING_ALREADY_EXISTS",
-    "messages": [
-        "Onboarding already exists for this recipient."
-    ]
-}
-```
-
+<Accordion title="Onboardings response" icon="fa-clipboard-check">
+  ```json
+  {
+      "code": "ONBOARDING_ALREADY_EXISTS",
+      "messages": [
+          "Onboarding already exists for this recipient."
+      ]
+  }
+  ```
 </Accordion>
-
