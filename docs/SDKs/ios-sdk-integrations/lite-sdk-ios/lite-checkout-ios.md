@@ -135,7 +135,7 @@ Parameters
 | `checkoutSession`                                                   | Refers to the current payment's checkout session.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `countryCode`                                                       | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                                          |
 | `language`                                                          | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
-| `navigationController`                                              | This property represents the navigation controller used for presenting the payment flow, and it's an optional `UINavigationController` instance.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `viewController`                                                    | This property represents the `UIViewController` used to present the payment flow. Even though the property remains optional for backward compatibility, you must supply a visible controller so the SDK can present its UI correctly.                                                                                                                                                                                                                                                                                                                                                                          |
 | `yunoCreatePayment(with token: String)`                             | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, which represents the payment token.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `yunoCreatePayment(with token: String, information: [String: Any])` | This method is responsible for creating a payment with the provided token. It takes a String parameter called `token`, representing the payment token. Additionally, it returns all the token response info in a dictionary.                                                                                                                                                                                                                                                                                                                                                                                  |
 | `yunoPaymentResult(_ result: Yuno.Result)`                          | This method is called when the payment process is completed, providing the result of the payment as a parameter of type `Yuno.Result`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -216,51 +216,9 @@ This code listens for deep links that open your app. When a URL is received, it 
 
 Make sure the `url.scheme` in this code matches the `callback_url` you provided when creating the `checkout_session`.
 
-## Click to Pay (CTP) with Passkey
-
-The integration flow for Click to Pay Passkey requires specific handling of the response, which differs from the standard payment flow.
-
-### Handling the One-Time Token (OTT) and Deeplink
-
-Unlike other processes, when a user completes a payment using CTP Passkey, the _One-Time Token_ (`OTT`) will not be received through the usual delegate methods.
-
-Instead, the transaction result (successful or failed) will be communicated to your application via the **deeplink URL**.
-
-#### 1. Closing the External Browser
-
-When receiving the deeplink callback in your application, it is essential to immediately call the `receiveDeeplink` method:
-
-```swift
-func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    
-    Yuno.receiveDeeplink(url: url)
-    
-    // Parse the URL to extract parameters
-    
-    return true
-}
-```
-
-Calling this method allows the SDK to properly close the external web browser that was used for Passkey authentication.
-
-#### 2. Processing the Deeplink URL
-
-The deeplink URL will contain parameters in the query string that indicate the transaction status:
-
-* `has_error`: If this parameter is present, it indicates that an error occurred during the transaction. You should handle this error scenario.
-* `one_time_token`: If the transaction was successful, the URL will contain this token.
-
-#### 3. Creating the Payment
-
-If you receive a `one_time_token` in the URL:
-
-1. Extract the value of the `one_time_token`.
-2. Use this token to create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
-3. Once the payment is created, proceed with the `continuePayment` flow in the SDK to finalize the transaction.
-
-> ⚠️ Important
+> 📘 Click to Pay
 >
-> The OTT will **not** be received through the `yunoCreatePayment(with token: String)` delegate method for CTP Passkey payments. You must extract the token from the deeplink URL parameters instead.
+> For Click to Pay support, follow the dedicated [Click to Pay SDK integration](doc:click-to-pay#sdk-integration) guide in the Wallets section.
 
 ## Callback
 

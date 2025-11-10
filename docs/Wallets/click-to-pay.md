@@ -40,3 +40,46 @@ To integrate and start offering Click to Pay to your customers, follow these 3 s
 
    <Image align="center" src="https://files.readme.io/24baf88-C2P_checkout.png" />
 4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **'Card' payment method**.
+
+## SDK integration
+
+The Yuno iOS SDK supports Click to Pay with Passkey. The flow differs from standard card payments because the SDK returns the result by deeplink instead of via the usual delegate callbacks.
+
+### Handle the one-time token (OTT) and deeplink
+
+When a shopper completes the Click to Pay Passkey flow, the SDK sends the result through the deeplink URL instead of the `yunoCreatePayment(with token: String)` delegate method.
+
+#### 1. Close the external browser
+
+When your app receives the deeplink callback, immediately call `Yuno.receiveDeeplink` to let the SDK dismiss the external browser that was used for Passkey authentication.
+
+```swift
+func application(_ app: UIApplication,
+                 open url: URL,
+                 options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    Yuno.receiveDeeplink(url: url)
+
+    // Parse the URL to extract parameters
+
+    return true
+}
+```
+
+#### 2. Process the deeplink URL
+
+The deeplink query string includes the information you need to continue:
+
+* `has_error`: Indicates an error occurred during the transaction. Handle this scenario in your app.
+* `one_time_token`: Present when the transaction succeeds. Use it to create the payment.
+
+#### 3. Create the payment
+
+If the deeplink contains a `one_time_token`:
+
+1. Extract the `one_time_token`.
+2. Use it to create the payment with the [Create Payment endpoint](https://docs.y.uno/reference/create-payment).
+3. After creating the payment, call `continuePayment` in the SDK to finalize the flow.
+
+> ⚠️ Important
+>
+> The OTT never reaches `yunoCreatePayment(with token: String)` for Click to Pay Passkey. Always read the token from the deeplink URL.

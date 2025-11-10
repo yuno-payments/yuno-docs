@@ -13,12 +13,6 @@ metadata:
 next:
   description: ''
 ---
-<br />
-
-> 👍 Recommended SDK
->
-> We recommend using the [iOS Seamless SDK](seamless-sdk-payment-ios) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
-
 This guide walks you through integrating Yuno's Lite iOS SDK for enrollment into your project.
 
 ## Requirements
@@ -93,6 +87,7 @@ Parameters
 | `customerSession`                              | Refers to the current payment's customer session.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `countryCode`                                  | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                                          |
 | `language`                                     | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
+| `viewController`                               | This property represents the `UIViewController` used to present the enrollment flow. Even though the property remains optional for backward compatibility, you must supply a visible controller so the SDK can present its UI correctly. |
 | `yunoEnrollmentResult(\_ result: Yuno.Result)` | This method is called when the enrollment process is completed, providing the result of the enrollment as a parameter of type `Yuno.Result`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 The `showPaymentStatus` parameter determines whether the payment status should be displayed. Passing `true` shows the payment status, while passing `false` hides it.
