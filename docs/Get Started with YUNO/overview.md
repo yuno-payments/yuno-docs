@@ -20,15 +20,15 @@ next:
       title: Create Your First Payment With SDK
       type: basic
 ---
-Welcome to the Yuno getting started guide. This section is designed to provide developers and businesses with a step-by-step guide to creating their first payment and performing the basic setup required to integrate Yuno services into their platform.
+Welcome to the Yuno Getting Started guide. Here you’ll find the essentials you need to launch your first payment and configure your workspace so you can move quickly from sandbox to production.
 
-With Yuno's services, managing multiple payment gateways is simplified, streamlining the payment process. Instead of integrating with several payment providers individually, you only need to integrate with Yuno once to access numerous payment methods and gateways. For more information, visit the [How Yuno works](doc:what-is-yuno) section.
+Yuno connects you to dozens of payment methods and providers with a single integration. Instead of stitching together separate connections, you plug in once and manage the rest through Yuno. If you’re curious about the platform’s architecture, check the [How Yuno works](doc:what-is-yuno) section.
 
-To complete this guide, follow these steps:
+Follow these two short tutorials to get up and running:
 
 1. [Set up your account](doc:step-1-set-up-your-account)
 2. [Create your first payment](doc:step-2-your-first-payment)
 
-Once you've completed these steps, you'll be ready to learn more about Yuno and start your integration.
+After you complete them, you’ll have a working environment, a first payment flow, and clear next steps for scaling your integration.
 
-As you explore this guide, you'll find comprehensive information to simplify your integration process. Regardless of your experience level with payment solutions, we're here to help. For any questions or if you encounter challenges, please reach out to your technical account manager.
+Need a hand? Your technical account manager can guide you through your next configuration or help unblock any questions along the way.
