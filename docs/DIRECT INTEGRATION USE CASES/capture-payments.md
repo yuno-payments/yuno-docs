@@ -12,7 +12,11 @@ metadata:
 next:
   description: ''
 ---
-In this guide, you will find step-by-step instructions on capturing a previously created payment on Yuno.
+In this guide, you will find step-by-step instructions on manually capturing a previously created payment on Yuno.
+
+> 📘 Automatic Delayed Capture
+>
+> If you prefer to have Yuno automatically capture payments after a specified delay, you can configure `delayed_capture_settings` when creating the payment. Learn more in the [Cancel and Capture Flow](doc:cancel-and-capture-flow) guide.
 
 > 🚧 Which payments can you capture
 > 
@@ -34,6 +38,13 @@ To capture a payment, you need to:
 >
 > Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
 
+> 💡 Capture Options
+>
+> This guide covers **manual capture** using the API endpoint. For other capture options including:
+> - **Real-time capture** (immediate purchase)
+> - **Delayed capture** (automatic capture after a delay)
+> 
+> See the [Cancel and Capture Flow](doc:cancel-and-capture-flow) guide.
 
 ## Capture a Payment
 

@@ -12,7 +12,11 @@ metadata:
 next:
   description: ''
 ---
-In this guide, you will find step-by-step instructions on canceling a previously created payment on Yuno.
+In this guide, you will find step-by-step instructions on manually canceling a previously created payment on Yuno.
+
+> 📘 Automatic Delayed Cancel
+>
+> If you prefer to have Yuno automatically cancel authorizations after a specified delay, you can configure `delayed_cancel_settings` when creating the payment. This helps improve customer experience by automatically releasing held funds. Learn more in the [Cancel and Capture Flow](doc:cancel-and-capture-flow) guide.
 
 > 🚧 Cancellable Payments
 > 
@@ -33,7 +37,6 @@ To cancel a payment, you need to:
 > 📘 Explore Yuno Postman Collections
 >
 > Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
-
 
 ## Cancel a Payment
 
