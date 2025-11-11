@@ -75,7 +75,7 @@ The payments can have the following status and sub status.
           <td>Initial state at the time of creating a payment.Waiting for customer action</td>
         </tr>
         <tr>
-          <td class="status" rowspan="5"><code>PENDING</code></td>
+          <td class="status" rowspan="6"><code>PENDING</code></td>
           <td class="substatus"><code>AUTHORIZED</code></td>
           <td>Authorize</td>
           <td>Succeeded</td>
@@ -88,10 +88,15 @@ The payments can have the following status and sub status.
           <td>The client has been redirected to the provider and we are waiting for the completion of the payment.</td>
         </tr>
         <tr>
-          <td class="substatus"><code>WAITING_ADDITIONAL_STEP</code></td>
+          <td class="substatus" rowspan="2"><code>WAITING_ADDITIONAL_STEP</code></td>
           <td>Purchase</td>
           <td>Pending</td>
           <td>3DS/Second factor</td>
+        </tr>
+        <tr>
+          <td>Authorize</td>
+          <td>Pending</td>
+          <td>3DS/Second factor for authorization flow</td>
         </tr>
         <tr>
           <td class="substatus"><code>PENDING_PROVIDER_CONFIRMATION</code></td>
