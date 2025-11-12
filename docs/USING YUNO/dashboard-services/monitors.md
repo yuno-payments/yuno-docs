@@ -18,7 +18,7 @@ You can access the Monitors section from your Yuno dashboard to view and manage 
 
 The monitoring process consists of four key steps that help identify and restore payment routes:
 
-1. **Anomaly detection**: The system continuously monitors approval rates over your specified time period. When rates drop below your defined threshold, it triggers alerts through your configured channels like email or Opsgenie.
+1. **Anomaly detection**: The system continuously monitors approval rates over your specified time period. When rates drop below your defined threshold, it triggers alerts through your configured channels like email or **Opsgenie**.
 
 2. **Alert notification**: If approval rates fall below the threshold, Yuno immediately notifies you through your chosen alert channels.
 
@@ -68,7 +68,7 @@ To configure a monitor for your payment routes:
    * **Time frame**: Set how long to measure the approval rate
    * **Approval rate limit**: Set the threshold that triggers alerts and actions
    * **Number of payments**: Set minimum, maximum, or range of payments needed to trigger the condition. This prevents redirects from anomalies during low payment volumes
-   * **Alert channels**: Choose email or Opsgenie notifications
+   * **Alert channels**: Choose email or **Opsgenie** notifications
    * **Automatic traffic redistribution**: Enable automatic redirection when alerts trigger. Requires a fallback provider for **Error** and **Pause** conditions
    * **Percentage of traffic**: Set how much traffic stays with the original provider for monitoring
 

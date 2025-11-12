@@ -43,7 +43,7 @@ pod install
 
 ### Swift Package Manager
 
-Add the Yuno SDK using Swift Package Manager. Add YunoSDK as a dependency in your Package.swift file:
+Add the Yuno SDK using Swift Package Manager. Add `YunoSDK` as a dependency in your Package.swift file:
 
 ```swift
 dependencies: [
@@ -109,7 +109,7 @@ The method `enrollPayment` initiates the payment enrollment process. You should 
 >
 > This feature is only used if you enroll in a payment method that executes deep links. If you are not enrolling in a payment method that executes deep links, you can ignore Step 3.
 
-If you use a payment method that requires a deep link to return to your app, use the method described in the following code block to obtain the enrollment status in your AppDelegate. The `url.scheme` should be the same as the `callback_url` used when creating the `customer_session`.
+If you use a payment method that requires a deep link to return to your app, use the method described in the following code block to obtain the enrollment status in your `AppDelegate`. The `url.scheme` should be the same as the `callback_url` used when creating the `customer_session`.
 
 ```swift
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
@@ -132,7 +132,7 @@ When the enrollment process finishes, the SDK calls:
 func yunoEnrollmentResult(_ result: Yuno.Result)
 ```
 
-This result can reflect different final states for the enrollment. The Yuno.Result enum includes:
+This result can reflect different final states for the enrollment. The `Yuno.Result` enum includes:
 
 ```swift
 enum Result {
@@ -285,8 +285,8 @@ Thread-safe means your code can be safely called from multiple threads without c
 
 We do not mark protocols as `@MainActor` because:
 
-* It would force all implementations to be MainActor-compatible
-* It would reduce flexibility for merchants who don't use MainActor
+* It would force all implementations to be `MainActor` compatible
+* It would reduce flexibility for merchants who don't use `MainActor`
 * Each implementation has different concurrency needs
 
 ### Merchant's responsibility
@@ -316,7 +316,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 }
 ```
 
-#### Option 2: Mutable properties with MainActor.assumeIsolated
+#### Option 2: Mutable properties with `MainActor.assumeIsolated`
 
 This approach, best for apps where configuration values might change during runtime (like user preferences), allows for mutable properties while maintaining thread safety by using `MainActor.assumeIsolated`.
 
@@ -337,9 +337,9 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 }
 ```
 
-#### Option 3: For non-MainActor classes
+#### Option 3: For non `MainActor` classes
 
-This approach is suitable for service classes that don't require MainActor isolation, making it best for background services or utility classes that don't interact with the UI.
+This approach is suitable for service classes that don't require `MainActor` isolation, making it best for background services or utility classes that don't interact with the UI.
 
 ```swift
 class MyService: YunoPaymentDelegate {
@@ -366,6 +366,6 @@ class MyService: YunoPaymentDelegate {
 
 When implementing concurrency in your delegate, keep these key points in mind:
 
-* **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
-* **nonisolated**: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
-* **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
+* `MainActor.assumeIsolated`: Only use when you guarantee it's called from `MainActor`. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
+* `nonisolated`: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
+* `viewController`: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.

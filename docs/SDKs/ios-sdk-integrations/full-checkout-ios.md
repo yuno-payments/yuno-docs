@@ -49,7 +49,7 @@ pod install
 
 ### Swift Package Manager
 
-To add the Yuno SDK to your iOS project, you need to install the [Swift Package Manager](https://www.swift.org/package-manager/). With the Swift package set up, add YunoSDK as a dependency, as presented in the following code block:
+To add the Yuno SDK to your iOS project, you need to install the [Swift Package Manager](https://www.swift.org/package-manager/). With the Swift package set up, add `YunoSDK` as a dependency, as presented in the following code block:
 
 ```swift
 dependencies: [
@@ -94,7 +94,7 @@ Configure the SDK with the following options:
 
 | Parameter         | Description                                                                                                                                                                           |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `cardFormType`    | This field can be used to choose Payment and Enrollment Card flow. It's an optional property and considers **.oneStep** by default.                                                   |
+| `cardFormType`    | This field can be used to choose Payment and Enrollment Card flow. It's an optional property and considers `.oneStep` by default.                                                   |
 | `appearance`      | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                          |
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
 | `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
@@ -755,8 +755,8 @@ Thread-safe means your code can be safely called from multiple threads without c
 
 We do not mark protocols as `@MainActor` because:
 
-* It would force all implementations to be MainActor-compatible
-* It would reduce flexibility for merchants who don't use MainActor
+* It would force all implementations to be `MainActor`-compatible
+* It would reduce flexibility for merchants who don't use `MainActor`
 * Each implementation has different concurrency needs
 
 ### Merchant's responsibility
@@ -785,7 +785,7 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 }
 ```
 
-#### Option 2: Mutable properties with MainActor.assumeIsolated
+#### Option 2: Mutable properties with `MainActor.assumeIsolated`
 
 This approach, best for apps where configuration values might change during runtime (like user preferences), allows for mutable properties while maintaining thread safety by using `MainActor.assumeIsolated`.
 
@@ -806,9 +806,9 @@ class MyViewController: UIViewController, YunoPaymentDelegate {
 }
 ```
 
-#### Option 3: For non-MainActor classes
+#### Option 3: For non-`MainActor` classes
 
-This approach is suitable for service classes that don't require MainActor isolation, making it best for background services or utility classes that don't interact with the UI.
+This approach is suitable for service classes that don't require `MainActor` isolation, making it best for background services or utility classes that don't interact with the UI.
 
 ```swift
 class MyService: YunoPaymentDelegate {
@@ -834,6 +834,6 @@ class MyService: YunoPaymentDelegate {
 
 When implementing concurrency in your delegate, keep these key points in mind:
 
-* **MainActor.assumeIsolated**: Only use when you guarantee it's called from MainActor. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
-* **nonisolated**: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
-* **viewController**: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
+* `MainActor.assumeIsolated`: Only use when you guarantee it's called from `MainActor`. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
+* `nonisolated`: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
+* `viewController`: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
