@@ -5,6 +5,10 @@ hidden: false
 metadata:
   robots: index
 ---
+> ❗️ This page is deprecated.
+>
+> The Yuno ClearSale SDK no longer requires standalone documentation. Contact your Yuno representative if you need historical details about the integration.
+
 The Yuno ClearSale SDK provides device fingerprinting and fraud prevention capabilities by integrating with ClearSale and is designed to complement the Yuno Payments SDK.
 
 ## Installation (Swift Package Manager - SPM)
