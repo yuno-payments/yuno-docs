@@ -22,9 +22,13 @@ Review the request body schema and examples below to understand the voucher paym
 
 Voucher payments support split payment functionality, allowing you to divide transaction amounts among multiple recipients. This is particularly useful for marketplace scenarios where voucher transactions need to be distributed among different sellers or stakeholders.
 
-Recipients and onboarding work the same way as they do for regular payments and split payments. The **recipient object** represents the merchant entity that will receive funds from voucher transactions, and must be onboarded with voucher providers (e.g. Alelo) before processing payments.
+**[Create recipient](ref:create-recipient-1)**: This endpoint creates a recipient entity that defines submerchants who will receive portions of split voucher transactions. The recipient represents the merchant or business entity with their business information, legal documentation, and banking details. Recipients work the same for vouchers as they do for regular payments and split payments.
 
-Use the [Create recipient endpoint](ref:create-recipient-1) to register merchants and the [Create onboarding endpoint](ref:create-onboarding) to complete provider-specific onboarding workflows. Note the **recipients** endpoint includes an `onboardings` object, allowing you to use both at the same time.
+**[Create onboarding](ref:create-onboarding)**: This endpoint registers the recipient with voucher providers (e.g. Alelo). The onboarding process integrates the recipient with the payment provider, including identity verification and compliance checks. Recipients must be successfully onboarded before they can receive split payments.
+
+<Callout icon="ℹ️" theme="info">
+  The **recipients** endpoint includes an `onboardings` object, allowing you to create both the recipient and onboarding in a single API call.
+</Callout>
 
 The required fields for voucher payments are the same as for regular payments. Check each endpoint's page to learn more about the required fields and parameters.
 
