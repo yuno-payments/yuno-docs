@@ -18,6 +18,18 @@ Review the request body schema and examples below to understand the voucher paym
   Review the `status` on the response to ensure the voucher payment has gone through.
 </Callout>
 
+## Recipients and Onboarding
+
+Voucher payments support split payment functionality, allowing you to divide transaction amounts among multiple recipients. This is particularly useful for marketplace scenarios where voucher transactions need to be distributed among different sellers or stakeholders.
+
+Recipients and onboarding work the same way as they do for regular payments and split payments. The **recipient object** represents the merchant entity that will receive funds from voucher transactions, and must be onboarded with voucher providers (e.g. Alelo) before processing payments.
+
+Use the [Create recipient endpoint](ref:create-recipient-1) to register merchants and the [Create onboarding endpoint](ref:create-onboarding) to complete provider-specific onboarding workflows. Note the **recipients** endpoint includes an `onboardings` object, allowing you to use both at the same time.
+
+The required fields for voucher payments are the same as for regular payments. Check each endpoint's page to learn more about the required fields and parameters.
+
+The examples below demonstrate how to structure recipients and onboarding requests for voucher payments. The Recipients examples show creating a recipient with an embedded `onboardings` object (combining both operations in one call). The Onboardings examples show creating a standalone onboarding for an existing recipient. Note the `type` field which can be `PREVIOUSLY_ONBOARDED` for merchants already registered with the provider, or `ONE_STEP_ONBOARDING`/`TWO_STEP_ONBOARDING` for new registrations.
+
 <Accordion title="Recipients request" icon="fa-users">
   ```json
   {
