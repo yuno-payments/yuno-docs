@@ -157,14 +157,15 @@ Depending on the type of event, you will receive a different type of webhook and
 | enrollment   | enroll     |
 | enrollment   | unenroll   |
 | enrollment   | expiration |
-| payment      | purchase   |
-| payment      | authorize  |
-| payment      | capture    |
-| payment      | refund     |
-| payment      | cancel     |
-| payment      | verify     |
-| payment      | chargeback |
-| payout       | payout     |
+| payment      | purchase        |
+| payment      | authorize       |
+| payment      | capture         |
+| payment      | refund          |
+| payment      | cancel          |
+| payment      | verify          |
+| payment      | chargeback      |
+| payment      | fraud_screening |
+| payout       | payout          |
 | subscription | create     |
 | subscription | pause      |
 | subscription | resume     |
@@ -177,3 +178,9 @@ Depending on the type of event, you will receive a different type of webhook and
 | onboarding   | declined   |
 | onboarding   | blocked    |
 | onboarding   | unblocked  |
+
+### Fraud Screening Webhook Behavior
+
+When a transaction is declined by the fraud screening and doesn't move forward to processing with any provider, no transactions are created — the `transactions` array comes back empty. In this case, the only elements that get created are within the `fraud_screening` object, and the webhook that's triggered is `payment.fraud_screening`.
+
+If due to the routing configuration the fraud screening declines but the transaction still proceeds to processing, the event sent to the client is `payment.purchase`.
