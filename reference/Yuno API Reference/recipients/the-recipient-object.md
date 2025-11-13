@@ -364,29 +364,46 @@ This object represents a recipient who will receive part of a [split payment](do
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>id</code></strong> <small>string</small>
           <br/>Provider identifier.
-          <br/><small>Example: PAGARME</small>
+          <br/><small>Example: ADYEN</small>
         </p>
       </div>
       <div class="yuno" style="margin-left:2em;">
-        <p><strong><code>redirect_url</code></strong> <small>string</small>
-          <br/>URL to redirect your recipient to finalize the onboarding.
-          <br/><small>Example: https://www.stripe.com</small>
+        <p><strong><code>connection_id</code></strong> <small>string</small>
+          <br/>The specific Yuno connection ID associated with that onboarding.
+          <br/><small>Example: 322d48b6-f423-4438-8ffb-0b9b5059a2e9</small>
         </p>
       </div>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>recipient_id</code></strong> <small>string</small>
           <br/>The unique identifier of the provider's recipient.
-          <br/><small>Example: AAAAA01</small>
+          <br/><small>Example: 9104911d-5df9-429e-8488-ad41abea1a4b</small>
+        </p>
+      </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>redirect_url</code></strong> <small>string</small>
+          <br/>Redirect URL where the end user will be redirected once the onboarding is finished.
+          <br/><small>Example: https://www.example.com/callback</small>
+        </p>
+      </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>onboarding_url</code></strong> <small>string</small>
+          <br/>URL to redirect your recipient to finalize the onboarding.
+          <br/><small>Example: https://www.provider.com/onboarding</small>
+        </p>
+      </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>legal_entity</code></strong> <small>string</small>
+          <br/>The legal entity identifier associated with the provider.
+        </p>
+      </div>
+      <div class="yuno" style="margin-left:2em;">
+        <p><strong><code>recipient_additional_id</code></strong> <small>string</small>
+          <br/>Additional information regarding the recipient. Usually the legal entity ID.
         </p>
       </div>
       <div class="yuno" style="margin-left:2em;">
         <p><strong><code>balance_account_id</code></strong> <small>string</small>
           <br/>The unique identifier of the provider's balance account.
-        </p>
-      </div>
-      <div class="yuno" style="margin-left:2em;">
-        <p><strong><code>legal_entity_id</code></strong> <small>string</small>
-          <br/>The identifier of the provider's registered legal entity.
         </p>
       </div>
     </details>
