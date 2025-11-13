@@ -9,6 +9,8 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.1   | **IMPROVE**: Hide debit cards when only credit is enabled.                                                                                                                                                       |
+|         | **NEW**: Enable Click to Pay passkey for render mode.                                                                                                                                                            |
 | 2.8.0   | **FIX**: Various bug fixes and improvements.                                                                                                                                                                      |
 |         | **CHANGE**: Change MM/YY format to Traditional Chinese.                                                                                                                                                           |
 |         | **CHANGE**: Migrate settings from v1 to v2; move logs from the Payment Methods service to the Settings v2 service.                                                                                                |
