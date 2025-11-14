@@ -1,5 +1,5 @@
 ---
-title: Copy of Create Checkout Session
+title: Update Checkout Session
 api:
   file: checkout-api.json
   operationId: post_checkoutsessions-1
