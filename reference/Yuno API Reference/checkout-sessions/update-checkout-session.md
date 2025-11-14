@@ -13,4 +13,4 @@ metadata:
     when the Customer resource was created.
   robots: index
 ---
-This request creates a checkout session using the unique identifier generated when the `customer` resource was created.
+Update an existing checkout session with this endpoint. Only fields you send will be updated.
