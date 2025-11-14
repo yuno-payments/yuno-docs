@@ -4,7 +4,7 @@ api:
   file: checkout-api.json
   operationId: post_checkoutsessions-1
 deprecated: false
-hidden: true
+hidden: false
 link:
   new_tab: false
 metadata:
