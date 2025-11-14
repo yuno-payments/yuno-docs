@@ -112,12 +112,12 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["settings", "payments"],
+                "required": ["settings", "additional_information"],
                 "properties": {
                   "settings": {
                     "type": "object",
                     "description": "AI agent configuration",
-                    "required": ["contact_details", "seller_details"],
+                    "required": ["contact_details"],
                     "properties": {
                       "contact_details": {
                         "type": "object",
@@ -149,13 +149,16 @@
                                 "example": ["MERCADO_PAGO", "NEQUI", "CREDIT_CARD"]
                               }
                             }
-                          },
-                          "additional_information": {
-                            "type": "object",
-                            "description": "All relevant information to feed to the AI to improve context."
                           }
                         }
-                      },
+                      }
+                    }
+                  },
+                  "additional_information": {
+                    "type": "object",
+                    "description": "All relevant information to feed to the AI to improve context.",
+                    "required": ["seller_details", "payment"],
+                    "properties": {
                       "seller_details": {
                         "type": "object",
                         "description": "Object containing the merchant's contact information to be used if the agent is unable to answer the inquiry.",
@@ -166,190 +169,197 @@
                             "description": "The merchant's name, used by the AI to introduce itself.",
                             "minLength": 3,
                             "maxLength": 255,
-                            "example": "Rappi"
+                            "example": "My Store"
                           },
                           "fallback_instructions": {
                             "type": "string",
                             "description": "Instruction to be provided to the user on how to contact customer support in case the AI cannot solve the issue.",
                             "minLength": 3,
                             "maxLength": 255,
-                            "example": "Please contact customer support at the following number 3132450765"
+                            "example": "Go to the application and click on the top right corner to contact a customer support agent."
+                          },
+                          "redirection_url": {
+                            "type": "string",
+                            "description": "URL to redirect the customer for additional support.",
+                            "example": "www.test.com/purchase"
                           }
                         }
-                      }
-                    }
-                  },
-                  "payments": {
-                    "type": "array",
-                    "description": "Array of declined payment objects",
-                    "items": {
-                      "type": "object",
-                      "required": ["account_id", "merchant_order_id", "country", "description", "created_at", "declined_reason"],
-                      "properties": {
-                        "account_id": {
-                          "type": "string",
-                          "description": "The unique identifier of the account.",
-                          "minLength": 36,
-                          "maxLength": 64,
-                          "example": "2404911d-5df9-429e-8488-ad41abea1a4b"
-                        },
-                        "id": {
-                          "type": "string",
-                          "description": "The unique identifier of the payment.",
-                          "minLength": 3,
-                          "maxLength": 64,
-                          "example": "5104911d-5df9-229e-8468-bd41abea1a4s"
-                        },
-                        "merchant_order_id": {
-                          "type": "string",
-                          "description": "Identification of the Order.",
-                          "minLength": 3,
-                          "maxLength": 255,
-                          "example": "432245"
-                        },
-                        "country": {
-                          "type": "string",
-                          "description": "Country where the payment was processed (ISO 3166-1).",
-                          "minLength": 2,
-                          "maxLength": 2,
-                          "example": "CO"
-                        },
-                        "description": {
-                          "type": "string",
-                          "description": "The description of product or service the user tried to purchase.",
-                          "minLength": 3,
-                          "maxLength": 1000,
-                          "example": "marketplace payment"
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time",
-                          "description": "The timestamp of when the payment was made (ISO 8601).",
-                          "minLength": 27,
-                          "maxLength": 27,
-                          "example": "2022-05-09T20:46:54.786342Z"
-                        },
-                        "declined_reason": {
-                          "type": "string",
-                          "description": "The declined reason for the payment provided by the payment provider.",
-                          "minLength": 3,
-                          "maxLength": 255,
-                          "example": "Insufficient funds"
-                        },
-                        "payment_method": {
-                          "type": "object",
-                          "required": ["type"],
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "description": "The type of payment method selected by the customer.",
-                              "minLength": 3,
-                              "maxLength": 255,
-                              "example": "Credit Card"
-                            },
-                            "card_data": {
-                              "type": "object",
-                              "properties": {
-                                "expiration_month": {
-                                  "type": "number",
-                                  "description": "Card's expiration month - MM",
-                                  "minimum": 1,
-                                  "maximum": 12,
-                                  "example": 10
-                                },
-                                "expiration_year": {
-                                  "type": "number",
-                                  "description": "Card's expiration year - YYYY",
-                                  "minimum": 2024,
-                                  "maximum": 9999,
-                                  "example": 2025
-                                },
-                                "iin": {
-                                  "type": "string",
-                                  "description": "The Institution identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution.",
-                                  "minLength": 6,
-                                  "maxLength": 8,
-                                  "example": "45079900"
-                                },
-                                "lfd": {
-                                  "type": "string",
-                                  "description": "Last four digits of the card.",
-                                  "minLength": 4,
-                                  "maxLength": 4,
-                                  "example": "0010"
-                                },
-                                "issuer": {
-                                  "type": "string",
-                                  "description": "Card issuer.",
-                                  "minLength": 3,
-                                  "maxLength": 255,
-                                  "example": "Banco Galicia"
-                                },
-                                "type": {
-                                  "type": "string",
-                                  "description": "Card's issuer type.",
-                                  "enum": ["CREDIT", "DEBIT", "PREPAID"],
-                                  "minLength": 3,
-                                  "maxLength": 255,
-                                  "example": "CREDIT"
+                      },
+                      "payment": {
+                        "type": "object",
+                        "description": "Declined payment information",
+                        "required": ["account_id", "merchant_order_id", "country", "description", "created_at", "declined_reason"],
+                        "properties": {
+                          "account_id": {
+                            "type": "string",
+                            "description": "The unique identifier of the account.",
+                            "minLength": 36,
+                            "maxLength": 64,
+                            "example": "e4c03f29-b0f6-403a-8814-9aee1a88d60e"
+                          },
+                          "id": {
+                            "type": "string",
+                            "description": "The unique identifier of the payment.",
+                            "minLength": 3,
+                            "maxLength": 64,
+                            "example": "f1fbad16-93c1-4335-b735-2b01ec94ea9e"
+                          },
+                          "merchant_order_id": {
+                            "type": "string",
+                            "description": "Identification of the Order.",
+                            "minLength": 3,
+                            "maxLength": 255,
+                            "example": "MX_Verification_50708779"
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "Country where the payment was processed (ISO 3166-1).",
+                            "minLength": 2,
+                            "maxLength": 2,
+                            "example": "CO"
+                          },
+                          "description": {
+                            "type": "string",
+                            "description": "The description of product or service the user tried to purchase.",
+                            "minLength": 3,
+                            "maxLength": 1000,
+                            "example": "Purchase in McDonalds"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "The timestamp of when the payment was made (ISO 8601).",
+                            "minLength": 27,
+                            "maxLength": 27,
+                            "example": "2022-05-09T20:46:54.786342Z"
+                          },
+                          "declined_reason": {
+                            "type": "string",
+                            "description": "The declined reason for the payment provided by the payment provider.",
+                            "minLength": 3,
+                            "maxLength": 255,
+                            "example": "insufficient funds"
+                          },
+                          "payment_method": {
+                            "type": "object",
+                            "required": ["type"],
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "description": "The type of payment method selected by the customer.",
+                                "minLength": 3,
+                                "maxLength": 255,
+                                "example": "Credit Card"
+                              },
+                              "detail": {
+                                "type": "object",
+                                "properties": {
+                                  "card_data": {
+                                    "type": "object",
+                                    "properties": {
+                                      "expiration_month": {
+                                        "type": "number",
+                                        "description": "Card's expiration month - MM",
+                                        "minimum": 1,
+                                        "maximum": 12,
+                                        "example": 12
+                                      },
+                                      "expiration_year": {
+                                        "type": "number",
+                                        "description": "Card's expiration year - YYYY",
+                                        "minimum": 2024,
+                                        "maximum": 9999,
+                                        "example": 2030
+                                      },
+                                      "iin": {
+                                        "type": "string",
+                                        "description": "The Institution identification number (IIN) refers to the first few digits of a payment card number issued by a financial institution.",
+                                        "minLength": 6,
+                                        "maxLength": 8,
+                                        "example": "636318"
+                                      },
+                                      "lfd": {
+                                        "type": "string",
+                                        "description": "Last four digits of the card.",
+                                        "minLength": 4,
+                                        "maxLength": 4,
+                                        "example": "2671"
+                                      },
+                                      "issuer": {
+                                        "type": "string",
+                                        "description": "Card issuer.",
+                                        "minLength": 3,
+                                        "maxLength": 255,
+                                        "example": "JPMORGAN"
+                                      },
+                                      "type": {
+                                        "type": "string",
+                                        "description": "Card's issuer type.",
+                                        "enum": ["CREDIT", "DEBIT", "PREPAID"],
+                                        "minLength": 3,
+                                        "maxLength": 255,
+                                        "example": "CREDIT"
+                                      }
+                                    }
+                                  }
                                 }
                               }
                             }
-                          }
-                        },
-                        "amount": {
-                          "type": "object",
-                          "required": ["value", "currency"],
-                          "properties": {
-                            "value": {
-                              "type": "number",
-                              "description": "The amount of the payment that was declined.",
-                              "example": 12100.00
-                            },
-                            "currency": {
-                              "type": "string",
-                              "description": "The currency of the payment that was declined (ISO 4217).",
-                              "minLength": 3,
-                              "maxLength": 3,
-                              "example": "COP"
+                          },
+                          "amount": {
+                            "type": "object",
+                            "required": ["value", "currency"],
+                            "properties": {
+                              "value": {
+                                "type": "number",
+                                "description": "The amount of the payment that was declined.",
+                                "example": 2700
+                              },
+                              "currency": {
+                                "type": "string",
+                                "description": "The currency of the payment that was declined (ISO 4217).",
+                                "minLength": 3,
+                                "maxLength": 3,
+                                "example": "USD"
+                              }
                             }
-                          }
-                        },
-                        "customer_payer": {
-                          "type": "object",
-                          "required": ["first_name"],
-                          "properties": {
-                            "first_name": {
-                              "type": "string",
-                              "description": "The customer's first name.",
-                              "minLength": 3,
-                              "maxLength": 255,
-                              "example": "John"
-                            },
-                            "last_name": {
-                              "type": "string",
-                              "description": "The customer's last name.",
-                              "minLength": 3,
-                              "maxLength": 255,
-                              "example": "Doe"
-                            },
-                            "phone": {
-                              "type": "object",
-                              "required": ["country_code", "number"],
-                              "properties": {
-                                "country_code": {
-                                  "type": "string",
-                                  "description": "Customer payer cell phone area code.",
-                                  "minLength": 2,
-                                  "maxLength": 3,
-                                  "example": "57"
-                                },
-                                "number": {
-                                  "type": "string",
-                                  "description": "Customer payer cell phone number.",
-                                  "minLength": 1,
-                                  "maxLength": 32,
-                                  "example": "3132450765"
+                          },
+                          "customer_payer": {
+                            "type": "object",
+                            "required": ["first_name"],
+                            "properties": {
+                              "first_name": {
+                                "type": "string",
+                                "description": "The customer's first name.",
+                                "minLength": 3,
+                                "maxLength": 255,
+                                "example": "John"
+                              },
+                              "last_name": {
+                                "type": "string",
+                                "description": "The customer's last name.",
+                                "minLength": 3,
+                                "maxLength": 255,
+                                "example": "Doe"
+                              },
+                              "phone": {
+                                "type": "object",
+                                "required": ["country_code", "number"],
+                                "properties": {
+                                  "country_code": {
+                                    "type": "string",
+                                    "description": "Customer payer cell phone area code.",
+                                    "minLength": 2,
+                                    "maxLength": 3,
+                                    "example": "57"
+                                  },
+                                  "number": {
+                                    "type": "string",
+                                    "description": "Customer payer cell phone number.",
+                                    "minLength": 1,
+                                    "maxLength": 32,
+                                    "example": "3132450765"
+                                  }
                                 }
                               }
                             }
@@ -366,37 +376,41 @@
                   "value": {
                     "settings": {
                       "contact_details": {
-                        "channel": "WHATSAPP_MESSAGE",
+                        "channel": "PHONE_CALL",
                         "welcome_message": "Good afternoon",
                         "payment_methods": {
                           "available": [
-                            "CREDIT_CARD"
+                            "MERCADO_PAGO",
+                            "NEQUI"
                           ]
                         }
-                      },
-                      "seller_details": {
-                        "name": "My Store",
-                        "fallback_instructions": "For assistance, please call our US support at 1-800-555-1234 or visit our help center at help.mystore.com."
                       }
                     },
-                    "payments": [
-                      {
-                        "account_id": "2404911d-5df9-429e-8488-ad41abea1a4b",
-                        "id": "9104911d-5df9-429e-8488-ad41abea1a4b",
-                        "merchant_order_id": "ORDER-12345",
+                    "additional_information": {
+                      "seller_details": {
+                        "name": "My Store",
+                        "fallback_instructions": "Go to the application and click on the top right corner to contact a customer support agent.",
+                        "redirection_url": "www.test.com/purchase"
+                      },
+                      "payment": {
+                        "account_id": "e4c03f29-b0f6-403a-8814-9aee1a88d60e",
+                        "id": "f1fbad16-93c1-4335-b735-2b01ec94ea9e",
+                        "merchant_order_id": "Verification_50708779",
                         "country": "US",
-                        "description": "Marketplace payment",
-                        "created_at": "2024-03-15T14:30:00Z",
-                        "declined_reason": "Insufficient funds",
+                        "description": "Retail purchase",
+                        "created_at": "2022-05-09T20:46:54.786342Z",
+                        "declined_reason": "insufficient funds",
                         "payment_method": {
-                          "type": "CREDIT",
-                          "card_data": {
-                            "expiration_year": "2028",
-                            "expiration_month": 12,
-                            "iin": "450799",
-                            "lfd": "1234",
-                            "issuer": "SCOTIABANK",
-                            "type": "CREDIT"
+                          "type": "Credit Card",
+                          "detail": {
+                            "card_data": {
+                              "iin": "636318",
+                              "lfd": "2671",
+                              "type": "CREDIT",
+                              "issuer": "JPMORGAN",
+                              "expiration_year": 2030,
+                              "expiration_month": 12
+                            }
                           }
                         },
                         "amount": {
@@ -412,7 +426,7 @@
                           }
                         }
                       }
-                    ]
+                    }
                   }
                 }
               }
@@ -1010,7 +1024,7 @@
               "issuer_name": {
                 "type": "string",
                 "description": "Name of the card issuer (MAX 255; MIN 3).",
-                "example": "JP Morgan Chase"
+                "example": "JPMORGAN"
               },
               "card_expiration_year": {
                 "type": "integer",
