@@ -1,9 +1,9 @@
 ---
 title: Declined Payment Calls
-excerpt: >-
-  The Declined Payment Calls endpoint is used to initiate the process of
-  handling large numbers of calls related to declined payments. The endpoint
-  receives an array of detailed information about the rejected payments.
+excerpt: >
+  This endpoint allows you to initiate large-scale processing of calls and
+  WhatsApp messages related to declined payments. To use the endpoint, you have
+  to provide an array with information about the rejected payments.
 api:
   file: ai-caller.json
   operationId: declined-payment-calls
