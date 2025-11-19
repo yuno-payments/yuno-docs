@@ -6,8 +6,8 @@ hidden: false
 metadata:
   title: Card Scanning (OCR)
   description: >-
-    Enable users to quickly complete card forms by scanning credit or debit cards
-    with their device's camera using Google Pay's OCR solution.
+    Enable users to quickly complete card forms by scanning credit or debit
+    cards with their device's camera using Google Pay's OCR solution.
   robots: index
 next:
   description: ''
@@ -16,7 +16,7 @@ This feature allows your users to quickly and accurately complete credit or debi
 
 ## Security & privacy
 
-The card data is processed directly by **Google Pay's OCR**. **Neither Yuno nor Google retains or stores** the scanned card details.
+The card data is processed directly by **Google Pay's OCR**. Neither Yuno nor Google retains or stores the scanned card details.
 
 ## Card details detected
 
@@ -29,9 +29,9 @@ The OCR scanner detects the following card details via the device camera:
 
 To enable and use the Card Scanning feature, your Android application must meet the following requirements:
 
-1. **SDK Version:** Your application must be using **Yuno Android SDK version 2.8.0** or higher.
-2. **Camera Permissions:** Your application must have the necessary **camera permissions** requested and granted by the user at runtime, as per standard Android development practices.
-3. **Google Pay Availability:** The feature requires your application to have **access to the Google Pay Services** on the user's device.
+1. **SDK Version:** Your application must be using Yuno Android SDK version 2.8.0 or higher.
+2. **Camera Permissions:** Your application must request and obtain the necessary camera permissions from the user at runtime, as per standard Android development practices.
+3. **Google Pay Availability:** The feature requires your application to have access to the Google Pay Services on the user's device.
 
 ## How to activate
 
@@ -72,4 +72,3 @@ if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
 ```
 
 3. When users interact with the card form, they can tap the camera icon to scan their card. The scanned card details will automatically populate the card number and expiration date fields.
-
