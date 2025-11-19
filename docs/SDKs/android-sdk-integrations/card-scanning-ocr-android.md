@@ -30,7 +30,7 @@ The OCR scanner detects the following card details via the device camera:
 To enable and use the Card Scanning feature, your Android application must meet the following requirements:
 
 1. **SDK Version:** Your application must be using Yuno Android SDK version 2.8.0 or higher.
-2. **Camera Permissions:** Your application must request and obtain the necessary camera permissions from the user at runtime, as per standard Android development practices.
+2. **Camera Permissions:** Your application must request and obtain the necessary camera permissions from the user at runtime, in accordance with standard Android development practices.
 3. **Google Pay Availability:** The feature requires your application to have access to the Google Pay Services on the user's device.
 
 ## How to activate
@@ -48,27 +48,4 @@ Once enabled in the dashboard and the prerequisites are met, users will see a ca
 >
 > Visit the [Checkout Builder](doc:checkout-builder) page for additional information.
 
-### Technical implementation
-
-To use card scanning in your payment flow, ensure the following:
-
-1. Ensure your app has the required camera permissions declared in your `AndroidManifest.xml`:
-
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-```
-
-2. Request camera permission at runtime before displaying the card form:
-
-```kotlin
-if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) 
-    != PackageManager.PERMISSION_GRANTED) {
-    ActivityCompat.requestPermissions(
-        this,
-        arrayOf(Manifest.permission.CAMERA),
-        CAMERA_PERMISSION_REQUEST_CODE
-    )
-}
-```
-
-3. When users interact with the card form, they can tap the camera icon to scan their card. The scanned card details will automatically populate the card number and expiration date fields.
+<br />
