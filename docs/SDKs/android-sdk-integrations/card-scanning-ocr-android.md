@@ -42,8 +42,6 @@ To enable the card scanning feature, you must activate it in the Checkout Builde
 3. Enable the card scanning feature in the payment method settings.
 4. Click **Publish settings** to apply the changes.
 
-Once enabled in the dashboard and the prerequisites are met, users will see a camera icon in the card form that allows them to scan their card.
-
 > 📘 Learn more about Checkout Builder
 >
 > Visit the [Checkout Builder](doc:checkout-builder) page for additional information.
