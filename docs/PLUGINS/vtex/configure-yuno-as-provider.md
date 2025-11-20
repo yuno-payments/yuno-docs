@@ -121,6 +121,18 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
       }
     ]
   ```
+* When a customer attempts multiple payments and those payments are declined, VTEX activates **Defense Mode**. During this period, VTEX does not execute our payment app, which means Yuno's fraud detection features are disabled. The payment process is delayed by VTEX and forwarded to the Yuno PPF connector. Once received, the Yuno PPF connector will send the payment along with the metadata `defense_mode=true`.
+
+  Yuno recommends configuring a route that bypasses fraud validation whenever the `defense_mode` metadata is set to `true`.
+
+  ```json
+  "metadata": [
+    {
+      "key": "defense_mode",
+      "value": "[true/false]"
+    }
+  ]
+  ```
 
 ### Customizations
 
