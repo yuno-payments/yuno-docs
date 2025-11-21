@@ -30,7 +30,14 @@ The seamless integration between Yuno and VTEX makes it easy for merchants to in
 
 ## Payment methods available
 
-All the payment methods that Yuno offers are available in VTEX, including credit/debit cards and alternative payment methods. Our team is actively collaborating with VTEX to ensure that all Yuno connections are made available to you as soon as possible. We are committed to expanding the available payment options to enhance your experience, so please feel free to reach out to your key account manager to find out more about the available payment methods in VTEX.
+All the payment methods that Yuno offers are available in VTEX, including credit/debit cards and alternative payment methods. This includes:
+
+* **Credit and debit cards**: Visa, Mastercard, American Express, and other card networks
+* **Alternative payment methods**: PIX, Boleto, and other local payment methods
+* **Digital wallets**: MercadoPago Checkout Pro, PayPal, and other wallet solutions
+* **Buy now pay later**: Installment options and BNPL solutions
+
+Our team is actively collaborating with VTEX to ensure that all Yuno connections are made available to you as soon as possible. We are committed to expanding the available payment options to enhance your experience, so please feel free to reach out to your key account manager to find out more about the available payment methods in VTEX.
 
 ## Plugin integration
 

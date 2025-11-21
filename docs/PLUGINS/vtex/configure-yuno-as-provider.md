@@ -59,7 +59,10 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 <Image border={false} src="https://files.readme.io/f053995-image.png" />
 
-7. Select the payment method you want to provide for your customer. You need to configure the provider for each card brand you want to make available for your customer.
+7. Select the payment method you want to provide for your customer. You need to configure the provider for each payment method you want to make available. This includes:
+   * **Card brands**: Visa, Mastercard, American Express, and other card networks
+   * **Alternative payment methods**: PIX, Boleto, MercadoPago Checkout Pro, and other local payment methods
+   * **Digital wallets**: PayPal and other wallet solutions
 
 <Image border={false} src="https://files.readme.io/4ad7929-image.png" />
 
@@ -73,7 +76,9 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 > 📘 Adding Multiple Payment Methods
 >
-> If you want to add more than one payment method to offer to your clients, Visa and Mastercard for example, you need to repeat steps **7** and **8** two times, one for Visa and the other for Mastercard.
+> If you want to add more than one payment method to offer to your clients, you need to repeat steps **7** and **8** for each payment method. For example:
+> * To offer both Visa and Mastercard, repeat the steps twice—once for Visa and once for Mastercard
+> * To offer cards and alternative payment methods like MercadoPago Checkout Pro or PIX, configure each payment method separately
 
 9. As the last step, you have to configure the Webhook URL to receive the updates from the payments.
    1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?) and select **Developers**.
