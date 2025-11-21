@@ -18,11 +18,17 @@ The **Lite SDK** provides full control over your payment experience. Unlike the 
 
 Additionally, the Lite SDK supports enrolling payment methods for future use. For more details, see [Lite SDK (Enrollment)](doc:enrollment-lite).
 
+> 📘 Google Pay and Apple Pay in Lite SDK
+>
+> Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See the platform-specific guides for implementation details.
+
 With the Lite SDK, you can:
 
 * Execute the payment process
 * Enroll a credit card while making a payment
 * Use a vaulted token from an enrolled payment method to complete a transaction
+* Use Google Pay and Apple Pay via the `mountExternalButtons` method
+* Perform real-time tax calculations using the BIN (Bank Identification Number) callback
 
 Use the following guides to implement each process:
 
