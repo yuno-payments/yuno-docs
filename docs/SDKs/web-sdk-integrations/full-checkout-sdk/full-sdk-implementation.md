@@ -111,6 +111,10 @@ yuno.startCheckout({
 >
 > For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
 
+> 📘 Google Pay and Apple Pay Display
+>
+> From SDK version 1.5, Google Pay and Apple Pay appear as direct buttons instead of radio buttons in the payment methods list. They are displayed separately from other payment methods.
+
 ## Step 4: Mount the SDK
 
 Display the payment methods:
@@ -196,6 +200,7 @@ When the method returns an object, you can handle your application's payment flo
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
+* [Mount external buttons](#mount-external-buttons)
 * [Form loader](#form-loader)
 * [Render mode ](#render-mode)
 * [Card form configurations ](#card-form-configurations)
@@ -204,6 +209,44 @@ Yuno Web SDK provides additional services and configurations you can use to impr
   * [Text payment form buttons](#text-payment-form-buttons)
   * [Persist credit card form to retry payments](#persist-credit-card-form-to-retry-payments)
   * [Hide Pay button](#hide-pay-button)
+
+### Mount external buttons
+
+You can use the `mountExternalButtons` method to render Google Pay and Apple Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+  },
+]);
+```
+
+#### Parameters
+
+| Parameter           | Description                                                                                                 |
+| :------------------ | :---------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                    |
+| `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (e.g., `'#apple-pay'`, `'.button'`). |
+
+#### Unmounting buttons
+
+You can unmount a single external button by payment method type:
+
+```javascript
+yuno.unmountExternalButton('APPLE_PAY');
+```
+
+Or unmount all external buttons at once:
+
+```javascript
+yuno.unmountAllExternalButtons();
+```
 
 ### Form loader
 
