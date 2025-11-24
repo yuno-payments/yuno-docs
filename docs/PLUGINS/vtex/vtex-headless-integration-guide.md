@@ -245,3 +245,25 @@ This example shows a Pix payment response, where Yuno generates a QR code in bot
 }
 
 ```
+
+## Payment Metadata
+
+When processing payments through the VTEX connector, Yuno includes metadata in both the checkout session and payment creation. This metadata provides additional context about the transaction.
+
+### Seller ID (Affiliate Code)
+
+The VTEX connector captures the `sellerId` (Affiliate Code) from VTEX orders and includes it in the checkout session and payment metadata. This enables marketplace tracking and affiliate mode functionality, allowing merchants to track attribution between their own stores and partner marketplaces.
+
+The `sellerId` is automatically included in the metadata when processing payments:
+
+```json
+"metadata": [
+  {
+    "key": "sellerId",
+    "value": "[affiliate_code_from_vtex_order]"
+  }
+]
+```
+
+This feature is particularly useful for merchants using VTEX's Affiliate mode to participate in marketplaces. For more information about configuring affiliates in VTEX, see the [VTEX documentation on configuring affiliates](https://help.vtex.com/tutorial/configuring-affiliates--tutorials_187).
+

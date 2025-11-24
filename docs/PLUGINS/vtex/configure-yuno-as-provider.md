@@ -133,6 +133,18 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
     }
   ]
   ```
+* The VTEX connector captures the `sellerId` (Affiliate Code) from VTEX orders and includes it in the checkout session and payment metadata. This enables marketplace tracking and affiliate mode functionality, allowing merchants to track attribution between their own stores and partner marketplaces.
+
+  ```json
+  "metadata": [
+    {
+      "key": "sellerId",
+      "value": "[affiliate_code_from_vtex_order]"
+    }
+  ]
+  ```
+
+  For more information about VTEX Affiliate mode, see the [VTEX documentation on configuring affiliates](https://help.vtex.com/tutorial/configuring-affiliates--tutorials_187).
 
 ### Customizations
 
