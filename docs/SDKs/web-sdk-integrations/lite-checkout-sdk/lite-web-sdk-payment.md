@@ -95,7 +95,7 @@ Use the `yuno.mountCheckoutLite()` function by selecting an HTML element and usi
 ```javascript
 yuno.mountCheckoutLite({
   /**
-   * can be one of 'PAYPAL' | 'PIX' | CARD
+   * can be one of 'PAYPAL' | 'PIX' | 'APPLE_PAY' | 'GOOGLE_PAY' | CARD
    */
   paymentMethodType: PAYMENT_METHOD_TYPE,
   /**
@@ -109,47 +109,7 @@ yuno.mountCheckoutLite({
 
 After mounting the SDK, the selected payment method flow will start automatically.
 
-> 📘 Google Pay and Apple Pay in Lite SDK
->
-> Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See [Mount external buttons](#mount-external-buttons) for more information.
-
-## Step 5: Mount external buttons (Optional)
-
-If you want to use Google Pay or Apple Pay in the Lite SDK, you can mount these payment buttons externally using the `mountExternalButtons` method. This method allows you to choose where each button is displayed in your UI.
-
-```javascript
-// Mount external buttons
-await yuno.mountExternalButtons([
-  {
-    paymentMethodType: 'APPLE_PAY',
-    elementSelector: '#apple-pay',
-  },
-  {
-    paymentMethodType: 'GOOGLE_PAY',
-    elementSelector: '#google-pay',
-  },
-]);
-```
-
-The `mountExternalButtons` method accepts an array of objects, each containing:
-- `paymentMethodType`: Either `'APPLE_PAY'` or `'GOOGLE_PAY'`
-- `elementSelector`: The CSS selector for the HTML element where the button should be rendered
-
-### Unmounting external buttons
-
-You can unmount a single external button:
-
-```javascript
-yuno.unmountExternalButton('APPLE_PAY');
-```
-
-Or unmount all external buttons at once:
-
-```javascript
-yuno.unmountAllExternalButtons();
-```
-
-## Step 6: Initiate the payment process
+## Step 5: Initiate the payment process
 
 After the user has selected a payment method, remember to call `yuno.startPayment()` to initiate the payment flow. Below, you will find an example where `yuno.startPayment()` is called when the user clicks on `button-pay`:
 
@@ -161,7 +121,7 @@ PayButton.addEventListener("click", () => {
 });
 ```
 
-## Step 7: Get the OTT (one-time token)
+## Step 6: Get the OTT (one-time token)
 
 Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the one-time token. The configuration function `yunoCreatePayment(oneTimeToken)` is then triggered with the one-time token.
 
@@ -179,7 +139,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation);
 >
 > The merchant is responsible for managing the loader. Yuno provides a default loader option, but merchants may implement their own loader if preferred. In that case, they are responsible for making the necessary configurations.
 
-## Step 8: Create the Payment
+## Step 7: Create the Payment
 
 Once you have completed the steps described before, you will be able to create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
@@ -191,7 +151,6 @@ Once you have completed the steps described before, you will be able to create a
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Mount external buttons](#mount-external-buttons)
 * [Form loader](doc:lite-checkout-sdk#loader)
 * [Bank Issuer List](doc:lite-checkout-sdk#form-of-the-issuer)
 * [Render mode ](doc:lite-checkout-sdk#mode-of-form-rendering)
@@ -201,44 +160,6 @@ Yuno Web SDK provides additional services and configurations you can use to impr
   * [Text payment form buttons](doc:lite-checkout-sdk#text-payment-form-buttons)
   * [Persist credit card form to retry payments](doc:lite-checkout-sdk#persist-credit-card-form-to-retry-payments)
   * [Hide Pay button](doc:lite-checkout-sdk#hide-pay-button)
-
-### Mount external buttons
-
-Use the `mountExternalButtons` method to render Google Pay and Apple Pay buttons in your custom UI. This method is required if you want to use these payment methods in the Lite SDK, as they are not available as built-in payment options.
-
-```javascript
-await yuno.mountExternalButtons([
-  {
-    paymentMethodType: 'APPLE_PAY',
-    elementSelector: '#apple-pay',
-  },
-  {
-    paymentMethodType: 'GOOGLE_PAY',
-    elementSelector: '#google-pay',
-  },
-]);
-```
-
-#### Parameters
-
-| Parameter           | Description                                                                                                 |
-| :------------------ | :---------------------------------------------------------------------------------------------------------- |
-| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                    |
-| `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (e.g., `'#apple-pay'`, `'.button'`). |
-
-#### Unmounting buttons
-
-You can unmount a single external button by payment method type:
-
-```javascript
-yuno.unmountExternalButton('APPLE_PAY');
-```
-
-Or unmount all external buttons at once:
-
-```javascript
-yuno.unmountAllExternalButtons();
-```
 
 ### Loader
 
@@ -384,7 +305,7 @@ yuno.startCheckout({
 |           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
 |           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
 |           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
-|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. This works the same as secure fields `options.onChange` method. |
+|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. The BIN (first 6 digits of the card number) can be used for real-time tax calculations. This works the same as secure fields `options.onChange` method. |
 
 ```javascript
 yuno.startCheckout({
@@ -404,57 +325,6 @@ yuno.startCheckout({
   },
 });
 ```
-
-#### Data available in onChange callback
-
-When the `onChange` callback is triggered, the `data` parameter contains:
-
-* **Card IIN/BIN Information**: Card issuer details including scheme, brand, type, and issuer information. The BIN (Bank Identification Number) is the first 6 digits of the card number and can be used for real-time tax calculations.
-* **Installment Plans**: Available installment options for the account if configured.
-* **Loading States**: `isCardIINLoading` and `isInstallmentLoading` boolean flags.
-
-#### Using BIN callback for real-time tax calculations
-
-You can use the BIN (Bank Identification Number) information from the `onChange` callback to perform real-time tax calculations based on the card's issuer. The BIN is available in the `data` object when the callback is triggered.
-
-```javascript
-yuno.startCheckout({
-  card: {
-    onChange: ({ error, data }) => {
-      if (error) {
-        console.log('Card form error:', error);
-        return;
-      }
-      
-      // Extract BIN from card IIN information
-      if (data?.iin) {
-        const bin = data.iin.bin; // BIN is the first 6 digits of the card
-        const issuerCountry = data.iin.issuer?.country; // Issuer country code
-        
-        // Use BIN and issuer information for tax calculations
-        calculateTax(bin, issuerCountry).then(taxAmount => {
-          // Update your UI with the calculated tax
-          updateTaxDisplay(taxAmount);
-        });
-      }
-    },
-  },
-});
-
-// Example function to calculate tax based on BIN
-async function calculateTax(bin, issuerCountry) {
-  // Call your backend API with the BIN to get tax information
-  const response = await fetch('/api/calculate-tax', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bin, issuerCountry }),
-  });
-  const { taxAmount } = await response.json();
-  return taxAmount;
-}
-```
-
-The `onChange` callback is triggered in real-time as the user enters their card number, allowing you to calculate and display taxes immediately when enough digits are entered to identify the card's BIN.
 
 #### Save card for future payments
 
@@ -540,6 +410,40 @@ If you hide the **Pay** button, you will need to start the one-time token creati
  */
 yuno.submitOneTimeTokenForm();
 ```
+
+## BIN callback for real-time tax calculations
+
+You can use the BIN (Bank Identification Number) callback in the Lite SDK to perform real-time tax calculations based on the card's issuer. The BIN is the first 6 digits of a card number and is also known as IIN (Issuer Identification Number).
+
+The `onChange` callback in the card configuration provides access to the BIN information in real-time as the user enters their card number. You can extract the BIN from the callback data and use it to calculate taxes based on the card's issuer.
+
+```javascript
+yuno.startCheckout({
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  countryCode: "FR",
+  language: "fr",
+  card: {
+    onChange: ({ error, data }) => {
+      if (error) {
+        console.log('Card form error:', error);
+        return;
+      }
+      
+      // Extract BIN from card IIN information for tax calculations
+      if (data?.iin) {
+        const bin = data.iin.bin; // BIN is the first 6 digits of the card
+        const issuerCountry = data.iin.issuer?.country;
+        
+        // Use BIN for real-time tax calculations
+        calculateTax(bin, issuerCountry);
+      }
+    },
+  },
+});
+```
+
+The callback is triggered in real-time as the user enters their card number, allowing you to calculate and display taxes immediately when enough digits are entered to identify the card's BIN.
 
 ## Stay Updated
 
