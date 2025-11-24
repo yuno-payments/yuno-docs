@@ -411,40 +411,6 @@ If you hide the **Pay** button, you will need to start the one-time token creati
 yuno.submitOneTimeTokenForm();
 ```
 
-## BIN callback for real-time tax calculations
-
-You can use the BIN (Bank Identification Number) callback in the Lite SDK to perform real-time tax calculations based on the card's issuer. The BIN is the first 6 digits of a card number and is also known as IIN (Issuer Identification Number).
-
-The `onChange` callback in the card configuration provides access to the BIN information in real-time as the user enters their card number. You can extract the BIN from the callback data and use it to calculate taxes based on the card's issuer.
-
-```javascript
-yuno.startCheckout({
-  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
-  elementSelector: "#root",
-  countryCode: "FR",
-  language: "fr",
-  card: {
-    onChange: ({ error, data }) => {
-      if (error) {
-        console.log('Card form error:', error);
-        return;
-      }
-      
-      // Extract BIN from card IIN information for tax calculations
-      if (data?.iin) {
-        const bin = data.iin.bin; // BIN is the first 6 digits of the card
-        const issuerCountry = data.iin.issuer?.country;
-        
-        // Use BIN for real-time tax calculations
-        calculateTax(bin, issuerCountry);
-      }
-    },
-  },
-});
-```
-
-The callback is triggered in real-time as the user enters their card number, allowing you to calculate and display taxes immediately when enough digits are entered to identify the card's BIN.
-
 ## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
