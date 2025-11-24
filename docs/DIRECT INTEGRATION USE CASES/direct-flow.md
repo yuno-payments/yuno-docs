@@ -38,7 +38,7 @@ You can skip this step if you have previously created the customer.
 
 This step is optional because you can send the customer information directly in the payment without creating a customer object in Yuno.
 
-<Callout icon="📘" theme="info">
+<Callout icon="🚧">
   Customer creation is required if you want to generate a `vaulted_token`.
 </Callout>
 
