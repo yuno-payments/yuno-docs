@@ -20,23 +20,27 @@ If you are a developer, you can use our Direct Flow to continue using your check
 
 Your company must be PCI-certified to use our server-to-server card payments service. Please forward your AOC certification to your account manager before beginning the implementation.
 
-> ❗️
->
-> We always recommend using Yuno's SDKs over Direct Flow integrations. Yuno's SDKs are PCI compliant and simplify the payment process by managing all complexities, including fraud prevention, 3DS, and payment provider-specific requirements. Direct Flow requires merchants to handle these aspects manually, increasing complexity and risk.
+<Callout icon="❗️" theme="error">
+  We always recommend using Yuno's SDKs over Direct Flow integrations. Yuno's SDKs are PCI compliant and simplify the payment process by managing all complexities, including fraud prevention, 3DS, and payment provider-specific requirements. Direct Flow requires merchants to handle these aspects manually, increasing complexity and risk.
+</Callout>
 
-For every implementation, we recommend taking the payment <code>status</code> and <code>sub\_status</code> as the main reference for the [payment's state](ref:payment). A payment could have different [transactions](ref:transaction) associated with it, so by focusing on the payment **status/sub\_status**, you can have the latest state regardless of how many transactions were made, giving you clear input for decision-making. With this integration, you can also [enroll credit cards](doc:direct-flow#enrollment) for future purchases (also only available for PCI-compliant merchants).
+For every implementation, we recommend taking the payment <code>status</code> and <code>sub_status</code> as the main reference for the [payment's state](ref:payment). A payment could have different [transactions](ref:transaction) associated with it, so by focusing on the payment **status/sub_status**, you can have the latest state regardless of how many transactions were made, giving you clear input for decision-making. With this integration, you can also [enroll credit cards](doc:direct-flow#enrollment) for future purchases (also only available for PCI-compliant merchants).
 
 ## Payment
 
-![](https://files.readme.io/d13bfc9-Diagrama_-_Direct_flow_pago.png)
+<Image border={false} src="https://files.readme.io/d13bfc9-Diagrama_-_Direct_flow_pago.png" />
 
 ### Step 1: Create a customer
 
-**\[Optional]**: The first step of the payment flow is to create a customer. A customer will have payment methods associated. You can create a customer using the following [endpoint](ref:create-customer). As a result, you will receive the customer's ID that was created in the Yuno DB.
+**[Optional]**: The first step of the payment flow is to create a customer. A customer will have payment methods associated. You can create a customer using the following [endpoint](ref:create-customer). As a result, you will receive the customer's ID that was created in the Yuno DB.
 
 You can skip this step if you have previously created the customer.
 
 This step is optional because you can send the customer information directly in the payment without creating a customer object in Yuno.
+
+<Callout icon="📘" theme="info">
+  Customer creation is required if you want to generate a `vaulted_token`.
+</Callout>
 
 ### Step 2: Create the payment
 
@@ -44,7 +48,7 @@ As you handle the whole payment experience with this integration, you will need 
 
 You can use the [examples section](ref:payment-examples) in the API reference as a reference. If the user selects a previously enrolled payment method, you can use the `vaulted_token` returned by the `get payment methods` service to create the payment.
 
-During the integration, we recommend taking the payment **status** and **sub\_status** as the main reference for the payment's state. A payment could have different transactions associated with it, so by focusing on the payment **status/sub\_status**, you can have the latest state regardless of how many transactions were made, giving you clear input for decision-making.
+During the integration, we recommend taking the payment **status** and **sub_status** as the main reference for the payment's state. A payment could have different transactions associated with it, so by focusing on the payment **status/sub_status**, you can have the latest state regardless of how many transactions were made, giving you clear input for decision-making.
 
 ### DIRECT vs REDIRECT Workflow
 
@@ -80,11 +84,11 @@ While using the Direct integration in Yuno, for Alternative Payment Methods (PSE
     ```
     <br />
 
-* **three\_d\_secure\_setup\_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
+* **three_d_secure_setup_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
 
 ## Enrollment
 
-![](https://files.readme.io/26b6ffc-Diagrama_-_Direct_flow_registro.png)
+<Image border={false} src="https://files.readme.io/26b6ffc-Diagrama_-_Direct_flow_registro.png" />
 
 ### Step 1: Create a customer
 
