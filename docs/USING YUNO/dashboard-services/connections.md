@@ -27,9 +27,13 @@ Let's walk through the process of adding, creating, and managing connections to 
 
 <Image align="center" src="https://files.readme.io/b83119ee6039bf9acdcbfd663efa5cba83e5636e850242ad805f7d11c6f47d8a-Conections_1.png" />
 
-3. The next screen, **Set up costs**, will let you enter cost information to use in Smart Routing. Select **Set up cost** to enter costs for successful and unsuccessful payments. This option is entirely optional, so you may click **Next** without entering data.
+3. The next screen, **Set up costs**, will let you enter cost information to use in Smart Routing and Reconciliations (Fees). Select **Set up cost** to enter costs for successful and unsuccessful payments. This option is entirely optional, so you may click **Next** without entering data.
 
 4. **Set up accounts** lets you select the accounts that will be affected by the changes. Check specific accounts or **Current account only** and click **Save** to finish. The system will confirm the connection has been created, establishing a bridge between your Yuno account and the chosen provider.
+
+> 📘 Editing connections
+>
+> One connection is created for each selected account. When editing a connection, changes will not be applied in bulk—each connection must be edited individually.
 
 5. With your connections set, you can proceed to the [Routing](../docs/routing) section to configure payment processing routes using the provider and payment methods you have available within Yuno.
 
@@ -40,6 +44,8 @@ Let's walk through the process of adding, creating, and managing connections to 
 > You can set default costs for all payments and add specific conditions for different situations, like setting a unique cost when a customer uses Visa.
 >
 > Costs are applied in the order you create them, but you can rearrange them by dragging and dropping. This setup helps Yuno Payments automatically choose the most cost-effective route for each transaction when you activate the Smart Routing.
+>
+> Costs are used both for Smart Routing and for Fees in Reconciliations.
 
 ## Managing connections
 
