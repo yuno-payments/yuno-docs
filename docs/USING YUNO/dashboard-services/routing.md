@@ -19,11 +19,11 @@ Dynamic routing is a payment orchestration technique that enhances users' paymen
 
 > 📘 Routing Configuration
 >
-> If you’re using our Embedded or Semi-lite checkout integrations, you can configure the routing of your enabled payment methods after setting the conditions for when each method should be displayed. However, if you’re using the Lite version, all available payment methods will be immediately accessible, allowing you to start configuring how each payment is processed.
+> If you're using our Embedded or Semi-lite checkout integrations, you can configure the routing of your enabled payment methods after setting the conditions for when each method should be displayed. However, if you're using the Lite version, all available payment methods will be immediately accessible, allowing you to start configuring how each payment is processed.
 
-> 📘 Route Monitoring Limitation
+> 📘 Editing Published Routes
 >
-> You can't create a monitor in published routes. [Learn more](#test)
+> You can configure and edit any aspect of a published route, including monitors and other settings. Published routes remain fully editable.
 
 ## Why use dynamic routing?
 
@@ -80,5 +80,23 @@ Smart routing can be applied automatically, optimizing payment distribution for 
 You can add a post-authorization provider after a Smart Routing step. This lets you run additional actions, such as risk reviews or settlements/captures, after approval. Add a new step and choose your desired provider (for example, Cybersource).
 
 ![](https://files.readme.io/4f296625f1362d991f0b1ed518bc846a9a5cdfa61cca38e8c93845ef1cda9a5c-image.png)
+
+## Antifraud & Authentication
+
+You can configure antifraud and authentication flows as part of your routing configuration. These flows help enhance security and compliance for your payment processing.
+
+### Available Flows
+
+* **3DS**: Configure 3D Secure authentication to add an extra layer of security for card payments.
+* **Preauth**: Set up pre-authorization flows to validate payment methods before completing the transaction.
+* **Postauth**: Configure post-authorization flows. If a post-authorization check is declined, you can set up a cancel transaction action to automatically reverse the authorization.
+
+### Automatic Capture
+
+You can configure automatic capture with a defined delay. This allows you to automatically capture authorized payments after a specified time period, streamlining your payment processing workflow.
+
+## List View
+
+When working with complex or lengthy routes, you can use the List view instead of the visual flow diagram. The List view provides a structured, text-based representation of your route configuration, making it easier to review and manage routes that have many steps or complex branching logic.
 
 <br />
