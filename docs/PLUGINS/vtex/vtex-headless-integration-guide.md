@@ -245,3 +245,30 @@ This example shows a Pix payment response, where Yuno generates a QR code in bot
 }
 
 ```
+
+## Payment Metadata
+
+When processing payments through Yuno with VTEX, additional metadata is included in the payment details:
+
+* As additional info in the payment detail, particularly inside the metadata struct, you will also be able to identify the VTEX account related to the payment creation.
+
+  ```json
+  "metadata": [
+      {
+        "key": "vtex_account",
+        "value": "[your_vtex_subaccount]"
+      }
+    ]
+  ```
+* When a customer attempts multiple payments and those payments are declined, VTEX activates **Defense Mode**. During this period, VTEX does not execute our payment app, which means Yuno's fraud detection features are disabled. The payment process is delayed by VTEX and forwarded to the Yuno PPF connector. Once received, the Yuno PPF connector will send the payment along with the metadata `defense_mode=true`.
+
+  Yuno recommends configuring a route that bypasses fraud validation whenever the `defense_mode` metadata is set to `true`.
+
+  ```json
+  "metadata": [
+    {
+      "key": "defense_mode",
+      "value": "[true/false]"
+    }
+  ]
+  ```
