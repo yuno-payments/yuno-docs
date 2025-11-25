@@ -50,6 +50,10 @@ Inside the Authentication tab of the Developers section, look for Customized API
 
 The flexibility of customized API keys streamlines access and permission control, enabling easy and secure API integration management through the Yuno dashboard.
 
+> ⚠️ Important: API Key Display
+>
+> When you create a customized API key, the key value is displayed only once during creation. Make sure to copy and securely store the key immediately, as you won't be able to view it again. If you lose the key or need to rotate it for security reasons, you can roll (regenerate) the key, which will invalidate the previous key and generate a new one.
+
 ## Safeguarding your credentials
 
 Protecting your authentication credentials is paramount for maintaining secure operations. Follow these guidelines:
@@ -61,3 +65,73 @@ Protecting your authentication credentials is paramount for maintaining secure o
 > 📘 Security Alert
 >
 > If you suspect credential exposure or unauthorized access, contact our support team immediately. Prompt action helps maintain the security of your operations.
+
+## Allowed IPs
+
+You can configure a list of allowed IP addresses to restrict API access to specific IP addresses or IP ranges. This adds an additional layer of security by ensuring that API requests can only originate from approved IP addresses.
+
+> ⚠️ Important: IP Validation
+>
+> If no IP addresses are added, IPs will not be validated by default. Please be mindful when adding new IPs, as it is a sensitive change that may impact payment processing.
+
+To configure allowed IPs:
+
+1. Navigate to the **Developers** section in the Yuno dashboard.
+2. Go to the **Authentication** tab.
+3. Click the **List of allowed IPs** button (located in the top right area of the Authentication tab).
+4. In the modal that opens, enter IP addresses or IP ranges in the **Enter IP address** field. You can:
+   * Enter individual IP addresses (e.g., `192.168.1.1`)
+   * Enter IP ranges using CIDR notation (e.g., `192.168.1.0/24`)
+   * Add multiple IPs by separating them with a comma, semicolon, space, or by pressing Enter
+5. Review the list of allowed IPs in the table below.
+6. Click **Save changes** to apply the configuration.
+
+Once configured, API requests from IP addresses not in the allowed list will be rejected, enhancing the security of your API integrations.
+
+> 📘 IP Address Management
+>
+> You can add multiple IP addresses or ranges, and update or remove them as needed. Changes to the allowed IP list take effect immediately.
+
+## Webhooks
+
+The **Webhooks** tab in the Developers section allows you to create and manage webhooks for receiving real-time notifications about events in your Yuno account.
+
+### Creating a webhook
+
+To create a new webhook:
+
+1. Navigate to the **Developers** section in the Yuno dashboard.
+2. Click on the **Webhooks** tab.
+3. Click **Add webhook** to open the webhook creation form.
+4. Fill in the required information in the **Details** section:
+   * **Name**: Provide a descriptive name for your webhook.
+   * **Endpoint URL**: Enter the URL where Yuno should send webhook notifications.
+   * **x-api-key** and **x-secret**: Set authentication credentials for webhook verification (optional but recommended).
+   * **Use OAuth2 Authentication**: Enable OAuth2 authentication for webhook verification (optional).
+   * **Use HMAC Authentication**: Enable HMAC authentication for webhook verification (optional).
+5. Under **Trigger on** (required), select the events that should trigger the webhook. Available event categories include:
+   * **Enrollment**: Enroll, Unenroll
+   * **Payment**: Authorize, Cancel, Capture, Refund, Verify, Chargeback, Purchase
+   * **Report**: Create, Update
+   * **Subscription**: Create, Pause, Resume, Cancel, Complete
+   
+   Yuno recommends selecting all relevant events to ensure comprehensive coverage.
+6. Under **Apply this webhook to other accounts** (required), select which accounts should receive webhook notifications. You can:
+   * Select specific accounts from the list
+   * Use "Select all" to apply to all accounts
+   * Use "Inverse" to invert your selection
+   * Choose "Current account only" to limit the webhook to the current account
+7. Click **Add** to create the webhook.
+
+### Managing webhooks
+
+Once created, you can:
+
+* **View webhook details**: See the webhook configuration, endpoint URL, and triggered events.
+* **Edit webhook**: Update the webhook name, endpoint URL, authentication credentials, or triggered events.
+* **Test webhook**: Send a test notification to verify the webhook is working correctly.
+* **Delete webhook**: Remove a webhook that is no longer needed.
+
+> 📘 Webhook Security
+>
+> Always use HTTPS for your webhook endpoint URLs to ensure secure transmission of webhook data. Additionally, verify webhook signatures using the provided x-api-key and x-secret to ensure the webhooks are authentic and haven't been tampered with.
