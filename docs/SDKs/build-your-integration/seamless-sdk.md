@@ -15,7 +15,7 @@ Yuno's **Seamless SDK** provides a simple and efficient integration while giving
 When using the Seamless SDK, you can:
 
 * Execute the payment process.
-* Enroll a credit card while making a payment.
+* Enroll a credit card while making a payment by setting `vault_on_success: true` when creating the payment.
 * Use a vaulted token from an enrolled payment method to complete a payment.
 
 Use the following guides to implement each process.
