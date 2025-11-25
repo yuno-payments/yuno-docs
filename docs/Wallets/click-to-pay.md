@@ -41,6 +41,20 @@ To integrate and start offering Click to Pay to your customers, follow these 3 s
    <Image align="center" src="https://files.readme.io/24baf88-C2P_checkout.png" />
 4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **'Card' payment method**.
 
+## VTEX Integration
+
+For VTEX merchants using Click to Pay, the integration provides automatic customer creation and data mapping to streamline the checkout experience.
+
+**Automatic customer creation:**
+
+When customers choose Click to Pay on VTEX stores:
+* The VTEX customer is automatically created in Yuno during payment initialization (if not already existing)
+* All customer data from the VTEX profile is automatically mapped to Yuno and included in the checkout session
+* Customer information (CVV, email, address) is pre-filled in the SDK, eliminating redundant data entry
+* The checkout flow matches the streamlined experience available for non-VTEX merchants
+
+This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration. For more details, see [Configure Yuno as Provider](doc:configure-yuno-as-provider) in the VTEX integration documentation.
+
 ## SDK integration
 
 The Yuno iOS SDK supports Click to Pay with Passkey. The flow differs from standard card payments because the SDK returns the result by deeplink instead of via the usual delegate callbacks.

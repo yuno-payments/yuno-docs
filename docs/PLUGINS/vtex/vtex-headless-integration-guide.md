@@ -196,6 +196,22 @@ To get TypeScript types, install the `npm` package:
 npm install @yuno-payments/sdk-web-vtex
 ```
 
+### Customer data in checkout session
+
+For Click to Pay transactions, the VTEX connector automatically creates the customer in Yuno and includes all available customer data in the checkout session. This ensures that customer information from the VTEX profile is properly mapped and sent to Yuno.
+
+**Customer data mapping:**
+
+When a customer initiates a Click to Pay payment:
+* The VTEX customer profile data is automatically mapped to Yuno customer fields
+* Customer information (email, address, phone, etc.) is included in the checkout session
+* The SDK automatically pre-fills fields such as CVV, email, and address, eliminating redundant data entry
+* The customer experience matches the streamlined flow available for non-VTEX merchants
+
+This automatic customer creation and data mapping only occurs when:
+* Click to Pay is selected as the payment method
+* The **Create customer** field is set to **Yes** in the VTEX provider configuration
+
 ## Payment Response Payloads
 
 When processing payments through **Yuno and VTEX**, the `yunopartnerbr.yuno` connector generates a structured payload containing all the necessary transaction details. Below, we provide example payloads for credit card payments and Pix payments (APMs).  
