@@ -41,7 +41,7 @@ To integrate and start offering Click to Pay to your customers, follow these 3 s
    <Image align="center" src="https://files.readme.io/24baf88-C2P_checkout.png" />
 4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **'Card' payment method**.
 
-## VTEX Integration
+## VTEX integration
 
 For VTEX merchants using Click to Pay, the integration provides automatic customer creation and data mapping to streamline the checkout experience.
 
