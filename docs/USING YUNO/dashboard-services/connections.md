@@ -56,7 +56,7 @@ The **Your connections** tab within Connections allows you to manage existing co
 * **Deleting connections**: If a connection is no longer needed, you can delete it. Exercise caution when deleting connections, as this action is irreversible.
 * **Managing multiple connections**: Check the box next to two or more connections to pause, unpause and delete connections in bulk.
 
-## Dynamic Metadata Configuration
+## Dynamic metadata configuration
 
 The Dynamic Metadata feature allows you to control which metadata fields are sent to each connected provider, giving you granular control over your payment data flow.
 
