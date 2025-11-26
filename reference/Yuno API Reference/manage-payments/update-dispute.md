@@ -19,5 +19,3 @@ This endpoint allows you to update evidence after submitting a dispute.
 > _Format_: File must be in PDF format, encoded as base64.  
 > _Size_: File must be no larger than 1 MB in size.  
 > _Language_: Dispute should be written in English or the country’s local language.
-
-Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](ref:authentication#idempotency) page for more information.
