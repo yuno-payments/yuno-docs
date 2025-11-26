@@ -16,7 +16,7 @@ Click to Pay is an online payment solution designed to streamline and secure onl
 
 *Networks available in Yuno*: [MasterCard](https://www.mastercard.us/en-us/personal/ways-to-pay/click-to-pay.html) 
 
-## Key Features and benefits:
+## Key features and benefits
 
 * **Ease of Use**: It enables consumers to make online purchases with a single click, eliminating the need to enter credit card details for each purchase manually.
 * **Enhanced Security**: Utilizes modern authentication standards to minimize fraud risk. This may include methods such as two-factor authentication or payment tokens.

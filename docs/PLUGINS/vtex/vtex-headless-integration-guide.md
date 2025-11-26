@@ -60,7 +60,7 @@ For more details, refer to the [Configure Yuno as Provider](../docs/configure-yu
 
 <Image align="center" src="https://files.readme.io/4902cb86d6c26bee4ac69c17c8eccb5d05d97d59639d1420065f48af77623e10-Install_Yuno_Payment_App_.png" />
 
-### Install Yuno SDK Web for VTEX (Optional)
+### Install Yuno SDK Web for VTEX (optional)
 
 If your project requires **Yuno SDK Web VTEX**, install it using `npm`:
 
@@ -84,7 +84,7 @@ yunoVTEX.mount({...})
 
 For additional information, access [@yuno-payments/sdk-web-vtex](https://www.npmjs.com/package/@yuno-payments/sdk-web-vtex).
 
-## Payment Flows
+## Payment flows
 
 The following sections illustrate how payments are processed in VTEXIO and VTEX Headless using different payment methods:
 
@@ -96,7 +96,7 @@ The following sections illustrate how payments are processed in VTEXIO and VTEX 
 
 VTEXIO enables seamless payment processing for various methods, including credit cards and alternative payment methods (APMs) like Pix. Below is a step-by-step breakdown of how these payment flows work.  
 
-#### Credit Card Payment Flow in VTEXIO
+#### Credit card payment flow in VTEXIO
 
 This flow details how credit card payments are processed in VTEXIO, from user interaction to transaction completion.
 
@@ -212,7 +212,7 @@ This automatic customer creation and data mapping only occurs when:
 * Click to Pay is selected as the payment method
 * The **Create customer** field is set to **Yes** in the VTEX provider configuration
 
-## Payment Response Payloads
+## Payment response payloads
 
 When processing payments through **Yuno and VTEX**, the `yunopartnerbr.yuno` connector generates a structured payload containing all the necessary transaction details. Below, we provide example payloads for credit card payments and Pix payments (APMs).  
 
@@ -224,7 +224,7 @@ When processing payments through **Yuno and VTEX**, the `yunopartnerbr.yuno` con
 >
 > For more details, access the [API reference](https://docs.y.uno/reference/create-payment).
 
-### Credit Card Payment Payload
+### Credit card payment payload
 
 The following JSON response represents a credit card payment authorization processed through Yuno.
 
@@ -240,7 +240,7 @@ The following JSON response represents a credit card payment authorization proce
 }
 ```
 
-### Pix Payment Payload
+### Pix payment payload
 
 This example shows a Pix payment response, where Yuno generates a QR code in both text format and base64 image format. 
 
