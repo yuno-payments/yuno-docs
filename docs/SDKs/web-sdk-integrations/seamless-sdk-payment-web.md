@@ -55,7 +55,7 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 - First, [create a customer](ref:create-customer) or retrieve an existing customer ID
 - Include it when creating the `checkout_session`
 
-### Key Parameters
+### Key parameters
 
 | Parameter            | Required | Description                                                                                                                                                                                                                                      |
 | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -226,6 +226,6 @@ async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
 
 For more information about enrolling payment methods, see [Enroll Payment Methods](doc:enroll-payment-methods).
 
-## Stay Updated
+## Stay updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
