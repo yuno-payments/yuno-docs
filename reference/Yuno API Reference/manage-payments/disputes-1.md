@@ -1,5 +1,5 @@
 ---
-title: Copy of Dispute a chargeback
+title: Update a chargeback dispute
 api:
   file: payment-api-refundcancel-payment.json
   operationId: post_{payment_id}transactions{transaction_id}dispute-1
