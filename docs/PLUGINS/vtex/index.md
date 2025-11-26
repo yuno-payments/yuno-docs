@@ -30,7 +30,7 @@ The seamless integration between Yuno and VTEX makes it easy for merchants to in
 
 ## Payment methods available
 
-All the payment methods that Yuno offers are available in VTEX, including credit/debit cards and alternative payment methods. This includes:
+The following payment method types are available in VTEX:
 
 * **Credit and debit cards**: Visa, Mastercard, American Express, and other card networks
 * **Alternative payment methods**: PIX, Boleto, and other local payment methods
