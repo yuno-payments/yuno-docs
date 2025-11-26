@@ -4,7 +4,7 @@ api:
   file: payment-api-refundcancel-payment.json
   operationId: post_{payment_id}transactions{transaction_id}dispute-1
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
