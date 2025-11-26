@@ -28,7 +28,7 @@ Gain complete understanding of your payment ecosystem through insightful analyti
 
 Using historical data, you can monitor payment performance trends over time, identify strengths, and pinpoint areas for optimization to continuously refine your payment strategies.
 
-## Navigating Insights
+## Navigating insights
 
 Yuno Insights organizes your data into four distinct tabs, each providing a unique perspective:
 
@@ -52,7 +52,7 @@ Analyzing the available data from these two angles will allow you to easily extr
 
 Empower your business choices by using Yuno Insights to determine the most effective payment methods and providers for your specific needs. Quickly identify anomalies and deviations from established patterns, enabling you to react proactively and optimize your payment ecosystem.
 
-## Tailor and export Insights
+## Tailor and export insights
 
 The Insight section contains several options to filter, customize, and extract data based on your preferences:
 
