@@ -149,7 +149,7 @@ For more information on the custom auto capture feature, [refer to the VTEX docu
 
 When using ClearSale fraud detection with the VTEX connector, Yuno automatically maps VTEX order data to ClearSale's required fields. This ensures that all necessary information is correctly passed to ClearSale for fraud analysis.
 
-### Delivery Type Mapping
+### Delivery type mapping
 
 The `deliveryType` field from VTEX orders is automatically extracted and mapped to ClearSale. This field is mandatory for merchants using ClearSale's Chargeback Guarantee (Total Garantido) product.
 
