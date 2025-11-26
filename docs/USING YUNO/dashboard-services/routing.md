@@ -121,6 +121,11 @@ The automatic capture will process authorized payments after the specified delay
 
 ## List View
 
-When working with complex or lengthy routes, you can use the List view instead of the visual flow diagram. The List view provides a structured, text-based representation of your route configuration, making it easier to review and manage routes that have many steps or complex branching logic.
+When working with complex or lengthy routes, you can use the List view instead of the visual flow diagram. The List view provides a structured, table-based representation of your route configuration, making it easier to review and manage routes that have many condition sets or complex configurations.
 
-<br />
+To access List view, navigate to a route in the Routing section and click the **List view** button in the top navigation bar. The List view displays your route configuration in a table format with columns for Condition set ID, Condition set name, Conditions, and Primary providers.
+
+You can filter condition sets by ID, search for specific configurations, and click the eye icon on any row to view detailed information. This view is particularly useful when your route has many condition sets or when the visual diagram becomes difficult to navigate.
+
+<Image align="center" src="https://files.readme.io/5a3c783199595ecda95230d36ccb9dea2afe5cb424da1465c5088db2fcc3da53-list-view-image.png" alt="Routing dashboard showing List View with table-based route configuration displaying condition sets with columns for Condition set ID, Condition set name, Conditions, and Primary providers, along with filter and search functionality" />
+
