@@ -85,15 +85,39 @@ You can add a post-authorization provider after a Smart Routing step. This lets 
 
 You can configure antifraud and authentication flows as part of your routing configuration. These flows help enhance security and compliance for your payment processing.
 
+### How to configure antifraud and authentication flows
+
+When building or editing a route in the Routing section:
+
+1. After adding a connection or step to your route, click on the step to configure it.
+2. In the step configuration panel, you'll find options for **Antifraud & Authentication** flows.
+3. Select the flow type you want to configure:
+   * **3DS**: Enable 3D Secure authentication to add an extra layer of security for card payments. This requires cardholders to complete additional authentication during the payment process.
+   * **Preauth**: Set up pre-authorization flows to validate payment methods before completing the transaction. This allows you to verify that funds are available and the payment method is valid before finalizing the transaction.
+   * **Postauth**: Configure post-authorization flows to perform additional checks after a payment has been authorized. If a post-authorization check is declined, you can set up a cancel transaction action to automatically reverse the authorization.
+4. Configure any additional settings specific to the selected flow type.
+5. Save your changes to apply the configuration to your route.
+
 ### Available Flows
 
-* **3DS**: Configure 3D Secure authentication to add an extra layer of security for card payments.
-* **Preauth**: Set up pre-authorization flows to validate payment methods before completing the transaction.
-* **Postauth**: Configure post-authorization flows. If a post-authorization check is declined, you can set up a cancel transaction action to automatically reverse the authorization.
+* **3DS**: Configure 3D Secure authentication to add an extra layer of security for card payments. This flow requires cardholders to complete additional authentication steps during the payment process, helping reduce fraud and comply with Strong Customer Authentication (SCA) requirements.
+* **Preauth**: Set up pre-authorization flows to validate payment methods before completing the transaction. This allows you to verify that funds are available and the payment method is valid before finalizing the transaction, reducing the risk of declined payments later in the process.
+* **Postauth**: Configure post-authorization flows to perform additional security checks after a payment has been authorized. If a post-authorization check is declined, you can set up a cancel transaction action to automatically reverse the authorization, protecting your business from fraudulent transactions that pass initial authorization.
 
 ### Automatic Capture
 
 You can configure automatic capture with a defined delay. This allows you to automatically capture authorized payments after a specified time period, streamlining your payment processing workflow.
+
+> 📘 Automatic Capture Configuration
+>
+> Automatic capture with delay is configured via the [Create Payment API](https://docs.y.uno/reference/create-payment) using `delayed_capture_settings` when creating a payment. This feature is not currently available in the Routing dashboard interface. For detailed information on configuring delayed capture, including delay format and settings, see the [Cancel and Capture Flow](doc:cancel-and-capture-flow) documentation.
+
+When using automatic capture:
+- Set `capture: false` in your payment request
+- Configure `delayed_capture_settings` with a `delay` field following ISO 8601 format (e.g., "P7D" for 7 days, "PT3H" for 3 hours)
+- Optionally set `simplified_mode: true` to enable automatic retry if capture fails
+
+The automatic capture will process authorized payments after the specified delay period, reducing manual intervention and ensuring timely settlement of transactions.
 
 ## List View
 
