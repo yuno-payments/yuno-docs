@@ -22,23 +22,23 @@ Aida is available across multiple channels:
 * Email
 * Yuno dashboard
 
-## Dashboard Integration
+## Dashboard integration
 
 Aida AI is embedded throughout the Yuno Dashboard, providing contextual assistance in different sections. Each section features Aida with a distinctive UI element (such as a colored callout box or the Aida AI logo) to make it easily identifiable and accessible.
 
-### Payments Section
+### Payments section
 
 In the Payments section, you can use Aida to get detailed information about any payment. Simply click **"Ask Aida AI about this payment"** to receive comprehensive payment details, transaction information, and troubleshooting insights directly within the dashboard.
 
-### Insights Section
+### Insights section
 
 The Insights section includes Aida AI functionality to help you generate charts and visualizations. Use **"Generate chart with Aida AI"** to create custom charts based on your payment data and analytics requirements. This feature is available via email integration.
 
-### Routing Section
+### Routing section
 
 When configuring payment routes, Aida AI can assist you in creating optimal routing configurations. Click **"Use Aida AI to help you create a route"** to get intelligent recommendations for routing conditions, connections, and flow optimization based on your payment processing needs.
 
-### Chatbot Integration
+### Chatbot integration
 
 Aida AI is also available through the Pylon chatbot widget. When you open the chatbot, you'll be prompted to choose between talking with Aida AI or your account manager. If you select Aida AI, you can interact with Aida to ask any questions about Yuno's platform, features, integrations, or your account.
 
@@ -282,7 +282,7 @@ Whether you’re launching a new market, debugging a payment flow, or just explo
 ```
 Yuno's subscription engine offers several key features and provides significant business value:  
 
-### Key Features:
+### Key features
 
 - **Recurring Revenue**: Facilitates the management of recurring payments, automating subscription billing processes, and streamlining subscription management.  
   This provides businesses with a steady and predictable income stream, crucial for financial stability.
@@ -291,7 +291,7 @@ Yuno's subscription engine offers several key features and provides significant 
 
 - **Automation and Efficiency**: Capabilities to pause, resume, and cancel subscriptions through API endpoints simplify operational tasks, reducing overhead and increasing efficiency.
 
-### Business Value:
+### Business value
 
 - **Customer Loyalty and Reduced Churn**: Subscribers typically exhibit higher loyalty, contributing to increased customer retention rates, reducing churn, and the need for constant customer acquisition efforts.
 
