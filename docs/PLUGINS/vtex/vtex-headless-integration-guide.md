@@ -12,7 +12,7 @@ next:
 ---
 Integrate Yuno SDK Web for VTEX Headless to handle online payments efficiently. This guide covers installation, configuration, and implementation steps.
 
-## VTEXIO Integration
+## VTEXIO integration
 
 To use Yuno in VTEXIO checkout, install the following applications:
 
@@ -60,7 +60,7 @@ For more details, refer to the [Configure Yuno as Provider](../docs/configure-yu
 
 <Image align="center" src="https://files.readme.io/4902cb86d6c26bee4ac69c17c8eccb5d05d97d59639d1420065f48af77623e10-Install_Yuno_Payment_App_.png" />
 
-### Install Yuno SDK Web for VTEX (Optional)
+### Install Yuno SDK Web for VTEX (optional)
 
 If your project requires **Yuno SDK Web VTEX**, install it using `npm`:
 
@@ -84,7 +84,7 @@ yunoVTEX.mount({...})
 
 For additional information, access [@yuno-payments/sdk-web-vtex](https://www.npmjs.com/package/@yuno-payments/sdk-web-vtex).
 
-## Payment Flows
+## Payment flows
 
 The following sections illustrate how payments are processed in VTEXIO and VTEX Headless using different payment methods:
 
@@ -92,11 +92,11 @@ The following sections illustrate how payments are processed in VTEXIO and VTEX 
 * [Pix (APMs) Payment Flow in VTEXIO](#pix-apms-payment-flow-in-vtexio)
 * [VTEX Headless Payment Flow](#vtex-headless-payment-flow) 
 
-### VTEXIO Payment Flows
+### VTEXIO payment flows
 
 VTEXIO enables seamless payment processing for various methods, including credit cards and alternative payment methods (APMs) like Pix. Below is a step-by-step breakdown of how these payment flows work.  
 
-#### Credit Card Payment Flow in VTEXIO
+#### Credit card payment flow in VTEXIO
 
 This flow details how credit card payments are processed in VTEXIO, from user interaction to transaction completion.
 
@@ -113,7 +113,7 @@ This flow details how credit card payments are processed in VTEXIO, from user in
 
 <Image align="center" src="https://files.readme.io/ef30b7c45fbb3db4e49c574d6085dd9f242872a3c14ad9f93112631409e3c44a-Diagrama_-_Credit_card_payment_flow_VTEXIO.png" />
 
-#### Pix (APMs) Payment Flow in VTEXIO
+#### Pix (APMs) payment flow in VTEXIO
 
 This flow explains how Pix and other APMs are handled in VTEXIO, including payment creation and redirection.
 
@@ -125,7 +125,7 @@ This flow explains how Pix and other APMs are handled in VTEXIO, including payme
 
 <Image align="center" src="https://files.readme.io/89ce5296e6a38d163c1e5c9936b689477545556e7c42fd2d57561db069d09e06-Diagrama_-_Pix_APM_payment_flow_VTEXIO.png" />
 
-### VTEX Headless
+### VTEX headless
 
 To use Yuno in VTEX Headless checkout, install:
 
@@ -133,7 +133,7 @@ To use Yuno in VTEX Headless checkout, install:
 
 Additionally, the [SDK Web VTEX](#installing-and-using-the-sdk-web-vtex) should be implemented. This SDK supports payments with two credit cards.
 
-#### VTEX Headless Payment Flow
+#### VTEX headless payment flow
 
 VTEX Headless requires a different approach to payment processing. Below are the steps for handling credit card transactions within VTEX Headless.
 
@@ -149,7 +149,7 @@ VTEX Headless requires a different approach to payment processing. Below are the
 
 <Image align="center" src="https://files.readme.io/4cc5782110e9722bbf3572bb047e010b8a17e471c600b6d6fa3bf64ac3536781-Diagrama_-_Credit_card_payment_flow_VTEX_Headless.png" />
 
-## Installing and Using the SDK Web VTEX
+## Installing and using the SDK Web VTEX
 
 The Yuno SDK Web VTEX allows seamless integration with VTEX’s payment infrastructure, enabling merchants to handle payments directly within their frontend.
 
@@ -196,7 +196,7 @@ To get TypeScript types, install the `npm` package:
 npm install @yuno-payments/sdk-web-vtex
 ```
 
-## Payment Response Payloads
+## Payment response payloads
 
 When processing payments through **Yuno and VTEX**, the `yunopartnerbr.yuno` connector generates a structured payload containing all the necessary transaction details. Below, we provide example payloads for credit card payments and Pix payments (APMs).  
 
@@ -208,7 +208,7 @@ When processing payments through **Yuno and VTEX**, the `yunopartnerbr.yuno` con
 >
 > For more details, access the [API reference](https://docs.y.uno/reference/create-payment).
 
-### Credit Card Payment Payload
+### Credit card payment payload
 
 The following JSON response represents a credit card payment authorization processed through Yuno.
 
@@ -224,7 +224,7 @@ The following JSON response represents a credit card payment authorization proce
 }
 ```
 
-### Pix Payment Payload
+### Pix payment payload
 
 This example shows a Pix payment response, where Yuno generates a QR code in both text format and base64 image format. 
 
@@ -246,11 +246,11 @@ This example shows a Pix payment response, where Yuno generates a QR code in bot
 
 ```
 
-## Payment Metadata
+## Payment metadata
 
 When processing payments through the VTEX connector, Yuno includes metadata in both the checkout session and payment creation. This metadata provides additional context about the transaction.
 
-### Seller ID (Affiliate Code)
+### Seller ID (affiliate code)
 
 The VTEX connector captures the `sellerId` (Affiliate Code) from VTEX orders and includes it in the checkout session and payment metadata. This enables marketplace tracking and affiliate mode functionality, allowing merchants to track attribution between their own stores and partner marketplaces.
 
