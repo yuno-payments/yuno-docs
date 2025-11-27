@@ -60,7 +60,7 @@ This feature requires the **Create customer** field to be set to **Yes** in the 
 
 > ⚠️ Important
 >
-> * Standard Click to Pay card flows use the existing SDK callbacks, but Passkey users require a special flow. When enabling Passkey, include a `callback_url` that matches your app’s deeplink scheme so the shopper returns to the app after authentication (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
+> * Standard Click to Pay card flows use the existing SDK callbacks, but Passkey users must include a `callback_url` that matches the app’s deeplink scheme so the shopper returns to the app after authentication (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
 >
 > ```json
 > {
