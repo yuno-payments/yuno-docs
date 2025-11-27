@@ -123,6 +123,6 @@ For Android, include a `callback_url` that matches your app’s deeplink scheme 
 >
 > The `callback_url` is used to redirect the customer back to your app after the Passkey authentication completes.
 >
-> The OTT never reaches the usual Android SDK callbacks (`callbackOTT`) for Click to Pay Passkey. Always read it from the deeplink parameters.
+> The OTT never reaches the usual Android SDK callbacks (`callbackOTT`) for Click to Pay Passkey, always read it from the deeplink parameters.
 
 See the full SDK guides for detailed samples: [Android Full Checkout](doc:full-checkout-android) and [iOS Full Checkout](doc:full-checkout-ios).
