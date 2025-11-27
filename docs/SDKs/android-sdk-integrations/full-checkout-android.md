@@ -454,6 +454,18 @@ The Yuno Android SDK provides additional services and configurations you can use
 
 Unlike other processes, when a user completes a payment using CTP Passkey, the _One-Time Token_ (`OTT`) will not be received through the usual callback methods. The OTT will be delivered via the **deeplink URL** in the Intent. Your app must read it from the `Intent`, create the payment on your backend, and then continue the flow with the SDK.
 
+> ⚠️ Important
+>
+> It is **essential** to include a `callback_url` when creating the checkout session for CTP Passkey payments. This URL must match the deeplink scheme configured in your AndroidManifest. For example:
+>
+> ```json
+> {
+>   "callback_url": "myapp://pay/ctp"
+> }
+> ```
+>
+> The `callback_url` is used to redirect the customer back to your app after the Passkey authentication process completes.
+
 #### 1. AndroidManifest (deeplink)
 
 Add an `intent-filter` to your main activity in `AndroidManifest.xml`:
@@ -570,6 +582,7 @@ You can test the CTP Passkey flow using these sample deeplink URLs:
 
 Use this checklist to ensure proper CTP Passkey integration:
 
+* ✅ `callback_url` included when creating the checkout session (must match deeplink scheme)
 * ✅ `intent-filter` configured correctly (scheme/host/path)
 * ✅ `handleDeeplink` implemented in both `onCreate()` and `onNewIntent()`
 * ✅ Extract both `one_time_token` and `checkout_session` parameters
