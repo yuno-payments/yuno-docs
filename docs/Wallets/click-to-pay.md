@@ -60,7 +60,7 @@ This feature requires the **Create customer** field to be set to **Yes** in the 
 
 > ⚠️ Important
 >
-> * Standard Click to Pay card flows use the existing SDK callbacks, but Passkey users must include a `callback_url` that matches the app’s deeplink scheme so the shopper returns to the app after authentication (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
+> Standard Click to Pay card flows use the existing SDK callbacks, but Passkey users must include a `callback_url` that matches the app’s deeplink scheme so the shopper returns to the app after authentication (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
 >
 > ```json
 > {
@@ -68,7 +68,9 @@ This feature requires the **Create customer** field to be set to **Yes** in the 
 > }
 > ```
 >
-> * For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
+>
+>
+> For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 
 The Yuno iOS and Android SDKs currently support Click to Pay via the Passkey flow. In both cases, the one-time token (OTT) is returned through a deeplink URL instead of the standard SDK callbacks, so your app must parse the deeplink parameters before continuing the payment.
 
@@ -122,21 +124,5 @@ For Android, include a `callback_url` that matches your app’s deeplink scheme 
 1. Check `has_error` to manage cancellations or failures.
 2. Extract `one_time_token` (and the optional `checkout_session`) from the URI.
 3. Send the OTT to your backend to call the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), then invoke `continuePayment` in the SDK to resume the flow.
-
-> ⚠️ Important
->
-> It is **essential** to include a `callback_url` when creating the checkout session for CTP Passkey payments. This URL must match the deeplink scheme configured in your `AndroidManifest`. For example:
->
-> ```json
-> {
->   "callback_url": "myapp://pay/ctp"
-> }
-> ```
->
-> The `callback_url` is used to redirect the customer back to your app after the Passkey authentication completes.
-
-> ⚠️ Important
->
-> The OTT never reaches the usual Android SDK callbacks (`callbackOTT`) for Click to Pay Passkey. Always read it from the deeplink parameters.
 
 See the full SDK guides for detailed samples: [Android Full Checkout](doc:full-checkout-android) and [iOS Full Checkout](doc:full-checkout-ios).
