@@ -56,7 +56,19 @@ When customers choose Click to Pay on VTEX stores:
 
 This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration. For more details, see [Configure Yuno as Provider](doc:configure-yuno-as-provider) in the VTEX integration documentation.
 
-## SDK integration
+## SDK integration (Click to Pay Passkey)
+
+> ⚠️ Important
+>
+> * Standard Click to Pay card flows use the existing SDK callbacks, but Passkey users require a special flow. When enabling Passkey, include a `callback_url` that matches your app’s deeplink scheme so the shopper returns to the app after authentication (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
+>
+> ```json
+> {
+>   "callback_url": "myapp://pay/ctp"
+> }
+> ```
+>
+> * For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 
 The Yuno iOS and Android SDKs currently support Click to Pay via the Passkey flow. In both cases, the one-time token (OTT) is returned through a deeplink URL instead of the standard SDK callbacks, so your app must parse the deeplink parameters before continuing the payment.
 
@@ -122,7 +134,9 @@ For Android, include a `callback_url` that matches your app’s deeplink scheme 
 > ```
 >
 > The `callback_url` is used to redirect the customer back to your app after the Passkey authentication completes.
+
+> ⚠️ Important
 >
-> The OTT never reaches the usual Android SDK callbacks (`callbackOTT`) for Click to Pay Passkey, always read it from the deeplink parameters.
+> The OTT never reaches the usual Android SDK callbacks (`callbackOTT`) for Click to Pay Passkey. Always read it from the deeplink parameters.
 
 See the full SDK guides for detailed samples: [Android Full Checkout](doc:full-checkout-android) and [iOS Full Checkout](doc:full-checkout-ios).
