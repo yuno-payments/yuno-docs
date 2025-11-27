@@ -12,7 +12,7 @@ next:
 ---
 Integrate Yuno SDK Web for VTEX Headless to handle online payments efficiently. This guide covers installation, configuration, and implementation steps.
 
-## VTEXIO Integration
+## VTEXIO integration
 
 To use Yuno in VTEXIO checkout, install the following applications:
 
@@ -92,7 +92,7 @@ The following sections illustrate how payments are processed in VTEXIO and VTEX 
 * [Pix (APMs) Payment Flow in VTEXIO](#pix-apms-payment-flow-in-vtexio)
 * [VTEX Headless Payment Flow](#vtex-headless-payment-flow) 
 
-### VTEXIO Payment Flows
+### VTEXIO payment flows
 
 VTEXIO enables seamless payment processing for various methods, including credit cards and alternative payment methods (APMs) like Pix. Below is a step-by-step breakdown of how these payment flows work.  
 
@@ -113,7 +113,7 @@ This flow details how credit card payments are processed in VTEXIO, from user in
 
 <Image align="center" src="https://files.readme.io/ef30b7c45fbb3db4e49c574d6085dd9f242872a3c14ad9f93112631409e3c44a-Diagrama_-_Credit_card_payment_flow_VTEXIO.png" />
 
-#### Pix (APMs) Payment Flow in VTEXIO
+#### Pix (APMs) payment flow in VTEXIO
 
 This flow explains how Pix and other APMs are handled in VTEXIO, including payment creation and redirection.
 
@@ -125,7 +125,7 @@ This flow explains how Pix and other APMs are handled in VTEXIO, including payme
 
 <Image align="center" src="https://files.readme.io/89ce5296e6a38d163c1e5c9936b689477545556e7c42fd2d57561db069d09e06-Diagrama_-_Pix_APM_payment_flow_VTEXIO.png" />
 
-### VTEX Headless
+### VTEX headless
 
 To use Yuno in VTEX Headless checkout, install:
 
@@ -133,7 +133,7 @@ To use Yuno in VTEX Headless checkout, install:
 
 Additionally, the [SDK Web VTEX](#installing-and-using-the-sdk-web-vtex) should be implemented. This SDK supports payments with two credit cards.
 
-#### VTEX Headless Payment Flow
+#### VTEX headless payment flow
 
 VTEX Headless requires a different approach to payment processing. Below are the steps for handling credit card transactions within VTEX Headless.
 
@@ -149,7 +149,7 @@ VTEX Headless requires a different approach to payment processing. Below are the
 
 <Image align="center" src="https://files.readme.io/4cc5782110e9722bbf3572bb047e010b8a17e471c600b6d6fa3bf64ac3536781-Diagrama_-_Credit_card_payment_flow_VTEX_Headless.png" />
 
-## Installing and Using the SDK Web VTEX
+## Installing and using the SDK Web VTEX
 
 The Yuno SDK Web VTEX allows seamless integration with VTEX’s payment infrastructure, enabling merchants to handle payments directly within their frontend.
 
@@ -195,22 +195,6 @@ To get TypeScript types, install the `npm` package:
 ```shell
 npm install @yuno-payments/sdk-web-vtex
 ```
-
-### Customer data in checkout session
-
-For Click to Pay transactions, the VTEX connector automatically creates the customer in Yuno and includes all available customer data in the checkout session. This ensures that customer information from the VTEX profile is properly mapped and sent to Yuno.
-
-**Customer data mapping:**
-
-When a customer initiates a Click to Pay payment:
-* The VTEX customer profile data is automatically mapped to Yuno customer fields
-* Customer information (email, address, phone, etc.) is included in the checkout session
-* The SDK automatically pre-fills fields such as CVV, email, and address, eliminating redundant data entry
-* The customer experience matches the streamlined flow available for non-VTEX merchants
-
-This automatic customer creation and data mapping only occurs when:
-* Click to Pay is selected as the payment method
-* The **Create customer** field is set to **Yes** in the VTEX provider configuration
 
 ## Payment response payloads
 
@@ -261,3 +245,25 @@ This example shows a Pix payment response, where Yuno generates a QR code in bot
 }
 
 ```
+
+## Payment metadata
+
+When processing payments through the VTEX connector, Yuno includes metadata in both the checkout session and payment creation. This metadata provides additional context about the transaction.
+
+### Seller ID (affiliate code)
+
+The VTEX connector captures the `sellerId` (Affiliate Code) from VTEX orders and includes it in the checkout session and payment metadata. This enables marketplace tracking and affiliate mode functionality, allowing merchants to track attribution between their own stores and partner marketplaces.
+
+The `sellerId` is automatically included in the metadata when processing payments:
+
+```json
+"metadata": [
+  {
+    "key": "sellerId",
+    "value": "[affiliate_code_from_vtex_order]"
+  }
+]
+```
+
+This feature is particularly useful for merchants using VTEX's Affiliate mode to participate in marketplaces. For more information about configuring affiliates in VTEX, see the [VTEX documentation on configuring affiliates](https://help.vtex.com/tutorial/configuring-affiliates--tutorials_187).
+

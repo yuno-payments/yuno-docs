@@ -438,6 +438,12 @@ Below, you will find details of each report type.
             <td>Jane Doe</td>
           </tr>
           <tr>
+            <td><code>bnpl_installments</code></td>
+            <td>string</td>
+            <td>The loan installments (MAX 50; MIN 1).</td>
+            <td>12</td>
+          </tr>
+          <tr>
             <td><code>browser_info_accept_header</code></td>
             <td>string</td>
             <td>The 'accept' header sent by the browser.</td>
@@ -661,6 +667,18 @@ Below, you will find details of each report type.
             <td>string</td>
             <td>Nationality of the individual.</td>
             <td>US</td>
+          </tr>
+          <tr>
+            <td><code>network_token</code></td>
+            <td>string</td>
+            <td>Token's number without any separators (MAX 19; MIN 8) only available for PCI certified merchants.</td>
+            <td>1234567890123456</td>
+          </tr>
+          <tr>
+            <td><code>network_transaction_id</code></td>
+            <td>string</td>
+            <td>Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle. (MAX 255; MIN 3)</td>
+            <td>NTX123456789</td>
           </tr>
           <tr>
             <td><code>order_fee_amount</code></td>
@@ -1200,10 +1218,40 @@ Below, you will find details of each report type.
       <td>NC2- 66e224a53fb722eaa0507579</td>
     </tr>
     <tr>
+      <td><code>merchant_advice_code</code></td>
+      <td>string</td>
+      <td>Normalized Merchant Advice Code for declined transactions; use it to guide retry behavior and routing.</td>
+      <td>01</td>
+    </tr>
+    <tr>
+      <td><code>merchant_advice_code_message</code></td>
+      <td>string</td>
+      <td>Human-readable message that explains the advice returned in <code>merchant_advice_code</code>.</td>
+      <td>Retry after 24 hours</td>
+    </tr>
+    <tr>
+      <td><code>merchant_customer_id</code></td>
+      <td>string</td>
+      <td>The unique identifier of the customer in the external merchant (MAX 255; MIN 3).</td>
+      <td>9440127422</td>
+    </tr>
+    <tr>
       <td><code>nationality</code></td>
       <td>string</td>
       <td>Nationality of the customer (MAX 3; MIN 2).</td>
       <td>UY</td>
+    </tr>
+    <tr>
+      <td><code>network_token</code></td>
+      <td>string</td>
+      <td>Token's number without any separators (MAX 19; MIN 8) only available for PCI certified merchants.</td>
+      <td>1234567890123456</td>
+    </tr>
+    <tr>
+      <td><code>network_transaction_id</code></td>
+      <td>string</td>
+      <td>Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle. (MAX 255; MIN 3)</td>
+      <td>NTX123456789</td>
     </tr>
     <tr>
       <td><code>payment_id</code></td>
@@ -1276,6 +1324,18 @@ Below, you will find details of each report type.
       <td>string</td>
       <td>Unique identifier for the provider (MAX 64; MIN 36).</td>
       <td>PROVIDER ID</td>
+    </tr>
+    <tr>
+      <td><code>provider_merchant_advice_code</code></td>
+      <td>string</td>
+      <td>Raw Merchant Advice Code returned by the provider for declined transactions.</td>
+      <td>R1</td>
+    </tr>
+    <tr>
+      <td><code>provider_merchant_advice_code_message</code></td>
+      <td>string</td>
+      <td>Provider message that explains the meaning of the raw Merchant Advice Code.</td>
+      <td>Issuer unavailable</td>
     </tr>
     <tr>
       <td><code>provider_image</code></td>
@@ -1498,6 +1558,18 @@ Below, you will find details of each report type.
       <td>string</td>
       <td>Wallet associated with the transaction (MAX 255; MIN 3).</td>
       <td>Wallet ABC</td>
+    </tr>
+    <tr>
+      <td><code>wallet_transaction_card_bin</code></td>
+      <td>string</td>
+      <td>The issuer identification number (IIN) refers to the first few digits of the payment card number issued by a financial institution (MAX 8; MIN 6).</td>
+      <td>492964</td>
+    </tr>
+    <tr>
+      <td><code>wallet_transaction_card_last_4_digits</code></td>
+      <td>string</td>
+      <td>The last four digits of the card (MAX 4; MIN 4).</td>
+      <td>1228</td>
     </tr>
   </tbody>
 </table>

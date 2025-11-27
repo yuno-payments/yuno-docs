@@ -9,6 +9,12 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.9.0    | **NEW**: Allow cards expiring in the current month and year. |
+|         | **FIX**: Various bug fixes and improvements. |
+|         | **NEW**: Reduce character limit for full list and payment button. |
+|         | **NEW**: Add support for Click to Pay passkey. |
+|         | **NEW**: Implement PayPal Installments. |
+|         | **NEW**: Support dark mode. |
 | 2.8.1   | **IMPROVE**: Hide debit cards when only credit is enabled.                                                                                                                                                       |
 |         | **NEW**: Enable Click to Pay passkey for render mode.                                                                                                                                                            |
 | 2.8.0   | **FIX**: Various bug fixes and improvements.                                                                                                                                                                      |
