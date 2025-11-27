@@ -16,7 +16,7 @@ This page provides a step-by-step guide to implement and enable Yuno's Full Web 
 Add the following script tag to your HTML file to include the Yuno Web SDK:
 
 ```html
-<script src="https://cdn.yuno.com/sdk-web/latest/yuno-sdk-web.js"></script>
+<script src="https://sdk-web.y.uno/v1.4/main.js"></script>
 ```
 
 Alternatively, you can install it via npm:
@@ -229,9 +229,9 @@ await yuno.mountExternalButtons([
 
 #### Parameters
 
-| Parameter           | Description                                                                                                 |
-| :------------------ | :---------------------------------------------------------------------------------------------------------- |
-| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                    |
+| Parameter           | Description                                                                                                    |
+| :------------------ | :------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                       |
 | `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (e.g., `'#apple-pay'`, `'.button'`). |
 
 #### Unmounting buttons
@@ -366,14 +366,81 @@ yuno.startCheckout({
 
 ### Card form configurations
 
-| Parameter | Description                                                                                                       |
-| --------- | ----------------------------------------------------------------------------------------------------------------- |
-| `card`    | Define specific settings for the credit card form:                                                                |
-|           | - **`type`**: `step` or `extends`                                                                                   |
-|           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
-|           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
-|           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
-|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method. |
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `card`
+      </td>
+
+      <td>
+        Define specific settings for the credit card form:
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`type`**: `step` or `extends`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`texts`**: Custom texts in the Card forms buttons.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ```javascript
 yuno.startCheckout({
