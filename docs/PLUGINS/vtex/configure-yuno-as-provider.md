@@ -148,6 +148,25 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
 
   For more information about VTEX Affiliate mode, see the [VTEX documentation on configuring affiliates](https://help.vtex.com/tutorial/configuring-affiliates--tutorials_187).
 
+### Automatic customer creation for Click to Pay
+
+When customers choose to pay via Click to Pay on VTEX merchants, the VTEX connector automatically creates the corresponding VTEX customer record in Yuno during the checkout flow initialization. This ensures a streamlined payment experience by eliminating redundant data entry.
+
+**How it works:**
+
+* **Automatic creation**: When a shopper initiates a Click to Pay transaction, the VTEX customer is automatically created in Yuno if it doesn't already exist
+* **Data mapping**: All customer data available in the VTEX profile is automatically mapped to Yuno and included in the checkout session
+* **Pre-filled fields**: The SDK automatically pre-fills customer information (CVV, email, address) from the VTEX profile, eliminating the need for customers to re-enter this information
+* **UX improvement**: The Click to Pay flow matches the streamlined experience for non-VTEX merchants, with no unnecessary input steps
+
+This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration (see step 4 in the configuration process above).
+
+<Callout icon="📘" theme="info">
+  ## Important
+
+  The automatic customer creation only applies when using Click to Pay as the payment method. For other payment methods, customer creation follows the standard flow based on the "Create customer" configuration setting.
+</Callout>
+
 ### Customizations
 
 If you want to add or change certain UX aspects of the checkout, VTEX lets the merchants modify a few things:

@@ -16,7 +16,7 @@ Click to Pay is an online payment solution designed to streamline and secure onl
 
 *Networks available in Yuno*: [MasterCard](https://www.mastercard.us/en-us/personal/ways-to-pay/click-to-pay.html) 
 
-## Key Features and benefits:
+## Key features and benefits
 
 * **Ease of Use**: It enables consumers to make online purchases with a single click, eliminating the need to enter credit card details for each purchase manually.
 * **Enhanced Security**: Utilizes modern authentication standards to minimize fraud risk. This may include methods such as two-factor authentication or payment tokens.
@@ -40,6 +40,20 @@ To integrate and start offering Click to Pay to your customers, follow these 3 s
 
    <Image align="center" src="https://files.readme.io/24baf88-C2P_checkout.png" />
 4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **'Card' payment method**.
+
+## VTEX integration
+
+For VTEX merchants using Click to Pay, the integration provides automatic customer creation and data mapping to streamline the checkout experience.
+
+**Automatic customer creation:**
+
+When customers choose Click to Pay on VTEX stores:
+* The VTEX customer is automatically created in Yuno during payment initialization (if not already existing)
+* All customer data from the VTEX profile is automatically mapped to Yuno and included in the checkout session
+* Customer information (CVV, email, address) is pre-filled in the SDK, eliminating redundant data entry
+* The checkout flow matches the streamlined experience available for non-VTEX merchants
+
+This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration. For more details, see [Configure Yuno as Provider](doc:configure-yuno-as-provider) in the VTEX integration documentation.
 
 ## SDK integration
 
