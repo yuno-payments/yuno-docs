@@ -5,7 +5,6 @@ hidden: false
 metadata:
   robots: index
 ---
-<br />
 
 > 👍 Recommended SDK
 >
@@ -19,9 +18,87 @@ Before proceeding with the Lite SDK implementation, please refer to the [SDK Int
 
 The integration guide provides three flexible methods:
 
-1. Direct HTML script inclusion
-2. Dynamic JavaScript injection
-3. NPM module installation
+* **[Method 1 (HTML)](#1-add-the-sdk-script-directly-in-html)**: Add a single script tag to your HTML file. This is the simplest method, ideal for basic implementations and quick prototypes
+* **[Method 2 (Dynamic JavaScript)](#2-inject-the-sdk-dynamically-using-javascript)**: Load the SDK programmatically with custom error handling and loading states. Best for applications needing more control over the integration
+* **[Method 3 (NPM)](#3-use-the-npm-module)**: Use our NPM package in modern JavaScript applications. This is our recommended approach, with dependency management, tree-shaking, and TypeScript support
+
+### 1. Add the SDK script directly in HTML
+
+The simplest way to integrate the Yuno SDK is by adding a `<script>` tag to your HTML file. This method provides a quick implementation while maintaining proper asynchronous loading. The SDK exposes an event that notifies when it's fully loaded, ensuring you can safely initialize and use its features at the right time.
+
+First, set up the event listener, then load the SDK:
+
+```html
+<script>
+  window.addEventListener('yuno-sdk-ready', () => {
+    console.log('SDK loaded');
+    const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+  });
+</script>
+
+<script defer src="https://sdk-web.y.uno/v1.3/main.js"></script>
+```
+
+### 2. Inject the SDK dynamically using JavaScript
+
+The dynamic JavaScript injection method provides enhanced control over SDK loading and initialization. This approach enables you to:
+
+* Load the SDK programmatically when needed
+* Implement custom loading states and error handling
+* Precisely control when the SDK becomes available
+* Synchronize SDK initialization with your application logic
+* Create tailored error handling for your use case
+
+This method is ideal when you need granular control over the SDK's loading process and want to handle various scenarios with precision.
+
+Create a function to inject the SDK dynamically:
+
+```javascript
+export const injectScript = async (): Promise<boolean> => {
+  const head = document.getElementsByTagName('head')[0];
+  const js = document.createElement('script');
+  js.src = "https://sdk-web.y.uno/v1.3/main.js";
+  js.defer = true;
+
+  return new Promise((resolve, reject) => {
+    window.addEventListener('yuno-sdk-ready', () => {
+      resolve(true);
+    });
+
+    js.onerror = (error) => {
+      const event = new CustomEvent('yuno-sdk-error', { detail: error });
+      window.dispatchEvent(event);
+      reject(new Error(`Failed to load script: ${js.src} - ${error.message}`));
+    };
+
+    head.appendChild(js);
+  });
+};
+```
+
+Use the function to inject the SDK:
+
+```javascript
+await injectScript();
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+### 3. Use the NPM module
+
+For projects using NPM package management, you can install the SDK as a module through NPM. This approach provides better dependency management, version control, and seamless integration with modern JavaScript build tools and frameworks. It's particularly beneficial for applications using bundlers like webpack, Rollup, or Vite.
+
+```bash
+npm install @yuno-payments/sdk-web
+```
+
+Then, load and initialize the SDK as follows:
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web';
+
+await loadScript();
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the lite enrollment functionality.
 
@@ -39,7 +116,71 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 ## Step 3: Create a customer session and an enrollment payment method object
 
-Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your SDK Lite integration for enrollment. While creating the payment method object, you will need to define which one is going to be available for your customer to enroll (in the case of SDK Lite, only CARD is available).
+Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your SDK Lite integration for enrollment. While creating the payment method object, you will need to define which payment method is going to be available for your customer to enroll.
+
+> 📘 Important
+>
+> The customer session and enrollment payment method object must be created on your **server-side** to keep your private API keys secure. The payment method type is set on the server-side, unlike other integrations where it may be set on the client-side.
+
+### Server-side example
+
+Create a customer session and enrollment payment method on your backend. This keeps your private API keys secure.
+
+```javascript
+// 1. Create customer session
+const customerSession = await fetch(
+  "https://api-sandbox.y.uno/v1/customers/sessions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      customer_id: "your-customer-id",
+      country: "US",
+    }),
+  }
+).then((res) => res.json());
+
+// 2. Create enrollment payment method
+const enrollment = await fetch(
+  `https://api-sandbox.y.uno/v1/customers/sessions/${customerSession.id}/payment-methods`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      type: "CARD",
+    }),
+  }
+).then((res) => res.json());
+
+// Return customerSession to your client
+return customerSession;
+```
+
+### Client-side example
+
+After receiving the `customerSession` from your server, initialize the Yuno SDK and mount the enrollment form on the client-side.
+
+```javascript
+// Initialize Yuno SDK
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+
+// Mount the enrollment form
+yuno.mountEnrollmentLite({
+  customerSession, // Received from your server
+  countryCode: "US",
+  language: "en",
+  showLoading: true,
+  onLoading: (args) => {
+    console.log(args);
+  },
+});
+```
 
 > 📘 Verify
 >
@@ -659,4 +800,3 @@ Use the [SDK Customizations](https://docs.y.uno/docs/sdk-customizations-ios) to 
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
 
-<br />
