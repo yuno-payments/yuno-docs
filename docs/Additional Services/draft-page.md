@@ -1,17 +1,9 @@
 ---
-title: Full SDK (Android)
-excerpt: ''
+title: Draft page
 deprecated: false
-hidden: false
+hidden: true
 metadata:
-  title: Full SDK
-  description: >-
-    Here is a step-by-step guide on integrating Yuno's Full SDK into your
-    Android application, enabling efficient and secure payment processing for
-    your mobile platform.
   robots: index
-next:
-  description: ''
 ---
 <br />
 

@@ -114,7 +114,7 @@ curl --request POST \
 
 For certain markets (MX for example) and payment processors, when a subscription-related payment is made, the ID of the agreement with the customer needs to be specified in the payment request to ensure correct processing. To facilitate this, we have enabled the `subscription_agreement_id` field inside the `stored_credentials` struct, allowing you to share the agreement made with the customer.
 
-> 📘 Note 
+> 📘 Note
 >
 > The `subscription_agreement_id` and `network_transaction_id` are independent fields. Including a `subscription_agreement_id` does not replace the need for a `network_transaction_id`. Both should be provided when applicable to ensure optimal approval rates and chargeback protection.
 
@@ -166,6 +166,10 @@ We associate the `network_transaction_id` with the `vaulted_token` for future tr
   * Card data with `vault_on_success` set to `true`
 * _Stored credentials_:
   * `usage` set to `FIRST`
+
+<Callout icon="⚠️" theme="warning">
+  When using <code>vault_on_success = true</code> in a direct integration, you must create the customer first and pass its <code>customer_payer.id</code> in the payment request. Sending customer details inline does not create the customer on Yuno's side, so the card cannot be stored and no <code>vaulted_token</code> will be returned.
+</Callout>
 
 If you already have the `network_transaction_id` for the card, you can include it in the payment in the corresponding field. If not, for MIT payments (with `stored_credentials.usage=USED`), we will send the `network_transaction_id` associated with the `vaulted_token` to the provider.
 

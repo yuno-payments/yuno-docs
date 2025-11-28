@@ -209,7 +209,8 @@ This object represents the payment created after generating the checkout session
       </p>
 
       <p><strong><code>vault_on_success</code></strong> <small>boolean</small>
-        <br />Flag to enroll the card after a successful payment.
+        <br />Flag to enroll the card after a successful payment. Requires the payment to reference an existing Yuno customer through <code>customer_payer.id</code>.
+        <br /><small> Without a customer ID no vaulting occurs and no <code>vaulted_token</code> is returned, even if customer details are included inline. </small>
         <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
       </p>
 

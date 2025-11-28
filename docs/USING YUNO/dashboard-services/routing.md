@@ -19,11 +19,11 @@ Dynamic routing is a payment orchestration technique that enhances users' paymen
 
 > 📘 Routing Configuration
 >
-> If you’re using our Embedded or Semi-lite checkout integrations, you can configure the routing of your enabled payment methods after setting the conditions for when each method should be displayed. However, if you’re using the Lite version, all available payment methods will be immediately accessible, allowing you to start configuring how each payment is processed.
+> If you're using our Embedded or Semi-lite checkout integrations, you can configure the routing of your enabled payment methods after setting the conditions for when each method should be displayed. However, if you're using the Lite version, all available payment methods will be immediately accessible, allowing you to start configuring how each payment is processed.
 
-> 📘 Route Monitoring Limitation
+> 📘 Editing Published Routes
 >
-> You can't create a monitor in published routes. [Learn more](#test)
+> You can configure and edit any aspect of a published route, including monitors and other settings. Published routes remain fully editable.
 
 ## Why use dynamic routing?
 
@@ -60,7 +60,7 @@ Dynamic routing ensures efficient and speedy transaction processing. Directing t
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/routing_V3.mp4" />
 
-## Smart Routing
+## Smart routing
 
 Smart Routing is a solution designed to intelligently optimize payment performance according to the variable you choose to optimize as a merchant. To activate Smart Routing, select two or more connections when setting conditions, click **Next**, and turn on the Smart Routing toggle.
 
@@ -81,4 +81,51 @@ You can add a post-authorization provider after a Smart Routing step. This lets 
 
 ![](https://files.readme.io/4f296625f1362d991f0b1ed518bc846a9a5cdfa61cca38e8c93845ef1cda9a5c-image.png)
 
-<br />
+## Antifraud & Authentication
+
+You can configure antifraud and authentication flows as part of your routing configuration. These flows help enhance security and compliance for your payment processing.
+
+### How to configure antifraud and authentication flows
+
+When building or editing a route in the Routing section:
+
+1. After adding a connection or step to your route, click on the step to configure it.
+2. In the step configuration panel, you'll find options for **Antifraud & Authentication** flows.
+3. Select the flow type you want to configure:
+   * **3DS**: Enable 3D Secure authentication to add an extra layer of security for card payments. This requires cardholders to complete additional authentication during the payment process.
+   * **Preauth**: Set up pre-authorization flows to validate payment methods before completing the transaction. This allows you to verify that funds are available and the payment method is valid before finalizing the transaction.
+   * **Postauth**: Configure post-authorization flows to perform additional checks after a payment has been authorized. If a post-authorization check is declined, you can set up a cancel transaction action to automatically reverse the authorization.
+4. Configure any additional settings specific to the selected flow type.
+5. Save your changes to apply the configuration to your route.
+
+### Available flows
+
+* **3DS**: Configure 3D Secure authentication to add an extra layer of security for card payments. This flow requires cardholders to complete additional authentication steps during the payment process, helping reduce fraud and comply with Strong Customer Authentication (SCA) requirements.
+* **Preauth**: Set up pre-authorization flows to validate payment methods before completing the transaction. This allows you to verify that funds are available and the payment method is valid before finalizing the transaction, reducing the risk of declined payments later in the process.
+* **Postauth**: Configure post-authorization flows to perform additional security checks after a payment has been authorized. If a post-authorization check is declined, you can set up a cancel transaction action to automatically reverse the authorization, protecting your business from fraudulent transactions that pass initial authorization.
+
+### Automatic capture
+
+You can configure automatic capture with a defined delay. This allows you to automatically capture authorized payments after a specified time period, streamlining your payment processing workflow.
+
+> 📘 Automatic Capture Configuration
+>
+> Automatic capture with delay is configured via the [Create Payment API](https://docs.y.uno/reference/create-payment) using `delayed_capture_settings` when creating a payment. This feature is not currently available in the Routing dashboard interface. For detailed information on configuring delayed capture, including delay format and settings, see the [Cancel and Capture Flow](doc:cancel-and-capture-flow) documentation.
+
+When using automatic capture:
+- Set `capture: false` in your payment request
+- Configure `delayed_capture_settings` with a `delay` field following ISO 8601 format (e.g., "P7D" for 7 days, "PT3H" for 3 hours)
+- Optionally set `simplified_mode: true` to enable automatic retry if capture fails
+
+The automatic capture will process authorized payments after the specified delay period, reducing manual intervention and ensuring timely settlement of transactions.
+
+## List view
+
+When working with complex or lengthy routes, you can use the List view instead of the visual flow diagram. The List view provides a structured, table-based representation of your route configuration, making it easier to review and manage routes that have many condition sets or complex configurations.
+
+To access List view, navigate to a route in the Routing section and click the **List view** button in the top navigation bar. The List view displays your route configuration in a table format with columns for Condition set ID, Condition set name, Conditions, and Primary providers.
+
+You can filter condition sets by ID, search for specific configurations, and click the eye icon on any row to view detailed information. This view is particularly useful when your route has many condition sets or when the visual diagram becomes difficult to navigate.
+
+<Image align="center" src="https://files.readme.io/5a3c783199595ecda95230d36ccb9dea2afe5cb424da1465c5088db2fcc3da53-list-view-image.png" alt="Routing dashboard showing List View with table-based route configuration displaying condition sets with columns for Condition set ID, Condition set name, Conditions, and Primary providers, along with filter and search functionality" />
+

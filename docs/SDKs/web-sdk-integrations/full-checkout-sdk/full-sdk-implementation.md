@@ -16,7 +16,7 @@ This page provides a step-by-step guide to implement and enable Yuno's Full Web 
 Add the following script tag to your HTML file to include the Yuno Web SDK:
 
 ```html
-<script src="https://cdn.yuno.com/sdk-web/latest/yuno-sdk-web.js"></script>
+<script src="https://sdk-web.y.uno/v1.4/main.js"></script>
 ```
 
 Alternatively, you can install it via npm:
@@ -111,6 +111,10 @@ yuno.startCheckout({
 >
 > For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
 
+> 📘 Google Pay and Apple Pay Display
+>
+> From SDK version 1.5, Google Pay and Apple Pay appear as direct buttons instead of radio buttons in the payment methods list. They are displayed separately from other payment methods.
+
 ## Step 4: Mount the SDK
 
 Display the payment methods:
@@ -196,6 +200,7 @@ When the method returns an object, you can handle your application's payment flo
 
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
+* [Mount external buttons](#mount-external-buttons)
 * [Form loader](#form-loader)
 * [Render mode ](#render-mode)
 * [Card form configurations ](#card-form-configurations)
@@ -204,6 +209,44 @@ Yuno Web SDK provides additional services and configurations you can use to impr
   * [Text payment form buttons](#text-payment-form-buttons)
   * [Persist credit card form to retry payments](#persist-credit-card-form-to-retry-payments)
   * [Hide Pay button](#hide-pay-button)
+
+### Mount external buttons
+
+You can use the `mountExternalButtons` method to render Google Pay and Apple Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+  },
+]);
+```
+
+#### Parameters
+
+| Parameter           | Description                                                                                                    |
+| :------------------ | :------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                       |
+| `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (e.g., `'#apple-pay'`, `'.button'`). |
+
+#### Unmounting buttons
+
+You can unmount a single external button by payment method type:
+
+```javascript
+yuno.unmountExternalButton('APPLE_PAY');
+```
+
+Or unmount all external buttons at once:
+
+```javascript
+yuno.unmountAllExternalButtons();
+```
 
 ### Form loader
 
@@ -323,14 +366,81 @@ yuno.startCheckout({
 
 ### Card form configurations
 
-| Parameter | Description                                                                                                       |
-| --------- | ----------------------------------------------------------------------------------------------------------------- |
-| `card`    | Define specific settings for the credit card form:                                                                |
-|           | - **`type`**: `step` or `extends`                                                                                   |
-|           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
-|           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
-|           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
-|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method. |
+<Table>
+  <thead>
+    <tr>
+      <th>
+        Parameter
+      </th>
+
+      <th>
+        Description
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        `card`
+      </td>
+
+      <td>
+        Define specific settings for the credit card form:
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`type`**: `step` or `extends`
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`texts`**: Custom texts in the Card forms buttons.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+
+      </td>
+
+      <td>
+        * **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method.
+      </td>
+    </tr>
+  </tbody>
+</Table>
 
 ```javascript
 yuno.startCheckout({

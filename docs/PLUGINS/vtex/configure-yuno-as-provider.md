@@ -59,7 +59,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 <Image border={false} src="https://files.readme.io/f053995-image.png" />
 
-7. Select the payment method you want to provide for your customer. You need to configure the provider for each card brand you want to make available for your customer.
+7. Select the payment method you want to provide for your customer. You need to configure the provider for each payment method you want to make available, including card brands (Visa, Mastercard, etc.), alternative payment methods (PIX, Boleto, Mercado Pago Wallet, etc.), and other payment types.
 
 <Image border={false} src="https://files.readme.io/4ad7929-image.png" />
 
@@ -73,7 +73,9 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 > 📘 Adding Multiple Payment Methods
 >
-> If you want to add more than one payment method to offer to your clients, Visa and Mastercard for example, you need to repeat steps **7** and **8** two times, one for Visa and the other for Mastercard.
+> If you want to add more than one payment method to offer to your clients, you need to repeat steps **7** and **8** for each payment method. For example:
+> * To offer Visa and Mastercard, repeat steps **7** and **8** two times, one for Visa and the other for Mastercard.
+> * To offer cards and alternative payment methods like Mercado Pago Wallet or PIX, configure each payment method separately.
 
 9. As the last step, you have to configure the Webhook URL to receive the updates from the payments.
    1. Access the [Yuno Dashboard](https://auth.y.uno/u/login?) and select **Developers**.
@@ -133,6 +135,37 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
     }
   ]
   ```
+* The VTEX connector captures the `sellerId` (Affiliate Code) from VTEX orders and includes it in the checkout session and payment metadata. This enables marketplace tracking and affiliate mode functionality, allowing merchants to track attribution between their own stores and partner marketplaces.
+
+  ```json
+  "metadata": [
+    {
+      "key": "sellerId",
+      "value": "[affiliate_code_from_vtex_order]"
+    }
+  ]
+  ```
+
+  For more information about VTEX Affiliate mode, see the [VTEX documentation on configuring affiliates](https://help.vtex.com/tutorial/configuring-affiliates--tutorials_187).
+
+### Automatic customer creation for Click to Pay
+
+When customers choose to pay via Click to Pay on VTEX merchants, the VTEX connector automatically creates the corresponding VTEX customer record in Yuno during the checkout flow initialization. This ensures a streamlined payment experience by eliminating redundant data entry.
+
+**How it works:**
+
+* **Automatic creation**: When a shopper initiates a Click to Pay transaction, the VTEX customer is automatically created in Yuno if it doesn't already exist
+* **Data mapping**: All customer data available in the VTEX profile is automatically mapped to Yuno and included in the checkout session
+* **Pre-filled fields**: The SDK automatically pre-fills customer information (CVV, email, address) from the VTEX profile, eliminating the need for customers to re-enter this information
+* **UX improvement**: The Click to Pay flow matches the streamlined experience for non-VTEX merchants, with no unnecessary input steps
+
+This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration (see step 4 in the configuration process above).
+
+<Callout icon="📘" theme="info">
+  ## Important
+
+  The automatic customer creation only applies when using Click to Pay as the payment method. For other payment methods, customer creation follows the standard flow based on the "Create customer" configuration setting.
+</Callout>
 
 ### Customizations
 
