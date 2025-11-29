@@ -75,7 +75,7 @@ The payments can have the following status and sub status.
           <td>Initial state at the time of creating a payment. Waiting for customer action</td>
         </tr>
         <tr>
-          <td class="status" rowspan="6"><code>PENDING</code></td>
+          <td class="status" rowspan="7"><code>PENDING</code></td>
           <td class="substatus"><code>AUTHORIZED</code></td>
           <td>Authorize</td>
           <td>Succeeded</td>
