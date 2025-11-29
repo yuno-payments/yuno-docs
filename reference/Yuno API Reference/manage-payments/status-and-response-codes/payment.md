@@ -110,6 +110,12 @@ The payments can have the following status and sub status.
           <td>Pending</td>
           <td>Transaction is being analyzed by fraud provider</td>
         </tr>
+				<tr>
+          <td class="substatus"><code>PENDING_OTP_COMPLETION</code></td>
+          <td>Purchase</td>
+          <td>Pending</td>
+          <td>Initial status upon payment creation</td>
+        </tr>
         <tr>
           <td class="status"><code>VERIFIED</code></td>
           <td class="substatus"><code>VERIFIED</code></td>
