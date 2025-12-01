@@ -12,8 +12,6 @@ metadata:
 next:
   description: ''
 ---
-<br />
-
 # Webhook attributes
 
 The JSON attributes for Yuno webhooks are listed below:
