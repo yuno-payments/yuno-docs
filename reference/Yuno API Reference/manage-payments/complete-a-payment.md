@@ -10,7 +10,7 @@ link:
 metadata:
   robots: index
 ---
-This request allows you to create an OTP when the status of a payment is `PENDING_OTP_COMPLETION`.
+This request allows you to complete a payment when its status is `PENDING OTP COMPLETION`.
 
 The response will return all the payment information, same as in [create payment](ref:create-payment).
 
