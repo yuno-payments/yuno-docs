@@ -22,7 +22,7 @@ The JSON attributes for Yuno webhooks are listed below:
 <body>
   <div class="yuno">
     <p><strong>account_id</strong> <small>string </small>
-      <br />The unique identifier of the account in Yuno (MAX 64 ; MIN 36).
+      <br />The unique identifier of the account in Yuno (MAX 64; MIN 36).
     </p>
   </div>
   <div class="yuno">
