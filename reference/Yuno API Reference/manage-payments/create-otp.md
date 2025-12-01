@@ -15,5 +15,5 @@ This request allows you to create an OTP when the status of a payment is `PENDIN
 The response will return all the payment information, same as in [create payment](ref:create-payment).
 
 <Callout icon="🚧" theme="warn">
-  If the payment flow requires an OTP, the creation of the payment will handle the first OTP delivery.
+  When a merchant creates a payment requiring an OTP (`PENDING_OTP_COMPLETION` status), the first sending of the OTP is done via the create payment endpoint.
 </Callout>
