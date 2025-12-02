@@ -220,39 +220,6 @@ This object represents the payment created after generating the checkout session
         payments (MAX: 64; MIN: 36).
         <br /><small> Example: 5104911d-5df9-229e-8468-bd41abea1a4s </small>
       </p>
-      
-      <details class="yuno">
-        <summary><strong><code>otp</code></strong> <small>object</small>
-          <br />
-          <p>One-time password configuration.</p>
-        </summary>
-        <div>
-          <p><strong><code>length</code></strong> <small>number</small>
-            <br />The character length of the one-time password.
-            <br /><small> Example: 6 </small>
-          </p>
-          <p><strong><code>expires_at</code></strong> <small>timestamp</small>
-            <br />OTP expiration date.
-            <br /><small> Example: 2025-12-31T23:59:59Z </small>
-          </p>
-          <details class="yuno">
-            <summary><strong><code>retries</code></strong> <small>object</small>
-              <br />
-              <p>Retry policy for the OTP flow.</p>
-            </summary>
-            <div>
-              <p><strong><code>accept</code></strong> <small>boolean</small>
-                <br />Indicates if the flow allows retries.
-                <br /><small> Example: true </small>
-              </p>
-              <p><strong><code>number</code></strong> <small>number</small>
-                <br />The amount of retries accepted.
-                <br /><small> Example: 2 </small>
-              </p>
-            </div>
-          </details>
-        </div>
-      </details>
 
       <details class="yuno">
         <summary><strong><code>detail</code></strong> <small>object</small>
@@ -623,6 +590,10 @@ This object represents the payment created after generating the checkout session
               <p><strong><code>bank_name</code></strong> <small>string</small>
                 <br />Name of the bank associated with the account (MAX 255; MIN 3).
                 <br /><small> Example: Banco Galicia </small>
+              </p>
+              <p><strong><code>bank_id</code></strong> <small>string</small>
+                <br />Identifier of the selected bank when the provider requires choosing one (MAX 255; MIN 1). Optional.
+                <br /><small> Example: galicia </small>
               </p>
               <p><strong><code>beneficiary_name</code></strong> <small>string</small>
                 <br />The name of the account holder (MAX 255; MIN 3).
@@ -2907,6 +2878,10 @@ This object represents the payment created after generating the checkout session
                     <br />Name of the bank associated with the account (MAX 255; MIN 3).
                     <br /><small> Example: Banco Galicia </small>
                   </p>
+                  <p><strong><code>bank_id</code></strong> <small>string</small>
+                    <br />Identifier of the selected bank when the provider requires choosing one. Returned only if the merchant sent a value.
+                    <br /><small> Example: galicia </small>
+                  </p>
                   <p><strong><code>beneficiary_name</code></strong> <small>string</small>
                     <br />The name of the account holder (MAX 255; MIN 3).
                     <br /><small> Example: John Doe </small>
@@ -3603,6 +3578,10 @@ This object represents the payment created after generating the checkout session
                   <p><strong><code>bank_name</code></strong> <small>string</small>
                     <br />Name of the bank associated with the account (MAX 255; MIN 3).
                     <br /><small> Example: Banco Galicia </small>
+                  </p>
+                    <small>string</small>
+                    <br />Identifier of the bank selected by the payer when provided in the original payment request.
+                    <br /><small> Example: galicia </small>
                   </p>
                   <p><strong><code>beneficiary_name</code></strong> <small>string</small>
                     <br />The name of the account holder (MAX 255; MIN 3).
