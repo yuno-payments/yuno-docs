@@ -50,7 +50,7 @@ Next, access the admin panel of your chosen identity provider. Here, you'll eith
 
 1. Access your identity provider's admin panel.
 2. Paste the **Identifier (Entity ID)** and **Assertion Consumer Service URL** provided by Yuno into the relevant fields.
-3. Enable the response and assertion signing options.
+3. Enable the **response** and **assertion** signing options.
 4. Save the changes and generate the **XML metadata file**. Alternatively, you can save the Entity ID (IDP), Sign In URL, and Certificate.
 
 **Step 4: Finalize the configuration in Yuno**
