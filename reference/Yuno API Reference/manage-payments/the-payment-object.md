@@ -3579,7 +3579,7 @@ This object represents the payment created after generating the checkout session
                     <br />Name of the bank associated with the account (MAX 255; MIN 3).
                     <br /><small> Example: Banco Galicia </small>
                   </p>
-                    <small>string</small>
+                  <p><strong><code>bank_id</code></strong> <small>string</small>
                     <br />Identifier of the bank selected by the payer when provided in the original payment request.
                     <br /><small> Example: galicia </small>
                   </p>
