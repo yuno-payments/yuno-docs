@@ -114,6 +114,10 @@ Yuno provides several webhooks related to enrollment and payment notifications. 
 
 The next JSON object presents an example of a data structure related to a payment event from Webhook V2.
 
+<Callout icon="ℹ️" theme="info">
+  Webhook payloads for events corresponding to a bank transfer payment method include `payment.payment_method.payment_method_detail.bank_transfer.bank_id`. The field mirrors the `bank_id` sent in the original payment request and is omitted when no bank was selected.
+</Callout>
+
 ```json
 {
     "type": "payment",
