@@ -96,6 +96,7 @@ yuno.startSeamlessCheckout({
     styles: "",
     cardSaveEnable: false,
     texts: {},
+    hideCardholderName: false, // Optional: Set to true to hide cardholder name field
   },
   texts: {},
   async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
@@ -136,7 +137,7 @@ Configure the seamless checkout with the following options:
 | `renderMode`                | Specify how and where the forms will be rendered. The options available are:                                                                                                                                                                                                                  |
 |                             | ▪️ `type: modal` (default)                                                                                                                                                                                                                                                                    |
 |                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                             |
-| `card`                      | Defines the configuration for the card form. It contains settings like render mode, custom styles, and save card option.                                                                                                                                                                      |
+| `card`                      | Defines the configuration for the card form. It contains settings like render mode, custom styles, save card option, and optional `hideCardholderName` to hide the cardholder name field. When `hideCardholderName` is set to `true`, the cardholder name field is not rendered. This does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations.                                                                                                                                                                      |
 | `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                    |
 | `yunoCreatePayment`         | Placeholder function for creating a payment. This function will not be called but should be implemented.                                                                                                                                                                                      |
 | `yunoPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                    |

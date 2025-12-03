@@ -276,81 +276,14 @@ yuno.startCheckout({
 
 ### Render mode
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `renderMode`
-      </td>
-
-      <td>
-        This optional parameter determines the mode in which the payment forms will be displayed.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `type`: can be one of `modal` or `element`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `elementSelector`
-      </td>
-
-      <td>
-        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| --------- | ----------- |
+| `renderMode` | This optional parameter determines the mode in which the payment forms will be displayed. |
+|           | - `type`: can be one of `modal` or `element`. |
+|           | - `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`. |
+| `elementSelector` | Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options: |
+|           | - **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted. |
+|           | - **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code. |
 
 ```javascript
 yuno.startCheckout({
@@ -366,81 +299,15 @@ yuno.startCheckout({
 
 ### Card form configurations
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Define specific settings for the credit card form:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`type`**: `step` or `extends`
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`texts`**: Custom texts in the Card forms buttons.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description                                                                                                       |
+| --------- | ----------------------------------------------------------------------------------------------------------------- |
+| `card`    | Define specific settings for the credit card form:                                                                |
+|           | - **`type`**: `step` or `extends`                                                                                   |
+|           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
+|           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
+|           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
+|           | - **`hideCardholderName`**: Optional. When set to `true`, the cardholder name field is hidden in the card form. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
+|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. The BIN (first 6 digits of the card number) can be used for real-time tax calculations. This works the same as secure fields `options.onChange` method. |
 
 ```javascript
 yuno.startCheckout({
@@ -449,6 +316,7 @@ yuno.startCheckout({
     styles: "",
     cardSaveEnable: false,
     texts: {},
+    hideCardholderName: false, // Optional: Set to true to hide cardholder name field
     isCreditCardProcessingOnly: true,
     onChange: ({ error, data }) => {
       if (error) {

@@ -272,101 +272,16 @@ yuno.startCheckout({
 >
 > The enhanced Lite SDK v2.0 provides advanced render mode capabilities that embed Yuno's checkout forms directly within your interface. This gives you complete control over the checkout journey, including loading, status, and payment input screens, with full visual customization and seamless UX integration.
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `renderMode`
-      </td>
-
-      <td>
-        This optional parameter determines how payment forms are displayed.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `type`: Either `'modal'` or `'element'`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `elementSelector`: Required if `type` is `'element'`. Specifies where to render the form.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `elementSelector`
-      </td>
-
-      <td>
-        Required when `type` is `'element'`. Specifies where to mount the Yuno SDK.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **String** (Deprecated): ID or selector for mounting the SDK.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **Object**: Specify elements for APM and action forms:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `apmForm`: Element to display the APM.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `actionForm`: Element for the **Continue Payment** button, which opens a modal for completing provider-specific payment steps.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| --------- | ----------- |
+| `renderMode` | This optional parameter determines how payment forms are displayed. |
+|           | - `type`: Either `'modal'` or `'element'`. |
+|           | - `elementSelector`: Required if `type` is `'element'`. Specifies where to render the form. |
+| `elementSelector` | Required when `type` is `'element'`. Specifies where to mount the Yuno SDK. |
+|           | - **String** (Deprecated): ID or selector for mounting the SDK. |
+|           | - **Object**: Specify elements for APM and action forms: |
+|           |   - `apmForm`: Element to display the APM. |
+|           |   - `actionForm`: Element for the **Continue Payment** button, which opens a modal for completing provider-specific payment steps. |
 
 ```javascript
 yuno.startCheckout({
@@ -384,6 +299,7 @@ yuno.startCheckout({
 |           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
 |           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
 |           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
+|           | - **`hideCardholderName`**: Optional. When set to `true`, the cardholder name field is hidden in the card form. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
 |           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. The BIN (first 6 digits of the card number) can be used for real-time tax calculations. This works the same as secure fields `options.onChange` method. |
 
 ```javascript
@@ -393,6 +309,7 @@ yuno.startCheckout({
     styles: "",
     cardSaveEnable: false,
     texts: {},
+    hideCardholderName: false, // Optional: Set to true to hide cardholder name field
     isCreditCardProcessingOnly: true,
     onChange: ({ error, data }) => {
       if (error) {
