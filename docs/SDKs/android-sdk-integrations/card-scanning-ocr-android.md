@@ -2,7 +2,7 @@
 title: Card Scanning (OCR)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Card Scanning (OCR)
   description: >-
