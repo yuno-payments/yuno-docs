@@ -86,7 +86,8 @@ final class YunoConfig {
     let cardFormType: CardFormType,
     let appearance: Yuno.Appearance,
     let saveCardEnabled: Bool,
-    let keepLoader: Bool
+    let keepLoader: Bool,
+    let cardNumberPlaceholder: String? // Optional: Custom placeholder text for card number field
 }
 ```
 
@@ -98,6 +99,7 @@ Configure the SDK with the following options:
 | `appearance`      | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                          |
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
 | `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
+| `cardNumberPlaceholder` | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation. |
 
 > 📘 Access Your API Key
 >
