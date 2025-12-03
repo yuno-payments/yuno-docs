@@ -219,6 +219,10 @@ PaymentSelected(
 )
 ```
 
+> 📘 Apple Pay Payment Flow
+>
+> When a customer selects Apple Pay as their payment method, the Apple Pay payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
+
 ## Step 7: Get the OTT (one-time token)
 
 The one-time token is a unique identifier that represents a payment session. This token is required to create a payment.
