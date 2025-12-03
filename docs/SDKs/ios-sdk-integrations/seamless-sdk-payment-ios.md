@@ -71,7 +71,8 @@ final class YunoConfig {
     let cardFormType: CardFormType,
     let appearance: Yuno.Appearance,
     let saveCardEnabled: Bool,
-    let keepLoader: Bool
+    let keepLoader: Bool,
+    let hideCardholderName: Bool? // Optional: Set to true to hide cardholder name field
 }
 ```
 
@@ -83,6 +84,7 @@ Configure the SDK with the following options:
 | `appearance`      | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                        |
 | `saveCardEnabled` | This optional field lets you choose whether the **Save Card** checkbox is shown on card flows. It is false by default.                                                              |
 | `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to false. |
+| `hideCardholderName` | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
 
 > 📘 Accessing Your API Key
 >
