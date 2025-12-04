@@ -233,6 +233,40 @@ The SDK returns different transaction states after payment completion. The follo
 | `internalError`   | It means that an unexpected error occurred within the system or infrastructure handling the payment process. This state suggests that there was a problem on the server or backend side rather than an issue with the user's input or request. |
 | `userCancell`     | This state indicates that the user has voluntarily canceled or aborted the transaction or payment process. This state is typically used when there is an option for the user to cancel or abandon the payment process.                         |
 
+### Payment Status Validation
+
+The SDK provides consistent status handling for different payment method types to ensure clear communication between the SDK state and backend payment status.
+
+#### Sync Payment Methods (Apple Pay)
+
+For synchronous payment methods like Apple Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
+
+- **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER)
+- **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
+- **Important**: The SDK will not return `reject` or `processing` in this scenario
+
+This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
+
+#### Async Payment Methods (PIX and QR-based methods)
+
+For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
+
+- **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER), optionally with a sub-status such as `USER_LEFT_FLOW`
+- **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
+- **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
+- **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+
+This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
+
+#### Expired Async Payments
+
+If a PIX QR code expires naturally:
+
+- **Backend Status**: Updated to `EXPIRED`
+- **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
+
+This ensures merchants receive accurate status information when a payment method has expired.
+
 Implement the delegate to receive transaction states:
 
 ```swift
