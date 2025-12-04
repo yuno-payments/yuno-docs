@@ -68,7 +68,7 @@ The states of chargebacks in Yuno represent the various stages of the process:
 
 ## Predisputes (deflections)
 
-Some networks and providers offer early-resolution programs that can deflect disputes before a formal chargeback is opened. Examples include Visa Rapid Dispute Resolution (RDR), Mastercard’s Ethoca ecosystem, and American Express Accelerated Dispute Resolution (ADR).
+Some networks and providers offer early-resolution programs that can deflect disputes before a formal chargeback is opened. Examples include Visa Rapid Dispute Resolution (RDR), Mastercard's Ethoca ecosystem, and American Express Accelerated Dispute Resolution (ADR).
 
 When a provider/network explicitly reports a predispute deflection, Yuno:
 
@@ -168,8 +168,19 @@ Body:
     }
   ]
 }
-
- 
 ```
 
-Please refer to the [Disputes API](ref:disputes) reference section for more information.
+The endpoint returns a standard payment response structure containing the updated payment information, including the chargeback/dispute status.
+
+### Updating Dispute Evidence
+
+If you need to add additional evidence to an existing dispute, you can use the [Update Dispute](ref:update-dispute) endpoint. This allows you to provide supplementary documentation after the initial dispute has been submitted.
+
+> ⚠️ Important Notes
+>
+> * **Status unchanged**: Adding additional evidence does not change the chargeback status. The status remains the same regardless of updates.
+> * **Provider support**: Not all providers support updating disputes. If a provider doesn't support updates, you'll receive a controlled error response, and the chargeback status will remain unchanged.
+> * **Retrieving dispute information**: You can retrieve the current status and information about a chargeback/dispute by using the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint, which includes transaction details with chargeback information.
+
+Please refer to the [Disputes API](ref:disputes) and [Update Dispute API](ref:update-dispute) reference sections for more information.
+
