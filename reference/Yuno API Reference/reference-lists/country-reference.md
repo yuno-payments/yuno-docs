@@ -91,7 +91,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1264
+        1
       </td>
     </tr>
     <tr>
@@ -120,7 +120,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1268
+        1
       </td>
     </tr>
     <tr>
@@ -210,7 +210,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1242
+        1
       </td>
     </tr>
     <tr>
@@ -239,7 +239,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1246
+        1
       </td>
     </tr>
     <tr>
@@ -297,7 +297,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1441
+        1
       </td>
     </tr>
     <tr>
@@ -452,7 +452,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1345
+        1
       </td>
     </tr>
     <tr>
@@ -635,7 +635,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1767
+        1
       </td>
     </tr>
     <tr>
@@ -815,7 +815,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1473
+        1
       </td>
     </tr>
     <tr>
@@ -993,7 +993,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1876
+        1
       </td>
     </tr>
     <tr>
@@ -1083,7 +1083,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1664
+        1
       </td>
     </tr>
     <tr>
@@ -1237,7 +1237,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1787
+        1
       </td>
     </tr>
     <tr>
@@ -1266,7 +1266,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1869
+        1
       </td>
     </tr>
     <tr>
@@ -1324,7 +1324,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1758
+        1
       </td>
     </tr>
     <tr>
@@ -1411,7 +1411,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1784
+        1
       </td>
     </tr>
     <tr>
@@ -1440,7 +1440,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1721
+        1
       </td>
     </tr>
     <tr>
@@ -1498,7 +1498,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1868
+        1
       </td>
     </tr>
     <tr>
@@ -1527,7 +1527,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1649
+        1
       </td>
     </tr>
     <tr>
@@ -1650,7 +1650,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1284
+        1
       </td>
     </tr>
     <tr>
@@ -1679,7 +1679,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1340
+        1
       </td>
     </tr>
   </tbody>
@@ -3897,7 +3897,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1671
+        1
       </td>
     </tr>
     <tr>
@@ -4583,7 +4583,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        1670
+        1
       </td>
     </tr>
     <tr>
