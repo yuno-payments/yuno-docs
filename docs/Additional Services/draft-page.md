@@ -99,7 +99,7 @@ Aida AI features throughout the dashboard are designed with distinctive visual e
 * **Chatbot widget**: The chatbot widget appears in the bottom right corner of all dashboard sections
 * **Clear option selection**: When opening the chatbot, you'll see a clear message asking if you want to talk with **Aida AI** or a **customer support representative**
 
-<Image alt="Aida AI chatbot widget with option selection" border={false} src="https://files.readme.io/aida-payments-widget.png" />
+<Image border={false} src="https://files.readme.io/04f11017ad1d9cbf804e10fafdb2692e1acdd461363e046793babf548265d1e5-image.png" />
 
 ## Getting Started
 
