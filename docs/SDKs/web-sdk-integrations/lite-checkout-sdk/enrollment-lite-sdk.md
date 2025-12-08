@@ -230,7 +230,7 @@ The configuration and mounting are done in the same step for the Enrollment Lite
       </td>
 
       <td>
-        Defines the language to be used in the payment forms. You can set it to one of the available language options: `es` (Spanish), `en` (English), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), or `th` (Thai).
+        Defines the language to be used in the payment forms. You can set it to one of the available language options: `es` (Spanish), `en` (English), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), `th` (Thai), or `tr` (Turkish).
       </td>
     </tr>
 
