@@ -15,9 +15,7 @@ The Aida AI chatbot widget is available across all dashboard sections, including
 
 The Aida AI chatbot widget is powered by Pylon and is accessible from any section of the Yuno Dashboard. When you open the chatbot, you'll be presented with the option to chat with **Aida AI** or a **customer support representative**.
 
-<br />
-
-<Image alt="Aida AI chatbot widget with option selection" border={false} src="https://files.readme.io/aida-payments-widget.png" />
+<Image border={false} src="https://files.readme.io/b5a7251027abc7361ac8e0059a84e952f2e458ada60a3d0ddf60ad6a553183ea-image.png" />
 
 **What you can do:**
 
@@ -37,7 +35,7 @@ The Aida AI chatbot widget is powered by Pylon and is accessible from any sectio
 
 In the **Payments** section, you can use Aida AI to get detailed information about specific payments, transactions, and payment history.
 
-<Image alt="Payments section with Aida AI chatbot open" border={false} src="https://files.readme.io/aida-payments-chatbot-open.png" />
+<Image border={false} src="https://files.readme.io/676fb0d282e5d35c38723e912f0585427f47b17bb791f2badb756ae34ea2e877-image.png" />
 
 **What you can do:**
 
