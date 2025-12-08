@@ -1,5 +1,5 @@
 ---
-title: Draft page
+title: Aida AI in the Dashboard
 deprecated: false
 hidden: true
 metadata:
