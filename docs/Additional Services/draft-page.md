@@ -55,7 +55,7 @@ In the **Payments** section, you can use Aida AI to get detailed information abo
 
 In the **Insights** section, Aida AI helps you understand your payment performance data and can assist with generating custom charts and visualizations.
 
-<Image alt="Insights section with Aida AI chatbot" border={false} src="https://files.readme.io/aida-insights-chatbot.png" />
+<Image border={false} src="https://files.readme.io/75bda10ed0022a347965d53e30e065b3ae439769c3fa26ea27641524f9a4a8a8-image.png" />
 
 **What you can do:**
 
@@ -75,7 +75,7 @@ In the **Insights** section, Aida AI helps you understand your payment performan
 
 In the **Routing** section, Aida AI assists you in creating and configuring routing rules.
 
-<Image alt="Routing section with Aida AI chatbot open" border={false} src="https://files.readme.io/aida-routing-chatbot-open.png" />
+<Image border={false} src="https://files.readme.io/d20cd3b5f3673f63753d4559de31e381ab471bc6641b53e4f22e2cc654bf0ed5-image.png" />
 
 **What you can do:**
 
