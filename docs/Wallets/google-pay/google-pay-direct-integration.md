@@ -10,11 +10,6 @@ metadata:
 next:
   description: ''
 ---
-
-> ❗️ **SDK Required**
->
-> Google Pay Direct integration requires using one of Yuno's SDKs (Web, Android, or iOS) for implementation. This feature cannot be implemented without an SDK integration.
-
 This page provides instructions for connecting and offering Google Pay™ as a payment option to your customers using the Direct integration.
 
 ## Requirements
@@ -47,14 +42,11 @@ To integrate Google Pay with Yuno, follow these steps:
 
 1. In the [Yuno dashboard](https://dashboard.y.uno/), go to the Connections tab. Find Google Pay and click Connect. Enter your credentials in the side panel. Choose a name for the connection and use the merchant ID obtained from the [Google Pay Business Console](https://pay.google.com/business/console) in the Merchant ID field.
 
-<Image align="center" src="https://files.readme.io/2fee3d1-google-pay1.png" />
+<Image align="center" border={false} src="https://files.readme.io/2fee3d1-google-pay1.png" />
 
 2. Create a route in Yuno's dashboard using the processor you want for Google Pay payments. See the [Configure dynamic routing](doc:routing#configuring-the-dynamic-routing) guide for more information.
-3. Integrate [Yuno's SDK](../docs/android-sdk-integrations) into your app to ensure a smooth connection between your application and Yuno's platform. [Example](https://github.com/yuno-payments/yuno-sdk-android).
-   1. **Authorization methods available**: Yuno supports all authorization methods (purchase, authorization, capture), but availability depends on each provider.
-4. Enable Google Pay as a payment method in your [Yuno Checkout builder](../docs/checkout-builder) so customers can use it during checkout.
 
-Once these integration steps are complete, Google Pay will be seamlessly offered to your customers via the Yuno checkout. Customers will be able to select Google Pay and authorize payments using their familiar Google Pay interface. Yuno then securely handles the payment token received from Google, processing the transaction through your configured payment processor. All Google Pay transactions will be visible and manageable within your Yuno dashboard alongside your other payment methods, providing a unified view of your operations.
+Customers will be able to select Google Pay and authorize payments using their familiar Google Pay interface. Yuno then securely handles the payment token received from Google, processing the transaction through your configured payment processor. All Google Pay transactions will be visible and manageable within your Yuno dashboard alongside your other payment methods, providing a unified view of your operations.
 
 ## Enable and test Google Pay with Yuno
 
@@ -70,7 +62,7 @@ After integrating, you can enable and test Google Pay with Yuno as follows:
    * In the Google Wallet API section, find the option labeled **Create a Pass**.
    * Click this option to enable **Demo mode**. This allows you to simulate and test pass creation and interactions without real transactions.
 
-<Image align="center" width="600px" src="https://files.readme.io/fbc51b7-6847ef9-demo_mode.png" />
+<Image align="center" border={false} width="600px" src="https://files.readme.io/fbc51b7-6847ef9-demo_mode.png" />
 
 4. Download the [Google Wallet App](https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel\&hl=en\&gl=US) from the Play Store.
 5. Go through the payment flow to test the integration.
@@ -114,7 +106,7 @@ Google provides brand guides for including the Google Pay brand in your website 
 
 ### Card networks supported
 
-The card networks supported worldwide are AMEX, DISCOVER, JCB, MASTERCARD, and VISA. For Brazil, supported networks are VISA, ELECTRON, MASTERCARD, MAESTRO, ELO, and ELO\_DEBIT.
+The card networks supported worldwide are AMEX, DISCOVER, JCB, MASTERCARD, and VISA. For Brazil, supported networks are VISA, ELECTRON, MASTERCARD, MAESTRO, ELO, and ELO_DEBIT.
 
 ## Pass Google Pay payment token in request
 
