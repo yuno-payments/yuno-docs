@@ -11,18 +11,41 @@ Aida AI is integrated throughout the Yuno Dashboard, providing contextual assist
 
 Aida AI lives in one chatbot widget (bottom right). Open it on any screen, choose **Aida AI** or **customer support**, and ask for help in natural language.
 
-* **Dashboard entry point** — bottom-right widget visible on every screen.  
-  ![](https://files.readme.io/3c3a115c146bda27428dddd6d89e9c04207fea76ceaaa13140761dff2d3308f4-image.png)
-* **Chatbot choice** — pick Aida AI or a representative when the widget opens.  
-  ![](https://files.readme.io/b5a7251027abc7361ac8e0059a84e952f2e458ada60a3d0ddf60ad6a553183ea-image.png)
-* **Payments** — ask about status, failures, history, or specific payment IDs.  
-  ![](https://files.readme.io/676fb0d282e5d35c38723e912f0585427f47b17bb791f2badb756ae34ea2e877-image.png)
-* **Insights** — ask for metric explanations, charts, or emailed visualisations.  
-  ![](https://files.readme.io/75bda10ed0022a347965d53e30e065b3ae439769c3fa26ea27641524f9a4a8a8-image.png)
-* **Routing** — ask for help creating, optimising, or troubleshooting routing rules.  
-  ![](https://files.readme.io/d20cd3b5f3673f63753d4559de31e381ab471bc6641b53e4f22e2cc654bf0ed5-image.png)
-* **Identify Aida AI** — look for the blue grid-like logo and the bottom-right widget; you will always see the option to choose Aida AI or customer support.  
-  ![](https://files.readme.io/04f11017ad1d9cbf804e10fafdb2692e1acdd461363e046793babf548265d1e5-image.png)
+### Dashboard entry point
+
+The Aida AI widget is always available in the bottom-right corner of every dashboard screen, so you can access help wherever you are.
+
+<Image alt="Dashboard with chatbot entry point" border={false} src="https://files.readme.io/3c3a115c146bda27428dddd6d89e9c04207fea76ceaaa13140761dff2d3308f4-image.png" />
+
+### Start a new chat
+
+When you open the widget, you'll be prompted to start a new chat with Aida AI.
+
+<Image alt="Chatbot option to choose Aida AI" border={false} src="https://files.readme.io/b5a7251027abc7361ac8e0059a84e952f2e458ada60a3d0ddf60ad6a553183ea-image.png" />
+
+### Payments
+
+On the Payments section, use the chat to ask about payment IDs, status, or recent failures.
+
+<Image alt="Payments view with chatbot open" border={false} src="https://files.readme.io/676fb0d282e5d35c38723e912f0585427f47b17bb791f2badb756ae34ea2e877-image.png" />
+
+### Insights
+
+In the Insights section, ask Aida AI for metric explanations or quick charts.
+
+<Image alt="Insights view with chatbot open" border={false} src="https://files.readme.io/75bda10ed0022a347965d53e30e065b3ae439769c3fa26ea27641524f9a4a8a8-image.png" />
+
+### Routing
+
+Within Routing, ask Aida AI to create, optimise, or troubleshoot routing rules.
+
+<Image alt="Routing view with chatbot open" border={false} src="https://files.readme.io/d20cd3b5f3673f63753d4559de31e381ab471bc6641b53e4f22e2cc654bf0ed5-image.png" />
+
+### Identifying Aida AI
+
+Look for the blue grid logo in the bottom-right widget. You can always choose between Aida AI and customer support.
+
+<Image alt="Chatbot option reminder" border={false} src="https://files.readme.io/04f11017ad1d9cbf804e10fafdb2692e1acdd461363e046793babf548265d1e5-image.png" />
 
 How to use:
 
