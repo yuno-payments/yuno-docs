@@ -16,7 +16,7 @@ This page provides a step-by-step guide to implement and enable Yuno's Full Web 
 Add the following script tag to your HTML file to include the Yuno Web SDK:
 
 ```html
-<script src="https://sdk-web.y.uno/v1.4/main.js"></script>
+<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
 ```
 
 Alternatively, you can install it via npm:
@@ -53,17 +53,17 @@ For further customization or advanced/optional settings, see the [Complementary 
 
 The following table lists all the available parameters for the `startCheckout` method with descriptions:
 
-| Parameter                         | Description                                                                                                                                                                                                                                                                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                                    |
-| `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                                                                                                                                            |
-| `countryCode`                     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.                                         |
-| `language`                        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul>                                                        |
-| `onLoading`                       | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                                    |
-| `showLoading`                     | Control the visibility of the Yuno loading/spinner page during the payment process. By default, it's `true`.                                                                                                                                                                                                                          |
-| `issuersFormEnable`               | Enables the issuer's form. By default, it's `true`.                                                                                                                                                                                                                                                                                   |
-| `showPaymentStatus`               | Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it's `true`.                                                                                                                                                                                                               |
-| `card.isCreditCardProcessingOnly` | Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets such as Brazil where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required. |
+| Parameter                         | Description                                                                                                                                                                                                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                     |
+| `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                                                                                                                             |
+| `countryCode`                     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.                          |
+| `language`                        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li></ul>                                         |
+| `onLoading`                       | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                     |
+| `showLoading`                     | Control the visibility of the Yuno loading/spinner page during the payment process. By default, it's `true`.                                                                                                                                                                                                           |
+| `issuersFormEnable`               | Enables the issuer's form. By default, it's `true`.                                                                                                                                                                                                                                                                    |
+| `showPaymentStatus`               | Shows the Yuno Payment Status page. You can use this option when continuing a payment as well. By default, it's `true`.                                                                                                                                                                                                |
+| `card.isCreditCardProcessingOnly` | Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required. |
 
 ```javascript
 yuno.startCheckout({
@@ -110,6 +110,10 @@ yuno.startCheckout({
 > 📘 `onPaymentMethodSelected` Event
 >
 > For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
+
+> 📘 PayPal Payment Flow
+>
+> When a customer selects PayPal as their payment method, the PayPal payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
 
 > 📘 Google Pay and Apple Pay Display
 >
@@ -229,9 +233,9 @@ await yuno.mountExternalButtons([
 
 #### Parameters
 
-| Parameter           | Description                                                                                                    |
-| :------------------ | :------------------------------------------------------------------------------------------------------------- |
-| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                       |
+| Parameter           | Description                                                                                                 |
+| :------------------ | :---------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                    |
 | `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (e.g., `'#apple-pay'`, `'.button'`). |
 
 #### Unmounting buttons
@@ -366,81 +370,14 @@ yuno.startCheckout({
 
 ### Card form configurations
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Define specific settings for the credit card form:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`type`**: `step` or `extends`
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`texts`**: Custom texts in the Card forms buttons.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description                                                                                                       |
+| --------- | ----------------------------------------------------------------------------------------------------------------- |
+| `card`    | Define specific settings for the credit card form:                                                                |
+|           | - **`type`**: `step` or `extends`                                                                                   |
+|           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
+|           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
+|           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
+|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method. |
 
 ```javascript
 yuno.startCheckout({

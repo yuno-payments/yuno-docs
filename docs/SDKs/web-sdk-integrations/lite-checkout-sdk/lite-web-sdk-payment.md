@@ -109,9 +109,9 @@ yuno.mountCheckoutLite({
 
 After mounting the SDK, the selected payment method flow will start automatically.
 
-> 📘 Google Pay and Apple Pay in Lite SDK
+> ⚠️ **Warning: Google Pay and Apple Pay in Lite SDK**
 >
-> Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See [Mount external buttons](#mount-external-buttons) for more information.
+> Google Pay and Apple Pay are *not* available as built-in payment options in the Lite SDK. To accept these payment methods, you **must** use the `mountExternalButtons` method. For implementation details, see [Mount external buttons](#mount-external-buttons).
 
 ## Step 5: Mount external buttons (Optional)
 
@@ -150,6 +150,8 @@ yuno.unmountAllExternalButtons();
 ```
 
 ## Step 6: Initiate the payment process
+
+For PayPal, the payment sheet opens immediately after selection—no extra confirmation step is needed.
 
 After the user has selected a payment method, remember to call `yuno.startPayment()` to initiate the payment flow. Below, you will find an example where `yuno.startPayment()` is called when the user clicks on `button-pay`:
 
@@ -384,7 +386,7 @@ yuno.startCheckout({
 |           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
 |           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
 |           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
-|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. The BIN (first 6 digits of the card number) can be used for real-time tax calculations. This works the same as secure fields `options.onChange` method. |
+|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN information and installment options. This works the same as secure fields `options.onChange` method. |
 
 ```javascript
 yuno.startCheckout({
