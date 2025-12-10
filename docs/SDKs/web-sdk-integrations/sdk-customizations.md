@@ -1338,6 +1338,10 @@ The following sections detail the elements that make up the Card and APM forms, 
 </body>
 `}</HTMLBlock>
 
+## Address autocomplete
+
+Merchants can enable or disable address autocomplete functionality in the Web SDK. When enabled, the SDK automatically fills address fields based on postal code lookup. When disabled, users must manually enter all address information.
+
 ## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
