@@ -2,7 +2,7 @@
 title: Aida AI in the Dashboard
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Aida AI in the Dashboard
   description: >-
