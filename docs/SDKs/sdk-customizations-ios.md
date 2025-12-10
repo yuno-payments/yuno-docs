@@ -94,3 +94,7 @@ Yuno.initialize(
 ```
 
 <Image border={false} src="https://files.readme.io/47e26ec-image.png" />
+
+## Address autocomplete
+
+Merchants can enable or disable address autocomplete functionality in the iOS SDK. When enabled, the SDK automatically fills address fields based on postal code lookup. When disabled, users must manually enter all address information.
