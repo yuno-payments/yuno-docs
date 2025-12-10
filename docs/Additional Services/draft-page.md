@@ -11,17 +11,17 @@ Aida AI is integrated throughout the Yuno Dashboard, providing contextual assist
 
 Aida AI lives in one chatbot widget (bottom right). Open it on any screen, choose **Aida AI** or **customer support**, and ask for help in natural language.
 
-* Dashboard view: see the chatbot entry point in the bottom right.  
+* **Dashboard entry point** — bottom-right widget visible on every screen.  
   ![](https://files.readme.io/3c3a115c146bda27428dddd6d89e9c04207fea76ceaaa13140761dff2d3308f4-image.png)
-* Chatbot choice: pick Aida AI or a representative when the widget opens.  
+* **Chatbot choice** — pick Aida AI or a representative when the widget opens.  
   ![](https://files.readme.io/b5a7251027abc7361ac8e0059a84e952f2e458ada60a3d0ddf60ad6a553183ea-image.png)
-* Payments: ask about payment status, failures, history, or specific payment IDs.  
+* **Payments** — ask about status, failures, history, or specific payment IDs.  
   ![](https://files.readme.io/676fb0d282e5d35c38723e912f0585427f47b17bb791f2badb756ae34ea2e877-image.png)
-* Insights: ask for metric explanations, charts, or emailed visualizations.  
+* **Insights** — ask for metric explanations, charts, or emailed visualisations.  
   ![](https://files.readme.io/75bda10ed0022a347965d53e30e065b3ae439769c3fa26ea27641524f9a4a8a8-image.png)
-* Routing: ask for help creating, optimizing, or troubleshooting routing rules.  
+* **Routing** — ask for help creating, optimising, or troubleshooting routing rules.  
   ![](https://files.readme.io/d20cd3b5f3673f63753d4559de31e381ab471bc6641b53e4f22e2cc654bf0ed5-image.png)
-* Identifying Aida AI: look for the blue grid-like Aida AI logo and the bottom-right widget placement; you will always see the option to choose Aida AI or customer support.  
+* **Identify Aida AI** — look for the blue grid-like logo and the bottom-right widget; you will always see the option to choose Aida AI or customer support.  
   ![](https://files.readme.io/04f11017ad1d9cbf804e10fafdb2692e1acdd461363e046793babf548265d1e5-image.png)
 
 How to use:
