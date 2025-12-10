@@ -1,10 +1,10 @@
 ---
-title: Aida AI in the Dashboard
+title: Aida AI in the dashboard
 excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: Aida AI in the Dashboard
+  title: Aida AI in the dashboard
   description: >-
     Learn how to use Aida AI throughout the Yuno Dashboard for contextual assistance in Payments, Insights, Routing sections, and chatbot integration.
   robots: index
@@ -19,7 +19,7 @@ The Aida AI chatbot widget is available across all dashboard sections, including
 
 ![Payments section with Aida AI chatbot widget](https://files.readme.io/aida-payments.png)
 
-## Aida AI Chatbot Widget
+## Aida AI chatbot widget
 
 The Aida AI chatbot widget is powered by Pylon and is accessible from any section of the Yuno Dashboard. When you open the chatbot, you'll be presented with the option to chat with **Aida AI** or a **customer support representative**.
 
@@ -37,7 +37,7 @@ The Aida AI chatbot widget is powered by Pylon and is accessible from any sectio
 3. Choose between **Aida AI** or **customer support representative**
 4. Start your conversation and get the help you need
 
-## Aida AI in Payments
+## Aida AI in payments
 
 In the **Payments** section, you can use Aida AI to get detailed information about specific payments, transactions, and payment history.
 
@@ -55,7 +55,7 @@ In the **Payments** section, you can use Aida AI to get detailed information abo
 3. Choose Aida AI when prompted
 4. Ask your question about payments, transactions, or payment-related issues
 
-## Aida AI in Insights
+## Aida AI in insights
 
 In the **Insights** section, Aida AI helps you understand your payment performance data and can assist with generating custom charts and visualizations.
 
@@ -73,7 +73,7 @@ In the **Insights** section, Aida AI helps you understand your payment performan
 3. Choose Aida AI when prompted
 4. Ask questions about your insights data or request chart generation
 
-## Aida AI in Routing
+## Aida AI in routing
 
 In the **Routing** section, Aida AI assists you in creating and configuring routing rules.
 
@@ -91,7 +91,7 @@ In the **Routing** section, Aida AI assists you in creating and configuring rout
 3. Choose Aida AI when prompted
 4. Ask for help with routing configuration or optimization
 
-## Identifying Aida AI Features
+## Identifying Aida AI features
 
 Aida AI features throughout the dashboard are designed with distinctive visual elements to make them easy to identify:
 
@@ -101,7 +101,7 @@ Aida AI features throughout the dashboard are designed with distinctive visual e
 
 ![Aida AI chatbot widget with option selection](https://files.readme.io/aida-payments-widget.png)
 
-## Getting Started
+## Getting started
 
 To start using Aida AI in the dashboard:
 
@@ -113,7 +113,7 @@ To start using Aida AI in the dashboard:
 
 The chatbot widget is always available, so you can access Aida AI from any section of the dashboard at any time.
 
-## What You Can Ask Aida AI
+## What you can ask Aida AI
 
 Aida AI can help you with a wide range of tasks across the dashboard:
 
