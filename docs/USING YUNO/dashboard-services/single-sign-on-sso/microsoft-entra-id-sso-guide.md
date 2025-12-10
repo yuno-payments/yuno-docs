@@ -16,7 +16,7 @@ This guide explains how to connect Yuno to Microsoft Entra ID (formerly Azure Ac
 
 ## Step 1: Configure the basic SAML settings
 
-First, go to the dashboard and click your profile image, then open **Security**. Navigate to the Single Sign-On (SSO) tab and gather this info:  
+First, go to the dashboard and click your profile image, then open **Security**. Navigate to the Single Sign-On (SSO) tab and gather this info:
 
 * Identifier (Entity ID)
 * Assertion consumer service URL
@@ -35,7 +35,7 @@ In Microsoft Entra ID, navigate to the **SAML certificates** section and downloa
 2. Wait for the **Upload completed** confirmation
 3. Click **Save**
 
-Alternatively, you may acquire the information listed in **Option B** and enter it manually.
+Alternatively, you can take the information listed in **Option B** and enter it manually.
 
 ## Step 3: Verify SAML certificate settings
 
@@ -48,7 +48,7 @@ Click **Save** to apply the changes.
 
 ## Troubleshooting
 
-If cannot set up the SSO connection or run into issues after initial configuration:
+If you cannot set up the SSO connection or run into issues after initial configuration:
 
 * Remember Yuno requires **signed SAML responses**, check:
   * Both the SAML response and the assertion are signed
