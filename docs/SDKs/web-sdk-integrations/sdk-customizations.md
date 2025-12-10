@@ -1340,49 +1340,7 @@ The following sections detail the elements that make up the Card and APM forms, 
 
 ## Address autocomplete
 
-The Web SDK supports address autocomplete functionality based on postal code lookup. When a user enters a valid postal code, the system automatically triggers a lookup and fills in the address fields (street, neighborhood, city, state) to save time and ensure accuracy.
-
-### Supported countries
-
-Address autocomplete is currently supported for the following countries:
-* **Brazil**: Full address autocomplete support
-* **United Kingdom (UK)**: Full address autocomplete support
-
-Support for additional countries will be added in future SDK versions.
-
-### Autocomplete behavior
-
-When address autocomplete is enabled:
-
-* **Postal code lookup**: Entering a valid postal code triggers a backend call to retrieve address information
-* **Loading state**: While the lookup is in progress, address fields display a skeleton loader
-* **Field auto-fill**: Once the lookup completes, the following fields are automatically filled:
-  * Street address
-  * Neighborhood
-  * City
-  * State
-* **Field reordering**: Address fields are automatically reordered when autocomplete is triggered to optimize the user experience and form layout
-
-### User override capabilities
-
-Address autocomplete is designed to help users, not restrict them. Users can always override autofilled values:
-
-* **Manual editing**: If a user edits any field manually, their manual input always takes precedence over autofilled values
-* **Postal code re-entry**: 
-  * If address fields are empty, re-entering the postal code will re-trigger the lookup and autofill the fields
-  * If fields are already filled or were manually modified, re-entering the postal code will not overwrite existing values
-* **Optional fields**: Fields such as address number and complement remain editable at all times and are not affected by autocomplete
-
-### Saved billing address
-
-If a saved billing address exists for the user and autofill is enabled:
-
-* The autofill result will override the existing saved address when a postal code is entered
-* Users can still manually edit any field to override the autofilled values
-
-### Enabling/disabling autofill
-
-Merchants can enable or disable address autofill functionality. When autofill is disabled, users must manually enter all address information.
+Merchants can enable or disable address autocomplete functionality in the Web SDK. When enabled, the SDK automatically fills address fields based on postal code lookup. When disabled, users must manually enter all address information.
 
 ## Stay Updated
 
