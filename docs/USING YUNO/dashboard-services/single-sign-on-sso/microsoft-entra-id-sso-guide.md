@@ -19,7 +19,7 @@ This guide explains how to connect Yuno to Microsoft Entra ID (formerly Azure Ac
 First, go to the dashboard and click your profile image, then open **Security**. Navigate to the Single Sign-On (SSO) tab and gather this info:
 
 * Identifier (Entity ID)
-* Assertion consumer service URL
+* Assertion Consumer Service URL
 
 In Microsoft Entra ID, go to:
 
