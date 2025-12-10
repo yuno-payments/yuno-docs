@@ -33,7 +33,7 @@ Let's walk through the process of adding, creating, and managing connections to 
 
 > 📘 Editing connections
 >
-> One connection is created for each selected account. When editing a connection, changes will not be applied in bulk—each connection must be edited individually.
+> When you create connections, one connection is set up for each account you select. Please note that if you need to make changes later, you must edit each connection individually—bulk editing is not supported.
 
 5. With your connections set, you can proceed to the [Routing](../docs/routing) section to configure payment processing routes using the provider and payment methods you have available within Yuno.
 
