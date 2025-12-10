@@ -109,13 +109,9 @@ yuno.mountCheckoutLite({
 
 After mounting the SDK, the selected payment method flow will start automatically.
 
-> 📘 PayPal Payment Flow
+> ⚠️ **Warning: Google Pay and Apple Pay in Lite SDK**
 >
-> When a customer selects PayPal as their payment method, the PayPal payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
-
-> 📘 Google Pay and Apple Pay in Lite SDK
->
-> Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See [Mount external buttons](#mount-external-buttons) for more information.
+> Google Pay and Apple Pay are *not* available as built-in payment options in the Lite SDK. To accept these payment methods, you **must** use the `mountExternalButtons` method. For implementation details, see [Mount external buttons](#mount-external-buttons).
 
 ## Step 5: Mount external buttons (Optional)
 
@@ -154,6 +150,8 @@ yuno.unmountAllExternalButtons();
 ```
 
 ## Step 6: Initiate the payment process
+
+For PayPal, the payment sheet opens immediately after selection—no extra confirmation step is needed.
 
 After the user has selected a payment method, remember to call `yuno.startPayment()` to initiate the payment flow. Below, you will find an example where `yuno.startPayment()` is called when the user clicks on `button-pay`:
 
