@@ -179,7 +179,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation);
 >
 > The merchant is responsible for managing the loader. Yuno provides a default loader option, but merchants may implement their own loader if preferred. In that case, they are responsible for making the necessary configurations.
 
-## Step 8: Create the Payment
+## Step 8: Create the payment
 
 Once you have completed the steps described before, you will be able to create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 

@@ -162,7 +162,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation);
 >
 > The merchant is responsible for managing the loader. Yuno provides a default loader option, but merchants may implement their own loader if preferred. In that case, they are responsible for making the necessary configurations.
 
-## Step 7: Create the Payment
+## Step 7: Create the payment
 
 After completing the previous steps, proceed to create a payment. Back-to-back payment creation must be performed using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant's backend should call this endpoint to create the payment in Yuno using the one-time token and checkout session.
 
@@ -301,13 +301,13 @@ yuno.startCheckout({
 
 | Parameter | Description                                                                                                       |
 | --------- | ----------------------------------------------------------------------------------------------------------------- |
-| `card`    | Define specific settings for the credit card form:                                                                |
-|           | - **`type`**: `step` or `extends`                                                                                   |
-|           | - **`styles`**: You can edit card form styles. Only you should write css, then it will be injected into the iframe. |
-|           | - **`cardSaveEnable`**: Show checkbox for save/enroll card. The default value is false.                             |
-|           | - **`texts`**: Custom texts in the Card forms buttons.                                                              |
+| `card`    | Configure settings for the credit card form:                                                                     |
+|           | - **`type`**: Card form layout type. Options: `step` or `extends`                                                |
+|           | - **`styles`**: Write custom CSS to style the card form. Your CSS will be injected into the iframe.             |
+|           | - **`cardSaveEnable`**: Show checkbox to save or enroll the card. Defaults to `false`.                           |
+|           | - **`texts`**: Custom text for the card form buttons.                                                             |
 |           | - **`cardNumberPlaceholder`**: Optional. Custom placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation. |
-|           | - **`onChange`**: Callback function triggered when card information state changes. This method is called whenever a card-related event occurs, such as during data fetching (loading), after completion, when a network is selected (mastercard-cartes bancaires, visa-cartes bancaires, etc), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. The BIN (first 6 digits of the card number) can be used for real-time tax calculations. This works the same as secure fields `options.onChange` method. |
+|           | - **`onChange`**: Callback function triggered when card information state changes. Called when card-related events occur, such as during data fetching (loading), after completion, when a network is selected (e.g., mastercard-cartes bancaires, visa-cartes bancaires), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. The BIN (first 6 digits of the card number) can be used for real-time tax calculations. Works the same as the secure fields `options.onChange` method. |
 
 ```javascript
 yuno.startCheckout({
