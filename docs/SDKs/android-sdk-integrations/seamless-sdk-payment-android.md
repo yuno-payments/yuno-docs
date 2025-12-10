@@ -182,10 +182,6 @@ The following table provides additional information about the possible states:
 
 ## Step 7: Get payment one-time token (OTT)
 
-> 📘 Apple Pay Payment Flow
->
-> When a customer selects Apple Pay as their payment method, the Apple Pay payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
-
 Call the method `startPaymentSeamlessLite` to start a payment process:
 
 ```kotlin

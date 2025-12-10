@@ -246,10 +246,6 @@ startPayment(
 
 ```
 
-> 📘 Apple Pay Payment Flow
->
-> When a customer selects Apple Pay as their payment method, the Apple Pay payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
-
 ### Parameters
 
 Configure the payment with the following options:
