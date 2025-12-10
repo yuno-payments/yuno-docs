@@ -160,10 +160,6 @@ startPaymentLite(
 )
 ```
 
-> 📘 Apple Pay Payment Flow
->
-> When a customer selects Apple Pay as their payment method, the Apple Pay payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
-
 For the Lite checkout version, you need to send an additional parameter, which can be the vaulted token and/or the payment method the customer will use to make the payment.
 
 ```swift

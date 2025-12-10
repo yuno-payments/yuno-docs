@@ -196,10 +196,6 @@ To start a payment after displaying the payment methods, call the `startPayment`
 Yuno.startPayment(showPaymentStatus:Bool)
 ```
 
-> 📘 Apple Pay Payment Flow
->
-> When a customer selects Apple Pay as their payment method, the Apple Pay payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
-
 ## Step 6: Get the OTT (one-time token)
 
 You can obtain the one-time token to create the payment back-to-back at the end of this process. You will get the one-time token in the function `yunoCreatePayment()` that you implement when adopting the `YunoPaymentDelegate`. An example of retrieving the one-time token is shown below:

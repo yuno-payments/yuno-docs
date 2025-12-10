@@ -102,10 +102,6 @@ Before starting the payment process, you need to create a `checkout_session` usi
 
 ## Step 3: Start the checkout and Payment process
 
-> 📘 Apple Pay Payment Flow
->
-> When a customer selects Apple Pay as their payment method, the Apple Pay payment sheet opens immediately after selection, providing a streamlined checkout experience with no extra confirmation steps required.
-
 The seamless checkout and payment process is initiated with a single method `startPaymentSeamlessLite`. In the `ViewController`, where Yuno will be displayed, call the `Yuno.startPaymentSeamlessLite()` method. You can use the method with async/await or using callbacks:
 
 ```swift Swift (async/await)
