@@ -134,4 +134,4 @@ Once created, you can:
 
 > 📘 Webhook Security
 >
-> Always use HTTPS for your webhook endpoint URLs to ensure secure transmission of webhook data. Additionally, verify webhook signatures using the provided x-api-key and x-secret to ensure the webhooks are authentic and haven't been tampered with.
+> Always use HTTPS for your webhook endpoint URLs to ensure secure transmission of webhook data. Additionally, verify webhook signatures using the provided public key and private secret key to ensure the webhooks are authentic and haven't been tampered with.
