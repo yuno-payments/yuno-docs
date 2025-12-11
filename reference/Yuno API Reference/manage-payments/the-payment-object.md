@@ -199,6 +199,7 @@ This object represents the payment created after generating the checkout session
         <br />The vaulted_token represents a securely stored payment_method associated with a previous transaction. When
         utilizing a vaulted_token for creating a payment, there is no need to send an additional token; it can be set as
         null (MAX: 64; MIN: 36).
+        <br /><small> This field is returned in the payment response when <code>vault_on_success = true</code> and the payment status is <code>SUCCEEDED</code>, provided the payment references an existing Yuno customer through <code>customer_payer.id</code>. </small>
         <br /><small> Example: 8604911d-5ds9-229e-8468-bd41abear14s </small>
       </p>
 
@@ -210,7 +211,7 @@ This object represents the payment created after generating the checkout session
 
       <p><strong><code>vault_on_success</code></strong> <small>boolean</small>
         <br />Flag to enroll the card after a successful payment. Requires the payment to reference an existing Yuno customer through <code>customer_payer.id</code>.
-        <br /><small> Without a customer ID no vaulting occurs and no <code>vaulted_token</code> is returned, even if customer details are included inline. </small>
+        <br /><small> When set to <code>true</code> and the payment status is <code>SUCCEEDED</code>, the payment response will include a <code>vaulted_token</code> that can be used for future transactions. Without a customer ID no vaulting occurs and no <code>vaulted_token</code> is returned, even if customer details are included inline. </small>
         <br /><small> Possible values: <code>True</code> or <code>False</code> </small>
       </p>
 

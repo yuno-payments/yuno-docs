@@ -118,7 +118,7 @@ Yuno also lets you use some additional features that are supported in the basic 
 Both fields can be found in the payment_method detail section of the payment.
 
 <Callout icon="ℹ️" theme="warning">
-  To generate and receive a <code>vaulted_token</code> when <code>vault_on_success = true</code>, the payment must reference an existing Yuno customer through <code>customer_payer.id</code>. Creating or sending the customer data inline inside the payment request does not create the customer on our side, so no vaulting will occur.
+  To generate and receive a <code>vaulted_token</code> when <code>vault_on_success = true</code>, the payment must reference an existing Yuno customer through <code>customer_payer.id</code>. Creating or sending the customer data inline inside the payment request does not create the customer on our side, so no vaulting will occur. When these conditions are met and the payment status is <code>SUCCEEDED</code>, the <code>vaulted_token</code> will be returned in the payment response and can be used for future transactions.
 </Callout>
 
 ### Step 5: Check the payment status
