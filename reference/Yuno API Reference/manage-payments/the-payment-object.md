@@ -588,16 +588,20 @@ This object represents the payment created after generating the checkout session
                 <br />Type of the bank account (MAX 255; MIN 3).
                 <br /><small> Example: CHECKINGS/SAVINGS </small>
               </p>
-              <p><strong><code>bank_name</code></strong> <small>string</small>
-                <br />Name of the bank associated with the account (MAX 255; MIN 3).
-                <br /><small> Example: Banco Galicia </small>
-              </p>
-              <p><strong><code>beneficiary_name</code></strong> <small>string</small>
-                <br />The name of the account holder (MAX 255; MIN 3).
-                <br /><small> Example: John Doe </small>
-              </p>
-              <p><strong><code>bank_account</code></strong> <small>string</small>
-                <br />The number of the bank account (MAX 255; MIN 3).
+                  <p><strong><code>bank_name</code></strong> <small>string</small>
+                    <br />Name of the bank associated with the account (MAX 255; MIN 3).
+                    <br /><small> Example: Banco Galicia </small>
+                  </p>
+                  <p><strong><code>bank_id</code></strong> <small>string</small>
+                    <br />Identifier of the selected bank when the provider requires choosing one. Returned only if the merchant sent a value.
+                    <br /><small> Example: galicia </small>
+                  </p>
+                  <p><strong><code>beneficiary_name</code></strong> <small>string</small>
+                    <br />The name of the account holder (MAX 255; MIN 3).
+                    <br /><small> Example: John Doe </small>
+                  </p>
+                  <p><strong><code>bank_account</code></strong> <small>string</small>
+                    <br />The number of the bank account (MAX 255; MIN 3).
                 <br /><small> Example: 54653211313333 </small>
               </p>
               <p><strong><code>bank_account_2</code></strong> <small>string</small>
