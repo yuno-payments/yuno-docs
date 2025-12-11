@@ -89,7 +89,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 <Image border={false} src="https://files.readme.io/ccc5357-image.png" />
 
-### PIX payment expiration management
+## PIX payment expiration management
 
 When configuring PIX payments with VTEX, Yuno provides automatic expiration handling to prevent order reconciliation issues:
 
@@ -148,7 +148,7 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
 
   For more information about VTEX Affiliate mode, see the [VTEX documentation on configuring affiliates](https://help.vtex.com/tutorial/configuring-affiliates--tutorials_187).
 
-### Automatic customer creation for Click to Pay
+## Automatic customer creation for Click to Pay
 
 When customers choose to pay via Click to Pay on VTEX merchants, the VTEX connector automatically creates the corresponding VTEX customer record in Yuno during the checkout flow initialization. This ensures a streamlined payment experience by eliminating redundant data entry.
 
@@ -177,6 +177,7 @@ If you want to add or change certain UX aspects of the checkout, VTEX lets the m
 ### Available options
 
 For more information on the custom auto capture feature, [refer to the VTEX documentation](https://developers.vtex.com/docs/guides/custom-auto-capture-feature).
+
 
 ## ClearSale field mappings
 
