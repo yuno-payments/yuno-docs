@@ -1,5 +1,5 @@
 ---
-title: Configure Yuno as provider
+title: Configure Yuno as Provider
 excerpt: ''
 deprecated: false
 hidden: false
@@ -89,7 +89,7 @@ To offer more payment methods to your clients using Yuno as the provider, you ne
 
 <Image border={false} src="https://files.readme.io/ccc5357-image.png" />
 
-### PIX payment expiration management
+## PIX payment expiration management
 
 When configuring PIX payments with VTEX, Yuno provides automatic expiration handling to prevent order reconciliation issues:
 
@@ -148,7 +148,7 @@ Once you start receiving payments in VTEX with Yuno, you will be able to see all
 
   For more information about VTEX Affiliate mode, see the [VTEX documentation on configuring affiliates](https://help.vtex.com/tutorial/configuring-affiliates--tutorials_187).
 
-### Automatic customer creation for Click to Pay
+## Automatic customer creation for Click to Pay
 
 When customers choose to pay via Click to Pay on VTEX merchants, the VTEX connector automatically creates the corresponding VTEX customer record in Yuno during the checkout flow initialization. This ensures a streamlined payment experience by eliminating redundant data entry.
 
@@ -177,25 +177,3 @@ If you want to add or change certain UX aspects of the checkout, VTEX lets the m
 ### Available options
 
 For more information on the custom auto capture feature, [refer to the VTEX documentation](https://developers.vtex.com/docs/guides/custom-auto-capture-feature).
-
-## ClearSale field mappings
-
-When using ClearSale fraud detection with the VTEX connector, Yuno automatically maps VTEX order data to ClearSale's required fields. This ensures that all necessary information is correctly passed to ClearSale for fraud analysis.
-
-### Delivery type mapping
-
-The `deliveryType` field from VTEX orders is automatically extracted and mapped to ClearSale. This field is mandatory for merchants using ClearSale's Chargeback Guarantee product.
-
-**VTEX to ClearSale Mapping:**
-
-The VTEX connector extracts the `deliveryType` value from VTEX order logs (available in `AdditionalData.Order.Shipping.Type`) and correctly maps it to ClearSale. Common delivery type values include:
-
-* `Normal` → Mapped as `NORMAL`
-* `ECONOMY` → Mapped as `ECONOMY`
-* Other delivery types are mapped according to ClearSale's field requirements
-
-The delivery type is automatically included in the payload sent to ClearSale, ensuring compliance with ClearSale's mandatory field requirements for Chargeback Guarantee products.
-
-> 📘 ClearSale Integration
->
-> For merchants using ClearSale's Chargeback Guarantee product, the `deliveryType` field is mandatory. The VTEX connector ensures this field is correctly extracted from VTEX orders and properly formatted for ClearSale.
