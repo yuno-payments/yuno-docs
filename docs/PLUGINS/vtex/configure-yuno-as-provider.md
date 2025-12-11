@@ -1,5 +1,5 @@
 ---
-title: Configure Yuno as Provider
+title: Configure Yuno as provider
 excerpt: ''
 deprecated: false
 hidden: false
@@ -145,13 +145,13 @@ If you want to add or change certain UX aspects of the checkout, VTEX lets the m
 
 For more information on the custom auto capture feature, [refer to the VTEX documentation](https://developers.vtex.com/docs/guides/custom-auto-capture-feature).
 
-## ClearSale Field Mappings
+## ClearSale field mappings
 
 When using ClearSale fraud detection with the VTEX connector, Yuno automatically maps VTEX order data to ClearSale's required fields. This ensures that all necessary information is correctly passed to ClearSale for fraud analysis.
 
 ### Delivery type mapping
 
-The `deliveryType` field from VTEX orders is automatically extracted and mapped to ClearSale. This field is mandatory for merchants using ClearSale's Chargeback Guarantee (Total Garantido) product.
+The `deliveryType` field from VTEX orders is automatically extracted and mapped to ClearSale. This field is mandatory for merchants using ClearSale's Chargeback Guarantee product.
 
 **VTEX to ClearSale Mapping:**
 
@@ -165,4 +165,4 @@ The delivery type is automatically included in the payload sent to ClearSale, en
 
 > 📘 ClearSale Integration
 >
-> For merchants using ClearSale's Chargeback Guarantee (Total Garantido) product, the `deliveryType` field is mandatory. The VTEX connector ensures this field is correctly extracted from VTEX orders and properly formatted for ClearSale.
+> For merchants using ClearSale's Chargeback Guarantee product, the `deliveryType` field is mandatory. The VTEX connector ensures this field is correctly extracted from VTEX orders and properly formatted for ClearSale.
