@@ -139,29 +139,25 @@ The Google Pay SDK returns the following object structure, which must be passed 
 
 ```json
 {
+  "account_id": "d34257e7-55d4-44cf-8b90-3a5152bbe020",
+  "description": "Google Pay test",
+  "merchant_order_id": "MER01",
   "country": "US",
   "amount": {
     "currency": "USD",
-    "value": 100
+    "value": 1
   },
   "customer_payer": {
-    "merchant_customer_validations": {
-      "account_is_verified": true,
-      "email_is_verified": true,
-      "phone_is_verified": true
-    }
+    "email": "testing@y.uno"
   },
   "workflow": "DIRECT",
   "payment_method": {
     "detail": {
       "wallet": {
-        "payment_token": "{\"apiVersion\":2,\"apiVersionMinor\":0,\"paymentMethodData\":{\"type\":\"CARD\",\"description\":\"Visa •••• 1234\",\"info\":{\"cardNetwork\":\"VISA\",\"cardDetails\":\"1234\"},\"tokenizationData\":{\"type\":\"PAYMENT_GATEWAY\",\"token\":\"examplePaymentMethodToken\"}}}"
+        "payment_token": "{\"signature\":\"MEQCIBvkZdkroLuBAj0K0yhqF4RfvkcWM8hW4nInpGnbSbqHAiA4emX0LkHkdnYqIiGgAQ+gF2Md5ac1DIsHItwJfwj9DQ\\u003d\\u003d\",\"intermediateSigningKey\":{\"signedKey\":\"{\\\"keyValue\\\":\\\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZ8tVNZqE1G6292tV11Ff1Pc1xZDZU9Mj5QSqDaU9hMjaH+CYI7+XL+Cor0X+4r0jICgcZgQkS/q+WzY8Eku1Fg\\\\u003d\\\\u003d\\\",\\\"keyExpiration\\\":\\\"1766083480615\\\"}\",\"signatures\":[\"MEYCIQC75wFVZ3JkWTZenVvU9WVdWzeKUvTiB2FAGtUjIP6qFgIhAP3nB97NF+2lXsqpflH/livwpy24IPSfWMF7i1pHqrw1\"]},\"protocolVersion\":\"ECv2\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"Fvw/m1KNUIAXRRd6gbbuH2eWEhARKpQL/WZBJF5GCWE9QTuJf15pJUASEIjooQa36AwbGuSUs5qtm36x/yWe8pGi4w2vNyN+bUcnw4HuxrhrPMD+VoioLwmJenHU7/ypW5wzGfOmaCWn3FQ8GjE59mfFtC+8+LPmt3Z9xcvr/wT4Qm09TNRp3k/4/6JaV2+OTYqeOER6pAvqb7WEEjRLjIapvAYKPE6VXrhIo5zdwGh2VWvxY000nkzEIbn3OKShJ/mT7ITLQF9b5J4caGGRVFBn2oobaO72I8CCpiTAWgsw3GnyQACk9ggqnXOugVWinFDDazcs0q2YF3x6fBjz8sJpODx1dTUPrOacvFzEJ9XPovYooYK3wDiRfrtwqoadG/SYlESoguIuuAx+XOdc1jP+NWy0WDVKIqAJOwsg5qkSvNS2qi3m7SKapX3EVLiw/619l9JpTIRHdiIIeOu5BtFYL86o4yb0plrE8/ivvQ2/7U4ISGxzaJ4o6PFk7RZ96nWafdT0m30JlxMmTOI6iUOtsw02SVtinwS+83xcN3s6XRAPWRjJ0d1kaUd/4kHbPy8S/UKNBjanytDwDzn6wEccluisI4E\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BPUzeogQZAp0N4D3vLYrvQ7Hc+fc261ZW17LIoMnIAgcWaANAhM39Z8mDCYxpiNIO/F0WtOkJhcvVZFSnI/yq/w\\\\u003d\\\",\\\"tag\\\":\\\"owzrWByO1bNLbw9m/G2kzGmWDnBCs7QoMN+N0zovZAo\\\\u003d\\\"}\"}"
       }
     },
     "type": "GOOGLE_PAY"
-  },
-  "account_id": "1d67e224-9a01-4ffc-a465-7db5c2ced44d",
-  "description": "Google Pay test",
-  "merchant_order_id": "MER01"
+  }
 }
 ```
