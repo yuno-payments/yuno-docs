@@ -162,7 +162,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation);
 >
 > The merchant is responsible for managing the loader. Yuno provides a default loader option, but merchants may implement their own loader if preferred. In that case, they are responsible for making the necessary configurations.
 
-## Step 7: Create the Payment
+## Step 7: Create the payment
 
 After completing the previous steps, proceed to create a payment. Back-to-back payment creation must be performed using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant's backend should call this endpoint to create the payment in Yuno using the one-time token and checkout session.
 
@@ -283,7 +283,7 @@ yuno.startCheckout({
 |           | - `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`. |
 | `elementSelector` | Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options: |
 |           | - **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted. |
-|           | - **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code. |
+|           | - **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. |
 
 ```javascript
 yuno.startCheckout({
