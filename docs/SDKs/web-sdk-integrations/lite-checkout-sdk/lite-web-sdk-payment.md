@@ -109,6 +109,8 @@ yuno.mountCheckoutLite({
 
 After mounting the SDK, the selected payment method flow will start automatically.
 
+For PayPal, the PayPal payment sheet now opens immediately after the shopper selects PayPal—no extra confirmation click required.
+
 > 📘 Google Pay and Apple Pay in Lite SDK
 >
 > Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See [Mount external buttons](#mount-external-buttons) for more information.

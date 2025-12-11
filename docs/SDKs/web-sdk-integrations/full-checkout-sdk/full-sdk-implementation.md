@@ -111,6 +111,8 @@ yuno.startCheckout({
 >
 > For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
 
+For PayPal, the payment sheet now opens immediately after the shopper selects PayPal—no extra confirmation click required.
+
 > 📘 Google Pay and Apple Pay Display
 >
 > From SDK version 1.5, Google Pay and Apple Pay appear as direct buttons instead of radio buttons in the payment methods list. They are displayed separately from other payment methods.
