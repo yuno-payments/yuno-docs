@@ -82,6 +82,7 @@ At the end of the create a customer process, you will receive an `id`, which ide
 > * **Checkout workflow**: Requires customer session for most payment methods (Cards, Nupay, PayPal, Daviplata, dLocal methods, Astropay, Adyen PIX Biométrico)
 > * **Direct workflow**: Available for Cards only (PCI compliant merchants). Proceed directly to Step 3 using the customer `id` generated in Step 1.
 > * **SDK workflow**: Payment methods like Nequi and Bancolombia Tokenbox require SDK implementation. WALLET_CONNECT (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](doc:sdk-overview) for details.
+> * **Seamless SDK workflow**: You can enroll payment methods during the seamless payment flow by setting `vault_on_success: true` when creating the payment. The payment method will be automatically enrolled if the payment succeeds. See [Seamless SDK (Payment Web)](doc:seamless-sdk-payment-web#enrolling-payment-methods-in-seamless-flow) for more details.
 
 After creating the customer, you will create a customer session to identify and store customers' information regarding payment preferences. Use the endpoint [Create Customer Session](ref:create-customer-session) to perform the request. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](doc:enroll-payment-methods#step-1-create-a-customer).
 

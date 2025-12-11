@@ -55,7 +55,7 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 - First, [create a customer](ref:create-customer) or retrieve an existing customer ID
 - Include it when creating the `checkout_session`
 
-### Key Parameters
+### Key parameters
 
 | Parameter            | Required | Description                                                                                                                                                                                                                                      |
 | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -100,7 +100,11 @@ yuno.startSeamlessCheckout({
   },
   texts: {},
   async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
-    await createPayment({ oneTimeToken, checkoutSession });
+    await createPayment({ 
+      oneTimeToken, 
+      checkoutSession,
+      vault_on_success: true 
+    });
     yuno.continuePayment({ showPaymentStatus: true });
   },
   yunoPaymentMethodSelected(data) {
@@ -139,7 +143,7 @@ Configure the seamless checkout with the following options:
 |                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                             |
 | `card`                      | Defines the configuration for the card form. It contains settings like render mode, custom styles, save card option, and optional `cardNumberPlaceholder` for customizing the card number field placeholder text. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default English placeholder ("Card number").                                                                                                                                                                      |
 | `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                    |
-| `yunoCreatePayment`         | Placeholder function for creating a payment. This function will not be called but should be implemented.                                                                                                                                                                                      |
+| `yunoCreatePayment`         | Placeholder function for creating a payment. This function will not be called but should be implemented. When creating the payment, you can include `vault_on_success: true` to enroll the payment method after a successful payment. See [Enrolling payment methods](#enrolling-payment-methods-in-seamless-flow) for more details. |
 | `yunoPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                    |
 | `yunoPaymentResult`         | Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`).                                                                                                                                                                                         |
 | `yunoError`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                             |
@@ -231,6 +235,40 @@ Or unmount all external buttons at once:
 yuno.unmountAllExternalButtons();
 ```
 
-## Stay Updated
+## Enrolling payment methods in seamless flow
+
+You can enroll payment methods (store cards for future use) directly during the seamless payment flow by setting `vault_on_success: true` when creating the payment in your `yunoCreatePayment` function.
+
+When `vault_on_success` is set to `true`:
+* The payment method will be automatically enrolled if the payment status is `SUCCEEDED`
+* If the payment does not succeed, no vaulting will occur
+* The payment response will include a `vaulted_token` that you can use for future transactions
+
+**Example:**
+
+```javascript
+async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+  const paymentResponse = await createPayment({ 
+    oneTimeToken, 
+    checkoutSession,
+    vault_on_success: true 
+  });
+  
+  // The payment response will include vaulted_token if payment succeeded
+  if (paymentResponse.vaulted_token) {
+    console.log('Payment method enrolled:', paymentResponse.vaulted_token);
+  }
+  
+  yuno.continuePayment({ showPaymentStatus: true });
+}
+```
+
+> 📘 Vaulting Requirements
+>
+> To generate and receive a `vaulted_token` when `vault_on_success = true`, the payment must reference an existing Yuno customer through `customer_payer.id` in the checkout session. Creating or sending the customer data inline inside the payment request does not create the customer on our side, so no vaulting will occur.
+
+For more information about enrolling payment methods, see [Enroll Payment Methods](doc:enroll-payment-methods).
+
+## Stay updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
