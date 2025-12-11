@@ -588,20 +588,20 @@ This object represents the payment created after generating the checkout session
                 <br />Type of the bank account (MAX 255; MIN 3).
                 <br /><small> Example: CHECKINGS/SAVINGS </small>
               </p>
-                  <p><strong><code>bank_name</code></strong> <small>string</small>
-                    <br />Name of the bank associated with the account (MAX 255; MIN 3).
-                    <br /><small> Example: Banco Galicia </small>
-                  </p>
-                  <p><strong><code>bank_id</code></strong> <small>string</small>
-                    <br />Identifier of the selected bank when the provider requires choosing one. Returned only if the merchant sent a value.
-                    <br /><small> Example: galicia </small>
-                  </p>
-                  <p><strong><code>beneficiary_name</code></strong> <small>string</small>
-                    <br />The name of the account holder (MAX 255; MIN 3).
-                    <br /><small> Example: John Doe </small>
-                  </p>
-                  <p><strong><code>bank_account</code></strong> <small>string</small>
-                    <br />The number of the bank account (MAX 255; MIN 3).
+              <p><strong><code>bank_name</code></strong> <small>string</small>
+                <br />Name of the bank associated with the account (MAX 255; MIN 3).
+                <br /><small> Example: Banco Galicia </small>
+              </p>
+              <p><strong><code>bank_id</code></strong> <small>string</small>
+                <br />Identifier of the selected bank when the provider requires choosing one (MAX 255; MIN 1). Optional.
+                <br /><small> Example: galicia </small>
+              </p>
+              <p><strong><code>beneficiary_name</code></strong> <small>string</small>
+                <br />The name of the account holder (MAX 255; MIN 3).
+                <br /><small> Example: John Doe </small>
+              </p>
+              <p><strong><code>bank_account</code></strong> <small>string</small>
+                <br />The number of the bank account (MAX 255; MIN 3).
                 <br /><small> Example: 54653211313333 </small>
               </p>
               <p><strong><code>bank_account_2</code></strong> <small>string</small>
@@ -770,6 +770,82 @@ This object represents the payment created after generating the checkout session
                     <br /><small> Example: JOHN DOE </small>
                   </p>
                 </div>
+              </details>
+              <details class="yuno">
+                <summary><strong><code>store_credentials</code></strong> <small>object</small>
+                  <br />
+                  <p>Indicates the processing type of the transaction. This object is used to send additional information about recurrence. It's optional, and few providers require it (e.g. Mercado Pago). Contact your TAM to confirm if it's needed for your integration.</p>
+                </summary>
+                <div>
+                  <p><strong><code>reason</code></strong> <small>enum</small>
+                    <br />Indicates the reason for storing credentials for the transaction.Enum:CARD_ON_FILE, SUBSCRIPTION, UNSCHEDULED_CARD_ON_FILE
+                    <br /><small> Example: SUBSCRIPTION </small>
+                  </p>
+                  <p><strong><code>usage</code></strong> <small>enum</small>
+                    <br />This field lets you indicate if this is the first time the vaulted_token/network_token is used for a payment or if it has already been used for a previous payment. Enum: FIRST, USED
+                    <br /><small> Example: USED </small>
+                  </p>
+                  <p><strong><code>subscription_agreement_id</code></strong> <small>string</small>
+                    <br />This field lets you indicate the identification of the agreement with the customer for a subscription. Mainly for MX (MAX 255; MIN 3).
+                    <br /><small> Example: AA0001 </small>
+                  </p>
+                  <p><strong><code>network_Transaction_id</code></strong> <small>string</small>
+                    <br />Unique identifier assigned to a transaction by the card network. It is used to track and reference specific transactions, particularly in recurring payment scenarios, ensuring consistency and traceability across the payment lifecycle (MAX 255; MIN 3).
+                    <br /><small> Example: 583103536844189 </small>
+                  </p>
+                  <details class="yuno">
+                    <summary><strong><code>additional_data</code></strong> <small>object</small>
+                      <br />
+                      <p>This structure is used to send additional information about recurrence. It's optional, and few providers require it (e.g. Mercado Pago). Contact your TAM to confirm if it's needed for your integration.</p>
+                    </summary>
+                    <div>
+                      <details class="yuno">
+                        <summary><strong><code>billing_cycles</code></strong> <small>object</small>
+                          <br />
+                          <p>Specifies the <code>billing_cycles</code> object. Defines the number of charges associated to the subscription. If using this object, you must enter data on all fields.</p>
+                        </summary>
+                        <div>
+                          <p><strong><code>current</code></strong> <small>integer</small>
+                            <br /><small> Example: 1 </small>
+                          </p>
+                          <p><strong><code>total</code></strong> <small>integer</small>
+                            <br />The total number of billing cycles for the subscription (MIN 1).
+                          </p>
+                        </div>
+                      </details>
+                      <details class="yuno">
+                        <summary><strong><code>frequency</code></strong> <small>object</small>
+                          <br />
+                          <p>Specifies the frequency type (e.g., DAY, WEEK, MONTH, YEAR) and value. Enter data on all fields if using this object.</p>
+                        </summary>
+                        <div>
+                          <p><strong><code>type</code></strong> <small>string</small>
+                            <br />Specifies the frequency type (e.g., DAY, WEEK, MONTH, YEAR).
+                            <br /><small> Example: MONTH </small>
+                          </p>
+                          <p><strong><code>value</code></strong> <small>string</small>
+                            <br />Specifies the frequency value.
+                          </p>
+                        </div>
+                      </details>
+                      <details class="yuno">
+                        <summary><strong><code>availability</code></strong> <small>object</small>
+                          <br />
+                          <p>Specifies the <code>availability</code> object. Defines a date interval based on starting and ending dates when the subscription is available to use.</p>
+                        </summary>
+                        <div>
+                          <p><strong><code>start_at</code></strong> <small>string</small>
+                            <br />The start date that the subscription plan will be available to use. If not set, the subscription is available from the moment it is created. <code>start_at</code> becomes mandatory when using <code>finish_at</code>.
+                          </p>
+                          <p><strong><code>finish_at</code></strong> <small>string</small>
+                            <br />The end date that the subscription plan will be available to use. If not set, the subscription is available indefinitely. <code>finish_at</code> becomes mandatory when using <code>start_at</code>.
+                          </p>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+                </div>
+              </details>
             </div>
           </details>
           <details class="yuno">
@@ -2879,6 +2955,10 @@ This object represents the payment created after generating the checkout session
                     <br />Name of the bank associated with the account (MAX 255; MIN 3).
                     <br /><small> Example: Banco Galicia </small>
                   </p>
+                  <p><strong><code>bank_id</code></strong> <small>string</small>
+                    <br />Identifier of the selected bank when the provider requires choosing one. Returned only if the merchant sent a value.
+                    <br /><small> Example: galicia </small>
+                  </p>
                   <p><strong><code>beneficiary_name</code></strong> <small>string</small>
                     <br />The name of the account holder (MAX 255; MIN 3).
                     <br /><small> Example: John Doe </small>
@@ -3575,6 +3655,10 @@ This object represents the payment created after generating the checkout session
                   <p><strong><code>bank_name</code></strong> <small>string</small>
                     <br />Name of the bank associated with the account (MAX 255; MIN 3).
                     <br /><small> Example: Banco Galicia </small>
+                  </p>
+                  <p><strong><code>bank_id</code></strong> <small>string</small>
+                    <br />Identifier of the bank selected by the payer when provided in the original payment request.
+                    <br /><small> Example: galicia </small>
                   </p>
                   <p><strong><code>beneficiary_name</code></strong> <small>string</small>
                     <br />The name of the account holder (MAX 255; MIN 3).
