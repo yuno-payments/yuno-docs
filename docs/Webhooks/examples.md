@@ -12,8 +12,6 @@ metadata:
 next:
   description: ''
 ---
-<br />
-
 # Webhook attributes
 
 The JSON attributes for Yuno webhooks are listed below:
@@ -22,7 +20,7 @@ The JSON attributes for Yuno webhooks are listed below:
 <body>
   <div class="yuno">
     <p><strong>account_id</strong> <small>string </small>
-      <br />The unique identifier of the account in Yuno (MAX 64 ; MIN 36).
+      <br />The unique identifier of the account in Yuno (MAX 64; MIN 36).
     </p>
   </div>
   <div class="yuno">
@@ -115,6 +113,10 @@ Yuno provides several webhooks related to enrollment and payment notifications. 
 ### Payment Webhook V2
 
 The next JSON object presents an example of a data structure related to a payment event from Webhook V2.
+
+<Callout icon="ℹ️" theme="info">
+  Webhook payloads for events corresponding to a bank transfer payment method include `payment.payment_method.payment_method_detail.bank_transfer.bank_id`. The field mirrors the `bank_id` sent in the original payment request and is omitted when no bank was selected.
+</Callout>
 
 ```json
 {
@@ -1489,6 +1491,86 @@ The next JSON object presents an example of a data structure related to a paymen
       "initial_payment_validation": true,
       "created_at": "2025-05-21T15:33:16.662026Z",
       "updated_at": "2025-05-21T15:33:16.662026Z"
+    }
+  }
+}
+```
+
+### subscription.active
+
+Sent when a subscription transitions from any other valid status into `ACTIVE`. Use this event to trigger post-activation processes without polling.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.active",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "description": "retries activos",
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "frequency": {
+        "type": "MINUTES",
+        "value": 3,
+        "monthly_billing_day": null,
+        "execution": "YUNO"
+      },
+      "billing_date": null,
+      "billing_cycles": {
+        "total": 5,
+        "current": 2,
+        "next_at": "2025-12-04T00:32:25.485281Z"
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payment_method": {
+        "type": "CARD",
+        "vaulted_token": "7eeb8d32-d5c3-45a8-955b-30accc625d1f",
+        "card": {
+          "installments": null,
+          "network_transaction_id": "651161211088410"
+        }
+      },
+      "availability": {
+        "start_at": "2025-12-04T00:29:25.485281Z",
+        "finish_at": null
+      },
+      "retries": {
+        "retry_on_decline": true,
+        "amount": 6
+      },
+      "metadata": [
+        {
+          "key": "Canal 1",
+          "value": "Soccer"
+        }
+      ],
+      "additional_data": null,
+      "payments": [],
+      "trial_period": {
+        "billing_cycles": 1,
+        "amount": {
+          "currency": null,
+          "value": null
+        }
+      },
+      "initial_payment_validation": true,
+      "provider_subscription_id": null,
+      "created_at": "2025-12-04T00:29:25.485281Z",
+      "updated_at": "2025-12-04T00:29:59.216998Z"
     }
   }
 }

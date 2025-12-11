@@ -10,11 +10,6 @@ metadata:
 next:
   description: ''
 ---
-
-> ❗️ **SDK Required**
->
-> Google Pay Direct integration requires using one of Yuno's SDKs (Web, Android, or iOS) for implementation. This feature cannot be implemented without an SDK integration.
-
 This page provides instructions for connecting and offering Google Pay™ as a payment option to your customers using the Direct integration.
 
 ## Requirements
@@ -47,14 +42,11 @@ To integrate Google Pay with Yuno, follow these steps:
 
 1. In the [Yuno dashboard](https://dashboard.y.uno/), go to the Connections tab. Find Google Pay and click Connect. Enter your credentials in the side panel. Choose a name for the connection and use the merchant ID obtained from the [Google Pay Business Console](https://pay.google.com/business/console) in the Merchant ID field.
 
-<Image align="center" src="https://files.readme.io/2fee3d1-google-pay1.png" />
+<Image align="center" border={false} src="https://files.readme.io/2fee3d1-google-pay1.png" />
 
 2. Create a route in Yuno's dashboard using the processor you want for Google Pay payments. See the [Configure dynamic routing](doc:routing#configuring-the-dynamic-routing) guide for more information.
-3. Integrate [Yuno's SDK](../docs/android-sdk-integrations) into your app to ensure a smooth connection between your application and Yuno's platform. [Example](https://github.com/yuno-payments/yuno-sdk-android).
-   1. **Authorization methods available**: Yuno supports all authorization methods (purchase, authorization, capture), but availability depends on each provider.
-4. Enable Google Pay as a payment method in your [Yuno Checkout builder](../docs/checkout-builder) so customers can use it during checkout.
 
-Once these integration steps are complete, Google Pay will be seamlessly offered to your customers via the Yuno checkout. Customers will be able to select Google Pay and authorize payments using their familiar Google Pay interface. Yuno then securely handles the payment token received from Google, processing the transaction through your configured payment processor. All Google Pay transactions will be visible and manageable within your Yuno dashboard alongside your other payment methods, providing a unified view of your operations.
+Customers will be able to select Google Pay and authorize payments using their familiar Google Pay interface. Yuno then securely handles the payment token received from Google, processing the transaction through your configured payment processor. All Google Pay transactions will be visible and manageable within your Yuno dashboard alongside your other payment methods, providing a unified view of your operations.
 
 ## Enable and test Google Pay with Yuno
 
@@ -70,7 +62,7 @@ After integrating, you can enable and test Google Pay with Yuno as follows:
    * In the Google Wallet API section, find the option labeled **Create a Pass**.
    * Click this option to enable **Demo mode**. This allows you to simulate and test pass creation and interactions without real transactions.
 
-<Image align="center" width="600px" src="https://files.readme.io/fbc51b7-6847ef9-demo_mode.png" />
+<Image align="center" border={false} width="600px" src="https://files.readme.io/fbc51b7-6847ef9-demo_mode.png" />
 
 4. Download the [Google Wallet App](https://play.google.com/store/apps/details?id=com.google.android.apps.walletnfcrel\&hl=en\&gl=US) from the Play Store.
 5. Go through the payment flow to test the integration.
@@ -114,7 +106,7 @@ Google provides brand guides for including the Google Pay brand in your website 
 
 ### Card networks supported
 
-The card networks supported worldwide are AMEX, DISCOVER, JCB, MASTERCARD, and VISA. For Brazil, supported networks are VISA, ELECTRON, MASTERCARD, MAESTRO, ELO, and ELO\_DEBIT.
+The card networks supported worldwide are AMEX, DISCOVER, JCB, MASTERCARD, and VISA. For Brazil, supported networks are VISA, ELECTRON, MASTERCARD, MAESTRO, ELO, and ELO_DEBIT.
 
 ## Pass Google Pay payment token in request
 
@@ -147,29 +139,25 @@ The Google Pay SDK returns the following object structure, which must be passed 
 
 ```json
 {
+  "account_id": "d34257e7-55d4-44cf-8b90-3a5152bbe020",
+  "description": "Google Pay test",
+  "merchant_order_id": "MER01",
   "country": "US",
   "amount": {
     "currency": "USD",
-    "value": 100
+    "value": 1
   },
   "customer_payer": {
-    "merchant_customer_validations": {
-      "account_is_verified": true,
-      "email_is_verified": true,
-      "phone_is_verified": true
-    }
+    "email": "testing@y.uno"
   },
   "workflow": "DIRECT",
   "payment_method": {
     "detail": {
       "wallet": {
-        "payment_token": "{\"apiVersion\":2,\"apiVersionMinor\":0,\"paymentMethodData\":{\"type\":\"CARD\",\"description\":\"Visa •••• 1234\",\"info\":{\"cardNetwork\":\"VISA\",\"cardDetails\":\"1234\"},\"tokenizationData\":{\"type\":\"PAYMENT_GATEWAY\",\"token\":\"examplePaymentMethodToken\"}}}"
+        "payment_token": "{\"signature\":\"MEQCIBvkZdkroLuBAj0K0yhqF4RfvkcWM8hW4nInpGnbSbqHAiA4emX0LkHkdnYqIiGgAQ+gF2Md5ac1DIsHItwJfwj9DQ\\u003d\\u003d\",\"intermediateSigningKey\":{\"signedKey\":\"{\\\"keyValue\\\":\\\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEZ8tVNZqE1G6292tV11Ff1Pc1xZDZU9Mj5QSqDaU9hMjaH+CYI7+XL+Cor0X+4r0jICgcZgQkS/q+WzY8Eku1Fg\\\\u003d\\\\u003d\\\",\\\"keyExpiration\\\":\\\"1766083480615\\\"}\",\"signatures\":[\"MEYCIQC75wFVZ3JkWTZenVvU9WVdWzeKUvTiB2FAGtUjIP6qFgIhAP3nB97NF+2lXsqpflH/livwpy24IPSfWMF7i1pHqrw1\"]},\"protocolVersion\":\"ECv2\",\"signedMessage\":\"{\\\"encryptedMessage\\\":\\\"Fvw/m1KNUIAXRRd6gbbuH2eWEhARKpQL/WZBJF5GCWE9QTuJf15pJUASEIjooQa36AwbGuSUs5qtm36x/yWe8pGi4w2vNyN+bUcnw4HuxrhrPMD+VoioLwmJenHU7/ypW5wzGfOmaCWn3FQ8GjE59mfFtC+8+LPmt3Z9xcvr/wT4Qm09TNRp3k/4/6JaV2+OTYqeOER6pAvqb7WEEjRLjIapvAYKPE6VXrhIo5zdwGh2VWvxY000nkzEIbn3OKShJ/mT7ITLQF9b5J4caGGRVFBn2oobaO72I8CCpiTAWgsw3GnyQACk9ggqnXOugVWinFDDazcs0q2YF3x6fBjz8sJpODx1dTUPrOacvFzEJ9XPovYooYK3wDiRfrtwqoadG/SYlESoguIuuAx+XOdc1jP+NWy0WDVKIqAJOwsg5qkSvNS2qi3m7SKapX3EVLiw/619l9JpTIRHdiIIeOu5BtFYL86o4yb0plrE8/ivvQ2/7U4ISGxzaJ4o6PFk7RZ96nWafdT0m30JlxMmTOI6iUOtsw02SVtinwS+83xcN3s6XRAPWRjJ0d1kaUd/4kHbPy8S/UKNBjanytDwDzn6wEccluisI4E\\\\u003d\\\",\\\"ephemeralPublicKey\\\":\\\"BPUzeogQZAp0N4D3vLYrvQ7Hc+fc261ZW17LIoMnIAgcWaANAhM39Z8mDCYxpiNIO/F0WtOkJhcvVZFSnI/yq/w\\\\u003d\\\",\\\"tag\\\":\\\"owzrWByO1bNLbw9m/G2kzGmWDnBCs7QoMN+N0zovZAo\\\\u003d\\\"}\"}"
       }
     },
     "type": "GOOGLE_PAY"
-  },
-  "account_id": "1d67e224-9a01-4ffc-a465-7db5c2ced44d",
-  "description": "Google Pay test",
-  "merchant_order_id": "MER01"
+  }
 }
 ```

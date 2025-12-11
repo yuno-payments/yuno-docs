@@ -12,11 +12,11 @@ next:
 ---
 Click to Pay is an online payment solution designed to streamline and secure online transactions. It's based on the EMVCo secure payment standard, a global consortium comprising major card companies like Visa, MasterCard, American Express, and Discover.
 
-<Image align="center" width="300px" src="https://files.readme.io/9411cdb-C2P_PAY.png" />
+<Image align="center" border={false} width="300px" src="https://files.readme.io/9411cdb-C2P_PAY.png" />
 
-*Networks available in Yuno*: [MasterCard](https://www.mastercard.us/en-us/personal/ways-to-pay/click-to-pay.html) 
+_Networks available in Yuno_: [MasterCard](https://www.mastercard.us/en-us/personal/ways-to-pay/click-to-pay.html)
 
-## Key Features and benefits:
+## Key features and benefits
 
 * **Ease of Use**: It enables consumers to make online purchases with a single click, eliminating the need to enter credit card details for each purchase manually.
 * **Enhanced Security**: Utilizes modern authentication standards to minimize fraud risk. This may include methods such as two-factor authentication or payment tokens.
@@ -28,20 +28,53 @@ This feature enhances the customer experience and aligns with modern digital pay
 
 ## Integration
 
-To integrate and start offering Click to Pay to your customers, follow these 3 simple steps: 
+To integrate and start offering Click to Pay to your customers, follow these 3 simple steps:
 
-1. Create a [connection](https://dashboard.y.uno/connections) in the Yuno dashboard using your Click to Pay credentials. 
+1. Create a [connection](https://dashboard.y.uno/connections) in the Yuno dashboard using your Click to Pay credentials.
 
-   <Image align="center" src="https://files.readme.io/c553dc8-C2P_connection.png" />
-2. Define the payment method route in the [Routing](https://dashboard.y.uno/routing) section in order to be able to enable it in the Checkout Builder. 
+   <Image align="center" border={false} src="https://files.readme.io/c553dc8-C2P_connection.png" />
+2. Define the payment method route in the [Routing](https://dashboard.y.uno/routing) section in order to be able to enable it in the Checkout Builder.
 
-   <Image align="center" src="https://files.readme.io/b22669d-C2P_Route.png" />
-3. Enable Click to Pay in the [Checkout builder](https://dashboard.y.uno/checkout-builder). 
+   <Image align="center" border={false} src="https://files.readme.io/b22669d-C2P_Route.png" />
+3. Enable Click to Pay in the [Checkout builder](https://dashboard.y.uno/checkout-builder).
 
-   <Image align="center" src="https://files.readme.io/24baf88-C2P_checkout.png" />
+   <Image align="center" border={false} src="https://files.readme.io/24baf88-C2P_checkout.png" />
 4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **'Card' payment method**.
 
-## SDK integration
+## VTEX integration
+
+For VTEX merchants using Click to Pay, the integration provides automatic customer creation and data mapping to streamline the checkout experience.
+
+**Automatic customer creation:**
+
+When customers choose Click to Pay on VTEX stores:
+
+* The VTEX customer is automatically created in Yuno during payment initialization (if not already existing)
+* All customer data from the VTEX profile is automatically mapped to Yuno and included in the checkout session
+* Customer information (CVV, email, address) is pre-filled in the SDK, eliminating redundant data entry
+* The checkout flow matches the streamlined experience available for non-VTEX merchants
+
+This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration. For more details, see [Configure Yuno as Provider](doc:configure-yuno-as-provider) in the VTEX integration documentation.
+
+## SDK integration (Click to Pay Passkey)
+
+> ⚠️ Important
+>
+> Standard Click to Pay card flows use the existing SDK callbacks, but Passkey users must include a `callback_url` that matches the app’s deeplink scheme so the shopper returns to the app after authentication (on Android this must match the scheme configured in `AndroidManifest.xml`). For example:
+>
+> ```json
+> {
+>   "callback_url": "myapp://pay/ctp"
+> }
+> ```
+>
+>
+>
+> For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
+
+The Yuno iOS and Android SDKs currently support Click to Pay via the Passkey flow. In both cases, the one-time token (OTT) is returned through a deeplink URL instead of the standard SDK callbacks, so your app must parse the deeplink parameters before continuing the payment.
+
+### iOS Passkey flow
 
 The Yuno iOS SDK supports Click to Pay with Passkey. The flow differs from standard card payments because the SDK returns the result by deeplink instead of via the usual delegate callbacks.
 
@@ -83,3 +116,13 @@ If the deeplink contains a `one_time_token`:
 > ⚠️ Important
 >
 > The OTT never reaches `yunoCreatePayment(with token: String)` for Click to Pay Passkey. Always read the token from the deeplink URL.
+
+### Android Passkey flow
+
+For Android, include a `callback_url` that matches your app’s deeplink scheme when creating the checkout session, add the corresponding `intent-filter` in `AndroidManifest.xml`, and handle the deeplink in both `onCreate` and `onNewIntent`. When the deeplink arrives:
+
+1. Check `has_error` to manage cancellations or failures.
+2. Extract `one_time_token` (and the optional `checkout_session`) from the URI.
+3. Send the OTT to your backend to call the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), then invoke `continuePayment` in the SDK to resume the flow.
+
+See the full SDK guides for detailed samples: [Android Full Checkout](doc:full-checkout-android) and [iOS Full Checkout](doc:full-checkout-ios).

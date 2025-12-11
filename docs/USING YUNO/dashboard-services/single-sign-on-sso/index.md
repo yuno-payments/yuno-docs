@@ -40,9 +40,18 @@ Click **Set up** to open the SSO configuration.
 
 Next, access the admin panel of your chosen identity provider. Here, you'll either generate a metadata XML file or obtain the necessary configuration details. Refer to your provider’s documentation for where to input Yuno’s information.
 
+> ⚠️ Required SAML signing
+>
+> Yuno rejects SAML responses that are not signed. Configure your identity provider so that:
+>
+> * Both the **SAML response and the assertion are signed**.
+> * **SHA-256** is the signing and digest algorithm.
+> * The certificate used for signing matches the one you upload to Yuno (via metadata or manual entry).
+
 1. Access your identity provider's admin panel.
 2. Paste the **Identifier (Entity ID)** and **Assertion Consumer Service URL** provided by Yuno into the relevant fields.
-3. Save the changes and generate the **XML metadata file**. Alternatively, you can save the Entity ID (IDP), Sign In URL, and Certificate.
+3. Enable the **response** and **assertion** signing options.
+4. Save the changes and generate the **XML metadata file**. Alternatively, you can save the Entity ID (IDP), Sign In URL, and Certificate.
 
 **Step 4: Finalize the configuration in Yuno**
 
@@ -69,3 +78,9 @@ To access Yuno using SSO:
 1. Enter your corporate email address and click **Continue with SSO**.
 2. You will be redirected to the identity provider for authentication.
 3. Upon successful authentication, you will gain access to the Yuno dashboard.
+
+## Troubleshooting and log access
+
+* **Users bounce back to the login screen**: Confirm that both the SAML response and assertion are signed with SHA-256, and that the current certificate is uploaded to Yuno.
+* **Certificate rotation**: Any time you rotate IdP certificates, update the configuration in Yuno to keep the signatures valid.
+* **SSO sign-in logs**: Dashboard users cannot yet view audit logs for SSO attempts. If you need to investigate an authentication issue, contact Yuno Support with the user email and timestamp so the team can pull the Datadog logs for you.

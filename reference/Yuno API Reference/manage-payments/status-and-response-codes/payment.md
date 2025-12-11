@@ -20,7 +20,7 @@ Payments have all the essential information about the order, including customer 
 
 In the following workflow, you can find the different payment statuses and how they can be updated.
 
-<Image align="center" src="https://files.readme.io/2ceb4ee07571acfa1befd8e280d7a74c1d25f7b46b9ad33da68d87e5e2ca24c7-payments_Asinc.png" />
+<Image align="center" border={false} src="https://files.readme.io/2ceb4ee07571acfa1befd8e280d7a74c1d25f7b46b9ad33da68d87e5e2ca24c7-payments_Asinc.png" />
 
 For every implementation, we recommend taking the payment <code>status</code> and <code>sub_status</code> as the main reference for the payment's state. A payment could have different [transactions](https://docs.y.uno/reference/transaction) associated with it. By focusing on the payment <code>status</code> / <code>sub_status</code>, you can have the latest state regardless of how many transactions were made, giving you clear inputs for decision-making.
 
@@ -72,10 +72,10 @@ The payments can have the following status and sub status.
           <td class="status"><code>READY_TO_PAY</code></td>
           <td></td>
           <td></td>
-          <td>Initial state at the time of creating a payment.Waiting for customer action</td>
+          <td>Initial state at the time of creating a payment. Waiting for customer action</td>
         </tr>
         <tr>
-          <td class="status" rowspan="6"><code>PENDING</code></td>
+          <td class="status" rowspan="7"><code>PENDING</code></td>
           <td class="substatus"><code>AUTHORIZED</code></td>
           <td>Authorize</td>
           <td>Succeeded</td>
@@ -109,6 +109,12 @@ The payments can have the following status and sub status.
           <td>Fraud</td>
           <td>Pending</td>
           <td>Transaction is being analyzed by fraud provider</td>
+        </tr>
+				<tr>
+          <td class="substatus"><code>PENDING_OTP_COMPLETION</code></td>
+          <td>Purchase</td>
+          <td>Pending</td>
+          <td>Initial status upon payment creation</td>
         </tr>
         <tr>
           <td class="status"><code>VERIFIED</code></td>
@@ -326,6 +332,6 @@ The payments can have the following status and sub status.
 
 ### Possible states for sync and async flows
 
-<Image align="center" src="https://files.readme.io/5abb6742f0f5c40410be7c93e2d7455e090ac857bf69d2009da04953a44a9349-payments_Sync.png" />
+<Image align="center" border={false} src="https://files.readme.io/5abb6742f0f5c40410be7c93e2d7455e090ac857bf69d2009da04953a44a9349-payments_Sync.png" />
 
-<Image align="center" src="https://files.readme.io/999b7b8d2e25cb00c8766bec06e748841d7af28514bd8049a2d0fb3438a69163-payments_Asinc.png" />
+<Image align="center" border={false} src="https://files.readme.io/999b7b8d2e25cb00c8766bec06e748841d7af28514bd8049a2d0fb3438a69163-payments_Asinc.png" />

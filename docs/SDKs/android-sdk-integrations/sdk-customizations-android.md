@@ -571,3 +571,7 @@ The following configurations are only available for SDK v1.10.0 and higher.
     android:id="@+id/spinner_gender"
     android:visibility="gone" />
 ```
+
+## Address autocomplete
+
+Merchants can enable or disable address autocomplete functionality in the Android SDK. When enabled, the SDK automatically fills address fields based on postal code lookup. When disabled, users must manually enter all address information.

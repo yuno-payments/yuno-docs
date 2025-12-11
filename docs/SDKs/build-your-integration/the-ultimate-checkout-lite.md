@@ -18,11 +18,16 @@ The **Lite SDK** provides full control over your payment experience. Unlike the 
 
 Additionally, the Lite SDK supports enrolling payment methods for future use. For more details, see [Lite SDK (Enrollment)](doc:enrollment-lite).
 
+> 📘 Google Pay and Apple Pay in Lite SDK
+>
+> Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See the platform-specific guides for implementation details.
+
 With the Lite SDK, you can:
 
 * Execute the payment process
 * Enroll a credit card while making a payment
 * Use a vaulted token from an enrolled payment method to complete a transaction
+* Perform real-time tax calculations using the BIN (Bank Identification Number) callback
 
 Use the following guides to implement each process:
 
@@ -44,7 +49,7 @@ The diagram below illustrates the complete payment workflow:
 
 This diagram illustrates the payment process using the SDK Lite, detailing the interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It outlines the steps from initiating a checkout and selecting payment methods to creating and completing the payment.
 
-#### Components Overview
+#### Components overview
 
 The payment workflow involves several key components working together to process payments securely. Here's how each component contributes to the process:
 
@@ -90,7 +95,7 @@ The Yuno SDK manages the payment flow on the client side, handling user interact
 * Shows screen for the user to complete payment
 * Display payment result (optional)
 
-#### Complete Flow
+#### Complete flow
 
 The following steps outline the complete interaction flow between all components of the SDK Lite Payment integration, detailing how each request and response moves through the system:
 
@@ -134,11 +139,11 @@ The following image describes the complete workflow:
 
 <Image border={false} src="https://files.readme.io/45a2289-Diagrama_-_Vaulted_token_Lite.png" />
 
-### Vaulted Token Lite Flow
+### Vaulted token Lite flow
 
 This diagram illustrates the payment process using a vaulted token with the SDK Lite, detailing the interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It outlines the steps from initiating a checkout and using a pre-stored payment method to creating and completing the payment.
 
-#### Components Overview
+#### Components overview
 
 The vaulted token payment workflow involves several key components working together to process payments securely. Here's how each component contributes to the process:
 
@@ -169,7 +174,7 @@ The Yuno Server handles all backend operations related to payment processing and
 * Creates payment in the payment provider
 * Provides payment results
 
-#### Complete Workflow
+#### Complete workflow
 
 The following steps outline the detailed sequence of interactions between the different components in the vaulted token payment workflow:
 

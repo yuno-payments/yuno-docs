@@ -169,6 +169,7 @@ Depending on the type of event, you will receive a different type of webhook and
 | subscription | create     |
 | subscription | pause      |
 | subscription | resume     |
+| subscription | active     |
 | subscription | cancel     |
 | subscription | complete   |
 | onboarding   | create     |
@@ -178,6 +179,8 @@ Depending on the type of event, you will receive a different type of webhook and
 | onboarding   | declined   |
 | onboarding   | blocked    |
 | onboarding   | unblocked  |
+
+> `subscription.active` is sent only when a subscription transitions from any other valid status into `ACTIVE`. No webhook is emitted if the subscription is already active.
 
 ### Fraud Screening Webhook Behavior
 
