@@ -28,13 +28,14 @@ Gain complete understanding of your payment ecosystem through insightful analyti
 
 Using historical data, you can monitor payment performance trends over time, identify strengths, and pinpoint areas for optimization to continuously refine your payment strategies.
 
-## Navigating Insights
+## Navigating insights
 
-Yuno Insights organizes your data into three distinct tabs, each providing a unique perspective:
+Yuno Insights organizes your data into four distinct tabs, each providing a unique perspective:
 
-* **Overview**: A high-level overview of your payent processing, including total payment volume, average ticket size, and conversion rate trends.
+* **Overview**: A high-level overview of your payment processing, including total payment volume, average ticket size, and conversion rate trends.
 * **Volume**: Details on payment volume, refunds and chargebacks. Volume is divided by provider, payment method, country, and other relevant factors.
-* **Conversion rate**: Performance metrics including approval rates, retry attempts, validation, and more. This screen is vital to track coversion rates, and therefore, payment success across your operation.
+* **Conversion rate**: Performance metrics including approval rates, retry attempts, validation, and more. This screen is vital to track conversion rates, and therefore, payment success across your operation.
+* **Fraud**: Fraud detection and prevention metrics, including fraud rates, fraud detection performance, and insights into fraudulent transaction patterns. This section helps you monitor and optimize your fraud prevention strategies.
 
 ## Informed decision-making
 
@@ -51,7 +52,7 @@ Analyzing the available data from these two angles will allow you to easily extr
 
 Empower your business choices by using Yuno Insights to determine the most effective payment methods and providers for your specific needs. Quickly identify anomalies and deviations from established patterns, enabling you to react proactively and optimize your payment ecosystem.
 
-## Tailor and export Insights
+## Tailor and export insights
 
 The Insight section contains several options to filter, customize, and extract data based on your preferences:
 
@@ -59,3 +60,47 @@ The Insight section contains several options to filter, customize, and extract d
 * **Personalization**: Click **Customize** to control the reports you see and their arrangement. Drag and drop elements to reorder them according to your priorities, or click the trash bin icon to remove less relevant reports. Remember to click **Done** to save your personalized layout.
 * **Set your charts**: Use the **Add chart** button to fine-tune visualizations displayed. After selecting this option, click the icon next to each report to toggle its visibility. Select **Apply** to confirm your chart selections.
 * **Export as PDF**: The **Download** button allows you to export the current Insights page as a PDF file. This feature simplifies the process of sharing Yuno's valuable reports across your organization.
+
+## Fraud insights
+
+The Fraud tab in Insights provides comprehensive fraud detection and prevention analytics. This section helps you monitor fraud patterns, evaluate the effectiveness of your fraud prevention tools, and make data-driven decisions to protect your business while maintaining a smooth customer experience.
+
+The Fraud tab is organized into three main sections:
+
+### Fraud screening
+
+Monitor fraud screening activities and performance:
+
+* **Total fraud screening volume**: Track the total number of fraud screenings performed
+* **Successful fraud screening volume**: Monitor successful fraud screenings
+* **Unsuccessful fraud screening volume**: Track unsuccessful fraud screenings
+* **Daily fraud screening conversion rate**: View conversion rate trends over time through bar charts
+
+### 3DS
+
+Analyze 3D Secure authentication performance:
+
+* **Total 3DS authentication volume**: Track total 3DS authentication attempts
+* **Successful 3DS authentication volume**: Monitor successful 3DS authentications
+* **Unsuccessful 3DS authentication volume**: Track unsuccessful 3DS authentications
+* **Daily 3DS conversion rate**: View conversion rate trends over time
+* **3DS decline reasons**: Analyze reasons for 3DS authentication declines
+* **Daily fraudiness vs challenge**: Compare fraudiness scores against challenge rates
+
+### Chargebacks
+
+Monitor chargeback activity and outcomes:
+
+* **Total chargebacks volume**: Track total chargebacks received
+* **Won chargebacks volume**: Monitor chargebacks that were successfully won
+* **Lost chargebacks volume**: Track chargebacks that were lost
+* **Disputed chargebacks volume**: Monitor chargebacks currently in dispute
+* **Daily chargebacks rate**: View chargeback rate trends over time
+* **Chargebacks rate by provider and card brand**: Analyze chargeback rates segmented by provider and card brand
+* **Chargeback reason distribution**: Understand the distribution of chargeback reasons
+* **Daily chargebacks win rate**: Track the rate at which chargebacks are won
+* **Daily disputed chargebacks**: Monitor chargebacks in dispute status
+* **Chargebacks status distribution**: View the distribution of chargeback statuses
+* **Chargebacks by type**: Analyze chargebacks categorized by type
+
+Use fraud insights to optimize your fraud prevention strategies, adjust fraud detection rules, and ensure you're protecting your business without unnecessarily declining legitimate transactions.
