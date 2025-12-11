@@ -285,7 +285,7 @@ yuno.startCheckout({
 |           | - `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`. |
 | `elementSelector` | Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options: |
 |           | - **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted. |
-|           | - **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code. |
+|           | - **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. |
 
 ```javascript
 yuno.startCheckout({
@@ -309,6 +309,7 @@ yuno.startCheckout({
 |           | - **`cardSaveEnable`**: Show checkbox to save or enroll the card. Defaults to `false`.                           |
 |           | - **`texts`**: Custom text for the card form buttons.                                                             |
 |           | - **`cardNumberPlaceholder`**: Optional. Custom placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default English placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation. |
+|           | - **`hideCardholderName`**: Optional. When set to `true`, the cardholder name field is hidden in the card form. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. |
 |           | - **`onChange`**: Callback function triggered when card information state changes. Called when card-related events occur, such as during data fetching (loading), after completion, when a network is selected (e.g., Visa, Mastercard), or when the card form is reset. Receives `{error, data}` where `data` contains card IIN (Issuer Identification Number, also known as BIN - Bank Identification Number) information and installment options. The BIN (first 6 digits of the card number) can be used for real-time tax calculations. Works the same as the secure fields `options.onChange` method. |
 
 ```javascript
@@ -319,6 +320,7 @@ yuno.startCheckout({
     cardSaveEnable: false,
     texts: {},
     cardNumberPlaceholder: "Enter card number", // Optional: Custom placeholder text
+    hideCardholderName: false, // Optional: Set to true to hide cardholder name field
     isCreditCardProcessingOnly: true,
     onChange: ({ error, data }) => {
       if (error) {
