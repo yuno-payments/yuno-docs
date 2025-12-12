@@ -40,7 +40,7 @@ The following table lists all required parameters and their descriptions. For op
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                                                                                  |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                        |
 | `countryCode`                     | Determines the country for which the payment process is being configured. See [Country coverage](doc:country-coverage-yuno-sdk) for supported countries and their codes.                                          |
-| `language`                        | Defines the language for payment forms. Options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>tr (Turkish)</li></ul>. |
+| `language`                        | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available. |
 | `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                                                                       |
 | `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                                                         |
 | `issuersFormEnable`               | Enables the issuer's form. Default: `true`.                                                                                                                                                                       |
@@ -52,7 +52,7 @@ yuno.startCheckout({
   checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
   elementSelector: "#root",
   countryCode: "FR",
-  language: "fr",
+  language: "fr-FR",
   showLoading: true,
   issuersFormEnable: true,
   showPaymentStatus: true,

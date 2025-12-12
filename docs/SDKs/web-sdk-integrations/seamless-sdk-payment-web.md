@@ -79,7 +79,7 @@ yuno.startSeamlessCheckout({
   checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
   elementSelector: "#root",
   countryCode: "US",
-  language: "en",
+  language: "en-US",
   showLoading: true,
   issuersFormEnable: true,
   showPaymentStatus: true,
@@ -133,7 +133,7 @@ Configure the seamless checkout with the following options:
 | `checkoutSession`           | Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`.                                                                                                                                    |
 | `elementSelector`           | The HTML element where the checkout will be rendered.                                                                                                                                                                                                                                         |
 | `countryCode`               | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
-| `language`                  | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>tr (Turkish)</li></ul>                |
+| `language`                  | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available. |
 | `showLoading`               | Controls the visibility of the Yuno loading/spinner page during the payment process. Default: `true`.                                                                                                                                                                                         |
 | `onLoading`                 | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                            |
 | `issuersFormEnable`         | Enables the issuer's form (e.g., a list of banks). Default: `true`.                                                                                                                                                                                                                           |
