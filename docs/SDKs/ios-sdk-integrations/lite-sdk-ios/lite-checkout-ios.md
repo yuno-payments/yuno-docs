@@ -183,7 +183,7 @@ You can obtain the one-time token to create the payment back-to-back at the end 
 func yunoCreatePayment(with token: String) { ... }
 ```
 
-## Step 6: Create the Payment
+## Step 6: Create the payment
 
 Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
@@ -195,7 +195,7 @@ Once you have completed the steps described before, you can create a payment. Th
 Yuno.continuePayment()
 ```
 
-## Step 7: Handle Payment Status (Optional)
+## Step 7: Handle payment status (Optional)
 
 > ❗️ Deep Links and Mercado Pago Checkout Pro
 >
@@ -237,6 +237,40 @@ The SDK returns different transaction states after payment completion. The follo
 | `internalError`   | It means that an unexpected error occurred within the system or infrastructure handling the payment process. This state suggests that there was a problem on the server or backend side rather than an issue with the user's input or request. |
 | `userCancell`     | This state indicates that the user has voluntarily canceled or aborted the transaction or payment process. This state is typically used when there is an option for the user to cancel or abandon the payment process.                         |
 
+### Payment status validation
+
+This section explains how the SDK handles payment status when users cancel or leave payment flows, and how the SDK status relates to the backend payment status in these scenarios.
+
+#### Sync payment methods (Apple Pay)
+
+For synchronous payment methods like Apple Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
+
+- **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER)
+- **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
+- **Important**: The SDK will not return `reject` or `processing` in this scenario
+
+This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
+
+#### Async payment methods (PIX and QR-based methods)
+
+For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
+
+- **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER), optionally with a sub-status such as `USER_LEFT_FLOW`
+- **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
+- **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
+- **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+
+This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
+
+#### Expired async payments
+
+If a PIX QR code expires naturally:
+
+- **Backend Status**: Updated to `EXPIRED`
+- **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
+
+This ensures merchants receive accurate status information when a payment method has expired.
+
 Implement the delegate to receive transaction states:
 
 ```swift
@@ -248,7 +282,7 @@ func yunoPaymentResult(_ result: Yuno.Result) { ... }
 func yunoEnrollmentResult(_ result: Yuno.Result) { ... }
 ```
 
-## Complementary Features
+## Complementary features
 
 The Yuno iOS SDK provides additional features to enhance the customer experience. Use [SDK Customizations](../docs/sdk-customizations-ios) to match your brand appearance or configure the loader.
 
