@@ -36,7 +36,7 @@ First, set up the event listener, then load the SDK:
   });
 </script>
 
-<script defer src="https://sdk-web.y.uno/v1.3/main.js"></script>
+<script defer src="https://sdk-web.y.uno/v1.5/main.js"></script>
 ```
 
 ### 2. Inject the SDK dynamically using JavaScript
@@ -57,7 +57,7 @@ Create a function to inject the SDK dynamically:
 export const injectScript = async (): Promise<boolean> => {
   const head = document.getElementsByTagName('head')[0];
   const js = document.createElement('script');
-  js.src = "https://sdk-web.y.uno/v1.3/main.js";
+  js.src = "https://sdk-web.y.uno/v1.5/main.js";
   js.defer = true;
 
   return new Promise((resolve, reject) => {
@@ -190,241 +190,19 @@ yuno.mountEnrollmentLite({
 
 The configuration and mounting are done in the same step for the Enrollment Lite. To do it, use the `yuno.mountEnrollmentLite` function and provide the necessary parameters. The following table lists all parameters and their descriptions.
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `customerSession`
-      </td>
-
-      <td>
-        Refers to the current payment's [customer session](ref:create-customer). Example: `'e15648b0-fcd5-4799-a14c-cc463ae8a133'`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `country_code`
-      </td>
-
-      <td>
-        This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `language`
-      </td>
-
-      <td>
-        Defines the language to be used in the payment forms. You can set it to one of the available language options: `es` (Spanish), `en` (English), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), `th` (Thai), or `tr` (Turkish).
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `showLoading`
-      </td>
-
-      <td>
-        Control the visibility of the Yuno loading/spinner page during the payment process.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `onLoading`
-      </td>
-
-      <td>
-        Required to receive notifications about server calls or loading events during the payment process.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `elementSelector`
-      </td>
-
-      <td>
-        Specifies the HTML element where you want to mount the Yuno SDK. The SDK will be rendered within this element.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Define specific settings for the credit card form.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `yunoEnrollmentStatus`
-      </td>
-
-      <td>
-        Define a callback to run after the enrollment process ends. It is called with `vaultedToken` and `status` parameters. The `status` returned can be one of:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `CREATED`: It is an initial and transitory state, only indicating that it is created and updated to another state.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `EXPIRED`: For asynchronous enrollments, such as MercadoPago, where the user has to take an external action and may never do so.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `REJECTED`: We reject it from our side. It may be because they entered incorrect Yuno credentials or are sending some data incorrectly.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `READY_TO_ENROLL`: It follows `CREATED` if everything is okay, indicating that the enrollment has started.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `ENROLL_IN_PROCESS`: For asynchronous enrollments, like MercadoPago, where the user has to take an action externally. It indicates that the user is performing the action.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `UNENROLL_IN_PROCESS`: For asynchronous unenrollments, in case the provider has an asynchronous response. Currently, there are none.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `ENROLLED`: Successfully enrolled.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `DECLINED`: The provider declined the enrollment. Does not include cards.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `CANCELED`: The enrollment flow is canceled halfway.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `ERROR`: There was an ERROR in the service or credentials.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `UNENROLLED`: The previously enrolled payment method has been unenrolled.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `issuersFormEnable`
-      </td>
-
-      <td>
-        Enable the issuer's form (bank list).
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `texts`
-      </td>
-
-      <td>
-        Provide custom text for payment form buttons to match your application's language or branding.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `card.isCreditCardProcessingOnly`
-      </td>
-
-      <td>
-        Enables you to ensure that all card transactions are processed as credit only. This option is helpful in markets where cards can act as both credit and debit. To enable, set the `isCreditCardProcessingOnly` to `true` to ensure that all card transactions are processed as credit. This parameter is not required.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| --- | --- |
+| `customerSession` | Refers to the current payment's [customer session](ref:create-customer). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`. |
+| `country_code` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](doc:country-coverage-yuno-sdk). |
+| `language` | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>tr (Turkish)</li></ul> |
+| `showLoading` | Controls visibility of the Yuno loading/spinner page during the payment process. |
+| `onLoading` | Required to receive notifications about server calls or loading events. |
+| `elementSelector` | HTML element where the Yuno SDK is mounted. |
+| `card` | Define specific settings for the credit card form. |
+| `yunoEnrollmentStatus` | Callback after enrollment ends; receives `vaultedToken` and `status`. Status options: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
+| `issuersFormEnable` | Enable the issuer's form (bank list). |
+| `texts` | Custom text for payment form buttons to match your application's language or branding. |
+| `card.isCreditCardProcessingOnly` | Optional. Forces card transactions to process as credit only—useful where cards act as both credit and debit. |
 
 The next code block presents an example of the Enrollment Lite parameter configuration and mounting.
 
@@ -595,81 +373,10 @@ yuno.startCheckout({
 
 ### Mode of form rendering
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `renderMode`
-      </td>
-
-      <td>
-        This parameter is optional. It determines the mode in which the payment forms will be displayed.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `type`: can be one of `modal` or `element`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `elementSelector`: Element where the form will be rendered. Only required if `type` is `element`.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        `elementSelector`
-      </td>
-
-      <td>
-        Required only if the type is `element`. Specifies the HTML elements where you want to mount the Yuno SDK. You can specify the elements using one of the following options:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **String (Deprecated)**: Provide the ID or selector of the element where the SDK should be mounted.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * **Object**: Specify the elements for mounting the APM and action forms. You need to provide the element for the `apmForm`, which is where the APM is displayed, and the element for the `actionForm`, where the Continue Payment button appears. This button triggers a modal that shows the steps to complete a payment with a provider. For example, with PIX, it displays a QR code.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| --- | --- |
+| `renderMode` | Determines how payment forms are displayed. <br/>- `type`: `modal` or `element`.<br/>- `elementSelector`: element where the form is rendered (required if `type` is `element`). |
+| `elementSelector` | Required when `type` is `element`. Specifies where to mount the Yuno SDK. <br/>- **String (Deprecated)**: ID or selector for mounting the SDK.<br/>- **Object**: Provide `apmForm` (where the APM is displayed) and `actionForm` (button that opens the modal to complete provider steps, e.g., PIX QR). |
 
 ```javascript
 yuno.startCheckout({
@@ -707,61 +414,9 @@ You also can choose one of the render options for the card form, `step` and `ext
 
 ### Card form configurations
 
-<Table>
-  <thead>
-    <tr>
-      <th>
-        Parameter
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        `card`
-      </td>
-
-      <td>
-        Define specific settings for the credit card form:
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `type`: `step` or `extends`
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `styles`: You can edit card form styles. Only you should write CSS, then it will be injected into the iframe.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-
-      </td>
-
-      <td>
-        * `texts`: Custom texts in the Card forms buttons.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Parameter | Description |
+| --- | --- |
+| `card` | Define settings for the credit card form: <br/>- `type`: `step` or `extends`.<br/>- `styles`: Write custom CSS to style the card form; your CSS is injected into the iframe.<br/>- `texts`: Custom texts for the card form buttons. |
 
 ```javascript
 yuno.startCheckout({
