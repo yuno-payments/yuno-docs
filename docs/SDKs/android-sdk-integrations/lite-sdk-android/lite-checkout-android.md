@@ -192,6 +192,40 @@ The following table provides additional information about the possible states:
 | `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the payment process.                                           | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
 | `CANCELED`       | The user voluntarily canceled the transaction or abandoned the payment process.                                                 | No.                                                                                                           |
 
+### Payment status validation
+
+This section explains how the SDK handles payment status when users cancel or leave payment flows, and how the SDK status relates to the backend payment status in these scenarios.
+
+#### Sync payment methods (Google Pay)
+
+For synchronous payment methods like Google Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
+
+- **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER)
+- **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
+- **Important**: The SDK will not return `REJECT` or `PROCESSING` in this scenario
+
+This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
+
+#### Async payment methods (PIX and QR-based methods)
+
+For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
+
+- **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER), optionally with a sub-status such as `USER_LEFT_FLOW`
+- **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
+- **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
+- **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+
+This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
+
+#### Expired async payments
+
+If a PIX QR code expires naturally:
+
+- **Backend Status**: Updated to `EXPIRED`
+- **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
+
+This ensures merchants receive accurate status information when a payment method has expired.
+
 ## Step 6: Initiate the payment process
 
 Call the method `startPaymentLite` to start a payment process:
@@ -268,7 +302,7 @@ continuePayment(
 
 Send `FALSE` in the `showPaymentStatus` parameter to show your payment status screens. Then, get the payment state by callback.
 
-## Render Mode (advanced integration)
+## Render mode (advanced integration)
 
 For developers requiring advanced UI control, the Lite SDK also supports render mode integration. This mode provides fragment-based UI components that you can integrate into custom layouts, offering more flexibility while maintaining the streamlined Lite SDK functionality.
 
