@@ -50,9 +50,9 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 
 ## Step 3: Create a checkout session
 
-> 📘 Sending `additional_data`
->
-> If your workflow requires sending the `additional_data` object, it can be sent as part of the checkout session.
+<Callout icon="📘" theme="info">
+  If your workflow requires sending the `additional_data` object, it can be sent as part of the checkout session.
+</Callout>
 
 To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint.
 
