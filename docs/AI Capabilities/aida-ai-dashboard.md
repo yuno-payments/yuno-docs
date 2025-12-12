@@ -2,11 +2,12 @@
 title: Aida AI in the Dashboard
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: Aida AI in the Dashboard
   description: >-
-    Learn how to use Aida AI throughout the Yuno Dashboard for contextual assistance in Payments, Insights, Routing sections, and chatbot integration.
+    Learn how to use Aida AI throughout the Yuno Dashboard for contextual
+    assistance in Payments, Insights, Routing sections, and chatbot integration.
   robots: index
 next:
   description: ''
