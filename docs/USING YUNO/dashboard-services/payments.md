@@ -25,7 +25,7 @@ The Payments dashboard section shows all payments, transactions, fraud screening
 * **All transactions**: View all transactions related to your payments.
 * **All fraud screenings**: Verify potential fraudulent transactions through our dedicated fraud screenings view.
 * **View all payouts**: Access and filter all payouts to easily find specific transactions.
-* **Filters**: Select **Add filters** to narrow your search results. You can filter by status, country, date, payment method, and more.
+* **Filters**: Select **Add filters** to narrow your search results. You can filter by status, country, date, payment method, and more. For PAYMENTS and TRANSACTIONS reports, additional filters are available to refine your data exports.
 * **Export reports**: Export customized data, schedule email reports, and download previous exports. CSV downloads are perfect for file sharing and team analysis.
 * **Review payment information**: Click any transaction to view detailed information. Payments will include the customer payer's information, payment method, and the transaction timeline associated with the payment.
 
@@ -57,3 +57,15 @@ Click the **Export** button to see three tabs, each giving you specialized contr
 **Quick export**: Select a specific date range and customize the columns visible in the export.\
 **Scheduled reports**: Configure a report to send periodically to your email address. You may also set the columns to export.
 **Downloads**: Previous reports are saved in this tab for easy download.
+
+## Report Filters
+
+When exporting PAYMENTS and TRANSACTIONS reports, you can use additional filters to refine your data:
+
+### PAYMENTS Report Filters
+
+[To be filled based on PDF requirements - list the new filters available for PAYMENTS reports]
+
+### TRANSACTIONS Report Filters
+
+[To be filled based on PDF requirements - list the new filters available for TRANSACTIONS reports]
