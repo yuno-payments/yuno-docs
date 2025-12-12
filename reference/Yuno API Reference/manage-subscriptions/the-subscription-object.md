@@ -375,18 +375,15 @@ This object represents a subscription that can be associated with a customer.
     <summary>
       <strong><code>metadata</code></strong> <small>object</small>
       <br />
-      <p>Specifies the metadata object. Set of key-value pairs that you can be attached to an object. This
-        can be useful for storing additional information about the object in a structured format. Individual keys can be
-        unset by posting an empty value to them. All keys can be unset by posting an empty value to metadata.</p>
+      <p>Specifies the metadata object.</p>
     </summary>
     <div>
       <div class="yuno">
-        <p><strong><code>key</code></strong> <small>string</small> <br />Object title that represents the key-value pair inside the
-          metadata (MAX 48; MIN 1). <br /><small> Example: sub_ext_id</small></p>
+        <p><strong><code>key</code></strong> <small>string</small> <br />This value serves as a name or indentifier for the metadata. Use a descriptive term. (MAX 48; MIN 1). <br /><small> Example: sub_ext_id</small></p>
       </div>
 
       <div class="yuno">
-        <p><strong><code>value</code></strong> <small>string</small> <br />Object value for the key defined (MAX 512; MIN 1).
+        <p><strong><code>value</code></strong> <small>string</small> <br />The information you wish to store within the metadata. (MAX 512; MIN 1).
           <br /><small> Example: AA001</small>
         </p>
       </div>
