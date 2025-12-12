@@ -85,92 +85,11 @@ Match your brand's unique look and feel using the Checkout Styling module. Chang
 
 The General Styling section allows you to adjust key visual elements, creating a consistent and professional look throughout the checkout experience. In this section, you can customize the following elements:
 
-<Table align={["left","left"]}>
-  <thead>
-    <tr>
-      <th>
-        Customizable Element
-      </th>
-
-      <th>
-        Description
-      </th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr>
-      <td>
-        **Background Color**
-      </td>
-
-      <td>
-        Set the background color applied across all checkout forms, establishing a base that reflects your brand’s aesthetic. This background color serves as the foundation of the entire checkout interface.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **Accent Color**
-      </td>
-
-      <td>
-        Select an accent color to highlight interactive elements, enhancing the user experience and adding brand-specific touches. The accent color applies to:  
-
-        * The background color of the primary button
-        * The border color of the secondary button
-        * Checkbox colors
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **Primary Text Color**
-      </td>
-
-      <td>
-        Define the main text color for high-visibility elements. This color will apply to:  
-
-        * Titles and subtitle
-        * User input fields
-        * Dropdown values
-        * Text on secondary buttons
-        * Checkbox text
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **Secondary Text Color**
-      </td>
-
-      <td>
-        Choose a secondary text color for supporting text elements. This color applies to:  
-
-        * Field descriptions
-        * Placeholder text
-        * Help text for additional form guidance
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **Primary Button Text Color**
-      </td>
-
-      <td>
-        Set the text color for the primary button to ensure the call-to-action is noticeable and accessible.
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        **Typography**
-      </td>
-
-      <td>
-        Select your preferred font.
-      </td>
-    </tr>
-  </tbody>
-</Table>
+| Customizable Element | Description |
+| :------------------- | :---------- |
+| **Background Color** | Set the background color applied across all checkout forms, establishing a base that reflects your brand's aesthetic. This background color serves as the foundation of the entire checkout interface. |
+| **Accent Color** | Select an accent color to highlight interactive elements, enhancing the user experience and adding brand-specific touches. The accent color applies to:<ul><li>The background color of the primary button</li><li>The border color of the secondary button</li><li>Checkbox colors</li></ul> |
+| **Primary Text Color** | Define the main text color for high-visibility elements. This color will apply to:<ul><li>Titles and subtitle</li><li>User input fields</li><li>Dropdown values</li><li>Text on secondary buttons</li><li>Checkbox text</li></ul> |
+| **Secondary Text Color** | Choose a secondary text color for supporting text elements. This color applies to:<ul><li>Field descriptions</li><li>Placeholder text</li><li>Help text for additional form guidance</li></ul> |
+| **Primary Button Text Color** | Set the text color for the primary button to ensure the call-to-action is noticeable and accessible. |
+| **Typography** | Select your preferred font. |
