@@ -188,11 +188,11 @@ The following table provides additional information about the possible states:
 | `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the payment process.                                           | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
 | `CANCELED`       | The user voluntarily canceled the transaction or abandoned the payment process.                                                 | No.                                                                                                           |
 
-### Payment Status Validation
+### Payment status validation
 
-The SDK provides consistent status handling for different payment method types to ensure clear communication between the SDK state and backend payment status.
+This section explains how the SDK handles payment status when users cancel or leave payment flows, and how the SDK status relates to the backend payment status in these scenarios.
 
-#### Sync Payment Methods (Google Pay)
+#### Sync payment methods (Google Pay)
 
 For synchronous payment methods like Google Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
 
@@ -202,7 +202,7 @@ For synchronous payment methods like Google Pay, when a user cancels or closes t
 
 This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
 
-#### Async Payment Methods (PIX and QR-based methods)
+#### Async payment methods (PIX and QR-based methods)
 
 For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
 
@@ -213,7 +213,7 @@ For asynchronous payment methods like PIX, when a user closes the QR code window
 
 This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
 
-#### Expired Async Payments
+#### Expired async payments
 
 If a PIX QR code expires naturally:
 
@@ -298,7 +298,7 @@ continuePayment(
 
 Send `FALSE` in the `showPaymentStatus` parameter to show your payment status screens. Then, get the payment state by callback.
 
-## Render Mode (advanced integration)
+## Render mode (advanced integration)
 
 For developers requiring advanced UI control, the Lite SDK also supports render mode integration. This mode provides fragment-based UI components that you can integrate into custom layouts, offering more flexibility while maintaining the streamlined Lite SDK functionality.
 
