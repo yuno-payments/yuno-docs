@@ -63,26 +63,17 @@ settings.domStorageEnabled = true
 
 ## Cookie usage
 
-<br />
+The Web SDK sets two essential cookies for its functionality:
 
-<Callout icon="🚧" theme="warn">
-  e Web SDK sets two essential cookies for its functionality:
+* `recognitionToken`: Required for the Click-to-Pay flow
+* `yuno`: Required for logging and analytics
 
-  * `recognitionToken`: Required for the Click-to-Pay flow
-  * `yuno`: Required for logging and analytics
+Third-party fraud prevention SDKs integrated within Yuno may set additional cookies. These cookies are managed by the respective providers and are outside of Yuno's control. For details about third-party cookies and their usage, please consult the documentation of your specific fraud prevention vendor.
 
-  Third-party fraud prevention SDKs integrated within Yuno may set additional cookies. These cookies are managed by the respective providers and are outside of Yuno's control. For details about third-party cookies and their usage, please consult the documentation of your specific fraud prevention vendor.
-</Callout>
-
-> 🚧 Cookie Usage
->
-> The Web SDK sets two essential cookies for its functionality:
->
-> * `recognitionToken`: Required for the Click-to-Pay flow
-> * `yuno`: Required for logging and analytics
->
-> Third-party fraud prevention SDKs integrated within Yuno may set additional cookies. These cookies are managed by the respective providers and are outside of Yuno's control. For details about third-party cookies and their usage, please consult the documentation of your specific fraud prevention vendor.
-
-## Stay Updated
+## Stay updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
+
+## Supported languages
+
+For the full list of languages supported by our SDKs, see [this page](doc:supported-languages). 
