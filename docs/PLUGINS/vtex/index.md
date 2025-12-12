@@ -18,7 +18,9 @@ Yuno and VTEX have joined forces to simplify payment processes for merchants wor
 
 ![](https://files.readme.io/64caa7b-vtex1.png)
 
-By integrating Yuno's payment orchestration platform with VTEX's e-commerce solution, merchants can easily manage payments and offer diverse payment options. Yuno ensures customers can choose their preferred payment method from local cards to digital wallets. Yuno's plugin allows your store to accept payments seamlessly without redirecting customers to external pages, enhancing the shopping experience and increasing the conversion rate.
+By integrating Yuno's payment orchestration platform with VTEX's e-commerce solution, merchants can easily manage payments and offer diverse payment options. Yuno ensures customers can choose their preferred payment method from local cards to digital wallets. Yuno's plugin allows your store to accept payments seamlessly without redirecting customers to external pages, enhancing the shopping experience and increasing the conversion rate. 
+
+Some payment methods like Pagaleve and Pix Parcelado open in a modal window, providing a seamless checkout experience within the VTEX storefront.
 
 > ❗️ Payments with two cards
 >

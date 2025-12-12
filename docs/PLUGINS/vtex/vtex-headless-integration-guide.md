@@ -123,6 +123,10 @@ This flow explains how Pix and other APMs are handled in VTEXIO, including payme
 4. Yuno generates a QR code and additional payment details and returns them to VTEX.
 5. VTEXIO opens the Pix application or redirects the user to complete the payment.
 
+> 📘 Modal Payment Methods
+>
+> Pagaleve and Pix Parcelado open in a modal window instead of redirecting to an external page. This provides a seamless checkout experience without leaving the VTEX storefront.
+
 <Image align="center" src="https://files.readme.io/89ce5296e6a38d163c1e5c9936b689477545556e7c42fd2d57561db069d09e06-Diagrama_-_Pix_APM_payment_flow_VTEXIO.png" />
 
 ### VTEX headless
