@@ -348,6 +348,27 @@ This object represents a recipient who will receive part of a [split payment](do
     </div>
 
     <div class="yuno" style="margin-left:1em;">
+      <p><strong><code>provider_response_code</code></strong> <small>string</small>
+        <br/>Provider response code returned by the provider during onboarding.
+        <br/><small>Example: 00</small>
+      </p>
+    </div>
+
+    <div class="yuno" style="margin-left:1em;">
+      <p><strong><code>provider_response_message</code></strong> <small>string</small>
+        <br/>Descriptive provider message associated with the onboarding response.
+        <br/><small>Example: Approved</small>
+      </p>
+    </div>
+
+    <div class="yuno" style="margin-left:1em;">
+      <p><strong><code>provider_raw_response</code></strong> <small>string</small>
+        <br/>Reference to the full raw provider response. Use this identifier to retrieve the complete payload when required.
+        <br/><small>Example: 64b3f8cba12e3c7d9f0a1234</small>
+      </p>
+    </div>
+
+    <div class="yuno" style="margin-left:1em;">
       <p><strong><code>callback_url</code></strong> <small>string</small>
         <br/>URL to redirect your customer after the onboarding process, if needed.
         <br/><small>Example: https://www.google.com</small>
