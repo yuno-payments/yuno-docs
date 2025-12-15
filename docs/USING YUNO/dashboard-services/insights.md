@@ -58,7 +58,8 @@ The Insight section contains several options to filter, customize, and extract d
 
 * **Filters**: Use the **Add filters** button to segment the displayed information by card brand, currency, date range, and other criteria, including **country**, **issuer country**, and **network tokens**. This allows you to focus on specific data segments for targeted analysis. You can quickly apply or clear large selections using the **Select all** and inverse selection controls in each filter.
 
-  ![Insights filters – Country filter with Select all](../insights-filters-country-select-all.png)
+  ![Insights filters – Country filter with Select all](https://files.readme.io/2b20a3a704baba339660bd962a2387dd4fe270ad4386de7595fca875ab91913c-insights-filters-country-select-all.png
+  )
   <!-- Screenshot: Insights Overview tab with the Country filter panel open, showing the country list and Select all option. -->
 * **Personalization**: Click **Customize** to control the reports you see and their arrangement. Drag and drop elements to reorder them according to your priorities, or click the trash bin icon to remove less relevant reports. Remember to click **Done** to save your personalized layout.
 * **Set your charts**: Use the **Add chart** button to fine-tune visualizations displayed. After selecting this option, click the icon next to each report to toggle its visibility. Select **Apply** to confirm your chart selections.
@@ -75,7 +76,7 @@ Key MAC visualisations include:
 
 Use these views to identify common advisory patterns, refine your retry strategies, and work with issuers or providers to reduce avoidable declines.
 
-![Insights MAC charts – Top and Daily top merchant advisory codes](../insights-mac-top-and-daily.png)
+![Insights MAC charts – Top and Daily top merchant advisory codes](https://files.readme.io/0be6cef2f43852e9611b44551f2729bbee4c1926041fae421a57b2485d849d9b-insights-mac-top-and-daily.png)
 <!-- Screenshot: MAC charts showing Top merchant advisory codes and Daily top merchant advisory codes side by side. -->
 
 ## Fraud insights
