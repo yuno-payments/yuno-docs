@@ -252,7 +252,7 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
 
-- **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER), optionally with a sub-status such as `USER_LEFT_FLOW`
+- **SDK Status**: Returns `PENDING`, optionally with a sub-status such as `CLOSED_BY_USER`
 - **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
 - **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
 - **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
