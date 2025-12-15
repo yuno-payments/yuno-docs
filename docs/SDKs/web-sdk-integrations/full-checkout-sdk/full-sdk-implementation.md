@@ -386,7 +386,7 @@ If a transaction is rejected, you can use the credit card form to retry a paymen
    2. Create a new checkout session and update the SDK with the new one by executing `yuno.updateCheckoutSession(checkoutsession)`
 3. Continue with the new checkout and one-time use token with the regular payment flow.
 
-### Hide Pay button
+### Hide pay button
 
 You can hide the Pay button when presenting the card or customer data form. Set `showPayButton` to `false` when starting the checkout with the `startCheckout` function:
 
@@ -468,7 +468,7 @@ Learn about the additional configurations from the Full SDK by accessing [Comple
 * [Payment Status](doc:payment-status): Update the user about the payment process
 * [3DS Setup SDK](doc:3d-secure): Integrate 3DS into your payment flow
 
-## Stay Updated
+## Stay updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
 
