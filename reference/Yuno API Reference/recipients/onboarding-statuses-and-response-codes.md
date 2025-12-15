@@ -11,6 +11,7 @@ See also:
 
 * [Create Onboarding](ref:create-onboarding)
 * [Continue Onboarding](ref:continue-onboarding)
+* [Get Onboarding](ref:get-onboarding) - Includes provider response fields and raw data storage
 
 ## Onboarding statuses
 
