@@ -243,9 +243,8 @@ yuno.mountEnrollmentLite({
      */
     type: "extends",
     /**
-     * You can edit card form styles
-     * Only you should write css, then it will be injected into the iframe
-     * Example
+     * Write custom CSS to style the card form. Your CSS will be injected into the iframe.
+     * Example:
      * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
      *  .Yuno-front-side-card__name-label {
      *    color: red !important;
