@@ -24,7 +24,7 @@ Both solutions initialize the same way. After adding the Yuno SDK to your system
 Ensure the Yuno SDK file is included in your webpage before closing the `<body>` tag. See the example below:
 
 ```html
-<script src="https://sdk-web.y.uno/v1.1/main.js"></script>
+<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
 ```
 
 ## Step 2: Initialize SDK with the public key
@@ -34,7 +34,7 @@ In your JavaScript application, create an instance of the `Yuno` class by provid
 Like the example below, use the initialized class that is attributed to the `yuno` constant:
 
 ```html
-<script src="https://sdk-web.y.uno/v1.1/main.js"></script>
+<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
 ```
 
 Once you create the instance, choose between using the Status or Status Lite solutions to access the payment status.
