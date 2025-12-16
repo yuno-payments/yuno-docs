@@ -1,7 +1,7 @@
 ---
 title: SDK Customizations - Deprecated Design
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
