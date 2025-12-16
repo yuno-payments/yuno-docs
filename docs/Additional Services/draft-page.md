@@ -25,10 +25,10 @@ The following sections detail the elements that make up the Card and APM forms, 
 
 Choose the design system you want to customize:
 
-<Shelf classname="platform_shelf">
-  <YunoCard title="Default Design" href="/docs/sdk-customizations-default-design" />
+<Shelf classname="link_cards_container">
+  <YunoCard title="Default Design" href="./sdk-customizations-default-design" titleSize="h4" />
 
-  <YunoCard title="Deprecated Design" href="/docs/sdk-customizations-deprecated-design" />
+  <YunoCard title="Deprecated Design" href="./sdk-customizations-deprecated-design" titleSize="h4" />
 </Shelf>
 
 ## Address autocomplete
@@ -38,11 +38,3 @@ Merchants can enable or disable address autocomplete functionality in the Web SD
 ## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
-
-***
-
-<Shelf classname="link_cards_container">
-  <YunoCard title="Full SDK" href="../docs/full-checkout-sdk" titleSize="h4" />
-
-  <YunoCard title="Direct Workflow" href="../docs/direct-flow" titleSize="h4" />
-</Shelf>
