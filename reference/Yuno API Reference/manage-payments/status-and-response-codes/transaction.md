@@ -578,6 +578,7 @@ With every transaction, you´ll receive a `response_code` detailing more info ab
     <tr><td><code>RETRY_AFTER_8_D</code></td><td>Retry after 8 days</td><td>HARD</td><td></td></tr>
     <tr><td><code>RETRY_AFTER_10_D</code></td><td>Retry after 10 days</td><td>HARD</td><td></td></tr>
     <tr><td><code>REJECTED_THREE_D_SECURE_REQUIRED</code></td><td>3DS validation rejection</td><td>SOFT</td><td>-</td></tr>
+    <tr><td><code>REFER_TO_CARD_ISSUER</code></td><td>Rejected by the bank. Refer to card issuer</td><td>SOFT</td><td>01</td></tr>
     <tr><td><code>REPORTED_LOST</code></td><td>Lost card</td><td>HARD</td><td>41</td></tr>
     <tr><td><code>REPORTED_STOLEN</code></td><td>Stolen card, pick-up</td><td>HARD</td><td>43</td></tr>
     <tr><td><code>REQUESTS_EXCEEDED</code></td><td>Requests limit for the provider account reached.</td><td>SOFT</td><td>-</td></tr>
