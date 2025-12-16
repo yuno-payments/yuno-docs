@@ -16,7 +16,7 @@ This page provides a step-by-step guide to implement and enable Yuno's Lite Web 
 Add the following script tag to your HTML file to include the Yuno Web SDK:
 
 ```html
-<script src="https://sdk-web.y.uno/v1.3/main.js"></script>
+<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
 ```
 
 Alternatively, you can install it via npm:
