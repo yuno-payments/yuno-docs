@@ -1,5 +1,5 @@
 ---
-title: SDK Customizations - Default Design
+title: Default Design
 deprecated: false
 hidden: true
 metadata:
@@ -10,14 +10,22 @@ Use the Default Design information when customizing the Yuno Web SDK. This appro
 Use the following links to navigate to the desired component:
 
 * [Input](#input)
+
 * [Dropdown](#dropdown)
+
 * [Checkbox](#checkbox)
+
 * [Button](#button)
+
 * [Card](#card)
+
 * [Alert](#alert)
+
 * [Modal](#modal)
-  * [Form Card Modal](#form-card-modal)
-  * [APM Modal](#apm-modal)
+
+* [Form Card Modal](#form-card-modal)
+
+* [APM Modal](#apm-modal)
 
 ### Input
 
@@ -32,7 +40,7 @@ The following table lists the classes available for customizing the input elemen
 
 The images below show how each class will affect the input element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-1.png" />
 
 You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
 
@@ -45,9 +53,9 @@ You can also customize the error warnings flagged by the interface. The followin
 
 The images below show how each class will affect the input element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-2.png" />
 
-The following code block shows an example of how you can customize the input element. To use the following code, you need to add it to `card` when starting the SDK with `yuno.startCheckout`:
+The following code block shows an example of how you can customize the input element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`:
 
 ```css
 styles: `
@@ -70,7 +78,7 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true" />
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true" />
 
 ### Dropdown
 
@@ -89,7 +97,7 @@ The following table lists the classes available for customizing the dropdown ele
 
 The images below show how each class will affect the dropdown element.
 
-<Image alt="Image" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-1.png?raw=true" />
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-1.png?raw=true" />
 
 You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
 
@@ -103,7 +111,7 @@ You can also customize the error warnings flagged by the interface. The followin
 
 The images below show how each class will affect the dropdown element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-2.png" />
 
 The following code block shows an example of how you can customize the dropdown element:
 
@@ -126,7 +134,7 @@ The following code block shows an example of how you can customize the dropdown 
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-3.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-3.png" />
 
 ### Checkbox
 
@@ -140,7 +148,7 @@ The following table lists the classes available for customizing the checkbox ele
 
 The image below shows how each class will affect the checkbox element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-1.png" />
 
 The following code block shows an example of how you can customize the checkbox element:
 
@@ -154,7 +162,7 @@ The following code block shows an example of how you can customize the checkbox 
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-2.png" />
 
 ### Button
 
@@ -166,7 +174,7 @@ The following table lists the classes available for customizing the button eleme
 
 The image below shows how each class will affect the button element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-1.png" />
 
 The following code block shows an example of how you can customize the button element:
 
@@ -178,7 +186,7 @@ The following code block shows an example of how you can customize the button el
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-2.png" />
 
 ### Card
 
@@ -190,9 +198,9 @@ The following table lists the classes available for customizing the card element
 
 The image below shows how each class will affect the card element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-1.png" />
 
-The code block below presents an example of how you can customize the card element. To use the following code, you need to add it to `card` when starting the SDK with `yuno.startCheckout`.
+The code block below presents an example of how you can customize the card element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`.
 
 ```css
 styles: `
@@ -206,7 +214,7 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-2.png" />
 
 ### Alert
 
@@ -220,7 +228,7 @@ The following table lists the classes available for customizing the alert elemen
 
 The image below shows how each class will affect the alert element.
 
-<Image alt="Image" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-1.png?raw=true" />
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-1.png?raw=true" />
 
 The following code block shows an example of how you can customize the alert element:
 
@@ -237,20 +245,18 @@ The following code block shows an example of how you can customize the alert ele
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-2.png" />
 
 ### Modal
 
 The modal element provides two options you can customize:
 
-* Form Card Modal
-* APM Modal
+* **Form Card Modal**
+* **APM Modal**
 
-> **Note**
->
-> ### Modal customization requirements
->
-> To customize the modal component style, you must define the custom style directly within your web page.
+### Modal customization requirements
+
+To customize the modal component style, you must define the custom style directly within your web page.
 
 #### Form Card Modal
 
@@ -269,7 +275,7 @@ The classes available for customizing the form card modal element while using th
 
 The image below presents how each class will affect the form card modal element.
 
-<Image alt="Image" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-1.png?raw=true" />
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-1.png?raw=true" />
 
 The code block below presents an example of how you can customize the form card modal element.
 
@@ -294,7 +300,7 @@ The code block below presents an example of how you can customize the form card 
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-2.png?raw=true" />
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-2.png?raw=true" />
 
 #### APM Modal
 
@@ -318,7 +324,7 @@ The classes available for customizing the APM modal element while using the Defa
 
 The image below presents how each class will affect the APM modal element.
 
-<Image alt="Image" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-1-v2.png?raw=true" />
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-1-v2.png?raw=true" />
 
 The code block below presents an example of how you can customize the APM modal element.
 
@@ -359,4 +365,4 @@ The code block below presents an example of how you can customize the APM modal 
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-2-v2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-2-v2.png" />
