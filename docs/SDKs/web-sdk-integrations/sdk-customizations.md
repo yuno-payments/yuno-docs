@@ -23,6 +23,65 @@ The Yuno Web SDK allows you to customize various elements, making it easy to ali
 * **Styles outside an iframe**: Inject the styles directly into the page.
 * **Check element structure**: Use the browser's developer mode to inspect where the element is rendered.
 
+## Input design types
+
+You can customize how labels and placeholders are displayed in input fields by configuring the input design type. This property controls the visual presentation of form labels and placeholders across different SDK implementations.
+
+### Configuration
+
+For all SDKs (except secure fields and headless), configure the input design type when starting the checkout:
+
+```javascript
+yuno.startCheckout({
+  ...config,
+  inputDesignType: 'float-label' | 'float-label-static' | 'label-placeholder'
+})
+```
+
+For secure fields, configure the design type in the field creation options:
+
+```javascript
+secureFields.create({
+  name: 'pan',
+  options: {
+    ...config,
+    designType: 'float-label' | 'float-label-static' | 'label-placeholder'
+  }
+})
+```
+
+### Available design types
+
+#### `float-label`
+
+The label floats above the input field when the field is focused or contains a value. When the field is empty and not focused, the label appears inside the input as placeholder text.
+
+<img style="width:100%;margin-top:20px;margin-bottom:28px;"
+  src="../images/float-label-empty.png">
+
+<img style="width:100%;margin-top:20px;margin-bottom:28px;"
+  src="../images/float-label-filled.png">
+
+#### `float-label-static`
+
+The label remains in a fixed position above the input field at all times, regardless of focus state or whether the field contains a value.
+
+<img style="width:100%;margin-top:20px;margin-bottom:28px;"
+  src="../images/float-label-static-empty.png">
+
+<img style="width:100%;margin-top:20px;margin-bottom:28px;"
+  src="../images/float-label-static-filled.png">
+
+#### `label-placeholder`
+
+The label appears as placeholder text inside the input field. The label does not float or move when the field is focused or filled.
+
+<img style="width:100%;margin-top:20px;margin-bottom:28px;"
+  src="../images/label-placeholder-empty.png">
+
+<img style="width:100%;margin-top:20px;margin-bottom:28px;"
+  src="../images/label-placeholder-filled.png">
+
 ## Default and Deprecated Design
 
 Use the Default Design information when customizing the Yuno Web SDK. This approach is recommended for all new customizations and ensures you use the most up-to-date styles and practices.
