@@ -59,6 +59,10 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 * First, [create a customer](ref:create-customer) or retrieve an existing customer ID
 * Include it when creating the `checkout_session`
 
+<Callout icon="💳" theme="info">
+  To control authorization and capture with cards, include `payment_method.detail.card.capture` in the checkout session: set `false` to authorize only, `true` to capture immediately.
+</Callout>
+
 ### Key parameters
 
 | Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
