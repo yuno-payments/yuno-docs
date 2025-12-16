@@ -1,5 +1,5 @@
 ---
-title: SDK Customizations - Deprecated Design
+title: Deprecated Design
 deprecated: false
 hidden: true
 metadata:
@@ -7,7 +7,7 @@ metadata:
 ---
 <br />
 
-> ⚠️ Deprecation Warning
+> ❗️ Deprecation Warning
 >
 > This design system is deprecated and will be removed in the future. Please use the [Default Design](/docs/sdk-customizations-default-design) for all new customizations.
 
@@ -16,13 +16,20 @@ The Deprecated Design is available for Yuno clients needing access to CSS class 
 Use the following links to navigate to the desired component:
 
 * [Input](#input)
+
 * [Dropdown](#dropdown)
+
 * [Button](#button)
+
 * [Card](#card)
+
 * [Alert](#alert)
+
 * [Modal](#modal)
-  * [Form Card Modal](#form-card-modal)
-  * [APM Modal](#apm-modal)
+
+* [Form Card Modal](#form-card-modal)
+
+* [APM Modal](#apm-modal)
 
 ### Input
 
@@ -37,7 +44,7 @@ The classes available for customizing the input element while using the Deprecat
 
 The images below show how each class will affect the input element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-1.png" />
 
 You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
 
@@ -50,9 +57,9 @@ You can also customize the error warnings flagged by the interface. The followin
 
 The images below show how each class will affect the input element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-2.png" />
 
-The following code block shows an example of how you can customize the input element. To use the following code, you need to add it to `card` when starting the SDK with `yuno.startCheckout`:
+The following code block shows an example of how you can customize the input element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`:
 
 ```css
 styles: `
@@ -79,7 +86,7 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-3.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-3.png" />
 
 ### Dropdown
 
@@ -97,7 +104,7 @@ The classes available for customizing the dropdown element while using the Depre
 
 The images below show how each class will affect the dropdown element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-1.png" />
 
 You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
 
@@ -110,9 +117,9 @@ You can also customize the error warnings flagged by the interface. The followin
 
 The images below show how each class will affect the dropdown element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-2.png" />
 
-The code block below presents an example of how you can customize the dropdown element. To use the following code, you need to add it to `card` when starting the SDK with `yuno.startCheckout`.
+The code block below presents an example of how you can customize the dropdown element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`.
 
 ```css
 styles: `
@@ -137,7 +144,7 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-3.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-3.png" />
 
 ### Button
 
@@ -150,9 +157,9 @@ The classes available for customizing the button element while using the Depreca
 
 The image below presents how each class will affect the button element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/button-depricated-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/button-depricated-1.png" />
 
-The code block below presents an example of how you can customize the button element. To use the following code, you need to add it to `card` when starting the SDK with `yuno.startCheckout`.
+The code block below presents an example of how you can customize the button element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`.
 
 ```css
 styles: `
@@ -166,7 +173,7 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/button-depricated-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/button-depricated-2.png" />
 
 ### Card
 
@@ -178,9 +185,9 @@ The classes available for customizing the card element while using the Deprecate
 
 The image below presents how each class will affect the card element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/card-depricated-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/card-depricated-1.png" />
 
-The code block below presents an example of how you can customize the card element. To use the following code, you need to add it to `card` when starting the SDK with `yuno.startCheckout`.
+The code block below presents an example of how you can customize the card element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`.
 
 ```css
 styles: `
@@ -194,7 +201,7 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/card-depricated-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/card-depricated-2.png" />
 
 ### Alert
 
@@ -208,9 +215,9 @@ The classes available for customizing the alert element while using the Deprecat
 
 The image below presents how each class will affect the alert element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/alert-depricated-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/alert-depricated-1.png" />
 
-The code block below presents an example of how you can customize the alert element. To use the following code, you need to add it to `card` when starting the SDK with `yuno.startCheckout`.
+The code block below presents an example of how you can customize the alert element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`.
 
 ```css
 styles: `
@@ -227,20 +234,18 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/alert-depricated-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/alert-depricated-2.png" />
 
 ### Modal
 
 The modal element provides two options you can customize:
 
-* Form Card Modal
-* APM Modal
+* **Form Card Modal**
+* **APM Modal**
 
-> **Note**
->
-> ### Modal customization requirements
->
-> To customize the modal component style, you must define the custom style directly within your web page.
+### Modal customization requirements
+
+To customize the modal component style, you must define the custom style directly within your web page.
 
 #### Form Card Modal
 
@@ -256,7 +261,7 @@ The classes available for customizing the form card modal element while using th
 
 The image below presents how each class will affect the form card modal element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/form-card-modal-depricated-1.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/form-card-modal-depricated-1.png" />
 
 The code block below presents an example of how you can customize the form card modal element.
 
@@ -270,7 +275,7 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/form-card-modal-depricated-2.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/form-card-modal-depricated-2.png" />
 
 #### APM Modal
 
@@ -288,7 +293,7 @@ The classes available for customizing the APM modal element while using the Depr
 
 The image below presents how each class will affect the APM modal element.
 
-<Image alt="Image" border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/form-apm-modal-depricated-1-v3.png" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/form-apm-modal-depricated-1-v3.png" />
 
 The code block below presents an example of how you can customize the APM modal element.
 
@@ -336,4 +341,4 @@ styles: `
 
 The following image shows the result of the customization:
 
-<Image alt="Image" border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-depricated/form-apm-modal-depricated-2-v2.png?raw=true" />
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-depricated/form-apm-modal-depricated-2-v2.png?raw=true" />
