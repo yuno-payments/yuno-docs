@@ -1,5 +1,5 @@
 ---
-title: Draft page
+title: SDK Customizations
 deprecated: false
 hidden: true
 metadata:
