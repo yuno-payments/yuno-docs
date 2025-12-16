@@ -218,15 +218,9 @@ The following code block presents the `apiClientPayment.generateToken` function 
 
 Once you have completed the steps described before, you can create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
-The endpoint response provides the `sdk_action_required` parameter, which indicates if additional actions are needed to complete the payment:
+The endpoint response includes the `sdk_action_required` parameter that indicates whether additional actions are needed to complete the payment:
 
-* If the customer selects a synchronous payment method, the payment is completed instantly. In this case, the `sdk_action_required` field in the API response will be `false`, and the payment process concludes at this step. While it is not mandatory to call the `continuePayment` method in this case, it is recommended to ensure proper handling.
-
-> 📘 Using continuePayment Method
->
-> If `sdk_action_required = false`, you can call the `Yuno.continuePayment()` method, and Yuno will handle the final process to complete the payment.
-
-* If the payment requires further interaction from the SDK to complete the flow, `sdk_action_required` will be `true`. In this case, proceed with Step 6 for instructions.
+For synchronous payment methods, the payment completes instantly. In this case, `sdk_action_required` will be false in the API response and the payment process ends. If the payment requires further interaction from the SDK to complete the flow, `sdk_action_required` will be true; in this case, proceed with Step 6 for instructions.
 
 ## Step 6: Process asynchronous payments (Optional)
 
@@ -238,24 +232,7 @@ A payment with 3DS may require an additional challenge to check the customer's i
 
 To perform the challenge and finish the payment, you have two integration options:
 
-* (Recommended by Yuno) [Integrate the SDK `continuePayment` method](#integrate-the-continuepayment-method-recommended)
 * [Get the 3DS challenge URL](#get-the-3ds-challenge-url)
-
-### Integrate the `continuePayment` method (Recommended)
-
-If you choose to use the `continuePayment` method, Yuno SDK will take care of displaying the additional screens for the customers complete the 3DS challenge, where they can carry out the necessary actions to complete the payment.
-
-To use the `continuePayment`, you need to perform the following call:
-
-```swift
-Yuno.continuePayment(showPaymentStatus: Bool)
-```
-
-The parameter `showPaymentStatus` is used to determine whether the payment status should be displayed. By passing `true` as an argument, the payment will be displayed on the screen.
-
-> 📘 Default Value for showPaymentStatus
->
-> In Yuno's iOS Headless SDK, the default value for `showPaymentStatus` is `true`. [Learn more](#showPaymentStatus)
 
 ### Get the 3DS challenge URL
 
