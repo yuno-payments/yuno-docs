@@ -7,7 +7,7 @@ metadata:
 ---
 <br />
 
-> **Warning**
+> ⚠️ Deprecation Warning
 >
 > This design system is deprecated and will be removed in the future. Please use the [Default Design](/docs/sdk-customizations-default-design) for all new customizations.
 
