@@ -39,6 +39,10 @@ Merchants can enable or disable address autocomplete functionality in the Web SD
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
 
-<br />
-
 ***
+
+<Shelf classname="link_cards_container">
+  <YunoCard title="Full SDK" href="../docs/full-checkout-sdk" titleSize="h4" />
+
+  <YunoCard title="Direct Workflow" href="../docs/direct-flow" titleSize="h4" />
+</Shelf>
