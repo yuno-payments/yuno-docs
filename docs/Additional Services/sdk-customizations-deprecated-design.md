@@ -30,8 +30,6 @@ Use the following links to navigate to the desired component:
 -   [Card](#card)
 -   [Alert](#alert)
 -   [Modal](#modal)
-   -   [Form Card Modal](#form-card-modal)
-   -   [APM Modal](#apm-modal)
 
 ## Input
 
