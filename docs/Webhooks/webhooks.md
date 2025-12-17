@@ -25,7 +25,7 @@ Webhooks are the best way to ensure your system is up-to-date with payment progr
 
 To start using Yuno’s webhooks, you need to build a public REST API to receive event notifications (POST request). That means the REST API you will build should not require any authentication or access restriction through a header. Despite using a public API, the communication system is very safe since Yuno event notifications will not be available to the public and will use a unique URL to communicate only to your REST API.
 
-## Webhooks Delivery and Response Requirements
+## Webhooks delivery and response requirements
 
 Yuno webhooks expects to receive an **HTTP 200 OK** status as a response to confirm the webhook was successfully received. The merchant system does not need to include any information in the response's body. Only the HTTP 200 status is required.
 

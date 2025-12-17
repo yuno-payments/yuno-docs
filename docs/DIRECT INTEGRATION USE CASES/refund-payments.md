@@ -33,7 +33,7 @@ To refund a payment, you need to:
 > Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
 
 
-## Refund a Payment
+## Refund a payment
 
 If you initiate a refund, it will reimburse a charge created earlier but not yet refunded. The amount will be credited back to the original payment method that was charged.
 

@@ -46,7 +46,7 @@ To capture a payment, you need to:
 > 
 > See the [Cancel and Capture Flow](doc:cancel-and-capture-flow) guide.
 
-## Capture a Payment
+## Capture a payment
 
 You can capture a payment only if it has the PENDING status. Use the [Capture Payment endpoint](ref:capture-authorization) to capture the payment. To identify the payment to be captured, you need to provide its `id` and the `transaction_id`. In addition, you need to inform the amount to be captured using the object `amount` on the body request:
 

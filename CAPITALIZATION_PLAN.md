@@ -185,6 +185,10 @@ The documentation is organized into the following main sections:
 - ✅ build-your-integration (8 files)
 - ✅ Get Started with YUNO (3 files)
 - ✅ How yuno works (12 files)
+- ✅ Payment Features (15 files)
+- ✅ Wallets (13 files)
+- ✅ DIRECT INTEGRATION USE CASES (9 files)
+- ✅ Webhooks (4 files)
 
 ### In Progress
 - ⏳ None
