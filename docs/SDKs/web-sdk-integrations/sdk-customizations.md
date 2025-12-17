@@ -15,6 +15,7 @@ metadata:
 next:
   description: ''
 ---
+
 The Yuno Web SDK allows you to customize various elements, making it easy to align the design of payment forms and the checkout flow with your brand guidelines and UX/UI. Although the structure of each element remains uniform, you can adjust colors, text, buttons, and much more.
 
 ## General guidelines

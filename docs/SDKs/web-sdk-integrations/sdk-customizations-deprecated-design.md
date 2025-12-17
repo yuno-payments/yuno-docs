@@ -15,7 +15,6 @@ metadata:
 next:
   description: ''
 ---
-# SDK Customizations - Deprecated Design
 
 > ❗️ Deprecation Warning
 >

@@ -15,7 +15,6 @@ metadata:
 next:
   description: ''
 ---
-# SDK Customizations - Default Design
 
 Use the Default Design information when customizing the Yuno Web SDK. This approach is recommended for all new customizations and ensures you use the most up-to-date styles and practices.
 
