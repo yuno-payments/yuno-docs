@@ -1,5 +1,5 @@
 ---
-title: Complementary features
+title: Complementary Features
 excerpt: ''
 deprecated: false
 hidden: false
