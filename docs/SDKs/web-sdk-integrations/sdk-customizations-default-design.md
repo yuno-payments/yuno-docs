@@ -31,7 +31,7 @@ Use the following links to navigate to the desired component:
    -   [Form Card Modal](#form-card-modal)
    -   [APM Modal](#apm-modal)
 
-### Input
+## Input
 
 The following table lists the classes available for customizing the input element while using the Default Design:
 
@@ -84,7 +84,7 @@ The following image shows the result of the customization:
 
 ![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true)
 
-### Dropdown
+## Dropdown
 
 The following table lists the classes available for customizing the dropdown element while using the Default Design:
 
@@ -140,7 +140,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-3.png)
 
-### Checkbox
+## Checkbox
 
 The following table lists the classes available for customizing the checkbox element while using the Default Design:
 
@@ -168,7 +168,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-2.png)
 
-### Button
+## Button
 
 The following table lists the classes available for customizing the button element while using the Default Design:
 
@@ -192,7 +192,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-2.png)
 
-### Card
+## Card
 
 The following table lists the classes available for customizing the card element while using the Default Design:
 
@@ -220,7 +220,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-2.png)
 
-### Alert
+## Alert
 
 The following table lists the classes available for customizing the alert element while using the Default Design:
 
@@ -251,7 +251,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-2.png)
 
-### Modal
+## Modal
 
 The modal element provides two options you can customize:
 

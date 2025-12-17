@@ -35,7 +35,7 @@ Use the following links to navigate to the desired component:
 -   [Form Card Modal](#form-card-modal)
 -   [APM Modal](#apm-modal)
 
-### Input
+## Input
 
 The classes available for customizing the input element while using the Deprecated Design are listed in the following table.
 
@@ -92,7 +92,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/input-depricated-3.png)
 
-### Dropdown
+## Dropdown
 
 The classes available for customizing the dropdown element while using the Deprecated Design are listed in the following table.
 
@@ -150,7 +150,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/dropdown-depricated-3.png)
 
-### Button
+## Button
 
 The classes available for customizing the button element while using the Deprecated Design are listed in the following table.
 
@@ -179,7 +179,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/button-depricated-2.png)
 
-### Card
+## Card
 
 The classes available for customizing the card element while using the Deprecated Design are listed in the following table.
 
@@ -207,7 +207,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/card-depricated-2.png)
 
-### Alert
+## Alert
 
 The classes available for customizing the alert element while using the Deprecated Design are listed in the following table.
 
@@ -240,7 +240,7 @@ The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-depricated/alert-depricated-2.png)
 
-### Modal
+## Modal
 
 The modal element provides two options you can customize:
 
