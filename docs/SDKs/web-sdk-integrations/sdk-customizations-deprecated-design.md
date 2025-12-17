@@ -1,5 +1,5 @@
 ---
-title: SDK Customizations - Deprecated Design
+title: Deprecated Design
 excerpt: ''
 deprecated: true
 hidden: false
@@ -342,4 +342,3 @@ styles: `
 The following image shows the result of the customization:
 
 ![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-depricated/form-apm-modal-depricated-2-v2.png?raw=true)
-
