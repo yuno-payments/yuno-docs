@@ -236,7 +236,7 @@ To perform the challenge and finish the payment, you have two integration option
 
 ### Get the 3DS challenge URL
 
-If you are not using the `continuePayment` method, you need to redirect your customer to the challenge URL by your self. To get the 3DS challenge URL, you need to call the `getThreeDSecureChallenge` function, providing the `checkoutSession`. The `checkoutSession` is only required if you aren't using the one used to create the payment. Below, you will find an example of using the `getThreeDSecureChallenge` function. As  `getThreeDSecureChallenge` is an asynchronous function, you can use `do/catch ` to ensure you will correctly handle triggered errors.
+To get the 3DS challenge URL, you need to call the `getThreeDSecureChallenge` function, providing the `checkoutSession`. The `checkoutSession` is only required if you aren't using the one used to create the payment. Below, you will find an example of using the `getThreeDSecureChallenge` function. As  `getThreeDSecureChallenge` is an asynchronous function, you can use `do/catch ` to ensure you will correctly handle triggered errors.
 
 ```swift
 func getThreeDSecureChallenge(checkoutSession: String?) async throws -> ThreeDSecureChallengeResponse
