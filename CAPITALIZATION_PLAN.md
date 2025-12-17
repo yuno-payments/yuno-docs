@@ -181,6 +181,10 @@ The documentation is organized into the following main sections:
 - ✅ web-sdk-integrations (5 files)
 - ✅ ios-sdk-integrations (11 files)
 - ✅ android-sdk-integrations (15 files)
+- ✅ web-secure-fields (4 files)
+- ✅ build-your-integration (8 files)
+- ✅ Get Started with YUNO (3 files)
+- ✅ How yuno works (12 files)
 
 ### In Progress
 - ⏳ None
