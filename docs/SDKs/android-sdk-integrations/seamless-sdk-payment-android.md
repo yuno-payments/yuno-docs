@@ -68,14 +68,14 @@ Create a new `checkout_session` using the [Create checkout session](ref:create-c
   Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
 </Callout>
 
-### Key Parameters
+### Key parameters
 
 | Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
 | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
 | `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
 
-> 🚧 Checkout Session Usage
+> 🚧 Checkout session usage
 >
 > The `checkout_session` is unique for each payment attempt and cannot be reused.
 
@@ -197,7 +197,7 @@ This section explains how the SDK handles payment status when users cancel or le
 For synchronous payment methods like Google Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
 
 * **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER)
-* **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
+* **Backend payment status**: Remains `PENDING` until PSP timeout or merchant cancellation
 * **Important**: The SDK will not return `REJECT` or `PROCESSING` in this scenario
 
 This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
@@ -207,8 +207,8 @@ This ensures that the backend payment remains in a pending state and can be prop
 For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
 
 * **SDK Status**: Returns `PROCESSING`, optionally with a sub-status such as `CLOSED_BY_USER`
-* **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
-* **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
+* **Backend payment status**: Remains `PENDING` and the QR code remains valid until expiry
+* **Checkout session reuse**: Re-opening the same checkout session can display the same valid QR code
 * **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
 
 This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
