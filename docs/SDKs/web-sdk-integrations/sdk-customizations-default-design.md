@@ -1,5 +1,5 @@
 ---
-title: SDK Customizations - Default Design
+title: Default Design
 excerpt: ''
 deprecated: false
 hidden: false
@@ -367,4 +367,3 @@ The code block below presents an example of how you can customize the APM modal 
 The following image shows the result of the customization:
 
 ![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-2-v2.png)
-
