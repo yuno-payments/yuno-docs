@@ -330,7 +330,7 @@ To complete the Headless SDK payment flow, you need to use [Yuno Webhooks](doc:c
 
 To finish the payment implementation and understand the remaining steps, access [Headless  SDK (Payment)](doc:headless-sdk-integration).
 
-## Step 7: Handle Payment Status (Optional)
+## Step 7: Handle payment status (Optional)
 
 > 🚧 Deep Links and Mercado Pago Checkout Pro
 >

@@ -240,7 +240,7 @@ extension MyViewController: YunoEnrollmentDelegate {
 }
 ```
 
-## Complementary Features
+## Complementary features
 
 Yuno iOS SDK provides additional services and configurations you can use to improve customers' experience.
 
