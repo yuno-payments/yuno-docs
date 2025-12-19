@@ -23,6 +23,12 @@ The Yuno Web SDK allows you to customize various elements, making it easy to ali
 * **Styles outside an iframe**: Inject the styles directly into the page.
 * **Check element structure**: Use the browser's developer mode to inspect where the element is rendered.
 
+## Input design types
+
+You can customize how labels and placeholders are displayed in input fields by configuring the input design type. This property controls the visual presentation of form labels and placeholders across different SDK implementations.
+
+For detailed configuration options, design type descriptions, and CSS class information, see the [Default Design](./sdk-customizations-default-design#input-design-types) page.
+
 ## Default and Deprecated Design
 
 Use the Default Design information when customizing the Yuno Web SDK. This approach is recommended for all new customizations and ensures you use the most up-to-date styles and practices.
