@@ -56,10 +56,28 @@ Empower your business choices by using Yuno Insights to determine the most effec
 
 The Insight section contains several options to filter, customize, and extract data based on your preferences:
 
-* **Filters**: Use the **Add filters** button to segment the displayed information by card brand, currency, date range, and other criteria. This allows you to focus on specific data segments for targeted analysis.
+* **Filters**: Use the **Add filters** button to segment the displayed information by card brand, currency, date range, and other criteria, including **country**, **issuer country**, and **network tokens**. This allows you to focus on specific data segments for targeted analysis. You can quickly apply or clear large selections using the **Select all** and inverse selection controls in each filter.
+
+  ![Insights filters – Country filter with Select all](https://files.readme.io/2b20a3a704baba339660bd962a2387dd4fe270ad4386de7595fca875ab91913c-insights-filters-country-select-all.png
+  )
+  <!-- Screenshot: Insights Overview tab with the Country filter panel open, showing the country list and Select all option. -->
 * **Personalization**: Click **Customize** to control the reports you see and their arrangement. Drag and drop elements to reorder them according to your priorities, or click the trash bin icon to remove less relevant reports. Remember to click **Done** to save your personalized layout.
 * **Set your charts**: Use the **Add chart** button to fine-tune visualizations displayed. After selecting this option, click the icon next to each report to toggle its visibility. Select **Apply** to confirm your chart selections.
 * **Export as PDF**: The **Download** button allows you to export the current Insights page as a PDF file. This feature simplifies the process of sharing Yuno's valuable reports across your organization.
+
+## Merchant advisory codes (MAC) insights
+
+Insights includes charts that highlight merchant advisory codes (MAC), helping you understand why issuers recommend actions such as trying again later or updating information.
+
+Key MAC visualisations include:
+
+* **Top merchant advisory codes**: A breakdown of the most frequent MAC codes returned in your transactions, along with their relative share.
+* **Daily top merchant advisory codes**: A time-series chart that shows how the top MAC codes evolve over time, helping you spot trends and changes in issuer behaviour.
+
+Use these views to identify common advisory patterns, refine your retry strategies, and work with issuers or providers to reduce avoidable declines.
+
+![Insights MAC charts – Top and Daily top merchant advisory codes](https://files.readme.io/0be6cef2f43852e9611b44551f2729bbee4c1926041fae421a57b2485d849d9b-insights-mac-top-and-daily.png)
+<!-- Screenshot: MAC charts showing Top merchant advisory codes and Daily top merchant advisory codes side by side. -->
 
 ## Fraud insights
 

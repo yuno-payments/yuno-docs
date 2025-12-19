@@ -77,12 +77,12 @@ final class YunoConfig {
 
 Configure the SDK with the following options:
 
-| Parameter         | Description                                                                                                                                                                         |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cardFormType`    | This field can be used to choose `Payment` and `Enrollment Card` flow. It's an optional property. It uses the `.oneStep` option by default.                                         |
-| `appearance`      | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                        |
-| `saveCardEnabled` | This optional field lets you choose whether the **Save Card** checkbox is shown on card flows. It is false by default.                                                              |
-| `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to false. |
+| Parameter            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cardFormType`       | This field can be used to choose `Payment` and `Enrollment Card` flow. It's an optional property. It uses the `.oneStep` option by default.                                                                                                                                                                                                                                                                                                                            |
+| `appearance`         | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                                                                                                                                                                                                                                                                                                           |
+| `saveCardEnabled`    | This optional field lets you choose whether the **Save Card** checkbox is shown on card flows. It is false by default.                                                                                                                                                                                                                                                                                                                                                 |
+| `keepLoader`         | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to false.                                                                                                                                                                                                                                                                                    |
 | `hideCardholderName` | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
 
 > 📘 Accessing Your API Key
@@ -93,12 +93,16 @@ Configure the SDK with the following options:
 
 Before starting the payment process, you need to create a `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint. This session initializes the payment flow and will be used in the next step.
 
+<Callout icon="💳" theme="info">
+  Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
+</Callout>
+
 #### Key Parameters
 
-| Parameter            | Required | Description                                                                                                                                                                                                                                      |
-| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                      |
-| `workflow`           | Yes      | Set the value to `SDK_SEAMLESS` so the SDK can complete the payment flow correctly.                                                                                                                                                              |
+| Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
+| `workflow`           | Yes      | Set the value to `SDK_SEAMLESS` so the SDK can complete the payment flow correctly.                                                                                                                                                                                                                                |
 | `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
 
 ## Step 3: Start the checkout and payment process
@@ -150,9 +154,9 @@ The following table describes each parameter from `SeamlessParams`:
 | Parameter         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession` | Refers to the current payment's checkout session.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `country_code`    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](../docs/country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                      |
+| `country_code`    | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their country code is available on the [Country coverage](../docs/country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                                      |
 | `language`        | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
-| `viewController`  | This property represents the `UIViewController` used to present the payment flow. Even though the property remains optional for backward compatibility, you must supply a visible controller so the SDK can present its UI correctly.                                                                                                                                                                                                                                                                                                                                                                       |
+| `viewController`  | This property represents the `UIViewController` used to present the payment flow. Even though the property remains optional for backward compatibility, you must supply a visible controller so the SDK can present its UI correctly.                                                                                                                                                                                                                                                                                                                                                                         |
 
 > 🚧 Swift 6 Concurrency Requirements
 >
@@ -204,9 +208,9 @@ This section explains how the SDK handles payment status when users cancel or le
 
 For synchronous payment methods like Apple Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
 
-- **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER)
-- **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
-- **Important**: The SDK will not return `reject` or `processing` in this scenario
+* **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER)
+* **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
+* **Important**: The SDK will not return `reject` or `processing` in this scenario
 
 This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
 
@@ -214,10 +218,10 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
 
-- **SDK Status**: Returns `PENDING`, optionally with a sub-status such as `CLOSED_BY_USER`
-- **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
-- **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
-- **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+* **SDK Status**: Returns `PENDING`, optionally with a sub-status such as `CLOSED_BY_USER`
+* **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
+* **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
+* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
 
 This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
 
@@ -225,8 +229,8 @@ This behavior allows users to return to the payment flow and complete the transa
 
 If a PIX QR code expires naturally:
 
-- **Backend Status**: Updated to `EXPIRED`
-- **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
+* **Backend Status**: Updated to `EXPIRED`
+* **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
 
 This ensures merchants receive accurate status information when a payment method has expired.
 
