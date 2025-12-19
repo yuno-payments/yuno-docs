@@ -20,6 +20,7 @@ Use the Default Design information when customizing the Yuno Web SDK. This appro
 
 Use the following links to navigate to the desired component:
 
+-   [Input design types](#input-design-types)
 -   [Input](#input)
 -   [Dropdown](#dropdown)
 -   [Checkbox](#checkbox)
@@ -27,6 +28,57 @@ Use the following links to navigate to the desired component:
 -   [Card](#card)
 -   [Alert](#alert)
 -   [Modal](#modal)
+
+## Input design types
+
+You can customize how labels and placeholders are displayed in input fields by configuring the input design type. This property controls the visual presentation of form labels and placeholders across different SDK implementations.
+
+### Configuration
+
+For all SDKs (except secure fields and headless), configure the input design type when starting the checkout:
+
+```javascript
+yuno.startCheckout({
+  ...config,
+  inputDesignType: 'float-label' | 'float-label-static' | 'label-placeholder'
+})
+```
+
+For secure fields, configure the design type in the field creation options:
+
+```javascript
+secureFields.create({
+  name: 'pan',
+  options: {
+    ...config,
+    designType: 'float-label' | 'float-label-static' | 'label-placeholder'
+  }
+})
+```
+
+### Available design types
+
+#### `float-label`
+
+The label floats above the input field when the field is focused or contains a value. When the field is empty and not focused, the label appears inside the input as placeholder text.
+
+#### `float-label-static`
+
+The label remains in a fixed position above the input field at all times, regardless of focus state or whether the field contains a value.
+
+#### `label-placeholder`
+
+The label appears as placeholder text inside the input field. The label does not float or move when the field is focused or filled.
+
+The following images show the input field structure and CSS classes (`.Yuno-fieldset__box`, `.Yuno-input__content`, `.Yuno-input__label`, `.Yuno-input__base`) that apply to all input design types.
+
+The first image shows the input field structure across multiple states with CSS class annotations:
+
+![](../../images/input-design-types-structure-1.png)
+
+The second image shows the input field structure in placeholder and filled states with CSS class annotations:
+
+![](../../images/input-design-types-structure-2.png)
 
 ## Input
 
