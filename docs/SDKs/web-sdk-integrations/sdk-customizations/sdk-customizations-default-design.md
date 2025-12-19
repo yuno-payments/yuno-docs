@@ -15,19 +15,18 @@ metadata:
 next:
   description: ''
 ---
-
 Use the Default Design information when customizing the Yuno Web SDK. This approach is recommended for all new customizations and ensures you use the most up-to-date styles and practices.
 
 Use the following links to navigate to the desired component:
 
--   [Input design types](#input-design-types)
--   [Input](#input)
--   [Dropdown](#dropdown)
--   [Checkbox](#checkbox)
--   [Button](#button)
--   [Card](#card)
--   [Alert](#alert)
--   [Modal](#modal)
+* [Input design types](#input-design-types)
+* [Input](#input)
+* [Dropdown](#dropdown)
+* [Checkbox](#checkbox)
+* [Button](#button)
+* [Card](#card)
+* [Alert](#alert)
+* [Modal](#modal)
 
 ## Input design types
 
@@ -74,39 +73,39 @@ The following images show the input field structure and CSS classes (`.Yuno-fiel
 
 The first image shows the input field structure across multiple states with CSS class annotations:
 
-![](../../images/input-design-types-structure-1.png)
+<Image border={false} src="https://files.readme.io/282d99683be7818b99bbf935ce791ce96edccdba554b13a3fcec1d7356d00496-input-design-types-structure-1.png" />
 
 The second image shows the input field structure in placeholder and filled states with CSS class annotations:
 
-![](../../images/input-design-types-structure-2.png)
+<Image border={false} src="https://files.readme.io/def2c2d53108aaa096503bce2ed20bdbec7cd87679cd6809ded2e6305b582ae1-input-design-types-structure-2.png" />
 
 ## Input
 
 The following table lists the classes available for customizing the input element while using the Default Design:
 
-| CSS Class | Description |
-| --- | --- |
-| `.Yuno-fieldset__box` | General container for input fields. |
-| `.Yuno-input__content` | Content area for input elements. |
-| `.Yuno-input__label` | Label for input elements. |
-| `.Yuno-input__base` | Base styling for input elements. |
+| CSS Class              | Description                         |
+| ---------------------- | ----------------------------------- |
+| `.Yuno-fieldset__box`  | General container for input fields. |
+| `.Yuno-input__content` | Content area for input elements.    |
+| `.Yuno-input__label`   | Label for input elements.           |
+| `.Yuno-input__base`    | Base styling for input elements.    |
 
 The images below show how each class will affect the input element.
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-1.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-1.png" />
 
 You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
 
-| CSS Class | Description |
-| --- | --- |
+| CSS Class                                      | Description                                  |
+| ---------------------------------------------- | -------------------------------------------- |
 | `.Yuno-input__label .Yuno-input__label--error` | Label with error styling for input elements. |
-| `.Yuno-error-text-field__content` | Container for error message content. |
-| `.Yuno-error-text-field__error-icon` | Icon for error messages. |
-| `.Yuno-error-text-field__message` | Text for error messages. |
+| `.Yuno-error-text-field__content`              | Container for error message content.         |
+| `.Yuno-error-text-field__error-icon`           | Icon for error messages.                     |
+| `.Yuno-error-text-field__message`              | Text for error messages.                     |
 
 The images below show how each class will affect the input element.
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-2.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-2.png" />
 
 The following code block shows an example of how you can customize the input element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`:
 
@@ -131,40 +130,40 @@ styles: `
 
 The following image shows the result of the customization:
 
-![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true)
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true" />
 
 ## Dropdown
 
 The following table lists the classes available for customizing the dropdown element while using the Default Design:
 
-| CSS Class | Description |
-| --- | --- |
-| `.Yuno-fieldset__box` | General container for input fields. |
-| `.Yuno-select__content` | Content area for select elements. |
-| `.Yuno-select__label` | Label for select elements. |
-| `.Yuno-select__button-combo-box` | Button for combo box elements. |
-| `.Yuno-select__input` | Input area for select elements. |
-| `.Yuno-select__arrow` | Arrow icon for select dropdown. |
-| `.Yuno-select__list-box` | Container for dropdown list items. |
-| `.Yuno-select__list-item` | Individual item in dropdown list. |
+| CSS Class                        | Description                         |
+| -------------------------------- | ----------------------------------- |
+| `.Yuno-fieldset__box`            | General container for input fields. |
+| `.Yuno-select__content`          | Content area for select elements.   |
+| `.Yuno-select__label`            | Label for select elements.          |
+| `.Yuno-select__button-combo-box` | Button for combo box elements.      |
+| `.Yuno-select__input`            | Input area for select elements.     |
+| `.Yuno-select__arrow`            | Arrow icon for select dropdown.     |
+| `.Yuno-select__list-box`         | Container for dropdown list items.  |
+| `.Yuno-select__list-item`        | Individual item in dropdown list.   |
 
 The images below show how each class will affect the dropdown element.
 
-![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-1.png?raw=true)
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-1.png?raw=true" />
 
 You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
 
-| CSS Class | Description |
-| --- | --- |
-| `.Yuno-fieldset__box .Yuno-fieldset__box--error` | Container with error styling. |
-| `.Yuno-select__label .Yuno-select__label--error` | Label with error styling. |
-| `.Yuno-error-text-field__content` | Container for error message content. |
-| `.Yuno-error-text-field__error-icon` | Icon for error messages. |
-| `.Yuno-error-text-field__message` | Text for error messages. |
+| CSS Class                                        | Description                          |
+| ------------------------------------------------ | ------------------------------------ |
+| `.Yuno-fieldset__box .Yuno-fieldset__box--error` | Container with error styling.        |
+| `.Yuno-select__label .Yuno-select__label--error` | Label with error styling.            |
+| `.Yuno-error-text-field__content`                | Container for error message content. |
+| `.Yuno-error-text-field__error-icon`             | Icon for error messages.             |
+| `.Yuno-error-text-field__message`                | Text for error messages.             |
 
 The images below show how each class will affect the dropdown element.
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-2.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-2.png" />
 
 The following code block shows an example of how you can customize the dropdown element:
 
@@ -187,21 +186,21 @@ The following code block shows an example of how you can customize the dropdown 
 
 The following image shows the result of the customization:
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-3.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/dropdown-default-3.png" />
 
 ## Checkbox
 
 The following table lists the classes available for customizing the checkbox element while using the Default Design:
 
-| CSS Class | Description |
-| --- | --- |
+| CSS Class                 | Description                      |
+| ------------------------- | -------------------------------- |
 | `.Yuno-checkbox__content` | Container for checkbox elements. |
-| `.Yuno-checkbox__icon` | Icon for checkbox elements. |
-| `.Yuno-checkbox__text` | Text for checkbox elements. |
+| `.Yuno-checkbox__icon`    | Icon for checkbox elements.      |
+| `.Yuno-checkbox__text`    | Text for checkbox elements.      |
 
 The image below shows how each class will affect the checkbox element.
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-1.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-1.png" />
 
 The following code block shows an example of how you can customize the checkbox element:
 
@@ -215,19 +214,19 @@ The following code block shows an example of how you can customize the checkbox 
 
 The following image shows the result of the customization:
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-2.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/checkbox-default-2.png" />
 
 ## Button
 
 The following table lists the classes available for customizing the button element while using the Default Design:
 
-| CSS Class | Description |
-| --- | --- |
+| CSS Class                                 | Description                        |
+| ----------------------------------------- | ---------------------------------- |
 | `.Yuno-button .Yuno-modal-bottom__button` | Class to configure the pay button. |
 
 The image below shows how each class will affect the button element.
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-1.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-1.png" />
 
 The following code block shows an example of how you can customize the button element:
 
@@ -239,19 +238,19 @@ The following code block shows an example of how you can customize the button el
 
 The following image shows the result of the customization:
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-2.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/button-default-2.png" />
 
 ## Card
 
 The following table lists the classes available for customizing the card element while using the Default Design:
 
-| CSS Class | Description |
-| --- | --- |
+| CSS Class                        | Description                                  |
+| -------------------------------- | -------------------------------------------- |
 | `.Yuno-front-side-card__content` | Class to configure the card element content. |
 
 The image below shows how each class will affect the card element.
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-1.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-1.png" />
 
 The code block below presents an example of how you can customize the card element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`.
 
@@ -267,21 +266,21 @@ styles: `
 
 The following image shows the result of the customization:
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-2.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/card-default-2.png" />
 
 ## Alert
 
 The following table lists the classes available for customizing the alert element while using the Default Design:
 
-| CSS Class | Description |
-| --- | --- |
-| `.Yuno-Alert` | Configure the alert container. |
-| `.Yuno-Alert__icon` | Enables you to change the alert icon. |
-| `.Yuno-Alert__message` | Text for the alert element. |
+| CSS Class              | Description                           |
+| ---------------------- | ------------------------------------- |
+| `.Yuno-Alert`          | Configure the alert container.        |
+| `.Yuno-Alert__icon`    | Enables you to change the alert icon. |
+| `.Yuno-Alert__message` | Text for the alert element.           |
 
 The image below shows how each class will affect the alert element.
 
-![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-1.png?raw=true)
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-1.png?raw=true" />
 
 The following code block shows an example of how you can customize the alert element:
 
@@ -298,14 +297,14 @@ The following code block shows an example of how you can customize the alert ele
 
 The following image shows the result of the customization:
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-2.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/alert-default-2.png" />
 
 ## Modal
 
 The modal element provides two options you can customize:
 
--   **Form Card Modal**
--   **APM Modal**
+* **Form Card Modal**
+* **APM Modal**
 
 ### Modal customization requirements
 
@@ -317,18 +316,18 @@ Within the Form Card Modal, three iframes exist, where the card number input, ex
 
 The classes available for customizing the form card modal element while using the Default Design are listed in the following table.
 
-| CSS Class | Description |
-| --- | --- |
-| `Yuno-modal__modal-content` | Container for the modal content. |
-| `Yuno-modal-header__content` | Header section of the modal. |
-| `Yuno-modal-header__icon` | Icon in the modal header. |
-| `Yuno-modal-header__title` | Title of the modal. |
-| `Yuno-modal-body__content` | Body content of the modal. |
-| `Yuno-modal-bottom__content` | Bottom section of the modal. |
+| CSS Class                    | Description                      |
+| ---------------------------- | -------------------------------- |
+| `Yuno-modal__modal-content`  | Container for the modal content. |
+| `Yuno-modal-header__content` | Header section of the modal.     |
+| `Yuno-modal-header__icon`    | Icon in the modal header.        |
+| `Yuno-modal-header__title`   | Title of the modal.              |
+| `Yuno-modal-body__content`   | Body content of the modal.       |
+| `Yuno-modal-bottom__content` | Bottom section of the modal.     |
 
 The image below presents how each class will affect the form card modal element.
 
-![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-1.png?raw=true)
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-1.png?raw=true" />
 
 The code block below presents an example of how you can customize the form card modal element.
 
@@ -353,31 +352,31 @@ The code block below presents an example of how you can customize the form card 
 
 The following image shows the result of the customization:
 
-![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-2.png?raw=true)
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-2.png?raw=true" />
 
 #### APM Modal
 
 The classes available for customizing the APM modal element while using the Default Design are listed in the following table.
 
-| CSS Class | Description |
-| --- | --- |
-| `.Yuno-modal__modal-content` | Container for the modal content. |
-| `.Yuno-modal-header__content` | Header section of the modal. |
-| `.Yuno-modal-header__icon` | Icon in the modal header. |
-| `.Yuno-modal-header__title` | Title of the modal. |
-| `.Yuno-modal-header__close-button` | Close button for the modal. |
-| `.yuno-user-form__heading .yuno-heading` | Heading for the user form. |
-| `.yuno-user-form__form` | Form container within the user form. |
-| `.Yuno-modal-body__content` | Body content of the modal. |
-| `.Yuno-modal-bottom__content` | Bottom section of the modal. |
+| CSS Class                                 | Description                                    |
+| ----------------------------------------- | ---------------------------------------------- |
+| `.Yuno-modal__modal-content`              | Container for the modal content.               |
+| `.Yuno-modal-header__content`             | Header section of the modal.                   |
+| `.Yuno-modal-header__icon`                | Icon in the modal header.                      |
+| `.Yuno-modal-header__title`               | Title of the modal.                            |
+| `.Yuno-modal-header__close-button`        | Close button for the modal.                    |
+| `.yuno-user-form__heading .yuno-heading`  | Heading for the user form.                     |
+| `.yuno-user-form__form`                   | Form container within the user form.           |
+| `.Yuno-modal-body__content`               | Body content of the modal.                     |
+| `.Yuno-modal-bottom__content`             | Bottom section of the modal.                   |
 | `.Yuno-button .Yuno-modal-bottom__button` | Button within the bottom section of the modal. |
-| `.Yuno-yuno-brand__content` | Content area for Yuno brand. |
-| `.Yuno-yuno-brand__icon` | Icon for Yuno brand. |
-| `Yuno-yuno-brand__text` | Text for Yuno brand. |
+| `.Yuno-yuno-brand__content`               | Content area for Yuno brand.                   |
+| `.Yuno-yuno-brand__icon`                  | Icon for Yuno brand.                           |
+| `Yuno-yuno-brand__text`                   | Text for Yuno brand.                           |
 
 The image below presents how each class will affect the APM modal element.
 
-![](https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-1-v2.png?raw=true)
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-1-v2.png?raw=true" />
 
 The code block below presents an example of how you can customize the APM modal element.
 
@@ -418,4 +417,4 @@ The code block below presents an example of how you can customize the APM modal 
 
 The following image shows the result of the customization:
 
-![](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-2-v2.png)
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-2-v2.png" />
