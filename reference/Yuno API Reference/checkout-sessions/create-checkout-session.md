@@ -16,3 +16,9 @@ next:
   description: ''
 ---
 This request creates a checkout session using the unique identifier generated when the `customer` resource was created.
+
+<Callout icon="📘" theme="info">
+  If your workflow requires sending the `additional_data` object, it can be sent as part of the checkout session.
+</Callout>
+
+<br />
