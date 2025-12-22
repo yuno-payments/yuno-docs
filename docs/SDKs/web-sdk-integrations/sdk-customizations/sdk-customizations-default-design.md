@@ -19,14 +19,67 @@ Use the Default Design information when customizing the Yuno Web SDK. This appro
 
 Use the following links to navigate to the desired component:
 
-* [Input design types](#input-design-types)
 * [Input](#input)
+* [Input design types](#input-design-types)
 * [Dropdown](#dropdown)
 * [Checkbox](#checkbox)
 * [Button](#button)
 * [Card](#card)
 * [Alert](#alert)
 * [Modal](#modal)
+
+## Input
+
+The following table lists the classes available for customizing the input element while using the Default Design:
+
+| CSS Class              | Description                         |
+| ---------------------- | ----------------------------------- |
+| `.Yuno-fieldset__box`  | General container for input fields. |
+| `.Yuno-input__content` | Content area for input elements.    |
+| `.Yuno-input__label`   | Label for input elements.           |
+| `.Yuno-input__base`    | Base styling for input elements.    |
+
+The images below show how each class will affect the input element.
+
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-1.png" />
+
+You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
+
+| CSS Class                                      | Description                                  |
+| ---------------------------------------------- | -------------------------------------------- |
+| `.Yuno-input__label .Yuno-input__label--error` | Label with error styling for input elements. |
+| `.Yuno-error-text-field__content`              | Container for error message content.         |
+| `.Yuno-error-text-field__error-icon`           | Icon for error messages.                     |
+| `.Yuno-error-text-field__message`              | Text for error messages.                     |
+
+The images below show how each class will affect the input element.
+
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-2.png" />
+
+The following code block shows an example of how you can customize the input element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`:
+
+```css
+styles: `
+  #root {
+    .Yuno-fieldset__box {
+      .Yuno-input__content {
+        background: lavender;
+        border-radius: 8px;
+        .Yuno-input__base {
+          background: lavender;
+        }
+      }
+    }
+    .Yuno-pan-secure-field .Yuno-fieldset__box.Yuno-fieldset__box--focus {
+      border-color: darkviolet !important;
+    }
+  }
+  `,
+```
+
+The following image shows the result of the customization:
+
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true" />
 
 ## Input design types
 
@@ -79,35 +132,7 @@ The second image shows the input field structure in placeholder and filled state
 
 <Image border={false} src="https://files.readme.io/def2c2d53108aaa096503bce2ed20bdbec7cd87679cd6809ded2e6305b582ae1-input-design-types-structure-2.png" />
 
-## Input
-
-The following table lists the classes available for customizing the input element while using the Default Design:
-
-| CSS Class              | Description                         |
-| ---------------------- | ----------------------------------- |
-| `.Yuno-fieldset__box`  | General container for input fields. |
-| `.Yuno-input__content` | Content area for input elements.    |
-| `.Yuno-input__label`   | Label for input elements.           |
-| `.Yuno-input__base`    | Base styling for input elements.    |
-
-The images below show how each class will affect the input element.
-
-<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-1.png" />
-
-You can also customize the error warnings flagged by the interface. The following table lists the classes related to error warnings:
-
-| CSS Class                                      | Description                                  |
-| ---------------------------------------------- | -------------------------------------------- |
-| `.Yuno-input__label .Yuno-input__label--error` | Label with error styling for input elements. |
-| `.Yuno-error-text-field__content`              | Container for error message content.         |
-| `.Yuno-error-text-field__error-icon`           | Icon for error messages.                     |
-| `.Yuno-error-text-field__message`              | Text for error messages.                     |
-
-The images below show how each class will affect the input element.
-
-<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-2.png" />
-
-The following code block shows an example of how you can customize the input element. To use the following code, you need to add it to  `card`  when starting the SDK with  `yuno.startCheckout`:
+<br />
 
 ```css
 styles: `
