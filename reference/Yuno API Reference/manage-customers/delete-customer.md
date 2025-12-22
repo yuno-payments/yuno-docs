@@ -10,4 +10,5 @@ link:
 metadata:
   robots: index
 ---
-You can delete a customer via this API request. The only required field is the customer `id`.
+You can delete a customer via this API request. In addition to deleting or anonymizing the customer within Yuno, this request will also trigger the deletion process with the payment providers the customer has interacted with.
+
