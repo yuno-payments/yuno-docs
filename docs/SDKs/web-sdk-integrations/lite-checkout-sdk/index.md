@@ -46,7 +46,7 @@ Add a `<script>` tag to your HTML file to integrate the Yuno SDK. This method pr
   });
 </script>
 
-<script defer src="https://sdk-web.y.uno/v1.1/main.js"></script>
+<script defer src="https://sdk-web.y.uno/v1.5/main.js"></script>
 ```
 
 ### 2. Inject the SDK dynamically using JavaScript
@@ -67,7 +67,7 @@ Create a function to inject the SDK dynamically:
 export const injectScript = async (): Promise<boolean> => {
   const head = document.getElementsByTagName('head')[0];
   const js = document.createElement('script');
-  js.src = "https://sdk-web.y.uno/v1.1/main.js";
+  js.src = "https://sdk-web.y.uno/v1.5/main.js";
   js.defer = true;
 
   return new Promise((resolve, reject) => {
