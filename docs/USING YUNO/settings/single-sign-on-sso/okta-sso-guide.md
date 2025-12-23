@@ -1,7 +1,7 @@
 ---
 title: Okta SSO Guide
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
