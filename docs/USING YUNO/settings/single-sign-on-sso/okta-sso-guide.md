@@ -50,7 +50,9 @@ Then, in the Yuno dashboard:
 2. Wait for the **Upload completed** confirmation
 3. Click **Save**
 
-<Image border={false} src="https://files.readme.io/6c703d7539262c66a14ac419ab6197e8e9b5583ab5bb94e623d609f414a81350-image.png" />
+<Image align="center" border={false} width="500px" src="https://files.readme.io/4c624675b74edc4ec587bec14ecd408341617a48e0c9676f5372b36a8a255e98-image.png" />
+
+<br />
 
 Alternatively, you can take the information listed in **Option B** and enter it manually.
 
