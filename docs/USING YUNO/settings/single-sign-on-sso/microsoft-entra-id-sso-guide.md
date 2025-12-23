@@ -21,7 +21,7 @@ First, go to the dashboard and click your profile image, then open **Security**.
 * Identifier (Entity ID)
 * Assertion Consumer Service URL
 
-<Image border={false} src="https://files.readme.io/26c0986966dcf9f51615f2b1943b32ddc33dcc462a069a921e267899e39e3614-image.png" />
+<Image align="center" border={false} width="500px" src="https://files.readme.io/9e3cd2de4ac82cab86057868c6a252901b5ce9a4d2542840da83aba1b56592bc-image.png" />
 
 In Microsoft Entra ID, go to:
 
@@ -29,13 +29,13 @@ In Microsoft Entra ID, go to:
 
 Under **Basic SAML configuration**, enter the values from the Yuno dashboard.
 
-<Image border={false} src="https://files.readme.io/ea9bccfc34e1bcffa9d18689a54979173b570b4a50f4cca39b9a856be64cea98-image.png" />
+<Image align="center" border={false} width="500px" src="https://files.readme.io/ea9bccfc34e1bcffa9d18689a54979173b570b4a50f4cca39b9a856be64cea98-image.png" />
 
 ## Step 2: Export and upload the federation metadata XML
 
 In Microsoft Entra ID, navigate to the **SAML certificates** section and download the **Federation Metadata XML** file.
 
-<Image border={false} src="https://files.readme.io/94f94d8a3974bb690612c7075878bbb13ac05c20c0ba4a38761f559ac22434a1-image.png" />
+<Image align="center" border={false} width="500px" src="https://files.readme.io/a5ae59a4c3fd97063a75fcd353eed36ac67bf42557334ddda2b7aa4df51cd137-image.png" />
 
 Then, in the Yuno dashboard:
 
@@ -43,7 +43,7 @@ Then, in the Yuno dashboard:
 2. Wait for the **Upload completed** confirmation
 3. Click **Save**
 
-<Image border={false} src="https://files.readme.io/6c703d7539262c66a14ac419ab6197e8e9b5583ab5bb94e623d609f414a81350-image.png" />
+<Image align="center" border={false} width="500px" src="https://files.readme.io/1819efc288ff2d00025f4d82a64161594dafc3bfa85b633ec8cc19fdb714a574-image.png" />
 
 Alternatively, you can take the information listed in **Option B** and enter it manually.
 
