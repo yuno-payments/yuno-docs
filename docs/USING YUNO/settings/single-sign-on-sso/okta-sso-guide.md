@@ -52,8 +52,6 @@ Then, in the Yuno dashboard:
 
 <Image align="center" border={false} width="500px" src="https://files.readme.io/4c624675b74edc4ec587bec14ecd408341617a48e0c9676f5372b36a8a255e98-image.png" />
 
-<br />
-
 Alternatively, you can take the information listed in **Option B** and enter it manually.
 
 ## Step 4: Assign users in Okta (optional)
