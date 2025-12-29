@@ -122,18 +122,6 @@ The label remains in a fixed position above the input field at all times, regard
 
 The label appears as placeholder text inside the input field. The label does not float or move when the field is focused or filled.
 
-The following images show the input field structure and CSS classes (`.Yuno-fieldset__box`, `.Yuno-input__content`, `.Yuno-input__label`, `.Yuno-input__base`) that apply to all input design types.
-
-The first image shows the input field structure across multiple states with CSS class annotations:
-
-<Image border={false} src="https://files.readme.io/282d99683be7818b99bbf935ce791ce96edccdba554b13a3fcec1d7356d00496-input-design-types-structure-1.png" />
-
-The second image shows the input field structure in placeholder and filled states with CSS class annotations:
-
-<Image border={false} src="https://files.readme.io/def2c2d53108aaa096503bce2ed20bdbec7cd87679cd6809ded2e6305b582ae1-input-design-types-structure-2.png" />
-
-<br />
-
 ```css
 styles: `
   #root {
