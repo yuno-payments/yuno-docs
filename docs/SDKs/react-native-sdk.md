@@ -976,7 +976,7 @@ enum YunoStatus {
 }
 ```
 
-### CardFlow
+### `CardFlow`
 
 ```typescript
 enum CardFlow {
@@ -985,7 +985,7 @@ enum CardFlow {
 }
 ```
 
-### CardType
+### `CardType`
 
 ```typescript
 enum CardType {
@@ -994,7 +994,7 @@ enum CardType {
 }
 ```
 
-### YunoLanguage
+### `YunoLanguage`
 
 ```typescript
 enum YunoLanguage {
@@ -1020,11 +1020,11 @@ enum YunoLanguage {
 }
 ```
 
-# Complete Example
+## Complete example
 
 Here's a complete implementation example:
 
-```tsx
+```javascript
 import React, { useEffect, useState } from 'react';
 import { View, Button, Alert, StyleSheet } from 'react-native';
 import {
@@ -1132,15 +1132,15 @@ const styles = StyleSheet.create({
 export default PaymentScreen;
 ```
 
-# Troubleshooting
+## Troubleshooting
 
-## Common Issues
+### Common issues
 
-### "Yuno SDK is not initialized" Error
+#### "Yuno SDK is not initialized" error
 
 **Solution:** Ensure you call `YunoSdk.initialize()` before any other SDK methods. For Android, also verify that `YunoSdkModule.initialize()` is called in your `MainApplication.onCreate()`.
 
-### Android: Build Fails with "Could not resolve dependency"
+#### Android: Build fails with "Could not resolve dependency"
 
 **Solution:** Ensure you've added the Yuno Maven repository to your `android/build.gradle`:
 
@@ -1148,7 +1148,7 @@ export default PaymentScreen;
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 ```
 
-### iOS: Pod Install Fails
+#### iOS: Pod Install Fails
 
 **Solution:**
 
@@ -1160,7 +1160,7 @@ pod install
 cd ..
 ```
 
-### Payment Events Not Received
+### Payment events not received
 
 **Solution:** Make sure you subscribe to events before starting the payment flow:
 
@@ -1174,11 +1174,11 @@ useEffect(() => {
 }, []);
 ```
 
-### Deep Links Not Working (iOS)
+### Deep links not working (iOS)
 
 **Solution:** Verify your `Info.plist` has the correct URL scheme configuration and that you're listening to the `Linking` events.
 
-## Debug Mode
+### Debug mode
 
 Enable debug logging:
 
@@ -1189,9 +1189,9 @@ adb logcat | grep -i yuno
 # iOS: Check Xcode console
 ```
 
-# API Reference Summary
+## API Reference Summary
 
-## YunoSdk Methods
+### `YunoSdk` methods
 
 | Method                                            | Description                    |
 | ------------------------------------------------- | ------------------------------ |
