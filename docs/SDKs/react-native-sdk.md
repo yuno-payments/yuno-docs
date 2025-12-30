@@ -287,7 +287,7 @@ The SDK supports the following languages:
 
 The Full SDK integration provides a complete payment UI managed by the SDK. This is the quickest way to integrate Yuno into your React Native application.
 
-## Prerequisites
+### Prerequisites
 
 Before starting the Full SDK integration, ensure you have:
 
@@ -295,13 +295,13 @@ Before starting the Full SDK integration, ensure you have:
 2. Initialized the SDK with `YunoSdk.initialize()`
 3. Created a checkout session from your backend
 
-## Implementation
+### Implementation
 
-### Step 1: Subscribe to Payment Events
+#### Step 1: Subscribe to payment events
 
 Set up event listeners before starting the payment flow:
 
-```typescript
+```javascript
 import { YunoSdk, YunoStatus } from '@yuno-payments/yuno-sdk-react-native';
 import { useEffect } from 'react';
 
@@ -363,11 +363,11 @@ function PaymentScreen() {
 }
 ```
 
-### Step 2: Display Payment Methods
+#### Step 2: Display payment methods
 
 Use the `YunoPaymentMethods` component to display available payment methods:
 
-```tsx
+```javascript
 import { YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 import { useState } from 'react';
 import { View, Button, StyleSheet } from 'react-native';
@@ -410,11 +410,11 @@ const styles = StyleSheet.create({
 });
 ```
 
-### Step 3: Start Payment
+#### Step 3: Start payment
 
 Trigger the payment flow when the user is ready:
 
-```typescript
+```javascript
 const handlePayment = async () => {
   try {
     await YunoSdk.startPayment(true); // true = show payment status screen
@@ -425,19 +425,19 @@ const handlePayment = async () => {
 };
 ```
 
-## startPayment Parameters
+### `startPayment` parameters
 
 | Parameter           | Type      | Required | Default | Description                                                |
 | ------------------- | --------- | -------- | ------- | ---------------------------------------------------------- |
 | `showPaymentStatus` | `boolean` | ✓        | -       | Whether to show the payment status screen after completion |
 
-# Lite SDK (Payment React Native)
+## Lite SDK (payment React Native)
 
 The Lite SDK provides more control over the payment flow by allowing you to specify which payment method to use.
 
-## Implementation
+### Implementation
 
-### Step 1: Start Payment Lite
+#### Step 1: Start payment Lite
 
 ```typescript
 import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
@@ -462,9 +462,9 @@ const handlePaymentLite = async () => {
 };
 ```
 
-## startPaymentLite Parameters
+### `startPaymentLite` parameters
 
-### StartPayment Object
+#### `StartPayment` object
 
 | Parameter           | Type             | Required | Description                                  |
 | ------------------- | ---------------- | -------- | -------------------------------------------- |
@@ -472,22 +472,22 @@ const handlePaymentLite = async () => {
 | `methodSelected`    | `MethodSelected` | ✓        | Selected payment method details              |
 | `showPaymentStatus` | `boolean`        |          | Show payment status screen (default: `true`) |
 
-### MethodSelected Object
+#### `MethodSelected` object
 
 | Parameter           | Type     | Required | Description                                   |
 | ------------------- | -------- | -------- | --------------------------------------------- |
 | `vaultedToken`      | `string` | ✓        | Saved payment method token                    |
 | `paymentMethodType` | `string` | ✓        | Payment method type (e.g., `'CARD'`, `'PIX'`) |
 
-# Lite SDK (Enrollment React Native)
+## Lite SDK (Enrollment React Native)
 
 The Enrollment SDK allows users to save payment methods without making a payment.
 
-## Implementation
+### Implementation
 
-### Step 1: Subscribe to Enrollment Events
+#### Step 1: Subscribe to enrollment events
 
-```typescript
+```javascript
 import { YunoSdk, YunoStatus } from '@yuno-payments/yuno-sdk-react-native';
 import { useEffect } from 'react';
 
@@ -512,9 +512,9 @@ function EnrollmentScreen() {
 }
 ```
 
-### Step 2: Start Enrollment
+#### Step 2: Start enrollment
 
-```typescript
+```javascript
 const startEnrollment = async () => {
   try {
     await YunoSdk.enrollmentPayment({
@@ -529,7 +529,7 @@ const startEnrollment = async () => {
 };
 ```
 
-## enrollmentPayment Parameters
+### `enrollmentPayment` parameters
 
 | Parameter           | Type      | Required | Description                                           |
 | ------------------- | --------- | -------- | ----------------------------------------------------- |
@@ -537,11 +537,11 @@ const startEnrollment = async () => {
 | `countryCode`       | `string`  |          | Country code (uses initialized value if not provided) |
 | `showPaymentStatus` | `boolean` |          | Show enrollment status (default: `true`)              |
 
-# Seamless Payment (React Native)
+## Seamless Payment (React Native)
 
 The Seamless Payment flow provides maximum control over the UI while still leveraging the SDK for secure payment processing.
 
-## Implementation
+### Implementation
 
 ```typescript
 import { YunoSdk, YunoStatus } from '@yuno-payments/yuno-sdk-react-native';
@@ -573,7 +573,7 @@ const handleSeamlessPayment = async () => {
 };
 ```
 
-## startPaymentSeamlessLite Parameters
+### `startPaymentSeamlessLite` parameters
 
 | Parameter           | Type             | Required | Description                           |
 | ------------------- | ---------------- | -------- | ------------------------------------- |
@@ -584,15 +584,15 @@ const handleSeamlessPayment = async () => {
 
 **Returns:** `Promise<YunoStatus>` - The payment status after completion
 
-# Headless SDK (Payment React Native)
+## Headless SDK (payment React Native)
 
 The Headless SDK provides complete control over the UI while using the SDK for secure tokenization and 3D Secure handling.
 
-## Generate Token
+### Generate token
 
 Use `generateToken` to tokenize payment data without the SDK UI:
 
-```typescript
+```javascript
 import { YunoSdk, CardType } from '@yuno-payments/yuno-sdk-react-native';
 
 const handleHeadlessPayment = async () => {
@@ -630,7 +630,7 @@ const handleHeadlessPayment = async () => {
 };
 ```
 
-## Handle 3D Secure Challenge
+## Handle 3D Secure challenge
 
 After generating a token, handle 3D Secure verification if required:
 
@@ -653,9 +653,9 @@ const handle3DSChallenge = async (checkoutSession: string) => {
 };
 ```
 
-## TokenCollectedData Structure
+## `TokenCollectedData` structure
 
-### PaymentMethod Object
+### `PaymentMethod` object
 
 | Property       | Type             | Required | Description                           |
 | -------------- | ---------------- | -------- | ------------------------------------- |
@@ -664,7 +664,7 @@ const handle3DSChallenge = async (checkoutSession: string) => {
 | `card`         | `CardData`       |          | Card details (required for new cards) |
 | `customer`     | `Customer`       |          | Customer information                  |
 
-### CardData Object
+### `CardData` object
 
 | Property      | Type          | Required | Description              |
 | ------------- | ------------- | -------- | ------------------------ |
@@ -672,7 +672,7 @@ const handle3DSChallenge = async (checkoutSession: string) => {
 | `detail`      | `Detail`      |          | Card details             |
 | `installment` | `Installment` |          | Installment information  |
 
-### Detail Object
+### `Detail` object
 
 | Property          | Type       | Description                     |
 | ----------------- | ---------- | ------------------------------- |
@@ -683,13 +683,13 @@ const handle3DSChallenge = async (checkoutSession: string) => {
 | `holderName`      | `string`   | Cardholder name                 |
 | `type`            | `CardType` | `CREDIT` or `DEBIT`             |
 
-# Headless SDK (Enrollment React Native)
+## Headless SDK (enrollment React Native)
 
 The Headless Enrollment SDK allows you to save payment methods with complete UI control.
 
-## Continue Enrollment
+### Continue enrollment
 
-```typescript
+```javascript
 import { YunoSdk, CardType } from '@yuno-payments/yuno-sdk-react-native';
 
 const handleHeadlessEnrollment = async () => {
@@ -723,20 +723,20 @@ const handleHeadlessEnrollment = async () => {
 };
 ```
 
-## EnrollmentCollectedData Structure
+### `EnrollmentCollectedData` structure
 
 | Property          | Type               | Required | Description            |
 | ----------------- | ------------------ | -------- | ---------------------- |
 | `customerSession` | `string`           | ✓        | Customer session ID    |
 | `paymentMethod`   | `EnrollmentMethod` | ✓        | Payment method details |
 
-# YunoPaymentMethods Component
+## `YunoPaymentMethods` component
 
 A native component that displays available payment methods using the Yuno SDK.
 
-## Usage
+### Usage
 
-```tsx
+```javascript
 import { YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 
 <YunoPaymentMethods
@@ -753,7 +753,7 @@ import { YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 />
 ```
 
-## Props
+### Props
 
 | Prop                      | Type              | Required | Description                                         |
 | ------------------------- | ----------------- | -------- | --------------------------------------------------- |
@@ -764,9 +764,9 @@ import { YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 | `style`                   | `ViewStyle`       |          | Custom styles for the container                     |
 | `testID`                  | `string`          |          | Test ID for automation tools                        |
 
-## Events
+### Events
 
-### PaymentMethodSelectedEvent
+#### `PaymentMethodSelectedEvent`
 
 ```typescript
 interface PaymentMethodSelectedEvent {
@@ -774,7 +774,7 @@ interface PaymentMethodSelectedEvent {
 }
 ```
 
-### PaymentMethodErrorEvent
+#### `PaymentMethodErrorEvent`
 
 ```typescript
 interface PaymentMethodErrorEvent {
@@ -782,11 +782,11 @@ interface PaymentMethodErrorEvent {
 }
 ```
 
-# Continue Payment
+## Continue payment
 
 Resume a previously started payment that was interrupted:
 
-```typescript
+```javascript
 await YunoSdk.continuePayment(
   'checkout_session_token',
   'US', // Country code
@@ -794,7 +794,7 @@ await YunoSdk.continuePayment(
 );
 ```
 
-# Handle Deep Links
+## Handle deep links
 
 For payment methods that redirect to external apps or browsers (iOS only):
 
@@ -839,11 +839,11 @@ function App() {
 }
 ```
 
-# Event Subscriptions
+## Event Subscriptions
 
 The SDK provides several event subscriptions for real-time status updates.
 
-## onPaymentStatus
+### `onPaymentStatus`
 
 Listen to payment status changes:
 
@@ -857,7 +857,7 @@ const subscription = YunoSdk.onPaymentStatus((state) => {
 subscription.remove();
 ```
 
-### YunoPaymentState
+### `YunoPaymentState`
 
 ```typescript
 interface YunoPaymentState {
@@ -866,7 +866,7 @@ interface YunoPaymentState {
 }
 ```
 
-## onEnrollmentStatus
+### `onEnrollmentStatus`
 
 Listen to enrollment status changes:
 
@@ -876,7 +876,7 @@ const subscription = YunoSdk.onEnrollmentStatus((state) => {
 });
 ```
 
-### YunoEnrollmentState
+### `YunoEnrollmentState`
 
 ```typescript
 interface YunoEnrollmentState {
@@ -884,7 +884,7 @@ interface YunoEnrollmentState {
 }
 ```
 
-## onOneTimeToken
+### `onOneTimeToken`
 
 Listen to one-time token generation:
 
@@ -894,11 +894,11 @@ const subscription = YunoSdk.onOneTimeToken((token) => {
 });
 ```
 
-## onOneTimeTokenInfo
+### `onOneTimeTokenInfo`
 
 Listen to extended token information:
 
-```typescript
+```javascript
 const subscription = YunoSdk.onOneTimeTokenInfo((tokenInfo) => {
   console.log('Token:', tokenInfo.token);
   console.log('Card Brand:', tokenInfo.cardData?.brand);
@@ -906,7 +906,7 @@ const subscription = YunoSdk.onOneTimeTokenInfo((tokenInfo) => {
 });
 ```
 
-### OneTimeTokenInfo
+### `OneTimeTokenInfo`
 
 ```typescript
 interface OneTimeTokenInfo {
@@ -919,51 +919,51 @@ interface OneTimeTokenInfo {
 }
 ```
 
-# Utility Methods
+## Utility Methods
 
-## hideLoader
+### `hideLoader`
 
 Manually hide the SDK loader:
 
-```typescript
+```javascript
 await YunoSdk.hideLoader();
 ```
 
-## getLastOneTimeToken
+### `getLastOneTimeToken`
 
 Get the last generated OTT:
 
-```typescript
+```javascript
 const lastOtt = await YunoSdk.getLastOneTimeToken();
 ```
 
-## getLastOneTimeTokenInfo
+### `getLastOneTimeTokenInfo`
 
 Get extended information about the last OTT:
 
-```typescript
+```javascript
 const tokenInfo = await YunoSdk.getLastOneTimeTokenInfo();
 ```
 
-## clearLastOneTimeToken
+### `clearLastOneTimeToken`
 
 Clear stored OTT data:
 
-```typescript
+```javascript
 await YunoSdk.clearLastOneTimeToken();
 ```
 
-## clearLastPaymentStatus
+### `clearLastPaymentStatus`
 
 Clear stored payment status:
 
-```typescript
+```javascript
 await YunoSdk.clearLastPaymentStatus();
 ```
 
-# Enums
+## Enums
 
-## YunoStatus
+### `YunoStatus`
 
 ```typescript
 enum YunoStatus {
@@ -976,7 +976,7 @@ enum YunoStatus {
 }
 ```
 
-## CardFlow
+### CardFlow
 
 ```typescript
 enum CardFlow {
@@ -985,7 +985,7 @@ enum CardFlow {
 }
 ```
 
-## CardType
+### CardType
 
 ```typescript
 enum CardType {
@@ -994,7 +994,7 @@ enum CardType {
 }
 ```
 
-## YunoLanguage
+### YunoLanguage
 
 ```typescript
 enum YunoLanguage {
