@@ -260,28 +260,7 @@ const initializeYuno = async () => {
 
 ### Supported languages
 
-The SDK supports the following languages:
-
-| Code    | Language              |
-| ------- | --------------------- |
-| `en`    | English               |
-| `es`    | Spanish               |
-| `pt`    | Portuguese            |
-| `fr`    | French                |
-| `de`    | German                |
-| `it`    | Italian               |
-| `id`    | Indonesian            |
-| `ms`    | Malay                 |
-| `pl`    | Polish                |
-| `ru`    | Russian               |
-| `tr`    | Turkish               |
-| `nl`    | Dutch                 |
-| `sv`    | Swedish               |
-| `th`    | Thai                  |
-| `fil`   | Filipino              |
-| `vi`    | Vietnamese            |
-| `zh-cn` | Chinese (Simplified)  |
-| `zh-tw` | Chinese (Traditional) |
+For the a list of languages available within our SDKs, please visit the [supported languages](doc:supported-languages) page. Please note Japanese and Korean are not available for the React Native SDK.
 
 ## Full SDK (React Native)
 
