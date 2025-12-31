@@ -137,10 +137,6 @@ styles: `
   `,
 ```
 
-The following image shows the result of the customization:
-
-<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true" />
-
 ## Dropdown
 
 The following table lists the classes available for customizing the dropdown element while using the Default Design:
