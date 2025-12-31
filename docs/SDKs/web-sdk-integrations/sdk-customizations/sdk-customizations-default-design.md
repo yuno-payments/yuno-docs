@@ -77,6 +77,10 @@ styles: `
   `,
 ```
 
+The following image shows the result of the customization:
+
+<Image border={false} src="https://github.com/writechoiceorg/yuno-images/blob/main/doc/SDKs/webSDK/customization-SDK-defaults/input-default-3.png?raw=true" />
+
 ## Input design types
 
 You can customize how labels and placeholders are displayed in input fields by configuring the input design type. This property controls the visual presentation of form labels and placeholders across different SDK implementations.
