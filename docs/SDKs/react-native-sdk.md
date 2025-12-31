@@ -172,7 +172,7 @@ class MainApplication : Application(), ReactApplication {
 }
 ```
 
-#### iOS Setup
+#### iOS setup
 
 ##### 2.1 Install CocoaPods dependencies
 
@@ -247,16 +247,16 @@ const initializeYuno = async () => {
 | `iosConfig`     | `IosConfig`     |          | iOS-specific configuration                               |
 | `androidConfig` | `AndroidConfig` |          | Android-specific configuration                           |
 
-### YunoConfig properties
+### `YunoConfig` properties
 
-| Property               | Type       | Default    | Description                                                       |
-| ---------------------- | ---------- | ---------- | ----------------------------------------------------------------- |
-| `language`             | `string`   | `'en'`     | UI language code. See [Supported Languages](#supported-languages) |
-| `cardFlow`             | `CardFlow` | `ONE_STEP` | Card input flow type (`ONE_STEP` or `STEP_BY_STEP`)               |
-| `saveCardEnabled`      | `boolean`  | `false`    | Enable the save card checkbox                                     |
-| `keepLoader`           | `boolean`  | `false`    | Keep loader visible after operations                              |
-| `isDynamicViewEnabled` | `boolean`  | `false`    | Enable dynamic views                                              |
-| `cardFormDeployed`     | `boolean`  | `false`    | Card form deployed state                                          |
+| Property               | Type       | Default    | Description                                                          |
+| ---------------------- | ---------- | ---------- | -------------------------------------------------------------------- |
+| `language`             | `string`   | `'en'`     | UI language code. See [Supported Languages](doc:supported-languages) |
+| `cardFlow`             | `CardFlow` | `ONE_STEP` | Card input flow type (`ONE_STEP` or `STEP_BY_STEP`)                  |
+| `saveCardEnabled`      | `boolean`  | `false`    | Enable the save card checkbox                                        |
+| `keepLoader`           | `boolean`  | `false`    | Keep loader visible after operations                                 |
+| `isDynamicViewEnabled` | `boolean`  | `false`    | Enable dynamic views                                                 |
+| `cardFormDeployed`     | `boolean`  | `false`    | Card form deployed state                                             |
 
 ### Supported languages
 
@@ -818,7 +818,7 @@ function App() {
 }
 ```
 
-## Event Subscriptions
+## Event subscriptions
 
 The SDK provides several event subscriptions for real-time status updates.
 
@@ -898,7 +898,7 @@ interface OneTimeTokenInfo {
 }
 ```
 
-## Utility Methods
+## Utility methods
 
 ### `hideLoader`
 
@@ -1127,7 +1127,7 @@ export default PaymentScreen;
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 ```
 
-#### iOS: Pod Install Fails
+#### iOS: Pod install fails
 
 **Solution:**
 
