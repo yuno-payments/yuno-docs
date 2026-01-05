@@ -1,7 +1,7 @@
 ---
 title: New - Headless Integration Pattern
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
