@@ -1,7 +1,7 @@
 ---
 title: New - Getting Started with Android SDK
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
