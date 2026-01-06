@@ -1,7 +1,7 @@
 ---
 title: New - Web SDK enrollment integration
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
