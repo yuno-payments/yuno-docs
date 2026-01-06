@@ -1,0 +1,471 @@
+---
+title: New - Web SDK enrollment integration
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+---
+This guide shows you how to enroll payment methods to customer accounts for future use. Enrollment allows you to save payment methods **without processing a payment**.
+
+> 📘 Prerequisites
+>
+> Before starting, make sure you've [installed and initialized the SDK](doc:web-sdk-getting-started).
+
+## Enrollment vs. Save During Payment
+
+There are **two ways** to save payment methods:
+
+### Option 1: Separate Enrollment (This Page)
+
+Use the enrollment workflow when:
+
+* You want to save payment methods WITHOUT processing a payment
+* You're setting up customer accounts before first purchase
+* You're building a payment method management interface
+* You need to enroll alternative payment methods (not just cards)
+
+**Uses:** Customer session + enrollment API
+
+### Option 2: Save During Payment
+
+Use save-during-payment when:
+
+* Customer is already making a purchase
+* You want to save cards only (simpler approach)
+* You don't need a separate enrollment UI
+
+**Uses:** `vault_on_success: true` or `cardSaveEnable` checkbox
+
+**[Learn about save-during-payment →](doc:web-sdk-payment-integration#enroll-cards-during-payment)**
+
+> **For Cards:** Save-during-payment is usually easier. Use separate enrollment only when you need to save payment methods before a purchase.
+
+## Step 1: Create a Customer Session
+
+Before starting the enrollment process, create a customer session on your backend (not a checkout session):
+
+```javascript
+// Server-side: Create customer session
+const customerSession = await fetch(
+  "https://api-sandbox.y.uno/v1/customers/sessions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      customer_id: "your-customer-id",
+      country: "US",
+    }),
+  }
+).then((res) => res.json());
+```
+
+> 📘 Customer Required
+>
+> First [create a customer](ref:create-customer) if you don't have one. You'll need the customer `id` to create the customer session.
+
+## Step 2: Create an Enrollment Payment Method Object
+
+On your backend, create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. Define which payment method your customer can enroll:
+
+```javascript
+// Server-side: Create enrollment payment method
+const enrollment = await fetch(
+  `https://api-sandbox.y.uno/v1/customers/sessions/${customerSession.id}/payment-methods`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      type: "CARD",
+      verify: { // Optional: verify card before enrollment
+        enabled: true
+      }
+    }),
+  }
+).then((res) => res.json());
+
+// Return customerSession to your client
+return customerSession;
+```
+
+> 📘 Card Verification
+>
+> If you want to verify cards (zero-value authorization) before enrollment, include the `verify` object with `enabled: true`. This validates the card without charging the customer.
+
+> 📘 Important
+>
+> The customer session and enrollment payment method object must be created on your **server-side** to keep your private API keys secure. The payment method type is set server-side, unlike other integrations where it may be set client-side.
+
+## Step 3: Mount the Enrollment Form
+
+On the client-side, mount the enrollment form using `yuno.mountEnrollmentLite()`:
+
+```javascript
+// Client-side: Initialize SDK
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+
+// Mount enrollment form
+yuno.mountEnrollmentLite({
+  customerSession: 'e15648b0-fcd5-4799-a14c-cc463ae8a133', // From server
+  country_code: 'US',
+  language: 'en-US',
+  elementSelector: '#enrollment-container',
+  showLoading: true,
+  issuersFormEnable: true,
+  card: {
+    type: "extends",
+    styles: "",
+    cardSaveEnable: false,
+    texts: {},
+    documentEnable: true,
+    isCreditCardProcessingOnly: false, // Optional
+  },
+  renderMode: {
+    type: "modal", // or "element"
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element",
+    },
+  },
+  texts: {},
+  onLoading: (args) => {
+    console.log(args);
+  },
+  yunoEnrollmentStatus: ({ status, vaultedToken }) => {
+    console.log('Enrollment status:', status);
+    console.log('Vaulted token:', vaultedToken);
+    
+    if (status === 'ENROLLED') {
+      // Store vaulted token for future use
+      saveVaultedToken(vaultedToken);
+    }
+  },
+  yunoError: (error) => {
+    console.log('Enrollment error:', error);
+  },
+});
+```
+
+### Parameters
+
+| Parameter                         | Description                                                                                                                                                          |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`                 | Refers to the current enrollment's [customer session](ref:create-customer-session). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`.                                 |
+| `country_code`                    | Country for the enrollment process. Use an `ENUM` value; see [Country Coverage](doc:country-coverage-yuno-sdk).                                                      |
+| `language`                        | Language for enrollment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available. |
+| `elementSelector`                 | HTML element where the Yuno SDK is mounted.                                                                                                                          |
+| `showLoading`                     | Controls visibility of the Yuno loading/spinner page during the enrollment process. Default: `true`.                                                                 |
+| `onLoading`                       | Required to receive notifications about server calls or loading events.                                                                                              |
+| `issuersFormEnable`               | Enable the issuer's form (bank list). Default: `true`.                                                                                                               |
+| `card`                            | Define specific settings for the credit card form. See [Card Form Configurations](#card-form-configurations) below.                                                  |
+| `card.isCreditCardProcessingOnly` | Optional. Forces card transactions to process as credit only—useful where cards act as both credit and debit.                                                        |
+| `renderMode`                      | Specify how and where the forms will be rendered. Options: `type: modal` (default) or `type: element`.                                                               |
+| `texts`                           | Custom text for enrollment form buttons to match your application's language or branding.                                                                            |
+| `yunoEnrollmentStatus`            | Callback after enrollment ends; receives `vaultedToken` and `status`.                                                                                                |
+| `yunoError`                       | Callback invoked when there is an error in the enrollment process.                                                                                                   |
+
+### Enrollment Status Values
+
+The `yunoEnrollmentStatus` callback receives a `status` field with one of the following values:
+
+* `CREATED`
+* `EXPIRED`
+* `REJECTED`
+* `READY_TO_ENROLL`
+* `ENROLL_IN_PROCESS`
+* `UNENROLL_IN_PROCESS`
+* `ENROLLED`
+* `DECLINED`
+* `CANCELED`
+* `ERROR`
+* `UNENROLLED`
+
+## Card Form Configurations
+
+Configure the enrollment card form:
+
+| Parameter        | Description                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| `type`           | Card form layout type. Options: `step` or `extends`. Default: `extends`.            |
+| `styles`         | Write custom CSS to style the card form. Your CSS will be injected into the iframe. |
+| `cardSaveEnable` | Show checkbox to save/enroll card. Default: `false`.                                |
+| `texts`          | Custom texts in card form buttons.                                                  |
+| `documentEnable` | Hide or show the document fields in card form. Default: `true`.                     |
+
+```javascript
+card: {
+  type: "extends",
+  styles: `
+    .Yuno-fieldset__box {
+      .Yuno-input__content {
+        background: lavender;
+        border-radius: 8px;
+      }
+    }
+  `,
+  cardSaveEnable: false,
+  texts: {
+    cardForm: {
+      enrollmentSubmitButton: "Save Card",
+      paymentSubmitButton: "Pay Now"
+    },
+    cardStepper: {
+      numberCardStep: {
+        nextButton: "Next"
+      },
+      cardHolderNameStep: {
+        prevButton: "Back",
+        nextButton: "Continue"
+      },
+      expirationDateStep: {
+        prevButton: "Back",
+        nextButton: "Continue"
+      },
+      cvvStep: {
+        prevButton: "Back",
+        nextButton: "Finish"
+      }
+    }
+  },
+  documentEnable: true,
+}
+```
+
+## Using Enrolled Payment Methods
+
+After successful enrollment, you receive a `vaulted_token` that represents the saved payment method.
+
+### Retrieving Vaulted Tokens
+
+Get enrolled payment methods for a customer:
+
+```javascript
+// Get by customer ID
+GET /v1/customers/{customer_id}/payment-methods
+
+// Get by checkout session (for payment)
+GET /v1/checkout/sessions/{checkout_session}/payment-methods
+```
+
+**API References:**
+
+* [Get payment methods by customer](ref:retrieve-enrolled-payment-methods-api)
+* [Get payment methods by checkout session](ref:retrieve-payment-methods-for-checkout)
+
+### Using in Future Payments
+
+Pass the vaulted token when processing payments:
+
+```javascript
+// In payment integration
+yuno.mountCheckout({
+  vaultedToken: "enrolled-token-here"
+});
+
+// Or with custom display
+yuno.mountCheckoutLite({
+  paymentMethodType: "CARD",
+  vaultedToken: "enrolled-token-here"
+});
+```
+
+> **Best Practice:** Always use vaulted tokens through the SDK, not directly in API calls. This ensures proper 3DS handling, fraud screening, and collection of any required fields.
+
+## Managing Enrolled Payment Methods
+
+Customers typically need to manage their saved payment methods:
+
+### Display Saved Methods
+
+Fetch and display enrolled payment methods in your UI:
+
+```javascript
+// Fetch customer's saved methods
+const paymentMethods = await fetch(
+  `/v1/customers/${customerId}/payment-methods`,
+  {
+    headers: {
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`
+    }
+  }
+).then(res => res.json());
+
+// Display in your UI with options to:
+// - Set as default
+// - Delete/unenroll
+// - Use for payment
+```
+
+### Unenroll (Remove) Payment Methods
+
+Allow customers to remove saved payment methods:
+
+```javascript
+// Delete a saved payment method
+DELETE /v1/customers/{customer_id}/payment-methods/{vaulted_token}
+```
+
+Some SDKs also provide built-in unenroll functionality in the UI.
+
+## Additional Features
+
+### Loader Control
+
+Control the loading spinner visibility:
+
+```javascript
+yuno.mountEnrollmentLite({
+  showLoading: true, // Show until hideLoader() is called
+});
+```
+
+### Render Mode
+
+Control where and how enrollment forms are displayed:
+
+```javascript
+yuno.mountEnrollmentLite({
+  renderMode: {
+    type: "modal", // or "element"
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element",
+    },
+  },
+});
+```
+
+**Render mode screenshots:**
+
+* **Modal**: Form appears as an overlay modal
+* **Element**: Form renders inline within specified element
+
+### Text Customization
+
+Customize button texts:
+
+```javascript
+yuno.mountEnrollmentLite({
+  texts: {
+    customerForm: {
+      submitButton: "Save Payment Method"
+    }
+  }
+});
+```
+
+## Card Verification
+
+When enrolling cards, you can optionally verify them before saving using a zero-value authorization:
+
+### How Verification Works
+
+1. Merchant creates enrollment with `verify` object
+2. SDK collects card information
+3. Yuno performs zero-value authorization with card issuer
+4. Card is validated without charging customer
+5. Authorization is immediately reversed
+6. Card is saved if verification succeeds
+
+### Implementing Verification
+
+Configure verification when creating the enrollment payment method object:
+
+```javascript
+// Server-side: Create enrollment with verification
+POST /v1/customers/sessions/{session_id}/payment-methods
+{
+  "type": "CARD",
+  "verify": {
+    "enabled": true
+  }
+}
+```
+
+**When to use verification:**
+
+* You want to ensure card is valid before saving
+* You need to detect invalid/expired cards early
+* Your business requires card validation
+
+**When to skip verification:**
+
+* First payment will happen immediately after enrollment
+* You want to minimize friction
+* Verification is handled during first payment
+
+## Supported Payment Methods
+
+Enrollment support varies by payment method type:
+
+| Payment Method         | Enrollment Support             |
+| ---------------------- | ------------------------------ |
+| **Credit/Debit Cards** | ✅ Full support                 |
+| **Bank Accounts**      | ✅ Varies by provider           |
+| **Digital Wallets**    | ⚠️ Limited (depends on wallet) |
+| **Cash Vouchers**      | ❌ Not applicable               |
+| **QR Payments**        | ❌ Not applicable               |
+
+> **For Cards:** Both SDK enrollment and save-during-payment work well.  
+> **For Other Methods:** Check specific payment method documentation for support details.
+
+## `continuePayment` Return Value
+
+For payment methods that require merchant-side action, the `await yuno.continuePayment()` method returns either an object or `null`:
+
+```typescript
+{
+  action: 'REDIRECT_URL'
+  type: string
+  redirect: {
+    init_url: string
+    success_url: string
+    error_url: string
+  }
+} | null
+```
+
+When the method returns an object, it allows you to handle your application's flows that require custom redirect handling. When it returns `null`, no additional merchant-side action is needed.
+
+## Demo App
+
+Access the [Demo App](doc:demo-app) for a complete implementation of enrollment functionality. The demo app includes working examples and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
+
+## Additional Resources
+
+* **[SDK Customizations](doc:sdk-customizations)**: Change the SDK appearance to match your brand
+* **[Payment Integration](doc:web-sdk-payment-integration)**: Process payments with enrolled methods
+* **[Changelog](https://docs.y.uno/changelog)**: Latest SDK updates and version history
+
+## Common Questions
+
+### When should I use enrollment vs. save-during-payment?
+
+**Use enrollment when:**
+
+* Setting up customer accounts before first purchase
+* Building payment method management UI
+* Need to enroll non-card payment methods
+
+**Use save-during-payment when:**
+
+* Customer is already making a purchase
+* Only need to save cards
+* Want simplest implementation
+
+### Can I enroll payment methods without SDK?
+
+For cards, use [Headless SDK Enrollment](doc:headless-sdk-enrollment) for complete UI control. For API-only enrollment (requires PCI compliance), contact Yuno support.
+
+### Do I need both enrollment and payment integration?
+
+No. You only need enrollment if you want to save payment methods separately from purchases. Many merchants only implement payment with the save-during-payment option.
+
+## Stay Updated
+
+Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
