@@ -5,8 +5,6 @@ hidden: true
 metadata:
   robots: index
 ---
-<br />
-
 Yuno's Web SDK provides flexible payment integration designed to enhance your payment processing capabilities and provide a seamless checkout experience for your customers. The Web SDK enables extensive customization while maintaining PCI compliance.
 
 ## Get Started
