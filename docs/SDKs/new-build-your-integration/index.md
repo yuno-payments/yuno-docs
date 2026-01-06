@@ -1,5 +1,5 @@
 ---
-title: NEW - SDK Integration Overview
+title: NEW - SDK Integrations
 deprecated: false
 hidden: true
 metadata:
