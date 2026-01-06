@@ -5,6 +5,8 @@ hidden: true
 metadata:
   robots: index
 ---
+<br />
+
 Yuno's Web SDK provides flexible payment integration designed to enhance your payment processing capabilities and provide a seamless checkout experience for your customers. The Web SDK enables extensive customization while maintaining PCI compliance.
 
 ## Get Started
@@ -24,7 +26,7 @@ Follow these steps to integrate Yuno's Web SDK:
 For advanced use cases requiring more control over the payment experience:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Secure Fields" href="../docs/secure-fields-payment" titleSize="h4" description="Build custom card forms with secure iframe fields" badge="Custom Forms" />
+  <YunoCard title="Secure Fields" href="../docs/new-web-sdk-secure-fields-integration" titleSize="h4" description="Build custom card forms with secure iframe fields" badge="Custom UI" />
 
   <YunoCard title="Headless SDK (Payment)" href="../docs/headless-sdk-payment" titleSize="h4" description="Complete control over payment UI and flow" badge="Advanced" />
 
