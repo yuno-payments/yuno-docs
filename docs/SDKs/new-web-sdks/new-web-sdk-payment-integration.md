@@ -1,7 +1,7 @@
 ---
 title: New - Web SDK Payment Integration
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
