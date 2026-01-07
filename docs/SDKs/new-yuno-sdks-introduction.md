@@ -18,40 +18,30 @@ SDKs are software tools and libraries that enable developers to build applicatio
 Yuno's SDK provides a range of benefits that can significantly enhance your payment processing workflows. Some key advantages include:
 
 1. **Simplified integration**: A user-friendly interface and clear documentation, for quick and straightforward integration
-2. **Enhanced security**: Incorporate robust security measures to protect sensitive customer data during payment, ensuring a secure transaction environment
+2. **Enhanced security**: Incorporate robust security measures such as tokenized payment information and 3DS authentication to protect sensitive customer data during payment, ensuring a secure transaction environment that keeps you PCI compliant
 3. **Customizability**: Customize the SDK to match your branding and design requirements, providing your customers with a seamless and consistent checkout experience
 4. **Wide platform support**: Designed to work across various platforms, including Web, Android, and iOS applications, allowing you to reach a broader audience
-5. **Comprehensive features**: Flexible mounting options and features tailored to different use cases, ensuring you have the right tools to meet your business needs
+5. **Comprehensive features**: Flexible integration options and features tailored to different use cases, ensuring you have the right tools to meet your business needs
 
 > 📘 Country Coverage
 >
 > The Yuno SDK is available across the globe. Check the [Country coverage](doc:country-coverage-yuno-sdk) page for a comprehensive list.
 
-## Integration Flexibility
+## Choose Your Platform
 
-Yuno's SDK provides multiple ways to integrate payments based on your UI/UX requirements:
-
-* **Automatic payment method display** - Let Yuno handle the payment method selection UI
-* **Custom payment method display** - Take full control over which methods to show and how
-* **Seamless flow** - Simplified single-call approach with automatic payment creation
-* **Secure Fields** (Web only) - Build custom card forms while maintaining PCI compliance
-* **Headless integration** - Complete control over the entire checkout experience with no UI components
-
-## Start using the Yuno SDK
-
-You can use our SDK in Web, Android, and iOS applications. To check the available solutions and how to use them, first choose the desired platform:
+Select your platform to get started with the Yuno SDK:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web SDK" href="../docs/web-sdk-integrations" />
+  <YunoCard title="Web Flow" href="../docs/web-sdk-integrations" />
 
-  <YunoCard title="iOS SDK" href="../docs/ios-sdk-integrations" />
+  <YunoCard title="iOS Flow" href="../docs/ios-sdk-integrations" />
 
-  <YunoCard title="Android SDK" href="../docs/android-sdk-integrations" />
+  <YunoCard title="Android Flow" href="../docs/android-sdk-integrations" />
 </Shelf>
 
 > 📘 Explore the SDK Project Example
 >
-> Yuno provides an example project of a running application using the SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can [create your first payment with SDK](#step-2-your-first-payment) by following our documentation.
+> Yuno provides an example project of a running application using the SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-web) or [download the project](https://github.com/yuno-payments/yuno-sdk-web/archive/refs/heads/main.zip). In addition, you can [create your first payment with SDK](doc:step-2-your-first-payment) by following our documentation.
 
 ## Choose Your Integration Approach
 
