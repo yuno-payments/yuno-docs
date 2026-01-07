@@ -11,9 +11,9 @@ This page explains the importance of choosing the right integration, the factors
 
 The integration method you select affects multiple aspects of your business, including:
 
-1. **Integration and maintenance effort**: The integration type impacts development time and the ongoing maintenance required.
+1. **Integration and maintenance effort**: Optimize development time and ongoing maintenance.
 
-2. **Effort to add and manage payment methods**: Some integrations allow you to manage payment methods directly from the Yuno dashboard with no coding required, while others may require developer intervention.
+2. **Effort to add and manage payment methods**: Some integrations allow you to manage payment methods directly from the Yuno dashboard with no coding, while others may require developer intervention.
 
 3. **Compliance requirements**: Certain integrations require certifications like PCI-DSS or ISO compliance. If you choose one of these methods, you must provide the necessary certifications to Yuno.
 
@@ -311,16 +311,12 @@ Yuno provides multiple integration options. Below, you can see the specification
 
 ### Yuno SDK
 
-The **Yuno SDK** provides flexible, PCI-compliant payment integration with multiple mounting options to fit your needs. The SDK offers pre-built UI components while allowing extensive customization. With Yuno SDK, you can:
+The **Yuno SDK** provides flexible, PCI-compliant payment integration with multiple mounting options to fit your needs, along with pre-built UI components and extensive customization:
 
 * **Choose your integration style**: Select from automatic payment method display, custom display control, or simplified seamless flow
 * **User experience management**: Yuno handles security and compliance while you customize the checkout to match your brand
 * **Payment method configuration**: Add and configure payment methods directly from the dashboard, with no extra coding
 * **Flexibility and control**: Pick the mounting option (`mountCheckout`, `mountCheckoutLite`, `mountSeamlessCheckout`) that gives you the right balance of convenience and control
-
-**Available for:** Web, iOS, Android
-
-**[Learn more about SDK integration options →](doc:build-your-integration)**
 
 ### Secure Fields SDK
 
@@ -351,9 +347,9 @@ Designed for merchants that need complete control over the checkout experience:
 
 ### Direct API
 
-Yuno recommends using SDKs over **Direct API** due to the additional complexity involved:
+Yuno recommends using the SDK over **Direct API** due to the additional complexity involved:
 
-* **Manual compliance management**: Unlike SDKs, **Direct API** requires merchants to manage compliance, fraud prevention, 3DS, and payment provider-specific requirements manually
+* **Manual compliance management**: Unlike the SDK, **Direct API** requires merchants to manage compliance, fraud prevention, 3DS, and payment provider-specific requirements manually
 * **Custom API integration**: Merchants can connect directly to Yuno's APIs to process payments if they have custom implementation needs
 * **PCI certification required**: Businesses must provide an Attestation of Compliance (AOC) before integration
 * **Access to Yuno API**: While some features are unavailable with this method, you still gain access to Yuno's standardized API, supporting hundreds of payment methods
