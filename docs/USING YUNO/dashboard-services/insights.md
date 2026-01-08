@@ -22,7 +22,7 @@ The **Insights** section provides a unified view of your payment performance met
 
 ## Understand your payment landscape
 
-Gain complete understanding of your payment ecosystem through insightful analytics. Access all critical payment data from a centralized platform, including:
+Gain a complete understanding of your payment ecosystem through insightful analytics. Access all critical payment data from a centralized platform, including:
 
 * Payment volumes
 * Transaction types
