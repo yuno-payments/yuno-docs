@@ -268,6 +268,20 @@ Yuno provides multiple integration options. Below, you can see the specification
 
 ## Integration options
 
+### Yuno SDK
+
+The Yuno SDK is our recommended integration method, providing a complete payment solution with minimal development effort:
+
+* **Pre-built UI components**: Ready-to-use payment forms and flows that work out of the box
+* **Multiple mounting options**: Choose how payment methods are displayed based on your UX needs
+* **Dashboard control**: Add or remove payment methods without code changes
+* **Built-in security**: PCI-DSS compliance, 3DS authentication, and fraud prevention included
+* **Easy maintenance**: Updates and new features deployed automatically
+
+**Available for:** Web, iOS, Android
+
+**[Learn more about SDK Integration →](doc:new-sdk-integration-overview)**
+
 ### Secure Fields (Web only)
 
 A secure checkout solution using prebuilt secure iframe fields for collecting card information:
