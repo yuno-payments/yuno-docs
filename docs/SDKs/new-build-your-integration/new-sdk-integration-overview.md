@@ -5,11 +5,11 @@ hidden: true
 metadata:
   robots: index
 ---
-Choose your integration approach based on your UI/UX requirements—each uses a different mounting function to give you the level of control you need.
+Choose your integration approach based on your UI/UX requirements.
 
 ## Standard SDK Integration
 
-Use the Yuno SDK when you want pre-built, secure UI components for collecting payments. You have **three mounting options** that give you different levels of control:
+The Yuno SDK provides pre-built, secure UI components for collecting payments with three mounting options:
 
 ### `mountCheckout()`
 
@@ -90,9 +90,9 @@ Once you've chosen your mounting approach, understand the two main workflows:
 
 Once you've chosen your integration approach and understand the workflows, proceed to your platform's implementation guide:
 
-- **[Web Flow →](../docs/web-sdk-integrations)** - JavaScript SDK for web applications
-- **[iOS Flow →](../docs/ios-sdk-integrations)** - Native iOS SDK for Swift/Objective-C
-- **[Android Flow →](../docs/android-sdk-integrations)** - Native Android SDK for Kotlin/Java
+* **[Web Flow →](../docs/web-sdk-integrations)** - JavaScript SDK for web applications
+* **[iOS Flow →](../docs/ios-sdk-integrations)** - Native iOS SDK for Swift/Objective-C
+* **[Android Flow →](../docs/android-sdk-integrations)** - Native Android SDK for Kotlin/Java
 
 ## Common Questions
 
