@@ -15,7 +15,7 @@ Yuno's Android SDKs are specifically designed to simplify the integration of pay
 
 ## Get Started
 
-Follow these steps to integrate Yuno's Android SDK:
+Follow these steps to integrate Yuno's Android SDK flow:
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Getting Started" href="../docs/android-sdk-getting-started" titleSize="h4" description="Install and initialize the Android SDK" badge="Start Here" />
