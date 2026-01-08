@@ -644,7 +644,7 @@ YunoConfig(
 )
 ```
 
-For detailed customization options, see [SDK Customizations](doc:sdk-customizations-android).
+For detailed customization options, see [Android SDK Complementary Features](doc:new-android-sdk-complementary-features).
 
 ## Demo Application
 
@@ -652,7 +652,7 @@ Access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/t
 
 ## Additional Resources
 
-* **[SDK Customizations](doc:sdk-customizations-android)**: Change the SDK appearance to match your brand
+* **[Android SDK Complementary Features](doc:new-android-sdk-complementary-features)**: Configuration options, UI customization, card scanning, and fraud prevention
 * **[External Browser Handling](doc:external-browser-callback-android)**: Handle deep links and browser returns
 * **[Card Scanning (OCR)](doc:card-scanning-ocr-android)**: Enable camera-based card scanning
 * **[ClearSale Integration](doc:clearsale-sdk-android)**: Fraud prevention integration

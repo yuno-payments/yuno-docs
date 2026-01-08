@@ -225,18 +225,16 @@ When not specified, the SDK uses the device's default language if supported, oth
 Now that you've installed and initialized the SDK, choose your integration path:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Payment Integration" href="../docs/android-sdk-payment-integration" titleSize="h4" description="Process one-time payments with multiple mounting options" />
+  <YunoCard title="Payment Integration" href="../docs/new-android-sdk-payment-integration" titleSize="h4" description="Process one-time payments with multiple mounting options" />
 
-  <YunoCard title="Enrollment Integration" href="../docs/android-sdk-enrollment-integration" titleSize="h4" description="Save payment methods for future use" />
+  <YunoCard title="Enrollment Integration" href="../docs/new-android-sdk-enrollment-integration" titleSize="h4" description="Save payment methods for future use" />
 
-  <YunoCard title="Headless Integration" href="../docs/headless-sdk-payment-android" titleSize="h4" description="Complete UI control for advanced use cases" />
+  <YunoCard title="Complementary Features" href="../docs/new-android-sdk-complementary-features" titleSize="h4" description="Configuration, UI customization, card scanning, and fraud prevention" />
 </Shelf>
 
 ## Additional Resources
 
-* **[SDK Customizations](doc:sdk-customizations-android)**: Customize the SDK appearance to match your brand
-* **[Card Scanning (OCR)](doc:card-scanning-ocr-android)**: Enable camera-based card scanning
-* **[ClearSale Integration](doc:clearsale-sdk-android)**: Fraud prevention with ClearSale
+* **[Android SDK Complementary Features](doc:new-android-sdk-complementary-features)**: Complete configuration and customization reference
 * **[External Browser Handling](doc:external-browser-callback-android)**: Handle deep links and browser returns
 * **[Release Notes](doc:release-notes-android-sdk)**: Latest SDK updates and version history
 

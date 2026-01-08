@@ -116,6 +116,18 @@ To use the Yuno Android SDK, you need to meet the following requirements:
 
 **[View full requirements →](doc:requirements-android)**
 
+## Additional Resources
+
+Explore optional features and configurations:
+
+<Shelf classname="link_cards_container">
+  <YunoCard title="Complementary Features" href="../docs/new-android-sdk-complementary-features" titleSize="h4" description="YunoConfig options, UI customization, card scanning, and fraud prevention" />
+
+  <YunoCard title="External Browser Handling" href="../docs/external-browser-callback-android" titleSize="h4" description="Handle deep links and browser returns for 3DS and redirects" />
+
+  <YunoCard title="Release Notes" href="../docs/release-notes-android-sdk" titleSize="h4" description="Latest SDK updates and version history" />
+</Shelf>
+
 ## SDK Project Example
 
 Yuno provides an example project of a running application using the SDK. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-android) or [download the project](https://github.com/yuno-payments/yuno-sdk-android/archive/refs/heads/master.zip).
