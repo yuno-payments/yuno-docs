@@ -72,10 +72,9 @@ Yuno provides multiple integration options. Below, you can see the specification
     <tr>
       <th>Feature</th>
       <th><a href="#yuno-sdk">Yuno SDK</a></th>
-      <th><a href="#secure-fields-sdk">Secure Fields</a></th>
-      <th><a href="#headless-sdk">Headless SDK</a></th>
+      <th><a href="#secure-fields">Secure Fields</a></th>
+      <th><a href="#headless-flow">Headless Flow</a></th>
       <th><a href="#direct-api">Direct API</a></th>
-      <th><a href="#plugins">Plugins</a></th>
     </tr>
   </thead>
   <tbody>
@@ -101,19 +100,9 @@ Yuno provides multiple integration options. Below, you can see the specification
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
           </path>
         </svg></td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
-          </path>
-        </svg></td>
     </tr>
     <tr>
       <td>Handle hundreds of payment methods with a single API</td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
-          </path>
-        </svg></td>
       <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
           <path
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
@@ -157,11 +146,6 @@ Yuno provides multiple integration options. Below, you can see the specification
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
           </path>
         </svg></td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
-          </path>
-        </svg></td>
     </tr>
     <tr>
       <td>Use Yuno's PCI-DSS Certification</td>
@@ -185,19 +169,9 @@ Yuno provides multiple integration options. Below, you can see the specification
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
           </path>
         </svg></td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
-          </path>
-        </svg></td>
     </tr>
     <tr>
       <td>Use 3D Secure</td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
-          </path>
-        </svg></td>
       <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
           <path
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
@@ -241,22 +215,12 @@ Yuno provides multiple integration options. Below, you can see the specification
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
           </path>
         </svg></td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
-          </path>
-        </svg></td>
     </tr>
     <tr>
       <td>Set checkout conditions using our dashboard</td>
       <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#29d99a" viewBox="0 0 256 256">
           <path
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z">
-          </path>
-        </svg></td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#f13f5e" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
           </path>
         </svg></td>
       <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#f13f5e" viewBox="0 0 256 256">
@@ -297,11 +261,6 @@ Yuno provides multiple integration options. Below, you can see the specification
             d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
           </path>
         </svg></td>
-      <td><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#f13f5e" viewBox="0 0 256 256">
-          <path
-            d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm37.66,130.34a8,8,0,0,1-11.32,11.32L128,139.31l-26.34,26.35a8,8,0,0,1-11.32-11.32L116.69,128,90.34,101.66a8,8,0,0,1,11.32-11.32L128,116.69l26.34-26.35a8,8,0,0,1,11.32,11.32L139.31,128Z">
-          </path>
-        </svg></td>
     </tr>
   </tbody>
 </table>
@@ -309,18 +268,9 @@ Yuno provides multiple integration options. Below, you can see the specification
 
 ## Integration options
 
-### Yuno SDK
+### Secure Fields (Web only)
 
-The **Yuno SDK** provides flexible, PCI-compliant payment integration with multiple mounting options to fit your needs, along with pre-built UI components and extensive customization:
-
-* **Choose your integration style**: Select from automatic payment method display, custom display control, or simplified seamless flow
-* **User experience management**: Yuno handles security and compliance while you customize the checkout to match your brand
-* **Payment method configuration**: Add and configure payment methods directly from the dashboard, with no extra coding
-* **Flexibility and control**: Pick the mounting option (`mountCheckout`, `mountCheckoutLite`, `mountSeamlessCheckout`) that gives you the right balance of convenience and control
-
-### Secure Fields SDK
-
-A secure checkout solution using prebuilt secure iframe fields for collecting card information (Web only):
+A secure checkout solution using prebuilt secure iframe fields for collecting card information:
 
 * **Custom card forms**: Build your own payment form UI while Yuno provides secure fields for sensitive data
 * **Secure data collection**: Simplifies the process of collecting and tokenizing payment card details
@@ -331,19 +281,18 @@ A secure checkout solution using prebuilt secure iframe fields for collecting ca
 
 **[Learn more about Secure Fields →](doc:secure-fields-payment)**
 
-### Headless SDK
+### Headless Flow
 
-Designed for merchants that need complete control over the checkout experience:
+An advanced integration pattern for merchants that need complete control over the checkout experience:
 
-* **Complete UI control**: You build everything - Yuno only handles tokenization
-* **Custom data capture**: You capture card data on your frontend and send it to Yuno for tokenization
-* **Tokenization process**: Yuno returns a token that you store and use for payment processing
-* **No PCI compliance needed**: Since card data never touches your server, PCI compliance is not required
-* **Full customization**: Ideal for businesses that want complete custom UX/UI without compliance burdens
+* **Complete UI control**: You build your entire checkout UI - Yuno handles tokenization only
+* **Custom data capture**: You capture payment data in your custom forms and send it to Yuno for secure tokenization
+* **Tokenization process**: Yuno returns a token that you use for payment processing via API
+* **Full customization**: Ideal for businesses with specific UX/UI requirements and development resources
 
 **Available for:** Web, iOS, Android
 
-**[Learn more about Headless SDK →](doc:headless-integration-pattern)**
+**[Learn more about Headless Flow →](doc:headless-integration-pattern)**
 
 ### Direct API
 
@@ -356,15 +305,8 @@ Yuno recommends using the SDK over **Direct API** due to the additional complexi
 
 **[Learn more about Direct API →](doc:direct-flow)**
 
-### Plugins
-
-Plugins offer the fastest and easiest integration with just a few clicks and basic configuration:
-
-* **Ease of implementation**: Quick setup with minimal development effort
-* **Platform dependency**: Feature availability depends on the platform's capabilities
-* **Dashboard management**: Add payment methods without code changes
-
-Currently, Yuno supports plugin integration with [VTEX](doc:vtex).
+> 💡 **Using VTEX?**  
+> Yuno offers a VTEX plugin for quick integration. [Learn more →](doc:vtex)
 
 ## Quick Comparison Guide
 
@@ -381,7 +323,7 @@ Currently, Yuno supports plugin integration with [VTEX](doc:vtex).
 * You want custom card form design with secure fields
 * You need a middle ground between full SDK and headless
 
-### Choose Headless SDK when:
+### Choose Headless Flow when:
 
 * You need complete control over every UI element
 * You're building a highly custom checkout experience
@@ -393,14 +335,8 @@ Currently, Yuno supports plugin integration with [VTEX](doc:vtex).
 * You have PCI-DSS compliance certification
 * You can manage fraud prevention and 3DS manually
 
-### Choose Plugins when:
-
-* You're using a supported e-commerce platform (e.g., VTEX)
-* You want the fastest possible integration
-* You don't need custom checkout experiences
-
 ## Next Steps
 
 1. **Review SDK options**: Learn about [SDK integration patterns](doc:build-your-integration)
-2. **Choose your platform**: Select [Web](doc:web-sdk-integrations), [iOS](doc:ios-sdk-integrations), or [Android](doc:android-sdk-integrations)
+2. **Choose your platform**: Select [Web Flow](doc:web-sdk-integrations), [iOS Flow](doc:ios-sdk-integrations), or [Android Flow](doc:android-sdk-integrations)
 3. **Get started**: Follow platform-specific implementation guides
