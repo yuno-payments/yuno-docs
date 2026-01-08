@@ -1,8 +1,13 @@
 ---
 title: Insights
-excerpt: ''
+excerpt: >-
+  Explore the Insights section for a comprehensive view of payment performance
+  metrics and analytics, enabling informed decision-making and strategy
+  optimization.
 deprecated: false
 hidden: false
+link:
+  new_tab: false
 metadata:
   title: Insights
   description: >-
@@ -10,8 +15,6 @@ metadata:
     your payment performance. Insights is a strategic tool that empowers
     merchants with actionable knowledge for enhanced decision-making.
   robots: index
-next:
-  description: ''
 ---
 The **Insights** section provides a unified view of your payment performance metrics and analytics, directly within the dashboard. This powerful tool transforms raw data into actionable intelligence, empowering you to make informed decisions and optimize your payment strategies. Its user-friendly interface can be easily customized to meet your unique business needs.
 
@@ -19,7 +22,7 @@ The **Insights** section provides a unified view of your payment performance met
 
 ## Understand your payment landscape
 
-Gain complete understanding of your payment ecosystem through insightful analytics. Access all critical payment data from a centralized platform, including:
+Gain a complete understanding of your payment ecosystem through insightful analytics. Access all critical payment data from a centralized platform, including:
 
 * Payment volumes
 * Transaction types
@@ -58,12 +61,46 @@ The Insight section contains several options to filter, customize, and extract d
 
 * **Filters**: Use the **Add filters** button to segment the displayed information by card brand, currency, date range, and other criteria, including **country**, **issuer country**, and **network tokens**. This allows you to focus on specific data segments for targeted analysis. You can quickly apply or clear large selections using the **Select all** and inverse selection controls in each filter.
 
-  ![Insights filters – Country filter with Select all](https://files.readme.io/2b20a3a704baba339660bd962a2387dd4fe270ad4386de7595fca875ab91913c-insights-filters-country-select-all.png
-  )
-  <!-- Screenshot: Insights Overview tab with the Country filter panel open, showing the country list and Select all option. -->
+<Image alt="Insights filters – Country filter with Select all" border={false} src="https://files.readme.io/2b20a3a704baba339660bd962a2387dd4fe270ad4386de7595fca875ab91913c-insights-filters-country-select-all.png" />
+
 * **Personalization**: Click **Customize** to control the reports you see and their arrangement. Drag and drop elements to reorder them according to your priorities, or click the trash bin icon to remove less relevant reports. Remember to click **Done** to save your personalized layout.
+
 * **Set your charts**: Use the **Add chart** button to fine-tune visualizations displayed. After selecting this option, click the icon next to each report to toggle its visibility. Select **Apply** to confirm your chart selections.
+
 * **Export as PDF**: The **Download** button allows you to export the current Insights page as a PDF file. This feature simplifies the process of sharing Yuno's valuable reports across your organization.
+
+## Your custom charts
+
+This section lets you build fully personalized dashboards using natural language prompts. Generate tailored data visualizations that adapt to your analysis needs, all without any manual setup required. You can create as many charts as needed, each born from your written input.
+
+### Supported chart types
+
+* **Single value**: Display a key total or metric at a glance.
+* **Line or bar charts**: Visualize trends or compare performance over time.
+* **Multiple line charts**: Compare categories such as countries, payment methods, or providers across the same time period.
+* **Pie charts**: Show the proportional distribution of categories within your data.
+
+Each chart includes an information icon (ⓘ) where you can view the exact prompt used to generate it, providing full transparency and allowing you to easily reuse or refine prompts.
+
+### Best practices for prompting
+
+* **Be specific and detailed**: Clearly describe what you want to visualize, including relevant details such as transaction type, status, country, provider, or any filters you wish to apply.
+
+<Callout icon="👍" theme="okay">
+  "Show a bar chart of approved credit card transactions by country for the last 3 months."
+</Callout>
+
+* **Always include a time range and frequency**: When requesting line or bar charts, specify both the period and the aggregation level (e.g., daily, weekly, monthly) for accurate trend analysis.
+
+<Callout icon="👍" theme="okay">
+  "Line chart of total volume per week for the last quarter."
+</Callout>
+
+* **Use dynamic time references for reusable charts**: Instead of fixed dates, use relative time frames such as "last week" or "previous month" to ensure your charts remain automatically up to date.
+
+<Callout icon="👍" theme="okay">
+  "Show total transactions by day for the last 30 days."
+</Callout>
 
 ## Merchant advisory codes (MAC) insights
 
@@ -76,8 +113,7 @@ Key MAC visualisations include:
 
 Use these views to identify common advisory patterns, refine your retry strategies, and work with issuers or providers to reduce avoidable declines.
 
-![Insights MAC charts – Top and Daily top merchant advisory codes](https://files.readme.io/0be6cef2f43852e9611b44551f2729bbee4c1926041fae421a57b2485d849d9b-insights-mac-top-and-daily.png)
-<!-- Screenshot: MAC charts showing Top merchant advisory codes and Daily top merchant advisory codes side by side. -->
+<Image alt="Insights MAC charts – Top and Daily top merchant advisory codes" border={false} src="https://files.readme.io/0be6cef2f43852e9611b44551f2729bbee4c1926041fae421a57b2485d849d9b-insights-mac-top-and-daily.png" />
 
 ## Fraud insights
 
