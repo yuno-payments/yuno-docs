@@ -5,7 +5,7 @@ hidden: true
 metadata:
   robots: index
 ---
-This page explains the payment workflow when using Yuno's SDK. The core workflow is **the same** regardless of which mounting option you choose (`mountCheckout()`, `mountCheckoutLite()`, or `mountSeamlessCheckout()`).
+This page explains the payment workflow when using Yuno's SDK. The core workflow is the same regardless of which mounting option you choose.
 
 ## Payment Workflow Overview
 
@@ -26,8 +26,8 @@ Your frontend application handles the user-facing aspects of the payment flow:
 * Initiate checkout
 * Display payment method selection (with `mountCheckout()`, Yuno displays them automatically; with `mountCheckoutLite()` or `mountSeamlessCheckout()`, you display them in your own UI)
 * Initiate SDK with checkout session
-* Receive one-time token from SDK (not applicable for Seamless SDK)
-* Trigger payment creation on your backend (manual for standard options; automatic for Seamless)
+* Receive one-time token from SDK
+* Trigger payment creation on your backend
 * Initiate SDK to continue payment flow if needed
 * Display payment result (optional)
 
@@ -66,7 +66,7 @@ The SDK manages the payment UI and flow:
 4. **Merchant Client** → Initialize SDK with checkout session → **Yuno SDK**
 5. **Yuno SDK** → Display payment methods → **User selects**
 6. **Yuno SDK** → Generate one-time token → Return to **Merchant Client**
-7. **Merchant Client** → Send token to → **Merchant Server** *(Seamless SDK handles steps 6-8 automatically)*
+7. **Merchant Client** → Send token to → **Merchant Server** _(Seamless SDK handles steps 6-8 automatically)_
 8. **Merchant Server** → Create payment → **Yuno Server**
 9. **Yuno Server** → Process payment → Payment provider
 10. **Merchant Client** → Call `continuePayment()` if needed → **Yuno SDK**
@@ -76,8 +76,9 @@ The SDK manages the payment UI and flow:
 ## Payment Method Display Options
 
 The workflow above is the same for all mounting options. The main differences are:
-- How payment methods are displayed (step 5)
-- Who handles payment creation (steps 6-8)
+
+* How payment methods are displayed (step 5)
+* Who handles payment creation (steps 6-8)
 
 ### Using `mountCheckout()`
 
@@ -173,9 +174,7 @@ yuno.mountSeamlessCheckout({
 
 You can save payment methods while processing a payment, without a separate enrollment flow.
 
-### Two Enrollment Options
-
-#### Option 1: API-Level Enrollment
+### Option 1: API-Level Enrollment
 
 Set `vault_on_success = true` when creating the payment:
 
@@ -193,7 +192,7 @@ async yunoCreatePayment(oneTimeToken) {
 
 **Result:** If payment succeeds, you'll receive a `vaulted_token` in the payment response.
 
-#### Option 2: SDK Checkbox
+### Option 2: SDK Checkbox
 
 Enable `cardSaveEnable` when starting checkout:
 
@@ -290,9 +289,3 @@ The workflow described above applies to all platforms. For detailed implementati
 * **Vaulted tokens** simplify repeat payments but should still go through the SDK
 * **Save during payment** is easier than separate enrollment for cards
 * **One-time tokens** are single-use and tied to the checkout session
-
-## Next Steps
-
-* **Learn about enrollment:** [SDK Enrollment Workflow](sdk-enrollment-workflow)
-* **Implement on your platform:** Choose Web, iOS, or Android guides
-* **Advanced use cases:** Explore [Headless Integration](headless-integration-pattern)
