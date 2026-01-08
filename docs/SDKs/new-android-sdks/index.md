@@ -9,7 +9,7 @@ metadata:
 
 > 👍 ELF Page Size Support
 >
-> The Yuno Android SDK fully supports Google's 16 KB ELF page alignment requirements. All native libraries are built and verified for 16 KB memory pages, ensuring compatibility with Android 15 (API Level 35) and ARMv9 devices. The SDK's native components were validated using Google's `check_elf_alignment.sh` script, confirming full compliance. Apps built with the Yuno SDK can be safely published to the Play Store and meet Google's November 1, 2025 enforcement deadline.
+> The Yuno Android SDK flow fully supports Google's 16 KB ELF page alignment requirements. All native libraries are built and verified for 16 KB memory pages, ensuring compatibility with Android 15 (API Level 35) and ARMv9 devices. The SDK's native components were validated using Google's `check_elf_alignment.sh` script, confirming full compliance. Apps built with the Yuno SDK can be safely published to the Play Store and meet Google's November 1, 2025 enforcement deadline.
 
 Yuno's Android SDKs are specifically designed to simplify the integration of payment processing functionality in your Android applications. Developers can implement features more efficiently, reducing the need for extensive knowledge of payment protocols and infrastructure.
 
@@ -65,7 +65,7 @@ Use the standard SDK when you want pre-built, secure UI components. You have **t
 
 **Best for:** Most integrations, standard checkouts, quick implementation
 
-**[Learn more →](doc:new-android-sdk-payment-integration)**
+**[Learn more →](doc:android-sdk-payment-integration)**
 
 ### Headless SDK (Advanced)
 
@@ -115,18 +115,6 @@ To use the Yuno Android SDK, you need to meet the following requirements:
 * **Kotlin Gradle Plugin**: Version 1.4.0 or above
 
 **[View full requirements →](doc:requirements-android)**
-
-## Additional Resources
-
-Explore optional features and configurations:
-
-<Shelf classname="link_cards_container">
-  <YunoCard title="Complementary Features" href="../docs/new-android-sdk-complementary-features" titleSize="h4" description="YunoConfig options, UI customization, card scanning, and fraud prevention" />
-
-  <YunoCard title="External Browser Handling" href="../docs/external-browser-callback-android" titleSize="h4" description="Handle deep links and browser returns for 3DS and redirects" />
-
-  <YunoCard title="Release Notes" href="../docs/release-notes-android-sdk" titleSize="h4" description="Latest SDK updates and version history" />
-</Shelf>
 
 ## SDK Project Example
 
