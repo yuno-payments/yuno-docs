@@ -72,7 +72,7 @@ For completely custom payment experiences with full UI control. Use when standar
 
 **Key difference:** No UI components - you handle everything and use Yuno only for tokenization.
 
-**[Learn more about Headless Integration →](headless-integration-pattern)**
+Headless integration is described within each flow's documentation.
 
 ## Understanding Workflows
 
