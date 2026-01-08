@@ -1,5 +1,5 @@
 ---
-title: New - Web SDK Payment Integration
+title: New - Web Flow Payment Integration
 deprecated: false
 hidden: true
 metadata:
