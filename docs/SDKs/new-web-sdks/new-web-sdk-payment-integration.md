@@ -15,9 +15,9 @@ This guide shows you how to integrate payment processing with Yuno's Web SDK. Yo
 
 The Yuno SDK offers **three mounting options** for displaying payment methods. All options use the same SDK - the difference is which function you call and how payment methods are presented to customers.
 
-### Option A: Automatic Payment Method Display
+### Option A: `mountCheckout()`
 
-**Use `mountCheckout()` when:**
+**Use when:**
 
 * You want Yuno to display all available payment methods automatically
 * You need a complete checkout solution with minimal frontend work
@@ -29,9 +29,9 @@ yuno.mountCheckout();
 
 **Best for:** Quick integration, standard e-commerce, marketplace checkouts
 
-### Option B: Custom Payment Method Display
+### Option B: `mountCheckoutLite()`
 
-**Use `mountCheckoutLite()` when:**
+**Use when:**
 
 * You want full control over payment method selection UI
 * You need to customize which methods to display and how
@@ -49,9 +49,9 @@ yuno.mountCheckoutLite({
 >
 > When using `mountCheckoutLite()`, Google Pay and Apple Pay require the `mountExternalButtons()` method for display. See [Mount External Buttons](#mount-external-buttons) below.
 
-### Option C: Seamless Flow
+### Option C: `mountSeamlessCheckout()`
 
-**Use `mountSeamlessCheckout()` when:**
+**Use when:**
 
 * You want a simplified single-call approach with automatic payment creation
 * You prefer payment creation handled via callbacks
@@ -179,12 +179,12 @@ yuno.startCheckout({
 
 The `startCheckout()` function accepts many configuration options for customizing SDK behavior:
 
-- **Loader control**: `showLoading`, `hideLoader()`
-- **Render mode**: `modal` vs `element`
-- **Card form options**: `cardSaveEnable`, `cardNumberPlaceholder`, `hideCardholderName`, `isCreditCardProcessingOnly`, `onChange`
-- **Issuer form**: `issuersFormEnable`
-- **Text customization**: `texts` for button labels
-- **And more**
+* **Loader control**: `showLoading`, `hideLoader()`
+* **Render mode**: `modal` vs `element`
+* **Card form options**: `cardSaveEnable`, `cardNumberPlaceholder`, `hideCardholderName`, `isCreditCardProcessingOnly`, `onChange`
+* **Issuer form**: `issuersFormEnable`
+* **Text customization**: `texts` for button labels
+* **And more**
 
 **For all configuration options, see [Complementary Features](doc:new-web-sdk-complementary-features).**
 
@@ -206,7 +206,7 @@ The `startCheckout()` function accepts many configuration options for customizin
 
 Choose your mounting option based on your integration needs:
 
-### Option A: Using `mountCheckout()` - Automatic Display
+### Option A: Using `mountCheckout()`
 
 Yuno automatically displays all available payment methods based on your dashboard configuration:
 
@@ -223,7 +223,7 @@ yuno.mountCheckout({
 });
 ```
 
-### Option B: Using `mountCheckoutLite()` - Custom Display
+### Option B: Using `mountCheckoutLite()`
 
 You control which payment method to display. First, fetch available methods from the API, display them in your UI, then mount the selected method.
 
@@ -268,11 +268,11 @@ yuno.mountCheckoutLite({
 
 See the [Payment Types](ref:payment-type-list) page for the complete list of payment method types.
 
-> 📘 Google Pay and Apple Pay in Lite SDK
+> 📘 Google Pay and Apple Pay in Lite Mounting
 >
 > When using `mountCheckoutLite()`, Google Pay and Apple Pay are not available as built-in payment options. To use these payment methods, you must use the `mountExternalButtons()` method. See [Mount External Buttons](#mount-external-buttons) below.
 
-### Option C: Using `mountSeamlessCheckout()` - Seamless Flow
+### Option C: Using `mountSeamlessCheckout()`
 
 Similar to `mountCheckoutLite()`, but payment creation happens automatically via callbacks:
 
@@ -283,9 +283,9 @@ yuno.mountSeamlessCheckout({
 });
 ```
 
-> 📘 Seamless SDK Callback Behavior
+> 📘 Seamless Callback Behavior
 >
-> When using Seamless SDK, the SDK handles token generation and payment creation behind the scenes. The `yunoCreatePayment` callback is invoked automatically after the customer completes the payment form. Your implementation should create the payment on your backend when this callback is triggered.
+> When using Seamless mounting option, the SDK handles token generation and payment creation behind the scenes. The `yunoCreatePayment` callback is invoked automatically after the customer completes the payment form. Your implementation should create the payment on your backend when this callback is triggered.
 
 ## Step 4: Initiate the Payment Process
 
@@ -462,14 +462,6 @@ yuno.unmountAllExternalButtons();
 
 For complete UI control, use the Headless Integration approach where you build your own payment UI and handle tokenization manually. This is ideal for merchants who need full control over the payment experience and want to build custom payment flows.
 
-> 📘 When to Use Headless Integration
->
-> Use Headless Integration when you need to:
-> * Build a completely custom payment UI
-> * Integrate payments into non-standard interfaces
-> * Have full control over payment method presentation
-> * Handle tokenization manually without SDK UI components
-
 ### Step 1: Initialize Headless API Client
 
 After initializing the SDK with your public key, create a Headless API client:
@@ -593,17 +585,17 @@ if (result && result.action === 'REDIRECT_URL') {
 
 ### Key Parameters for `generateToken()`
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `checkout_session` | Yes | The checkout session ID |
-| `payment_method.type` | Yes | Payment method type (e.g., "CARD") |
-| `payment_method.vaulted_token` | No | Use when processing with saved payment method |
-| `card.save` | No | Set to `true` to save card for future use |
-| `card.detail` | Yes* | Card information (*required when not using vaulted token) |
-| `card.detail.type` | No | "CREDIT" or "DEBIT" (auto-detected if not provided) |
-| `card.installment` | No | Required only if installment plan is configured |
-| `device_fingerprint` | No | Required if fraud screening is configured |
-| `third_party_session_id` | No | Required if third-party configuration exists |
+| Parameter                      | Required | Description                                               |
+| ------------------------------ | -------- | --------------------------------------------------------- |
+| `checkout_session`             | Yes      | The checkout session ID                                   |
+| `payment_method.type`          | Yes      | Payment method type (e.g., "CARD")                        |
+| `payment_method.vaulted_token` | No       | Use when processing with saved payment method             |
+| `card.save`                    | No       | Set to `true` to save card for future use                 |
+| `card.detail`                  | Yes*     | Card information (*required when not using vaulted token) |
+| `card.detail.type`             | No       | "CREDIT" or "DEBIT" (auto-detected if not provided)       |
+| `card.installment`             | No       | Required only if installment plan is configured           |
+| `device_fingerprint`           | No       | Required if fraud screening is configured                 |
+| `third_party_session_id`       | No       | Required if third-party configuration exists              |
 
 > 📘 Benefits of Using Vaulted Tokens
 >
@@ -619,10 +611,3 @@ if (result && result.action === 'REDIRECT_URL') {
 5. Handle async actions → continuePayment() if needed
 6. Show payment result → Your custom UI
 ```
-
-## Next Steps
-
-- **[Enrollment Integration](doc:new-web-sdk-enrollment-integration)**: Save payment methods for future use
-- **[Complementary Features](doc:new-web-sdk-complementary-features)**: Advanced configuration options
-- **[Secure Fields](doc:new-web-sdk-secure-fields)**: Custom card forms with iframe security
-- **[Demo App](doc:demo-app)**: Working examples and implementation reference
