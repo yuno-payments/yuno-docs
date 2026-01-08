@@ -5,7 +5,6 @@ hidden: true
 metadata:
   robots: index
 ---
-
 Secure Fields allow you to build completely custom card payment forms while maintaining PCI compliance. Use iframe-based secure fields for card number, expiration, and CVV.
 
 > **This is a Web-only, card-only alternative to standard SDK mounting options.**
@@ -18,28 +17,25 @@ Secure Fields allow you to build completely custom card payment forms while main
 
 **Use Secure Fields when:**
 
-- You need custom card form layouts
-- Standard SDK card forms don't fit your design
-- You want PCI compliance without managing card data
+* You need custom card form layouts
+* Standard SDK card forms don't fit your design
+* You want PCI compliance without managing card data
 
 **Don't use Secure Fields when:**
 
-- Standard SDK card forms work → Use [Payment Integration](doc:new-web-sdk-payment-integration) with `mountCheckout()` or `mountCheckoutLite()`
-- You need non-card payment methods → Use [Payment Integration](doc:new-web-sdk-payment-integration)
-- You need complete control over everything → Use [Headless Integration](doc:new-headless-integration-pattern)
+* Standard SDK card forms work → Use [Payment Integration](doc:new-web-sdk-payment-integration) with `mountCheckout()` or `mountCheckoutLite()`
+* You need non-card payment methods → Use [Payment Integration](doc:new-web-sdk-payment-integration)
+* You need complete control over everything → Use [Headless Integration](doc:new-headless-integration-pattern)
 
 ## How It Works
 
 Secure Fields provides iframe-based input components:
 
-- Card number field (iframe)
-- Expiration field (iframe)
-- CVV field (iframe)
+* Card number field
+* Expiration field
+* CVV field
 
 You build the form layout, style the iframes, and Secure Fields handles tokenization.
-
-> **For standard card forms:** See [Payment Integration](doc:new-web-sdk-payment-integration)  
-> **For complete control:** See [Headless Integration](doc:new-headless-integration-pattern)
 
 ## Payment with Secure Fields
 
@@ -295,8 +291,6 @@ if (payment.checkout.sdk_action_required) {
 >
 > Always call `yuno.continuePayment()` when `sdk_action_required` is true. This handles additional steps like 3D Secure challenges or redirects.
 
-***
-
 ## Enrollment with Secure Fields
 
 Use Secure Fields to save payment methods for future use without processing a payment.
@@ -378,8 +372,6 @@ console.log('Status:', vaultedTokenWithInfo.status);
 console.log('Provider:', vaultedTokenWithInfo.provider);
 ```
 
-***
-
 ## Field Management Methods
 
 Secure Fields provide utility methods for enhanced user experience:
@@ -447,8 +439,6 @@ secureNumber.setCardType('CREDIT');
 secureNumber.setCardType('DEBIT');
 ```
 
-***
-
 ## Retry Failed Payments
 
 If a transaction is rejected, you can persist card data to retry without re-entering card details:
@@ -479,8 +469,6 @@ const newToken = await secureFields.generateTokenWithInformation({
 
 3. Create payment with the new token
 
-***
-
 ## TypeScript Configuration
 
 To use TypeScript with Secure Fields:
@@ -508,8 +496,6 @@ import { YunoInstance } from '@yuno-payments/sdk-web-types/dist/types';
 
 const yunoInstance: YunoInstance = await Yuno.initialize('YOUR_API_KEY');
 ```
-
-***
 
 ## Complete Implementation Example
 
@@ -708,13 +694,7 @@ Here's a complete example combining all the steps:
 </html>
 ```
 
-***
-
-## Next Steps
-
-* **[SDK Customizations](doc:sdk-customizations)** - Customize the SDK appearance
-* **[Payment Status](doc:payment-status)** - Display payment status to users
-* **[Demo App](doc:demo-app)** - See a complete working example
+<br />
 
 > 📘 Demo App
 >
