@@ -1,5 +1,5 @@
 ---
-title: New - Web SDK Complementary Features
+title: New - Web Flow Complementary Features
 excerpt: ''
 deprecated: false
 hidden: true
@@ -10,8 +10,7 @@ metadata:
 next:
   description: ''
 ---
-
-Configuration options for customizing the Yuno Web SDK behavior and appearance.
+Configuration options for customizing the Yuno Web SDK flow behavior and appearance.
 
 > **Integration Guides:**  
 > See [Payment Integration](doc:new-web-sdk-payment-integration) or [Enrollment Integration](doc:new-web-sdk-enrollment-integration) for complete implementation workflows.
@@ -20,8 +19,8 @@ Configuration options for customizing the Yuno Web SDK behavior and appearance.
 
 Control the visibility and behavior of the loading spinner during SDK operations.
 
-| Parameter     | Description                                                                                                                                                    |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter     | Description                                                                                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `showLoading` | Controls whether the Yuno loading/spinner is displayed. When enabled, the loader remains visible until `hideLoader()` or `continuePayment()` is called. Default: `true`. |
 
 **Example:**
@@ -46,10 +45,10 @@ yuno.hideLoader();
 
 Control how and where SDK forms are displayed on your page.
 
-| Parameter         | Description                                                                                                                                          |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `renderMode`      | Determines the display mode for payment forms. Can be `modal` (overlay) or `element` (embedded in page).                                             |
-| `type`            | Set to `'modal'` for overlay display or `'element'` to embed within a specific page element.                                                         |
+| Parameter         | Description                                                                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `renderMode`      | Determines the display mode for payment forms. Can be `modal` (overlay) or `element` (embedded in page).                                                 |
+| `type`            | Set to `'modal'` for overlay display or `'element'` to embed within a specific page element.                                                             |
 | `elementSelector` | Required when `type` is `'element'`. Specifies where to render the SDK. Can be a string (element ID/selector) or object (separate APM and action forms). |
 
 ### Render Mode Options
@@ -99,17 +98,17 @@ Below are screenshots presenting the difference between `modal` and `element` re
 
 Customize the appearance and behavior of credit/debit card forms.
 
-| Parameter    | Description                                                                                  |
-| ------------ | -------------------------------------------------------------------------------------------- |
-| `card`       | Object containing card form settings.                                                        |
-| `type`       | Card form layout: `'step'` (separate screens) or `'extends'` (single screen). Default: `'extends'`. |
-| `styles`     | Custom CSS to inject into the card form iframe for styling.                                  |
-| `cardSaveEnable` | Show checkbox for saving/enrolling cards for future use. Default: `false`.              |
-| `texts`      | Custom text labels for card form buttons.                                                    |
-| `cardNumberPlaceholder` | Custom placeholder text for card number input field.                             |
-| `hideCardholderName` | Hide the cardholder name field from the card form. Default: `false`.                |
-| `isCreditCardProcessingOnly` | Process credit cards only, hiding debit option. Useful for Brazil. Default: `false`. |
-| `onChange`   | Callback function triggered when card form data changes. Receives `{ error, data }`.         |
+| Parameter                    | Description                                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| `card`                       | Object containing card form settings.                                                               |
+| `type`                       | Card form layout: `'step'` (separate screens) or `'extends'` (single screen). Default: `'extends'`. |
+| `styles`                     | Custom CSS to inject into the card form iframe for styling.                                         |
+| `cardSaveEnable`             | Show checkbox for saving/enrolling cards for future use. Default: `false`.                          |
+| `texts`                      | Custom text labels for card form buttons.                                                           |
+| `cardNumberPlaceholder`      | Custom placeholder text for card number input field.                                                |
+| `hideCardholderName`         | Hide the cardholder name field from the card form. Default: `false`.                                |
+| `isCreditCardProcessingOnly` | Process credit cards only, hiding debit option. Useful for Brazil. Default: `false`.                |
+| `onChange`                   | Callback function triggered when card form data changes. Receives `{ error, data }`.                |
 
 **Example:**
 
@@ -154,8 +153,8 @@ yuno.startCheckout({
 
 Choose between two card form layouts:
 
-- **`step`**: Multi-step form (customer selects card, then fills details on separate screen)
-- **`extends`**: Single-screen form (all card details on one screen)
+* **`step`**: Multi-step form (customer selects card, then fills details on separate screen)
+* **`extends`**: Single-screen form (all card details on one screen)
 
 <Image align="center" border={false} src="https://files.readme.io/08654f8fa7b638641cb1b9f5b882a75537a9e449fff4960cf560c1ec5b3efb74-caracteristicas_Complemetarias_web_2.png" />
 
@@ -192,9 +191,9 @@ yuno.startCheckout({
 ```
 
 2. **If transaction fails:**
-   - Call `yuno.notifyError()` to clear the previously entered CVV
-   - Create a new checkout session
-   - Update the SDK with the new session:
+   * Call `yuno.notifyError()` to clear the previously entered CVV
+   * Create a new checkout session
+   * Update the SDK with the new session:
 
 ```javascript
 yuno.updateCheckoutSession(newCheckoutSession);
@@ -206,9 +205,9 @@ yuno.updateCheckoutSession(newCheckoutSession);
 
 Enable a form for customers to select their bank or card issuer.
 
-| Parameter           | Description                                                         |
-| ------------------- | ------------------------------------------------------------------- |
-| `issuersFormEnable` | Display issuer selection form (bank list). Default: `true`.        |
+| Parameter           | Description                                                 |
+| ------------------- | ----------------------------------------------------------- |
+| `issuersFormEnable` | Display issuer selection form (bank list). Default: `true`. |
 
 **Example:**
 
@@ -222,8 +221,8 @@ yuno.startCheckout({
 
 Display Google Pay and Apple Pay as standalone buttons (separate from the payment methods list).
 
-| Function                | Description                                                                 |
-| ----------------------- | --------------------------------------------------------------------------- |
+| Function                 | Description                                                                |
+| ------------------------ | -------------------------------------------------------------------------- |
 | `mountExternalButtons()` | Renders Google Pay and Apple Pay buttons in a specified container element. |
 
 **Example:**
@@ -243,9 +242,9 @@ yuno.mountExternalButtons({
 
 Customize button labels and text throughout the SDK to match your application's language or branding.
 
-| Parameter | Description                                                                 |
-| --------- | --------------------------------------------------------------------------- |
-| `texts`   | Object containing custom text labels for various SDK buttons and messages.  |
+| Parameter | Description                                                                |
+| --------- | -------------------------------------------------------------------------- |
+| `texts`   | Object containing custom text labels for various SDK buttons and messages. |
 
 **Example:**
 
@@ -288,13 +287,13 @@ For Mercado Pago Checkout Pro in webview environments, `await yuno.continuePayme
 
 **Properties:**
 
-| Property      | Description                                                                          |
-| ------------- | ------------------------------------------------------------------------------------ |
-| `action`      | Always `'REDIRECT_URL'` when redirect handling is required.                          |
-| `type`        | Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying the payment method.            |
-| `init_url`    | URL to redirect customer to for completing payment with Mercado Pago Checkout Pro.  |
-| `success_url` | URL to redirect customer to after successful payment.                                |
-| `error_url`   | URL to redirect customer to if payment fails.                                        |
+| Property      | Description                                                                        |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `action`      | Always `'REDIRECT_URL'` when redirect handling is required.                        |
+| `type`        | Enum value `'MERCADO_PAGO_CHECKOUT_PRO'` identifying the payment method.           |
+| `init_url`    | URL to redirect customer to for completing payment with Mercado Pago Checkout Pro. |
+| `success_url` | URL to redirect customer to after successful payment.                              |
+| `error_url`   | URL to redirect customer to if payment fails.                                      |
 
 When an object is returned, handle the custom redirect flow. When `null`, no additional action is needed.
 
@@ -314,11 +313,11 @@ const yuno = await Yuno.initialize(publicApiKey, applicationSession, options);
 
 **Parameters:**
 
-| Parameter            | Type                 | Description                                                                                                  |
-| -------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `publicApiKey`       | `string`             | Your public API key from the Yuno Dashboard.                                                                 |
-| `applicationSession` | `string | undefined` | Optional session ID. **Recommended:** Leave as `undefined` to let SDK manage sessions internally.            |
-| `options`            | `object | undefined` | Optional advanced configuration (e.g., custom cookie name for device identification).                        |
+| Parameter            | Type     | Description                                  |                                                                                                   |
+| :------------------- | :------- | :------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| `publicApiKey`       | `string` | Your public API key from the Yuno Dashboard. |                                                                                                   |
+| `applicationSession` | `string  | undefined`                                   | Optional session ID. **Recommended:** Leave as `undefined` to let SDK manage sessions internally. |
+| `options`            | `object  | undefined`                                   | Optional advanced configuration (e.g., custom cookie name for device identification).             |
 
 ### Options Structure
 
@@ -354,7 +353,6 @@ const yuno = await Yuno.initialize(publicApiKey, undefined, options);
 
 ## Next Steps
 
-- **[Payment Integration](doc:new-web-sdk-payment-integration)**: Process payments with the Web SDK
-- **[Enrollment Integration](doc:new-web-sdk-enrollment-integration)**: Save payment methods for future use
-- **[Getting Started](doc:new-getting-started-with-web-sdk)**: Installation and initialization guide
-
+* **[Payment Integration](doc:new-web-sdk-payment-integration)**: Process payments with the Web SDK
+* **[Enrollment Integration](doc:new-web-sdk-enrollment-integration)**: Save payment methods for future use
+* **[Getting Started](doc:new-getting-started-with-web-sdk)**: Installation and initialization guide

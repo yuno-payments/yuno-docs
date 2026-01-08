@@ -1,5 +1,5 @@
 ---
-title: New - iOS SDKs
+title: New - iOS Flow
 deprecated: false
 hidden: true
 metadata:
@@ -9,7 +9,7 @@ Yuno's iOS SDKs are designed to simplify the integration of payment processing f
 
 ## Standard SDK Integration
 
-The Yuno iOS SDK offers a flexible way to integrate payment and enrollment flows with pre-built UI components. Choose between full checkout (Yuno manages payment method display) or pre-selected payment method (you control the UI).
+The Yuno iOS SDK flow offers a flexible way to integrate payment and enrollment flows with pre-built UI components. Choose between full checkout (Yuno manages payment method display) or pre-selected payment method (you control the UI).
 
 <Shelf classname="link_cards_container">
   <YunoCard title="Getting Started" href="/docs/ios-sdk-getting-started" titleSize="h4" badge="Start Here" />

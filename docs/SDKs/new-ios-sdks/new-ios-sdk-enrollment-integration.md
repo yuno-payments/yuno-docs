@@ -1,5 +1,5 @@
 ---
-title: New - iOS SDK - Enrollment Integration
+title: New - iOS Flow Enrollment Integration
 deprecated: false
 hidden: true
 metadata:
