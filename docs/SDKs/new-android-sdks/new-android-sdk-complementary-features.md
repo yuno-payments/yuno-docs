@@ -1,12 +1,13 @@
 ---
-title: New - Android SDK Complementary Features
+title: New - Android Flow Complementary Features
 excerpt: ''
 deprecated: false
 hidden: true
 metadata:
   title: Android SDK Complementary Features
   description: >-
-    Configure and customize the Yuno Android SDK with initialization options, UI customization, card scanning, fraud prevention, and more.
+    Configure and customize the Yuno Android SDK with initialization options, UI
+    customization, card scanning, fraud prevention, and more.
   robots: index
 ---
 
@@ -715,4 +716,3 @@ Ensure your Android project meets the following requirements:
 * **[Enrollment Integration](doc:new-android-sdk-enrollment-integration)**: Save payment methods for future use
 * **[External Browser Handling](doc:external-browser-callback-android)**: Handle deep links and browser returns
 * **[Release Notes](doc:release-notes-android-sdk)**: Latest SDK updates and version history
-
