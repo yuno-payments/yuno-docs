@@ -142,6 +142,16 @@ The `startCheckout()` function accepts many configuration options for customizin
 
 Choose your mounting option based on your integration needs:
 
+### Quick Comparison
+
+| Feature                    | `mountCheckout()`   | `mountCheckoutLite()`     | `mountSeamlessCheckout()` |
+| -------------------------- | ------------------- | ------------------------- | ------------------------- |
+| **Payment method display** | Yuno handles        | You control               | You control               |
+| **UI control**             | High customization  | Complete control          | High customization        |
+| **Google/Apple Pay**       | Built-in buttons    | External buttons required | Built-in buttons          |
+| **Payment creation**       | Manual via callback | Manual via callback       | Automatic via callback    |
+| **Integration effort**     | Low                 | Medium                    | Low                       |
+
 ### Option A: Using `mountCheckout()`
 
 Yuno automatically displays all available payment methods based on your dashboard configuration:
