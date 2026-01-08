@@ -1,5 +1,5 @@
 ---
-title: New - iOS SDK Payment Integration
+title: New - iOS Flow Payment Integration
 deprecated: false
 hidden: true
 metadata:
