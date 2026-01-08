@@ -1,122 +1,48 @@
 ---
-title: New - Headless Integration Pattern
+title: New - Headless Integration
 deprecated: false
 hidden: true
 metadata:
   robots: index
 ---
-<br />
+Headless Integration gives you complete control over your payment UI by using the SDK as a tokenization library only. This guide covers implementation details for payment and enrollment using the Headless Integration approach.
 
-Yuno's **Headless SDK** provides complete control over your payment and enrollment UI while maintaining PCI compliance. This page explains the Headless integration pattern and when to use it.
+> **Note:** This is an advanced integration pattern. If you're deciding whether to use Headless Integration, see [SDK Integration Overview](sdk-integration-overview) first.
 
-## What is Headless SDK?
+## How Headless Integration Works
 
-The Headless SDK is a **tokenization library** that lets you build completely custom payment experiences without Yuno UI components. Unlike the standard SDK, Headless provides:
+Unlike standard mounting options (`mountCheckout()`, `mountCheckoutLite()`), Headless Integration provides no UI components. Instead, you:
 
-* **No UI components** - You build all forms and interfaces
-* **Direct token generation** - Call `generateToken()` with payment data
-* **Complete UX control** - Design every interaction yourself
-* **PCI compliance maintained** - Sensitive data never touches your server
+1. Build your own forms and collect payment data
+2. Call Headless SDK functions to generate tokens
+3. Handle all UI, validation, and error display yourself
+4. Manually manage 3DS challenges and redirects
 
-## Headless vs. Standard SDK
+**Key API differences:**
 
-| Aspect                 | Standard SDK                                   | Headless SDK                         |
-| ---------------------- | ---------------------------------------------- | ------------------------------------ |
-| **UI Components**      | Pre-built forms and flows                      | None - you build everything          |
-| **Mounting Functions** | `mountCheckout()`, `mountCheckoutLite()`, etc. | No mounting - just `generateToken()` |
-| **Payment Methods**    | All supported methods                          | Cards only (most platforms)          |
-| **Integration Effort** | Low to Medium                                  | High                                 |
-| **Customization**      | High                                           | Complete                             |
-| **Use Case**           | Standard checkouts                             | Fully custom experiences             |
+| Standard SDK | Headless Integration |
+|--------------|---------------------|
+| `mountCheckout()` / `mountCheckoutLite()` | `apiClientPayment()` |
+| `startPayment()` | `generateToken()` |
+| `continuePayment()` (automatic 3DS) | `getThreeDSecureChallenge()` (manual) |
+| `mountEnrollmentForm()` | `apiClientEnroll()` |
 
-## When to Use Headless
+## Headless Payment Integration
 
-### ✅ Use Headless When:
+### Payment Workflow
 
-* You need **complete control** over every UI element
-* You have **specific design requirements** that can't be met with SDK customization
-* You're building a **unique checkout experience**
-* You have **development resources** for custom UI implementation
-* You need to **match exact brand guidelines** pixel-perfect
+The Headless payment integration follows the same conceptual workflow as standard SDK, but you handle UI and tokenization manually:
 
-### ❌ Don't Use Headless When:
+1. Create checkout session (same as standard SDK)
+2. Build and display your custom payment form
+3. Collect card data in your UI
+4. Call `apiClientPayment.generateToken()` with card data
+5. Send token to your backend
+6. Backend creates payment (same as standard SDK)
+7. Handle 3DS challenges manually (if required)
+8. Display payment result in your UI
 
-* Standard SDK mounting options meet your needs
-* You want faster time-to-market
-* You have limited frontend development resources
-* You need support for multiple payment method types with pre-built UI
-* You want Yuno to handle payment method display and selection
-
-> **Recommendation:** Start with standard SDK (`mountCheckout()` or `mountCheckoutLite()`). Move to Headless only if standard options can't meet your requirements.
-
-## Headless Payment Workflow
-
-The Headless payment workflow gives you complete control over the payment experience while Yuno handles tokenization and processing.
-
-<Image align="center" border={false} src="https://files.readme.io/a17409c-Diagrama_-_SDK_Headless_pago.png" />
-
-### Component Responsibilities
-
-#### Merchant Client (Your Frontend)
-
-With Headless, you handle all UI responsibilities:
-
-* Build and display custom payment forms
-* Collect card information in your UI
-* Validate input fields
-* Call Headless SDK to generate token
-* Handle errors and validation messages
-* Display payment status
-
-#### Merchant Server (Your Backend)
-
-Your backend handles payment processing:
-
-* Create customer (if new)
-* Create checkout session
-* Create payment using token from Headless SDK
-* Receive payment result via webhook
-
-#### Yuno Headless SDK
-
-The Headless SDK only handles tokenization:
-
-* Accept payment data from your form
-* Generate one-time token
-* Collect device fingerprint (for fraud prevention)
-* Return token to your application
-
-#### Yuno Server
-
-Yuno processes the payment:
-
-* Validate tokens
-* Process payments with providers
-* Send payment results via webhooks
-
-### Headless Payment Steps
-
-1. **Merchant Server** → Create customer → **Yuno Server**
-2. **Merchant Server** → Create checkout session → **Yuno Server**
-3. **Merchant Client** → Display custom payment form → **User enters card data**
-4. **Merchant Client** → Call `apiClientPayment.generateToken()` → **Headless SDK**
-5. **Headless SDK** → Generate one-time token → Return to **Merchant Client**
-6. **Merchant Client** → Send token to → **Merchant Server**
-7. **Merchant Server** → Create payment → **Yuno Server**
-8. **Yuno Server** → Process payment → Payment provider
-9. **Yuno Server** → Send result → **Merchant Server** (webhook)
-
-### Key Differences from Standard SDK
-
-With Headless payment:
-
-* **No `mountCheckout()` or `mountCheckoutLite()`** - You build the form
-* **No `startPayment()`** - You call `generateToken()` directly
-* **No `continuePayment()` automation** - You handle 3DS challenge URLs manually
-* **Manual error handling** - You display validation errors
-* **Custom loading states** - You control all UI feedback
-
-### Headless Payment Example
+### Code Example
 
 ```javascript
 // Initialize Headless SDK
@@ -169,25 +95,19 @@ try {
 }
 ```
 
-## Headless Enrollment Workflow
+## Headless Enrollment Integration
 
-The Headless enrollment workflow allows you to build custom enrollment interfaces while Yuno handles tokenization and storage.
+### Enrollment Workflow
 
-<Image align="center" border={false} src="https://files.readme.io/e46babd-Diagrama_-_SDK_Headless_Enroll.png" />
+Headless enrollment integration follows the same concept as standard enrollment, but you build the form:
 
-### Headless Enrollment Steps
+1. Create customer session (same as standard enrollment)
+2. Create enrollment payment method object
+3. Build and display your custom enrollment form
+4. Call `apiClientEnroll.continueEnrollment()` with card data
+5. Receive and store vaulted token
 
-1. **Merchant Server** → Create customer → **Yuno Server**
-2. **Merchant Server** → Create customer session → **Yuno Server**
-3. **Merchant Server** → Create enrollment payment method object → **Yuno Server**
-4. **Merchant Client** → Display custom enrollment form → **User enters data**
-5. **Merchant Client** → Call `apiClientEnroll.continueEnrollment()` → **Headless SDK**
-6. **Headless SDK** → Generate vaulted token → Return to **Merchant Client**
-7. **Merchant Client** → Store vaulted token → **Merchant Server**
-8. **Yuno Server** → Process enrollment → Payment provider
-9. **Yuno Server** → Send result → **Merchant Server** (webhook)
-
-### Headless Enrollment Example
+### Code Example
 
 ```javascript
 // Initialize Headless SDK
@@ -236,9 +156,9 @@ try {
 
 ## Manual 3DS Handling
 
-With Headless SDK, you must manually handle 3DS authentication challenges:
+With Headless Integration, you must manually handle 3DS authentication. After creating a payment, check if `sdk_action_required` is true, then:
 
-### Getting the Challenge URL
+**Step 1: Get the 3DS challenge URL**
 
 ```javascript
 // After creating payment, if sdk_action_required is true:
@@ -249,11 +169,11 @@ const challenge = await apiClientPayment.getThreeDSecureChallenge(
 // challenge.url contains the 3DS authentication page
 ```
 
-### Handling the Redirect
+**Step 2: Redirect user to challenge URL**
 
 You have two options:
 
-#### Option 1: Redirect in Current Window
+**Option 1: Full page redirect**
 
 ```javascript
 // Redirect user to 3DS challenge
@@ -264,7 +184,7 @@ window.location.href = challenge.url;
 // Check payment status on callback
 ```
 
-#### Option 2: Open in Modal/WebView
+**Option 2: Modal/iframe**
 
 ```javascript
 // Open challenge URL in iframe/webview
@@ -278,9 +198,9 @@ modal.onClose(() => {
 });
 ```
 
-### Setting Callback URL
+**Step 3: Set callback URL**
 
-When creating checkout session, specify where users return after 3DS:
+When creating checkout session, specify where to return after 3DS:
 
 ```javascript
 POST /v1/checkout/sessions
@@ -290,9 +210,9 @@ POST /v1/checkout/sessions
 }
 ```
 
-## Using Vaulted Tokens with Headless
+## Using Vaulted Tokens with Headless Integration
 
-Even with Headless SDK, you should tokenize vaulted tokens through the SDK:
+Pass vaulted tokens through the SDK for proper security handling:
 
 ```javascript
 // Generate token using existing vaulted token
@@ -310,87 +230,40 @@ const tokenResponse = await apiClientPayment.generateToken({
 });
 ```
 
-**Why tokenize vaulted tokens?**
+This ensures proper device fingerprinting, 3DS handling, and fraud prevention.
 
-* Collects fresh device fingerprint for fraud prevention
-* Handles any required 3DS authentication
-* Gathers additional fields if needed by provider
-* Ensures proper security protocols
+## Important Limitations
 
-## Limitations and Considerations
+**Payment Method Support:**
+- ✅ Credit/Debit cards fully supported
+- ⚠️ Limited support for other payment methods (varies by platform)
 
-### Payment Method Support
+**Development Requirements:**
 
-Most Headless SDK implementations support:
+You must build and maintain:
+- All input fields and validation
+- Card number formatting and masking  
+- Error message display
+- Loading states
+- 3DS redirect handling
+- Payment status display
 
-* ✅ Credit/Debit cards
-* ⚠️ Limited support for other payment methods (varies by platform)
+**Trade-offs:**
+- Higher development effort vs. standard SDK
+- More code to maintain
+- Manual handling of provider requirement changes
+- Testing complexity increases
 
-For full payment method support, use standard SDK with `mountCheckoutLite()`.
+> **Recommendation:** Use standard SDK mounting options unless you have specific requirements that cannot be met with SDK customization.
 
-### Development Effort
+## Platform-Specific Headless Integration
 
-Headless requires you to build:
-
-* ✅ All input fields and validation
-* ✅ Card number formatting and masking
-* ✅ Error message display
-* ✅ Loading states and spinners
-* ✅ 3DS redirect handling
-* ✅ Payment status display
-
-This significantly increases development time compared to standard SDK.
-
-### Maintenance
-
-With Headless, you're responsible for:
-
-* Keeping up with payment provider requirement changes
-* Implementing new validation rules
-* Handling provider-specific edge cases
-* Testing across all scenarios
-
-Standard SDK handles these automatically via updates.
-
-## Platform-Specific Implementation
-
-For detailed Headless SDK implementation, see the platform-specific guides:
+For detailed Headless Integration implementation, see the platform-specific guides:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web Headless SDK" href="../docs/headless-sdk-payment" />
+  <YunoCard title="Web Headless Integration" href="../docs/headless-sdk-payment" />
 
-  <YunoCard title="iOS Headless SDK" href="../docs/headless-sdk-payment-ios" />
+  <YunoCard title="iOS Headless Integration" href="../docs/headless-sdk-payment-ios" />
 
-  <YunoCard title="Android Headless SDK" href="../docs/headless-sdk-payment-android" />
+  <YunoCard title="Android Headless Integration" href="../docs/headless-sdk-payment-android" />
 </Shelf>
-
-## Key Takeaways
-
-* **Complete UI control** - No Yuno components, you build everything
-* **Higher complexity** - More code, more maintenance, more testing
-* **Cards primarily** - Limited payment method support compared to standard SDK
-* **Manual 3DS** - You handle challenge URLs and redirects
-* **Use when necessary** - Only if standard SDK can't meet requirements
-
-## Decision Framework
-
-Use this decision tree to choose the right integration:
-
-```
-Need payment processing?
-├─ Yes → Need custom payment method display?
-│  ├─ No → Use mountCheckout() (automatic display)
-│  └─ Yes → Can you use pre-built payment forms?
-│     ├─ Yes → Use mountCheckoutLite() (custom display)
-│     └─ No → Need complete form control?
-│        ├─ Yes → Use Headless SDK
-│        └─ No → Try Secure Fields first
-└─ No → Just enrollment?
-   └─ Follow same logic for enrollment functions
-```
-
-## Next Steps
-
-* **Start with standard SDK:** Review [SDK Payment Workflow](sdk-payment-workflow)
-* **Consider alternatives:** Check [Secure Fields](../docs/secure-fields-payment) for middle ground
-* **Ready for Headless?** See platform-specific implementation guides above

@@ -73,7 +73,7 @@ Yuno provides multiple integration options. Below, you can see the specification
       <th>Feature</th>
       <th><a href="#yuno-sdk">Yuno SDK</a></th>
       <th><a href="#secure-fields">Secure Fields</a></th>
-      <th><a href="#headless-flow">Headless Flow</a></th>
+      <th><a href="#headless-integration">Headless Integration</a></th>
       <th><a href="#direct-api">Direct API</a></th>
     </tr>
   </thead>
@@ -281,7 +281,7 @@ A secure checkout solution using prebuilt secure iframe fields for collecting ca
 
 **[Learn more about Secure Fields →](doc:secure-fields-payment)**
 
-### Headless Flow
+### Headless Integration
 
 An advanced integration pattern for merchants that need complete control over the checkout experience:
 
@@ -292,7 +292,7 @@ An advanced integration pattern for merchants that need complete control over th
 
 **Available for:** Web, iOS, Android
 
-**[Learn more about Headless Flow →](doc:headless-integration-pattern)**
+**[Learn more about Headless Integration →](doc:headless-integration-pattern)**
 
 ### Direct API
 
@@ -323,7 +323,7 @@ Yuno recommends using the SDK over **Direct API** due to the additional complexi
 * You want custom card form design with secure fields
 * You need a middle ground between full SDK and headless
 
-### Choose Headless Flow when:
+### Choose Headless Integration when:
 
 * You need complete control over every UI element
 * You're building a highly custom checkout experience

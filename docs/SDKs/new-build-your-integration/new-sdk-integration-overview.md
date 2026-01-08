@@ -66,13 +66,13 @@ For completely custom card form design while maintaining PCI compliance. Ideal w
 
 **[Learn more about Secure Fields →](../docs/secure-fields-payment)**
 
-### Headless Flow (Advanced)
+### Headless Integration (Advanced)
 
 For completely custom payment experiences with full UI control. Use when standard SDK mounting options can't meet your UX requirements.
 
 **Key difference:** No UI components - you handle everything and use Yuno only for tokenization.
 
-**[Learn more about Headless Flow →](headless-integration-pattern)**
+**[Learn more about Headless Integration →](headless-integration-pattern)**
 
 ## Understanding Workflows
 
@@ -104,9 +104,9 @@ Once you've chosen your integration approach and understand the workflows, proce
 
 Yes! All options use the same SDK initialization. You can change which mounting function you call without reinstalling or reconfiguring.
 
-### When should I use the Headless Flow instead?
+### When should I use Headless Integration instead?
 
-Use the Headless Flow only when standard SDK mounting options can't meet your UX requirements. Headless requires more code but gives complete control.
+Use Headless Integration only when standard SDK mounting options can't meet your UX requirements. Headless Integration requires more code but gives complete control.
 
 ### What about other payment methods (not cards)?
 
