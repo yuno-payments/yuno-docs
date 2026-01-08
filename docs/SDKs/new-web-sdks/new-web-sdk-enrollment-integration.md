@@ -97,7 +97,7 @@ return customerSession;
 >
 > If you want to verify cards (zero-value authorization) before enrollment, include the `verify` object with `enabled: true`. This validates the card without charging the customer.
 
-> 📘 Important
+> 🚧 Important
 >
 > The customer session and enrollment payment method object must be created on your **server-side** to keep your private API keys secure. The payment method type is set server-side, unlike other integrations where it may be set client-side.
 
@@ -265,11 +265,11 @@ Some SDKs also provide built-in unenroll functionality in the UI.
 
 The enrollment workflow supports many configuration options for customizing SDK behavior:
 
-- **Loader control**: `showLoading`, `hideLoader()`
-- **Render mode**: `modal` vs `element`
-- **Card form options**: `type`, `styles`, `cardSaveEnable`, `texts`, `documentEnable`
-- **Text customization**: Custom button labels
-- **And more**
+* **Loader control**: `showLoading`, `hideLoader()`
+* **Render mode**: `modal` vs `element`
+* **Card form options**: `type`, `styles`, `cardSaveEnable`, `texts`, `documentEnable`
+* **Text customization**: Custom button labels
+* **And more**
 
 **For all configuration options, see [Complementary Features](doc:new-web-sdk-complementary-features).**
 
@@ -350,12 +350,6 @@ When the method returns an object, it allows you to handle your application's fl
 
 Access the [Demo App](doc:demo-app) for a complete implementation of enrollment functionality. The demo app includes working examples and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
 
-## Next Steps
-
-- **[Payment Integration](doc:new-web-sdk-payment-integration)**: Process payments with enrolled methods
-- **[Complementary Features](doc:new-web-sdk-complementary-features)**: Advanced configuration options
-- **[Secure Fields](doc:new-web-sdk-secure-fields-integration)**: Alternative for custom card forms
-
 ## Common Questions
 
 ### When should I use enrollment vs. save-during-payment?
@@ -383,14 +377,6 @@ No. You only need enrollment if you want to save payment methods separately from
 ## Alternative: Headless Enrollment (Advanced)
 
 For complete UI control, use the Headless Enrollment approach where you build your own enrollment UI and handle tokenization manually. This is ideal for merchants who need full control over the enrollment experience.
-
-> 📘 When to Use Headless Enrollment
->
-> Use Headless Enrollment when you need to:
-> * Build a completely custom enrollment UI
-> * Integrate enrollment into non-standard interfaces
-> * Have full control over payment method presentation
-> * Handle tokenization manually without SDK UI components
 
 ### Step 1: Create Customer Session
 
@@ -496,13 +482,13 @@ if (apiClientEnroll.shouldContinue) {
 
 ### Key Parameters for `continueEnrollment()`
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `customer_session` | Yes | The customer session ID |
-| `payment_method.type` | Yes | Payment method type (currently only "CARD" supported) |
-| `card.detail` | Yes | Card information including number, expiration, security code, holder name |
-| `card.detail.type` | No | "CREDIT" or "DEBIT" (auto-detected if not provided) |
-| `device_fingerprint` | No | Required if fraud screening is configured |
+| Parameter             | Required | Description                                                               |
+| --------------------- | -------- | ------------------------------------------------------------------------- |
+| `customer_session`    | Yes      | The customer session ID                                                   |
+| `payment_method.type` | Yes      | Payment method type (currently only "CARD" supported)                     |
+| `card.detail`         | Yes      | Card information including number, expiration, security code, holder name |
+| `card.detail.type`    | No       | "CREDIT" or "DEBIT" (auto-detected if not provided)                       |
+| `device_fingerprint`  | No       | Required if fraud screening is configured                                 |
 
 ### Response Structure
 
