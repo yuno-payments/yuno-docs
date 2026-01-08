@@ -11,7 +11,7 @@ metadata:
 >
 > The Yuno Android SDK flow fully supports Google's 16 KB ELF page alignment requirements. All native libraries are built and verified for 16 KB memory pages, ensuring compatibility with Android 15 (API Level 35) and ARMv9 devices. The SDK's native components were validated using Google's `check_elf_alignment.sh` script, confirming full compliance. Apps built with the Yuno SDK can be safely published to the Play Store and meet Google's November 1, 2025 enforcement deadline.
 
-Yuno's Android SDKs are specifically designed to simplify the integration of payment processing functionality in your Android applications. Developers can implement features more efficiently, reducing the need for extensive knowledge of payment protocols and infrastructure.
+Yuno's Android SDK flows are specifically designed to simplify the integration of payment processing functionality in your Android applications. Developers can implement features more efficiently, reducing the need for extensive knowledge of payment protocols and infrastructure.
 
 ## Get Started
 
