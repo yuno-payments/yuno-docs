@@ -312,9 +312,3 @@ No. You only need enrollment if you want to save payment methods separately from
 ### Can I enroll payment methods without SDK?
 
 For cards, use [Headless SDK Enrollment](headless-integration-pattern) for complete UI control. For API-only enrollment (requires PCI compliance), contact Yuno support.
-
-## Next Steps
-
-* **Learn about payments:** [SDK Payment Workflow](sdk-payment-workflow)
-* **Implement on your platform:** Choose Web, iOS, or Android guides
-* **Advanced use cases:** Explore [Headless Integration](headless-integration-pattern)
