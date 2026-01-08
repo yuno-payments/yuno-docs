@@ -493,11 +493,169 @@ Access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/t
 
 ### Can I enroll payment methods without SDK?
 
-For cards, use [Headless SDK Enrollment](doc:headless-sdk-enrollment-android) for complete UI control. For API-only enrollment (requires PCI compliance), contact Yuno support.
+See the Headless Enrollment section below for complete UI control. For API-only enrollment (requires PCI compliance), contact Yuno support.
 
 ### Do I need both enrollment and payment integration?
 
 No. You only need enrollment if you want to save payment methods separately from purchases. Many merchants only implement payment with the save-during-payment option.
+
+## Alternative: Headless Enrollment (Advanced)
+
+For complete UI control, use the Headless Enrollment approach where you build your own enrollment UI and handle tokenization manually. This is ideal for merchants who need full control over the enrollment experience.
+
+> 📘 When to Use Headless Enrollment
+>
+> Use Headless Enrollment when you need to:
+> * Build a completely custom enrollment UI
+> * Integrate enrollment into non-standard interfaces
+> * Have full control over payment method presentation
+> * Handle tokenization manually without SDK UI components
+
+### Step 1: Create Customer Session
+
+Before starting enrollment, create a customer session on your backend:
+
+```kotlin
+// Server-side
+val customer = createCustomer(
+    firstName = "John",
+    lastName = "Doe",
+    email = "john.doe@example.com"
+)
+
+val customerSession = createCustomerSession(
+    customerId = customer.id,
+    country = "US"
+)
+```
+
+### Step 2: Create Enrollment Payment Method Object
+
+Create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint:
+
+```kotlin
+// Server-side
+val enrollmentObject = enrollPaymentMethod(
+    customerSession = customerSession.id,
+    paymentMethodType = "CARD"
+)
+```
+
+> 🚧 Card Verification
+>
+> To verify cards (zero value authorization) before enrollment, include the `verify` object when creating the payment method object.
+
+### Step 3: Initialize Headless API Client
+
+After initializing the SDK with your public key, create a Headless enrollment client:
+
+```kotlin
+val apiClientEnroll = Yuno.apiClientEnroll(
+    country_code = "US",
+    customerSession = "cus_ses_123456",
+    context = this
+)
+```
+
+### Step 4: Collect Payment Information
+
+Build your own UI to collect payment information from customers. The SDK doesn't provide any UI components in Headless mode - you're responsible for:
+
+* Card number input
+* Expiration date fields
+* Security code field
+* Cardholder name
+* Any additional required fields
+
+### Step 5: Generate Vaulted Token
+
+Use the collected information to enroll the payment method:
+
+```kotlin
+try {
+    val result = apiClientEnroll.continueEnrollment(
+        collectedData = EnrollCollectedData(
+            customerSession = "cus_ses_123456",
+            paymentMethod = PaymentMethod(
+                type = "CARD",
+                card = CardData(
+                    detail = CardDetail(
+                        number = "4111111111111111",
+                        expirationMonth = 12,
+                        expirationYear = 25,
+                        securityCode = "123",
+                        holderName = "JOHN DOE",
+                        type = "CREDIT" // or "DEBIT"
+                    )
+                ),
+                customer = CustomerData(),
+                deviceFingerprint = "device-fingerprint-id"
+            )
+        )
+    )
+
+    val vaultedToken = result.vaultedToken
+    // Save this token for future payments
+} catch (error: Exception) {
+    Log.e("Enrollment", "Enrollment failed: ${error.message}")
+}
+```
+
+### Step 6: Handle Asynchronous Enrollment Actions
+
+For payment methods that require additional verification steps (3DS, etc.), handle the continuation:
+
+```kotlin
+if (apiClientEnroll.shouldContinue) {
+    try {
+        val continueResult = apiClientEnroll.continueEnrollment()
+        // Handle enrollment completion
+    } catch (error: Exception) {
+        Log.e("Enrollment", "Continue enrollment failed: ${error.message}")
+    }
+}
+```
+
+### Key Parameters for `continueEnrollment()`
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `customerSession` | Yes | The customer session ID |
+| `paymentMethod.type` | Yes | Payment method type (currently only "CARD" supported) |
+| `card.detail` | Yes | Card information including number, expiration, security code, holder name |
+| `card.detail.type` | No | "CREDIT" or "DEBIT" (auto-detected if not provided) |
+| `deviceFingerprint` | No | Required if fraud screening is configured |
+
+### Response Structure
+
+The `continueEnrollment()` method returns:
+
+```kotlin
+EnrollmentResult(
+    vaultedToken = "vtk_abc123def456",
+    type = "CARD",
+    cardData = CardData(
+        holderName = "JOHN DOE",
+        iin = "41111111",
+        lfd = "1111",
+        brand = "VISA",
+        type = "CREDIT",
+        issuerName = "JPMORGAN CHASE BANK N A"
+    )
+)
+```
+
+### Headless Enrollment Flow
+
+```
+1. Create customer session → Your backend
+2. Create enrollment object → Your backend
+3. Customer enters card info → Your custom UI
+4. Submit enrollment data → apiClientEnroll.continueEnrollment()
+5. Receive vaulted token → result.vaultedToken
+6. Handle verification → continueEnrollment() if needed
+7. Save vaulted token → Your backend/database
+```
 
 ## Stay Updated
 

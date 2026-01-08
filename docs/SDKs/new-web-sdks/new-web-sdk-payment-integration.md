@@ -458,6 +458,168 @@ Or unmount all external buttons:
 yuno.unmountAllExternalButtons();
 ```
 
+## Alternative: Headless Integration (Advanced)
+
+For complete UI control, use the Headless Integration approach where you build your own payment UI and handle tokenization manually. This is ideal for merchants who need full control over the payment experience and want to build custom payment flows.
+
+> 📘 When to Use Headless Integration
+>
+> Use Headless Integration when you need to:
+> * Build a completely custom payment UI
+> * Integrate payments into non-standard interfaces
+> * Have full control over payment method presentation
+> * Handle tokenization manually without SDK UI components
+
+### Step 1: Initialize Headless API Client
+
+After initializing the SDK with your public key, create a Headless API client:
+
+```javascript
+const apiClientPayment = yuno.apiClientPayment({
+  country_code: "US",
+  checkout_session: "438413b7-4921-41e4-b8f3-28a5a0141638"
+});
+```
+
+### Step 2: Collect Payment Information
+
+Build your own UI to collect payment information from customers. The SDK doesn't provide any UI components in Headless mode - you're responsible for:
+
+* Card number input
+* Expiration date fields
+* Security code field
+* Cardholder name
+* Any additional required fields
+
+### Step 3: Generate Token
+
+Use the collected information to generate a one-time token:
+
+#### Option A: With Card Data
+
+```javascript
+try {
+  const result = await apiClientPayment.generateToken({
+    checkout_session: "438413b7-4921-41e4-b8f3-28a5a0141638",
+    payment_method: {
+      type: "CARD",
+      vaulted_token: null,
+      card: {
+        save: false,
+        detail: {
+          number: "4111111111111111",
+          expiration_month: 12,
+          expiration_year: 25,
+          security_code: "123",
+          holder_name: "ANDREA B",
+          type: "CREDIT" // or "DEBIT"
+        },
+        installment: {
+          id: "installment-id-here",
+          value: 1
+        }
+      },
+      customer: {},
+      device_fingerprint: "device-fingerprint-id",
+      third_party_session_id: "third-party-session-id"
+    }
+  });
+
+  const oneTimeToken = result.token;
+  // Use this token to create payment on your backend
+} catch (error) {
+  console.error("Token generation failed:", error);
+}
+```
+
+#### Option B: With Vaulted Token
+
+```javascript
+try {
+  const result = await apiClientPayment.generateToken({
+    checkout_session: "438413b7-4921-41e4-b8f3-28a5a0141638",
+    payment_method: {
+      type: "CARD",
+      vaulted_token: "stored-token-id",
+      card: {
+        detail: {
+          security_code: "123"
+        },
+        installment: {
+          id: "installment-id-here",
+          value: 1
+        }
+      }
+    }
+  });
+
+  const oneTimeToken = result.token;
+  // Use this token to create payment on your backend
+} catch (error) {
+  console.error("Token generation failed:", error);
+}
+```
+
+### Step 4: Create Payment
+
+After generating the token, call your backend to create the payment using the [Create Payment](ref:create-payment) endpoint:
+
+```javascript
+// Call your backend
+await fetch('/api/create-payment', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    one_time_token: oneTimeToken,
+    checkout_session: checkoutSession
+  })
+});
+```
+
+### Step 5: Handle Asynchronous Payment Actions
+
+For payment methods that require additional steps (3DS, redirects, etc.), use `continuePayment()`:
+
+```javascript
+const result = await yuno.continuePayment({
+  showPaymentStatus: false // Handle status in your own UI
+});
+
+if (result && result.action === 'REDIRECT_URL') {
+  // Handle redirect in your UI
+  window.location.href = result.redirect.init_url;
+}
+```
+
+### Key Parameters for `generateToken()`
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `checkout_session` | Yes | The checkout session ID |
+| `payment_method.type` | Yes | Payment method type (e.g., "CARD") |
+| `payment_method.vaulted_token` | No | Use when processing with saved payment method |
+| `card.save` | No | Set to `true` to save card for future use |
+| `card.detail` | Yes* | Card information (*required when not using vaulted token) |
+| `card.detail.type` | No | "CREDIT" or "DEBIT" (auto-detected if not provided) |
+| `card.installment` | No | Required only if installment plan is configured |
+| `device_fingerprint` | No | Required if fraud screening is configured |
+| `third_party_session_id` | No | Required if third-party configuration exists |
+
+> 📘 Benefits of Using Vaulted Tokens
+>
+> When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. You can also add installment information and a security code if the provider requires it.
+
+### Headless Integration Flow
+
+```
+1. Customer enters payment info → Your custom UI
+2. Submit payment data → apiClientPayment.generateToken()
+3. Receive one-time token → result.token
+4. Create payment → Your backend calls Yuno API
+5. Handle async actions → continuePayment() if needed
+6. Show payment result → Your custom UI
+```
+
 ## Next Steps
 
 - **[Enrollment Integration](doc:new-web-sdk-enrollment-integration)**: Save payment methods for future use

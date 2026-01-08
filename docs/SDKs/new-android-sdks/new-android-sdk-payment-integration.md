@@ -646,6 +646,184 @@ YunoConfig(
 
 For detailed customization options, see [Android SDK Complementary Features](doc:new-android-sdk-complementary-features).
 
+## Alternative: Headless Integration (Advanced)
+
+For complete UI control, use the Headless Integration approach where you build your own payment UI and handle tokenization manually. This is ideal for merchants who need full control over the payment experience and want to build custom payment flows.
+
+> 📘 When to Use Headless Integration
+>
+> Use Headless Integration when you need to:
+> * Build a completely custom payment UI
+> * Integrate payments into non-standard interfaces
+> * Have full control over payment method presentation
+> * Handle tokenization manually without SDK UI components
+
+### Step 1: Initialize Headless API Client
+
+After initializing the SDK with your public key, create a Headless API client:
+
+```kotlin
+val apiClientPayment = Yuno.apiClientPayment(
+    country_code = "US",
+    checkoutSession = "438413b7-4921-41e4-b8f3-28a5a0141638",
+    context = this
+)
+```
+
+### Step 2: Collect Payment Information
+
+Build your own UI to collect payment information from customers. The SDK doesn't provide any UI components in Headless mode - you're responsible for:
+
+* Card number input
+* Expiration date fields
+* Security code field
+* Cardholder name
+* Any additional required fields
+
+### Step 3: Generate Token
+
+Use the collected information to generate a one-time token:
+
+#### Option A: With Card Data
+
+```kotlin
+try {
+    val result = apiClientPayment.generateToken(
+        collectedData = TokenCollectedData(
+            checkoutSession = "438413b7-4921-41e4-b8f3-28a5a0141638",
+            paymentMethod = PaymentMethod(
+                type = "CARD",
+                vaultedToken = null,
+                card = CardData(
+                    save = false,
+                    detail = CardDetail(
+                        number = "4111111111111111",
+                        expirationMonth = 12,
+                        expirationYear = 25,
+                        securityCode = "123",
+                        holderName = "ANDREA B",
+                        type = "CREDIT" // or "DEBIT"
+                    ),
+                    installment = Installment(
+                        id = "installment-id-here",
+                        value = 1
+                    )
+                ),
+                customer = CustomerData(),
+                deviceFingerprint = "device-fingerprint-id",
+                thirdPartySessionId = "third-party-session-id"
+            )
+        )
+    )
+
+    val oneTimeToken = result.token
+    // Use this token to create payment on your backend
+} catch (error: Exception) {
+    Log.e("Headless", "Token generation failed: ${error.message}")
+}
+```
+
+#### Option B: With Vaulted Token
+
+```kotlin
+try {
+    val result = apiClientPayment.generateToken(
+        collectedData = TokenCollectedData(
+            checkoutSession = "438413b7-4921-41e4-b8f3-28a5a0141638",
+            paymentMethod = PaymentMethod(
+                type = "CARD",
+                vaultedToken = "stored-token-id",
+                card = CardData(
+                    detail = CardDetail(
+                        securityCode = "123"
+                    ),
+                    installment = Installment(
+                        id = "installment-id-here",
+                        value = 1
+                    )
+                )
+            )
+        )
+    )
+
+    val oneTimeToken = result.token
+    // Use this token to create payment on your backend
+} catch (error: Exception) {
+    Log.e("Headless", "Token generation failed: ${error.message}")
+}
+```
+
+### Step 4: Create Payment
+
+After generating the token, call your backend to create the payment using the [Create Payment](ref:create-payment) endpoint:
+
+```kotlin
+// Call your backend
+val response = apiService.createPayment(
+    oneTimeToken = oneTimeToken,
+    checkoutSession = checkoutSession
+)
+```
+
+### Step 5: Handle Asynchronous Payment Actions
+
+For payment methods that require additional steps (3DS, redirects, etc.), use `continuePayment()`:
+
+```kotlin
+lifecycleScope.launch {
+    try {
+        val result = Yuno.continuePayment(
+            checkoutSession = checkoutSession,
+            showPaymentStatus = false // Handle status in your own UI
+        )
+        
+        // Handle the result in your custom UI
+        when (result) {
+            is PaymentResult.Success -> {
+                // Payment successful
+            }
+            is PaymentResult.Pending -> {
+                // Payment requires additional action
+            }
+            is PaymentResult.Error -> {
+                // Handle error
+            }
+        }
+    } catch (error: Exception) {
+        Log.e("Payment", "Continue payment failed: ${error.message}")
+    }
+}
+```
+
+### Key Parameters for `generateToken()`
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `checkoutSession` | Yes | The checkout session ID |
+| `paymentMethod.type` | Yes | Payment method type (e.g., "CARD") |
+| `paymentMethod.vaultedToken` | No | Use when processing with saved payment method |
+| `card.save` | No | Set to `true` to save card for future use |
+| `card.detail` | Yes* | Card information (*required when not using vaulted token) |
+| `card.detail.type` | No | "CREDIT" or "DEBIT" (auto-detected if not provided) |
+| `card.installment` | No | Required only if installment plan is configured |
+| `deviceFingerprint` | No | Required if fraud screening is configured |
+| `thirdPartySessionId` | No | Required if third-party configuration exists |
+
+> 📘 Benefits of Using Vaulted Tokens
+>
+> When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. You can also add installment information and a security code if the provider requires it.
+
+### Headless Integration Flow
+
+```
+1. Customer enters payment info → Your custom UI
+2. Submit payment data → apiClientPayment.generateToken()
+3. Receive one-time token → result.token
+4. Create payment → Your backend calls Yuno API
+5. Handle async actions → continuePayment() if needed
+6. Show payment result → Your custom UI
+```
+
 ## Demo Application
 
 Access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) for a complete implementation of all SDK features with working examples.

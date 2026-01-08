@@ -374,11 +374,166 @@ Access the [Demo App](doc:demo-app) for a complete implementation of enrollment 
 
 ### Can I enroll payment methods without SDK?
 
-For cards, use [Headless SDK Enrollment](doc:headless-sdk-enrollment) for complete UI control. For API-only enrollment (requires PCI compliance), contact Yuno support.
+See the Headless Enrollment section below for complete UI control. For API-only enrollment (requires PCI compliance), contact Yuno support.
 
 ### Do I need both enrollment and payment integration?
 
 No. You only need enrollment if you want to save payment methods separately from purchases. Many merchants only implement payment with the save-during-payment option.
+
+## Alternative: Headless Enrollment (Advanced)
+
+For complete UI control, use the Headless Enrollment approach where you build your own enrollment UI and handle tokenization manually. This is ideal for merchants who need full control over the enrollment experience.
+
+> 📘 When to Use Headless Enrollment
+>
+> Use Headless Enrollment when you need to:
+> * Build a completely custom enrollment UI
+> * Integrate enrollment into non-standard interfaces
+> * Have full control over payment method presentation
+> * Handle tokenization manually without SDK UI components
+
+### Step 1: Create Customer Session
+
+Before starting enrollment, create a customer session on your backend:
+
+```javascript
+// Server-side
+const customer = await createCustomer({
+  first_name: "John",
+  last_name: "Doe",
+  email: "john.doe@example.com"
+});
+
+const customerSession = await createCustomerSession({
+  customer_id: customer.id,
+  country: "US"
+});
+```
+
+### Step 2: Create Enrollment Payment Method Object
+
+Create an enrollment payment method object using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint:
+
+```javascript
+// Server-side
+const enrollmentObject = await enrollPaymentMethod({
+  customer_session: customerSession.id,
+  payment_method_type: "CARD"
+});
+```
+
+> 🚧 Card Verification
+>
+> To verify cards (zero value authorization) before enrollment, include the `verify` object when creating the payment method object.
+
+### Step 3: Initialize Headless API Client
+
+After initializing the SDK with your public key, create a Headless enrollment client:
+
+```javascript
+const apiClientEnroll = yuno.apiClientEnroll({
+  country_code: "US",
+  customer_session: "cus_ses_123456"
+});
+```
+
+### Step 4: Collect Payment Information
+
+Build your own UI to collect payment information from customers. The SDK doesn't provide any UI components in Headless mode - you're responsible for:
+
+* Card number input
+* Expiration date fields
+* Security code field
+* Cardholder name
+* Any additional required fields
+
+### Step 5: Generate Vaulted Token
+
+Use the collected information to enroll the payment method:
+
+```javascript
+try {
+  const result = await apiClientEnroll.continueEnrollment({
+    customer_session: "cus_ses_123456",
+    payment_method: {
+      type: "CARD",
+      card: {
+        detail: {
+          number: "4111111111111111",
+          expiration_month: 12,
+          expiration_year: 25,
+          security_code: "123",
+          holder_name: "JOHN DOE",
+          type: "CREDIT" // or "DEBIT"
+        }
+      },
+      customer: {},
+      device_fingerprint: "device-fingerprint-id"
+    }
+  });
+
+  const vaultedToken = result.vaulted_token;
+  // Save this token for future payments
+} catch (error) {
+  console.error("Enrollment failed:", error);
+}
+```
+
+### Step 6: Handle Asynchronous Enrollment Actions
+
+For payment methods that require additional verification steps (3DS, etc.), handle the continuation:
+
+```javascript
+if (apiClientEnroll.shouldContinue) {
+  try {
+    const continueResult = await apiClientEnroll.continueEnrollment();
+    // Handle enrollment completion
+  } catch (error) {
+    console.error("Continue enrollment failed:", error);
+  }
+}
+```
+
+### Key Parameters for `continueEnrollment()`
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `customer_session` | Yes | The customer session ID |
+| `payment_method.type` | Yes | Payment method type (currently only "CARD" supported) |
+| `card.detail` | Yes | Card information including number, expiration, security code, holder name |
+| `card.detail.type` | No | "CREDIT" or "DEBIT" (auto-detected if not provided) |
+| `device_fingerprint` | No | Required if fraud screening is configured |
+
+### Response Structure
+
+The `continueEnrollment()` method returns:
+
+```json
+{
+  "vaulted_token": "vtk_abc123def456",
+  "type": "CARD",
+  "card_data": {
+    "holder_name": "JOHN DOE",
+    "iin": "41111111",
+    "lfd": "1111",
+    "brand": "VISA",
+    "type": "CREDIT",
+    "issuer_name": "JPMORGAN CHASE BANK N A"
+  }
+}
+```
+
+### Headless Enrollment Flow
+
+```
+1. Create customer session → Your backend
+2. Create enrollment object → Your backend
+3. Customer enters card info → Your custom UI
+4. Submit enrollment data → apiClientEnroll.continueEnrollment()
+5. Receive vaulted token → result.vaulted_token
+6. Handle verification → continueEnrollment() if needed
+7. Save vaulted token → Your backend/database
+```
 
 ## Stay Updated
 
