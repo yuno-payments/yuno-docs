@@ -1,5 +1,5 @@
 ---
-title: New - Getting Started with Web SDK
+title: New - Getting Started with Web Flow
 deprecated: false
 hidden: true
 metadata:
