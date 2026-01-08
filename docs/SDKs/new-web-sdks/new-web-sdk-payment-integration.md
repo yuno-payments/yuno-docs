@@ -5,75 +5,11 @@ hidden: true
 metadata:
   robots: index
 ---
-This guide shows you how to integrate payment processing with Yuno's Web SDK. You'll learn about different mounting options and choose the approach that best fits your UI/UX requirements.
+This guide shows you how to integrate payment processing using the Yuno SDK's Web Flow.
 
 > 📘 Prerequisites
 >
 > Before starting, make sure you've [installed and initialized the SDK](doc:new-getting-started-with-web-sdk).
-
-## Choose Your Mounting Option
-
-The Yuno SDK offers **three mounting options** for displaying payment methods. All options use the same SDK - the difference is which function you call and how payment methods are presented to customers.
-
-### Option A: `mountCheckout()`
-
-**Use when:**
-
-* You want Yuno to display all available payment methods automatically
-* You need a complete checkout solution with minimal frontend work
-* Payment methods should update automatically from dashboard configuration
-
-```javascript
-yuno.mountCheckout();
-```
-
-**Best for:** Quick integration, standard e-commerce, marketplace checkouts
-
-### Option B: `mountCheckoutLite()`
-
-**Use when:**
-
-* You want full control over payment method selection UI
-* You need to customize which methods to display and how
-* You want to integrate payment forms into your existing checkout design
-
-```javascript
-yuno.mountCheckoutLite({
-  paymentMethodType: 'CARD' // You control which method to mount
-});
-```
-
-**Best for:** Custom checkout experiences, branded payment flows, complex UX requirements
-
-> 📘 Google Pay and Apple Pay in mountCheckoutLite
->
-> When using `mountCheckoutLite()`, Google Pay and Apple Pay require the `mountExternalButtons()` method for display. See [Mount External Buttons](#mount-external-buttons) below.
-
-### Option C: `mountSeamlessCheckout()`
-
-**Use when:**
-
-* You want a simplified single-call approach with automatic payment creation
-* You prefer payment creation handled via callbacks
-* You want minimal integration code
-
-```javascript
-yuno.mountSeamlessCheckout({
-  paymentMethodType: 'CARD' // You control which method to mount
-});
-```
-
-**Best for:** Streamlined checkouts, simple payment flows, rapid implementation
-
-### Quick Comparison
-
-| Feature                    | `mountCheckout()`   | `mountCheckoutLite()`     | `mountSeamlessCheckout()` |
-| -------------------------- | ------------------- | ------------------------- | ------------------------- |
-| **Payment method display** | Yuno handles        | You control               | You control               |
-| **UI control**             | High customization  | Complete control          | High customization        |
-| **Google/Apple Pay**       | Built-in buttons    | External buttons required | Built-in buttons          |
-| **Payment creation**       | Manual via callback | Manual via callback       | Automatic via callback    |
-| **Integration effort**     | Low                 | Medium                    | Low                       |
 
 ## Step 1: Create a Checkout Session
 
