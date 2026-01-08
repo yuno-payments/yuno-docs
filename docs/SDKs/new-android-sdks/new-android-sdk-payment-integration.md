@@ -5,7 +5,7 @@ hidden: true
 metadata:
   robots: index
 ---
-This guide shows you how to integrate payment processing with Yuno's Android SDK. You'll learn about different mounting options and choose the approach that best fits your UI/UX requirements.
+This guide shows you how to integrate payment processing with Yuno's Android SDK flow. You'll learn about different mounting options and choose the approach that best fits your UI/UX requirements.
 
 > 📘 Prerequisites
 >
@@ -653,6 +653,7 @@ For complete UI control, use the Headless Integration approach where you build y
 > 📘 When to Use Headless Integration
 >
 > Use Headless Integration when you need to:
+>
 > * Build a completely custom payment UI
 > * Integrate payments into non-standard interfaces
 > * Have full control over payment method presentation
@@ -797,17 +798,17 @@ lifecycleScope.launch {
 
 ### Key Parameters for `generateToken()`
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `checkoutSession` | Yes | The checkout session ID |
-| `paymentMethod.type` | Yes | Payment method type (e.g., "CARD") |
-| `paymentMethod.vaultedToken` | No | Use when processing with saved payment method |
-| `card.save` | No | Set to `true` to save card for future use |
-| `card.detail` | Yes* | Card information (*required when not using vaulted token) |
-| `card.detail.type` | No | "CREDIT" or "DEBIT" (auto-detected if not provided) |
-| `card.installment` | No | Required only if installment plan is configured |
-| `deviceFingerprint` | No | Required if fraud screening is configured |
-| `thirdPartySessionId` | No | Required if third-party configuration exists |
+| Parameter                    | Required | Description                                               |
+| ---------------------------- | -------- | --------------------------------------------------------- |
+| `checkoutSession`            | Yes      | The checkout session ID                                   |
+| `paymentMethod.type`         | Yes      | Payment method type (e.g., "CARD")                        |
+| `paymentMethod.vaultedToken` | No       | Use when processing with saved payment method             |
+| `card.save`                  | No       | Set to `true` to save card for future use                 |
+| `card.detail`                | Yes*     | Card information (*required when not using vaulted token) |
+| `card.detail.type`           | No       | "CREDIT" or "DEBIT" (auto-detected if not provided)       |
+| `card.installment`           | No       | Required only if installment plan is configured           |
+| `deviceFingerprint`          | No       | Required if fraud screening is configured                 |
+| `thirdPartySessionId`        | No       | Required if third-party configuration exists              |
 
 > 📘 Benefits of Using Vaulted Tokens
 >
