@@ -1,5 +1,5 @@
 ---
-title: New - Android SDK Payment Integration
+title: New - Android Flow Payment Integration
 deprecated: false
 hidden: true
 metadata:
