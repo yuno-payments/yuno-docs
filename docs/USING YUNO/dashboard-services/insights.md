@@ -67,39 +67,6 @@ The Insight section contains several options to filter, customize, and extract d
 
 * **Export as PDF**: The **Download** button allows you to export the current Insights page as a PDF file. This feature simplifies the process of sharing Yuno's valuable reports across your organization.
 
-## Your custom charts
-
-This section lets you build fully personalized dashboards using natural language prompts. Generate tailored data visualizations that adapt to your analysis needs, all without any manual setup required. You can create as many charts as needed, each born from your written input.
-
-### Supported chart types
-
-* **Single value**: Display a key total or metric at a glance.
-* **Line or bar charts**: Visualize trends or compare performance over time.
-* **Multiple line charts**: Compare categories such as countries, payment methods, or providers across the same time period.
-* **Pie charts**: Show the proportional distribution of categories within your data.
-
-Each chart includes an information icon (ⓘ) where you can view the exact prompt used to generate it, providing full transparency and allowing you to easily reuse or refine prompts.
-
-### Best practices for prompting
-
-* **Be specific and detailed**: Clearly describe what you want to visualize, including relevant details such as transaction type, status, country, provider, or any filters you wish to apply.
-
-<Callout icon="👍" theme="okay">
-  "Show a bar chart of approved credit card transactions by country for the last 3 months."
-</Callout>
-
-* **Always include a time range and frequency**: When requesting line or bar charts, specify both the period and the aggregation level (e.g., daily, weekly, monthly) for accurate trend analysis.
-
-<Callout icon="👍" theme="okay">
-  “Line chart of total volume per week for the last quarter.”
-</Callout>
-
-* **Use dynamic time references for reusable charts**: Instead of fixed dates, use relative time frames such as “last week” or “previous month” to ensure your charts remain automatically up to date.
-
-<Callout icon="👍" theme="okay">
-  “Show total transactions by day for the last 30 days.”
-</Callout>
-
 ## Merchant advisory codes (MAC) insights
 
 Insights includes charts that highlight merchant advisory codes (MAC), helping you understand why issuers recommend actions such as trying again later or updating information.
@@ -156,3 +123,38 @@ Monitor chargeback activity and outcomes:
 * **Chargebacks by type**: Analyze chargebacks categorized by type
 
 Use fraud insights to optimize your fraud prevention strategies, adjust fraud detection rules, and ensure you're protecting your business without unnecessarily declining legitimate transactions.
+
+## Your custom charts
+
+This section lets you build fully personalized dashboards using natural language prompts. Generate tailored data visualizations that adapt to your analysis needs, all without any manual setup required. You can create as many charts as needed, each born from your written input.
+
+### Supported chart types
+
+* **Single value**: Display a key total or metric at a glance.
+* **Line or bar charts**: Visualize trends or compare performance over time.
+* **Multiple line charts**: Compare categories such as countries, payment methods, or providers across the same time period.
+* **Pie charts**: Show the proportional distribution of categories within your data.
+
+Each chart includes an information icon (ⓘ) where you can view the exact prompt used to generate it, providing full transparency and allowing you to easily reuse or refine prompts.
+
+### Best practices for prompting
+
+* **Be specific and detailed**: Clearly describe what you want to visualize, including relevant details such as transaction type, status, country, provider, or any filters you wish to apply.
+
+<Callout icon="👍" theme="okay">
+  "Show a bar chart of approved credit card transactions by country for the last 3 months."
+</Callout>
+
+* **Always include a time range and frequency**: When requesting line or bar charts, specify both the period and the aggregation level (e.g., daily, weekly, monthly) for accurate trend analysis.
+
+<Callout icon="👍" theme="okay">
+  “Line chart of total volume per week for the last quarter.”
+</Callout>
+
+* **Use dynamic time references for reusable charts**: Instead of fixed dates, use relative time frames such as “last week” or “previous month” to ensure your charts remain automatically up to date.
+
+<Callout icon="👍" theme="okay">
+  “Show total transactions by day for the last 30 days.”
+</Callout>
+
+<br />
