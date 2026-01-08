@@ -1,5 +1,5 @@
 ---
-title: New - Android SDK Enrollment Integration
+title: New - Android Flow Enrollment Integration
 deprecated: false
 hidden: true
 metadata:
