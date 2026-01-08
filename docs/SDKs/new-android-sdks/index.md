@@ -65,7 +65,7 @@ Use the standard SDK when you want pre-built, secure UI components. You have **t
 
 **Best for:** Most integrations, standard checkouts, quick implementation
 
-**[Learn more →](doc:android-sdk-payment-integration)**
+**[Learn more →](doc:new-android-sdk-payment-integration)**
 
 ### Headless SDK (Advanced)
 

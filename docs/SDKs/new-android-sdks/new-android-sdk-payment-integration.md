@@ -9,7 +9,7 @@ This guide shows you how to integrate payment processing with Yuno's Android SDK
 
 > 📘 Prerequisites
 >
-> Before starting, make sure you've [installed and initialized the SDK](doc:android-sdk-getting-started).
+> Before starting, make sure you've [installed and initialized the SDK](doc:new-getting-started-with-android-sdk).
 
 ## Choose Your Mounting Option
 
@@ -240,7 +240,39 @@ Column(
 
 ### Option B: Custom Payment Method Display
 
-You control which payment method to display. First, fetch available methods, display them in your UI, then mount the selected method:
+You control which payment method to display. First, fetch available methods from the API, display them in your UI, then mount the selected method.
+
+**Step 1: Fetch available payment methods**
+
+Call the API to retrieve payment methods available for the checkout session:
+
+```kotlin
+// Backend API call
+GET /v1/checkout/sessions/{checkout_session}/payment-methods
+
+// Example response
+{
+  "payment_methods": [
+    {
+      "type": "CARD",
+      "name": "Credit/Debit Card",
+      "supported": true
+    },
+    {
+      "type": "PIX",
+      "name": "PIX",
+      "supported": true
+    },
+    // ... more payment methods
+  ]
+}
+```
+
+**Step 2: Display payment methods in your UI**
+
+Present the payment methods to your customer and capture their selection.
+
+**Step 3: Mount the selected payment method**
 
 ```kotlin
 startPaymentLite(
@@ -624,7 +656,7 @@ Access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/t
 * **[External Browser Handling](doc:external-browser-callback-android)**: Handle deep links and browser returns
 * **[Card Scanning (OCR)](doc:card-scanning-ocr-android)**: Enable camera-based card scanning
 * **[ClearSale Integration](doc:clearsale-sdk-android)**: Fraud prevention integration
-* **[Enrollment Integration](doc:android-sdk-enrollment-integration)**: Save payment methods for future use
+* **[Enrollment Integration](doc:new-android-sdk-enrollment-integration)**: Save payment methods for future use
 * **[Release Notes](doc:release-notes-android-sdk)**: Latest SDK updates
 
 ## Stay Updated

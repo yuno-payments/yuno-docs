@@ -9,7 +9,7 @@ This guide shows you how to enroll payment methods to customer accounts for futu
 
 > 📘 Prerequisites
 >
-> Before starting, make sure you've [installed and initialized the SDK](doc:android-sdk-getting-started).
+> Before starting, make sure you've [installed and initialized the SDK](doc:new-getting-started-with-android-sdk).
 
 ## Enrollment vs. Save During Payment
 
@@ -36,7 +36,7 @@ Use save-during-payment when:
 
 **Uses:** `saveCardEnabled: true` in `YunoConfig`
 
-**[Learn about save-during-payment →](doc:android-sdk-payment-integration#save-cards-during-payment)**
+**[Learn about save-during-payment →](doc:new-android-sdk-payment-integration#save-cards-during-payment)**
 
 > **For Cards:** Save-during-payment is usually easier. Use separate enrollment only when you need to save payment methods before a purchase.
 
@@ -472,7 +472,7 @@ Access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/t
 ## Additional Resources
 
 * **[SDK Customizations](doc:sdk-customizations-android)**: Change the SDK appearance to match your brand
-* **[Payment Integration](doc:android-sdk-payment-integration)**: Process payments with enrolled methods
+* **[Payment Integration](doc:new-android-sdk-payment-integration)**: Process payments with enrolled methods
 * **[Release Notes](doc:release-notes-android-sdk)**: Latest SDK updates
 
 ## Common Questions
