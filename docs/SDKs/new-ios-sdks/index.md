@@ -1,5 +1,5 @@
 ---
-title: New - iOS SDKs
+title: New - iOS Flow
 deprecated: false
 hidden: true
 metadata:
