@@ -16,8 +16,6 @@ metadata:
     merchants with actionable knowledge for enhanced decision-making.
   robots: index
 ---
-<br />
-
 The **Insights** section provides a unified view of your payment performance metrics and analytics, directly within the dashboard. This powerful tool transforms raw data into actionable intelligence, empowering you to make informed decisions and optimize your payment strategies. Its user-friendly interface can be easily customized to meet your unique business needs.
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/Insights/insights_V3.mp4" />
