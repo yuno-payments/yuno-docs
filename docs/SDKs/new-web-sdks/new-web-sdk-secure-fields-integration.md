@@ -1,77 +1,45 @@
 ---
-title: New - Web SDK - Secure Fields Integration
+title: New - Secure Fields
 deprecated: false
 hidden: true
 metadata:
   robots: index
 ---
-Yuno's Secure Fields provide a way to securely collect card payment information while maintaining PCI compliance. This approach allows you to build completely custom user interfaces while keeping sensitive card data secure through iframe-based fields.
+
+Secure Fields allow you to build completely custom card payment forms while maintaining PCI compliance. Use iframe-based secure fields for card number, expiration, and CVV.
+
+> **This is a Web-only, card-only alternative to standard SDK mounting options.**
 
 > 📘 Prerequisites
 >
-> Before starting, make sure you've [installed and initialized the SDK](new-getting-started-with-web-sdk).
-
-## What are Secure Fields?
-
-Secure Fields are **iframe-based input fields** that you embed in your custom UI. Each field (card number, expiration, CVV) is a secure iframe that:
-
-* Captures sensitive card data without it touching your server
-* Provides automatic formatting and validation
-* Can be styled to match your design
-* Generates secure tokens for processing payments
+> Before starting, make sure you've [installed and initialized the SDK](doc:new-getting-started-with-web-sdk).
 
 ## When to Use Secure Fields
 
-### ✅ Use Secure Fields When:
+**Use Secure Fields when:**
 
-* You want **complete control** over your checkout UI design
-* You need to **build custom forms** that match your brand exactly
-* You want **PCI compliance** without managing sensitive card data
-* You're processing **card payments only**
+- You need custom card form layouts
+- Standard SDK card forms don't fit your design
+- You want PCI compliance without managing card data
 
-### ❌ Don't Use Secure Fields When:
+**Don't use Secure Fields when:**
 
-* You want pre-built UI components → Use [standard SDK integration](new-web-sdk-payment-integration)
-* You need to accept alternative payment methods (PIX, wallets, etc.) → Use [standard SDK integration](new-web-sdk-payment-integration)
-* You need complete API-level control → Use [Headless SDK](../web-sdk-integrations/headless-sdk-web/headless-sdk-payment)
+- Standard SDK card forms work → Use [Payment Integration](doc:new-web-sdk-payment-integration) with `mountCheckout()` or `mountCheckoutLite()`
+- You need non-card payment methods → Use [Payment Integration](doc:new-web-sdk-payment-integration)
+- You need complete control over everything → Use [Headless Integration](doc:new-headless-integration-pattern)
 
-***
+## How It Works
 
-## Installation and Initialization
+Secure Fields provides iframe-based input components:
 
-### Step 1: Install the SDK
+- Card number field (iframe)
+- Expiration field (iframe)
+- CVV field (iframe)
 
-Add the SDK to your project using one of these methods:
+You build the form layout, style the iframes, and Secure Fields handles tokenization.
 
-**HTML Script Tag:**
-
-```html
-<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
-```
-
-**NPM:**
-
-```bash
-npm install @yuno-payments/sdk-web
-```
-
-> 📘 TypeScript Support
->
-> For TypeScript projects, install the type definitions: `npm install @yuno-payments/sdk-web-types`
-
-### Step 2: Initialize the SDK
-
-Create an instance of the Yuno SDK with your Public API Key:
-
-```javascript
-const yuno = await Yuno.initialize('YOUR_PUBLIC_API_KEY');
-```
-
-> 📘 Access Your API Key
->
-> Retrieve your API Key from the [Developers section](../docs/developers-credentials) in the Yuno Dashboard.
-
-***
+> **For standard card forms:** See [Payment Integration](doc:new-web-sdk-payment-integration)  
+> **For complete control:** See [Headless Integration](doc:new-headless-integration-pattern)
 
 ## Payment with Secure Fields
 

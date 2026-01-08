@@ -9,7 +9,7 @@ This guide shows you how to integrate payment processing with Yuno's Web SDK. Yo
 
 > 📘 Prerequisites
 >
-> Before starting, make sure you've [installed and initialized the SDK](doc:web-sdk-getting-started).
+> Before starting, make sure you've [installed and initialized the SDK](doc:new-getting-started-with-web-sdk).
 
 ## Choose Your Mounting Option
 
@@ -124,15 +124,9 @@ yuno.startCheckout({
   showLoading: true,
   issuersFormEnable: true,
   showPaymentStatus: true,
-  onLoading: (args) => console.log(args),
   card: {
     type: "extends",
-    styles: "",
-    cardSaveEnable: false,
-    texts: {},
-    cardNumberPlaceholder: "Enter card number", // Optional
-    hideCardholderName: false, // Optional
-    isCreditCardProcessingOnly: false, // Optional
+    isCreditCardProcessingOnly: false,
     onChange: ({ error, data }) => {
       if (error) {
         console.log('Card form error:', error);
@@ -141,14 +135,9 @@ yuno.startCheckout({
       }
     },
   },
-  renderMode: {
-    type: "modal", // or "element"
-    elementSelector: {
-      apmForm: "#form-element",
-      actionForm: "#action-form-element",
-    },
+  onLoading: (args) => {
+    console.log('Loading event:', args);
   },
-  texts: {},
   async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
     await createPayment({ oneTimeToken, checkoutSession });
     yuno.continuePayment({ showPaymentStatus: true });
@@ -160,7 +149,7 @@ yuno.startCheckout({
     console.log("Payment result:", data);
   },
   yunoError: (error, data) => {
-    console.error("An error occurred:", error);
+    console.error("An error occurred:", error, data);
   },
 });
 ```
@@ -169,7 +158,7 @@ yuno.startCheckout({
 >
 > If using `mountSeamlessCheckout()` in Step 3, use `startSeamlessCheckout()` instead of `startCheckout()`. The parameters are the same.
 
-### Parameters
+### Essential Parameters
 
 | Parameter                   | Description                                                                                                                                                                                           |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -178,17 +167,26 @@ yuno.startCheckout({
 | `countryCode`               | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. See [Country Coverage](doc:country-coverage-yuno-sdk). |
 | `language`                  | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available.                                     |
 | `showLoading`               | Controls the visibility of the Yuno loading/spinner page during the payment process. Default: `true`.                                                                                                 |
-| `onLoading`                 | Required to receive notifications about server calls or loading events during the payment process.                                                                                                    |
+| `onLoading`                 | Callback to receive notifications about server calls or loading events during the payment process.                                                                                                    |
 | `issuersFormEnable`         | Enables the issuer's form (e.g., a list of banks). Default: `true`.                                                                                                                                   |
 | `showPaymentStatus`         | Shows the Yuno Payment Status page, which is useful when continuing a payment. Default: `true`.                                                                                                       |
-| `showPayButton`             | Controls the visibility of the pay button in the customer or card form. Default: `true`.                                                                                                              |
-| `renderMode`                | Specify how and where the forms will be rendered. Options: `type: modal` (default) or `type: element` (requires `elementSelector`).                                                                   |
-| `card`                      | Defines the configuration for the card form. See [Card Form Configurations](#card-form-configurations) below.                                                                                         |
-| `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                            |
 | `yunoCreatePayment`         | Callback function for creating a payment. Called when the SDK generates a one-time token.                                                                                                             |
 | `yunoPaymentMethodSelected` | Callback invoked when a payment method is selected.                                                                                                                                                   |
 | `yunoPaymentResult`         | Callback called after the payment is completed, with the payment status.                                                                                                                              |
-| `yunoError`                 | Callback invoked when there is an error in the payment process.                                                                                                                                       |
+| `yunoError`                 | Callback invoked when an error occurs during the payment process.                                                                                                                                     |
+
+### Configuration Options
+
+The `startCheckout()` function accepts many configuration options for customizing SDK behavior:
+
+- **Loader control**: `showLoading`, `hideLoader()`
+- **Render mode**: `modal` vs `element`
+- **Card form options**: `cardSaveEnable`, `cardNumberPlaceholder`, `hideCardholderName`, `isCreditCardProcessingOnly`, `onChange`
+- **Issuer form**: `issuersFormEnable`
+- **Text customization**: `texts` for button labels
+- **And more**
+
+**For all configuration options, see [Complementary Features](doc:new-web-sdk-complementary-features).**
 
 > 📘 Customer and Merchant-Initiated Transactions
 >
@@ -227,7 +225,39 @@ yuno.mountCheckout({
 
 ### Option B: Using `mountCheckoutLite()` - Custom Display
 
-You control which payment method to display. First, fetch available methods from the API, display them in your UI, then mount the selected method:
+You control which payment method to display. First, fetch available methods from the API, display them in your UI, then mount the selected method.
+
+**Step 1: Fetch available payment methods**
+
+Call the API to retrieve payment methods available for the checkout session:
+
+```javascript
+// Backend API call
+GET /v1/checkout/sessions/{checkout_session}/payment-methods
+
+// Example response
+{
+  "payment_methods": [
+    {
+      "type": "CARD",
+      "name": "Credit/Debit Card",
+      "supported": true
+    },
+    {
+      "type": "PIX",
+      "name": "PIX",
+      "supported": true
+    },
+    // ... more payment methods
+  ]
+}
+```
+
+**Step 2: Display payment methods in your UI**
+
+Present the payment methods to your customer and capture their selection.
+
+**Step 3: Mount the selected payment method**
 
 ```javascript
 yuno.mountCheckoutLite({
@@ -237,6 +267,10 @@ yuno.mountCheckoutLite({
 ```
 
 See the [Payment Types](ref:payment-type-list) page for the complete list of payment method types.
+
+> 📘 Google Pay and Apple Pay in Lite SDK
+>
+> When using `mountCheckoutLite()`, Google Pay and Apple Pay are not available as built-in payment options. To use these payment methods, you must use the `mountExternalButtons()` method. See [Mount External Buttons](#mount-external-buttons) below.
 
 ### Option C: Using `mountSeamlessCheckout()` - Seamless Flow
 
@@ -248,6 +282,10 @@ yuno.mountSeamlessCheckout({
   vaultedToken: 'optional-vaulted-token'
 });
 ```
+
+> 📘 Seamless SDK Callback Behavior
+>
+> When using Seamless SDK, the SDK handles token generation and payment creation behind the scenes. The `yunoCreatePayment` callback is invoked automatically after the customer completes the payment form. Your implementation should create the payment on your backend when this callback is triggered.
 
 ## Step 4: Initiate the Payment Process
 
@@ -387,7 +425,7 @@ yuno.startCheckout({
 
 **Result:** If user checks the box and payment succeeds, you'll receive a `vaulted_token`.
 
-> **Important:** Use only ONE enrollment method. For enrolling alternative payment methods (not cards), see [Enrollment Integration](doc:web-sdk-enrollment-integration).
+> **Important:** Use only ONE enrollment method. For enrolling alternative payment methods (not cards), see [Enrollment Integration](doc:new-web-sdk-enrollment-integration).
 
 ## Mount External Buttons
 
@@ -420,141 +458,9 @@ Or unmount all external buttons:
 yuno.unmountAllExternalButtons();
 ```
 
-## Card Form Configurations
+## Next Steps
 
-Configure card form appearance and behavior:
-
-| Parameter                    | Description                                                                         |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| `type`                       | Card form layout type. Options: `step` or `extends`.                                |
-| `styles`                     | Write custom CSS to style the card form. Your CSS will be injected into the iframe. |
-| `cardSaveEnable`             | Show checkbox to save or enroll the card. Defaults to `false`.                      |
-| `texts`                      | Custom text for the card form buttons.                                              |
-| `cardNumberPlaceholder`      | Optional. Custom placeholder text for the card number field.                        |
-| `hideCardholderName`         | Optional. When set to `true`, the cardholder name field is hidden.                  |
-| `isCreditCardProcessingOnly` | Optional. Forces all card transactions to process as credit only.                   |
-| `onChange`                   | Callback function triggered when card information state changes.                    |
-
-```javascript
-yuno.startCheckout({
-  card: {
-    type: "extends",
-    styles: "",
-    cardSaveEnable: false,
-    texts: {},
-    cardNumberPlaceholder: "Enter card number",
-    hideCardholderName: false,
-    isCreditCardProcessingOnly: false,
-    onChange: ({ error, data }) => {
-      if (error) {
-        console.log('Card form error:', error);
-      } else {
-        console.log('Card form data (BIN info, installments):', data);
-      }
-    },
-  },
-});
-```
-
-## Additional Features
-
-### Form Loader
-
-Control the loading spinner visibility:
-
-```javascript
-yuno.startCheckout({
-  showLoading: true, // Show until hideLoader() or continuePayment() is called
-});
-```
-
-### Render Mode
-
-Control where and how payment forms are displayed:
-
-```javascript
-yuno.startCheckout({
-  renderMode: {
-    type: "modal", // or "element"
-    elementSelector: {
-      apmForm: "#form-element", // Where APM is displayed
-      actionForm: "#action-form-element" // Where continue button appears
-    },
-  },
-});
-```
-
-### Text Customization
-
-Customize button texts:
-
-```javascript
-yuno.startCheckout({
-  texts: {
-    customerForm: {
-      submitButton: "Pay Now"
-    },
-    paymentOtp: {
-      sendOtpButton: "Send Code"
-    }
-  }
-});
-```
-
-### Hide Pay Button
-
-Hide the pay button and trigger payment programmatically:
-
-```javascript
-yuno.startCheckout({
-  showPayButton: false,
-});
-
-// Later, trigger payment creation
-yuno.submitOneTimeTokenForm();
-```
-
-### Persist Form for Retries
-
-Keep the card form visible after token creation to allow retries:
-
-```javascript
-yuno.startCheckout({
-  automaticallyUnmount: false,
-});
-
-// If transaction is rejected:
-yuno.notifyError(); // Clears CVV
-yuno.updateCheckoutSession(newCheckoutSession); // Update session
-// Continue with new checkout
-```
-
-## Optional Initialization Options
-
-Advanced configuration for device identification:
-
-```javascript
-const yuno = await Yuno.initialize(publicApiKey, undefined, {
-  cookies: {
-    deviceId: {
-      name: "custom-device-id" // Default: "yuno"
-    }
-  }
-});
-```
-
-## Demo App
-
-Access the [Demo App](doc:demo-app) for a complete implementation of all SDK features. The demo app includes working examples and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
-
-## Additional Resources
-
-* **[SDK Customizations](doc:sdk-customizations)**: Change the SDK appearance to match your brand
-* **[Payment Status](doc:payment-status)**: Monitor payment status with the SDK
-* **[3DS Setup](doc:3d-secure)**: Integrate 3DS into your payment flow
-* **[Enrollment Integration](doc:web-sdk-enrollment-integration)**: Save payment methods for future use
-* **[Changelog](https://docs.y.uno/changelog)**: Latest SDK updates and version history
-
-## Stay Updated
-
-Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
+- **[Enrollment Integration](doc:new-web-sdk-enrollment-integration)**: Save payment methods for future use
+- **[Complementary Features](doc:new-web-sdk-complementary-features)**: Advanced configuration options
+- **[Secure Fields](doc:new-web-sdk-secure-fields)**: Custom card forms with iframe security
+- **[Demo App](doc:demo-app)**: Working examples and implementation reference

@@ -9,7 +9,7 @@ This guide shows you how to enroll payment methods to customer accounts for futu
 
 > 📘 Prerequisites
 >
-> Before starting, make sure you've [installed and initialized the SDK](doc:web-sdk-getting-started).
+> Before starting, make sure you've [installed and initialized the SDK](doc:new-getting-started-with-web-sdk).
 
 ## Enrollment vs. Save During Payment
 
@@ -36,7 +36,7 @@ Use save-during-payment when:
 
 **Uses:** `vault_on_success: true` or `cardSaveEnable` checkbox
 
-**[Learn about save-during-payment →](doc:web-sdk-payment-integration#enroll-cards-during-payment)**
+**[Learn about save-during-payment →](doc:new-web-sdk-payment-integration#enroll-cards-during-payment)**
 
 > **For Cards:** Save-during-payment is usually easier. Use separate enrollment only when you need to save payment methods before a purchase.
 
@@ -185,57 +185,6 @@ The `yunoEnrollmentStatus` callback receives a `status` field with one of the fo
 * `ERROR`
 * `UNENROLLED`
 
-## Card Form Configurations
-
-Configure the enrollment card form:
-
-| Parameter        | Description                                                                         |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| `type`           | Card form layout type. Options: `step` or `extends`. Default: `extends`.            |
-| `styles`         | Write custom CSS to style the card form. Your CSS will be injected into the iframe. |
-| `cardSaveEnable` | Show checkbox to save/enroll card. Default: `false`.                                |
-| `texts`          | Custom texts in card form buttons.                                                  |
-| `documentEnable` | Hide or show the document fields in card form. Default: `true`.                     |
-
-```javascript
-card: {
-  type: "extends",
-  styles: `
-    .Yuno-fieldset__box {
-      .Yuno-input__content {
-        background: lavender;
-        border-radius: 8px;
-      }
-    }
-  `,
-  cardSaveEnable: false,
-  texts: {
-    cardForm: {
-      enrollmentSubmitButton: "Save Card",
-      paymentSubmitButton: "Pay Now"
-    },
-    cardStepper: {
-      numberCardStep: {
-        nextButton: "Next"
-      },
-      cardHolderNameStep: {
-        prevButton: "Back",
-        nextButton: "Continue"
-      },
-      expirationDateStep: {
-        prevButton: "Back",
-        nextButton: "Continue"
-      },
-      cvvStep: {
-        prevButton: "Back",
-        nextButton: "Finish"
-      }
-    }
-  },
-  documentEnable: true,
-}
-```
-
 ## Using Enrolled Payment Methods
 
 After successful enrollment, you receive a `vaulted_token` that represents the saved payment method.
@@ -312,52 +261,17 @@ DELETE /v1/customers/{customer_id}/payment-methods/{vaulted_token}
 
 Some SDKs also provide built-in unenroll functionality in the UI.
 
-## Additional Features
+## Configuration Options
 
-### Loader Control
+The enrollment workflow supports many configuration options for customizing SDK behavior:
 
-Control the loading spinner visibility:
+- **Loader control**: `showLoading`, `hideLoader()`
+- **Render mode**: `modal` vs `element`
+- **Card form options**: `type`, `styles`, `cardSaveEnable`, `texts`, `documentEnable`
+- **Text customization**: Custom button labels
+- **And more**
 
-```javascript
-yuno.mountEnrollmentLite({
-  showLoading: true, // Show until hideLoader() is called
-});
-```
-
-### Render Mode
-
-Control where and how enrollment forms are displayed:
-
-```javascript
-yuno.mountEnrollmentLite({
-  renderMode: {
-    type: "modal", // or "element"
-    elementSelector: {
-      apmForm: "#form-element",
-      actionForm: "#action-form-element",
-    },
-  },
-});
-```
-
-**Render mode screenshots:**
-
-* **Modal**: Form appears as an overlay modal
-* **Element**: Form renders inline within specified element
-
-### Text Customization
-
-Customize button texts:
-
-```javascript
-yuno.mountEnrollmentLite({
-  texts: {
-    customerForm: {
-      submitButton: "Save Payment Method"
-    }
-  }
-});
-```
+**For all configuration options, see [Complementary Features](doc:new-web-sdk-complementary-features).**
 
 ## Card Verification
 
@@ -436,11 +350,11 @@ When the method returns an object, it allows you to handle your application's fl
 
 Access the [Demo App](doc:demo-app) for a complete implementation of enrollment functionality. The demo app includes working examples and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
 
-## Additional Resources
+## Next Steps
 
-* **[SDK Customizations](doc:sdk-customizations)**: Change the SDK appearance to match your brand
-* **[Payment Integration](doc:web-sdk-payment-integration)**: Process payments with enrolled methods
-* **[Changelog](https://docs.y.uno/changelog)**: Latest SDK updates and version history
+- **[Payment Integration](doc:new-web-sdk-payment-integration)**: Process payments with enrolled methods
+- **[Complementary Features](doc:new-web-sdk-complementary-features)**: Advanced configuration options
+- **[Secure Fields](doc:new-web-sdk-secure-fields-integration)**: Alternative for custom card forms
 
 ## Common Questions
 

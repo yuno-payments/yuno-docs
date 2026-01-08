@@ -155,31 +155,20 @@ The Web SDK sets two essential cookies for its functionality:
 
 Third-party fraud prevention SDKs integrated within Yuno may set additional cookies. These cookies are managed by the respective providers and are outside of Yuno's control. For details about third-party cookies and their usage, please consult the documentation of your specific fraud prevention vendor.
 
-## What's Next?
+## Next Steps
 
 Now that you've installed and initialized the SDK, choose your integration path:
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Payment Integration" href="../docs/web-sdk-payment-integration" titleSize="h4" description="Process one-time payments with multiple mounting options" />
+  <YunoCard title="Payment Integration" href="../docs/new-web-sdk-payment-integration" titleSize="h4" description="Process one-time payments with multiple mounting options" />
 
-  <YunoCard title="Enrollment Integration" href="../docs/web-sdk-enrollment-integration" titleSize="h4" description="Save payment methods for future use" />
+  <YunoCard title="Enrollment Integration" href="../docs/new-web-sdk-enrollment-integration" titleSize="h4" description="Save payment methods for future use" />
 
-  <YunoCard title="Headless Integration" href="../docs/headless-sdk-payment" titleSize="h4" description="Complete UI control for advanced use cases" />
+  <YunoCard title="Complementary Features" href="../docs/new-web-sdk-complementary-features" titleSize="h4" description="Configuration options and SDK customization" />
 
-  <YunoCard title="Secure Fields" href="../docs/secure-fields-payment" titleSize="h4" description="Custom card forms with secure iframe fields" />
+  <YunoCard title="Secure Fields" href="../docs/new-web-sdk-secure-fields-integration" titleSize="h4" description="Custom card forms (card payments only)" />
 </Shelf>
-
-## Additional Resources
-
-* **[Demo App](doc:demo-app)**: Working examples of all SDK integrations
-* **[SDK Customizations](doc:sdk-customizations)**: Customize the SDK appearance to match your brand
-* **[Payment Status](doc:payment-status)**: Monitor payment status with the SDK
-* **[Changelog](https://docs.y.uno/changelog)**: Latest SDK updates and version history
 
 ## Supported Languages
 
 For the full list of languages supported by our SDKs, see the [Supported Languages](doc:supported-languages) page.
-
-## Stay Updated
-
-Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
