@@ -1,5 +1,5 @@
 ---
-title: New - Web SDK enrollment integration
+title: New - Web Flow Enrollment Integration
 deprecated: false
 hidden: true
 metadata:
