@@ -5,80 +5,11 @@ hidden: true
 metadata:
   robots: index
 ---
-This guide shows you how to integrate payment processing with Yuno's Android SDK flow. You'll learn about different mounting options and choose the approach that best fits your UI/UX requirements.
+This guide shows you how to integrate payment processing using the Yuno SDK's Android Flow.
 
 > 📘 Prerequisites
 >
 > Before starting, make sure you've [installed and initialized the SDK](doc:new-getting-started-with-android-sdk).
-
-## Choose Your Mounting Option
-
-The Yuno SDK offers **three mounting options** for displaying payment methods. All options use the same SDK - the difference is which function you call and how payment methods are presented to customers.
-
-### Option A: Automatic Payment Method Display
-
-**Use `PaymentMethodListViewComponent` when:**
-
-* You want Yuno to display all available payment methods automatically
-* You need a complete checkout solution with minimal frontend work
-* Payment methods should update automatically from dashboard configuration
-
-```kotlin
-PaymentMethodListViewComponent(
-    activity = activity,
-    onPaymentSelected = { isSelected ->
-        paymentMethodIsSelected = isSelected
-    }
-)
-```
-
-**Best for:** Quick integration, standard e-commerce, marketplace checkouts
-
-### Option B: Custom Payment Method Display
-
-**Use `startPaymentLite()` when:**
-
-* You want full control over payment method selection UI
-* You need to customize which methods to display and how
-* You want to integrate payment forms into your existing checkout design
-
-```kotlin
-startPaymentLite(
-    paymentSelected = PaymentSelected(
-        paymentMethodType = "CARD" // You control which method
-    )
-)
-```
-
-**Best for:** Custom checkout experiences, branded payment flows, complex UX requirements
-
-### Option C: Seamless Flow
-
-**Use `startPaymentSeamlessLite()` when:**
-
-* You want a simplified single-call approach
-* You prefer streamlined payment creation
-* You want minimal integration code
-
-```kotlin
-startPaymentSeamlessLite(
-    paymentSelected = PaymentSelected(
-        paymentMethodType = "CARD" // You control which method
-    )
-)
-```
-
-**Best for:** Streamlined checkouts, simple payment flows, rapid implementation
-
-### Quick Comparison
-
-| Feature                    | Automatic Display                | Custom Display       | Seamless Flow                |
-| -------------------------- | -------------------------------- | -------------------- | ---------------------------- |
-| **Component**              | `PaymentMethodListViewComponent` | `startPaymentLite()` | `startPaymentSeamlessLite()` |
-| **Payment method display** | Yuno handles                     | You control          | You control                  |
-| **UI control**             | High customization               | Complete control     | High customization           |
-| **Integration effort**     | Low                              | Medium               | Low                          |
-| **Best for**               | Standard checkouts               | Custom experiences   | Quick implementation         |
 
 ## Step 1: Create a Checkout Session
 
@@ -192,6 +123,16 @@ If a PIX QR code expires naturally:
 ## Step 3: Mount the SDK
 
 Choose your mounting option based on your integration needs:
+
+### Quick Comparison
+
+| Feature                    | Automatic Display                | Custom Display       | Seamless Flow                |
+| -------------------------- | -------------------------------- | -------------------- | ---------------------------- |
+| **Component**              | `PaymentMethodListViewComponent` | `startPaymentLite()` | `startPaymentSeamlessLite()` |
+| **Payment method display** | Yuno handles                     | You control          | You control                  |
+| **UI control**             | High customization               | Complete control     | High customization           |
+| **Integration effort**     | Low                              | Medium               | Low                          |
+| **Best for**               | Standard checkouts               | Custom experiences   | Quick implementation         |
 
 ### Option A: Automatic Payment Method Display
 
