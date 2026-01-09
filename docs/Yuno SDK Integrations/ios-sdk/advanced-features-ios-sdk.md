@@ -374,7 +374,7 @@ func application(_ application: UIApplication,
     ClearSale.setup(apiKey: "your-clearsale-key")
     
     // Initialize Yuno
-    Yuno.initialize(publicKey: "your-public-key")
+    Yuno.initialize(apiKey: "your-public-key")
     
     return true
 }
@@ -391,7 +391,7 @@ Configure card input flow during Yuno initialization:
 ```swift
 // In AppDelegate or App struct
 Yuno.initialize(
-    publicKey: "your-public-key",
+    apiKey: "your-public-key",
     cardFlow: .oneStep // or .stepByStep
 )
 ```
@@ -476,7 +476,7 @@ POST /webhooks/yuno
 
 ```swift
 // Use test key
-Yuno.initialize(publicKey: "pk_test_your_key")
+Yuno.initialize(apiKey: "pk_test_your_key")
 ```
 
 ### Debug Logging
@@ -504,7 +504,7 @@ Task(priority: .background) {
 ```swift
 // Load only when needed
 lazy var yuno: Yuno = {
-    Yuno.initialize(publicKey: "pk_test_key")
+    Yuno.initialize(apiKey: "pk_test_key")
     return Yuno.shared
 }()
 ```
