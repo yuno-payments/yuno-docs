@@ -7,6 +7,144 @@ metadata:
 ---
 Advanced configuration and custom integrations for iOS.
 
+## Alternative Mounting Options
+
+The basic flow uses `Yuno.startPayment()` which handles the full payment flow automatically. For more control, use these alternatives:
+
+### Custom Payment Method Selection (`startPaymentLite`)
+
+Select which payment method to display. Your delegate must implement `YunoPaymentFullDelegate` with required properties:
+
+```swift
+class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
+    var checkoutSession: String { return _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+    
+    private var _checkoutSession: String = ""
+    
+    func setupPayment() async {
+        // 1. Create session
+        let session = await createCheckoutSession()
+        _checkoutSession = session.checkoutSession
+        
+        // 2. Fetch available methods
+        let methods = await fetchPaymentMethods(sessionId: checkoutSession)
+        
+        // 3. Display in your UI, then start payment with selected method
+        Yuno.startPaymentLite(
+            paymentMethodType: selectedMethod, // "CARD", "PIX", etc.
+            vaultedToken: nil, // or saved token
+            delegate: self
+        )
+    }
+}
+```
+
+### Simplified Flow (`startPaymentSeamlessLite`)
+
+Similar to Lite but with automatic payment creation:
+
+```swift
+Yuno.startPaymentSeamlessLite(
+    paymentMethodType: "CARD",
+    vaultedToken: nil,
+    delegate: self
+)
+```
+
+## Enrollment (Save Cards)
+
+### Save During Payment
+
+Your delegate provides the session info via properties:
+
+```swift
+class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+    
+    private var _checkoutSession: String = ""
+    
+    func setupPayment() async {
+        let session = await createCheckoutSession()
+        _checkoutSession = session.checkoutSession
+        
+        // Start payment - SDK will show save card checkbox automatically
+        Yuno.startPayment()
+    }
+    
+    // In delegate:
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        Task {
+            await createPayment(
+                token: token,
+                vaultOnSuccess: true // Save after successful payment
+            )
+            Yuno.continuePayment(showPaymentStatus: true)
+        }
+    }
+}
+```
+
+### Separate Enrollment
+
+```swift
+class EnrollmentViewController: UIViewController, YunoEnrollmentDelegate {
+    var customerSession: String { _customerSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+    
+    private var _customerSession: String = ""
+    
+    func setupEnrollment() async {
+        // Create customer session on backend
+        let session = await createCustomerSession(customerId: "cus_123")
+        _customerSession = session.id
+        
+        // Start enrollment - SDK reads session from delegate
+        Yuno.enrollPayment(delegate: self)
+    }
+    
+    func yunoEnrollmentStatus(status: Yuno.EnrollmentStatus, vaultedToken: String?) {
+        if status == .successful, let token = vaultedToken {
+            print("Card saved:", token)
+        }
+    }
+    
+    func yunoDidSelect(enrollmentMethod: EnrollmentMethodSelected) {
+        print("Selected enrollment method:", enrollmentMethod)
+    }
+}
+```
+
+## Vaulted Token Payments
+
+Use saved cards by providing the vaulted token to `startPaymentLite`:
+
+```swift
+class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+    
+    private var _checkoutSession: String = ""
+    
+    func payWithSavedCard(vaultedToken: String) {
+        Yuno.startPaymentLite(
+            paymentMethodType: "CARD",
+            vaultedToken: vaultedToken,
+            delegate: self
+        )
+    }
+}
+```
+
 ## Custom UI (Headless Integration)
 
 Build completely custom payment forms with full UI control when you need complete control over every UI element, highly custom checkout experiences, or have development resources for custom UI.
@@ -178,13 +316,18 @@ Handle concurrency warnings with proper annotations:
 
 ```swift
 @MainActor
-class PaymentViewController: UIViewController, YunoPaymentDelegate {
+class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+    
+    private var _checkoutSession: String = ""
     
     // Safe to call from any thread
     nonisolated func startPayment() {
         Task { @MainActor in
-            let config = YunoConfig(...)
-            Yuno.startPayment(with: config, delegate: self)
+            Yuno.startPayment()
         }
     }
     
@@ -243,32 +386,36 @@ ClearSale data is automatically collected and sent with payments.
 
 ### Card Flow Types
 
+Configure card input flow during Yuno initialization:
+
 ```swift
-let config = YunoConfig(
-    checkoutSession: session.id,
-    countryCode: "US",
+// In AppDelegate or App struct
+Yuno.initialize(
+    publicKey: "your-public-key",
     cardFlow: .oneStep // or .stepByStep
 )
 ```
 
 ### Hide Cardholder Name
 
+Configure cardholder name visibility:
+
 ```swift
-let config = YunoConfig(
-    checkoutSession: session.id,
-    countryCode: "US",
-    hideCardholderName: true
-)
+// Set globally
+Yuno.hideCardholderName = true
 ```
 
 ### Show/Hide Status Screen
 
+Control payment status screen in `continuePayment()`:
+
 ```swift
-let config = YunoConfig(
-    checkoutSession: session.id,
-    countryCode: "US",
-    showPaymentStatus: false // Handle result yourself
-)
+func yunoCreatePayment(with token: String, information: [String: Any]) {
+    Task {
+        await createPayment(token: token)
+        Yuno.continuePayment(showPaymentStatus: false) // Handle result yourself
+    }
+}
 ```
 
 ## Error Handling

@@ -13,7 +13,7 @@ Ready-to-use iOS code examples for common scenarios.
 import UIKit
 import YunoSDK
 
-class PaymentViewController: UIViewController, YunoPaymentDelegate {
+class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
     
     @IBOutlet weak var payButton: UIButton!
     
@@ -110,7 +110,7 @@ struct CheckoutView: View {
     }
 }
 
-extension CheckoutView: YunoPaymentDelegate {
+extension CheckoutView: YunoPaymentFullDelegate {
     func yunoPaymentResult(_ result: PaymentResult) {
         if result.status == .succeeded {
             showSuccess = true
@@ -197,7 +197,7 @@ class FastCheckoutVC: UIViewController {
     }
 }
 
-extension FastCheckoutVC: YunoPaymentDelegate {
+extension FastCheckoutVC: YunoPaymentFullDelegate {
     func yunoPaymentResult(_ result: PaymentResult) {
         if result.status == .succeeded {
             navigateToOrderConfirmation()
@@ -317,7 +317,7 @@ class PaymentWithRetryVC: UIViewController {
     }
 }
 
-extension PaymentWithRetryVC: YunoPaymentDelegate {
+extension PaymentWithRetryVC: YunoPaymentFullDelegate {
     func yunoPaymentResult(_ result: PaymentResult) {
         if result.status == .succeeded {
             retryCount = 0
@@ -350,7 +350,7 @@ class PaymentWithAnalyticsVC: UIViewController {
     }
 }
 
-extension PaymentWithAnalyticsVC: YunoPaymentDelegate {
+extension PaymentWithAnalyticsVC: YunoPaymentFullDelegate {
     func yunoPaymentResult(_ result: PaymentResult) {
         switch result.status {
         case .succeeded:
@@ -441,7 +441,7 @@ class PaymentViewModel: ObservableObject {
     }
 }
 
-extension PaymentViewModel: YunoPaymentDelegate {
+extension PaymentViewModel: YunoPaymentFullDelegate {
     func yunoPaymentResult(_ result: PaymentResult) {
         Task { @MainActor in
             if result.status == .succeeded {

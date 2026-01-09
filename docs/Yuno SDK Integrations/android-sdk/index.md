@@ -19,7 +19,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("com.yuno.payments:android-sdk:1.0.0")
+    implementation("com.yuno.sdk:yuno-sdk-android:2.8.1")
 }
 ```
 
@@ -30,7 +30,7 @@ dependencies {
 **In Application class:**
 
 ```kotlin
-import com.yuno.payments.Yuno
+import com.yuno.sdk.Yuno
 import android.app.Application
 
 class MyApplication : Application() {
@@ -66,8 +66,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.yuno.payments.Yuno
-import com.yuno.payments.features.base.OneTimeToken
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.payments.OneTimeToken
 
 @Composable
 fun PaymentScreen() {
@@ -76,13 +76,8 @@ fun PaymentScreen() {
     val scope = rememberCoroutineScope()
     
     LaunchedEffect(Unit) {
-        // Initialize checkout
-        val session = createCheckoutSession()
-        checkoutSession = session.checkoutSession
-        
+        // 1. Initialize checkout with callback
         startCheckout(
-            checkoutSession = session.checkoutSession,
-            countryCode = "US",
             callbackPaymentState = { state ->
                 when (state) {
                     "SUCCEEDED" -> navigateToSuccess()
@@ -90,6 +85,16 @@ fun PaymentScreen() {
                     else -> {}
                 }
             }
+        )
+        
+        // 2. Create session on backend
+        val session = createCheckoutSession()
+        checkoutSession = session.checkoutSession
+        
+        // 3. Update SDK with session and country
+        updateCheckoutSession(
+            checkoutSession = session.checkoutSession,
+            countryCode = "US"
         )
     }
     
@@ -155,8 +160,8 @@ suspend fun createPayment(token: String, checkoutSession: String) {
 ### XML Views (Traditional)
 
 ```kotlin
-import com.yuno.payments.Yuno
-import com.yuno.payments.features.base.OneTimeToken
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.payments.OneTimeToken
 
 class PaymentActivity : AppCompatActivity() {
     private lateinit var checkoutSession: String
@@ -180,18 +185,24 @@ class PaymentActivity : AppCompatActivity() {
     
     private fun initializeCheckout() {
         lifecycleScope.launch {
-            val session = createCheckoutSession()
-            checkoutSession = session.checkoutSession
-            
+            // 1. Initialize checkout with callback
             startCheckout(
-                checkoutSession = session.checkoutSession,
-                countryCode = "US",
                 callbackPaymentState = { state ->
                     handlePaymentState(state)
                 }
             )
             
-            // Set up payment methods view
+            // 2. Create session on backend
+            val session = createCheckoutSession()
+            checkoutSession = session.checkoutSession
+            
+            // 3. Update SDK with session and country
+            updateCheckoutSession(
+                checkoutSession = session.checkoutSession,
+                countryCode = "US"
+            )
+            
+            // 4. Set up payment methods view
             setupPaymentMethodsView()
         }
     }
@@ -281,107 +292,13 @@ class PaymentActivity : AppCompatActivity() {
 }
 ```
 
-## Alternative Mounting Options
-
-The basic flow above uses automatic payment method display. For more control:
-
-### Custom Payment Method Selection (`startPaymentLite`)
-
-Control which payment method to display:
-
-```kotlin
-// 1. Fetch available methods
-val methods = fetchPaymentMethods(sessionId)
-
-// 2. Display in your UI
-// 3. Start payment with selected method
-
-startPaymentLite(
-    paymentMethodType = selectedMethod, // "CARD", "PIX", etc.
-    vaultedToken = null,
-    showPaymentStatus = true,
-    callbackOTT = { token ->
-        token?.let { createPayment(it, checkoutSession) }
-    }
-)
-```
-
-### Simplified Flow (`startPaymentSeamlessLite`)
-
-Similar to Lite but with automatic payment creation:
-
-```kotlin
-startPaymentSeamlessLite(
-    paymentMethodType = "CARD",
-    vaultedToken = null,
-    showPaymentStatus = true
-)
-```
-
-## Enrollment (Save Cards)
-
-### Save During Payment
-
-```kotlin
-// When creating payment on backend, include vault_on_success flag
-suspend fun createPayment(token: String, checkoutSession: String) {
-    apiClient.post("/payment/create", mapOf(
-        "one_time_token" to token,
-        "checkout_session" to checkoutSession,
-        "vault_on_success" to true // Save after successful payment
-    ))
-}
-
-// Configure SDK to show save checkbox
-startCheckout(
-    checkoutSession = session.checkoutSession,
-    countryCode = "US",
-    // SDK will show "Save card" checkbox
-)
-```
-
-### Separate Enrollment
-
-```kotlin
-// Create customer session on backend
-val customerSession = createCustomerSession("cus_123")
-
-// Start enrollment
-initEnrollment(
-    customerSession = customerSession.id,
-    countryCode = "US"
-)
-
-// Start enrollment flow
-startEnrollment(
-    showEnrollmentStatus = true,
-    callback = { vaultedToken ->
-        vaultedToken?.let {
-            println("Card saved: $it")
-        }
-    }
-)
-```
-
-## Vaulted Token Payments
-
-```kotlin
-startPaymentLite(
-    paymentMethodType = "CARD",
-    vaultedToken = "vtok_saved_card_123",
-    showPaymentStatus = true,
-    callbackOTT = { token ->
-        token?.let { createPayment(it, checkoutSession) }
-    }
-)
-```
-
 ## Handling Payment Results
 
+Handle payment status changes via the `callbackPaymentState` callback:
+
 ```kotlin
+// Set up payment state callback during initialization
 startCheckout(
-    checkoutSession = session.checkoutSession,
-    countryCode = "US",
     callbackPaymentState = { state ->
         when (state) {
             "SUCCEEDED" -> {
@@ -407,6 +324,12 @@ startCheckout(
             else -> {}
         }
     }
+)
+
+// After startCheckout, update with session and country
+updateCheckoutSession(
+    checkoutSession = session.checkoutSession,
+    countryCode = "US"
 )
 ```
 
@@ -456,11 +379,29 @@ const val PAYMENT_STATE_CANCELED = "CANCELED"
 
 ```proguard
 # Yuno SDK
--keep class com.yuno.payments.** { *; }
--keep interface com.yuno.payments.** { *; }
--dontwarn com.yuno.payments.**
+-keep class com.yuno.sdk.** { *; }
+-keep interface com.yuno.sdk.** { *; }
+-dontwarn com.yuno.sdk.**
 
 # OkHttp & Retrofit
 -dontwarn okhttp3.**
 -dontwarn retrofit2.**
 ```
+
+## Next Steps
+
+Ready to explore more advanced features? Check out the [Advanced Features](./advanced-features-android-sdk.md) guide for:
+
+- **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+- **Enrollment (Save Cards)** - Save payment methods for future use
+- **Vaulted Token Payments** - One-click payments with saved cards
+- **Custom UI (Headless Integration)** - Build completely custom payment forms
+- **Render Mode Integration** - Display payment form within your custom view
+- **Styling** - Customize SDK appearance with themes
+- **Card Scanning (OCR)** - Enable card scanning with camera
+- **ClearSale Integration** - Fraud prevention
+- **External Browser Return (Deep Links)** - Handle payment redirects
+
+See also:
+- [Code Examples](./code-examples-android-sdk.md) - Copy-paste examples for common scenarios
+- [Release Notes](./release-notes-android-sdk.md) - SDK versions, changes, and migration guides

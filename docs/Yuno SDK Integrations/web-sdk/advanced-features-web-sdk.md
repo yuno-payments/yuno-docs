@@ -7,6 +7,129 @@ metadata:
 ---
 Advanced configuration options and custom integrations for the Yuno Web SDK.
 
+## Alternative Mounting Options
+
+The basic flow uses `mountCheckout()` for automatic payment method display. For more control, use these alternatives:
+
+### Custom Payment Method Selection (`mountCheckoutLite()`)
+
+Control which payment method to display:
+
+```javascript
+// 1. Fetch available methods from backend
+const methods = await fetch('/api/payment-methods').then(r => r.json());
+
+// 2. Display methods in your custom UI
+// 3. Mount selected payment method
+
+yuno.mountCheckoutLite({
+  paymentMethodType: selectedMethod, // 'CARD', 'PIX', etc.
+  vaultedToken: null // or saved token
+});
+
+// 4. Still need startPayment()
+document.querySelector('#pay-button').addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
+
+**Google Pay & Apple Pay with Lite:**
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay-button'
+  },
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay-button'
+  }
+]);
+```
+
+### Simplified Flow (`mountSeamlessCheckout()`)
+
+Similar to `mountCheckoutLite()` but with automatic payment creation:
+
+```javascript
+// Use startSeamlessCheckout instead of startCheckout
+yuno.startSeamlessCheckout({
+  // Same configuration
+});
+
+// Mount
+yuno.mountSeamlessCheckout({
+  paymentMethodType: 'CARD'
+});
+
+// Still need startPayment()
+document.querySelector('#pay-button').addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
+
+## Enrollment (Save Cards)
+
+### Save During Payment
+
+```javascript
+yuno.startCheckout({
+  checkoutSession: session.id,
+  elementSelector: '#payment-container',
+  countryCode: 'US',
+  card: {
+    cardSaveEnable: true // Shows "Save card" checkbox
+  },
+  async yunoCreatePayment(token) {
+    await fetch('/api/payment/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        token,
+        vault_on_success: true // Save card after successful payment
+      })
+    });
+    yuno.continuePayment();
+  }
+});
+```
+
+### Separate Enrollment
+
+```javascript
+// Create customer session on backend
+const customerSession = await fetch('/api/customer/session', {
+  method: 'POST',
+  body: JSON.stringify({ customer_id: 'cus_123' })
+}).then(r => r.json());
+
+// Initialize enrollment
+yuno.startEnrollment({
+  customerSession: customerSession.id,
+  countryCode: 'US',
+  async yunoEnrolled(vaultedToken) {
+    console.log('Card saved:', vaultedToken);
+  }
+});
+
+// Mount enrollment form
+yuno.mountEnrollment();
+```
+
+## Vaulted Token Payments
+
+```javascript
+// Use saved card
+yuno.mountCheckout({
+  vaultedToken: 'vtok_saved_card_123'
+});
+
+// Still need startPayment()
+document.querySelector('#pay-button').addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
+
 ## Custom UI (Headless Integration)
 
 Build completely custom payment forms with full UI control when you need complete control over every UI element, building highly custom checkout experiences, or have development resources for custom UI. Yuno handles only tokenization.

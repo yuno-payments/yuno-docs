@@ -27,7 +27,7 @@ In Xcode: File → Add Package Dependencies
 https://github.com/yuno-payments/yuno-sdk-ios
 ```
 
-> 📘 Requirements: iOS 13.0+, Swift 5.7+
+> 📘 Requirements: iOS 14.0+, Swift 5.7+
 
 ## Initialize
 
@@ -78,30 +78,35 @@ struct PaymentView: View {
 }
 
 @MainActor
-class PaymentViewModel: ObservableObject, YunoPaymentDelegate {
-    private var config: YunoConfig?
+class PaymentViewModel: ObservableObject, YunoPaymentFullDelegate {
+    private var _checkoutSession: String = ""
+    private var _countryCode: String = "US"
+    private var paymentMethodsView: UIView?
+    
+    // YunoPaymentFullDelegate required properties
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { _countryCode }
+    var language: String? { "en" }
+    var viewController: UIViewController? { nil }
     
     func initialize() async {
         // Create checkout session on backend
         let session = await createCheckoutSession()
+        _checkoutSession = session.checkoutSession
         
-        // Configure payment
-        self.config = YunoConfig(
-            checkoutSession: session.checkoutSession,
-            countryCode: "US",
-            language: "en"
-        )
+        // Get payment methods view from SDK
+        paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+        
+        // Add view to your UI hierarchy (in SwiftUI, use UIViewRepresentable)
     }
     
-    func startPaymentFlow() async {
-        guard let config = config else { return }
-        
-        // Start payment with SDK
-        Yuno.startPayment(with: config, delegate: self)
+    func startPayment() async {
+        // Start payment - SDK reads session from delegate properties
+        Yuno.startPayment()
     }
     
-    // YunoPaymentDelegate methods
-    func yunoCreatePayment(with token: String) {
+    // YunoPaymentFullDelegate methods
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
         Task {
             await createPayment(token: token)
             Yuno.continuePayment(showPaymentStatus: true)
@@ -115,6 +120,16 @@ class PaymentViewModel: ObservableObject, YunoPaymentDelegate {
         case .failure(let error):
             print("Payment failed:", error)
         }
+    }
+    
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) {
+        // Called when payment methods view height changes
+        print("Payment methods view height:", height)
+    }
+    
+    func yunoDidSelect(paymentMethod: PaymentMethodSelected) {
+        // Called when user selects a payment method
+        print("Selected payment method:", paymentMethod)
     }
 }
 
@@ -131,41 +146,60 @@ func createCheckoutSession() async -> CheckoutSession {
 import UIKit
 import YunoSDK
 
-class PaymentViewController: UIViewController, YunoPaymentDelegate {
-    var checkoutSession: String?
+class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
+    private var _checkoutSession: String = ""
+    private var paymentMethodsView: UIView?
+    
+    // YunoPaymentFullDelegate required properties
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let payButton = UIButton(type: .system)
-        payButton.setTitle("Pay Now", for: .normal)
-        payButton.addTarget(self, action: #selector(payButtonTapped), for: .touchUpInside)
-        view.addSubview(payButton)
-    }
-    
-    @objc func payButtonTapped() {
         Task {
-            // Create session
+            // 1. Create session on backend
             let session = await createCheckoutSession()
-            self.checkoutSession = session.checkoutSession
+            _checkoutSession = session.checkoutSession
             
-            // Configure payment
-            let config = YunoConfig(
-                checkoutSession: session.checkoutSession,
-                countryCode: "US",
-                language: "en",
-                viewController: self
-            )
+            // 2. Get payment methods view from SDK
+            paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
             
-            // Start payment
-            Yuno.startPayment(with: config, delegate: self)
+            // 3. Add payment methods view to hierarchy
+            if let methodsView = paymentMethodsView {
+                methodsView.translatesAutoresizingMaskIntoConstraints = false
+                view.addSubview(methodsView)
+                NSLayoutConstraint.activate([
+                    methodsView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                    methodsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    methodsView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+                ])
+            }
+            
+            // 4. Add pay button
+            let payButton = UIButton(type: .system)
+            payButton.setTitle("Pay Now", for: .normal)
+            payButton.addTarget(self, action: #selector(payButtonTapped), for: .touchUpInside)
+            payButton.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(payButton)
+            NSLayoutConstraint.activate([
+                payButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+                payButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            ])
         }
     }
     
-    // YunoPaymentDelegate methods
-    func yunoCreatePayment(with token: String) {
+    @objc func payButtonTapped() {
+        // Start payment - SDK reads session from delegate properties
+        Yuno.startPayment()
+    }
+    
+    // YunoPaymentFullDelegate methods
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
         Task {
-            await createPayment(token: token, checkoutSession: self.checkoutSession!)
+            await createPayment(token: token, checkoutSession: _checkoutSession)
             Yuno.continuePayment(showPaymentStatus: true)
         }
     }
@@ -178,105 +212,18 @@ class PaymentViewController: UIViewController, YunoPaymentDelegate {
             showAlert(message: "Payment failed: \(error.localizedDescription)")
         }
     }
-}
-```
-
-## Alternative Mounting Options
-
-The basic flow above uses `Yuno.startPayment()` which handles the full payment flow automatically. For more control:
-
-### Custom Payment Method Selection (`startPaymentLite`)
-
-Select which payment method to display:
-
-```swift
-// 1. Fetch available methods
-let methods = await fetchPaymentMethods(sessionId: checkoutSession)
-
-// 2. Display in your UI
-// 3. Start payment with selected method
-
-Yuno.startPaymentLite(
-    with: config,
-    paymentMethodType: selectedMethod, // "CARD", "PIX", etc.
-    vaultedToken: nil, // or saved token
-    delegate: self
-)
-```
-
-### Simplified Flow (`startPaymentSeamlessLite`)
-
-Similar to Lite but with automatic payment creation:
-
-```swift
-Yuno.startPaymentSeamlessLite(
-    with: config,
-    paymentMethodType: "CARD",
-    vaultedToken: nil,
-    delegate: self
-)
-```
-
-## Enrollment (Save Cards)
-
-### Save During Payment
-
-```swift
-let config = YunoConfig(
-    checkoutSession: session.id,
-    countryCode: "US",
-    cardSaveEnable: true // Show save card checkbox
-)
-
-Yuno.startPayment(with: config, delegate: self)
-
-// In delegate:
-func yunoCreatePayment(with token: String) {
-    Task {
-        await createPayment(
-            token: token,
-            vaultOnSuccess: true // Save after successful payment
-        )
-        Yuno.continuePayment(showPaymentStatus: true)
+    
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) {
+        // Called when payment methods view height changes
+        // Update constraints if needed
+        print("Payment methods view height:", height)
+    }
+    
+    func yunoDidSelect(paymentMethod: PaymentMethodSelected) {
+        // Called when user selects a payment method
+        print("Selected payment method:", paymentMethod)
     }
 }
-```
-
-### Separate Enrollment
-
-```swift
-// Create customer session on backend
-let customerSession = await createCustomerSession(customerId: "cus_123")
-
-// Configure enrollment
-let config = YunoConfig(
-    customerSession: customerSession.id,
-    countryCode: "US"
-)
-
-// Conform to YunoEnrollmentDelegate
-extension PaymentViewModel: YunoEnrollmentDelegate {
-    func yunoEnrollmentStatus(status: Yuno.EnrollmentStatus, vaultedToken: String?) {
-        if status == .successful, let token = vaultedToken {
-            print("Card saved:", token)
-        }
-    }
-}
-
-// Start enrollment
-Yuno.enrollPayment(with: config, delegate: self)
-```
-
-## Vaulted Token Payments
-
-```swift
-let config = YunoConfig(
-    checkoutSession: session.id,
-    countryCode: "US",
-    vaultedToken: "vtok_saved_card_123"
-)
-
-Yuno.startPayment(with: config, delegate: self)
 ```
 
 ## Handling Payment Results
@@ -314,7 +261,7 @@ func yunoPaymentResult(_ result: Yuno.Result) {
 3DS is handled automatically. For asynchronous payment methods:
 
 ```swift
-func yunoCreatePayment(with token: String) {
+func yunoCreatePayment(with token: String, information: [String: Any]) {
     Task {
         await createPayment(token: token)
         
@@ -361,6 +308,19 @@ Yuno.Appearance.font = .systemFont(ofSize: 16)
 Yuno.Appearance.cornerRadius = 8.0
 ```
 
-## Proguard Rules
+## Next Steps
 
-Not applicable for iOS.
+Ready to explore more advanced features? Check out the [Advanced Features](./advanced-features-ios-sdk.md) guide for:
+
+- **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+- **Enrollment (Save Cards)** - Save payment methods for future use
+- **Vaulted Token Payments** - One-click payments with saved cards
+- **Custom UI (Headless Integration)** - Build completely custom payment forms
+- **Render Mode Integration** - Display payment form within your custom view
+- **Styling & Appearance** - Customize SDK appearance
+- **Swift 6 Concurrency** - Handle concurrency warnings with proper annotations
+- **ClearSale Integration** - Fraud prevention
+
+See also:
+- [Code Examples](./code-examples-ios-sdk.md) - Copy-paste examples for common scenarios
+- [Release Notes](./release-notes-ios-sdk.md) - SDK versions, changes, and migration guides

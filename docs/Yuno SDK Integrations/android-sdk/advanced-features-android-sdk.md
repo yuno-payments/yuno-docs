@@ -7,13 +7,112 @@ metadata:
 ---
 Advanced configuration and custom integrations for Android.
 
+## Alternative Mounting Options
+
+The basic flow uses automatic payment method display. For more control, use these alternatives:
+
+### Custom Payment Method Selection (`startPaymentLite`)
+
+Control which payment method to display:
+
+```kotlin
+// 1. Fetch available methods
+val methods = fetchPaymentMethods(sessionId)
+
+// 2. Display in your UI
+// 3. Start payment with selected method
+
+startPaymentLite(
+    paymentMethodType = selectedMethod, // "CARD", "PIX", etc.
+    vaultedToken = null,
+    showPaymentStatus = true,
+    callbackOTT = { token ->
+        token?.let { createPayment(it, checkoutSession) }
+    }
+)
+```
+
+### Simplified Flow (`startPaymentSeamlessLite`)
+
+Similar to Lite but with automatic payment creation:
+
+```kotlin
+startPaymentSeamlessLite(
+    paymentMethodType = "CARD",
+    vaultedToken = null,
+    showPaymentStatus = true
+)
+```
+
+## Enrollment (Save Cards)
+
+### Save During Payment
+
+```kotlin
+// When creating payment on backend, include vault_on_success flag
+suspend fun createPayment(token: String, checkoutSession: String) {
+    apiClient.post("/payment/create", mapOf(
+        "one_time_token" to token,
+        "checkout_session" to checkoutSession,
+        "vault_on_success" to true // Save after successful payment
+    ))
+}
+
+// Configure SDK to show save checkbox
+startCheckout(
+    callbackPaymentState = { state -> handlePaymentState(state) }
+)
+
+// Update with session - SDK will show "Save card" checkbox automatically
+updateCheckoutSession(
+    checkoutSession = session.checkoutSession,
+    countryCode = "US"
+)
+```
+
+### Separate Enrollment
+
+```kotlin
+// Create customer session on backend
+val customerSession = createCustomerSession("cus_123")
+
+// Start enrollment
+initEnrollment(
+    customerSession = customerSession.id,
+    countryCode = "US"
+)
+
+// Start enrollment flow
+startEnrollment(
+    showEnrollmentStatus = true,
+    callback = { vaultedToken ->
+        vaultedToken?.let {
+            println("Card saved: $it")
+        }
+    }
+)
+```
+
+## Vaulted Token Payments
+
+```kotlin
+startPaymentLite(
+    paymentMethodType = "CARD",
+    vaultedToken = "vtok_saved_card_123",
+    showPaymentStatus = true,
+    callbackOTT = { token ->
+        token?.let { createPayment(it, checkoutSession) }
+    }
+)
+```
+
 ## Custom UI (Headless Integration)
 
 Build completely custom payment forms with full UI control when you need complete control over every UI element, highly custom checkout experiences, or have development resources for custom UI.
 
 ```kotlin
-import com.yuno.payments.Yuno
-import com.yuno.payments.features.api_client.ApiClientPayment
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.api.ApiClientPayment
 
 lifecycleScope.launch {
     // 1. Initialize headless client
@@ -158,7 +257,7 @@ Enable card scanning with camera.
 
 ```kotlin
 dependencies {
-    implementation("com.yuno.payments:card-scan:1.0.0")
+    implementation("com.yuno.sdk:card-scan:2.8.1")
 }
 ```
 
@@ -210,33 +309,51 @@ ClearSale fingerprint is automatically collected and sent.
 
 ## Error Handling
 
+Handle errors in payment state callback and payment processing:
+
 ```kotlin
-Yuno.startCheckout(
-    activity = this,
-    checkoutSession = session.id,
-    countryCode = "US",
-    yunoCreatePayment = { token ->
-        try {
-            createPayment(token)
-        } catch (e: Exception) {
-            Log.e("Payment", "Error: ${e.message}")
-            throw e
-        }
-    },
-    yunoPaymentResult = { result ->
-        when (result.status) {
-            PaymentStatus.SUCCEEDED -> handleSuccess()
-            PaymentStatus.FAILED -> {
-                when (result.error?.code) {
-                    "SESSION_EXPIRED" -> recreateSession()
-                    "INVALID_CARD" -> showError("Invalid card")
-                    "INSUFFICIENT_FUNDS" -> showError("Insufficient funds")
-                    "NETWORK_ERROR" -> retryPayment()
-                    else -> showError(result.error?.message ?: "Payment failed")
-                }
+// Set up error handling in payment state callback
+startCheckout(
+    callbackPaymentState = { state ->
+        when (state) {
+            "SUCCEEDED" -> handleSuccess()
+            "FAIL" -> {
+                // Handle payment failure
+                showError("Payment failed")
             }
-            PaymentStatus.PENDING -> showPendingMessage()
-            PaymentStatus.REJECTED -> showRejectedMessage()
+            "REJECT" -> {
+                // Handle payment rejection
+                showRejectedMessage()
+            }
+            "PROCESSING" -> showPendingMessage()
+            else -> {}
+        }
+    }
+)
+
+// Update session with error handling
+try {
+    val session = createCheckoutSession()
+    updateCheckoutSession(
+        checkoutSession = session.checkoutSession,
+        countryCode = "US"
+    )
+} catch (e: Exception) {
+    Log.e("Payment", "Session error: ${e.message}")
+    showError("Failed to initialize payment")
+}
+
+// Handle errors during payment creation
+startPayment(
+    showStatusYuno = true,
+    callbackOTT = { token ->
+        lifecycleScope.launch {
+            try {
+                createPayment(token, checkoutSession)
+            } catch (e: Exception) {
+                Log.e("Payment", "Payment creation error: ${e.message}")
+                showError("Payment failed: ${e.message}")
+            }
         }
     }
 )

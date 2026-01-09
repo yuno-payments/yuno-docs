@@ -5,305 +5,86 @@ hidden: true
 metadata:
   robots: index
 ---
-Choose your platform and follow the steps below to process your first payment with Yuno.
+Choose your platform to get started with Yuno. Each guide includes installation, basic setup, and your first payment in minutes.
 
-## Web
+## Platform Guides
 
-### 1. Install
+### [Web SDK](./web-sdk/)
 
-```bash
-npm install @yuno-payments/sdk-web
-```
+Build payment experiences for web applications using JavaScript/TypeScript.
 
-Or include via CDN:
+**Best for:** E-commerce websites, web apps, SPA applications
 
-```html
-<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
-```
+**Key features:**
+- NPM package or CDN integration
+- TypeScript support built-in
+- Secure Fields for PCI compliance
+- Custom UI with Headless mode
 
-### 2. Initialize and Process Payment
+[Get started with Web SDK →](./web-sdk/)
 
-```javascript
-import { Yuno } from '@yuno-payments/sdk-web';
+---
 
-// Initialize SDK
-const yuno = await Yuno.initialize('your-public-api-key');
+### [iOS SDK](./ios-sdk/)
 
-// Create checkout session on your backend
-const session = await fetch('/api/create-session', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    customer_id: 'customer-123',
-    amount: { currency: 'USD', value: 1000 },
-    country: 'US'
-  })
-}).then(r => r.json());
+Native iOS SDK for iPhone and iPad applications.
 
-// Configure checkout
-yuno.startCheckout({
-  checkoutSession: session.checkout_session,
-  elementSelector: '#payment-form',
-  countryCode: 'US',
-  async yunoCreatePayment(oneTimeToken) {
-    // Process payment on your backend
-    await fetch('/api/process-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        one_time_token: oneTimeToken,
-        checkout_session: session.checkout_session
-      })
-    });
-    yuno.continuePayment();
-  }
-});
+**Best for:** Native iOS apps, Swift/SwiftUI projects
 
-// Mount payment form
-yuno.mountCheckout();
-```
+**Key features:**
+- SwiftUI and UIKit support
+- Swift 6 concurrency ready
+- iOS 14.0+
+- CocoaPods and SPM support
 
-### 3. Add HTML Container and Trigger Payment
+[Get started with iOS SDK →](./ios-sdk/)
 
-```html
-<div id="payment-form"></div>
-<button id="pay-button">Pay Now</button>
+---
 
-<script>
-  document.getElementById('pay-button').addEventListener('click', () => {
-    yuno.startPayment();
-  });
-</script>
-```
+### [Android SDK](./android-sdk/)
 
-**Test with:** Card `4111 1111 1111 1111`, any future date, any CVV
+Native Android SDK for Android applications.
 
-[Complete Web guide →](web-sdk/)
+**Best for:** Native Android apps, Kotlin projects
 
-## iOS
+**Key features:**
+- Jetpack Compose support
+- Kotlin-first design
+- Android 5.0 (API 21)+
+- Card scanning (OCR)
 
-### 1. Install
+[Get started with Android SDK →](./android-sdk/)
 
-**CocoaPods:**
-```ruby
-pod 'YunoSDK'
-```
+---
 
-**Swift Package Manager:**
-```swift
-dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "1.0.0")
-]
-```
+### [React Native SDK](./react-native-sdk-1/)
 
-### 2. Initialize and Process Payment
+Cross-platform SDK for React Native applications.
 
-```swift
-import YunoSDK
+**Best for:** Cross-platform mobile apps
 
-// Initialize in AppDelegate or App struct
-Yuno.initialize(publicKey: "your-public-api-key")
+**Key features:**
+- Single codebase for iOS & Android
+- TypeScript definitions included
+- Native performance
+- React Native 0.70+
 
-// In your view controller
-class PaymentViewController: UIViewController, YunoPaymentDelegate {
-    
-    func processPayment() async {
-        // Create session on your backend
-        let session = try await createCheckoutSession()
-        
-        // Configure and start payment
-        let config = YunoConfig(
-            checkoutSession: session.id,
-            countryCode: "US"
-        )
-        
-        Yuno.startPayment(with: config, delegate: self)
-    }
-    
-    // Handle payment result
-    func yunoPaymentResult(_ result: PaymentResult) {
-        switch result.status {
-        case .succeeded:
-            print("Payment succeeded!")
-        case .failed:
-            print("Payment failed: \(result.error?.message ?? "")")
-        case .pending:
-            print("Payment pending")
-        }
-    }
-}
-```
+[Get started with React Native SDK →](./react-native-sdk-1/)
 
-**Test with:** Card `4111 1111 1111 1111`, any future date, any CVV
-
-[Complete iOS guide →](ios-sdk/)
-
-## Android
-
-### 1. Install
-
-**build.gradle:**
-```kotlin
-repositories {
-    maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
-}
-
-dependencies {
-    implementation 'com.yuno.payments:android-sdk:1.0.0'
-}
-```
-
-### 2. Initialize and Process Payment
-
-**Initialize in Application:**
-```kotlin
-class MyApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        Yuno.initialize(
-            this,
-            publicApiKey = "your-public-api-key",
-            config = YunoConfig()
-        )
-    }
-}
-```
-
-**In Activity/Fragment:**
-```kotlin
-import com.yuno.payments.Yuno
-
-class PaymentActivity : ComponentActivity() {
-    private var checkoutSession: String? = null
-    private var paymentReady = mutableStateOf(false)
-    
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        
-        setContent {
-            var paymentMethodSelected by remember { mutableStateOf(false) }
-            
-            Column {
-                // Initialize checkout
-                LaunchedEffect(Unit) {
-                    val session = createCheckoutSession()
-                    checkoutSession = session.id
-                    
-                    startCheckout(
-                        checkoutSession = session.id,
-                        countryCode = "US"
-                    )
-                }
-                
-                // Display payment methods
-                PaymentMethodListViewComponent(
-                    activity = this@PaymentActivity,
-                    onPaymentSelected = { paymentMethodSelected = it }
-                )
-                
-                // Pay button
-                Button(
-                    onClick = {
-                        lifecycleScope.launch {
-                            startPayment(
-                                showStatusYuno = true,
-                                callbackOTT = { token ->
-                                    token?.let { processPayment(it, checkoutSession!!) }
-                                }
-                            )
-                        }
-                    },
-                    enabled = paymentMethodSelected
-                ) {
-                    Text("Pay Now")
-                }
-            }
-        }
-    }
-}
-```
-
-**Test with:** Card `4111 1111 1111 1111`, any future date, any CVV
-
-[Complete Android guide →](android-sdk/)
-
-## React Native
-
-### 1. Install
-
-```bash
-npm install @yuno-payments/react-native-sdk
-```
-
-**iOS:**
-```bash
-cd ios && pod install
-```
-
-### 2. Initialize and Process Payment
-
-```typescript
-import { Yuno } from '@yuno-payments/react-native-sdk';
-
-// Initialize
-Yuno.initialize({
-  publicKey: 'your-public-api-key',
-});
-
-// In your component
-const PaymentScreen = () => {
-  const [isReady, setIsReady] = useState(false);
-  
-  useEffect(() => {
-    initCheckout();
-    return () => YunoSdk.removeListeners();
-  }, []);
-  
-  const initCheckout = async () => {
-    const session = await createCheckoutSession();
-    
-    // Set up listeners
-    YunoSdk.yunoPaymentResult((result) => {
-      if (result.status === 'SUCCEEDED') {
-        console.log('Payment succeeded!');
-      }
-    });
-    
-    // Show checkout
-    await YunoSdk.showPaymentCheckout({
-      checkoutSession: session.id,
-      countryCode: 'US',
-    });
-    
-    setIsReady(true);
-  };
-  
-  const processPayment = async () => {
-    await YunoSdk.startPayment(true); // Start payment flow
-  };
-  
-  return (
-    <Button 
-      title="Pay Now" 
-      onPress={processPayment}
-      disabled={!isReady}
-    />
-  );
-};
-```
-
-**Test with:** Card `4111 1111 1111 1111`, any future date, any CVV
-
-[Complete React Native guide →](react-native-sdk-1/)
+## Before You Start
 
 > 📘 Get Your API Keys
 >
-> Log in to [Yuno Dashboard](https://dashboard.y.uno) → **Developers** > **Credentials** → Copy your **Public API Key** (for frontend) and **Secret Key** (for backend)
+> Log in to [Yuno Dashboard](https://dashboard.y.uno) → **Developers** > **Credentials** → Copy your **Public API Key** (for SDK initialization)
 
 ## Test Cards
+
+Use these test cards when testing your integration:
 
 | Card Number         | Scenario       |
 | ------------------- | -------------- |
 | 4111 1111 1111 1111 | Success        |
 | 4000 0000 0000 0002 | Declined       |
 | 4000 0000 0000 3220 | 3DS Challenge  |
+
+Use any future expiry date and any 3-digit CVV for testing.
