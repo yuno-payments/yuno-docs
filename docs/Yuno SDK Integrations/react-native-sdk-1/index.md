@@ -50,12 +50,13 @@ export default function App() {
 
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
-import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+import { View, Button, Text, StyleSheet, ScrollView } from 'react-native';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 
 export default function PaymentScreen() {
   const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
   
   useEffect(() => {
     initializeCheckout();
@@ -101,7 +102,7 @@ export default function PaymentScreen() {
   
   const handlePayment = async () => {
     try {
-      // 3. Start payment flow
+      // Start payment flow
       await YunoSdk.startPayment(true); // true = show payment status screen
     } catch (error) {
       console.error('Payment start failed:', error);
@@ -109,15 +110,26 @@ export default function PaymentScreen() {
   };
   
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.amount}>$25.00</Text>
+      
+      {/* Display payment methods */}
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(selected) => {
+            setPaymentMethodSelected(selected);
+          }}
+        />
+      )}
       
       <Button
         title="Pay Now"
         onPress={handlePayment}
-        disabled={!isReady}
+        disabled={!isReady || !paymentMethodSelected}
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -153,8 +165,8 @@ const styles = StyleSheet.create({
 
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, ActivityIndicator, Alert } from 'react-native';
-import { YunoSdk, YunoPaymentResult, YunoError } from '@yuno-payments/yuno-sdk-react-native';
+import { View, Button, Text, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { YunoSdk, YunoPaymentMethods, YunoPaymentState } from '@yuno-payments/yuno-sdk-react-native';
 
 interface CheckoutSession {
   checkoutSession: string;
@@ -165,12 +177,13 @@ export default function CheckoutScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
   
   useEffect(() => {
     loadCheckout();
     
     // Subscribe to payment status
-    const paymentSubscription = YunoSdk.onPaymentStatus((state) => {
+    const paymentSubscription = YunoSdk.onPaymentStatus((state: YunoPaymentState) => {
       setIsProcessing(false);
       
       switch (state.status) {
@@ -226,17 +239,29 @@ export default function CheckoutScreen() {
   }
   
   return (
-    <View style={{ flex: 1, padding: 20 }}>
+    <ScrollView style={{ flex: 1, padding: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
         Total: $25.00
       </Text>
       
+      {/* Display payment methods */}
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(selected) => {
+            setPaymentMethodSelected(selected);
+          }}
+          style={{ marginBottom: 20 }}
+        />
+      )}
+      
       <Button
         title={isProcessing ? 'Processing...' : 'Pay Now'}
         onPress={processPayment}
-        disabled={isProcessing}
+        disabled={isProcessing || !paymentMethodSelected}
       />
-    </View>
+    </ScrollView>
   );
 }
 

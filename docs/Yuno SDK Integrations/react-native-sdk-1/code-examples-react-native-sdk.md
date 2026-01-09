@@ -11,14 +11,18 @@ Ready-to-use React Native code examples for common scenarios.
 
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
-import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+import { View, Button, Text, StyleSheet, ScrollView } from 'react-native';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 
 export default function PaymentScreen() {
   const [result, setResult] = useState('');
-  const [checkoutSession, setCheckoutSession] = useState('');
+  const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
   
   useEffect(() => {
+    // Initialize checkout on mount
+    initCheckout();
+    
     // Subscribe to payment events
     const subscription = YunoSdk.onPaymentStatus((state) => {
       if (state.status === 'SUCCEEDED') {
@@ -31,28 +35,49 @@ export default function PaymentScreen() {
     return () => subscription.remove();
   }, []);
   
-  const processPayment = async () => {
+  const initCheckout = async () => {
     const session = await fetch('https://api.example.com/checkout', {
       method: 'POST',
       body: JSON.stringify({ amount: { currency: 'USD', value: 2500 } }),
     }).then(r => r.json());
     
-    setCheckoutSession(session.id);
+    setCheckoutSession(session.checkoutSession);
+  };
+  
+  const processPayment = async () => {
     await YunoSdk.startPayment(true);
   };
   
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.amount}>$25.00</Text>
-      <Button title="Pay Now" onPress={processPayment} />
-      {result ? <Text>{result}</Text> : null}
-    </View>
+      
+      {/* Display payment methods */}
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(selected) => {
+            setPaymentMethodSelected(selected);
+          }}
+        />
+      )}
+      
+      <Button 
+        title="Pay Now" 
+        onPress={processPayment}
+        disabled={!paymentMethodSelected}
+      />
+      
+      {result ? <Text style={styles.result}>{result}</Text> : null}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  container: { flex: 1, padding: 20 },
   amount: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 24 },
+  result: { marginTop: 20, textAlign: 'center', fontSize: 16 },
 });
 ```
 
@@ -61,14 +86,19 @@ const styles = StyleSheet.create({
 ```typescript
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 import { useState, useEffect } from 'react';
-import { View, Button, Text, Alert } from 'react-native';
+import { View, Button, Text, Alert, ScrollView } from 'react-native';
 
 const Stack = createStackNavigator();
 
 function CheckoutScreen({ navigation }) {
+  const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
+  
   useEffect(() => {
+    initCheckout();
+    
     const subscription = YunoSdk.onPaymentStatus((state) => {
       if (state.status === 'SUCCEEDED') {
         navigation.navigate('Success');
@@ -80,13 +110,35 @@ function CheckoutScreen({ navigation }) {
     return () => subscription.remove();
   }, []);
   
-  const handlePayment = async () => {
+  const initCheckout = async () => {
     const session = await createCheckoutSession();
+    setCheckoutSession(session.checkoutSession);
+  };
+  
+  const handlePayment = async () => {
     await YunoSdk.startPayment(true);
   };
   
   return (
-    <View>
+    <ScrollView style={{ padding: 20 }}>
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>Checkout</Text>
+      
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(selected) => {
+            setPaymentMethodSelected(selected);
+          }}
+        />
+      )}
+      
+      <Button 
+        title="Continue to Payment" 
+        onPress={handlePayment}
+        disabled={!paymentMethodSelected}
+      />
+    </ScrollView>
       <Button title="Pay" onPress={handlePayment} />
     </View>
   );

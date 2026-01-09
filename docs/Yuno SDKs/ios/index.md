@@ -38,13 +38,13 @@ import YunoSDK
 
 // In AppDelegate
 func application(_ application: UIApplication, didFinishLaunchingWithOptions...) -> Bool {
-    Yuno.initialize(publicAPIKey: "your-public-api-key")
+    Yuno.initialize(publicKey: "your-public-api-key")
     return true
 }
 
 // Or in SwiftUI App struct
 init() {
-    Yuno.initialize(publicAPIKey: "your-public-api-key")
+    Yuno.initialize(publicKey: "your-public-api-key")
 }
 ```
 
