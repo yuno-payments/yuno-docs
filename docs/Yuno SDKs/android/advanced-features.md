@@ -7,7 +7,7 @@ metadata:
 ---
 Advanced configuration and custom integrations for Android.
 
-## Custom UI (Headless Integration) {#custom-ui}
+## Custom UI (Headless Integration)
 
 Build completely custom payment forms with full UI control when you need complete control over every UI element, highly custom checkout experiences, or have development resources for custom UI.
 
@@ -64,7 +64,7 @@ val token = apiClient.generateToken(
 )
 ```
 
-## Render Mode Integration {#render-mode}
+## Render Mode Integration
 
 Display payment form within your custom view.
 
@@ -121,7 +121,7 @@ class PaymentActivity : ComponentActivity(), YunoPaymentRenderListener {
 }
 ```
 
-## Styling {#styling}
+## Styling
 
 Customize SDK appearance with themes.
 
@@ -150,7 +150,7 @@ Apply theme:
 Yuno.setTheme(R.style.YunoSDKTheme)
 ```
 
-## Card Scanning (OCR) {#card-scanning}
+## Card Scanning (OCR)
 
 Enable card scanning with camera.
 
@@ -176,7 +176,7 @@ Yuno.initialize(
 
 Card scanning button appears automatically in card form.
 
-## ClearSale Integration {#clearsale}
+## ClearSale Integration
 
 Enable fraud prevention.
 

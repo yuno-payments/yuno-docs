@@ -7,7 +7,7 @@ metadata:
 ---
 Advanced configuration options and custom integrations for the Yuno Web SDK.
 
-## Custom UI (Headless Integration) {#custom-ui}
+## Custom UI (Headless Integration)
 
 Build completely custom payment forms with full UI control when you need complete control over every UI element, building highly custom checkout experiences, or have development resources for custom UI. Yuno handles only tokenization.
 
@@ -97,7 +97,7 @@ const result = await apiClientPayment.generateToken({
 });
 ```
 
-## Secure Fields (Custom Card Forms) {#secure-fields}
+## Secure Fields (Custom Card Forms)
 
 Build custom card forms while maintaining PCI compliance using secure iframe fields. Ideal when you want custom card form design, need specific field layouts, or require iframe-based security for cards.
 
@@ -164,7 +164,7 @@ fields: {
 }
 ```
 
-## Multiple Currencies {#currencies}
+## Multiple Currencies
 
 Handle multi-currency payments with automatic conversion.
 
@@ -187,7 +187,7 @@ yuno.startCheckout({
 });
 ```
 
-## Styling & Themes {#styling}
+## Styling & Themes
 
 ### Custom CSS
 
@@ -215,7 +215,7 @@ yuno.startCheckout({
 });
 ```
 
-## Render Modes {#render-modes}
+## Render Modes
 
 ### Modal Display
 
@@ -235,7 +235,7 @@ yuno.startCheckout({
 });
 ```
 
-## Fraud Prevention {#fraud}
+## Fraud Prevention
 
 ### Device Fingerprinting
 

@@ -7,7 +7,7 @@ metadata:
 ---
 Advanced configuration and custom integrations for iOS.
 
-## Custom UI (Headless Integration) {#custom-ui}
+## Custom UI (Headless Integration)
 
 Build completely custom payment forms with full UI control when you need complete control over every UI element, highly custom checkout experiences, or have development resources for custom UI.
 
@@ -70,7 +70,7 @@ let result = try await apiClient.generateToken(data: TokenCollectedData(
 ))
 ```
 
-## Render Mode Integration {#render-mode}
+## Render Mode Integration
 
 Display payment form within your custom view.
 
@@ -144,7 +144,7 @@ struct PaymentViewWrapper: UIViewRepresentable {
 }
 ```
 
-## Styling & Appearance {#styling}
+## Styling & Appearance
 
 Customize SDK appearance with `Yuno.Appearance`:
 
@@ -172,7 +172,7 @@ func configureAppearance() {
 }
 ```
 
-## Swift 6 Concurrency {#swift6}
+## Swift 6 Concurrency
 
 Handle concurrency warnings with proper annotations:
 
@@ -209,7 +209,7 @@ extension PaymentViewController {
 }
 ```
 
-## ClearSale Integration {#clearsale}
+## ClearSale Integration
 
 Enable fraud prevention:
 

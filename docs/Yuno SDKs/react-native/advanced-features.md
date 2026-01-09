@@ -7,7 +7,7 @@ metadata:
 ---
 Advanced configuration and custom integrations for React Native.
 
-## Custom UI (Headless Integration) {#custom-ui}
+## Custom UI (Headless Integration)
 
 Build completely custom payment forms with full UI control when you need complete control over every UI element, highly custom checkout experiences, or have development resources for custom UI.
 
@@ -78,7 +78,7 @@ const CustomPaymentForm = () => {
 };
 ```
 
-## Styling {#styling}
+## Styling
 
 Customize SDK appearance.
 
@@ -93,7 +93,7 @@ Yuno.setTheme({
 });
 ```
 
-## Platform-Specific Configuration {#platform-specific}
+## Platform-Specific Configuration
 
 Handle platform differences.
 
