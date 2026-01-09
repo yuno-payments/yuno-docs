@@ -1,7 +1,7 @@
 ---
 title: Release Notes iOS SDK
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---

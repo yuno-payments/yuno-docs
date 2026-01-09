@@ -352,7 +352,7 @@ enrollmentSubscription.remove();
 
 ## Next Steps
 
-Ready to explore more advanced features? Check out the [Advanced Features](./advanced-features-react-native-sdk.md) guide for:
+Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-react-native-sdk) guide for:
 
 - **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
 - **Enrollment (Save Cards)** - Save payment methods for future use
@@ -362,4 +362,4 @@ Ready to explore more advanced features? Check out the [Advanced Features](./adv
 - **Styling** - Customize SDK appearance
 
 See also:
-- [Code Examples](./code-examples-react-native-sdk.md) - Copy-paste examples for common scenarios
+- [Code Examples](doc:code-examples-react-native-sdk) - Copy-paste examples for common scenarios

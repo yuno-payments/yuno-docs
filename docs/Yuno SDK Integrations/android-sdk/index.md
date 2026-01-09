@@ -390,7 +390,7 @@ const val PAYMENT_STATE_CANCELED = "CANCELED"
 
 ## Next Steps
 
-Ready to explore more advanced features? Check out the [Advanced Features](./advanced-features-android-sdk.md) guide for:
+Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-android-sdk) guide for:
 
 - **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
 - **Enrollment (Save Cards)** - Save payment methods for future use
@@ -403,5 +403,5 @@ Ready to explore more advanced features? Check out the [Advanced Features](./adv
 - **External Browser Return (Deep Links)** - Handle payment redirects
 
 See also:
-- [Code Examples](./code-examples-android-sdk.md) - Copy-paste examples for common scenarios
-- [Release Notes](./release-notes-android-sdk.md) - SDK versions, changes, and migration guides
+- [Code Examples](doc:code-examples-android-sdk) - Copy-paste examples for common scenarios
+- [Release Notes](doc:release-notes-android-sdk) - SDK versions, changes, and migration guides

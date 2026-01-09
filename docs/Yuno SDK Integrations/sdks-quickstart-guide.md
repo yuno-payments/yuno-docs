@@ -9,7 +9,7 @@ Choose your platform to get started with Yuno. Each guide includes installation,
 
 ## Platform Guides
 
-### [Web SDK](./web-sdk/)
+### [Web SDK](doc:web-sdk)
 
 Build payment experiences for web applications using JavaScript/TypeScript.
 
@@ -21,11 +21,11 @@ Build payment experiences for web applications using JavaScript/TypeScript.
 - Secure Fields for PCI compliance
 - Custom UI with Headless mode
 
-[Get started with Web SDK →](./web-sdk/)
+[Get started with Web SDK →](doc:web-sdk)
 
 ---
 
-### [iOS SDK](./ios-sdk/)
+### [iOS SDK](doc:ios-sdk)
 
 Native iOS SDK for iPhone and iPad applications.
 
@@ -37,11 +37,11 @@ Native iOS SDK for iPhone and iPad applications.
 - iOS 14.0+
 - CocoaPods and SPM support
 
-[Get started with iOS SDK →](./ios-sdk/)
+[Get started with iOS SDK →](doc:ios-sdk)
 
 ---
 
-### [Android SDK](./android-sdk/)
+### [Android SDK](doc:android-sdk)
 
 Native Android SDK for Android applications.
 
@@ -53,11 +53,11 @@ Native Android SDK for Android applications.
 - Android 5.0 (API 21)+
 - Card scanning (OCR)
 
-[Get started with Android SDK →](./android-sdk/)
+[Get started with Android SDK →](doc:android-sdk)
 
 ---
 
-### [React Native SDK](./react-native-sdk-1/)
+### [React Native SDK](doc:react-native-sdk-1)
 
 Cross-platform SDK for React Native applications.
 
@@ -69,7 +69,7 @@ Cross-platform SDK for React Native applications.
 - Native performance
 - React Native 0.70+
 
-[Get started with React Native SDK →](./react-native-sdk-1/)
+[Get started with React Native SDK →](doc:react-native-sdk-1)
 
 ## Before You Start
 

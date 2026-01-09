@@ -310,7 +310,7 @@ Yuno.Appearance.cornerRadius = 8.0
 
 ## Next Steps
 
-Ready to explore more advanced features? Check out the [Advanced Features](./advanced-features-ios-sdk.md) guide for:
+Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-ios-sdk) guide for:
 
 - **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
 - **Enrollment (Save Cards)** - Save payment methods for future use
@@ -322,5 +322,5 @@ Ready to explore more advanced features? Check out the [Advanced Features](./adv
 - **ClearSale Integration** - Fraud prevention
 
 See also:
-- [Code Examples](./code-examples-ios-sdk.md) - Copy-paste examples for common scenarios
-- [Release Notes](./release-notes-ios-sdk.md) - SDK versions, changes, and migration guides
+- [Code Examples](doc:code-examples-ios-sdk) - Copy-paste examples for common scenarios
+- [Release Notes](doc:release-notes-ios-sdk) - SDK versions, changes, and migration guides

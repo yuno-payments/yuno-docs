@@ -265,7 +265,7 @@ yuno.startCheckout({
 
 ## Next Steps
 
-Ready to explore more advanced features? Check out the [Advanced Features](./advanced-features-web-sdk.md) guide for:
+Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-web-sdk) guide for:
 
 - **Alternative Mounting Options** - `mountCheckoutLite()` and `mountSeamlessCheckout()` for custom payment method selection
 - **Enrollment (Save Cards)** - Save payment methods for future use
@@ -276,4 +276,4 @@ Ready to explore more advanced features? Check out the [Advanced Features](./adv
 - **Advanced Configuration** - Dynamic views, render mode, and more
 
 See also:
-- [Code Examples](./code-examples-web-sdk.md) - Copy-paste examples for common scenarios
+- [Code Examples](doc:code-examples-web-sdk) - Copy-paste examples for common scenarios
