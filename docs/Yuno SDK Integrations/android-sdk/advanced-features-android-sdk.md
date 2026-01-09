@@ -279,3 +279,133 @@ lifecycleScope.launch(Dispatchers.IO) {
 }
 ```
 
+## External Browser Return (Deep Links)
+
+Handle users returning to your app after external payment flows like 3DS authentication challenges, bank transfer redirects, PIX payments, and alternative payment methods with external redirects.
+
+### 1. Set callback_url in Checkout Session
+
+Include `callback_url` when creating the checkout session on your backend:
+
+```json
+{
+  "callback_url": "myapp://return"
+}
+```
+
+> ❗️ Important
+>
+> Without `callback_url`, users may be stranded in the external browser with no way to return to your app.
+
+### 2. Configure Deep Link Handling
+
+Add an `intent-filter` to your activity in `AndroidManifest.xml`:
+
+```xml
+<activity android:name=".YourMainActivity">
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="myapp"
+            android:host="return" />
+    </intent-filter>
+</activity>
+```
+
+The scheme (`myapp`) and host (`return`) must match your `callback_url`.
+
+### 3. Handle Return Intent
+
+Handle the deep link when the user returns:
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    
+    // Check if app was opened via deep link
+    intent.data?.let { uri ->
+        val url = uri.toString()
+        if (url.contains("myapp://return")) {
+            handlePaymentReturn(uri)
+        }
+    }
+}
+
+private fun handlePaymentReturn(uri: Uri) {
+    val sessionId = uri.getQueryParameter("checkoutSession")
+    
+    sessionId?.let {
+        continuePayment(
+            showPaymentStatus = true,
+            checkoutSession = it,
+            countryCode = "US"
+        ) { result ->
+            result?.let { status ->
+                Toast.makeText(this, "Payment status: $status", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+```
+
+### 4. Full Integration Example
+
+```kotlin
+class PaymentActivity : ComponentActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Initialize checkout
+        startCheckout(
+            callbackPaymentState = { state ->
+                handlePaymentState(state)
+            }
+        )
+        
+        // Handle deep link return
+        if (intent?.data != null) {
+            handleDeepLinkReturn(intent)
+        } else {
+            // Normal payment flow
+            initializePaymentUI()
+        }
+    }
+    
+    private fun handleDeepLinkReturn(intent: Intent) {
+        intent.data?.let { uri ->
+            if (uri.toString().contains("myapp://return")) {
+                val sessionId = extractCheckoutSession(uri)
+                
+                sessionId?.let {
+                    continuePayment(
+                        showPaymentStatus = true,
+                        checkoutSession = it,
+                        countryCode = "US"
+                    ) { result ->
+                        when (result) {
+                            "SUCCEEDED" -> navigateToSuccess()
+                            "FAILED" -> showError("Payment failed")
+                            else -> showPendingMessage()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private fun extractCheckoutSession(uri: Uri): String? {
+        return uri.getQueryParameter("checkoutSession")
+    }
+}
+```
+
+### Best Practices
+
+- Always include `callback_url` in payment flows that may redirect
+- Test deep link handling on multiple devices and Android versions
+- Handle missing or malformed deep link data gracefully
+- Update payment status in your UI after returning from external browser
+
