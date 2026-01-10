@@ -1,7 +1,7 @@
 ---
 title: Release Notes Android SDK
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
