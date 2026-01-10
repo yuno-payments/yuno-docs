@@ -2,7 +2,7 @@
 title: SDK Integration Overview
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Step by Step Integration Process
   description: >-
