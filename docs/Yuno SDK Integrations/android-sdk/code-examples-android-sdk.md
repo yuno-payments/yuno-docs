@@ -1,7 +1,7 @@
 ---
 title: Code Examples Android SDK
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
@@ -509,4 +509,3 @@ object YunoAPIClient {
     }
 }
 ```
-
