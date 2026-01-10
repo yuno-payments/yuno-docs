@@ -21,7 +21,9 @@ cd ios && pod install
 
 No additional steps required.
 
-> 📘 Requirements: React Native 0.70+, Node.js 16+, Android Min SDK 21, iOS 14.0+
+> 📘 Requirements
+>
+> React Native 0.70+, Node.js 16+, Android Min SDK 21, iOS 14.0+
 
 > 📘 TypeScript Support
 >
@@ -318,11 +320,11 @@ const paymentSubscription = YunoSdk.onPaymentStatus((state) => {
 
 ### Essential Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `checkoutSession` | string | Session ID from backend |
-| `countryCode` | string | ISO country code (e.g., 'US') |
-| `showPaymentStatus` | boolean | Show payment result screen |
+| Parameter           | Type    | Description                   |
+| ------------------- | ------- | ----------------------------- |
+| `checkoutSession`   | string  | Session ID from backend       |
+| `countryCode`       | string  | ISO country code (e.g., 'US') |
+| `showPaymentStatus` | boolean | Show payment result screen    |
 
 ### Event Listeners
 
@@ -354,12 +356,13 @@ enrollmentSubscription.remove();
 
 Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-react-native-sdk) guide for:
 
-- **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
-- **Enrollment (Save Cards)** - Save payment methods for future use
-- **Vaulted Token Payments** - One-click payments with saved cards
-- **Custom UI (Headless Integration)** - Build completely custom payment forms
-- **Platform-Specific Configuration** - Handle iOS vs Android differences
-- **Styling** - Customize SDK appearance
+* **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+* **Enrollment (Save Cards)** - Save payment methods for future use
+* **Vaulted Token Payments** - One-click payments with saved cards
+* **Custom UI (Headless Integration)** - Build completely custom payment forms
+* **Platform-Specific Configuration** - Handle iOS vs Android differences
+* **Styling** - Customize SDK appearance
 
 See also:
-- [Code Examples](doc:code-examples-react-native-sdk) - Copy-paste examples for common scenarios
+
+* [Code Examples](doc:code-examples-react-native-sdk) - Copy-paste examples for common scenarios
