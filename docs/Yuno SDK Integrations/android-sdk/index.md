@@ -23,7 +23,9 @@ dependencies {
 }
 ```
 
-> 📘 Requirements: Android 5.0 (API 21)+, Kotlin 1.9.24+, Java 17, Jetpack Compose (for Compose integration)
+> 📘 Requirements
+>
+> Android 5.0 (API 21)+, Kotlin 1.9.24+, Java 17, Jetpack Compose (for Compose integration)
 
 ## Initialize
 
@@ -356,12 +358,12 @@ startPayment(
 
 ### Essential Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `checkoutSession` | String | Session ID from backend |
-| `countryCode` | String | ISO country code (e.g., 'US') |
-| `callbackPaymentState` | Function | Payment state callback |
-| `callbackOTT` | Function | One-time token callback |
+| Parameter              | Type     | Description                   |
+| ---------------------- | -------- | ----------------------------- |
+| `checkoutSession`      | String   | Session ID from backend       |
+| `countryCode`          | String   | ISO country code (e.g., 'US') |
+| `callbackPaymentState` | Function | Payment state callback        |
+| `callbackOTT`          | Function | One-time token callback       |
 
 ### Payment Status States
 
@@ -392,16 +394,17 @@ const val PAYMENT_STATE_CANCELED = "CANCELED"
 
 Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-android-sdk) guide for:
 
-- **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
-- **Enrollment (Save Cards)** - Save payment methods for future use
-- **Vaulted Token Payments** - One-click payments with saved cards
-- **Custom UI (Headless Integration)** - Build completely custom payment forms
-- **Render Mode Integration** - Display payment form within your custom view
-- **Styling** - Customize SDK appearance with themes
-- **Card Scanning (OCR)** - Enable card scanning with camera
-- **ClearSale Integration** - Fraud prevention
-- **External Browser Return (Deep Links)** - Handle payment redirects
+* **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+* **Enrollment (Save Cards)** - Save payment methods for future use
+* **Vaulted Token Payments** - One-click payments with saved cards
+* **Custom UI (Headless Integration)** - Build completely custom payment forms
+* **Render Mode Integration** - Display payment form within your custom view
+* **Styling** - Customize SDK appearance with themes
+* **Card Scanning (OCR)** - Enable card scanning with camera
+* **ClearSale Integration** - Fraud prevention
+* **External Browser Return (Deep Links)** - Handle payment redirects
 
 See also:
-- [Code Examples](doc:code-examples-android-sdk) - Copy-paste examples for common scenarios
-- [Release Notes](doc:release-notes-android-sdk) - SDK versions, changes, and migration guides
+
+* [Code Examples](doc:code-examples-android-sdk) - Copy-paste examples for common scenarios
+* [Release Notes](doc:release-notes-android-sdk) - SDK versions, changes, and migration guides
