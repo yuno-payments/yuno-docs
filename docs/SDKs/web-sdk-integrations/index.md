@@ -2,7 +2,7 @@
 title: Web SDKs
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Web SDK Integrations
   description: >-
@@ -76,4 +76,4 @@ Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates a
 
 ## Supported languages
 
-For the full list of languages supported by our SDKs, see [this page](doc:supported-languages). 
+For the full list of languages supported by our SDKs, see [this page](doc:supported-languages).
