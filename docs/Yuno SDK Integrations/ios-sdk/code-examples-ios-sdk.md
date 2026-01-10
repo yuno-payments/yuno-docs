@@ -1,7 +1,7 @@
 ---
 title: Code Examples iOS SDK
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
@@ -513,4 +513,3 @@ class YunoAPIClient {
     }
 }
 ```
-
