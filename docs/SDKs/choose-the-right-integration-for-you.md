@@ -2,7 +2,7 @@
 title: Choose the Right Integration for You
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Choose The Right Integration For You
   description: >-
@@ -521,4 +521,3 @@ Plugins offer the fastest and easiest integration with just a few clicks and bas
 * **Platform dependency**: Feature availability depends on the platform's capabilities.
 
 Currently, Yuno supports plugin integration with [VTEX](doc:vtex).
-
