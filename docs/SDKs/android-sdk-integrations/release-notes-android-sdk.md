@@ -2,7 +2,7 @@
 title: Android SDK Release Notes
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
