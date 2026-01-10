@@ -1,7 +1,7 @@
 ---
 title: Advanced Features iOS SDK
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
@@ -508,4 +508,3 @@ lazy var yuno: Yuno = {
     return Yuno.shared
 }()
 ```
-
