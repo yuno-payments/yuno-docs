@@ -2,7 +2,7 @@
 title: iOS SDKs
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: iOS SDK Integrations
   description: >-
