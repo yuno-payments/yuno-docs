@@ -2,7 +2,7 @@
 title: Android SDKs
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Android SDK Integrations
   description: >-
