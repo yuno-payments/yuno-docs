@@ -1,7 +1,7 @@
 ---
 title: Advanced Features Web SDK
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
@@ -665,4 +665,3 @@ const yuno = await Yuno.initialize('pk_live_prod_key', {
   debug: false
 });
 ```
-
