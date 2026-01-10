@@ -1,7 +1,7 @@
 ---
 title: Advanced Features Android SDK
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
@@ -525,4 +525,3 @@ class PaymentActivity : ComponentActivity() {
 - Test deep link handling on multiple devices and Android versions
 - Handle missing or malformed deep link data gracefully
 - Update payment status in your UI after returning from external browser
-
