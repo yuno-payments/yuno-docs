@@ -38,7 +38,7 @@ Once configured, the webhook will send notifications whenever the selected event
 
 In the [Yuno dashboard](https://dashboard.y.uno/) Developers tab, you can activate and deactivate webhooks using the **Status** toggle button.
 
-Access the [Webhooks Examples](doc:examples) page to check examples for payment, enrollment, and many other notification events.
+Access the [Webhooks Examples](doc:object-and-examples) page to check examples for payment, enrollment, and many other notification events.
 
 ### HMAC authentication
 
@@ -152,11 +152,11 @@ Yuno webhooks expect to receive an HTTP 200 OK status as a response to indicate 
 
 Depending on the type of event, you will receive a different type of webhook and event. The next table presents the possible event types for enrollments and payments currently available.
 
-| type         | type_event |
-| :----------- | :--------- |
-| enrollment   | enroll     |
-| enrollment   | unenroll   |
-| enrollment   | expiration |
+| type         | type_event      |
+| :----------- | :-------------- |
+| enrollment   | enroll          |
+| enrollment   | unenroll        |
+| enrollment   | expiration      |
 | payment      | purchase        |
 | payment      | authorize       |
 | payment      | capture         |
@@ -166,19 +166,19 @@ Depending on the type of event, you will receive a different type of webhook and
 | payment      | chargeback      |
 | payment      | fraud_screening |
 | payout       | payout          |
-| subscription | create     |
-| subscription | pause      |
-| subscription | resume     |
-| subscription | active     |
-| subscription | cancel     |
-| subscription | complete   |
-| onboarding   | create     |
-| onboarding   | pending    |
-| onboarding   | succeeded  |
-| onboarding   | canceled   |
-| onboarding   | declined   |
-| onboarding   | blocked    |
-| onboarding   | unblocked  |
+| subscription | create          |
+| subscription | pause           |
+| subscription | resume          |
+| subscription | active          |
+| subscription | cancel          |
+| subscription | complete        |
+| onboarding   | create          |
+| onboarding   | pending         |
+| onboarding   | succeeded       |
+| onboarding   | canceled        |
+| onboarding   | declined        |
+| onboarding   | blocked         |
+| onboarding   | unblocked       |
 
 > `subscription.active` is sent only when a subscription transitions from any other valid status into `ACTIVE`. No webhook is emitted if the subscription is already active.
 
