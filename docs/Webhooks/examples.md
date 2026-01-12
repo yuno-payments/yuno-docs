@@ -2,7 +2,7 @@
 title:  Examples
 slug: examples
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
