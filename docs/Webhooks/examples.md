@@ -4,7 +4,7 @@ excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: Examples
+  title: Object and Examples
   description: >-
     Here you find some examples of webhooks and the JSON attributes that you
     will receive in the notification.
