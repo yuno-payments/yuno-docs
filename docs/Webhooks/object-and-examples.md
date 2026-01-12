@@ -1,10 +1,19 @@
 ---
 title: Object and Examples
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
+  title: Examples
+  description: >-
+    Here you find some examples of webhooks and the JSON attributes that you
+    will receive in the notification.
   robots: index
+next:
+  description: ''
 ---
+# Webhook attributes
+
 The JSON attributes for Yuno webhooks are listed below:
 
 <HTMLBlock>{`
