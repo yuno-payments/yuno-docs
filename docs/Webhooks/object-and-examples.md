@@ -5,6 +5,9 @@ hidden: false
 metadata:
   robots: index
 ---
+
+# Webhook attributes
+
 The JSON attributes for Yuno webhooks are listed below:
 
 <HTMLBlock>{`

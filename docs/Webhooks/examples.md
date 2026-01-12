@@ -1,17 +1,11 @@
 ---
-title: Object and Examples
-excerpt: ''
+title:  Examples
 deprecated: false
 hidden: false
 metadata:
-  title: Object and Examples
-  description: >-
-    Here you find some examples of webhooks and the JSON attributes that you
-    will receive in the notification.
   robots: index
-next:
-  description: ''
 ---
+
 # Webhook attributes
 
 The JSON attributes for Yuno webhooks are listed below:
