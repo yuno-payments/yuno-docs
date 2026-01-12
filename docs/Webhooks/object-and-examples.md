@@ -78,25 +78,25 @@ The JSON attributes for Yuno webhooks are listed below:
 Yuno provides several webhooks related to enrollment and payment notifications. Here you will find some examples of data structures related to each event.
 
 <Shelf classname="link_cards_container">
-  <YunoCard title="Payment Webhook V2" href="/docs/examples#payment-webhook-v2" titleSize="h4" />
+  <YunoCard title="Payment Webhook V2" href="/docs/object-and-examples#payment-webhook-v2" titleSize="h4" />
 
-  <YunoCard title="Payment Webhook V1" href="/docs/examples#payment-webhook-v1" titleSize="h4" />
+  <YunoCard title="Payment Webhook V1" href="/docs/object-and-examples#payment-webhook-v1" titleSize="h4" />
 
-  <YunoCard title="Chargeback Webhook V2" href="/docs/examples#chargeback-webhook-v2" titleSize="h4" />
+  <YunoCard title="Chargeback Webhook V2" href="/docs/object-and-examples#chargeback-webhook-v2" titleSize="h4" />
 
-  <YunoCard title="Chargeback Webhook V1" href="/docs/examples#chargeback-webhook-v1" titleSize="h4" />
+  <YunoCard title="Chargeback Webhook V1" href="/docs/object-and-examples#chargeback-webhook-v1" titleSize="h4" />
 
-  <YunoCard title="Enrollment" href="/docs/examples#enrollment" titleSize="h4" />
+  <YunoCard title="Enrollment" href="/docs/object-and-examples#enrollment" titleSize="h4" />
 
-  <YunoCard title="Payouts" href="/docs/examples#payouts" titleSize="h4" />
+  <YunoCard title="Payouts" href="/docs/object-and-examples#payouts" titleSize="h4" />
 
-  <YunoCard title="Subscriptions" href="/docs/examples#subscriptions" titleSize="h4" />
+  <YunoCard title="Subscriptions" href="/docs/object-and-examples#subscriptions" titleSize="h4" />
 
-  <YunoCard title="Onboardings" href="/docs/examples#onboardings" titleSize="h4" />
+  <YunoCard title="Onboardings" href="/docs/object-and-examples#onboardings" titleSize="h4" />
 
-  <YunoCard title="Refunds" href="/docs/examples#refunds" titleSize="h4" />
+  <YunoCard title="Refunds" href="/docs/object-and-examples#refunds" titleSize="h4" />
 
-  <YunoCard title="HMAC - Authorization" href="/docs/examples#hmac---authorization" titleSize="h4" />
+  <YunoCard title="HMAC - Authorization" href="/docs/object-and-examples#hmac---authorization" titleSize="h4" />
 </Shelf>
 
 ## Payment
