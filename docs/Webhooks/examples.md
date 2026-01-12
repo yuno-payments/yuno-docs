@@ -1,5 +1,6 @@
 ---
 title:  Examples
+slug: examples
 deprecated: false
 hidden: false
 metadata:
