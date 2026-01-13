@@ -62,7 +62,7 @@ The JSON attributes for Yuno webhooks are listed below:
   }
 
   .yuno {
-    --highlight: var(#eee);
+    --highlight: #eee;
     background: #eee;
     margin: 1.5em;
     border-radius: 5px;
