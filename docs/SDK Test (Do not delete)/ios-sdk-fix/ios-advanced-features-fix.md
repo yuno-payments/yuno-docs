@@ -104,9 +104,11 @@ case .userCancelled:
 }
 ```
 
-> 📘 Seamless SDK Note
->
-> The Seamless SDK automatically handles payment creation on the backend. You still receive the payment result through the return value, but you don't need to call the Create Payment API manually.
+<Callout icon="📘" theme="info">
+
+
+  The Seamless flow automatically handles payment creation on the backend. You still receive the payment result through the return value, but you don't need to call the Create Payment API manually.
+</Callout>
 
 ## Enrollment (Save Cards)
 
