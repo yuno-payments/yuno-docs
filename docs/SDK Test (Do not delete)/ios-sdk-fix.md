@@ -35,9 +35,7 @@ dependencies: [
 ]
 ```
 
-> 📘 Requirements
->
-> iOS 14.0+, Swift 5.7+
+> 📘 Requirements: iOS 14.0+, Swift 5.7+
 
 ## Initialize
 
@@ -74,9 +72,9 @@ init() {
 >
 > If your app uses a `UISceneDelegate`, place your Yuno initialization code within your `SceneDelegate`.
 
-> 📘 Access Your API Keys
+> 📘 Access Your API Key
 >
-> Retrieve your API Keys from the [Developers section](doc:developers-credentials) in the Yuno Dashboard.
+> Retrieve your API Key from the [Developers section](doc:developers-credentials) in the Yuno Dashboard.
 
 ### Configuration Options
 
@@ -84,7 +82,7 @@ Customize the SDK appearance and behavior using `YunoConfig`:
 
 ```swift
 let config = YunoConfig(
-    cardFormType: .oneStep,      // or .stepByStep
+    cardFormType: .oneStep,      // or .multiStep
     appearance: customAppearance,
     saveCardEnabled: true,
     keepLoader: false,
@@ -102,7 +100,7 @@ Yuno.initialize(
 
 | Parameter           | Type              | Default      | Description                                                               |
 | ------------------- | ----------------- | ------------ | ------------------------------------------------------------------------- |
-| `cardFormType`      | `CardFormType`    | `.oneStep`   | Card form flow type. Options: `.oneStep` or `.stepByStep`.                |
+| `cardFormType`      | `CardFormType`    | `.oneStep`   | Card form flow type. Options: `.oneStep` or `.multiStep`.                 |
 | `appearance`        | `Yuno.Appearance` | Yuno default | Custom appearance configuration for the SDK UI.                           |
 | `saveCardEnabled`   | `Bool`            | `false`      | When `true`, displays a "Save card" checkbox during payment.              |
 | `keepLoader`        | `Bool`            | `false`      | When `true`, you must manually call `hideLoader()` to dismiss the loader. |
@@ -482,7 +480,7 @@ When not specified, the SDK uses the device's default language if supported, oth
 
 Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-ios-sdk) guide for:
 
-* **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+* **Alternative Payment Flows** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
 * **Enrollment (Save Cards)** - Save payment methods for future use
 * **Vaulted Token Payments** - One-click payments with saved cards
 * **Custom UI (Headless Integration)** - Build completely custom payment forms
