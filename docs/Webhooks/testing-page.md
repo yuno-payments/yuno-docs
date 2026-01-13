@@ -10,6 +10,7 @@ metadata:
 The JSON attributes for Yuno webhooks are listed below:
 
 <HTMLBlock>{`
+<div class="notranslate">
   <div class="yuno">
     <p><strong>account_id</strong> <small>string </small>
       <br />The unique identifier of the account in Yuno (MAX 64; MIN 36).
@@ -46,30 +47,31 @@ The JSON attributes for Yuno webhooks are listed below:
       <br />The HMAC-SHA256 signature sent in the HTTP header for webhook verification when HMAC authentication is enabled.
     </p>
   </div>
-<style>
-  :root {
-    --yuno-main-color: #614AD6;
-    --yellow: #CEE65A;
-  }
+  <style>
+    :root {
+      --yuno-main-color: #614AD6;
+      --yellow: #CEE65A;
+    }
 
-  details {
-    display: flex;
-    overflow: hidden;
-  }
+    details {
+      display: flex;
+      overflow: hidden;
+    }
 
-  p {
-    margin-left: 20px;
-  }
+    p {
+      margin-left: 20px;
+    }
 
-  .yuno {
-    --highlight: #eee;
-    background: #eee;
-    margin: 1.5em;
-    border-radius: 5px;
-    border-left: 15px solid var(--yuno-main-color);
-    padding: 0.25em;
-  }
-</style>
+    .yuno {
+      --highlight: #eee;
+      background: #eee;
+      margin: 1.5em;
+      border-radius: 5px;
+      border-left: 15px solid var(--yuno-main-color);
+      padding: 0.25em;
+    }
+  </style>
+</div>
 `}</HTMLBlock>
 
 # Examples
