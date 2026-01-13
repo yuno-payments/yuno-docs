@@ -1,7 +1,7 @@
 ---
 title: Testing page
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
