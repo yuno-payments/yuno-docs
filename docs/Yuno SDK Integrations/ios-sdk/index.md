@@ -280,12 +280,12 @@ func yunoCreatePayment(with token: String, information: [String: Any]) {
 
 ### Essential Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `checkoutSession` | String | Session ID from backend |
-| `countryCode` | String | ISO country code (e.g., 'US') |
-| `language` | String? | Language code (e.g., 'en') |
-| `viewController` | UIViewController? | For presenting payment UI (UIKit) |
+| Parameter         | Type              | Description                       |
+| ----------------- | ----------------- | --------------------------------- |
+| `checkoutSession` | String            | Session ID from backend           |
+| `countryCode`     | String            | ISO country code (e.g., 'US')     |
+| `language`        | String?           | Language code (e.g., 'en')        |
+| `viewController`  | UIViewController? | For presenting payment UI (UIKit) |
 
 ### Card Configuration
 
@@ -312,15 +312,15 @@ Yuno.Appearance.cornerRadius = 8.0
 
 Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-ios-sdk) guide for:
 
-- **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
-- **Enrollment (Save Cards)** - Save payment methods for future use
-- **Vaulted Token Payments** - One-click payments with saved cards
-- **Custom UI (Headless Integration)** - Build completely custom payment forms
-- **Render Mode Integration** - Display payment form within your custom view
-- **Styling & Appearance** - Customize SDK appearance
-- **Swift 6 Concurrency** - Handle concurrency warnings with proper annotations
-- **ClearSale Integration** - Fraud prevention
+* **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+* **Enrollment (Save Cards)** - Save payment methods for future use
+* **Vaulted Token Payments** - One-click payments with saved cards
+* **Custom UI (Headless Integration)** - Build completely custom payment forms
+* **Render Mode Integration** - Display payment form within your custom view
+* **Styling & Appearance** - Customize SDK appearance
+* **Swift 6 Concurrency** - Handle concurrency warnings with proper annotations
 
 See also:
-- [Code Examples](doc:code-examples-ios-sdk) - Copy-paste examples for common scenarios
-- [Release Notes](doc:release-notes-ios-sdk) - SDK versions, changes, and migration guides
+
+* [Code Examples](doc:code-examples-ios-sdk) - Copy-paste examples for common scenarios
+* [Release Notes](doc:release-notes-ios-sdk) - SDK versions, changes, and migration guides
