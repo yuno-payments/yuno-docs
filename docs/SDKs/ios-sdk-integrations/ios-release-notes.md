@@ -9,6 +9,11 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.10.0   | **FIX**: Change goto to continue on enrollment. |
+|         | **FIX**: Change goto to continue payment on APMs. |
+|         | **NEW**: Support payment and enrollment. |
+|         | **NEW**: Add notification URL into Apple Pay token. |
+|         | **NEW**: Support calling CEP services to fill address fields. |
 | 2.9.0    | **NEW**: Allow cards expiring in the current month and year. |
 |         | **FIX**: Various bug fixes and improvements. |
 |         | **NEW**: Reduce character limit for full list and payment button. |
