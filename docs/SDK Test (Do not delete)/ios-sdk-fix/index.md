@@ -35,7 +35,9 @@ dependencies: [
 ]
 ```
 
-> 📘 Requirements: iOS 14.0+, Swift 5.7+
+> 📘 Requirements
+>
+> iOS 14.0+, Swift 5.7+
 
 ## Initialize
 
