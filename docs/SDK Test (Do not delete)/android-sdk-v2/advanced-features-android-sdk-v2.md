@@ -1,7 +1,7 @@
 ---
 title: Advanced Features Android SDK - v2
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
