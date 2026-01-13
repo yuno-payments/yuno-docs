@@ -1,7 +1,7 @@
 ---
 title: iOS Advanced Features Fix
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
