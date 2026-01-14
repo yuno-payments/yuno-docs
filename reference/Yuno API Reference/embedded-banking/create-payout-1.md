@@ -1,5 +1,5 @@
 ---
-title: Copy of Create Payout
+title: Create Payout
 api:
   file: payouts.json
   operationId: create-payout-1
