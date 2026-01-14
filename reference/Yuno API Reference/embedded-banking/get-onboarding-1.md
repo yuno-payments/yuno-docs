@@ -1,5 +1,5 @@
 ---
-title: Copy of Get Onboarding
+title: Get Onboarding
 excerpt: Retrieves detailed information about a specific onboarding for a recipient.
 api:
   file: openapi.json
