@@ -5,7 +5,7 @@ api:
   file: openapi.json
   operationId: delete-recipient-1
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
