@@ -1,5 +1,5 @@
 ---
-title: Copy of Create Onboarding
+title: Create Onboarding
 api:
   file: openapi.json
   operationId: post_{id}onboardings-1
