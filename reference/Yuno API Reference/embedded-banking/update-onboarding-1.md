@@ -1,5 +1,5 @@
 ---
-title: Copy of Update Onboarding
+title: Update Onboarding
 api:
   file: openapi.json
   operationId: update-onboarding-1
@@ -10,8 +10,7 @@ link:
 metadata:
   robots: index
 ---
-
-This endpoint updates an existing onboarding for a recipient, allowing you to modify onboarding details after initial creation. Use this when you need to update provider information, documentation, banking details, or other onboarding parameters for existing recipients in the [split payments marketplace](https://docs.y.uno/docs/split-payments-marketplace#/).
+This endpoint updates an existing onboarding for a recipient, allowing you to modify onboarding details after initial creation. Use this when you need to update provider information, documentation or other onboarding parameters for existing recipients.
 
 ## Prerequisites
 
