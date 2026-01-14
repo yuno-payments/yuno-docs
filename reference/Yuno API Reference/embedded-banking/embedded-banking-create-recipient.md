@@ -1,9 +1,8 @@
 ---
-title: Copy of Create Recipient
+title: Create Recipient
 excerpt: >-
-  Creates a new recipient for split payment scenarios. This endpoint allows
-  merchants to define recipients that can receive portions of payments in
-  marketplace or split payment models.
+  Creates a new recipient for Embedded banking scenarios. This endpoint allows
+  merchants to define recipients that can 
 api:
   file: openapi.json
   operationId: create-recipient-1
