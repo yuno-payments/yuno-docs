@@ -4,7 +4,7 @@ api:
   file: payment-api-create-payment-back-to-back.json
   operationId: create-payment-1
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
