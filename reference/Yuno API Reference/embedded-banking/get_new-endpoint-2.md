@@ -1,5 +1,5 @@
 ---
-title: Copy of Create Bank Account
+title: Retrieve Bank Account
 excerpt: This endpoint creates an account for a recipient with a SUCCEEDED onboarding
 api:
   file: test-api-creation.json
