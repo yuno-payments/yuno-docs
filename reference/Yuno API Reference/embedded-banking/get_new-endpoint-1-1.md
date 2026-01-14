@@ -1,9 +1,10 @@
 ---
 title: Retrieve Bank Account
-excerpt: This endpoint creates an account for a recipient with a SUCCEEDED onboarding
+excerpt: This endpoint retrieves a bank account information.
 api:
   file: test-api-creation.json
-  operationId: post_recipients-recipient-id-onboardings-onboarding-id-bank-accounts-1-1
+  operationId: >-
+    get_recipients-recipient-id-onboardings-onboarding-id-bank-accounts-bank-account-id
 deprecated: false
 hidden: true
 link:
