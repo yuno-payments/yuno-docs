@@ -1,6 +1,6 @@
 ---
-title: Create Account
-excerpt: This is your first endpoint! Edit this page to start documenting your API.
+title: Create Bank Account
+excerpt: This endpoint creates an account for a recipient with a SUCCEEDED onboarding
 api:
   file: test-api-creation.json
   operationId: post_recipients-recipient-id-onboardings-onboarding-id-bank-accounts
