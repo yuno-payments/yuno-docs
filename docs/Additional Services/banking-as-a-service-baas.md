@@ -58,7 +58,7 @@ Transfers are split into **incoming transfers (payins)** and **outgoing transfer
 
 ## Flow 3: Card management
 
-This flow lets users request a physical or virtual card, view card details, and manage card status. Card operations must run under PCI DSS compliant environments and depend on the banking partner’s issuing capabilities.
+This flow lets users request a physical or virtual card, view card details, and manage card status. Yuno's infrastructure turns PCI compliance into a simple, built-in part of your card program.
 
 Status: `PENDING`
 
