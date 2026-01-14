@@ -7,6 +7,25 @@ metadata:
 ---
 Advanced configuration and custom integrations for iOS.
 
+## PaymentMethodSelected Helper Class
+
+`PaymentMethodSelected` is a protocol in the Yuno SDK. To use it with `startPaymentLite()` and other methods, create a simple conforming class:
+
+```swift
+// Add this helper class to your project
+class SelectedPaymentMethod: PaymentMethodSelected {
+    let paymentMethodType: String
+    let vaultedToken: String?
+    
+    init(paymentMethodType: String, vaultedToken: String? = nil) {
+        self.paymentMethodType = paymentMethodType
+        self.vaultedToken = vaultedToken
+    }
+}
+```
+
+This class is used throughout the examples below.
+
 ## Alternative Payment Flows
 
 The basic flow uses `Yuno.startPayment()` which handles the full payment flow automatically. For more control, use these alternatives:
@@ -33,7 +52,7 @@ class PaymentViewController: UIViewController, YunoPaymentDelegate {
         let methods = await fetchPaymentMethods(sessionId: checkoutSession)
         
         // 3. Display in your UI, then start payment with selected method
-        let paymentSelected = PaymentMethodSelected(
+        let paymentSelected = SelectedPaymentMethod(
             paymentMethodType: "CARD", // User's selection
             vaultedToken: nil // Optional: for enrolled methods
         )
@@ -79,7 +98,7 @@ let seamlessParams = SeamlessParams(
     viewController: self
 )
 
-let paymentSelected = PaymentMethodSelected(
+let paymentSelected = SelectedPaymentMethod(
     paymentMethodType: "CARD",
     vaultedToken: nil
 )
@@ -104,11 +123,9 @@ case .userCancelled:
 }
 ```
 
-<Callout icon="📘" theme="info">
-
-
-  The Seamless flow automatically handles payment creation on the backend. You still receive the payment result through the return value, but you don't need to call the Create Payment API manually.
-</Callout>
+> 📘 Seamless SDK Note
+>
+> The Seamless SDK automatically handles payment creation on the backend. You still receive the payment result through the return value, but you don't need to call the Create Payment API manually.
 
 ## Enrollment (Save Cards)
 
@@ -182,7 +199,7 @@ class PaymentViewController: UIViewController, YunoPaymentDelegate {
     private var _checkoutSession: String = ""
     
     func payWithSavedCard(vaultedToken: String) {
-        let paymentSelected = PaymentMethodSelected(
+        let paymentSelected = SelectedPaymentMethod(
             paymentMethodType: "CARD",
             vaultedToken: vaultedToken
         )
@@ -300,7 +317,7 @@ class PaymentViewController: UIViewController, YunoPaymentDelegate {
         let session = await createCheckoutSession()
         _checkoutSession = session.id
         
-        let paymentSelected = PaymentMethodSelected(
+        let paymentSelected = SelectedPaymentMethod(
             paymentMethodType: "CARD",
             vaultedToken: nil
         )
