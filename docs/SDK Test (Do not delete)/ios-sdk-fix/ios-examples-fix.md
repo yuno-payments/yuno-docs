@@ -7,6 +7,25 @@ metadata:
 ---
 Ready-to-use iOS code examples for common scenarios.
 
+## PaymentMethodSelected Helper Class
+
+`PaymentMethodSelected` is a protocol in the Yuno SDK. To use it with `startPaymentLite()` and other methods, create a simple conforming class:
+
+```swift
+// Add this helper class to your project
+class SelectedPaymentMethod: PaymentMethodSelected {
+    let paymentMethodType: String
+    let vaultedToken: String?
+    
+    init(paymentMethodType: String, vaultedToken: String? = nil) {
+        self.paymentMethodType = paymentMethodType
+        self.vaultedToken = vaultedToken
+    }
+}
+```
+
+This class is used throughout the examples below.
+
 ## Example 1: Basic UIKit Payment
 
 ```swift
@@ -285,7 +304,7 @@ class FastCheckoutViewController: UIViewController, YunoPaymentDelegate {
             _checkoutSession = session.id
             
             // Start payment with vaulted token
-            let paymentSelected = PaymentMethodSelected(
+            let paymentSelected = SelectedPaymentMethod(
                 paymentMethodType: "CARD",
                 vaultedToken: card.vaultedToken
             )
@@ -361,7 +380,7 @@ class CustomSelectionViewController: UIViewController, YunoPaymentDelegate {
     }
     
     func didSelectPaymentMethod(_ method: PaymentMethod) {
-        let paymentSelected = PaymentMethodSelected(
+        let paymentSelected = SelectedPaymentMethod(
             paymentMethodType: method.type,
             vaultedToken: nil
         )
@@ -415,7 +434,7 @@ class RenderModeViewController: UIViewController, YunoPaymentDelegate {
             let session = try await createCheckoutSession()
             _checkoutSession = session.id
             
-            let paymentSelected = PaymentMethodSelected(
+            let paymentSelected = SelectedPaymentMethod(
                 paymentMethodType: "CARD",
                 vaultedToken: nil
             )
@@ -493,7 +512,7 @@ class PaymentWithRetryViewController: UIViewController, YunoPaymentDelegate {
                 let session = try await createCheckoutSession()
                 _checkoutSession = session.id
                 
-                let paymentSelected = PaymentMethodSelected(
+                let paymentSelected = SelectedPaymentMethod(
                     paymentMethodType: "CARD",
                     vaultedToken: nil
                 )
