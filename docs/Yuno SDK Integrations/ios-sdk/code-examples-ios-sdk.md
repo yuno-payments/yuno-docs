@@ -7,6 +7,25 @@ metadata:
 ---
 Ready-to-use iOS code examples for common scenarios.
 
+## PaymentMethodSelected Helper Class
+
+`PaymentMethodSelected` is a protocol in the Yuno SDK. To use it with `startPaymentLite()` and other methods, create a simple conforming class:
+
+```swift
+// Add this helper class to your project
+class SelectedPaymentMethod: PaymentMethodSelected {
+    let paymentMethodType: String
+    let vaultedToken: String?
+    
+    init(paymentMethodType: String, vaultedToken: String? = nil) {
+        self.paymentMethodType = paymentMethodType
+        self.vaultedToken = vaultedToken
+    }
+}
+```
+
+This class is used throughout the examples below.
+
 ## Example 1: Basic UIKit Payment
 
 ```swift
@@ -15,24 +34,39 @@ import YunoSDK
 
 class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
     
+    private var _checkoutSession: String = ""
+    private var paymentMethodsView: UIView?
+    
+    // YunoPaymentFullDelegate required properties
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+    
     @IBOutlet weak var payButton: UIButton!
     
-    @IBAction func payButtonTapped() {
-        startPayment()
-    }
-    
-    func startPayment() {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
         Task {
+            // 1. Create session on backend
             let session = try await createSession(amount: 2500)
+            _checkoutSession = session.id
             
-            await MainActor.run {
-                let config = YunoConfig(
-                    checkoutSession: session.id,
-                    countryCode: "US"
-                )
-                Yuno.startPayment(with: config, delegate: self)
+            // 2. Get payment methods view from SDK
+            paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+            
+            // 3. Add to view hierarchy
+            if let methodsView = paymentMethodsView {
+                methodsView.translatesAutoresizingMaskIntoConstraints = false
+                view.addSubview(methodsView)
+                // Add constraints...
             }
         }
+    }
+    
+    @IBAction func payButtonTapped() {
+        Yuno.startPayment()
     }
     
     func createSession(amount: Int) async throws -> CheckoutSession {
@@ -48,12 +82,37 @@ class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
         return try JSONDecoder().decode(CheckoutSession.self, from: data)
     }
     
-    func yunoPaymentResult(_ result: PaymentResult) {
-        if result.status == .succeeded {
-            performSegue(withIdentifier: "showSuccess", sender: nil)
-        } else {
-            showAlert(title: "Error", message: result.error?.message ?? "Payment failed")
+    // YunoPaymentFullDelegate methods
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        Task {
+            await createPayment(token: token)
+            Yuno.continuePayment()
         }
+    }
+    
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
+            performSegue(withIdentifier: "showSuccess", sender: nil)
+        case .fail, .reject, .internalError:
+            showAlert(title: "Error", message: "Payment failed")
+        case .processing:
+            showAlert(title: "Processing", message: "Payment is being processed")
+        case .userCancelled:
+            break
+        }
+    }
+    
+    func yunoDidSelect(paymentMethod: PaymentMethodSelected) {
+        print("Selected:", paymentMethod)
+    }
+    
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) {
+        // Update constraints if needed
+    }
+    
+    func yunoDidUnenrollSuccessfully(_ success: Bool) {
+        print("Unenroll success:", success)
     }
 }
 ```
@@ -65,6 +124,7 @@ import SwiftUI
 import YunoSDK
 
 struct CheckoutView: View {
+    @StateObject private var viewModel = CheckoutViewModel()
     @State private var showSuccess = false
     @State private var errorMessage: String?
     
@@ -74,9 +134,12 @@ struct CheckoutView: View {
                 .font(.largeTitle)
             
             Button("Pay Now") {
-                Task { await processPayment() }
+                Task { await viewModel.startPayment() }
             }
             .buttonStyle(.borderedProminent)
+        }
+        .task {
+            await viewModel.initialize()
         }
         .alert("Success!", isPresented: $showSuccess) {
             Button("OK") { }
@@ -86,88 +149,141 @@ struct CheckoutView: View {
         } message: {
             Text(errorMessage ?? "")
         }
-    }
-    
-    func processPayment() async {
-        do {
-            let session = try await createCheckoutSession()
-            
-            await MainActor.run {
-                let config = YunoConfig(
-                    checkoutSession: session.id,
-                    countryCode: "US"
-                )
-                Yuno.startPayment(with: config, delegate: self)
+        .onReceive(viewModel.$paymentStatus) { status in
+            switch status {
+            case .succeeded:
+                showSuccess = true
+            case .failed(let message):
+                errorMessage = message
+            default:
+                break
             }
-        } catch {
-            errorMessage = error.localizedDescription
         }
-    }
-    
-    func createCheckoutSession() async throws -> CheckoutSession {
-        // API call implementation
-        fatalError("Implement API call")
     }
 }
 
-extension CheckoutView: YunoPaymentFullDelegate {
-    func yunoPaymentResult(_ result: PaymentResult) {
-        if result.status == .succeeded {
-            showSuccess = true
-        } else {
-            errorMessage = result.error?.message
+@MainActor
+class CheckoutViewModel: ObservableObject, YunoPaymentFullDelegate {
+    enum PaymentStatus {
+        case idle, processing, succeeded, failed(String)
+    }
+    
+    @Published var paymentStatus: PaymentStatus = .idle
+    
+    private var _checkoutSession: String = ""
+    private var paymentMethodsView: UIView?
+    
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { nil }
+    
+    func initialize() async {
+        let session = try? await createCheckoutSession()
+        _checkoutSession = session?.id ?? ""
+        paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+    }
+    
+    func startPayment() async {
+        paymentStatus = .processing
+        Yuno.startPayment()
+    }
+    
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        Task {
+            await createPayment(token: token)
+            Yuno.continuePayment()
         }
     }
+    
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
+            paymentStatus = .succeeded
+        case .fail, .reject, .internalError:
+            paymentStatus = .failed("Payment failed")
+        case .processing:
+            paymentStatus = .processing
+        case .userCancelled:
+            paymentStatus = .idle
+        }
+    }
+    
+    func yunoDidSelect(paymentMethod: PaymentMethodSelected) { }
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) { }
+    func yunoDidUnenrollSuccessfully(_ success: Bool) { }
 }
 ```
 
-## Example 3: Subscription Enrollment
+## Example 3: Enrollment (Save Card)
 
 ```swift
-class SubscriptionVC: UIViewController, YunoEnrollmentDelegate {
+import UIKit
+import YunoSDK
+
+class EnrollmentViewController: UIViewController, YunoEnrollmentDelegate {
+    
+    private var _customerSession: String = ""
+    
+    // YunoEnrollmentDelegate required properties
+    var customerSession: String { _customerSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
     
     func enrollCard() {
         Task {
+            // Create customer session on backend
             let session = try await createCustomerSession(customerId: "cus_123")
+            _customerSession = session.id
             
-            await MainActor.run {
-                let config = YunoConfig(
-                    customerSession: session.id,
-                    countryCode: "US"
-                )
-                Yuno.enrollPayment(with: config, delegate: self)
-            }
+            // Start enrollment
+            Yuno.enrollPayment(with: self, showPaymentStatus: true)
         }
     }
     
-    func yunoEnrollmentResult(_ result: EnrollmentResult) {
-        if result.status == .succeeded {
-            saveVaultedToken(result.vaultedToken)
-            setupSubscription(vaultedToken: result.vaultedToken)
+    func yunoEnrollmentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
+            print("Card enrolled successfully")
+            // Fetch vaulted tokens from your backend
+            fetchSavedCards()
+        case .fail, .reject, .internalError:
+            showAlert("Enrollment failed")
+        case .processing:
+            showAlert("Enrollment processing")
+        case .userCancelled:
+            break
         }
     }
     
-    func setupSubscription(vaultedToken: String) {
+    func fetchSavedCards() {
         Task {
-            try await apiClient.post("/subscriptions", body: [
-                "customer_id": "cus_123",
-                "vaulted_token": vaultedToken,
-                "plan": "premium_monthly"
-            ])
-            
-            await MainActor.run {
-                showAlert("Subscription activated!")
-            }
+            let cards = try await apiClient.get("/customer/cards")
+            // Update UI with saved cards
         }
     }
 }
 ```
 
-## Example 4: One-Click Payment
+## Example 4: One-Click Payment with Saved Card
 
 ```swift
-class FastCheckoutVC: UIViewController {
+import UIKit
+import YunoSDK
+
+class FastCheckoutViewController: UIViewController, YunoPaymentDelegate {
+    
+    private var _checkoutSession: String = ""
     var savedCards: [SavedCard] = []
+    
+    // YunoPaymentDelegate required properties
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
+    
+    @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -183,24 +299,41 @@ class FastCheckoutVC: UIViewController {
     
     func payWithSavedCard(_ card: SavedCard) {
         Task {
+            // Create checkout session
             let session = try await createCheckoutSession()
+            _checkoutSession = session.id
             
-            await MainActor.run {
-                let config = YunoConfig(
-                    checkoutSession: session.id,
-                    countryCode: "US",
-                    vaultedToken: card.vaultedToken
-                )
-                Yuno.startPayment(with: config, delegate: self)
-            }
+            // Start payment with vaulted token
+            let paymentSelected = SelectedPaymentMethod(
+                paymentMethodType: "CARD",
+                vaultedToken: card.vaultedToken
+            )
+            
+            Yuno.startPaymentLite(
+                with: self,
+                paymentSelected: paymentSelected,
+                showPaymentStatus: true
+            )
         }
     }
-}
-
-extension FastCheckoutVC: YunoPaymentFullDelegate {
-    func yunoPaymentResult(_ result: PaymentResult) {
-        if result.status == .succeeded {
+    
+    func yunoCreatePayment(with token: String) {
+        Task {
+            await createPayment(token: token)
+            Yuno.continuePayment()
+        }
+    }
+    
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
             navigateToOrderConfirmation()
+        case .fail, .reject, .internalError:
+            showAlert("Payment failed")
+        case .processing:
+            showAlert("Payment processing")
+        case .userCancelled:
+            break
         }
     }
 }
@@ -209,7 +342,17 @@ extension FastCheckoutVC: YunoPaymentFullDelegate {
 ## Example 5: Custom Payment Method Selection
 
 ```swift
-class CustomSelectionVC: UIViewController {
+import UIKit
+import YunoSDK
+
+class CustomSelectionViewController: UIViewController, YunoPaymentDelegate {
+    
+    private var _checkoutSession: String = ""
+    
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
     
     @IBOutlet weak var tableView: UITableView!
     var paymentMethods: [PaymentMethod] = []
@@ -217,6 +360,8 @@ class CustomSelectionVC: UIViewController {
     func loadPaymentMethods() async {
         do {
             let session = try await createCheckoutSession()
+            _checkoutSession = session.id
+            
             paymentMethods = try await fetchPaymentMethods(session: session.id)
             tableView.reloadData()
         } catch {
@@ -235,16 +380,32 @@ class CustomSelectionVC: UIViewController {
     }
     
     func didSelectPaymentMethod(_ method: PaymentMethod) {
-        let config = YunoConfig(
-            checkoutSession: currentSession.id,
-            countryCode: "US"
+        let paymentSelected = SelectedPaymentMethod(
+            paymentMethodType: method.type,
+            vaultedToken: nil
         )
         
         Yuno.startPaymentLite(
-            with: config,
-            paymentType: method.type,
-            delegate: self
+            with: self,
+            paymentSelected: paymentSelected,
+            showPaymentStatus: true
         )
+    }
+    
+    func yunoCreatePayment(with token: String) {
+        Task {
+            await createPayment(token: token)
+            Yuno.continuePayment()
+        }
+    }
+    
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
+            navigateToSuccess()
+        default:
+            showError("Payment failed")
+        }
     }
 }
 ```
@@ -252,35 +413,77 @@ class CustomSelectionVC: UIViewController {
 ## Example 6: Render Mode Integration
 
 ```swift
-class RenderModeVC: UIViewController, YunoPaymentRenderFlowProtocol {
+import UIKit
+import YunoSDK
+
+class RenderModeViewController: UIViewController, YunoPaymentDelegate {
+    
+    private var _checkoutSession: String = ""
+    private var paymentFlow: YunoPaymentRenderFlowProtocol?
+    
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
     
     @IBOutlet weak var paymentContainerView: UIView!
+    @IBOutlet weak var submitButton: UIButton!
     
     func startPayment() {
         Task {
             let session = try await createCheckoutSession()
+            _checkoutSession = session.id
             
-            await MainActor.run {
-                let config = YunoConfig(
-                    checkoutSession: session.id,
-                    countryCode: "US"
-                )
-                Yuno.startPaymentRenderFlow(with: config, delegate: self)
+            let paymentSelected = SelectedPaymentMethod(
+                paymentMethodType: "CARD",
+                vaultedToken: nil
+            )
+            
+            // Create payment flow instance
+            paymentFlow = await Yuno.startPaymentRenderFlow(
+                paymentMethodSelected: paymentSelected,
+                with: self
+            )
+            
+            // Get and display the form
+            if let formView = await paymentFlow?.formView(
+                paymentMethodSelected: paymentSelected,
+                with: self
+            ) {
+                formView.translatesAutoresizingMaskIntoConstraints = false
+                paymentContainerView.addSubview(formView)
+                NSLayoutConstraint.activate([
+                    formView.topAnchor.constraint(equalTo: paymentContainerView.topAnchor),
+                    formView.leadingAnchor.constraint(equalTo: paymentContainerView.leadingAnchor),
+                    formView.trailingAnchor.constraint(equalTo: paymentContainerView.trailingAnchor),
+                    formView.bottomAnchor.constraint(equalTo: paymentContainerView.bottomAnchor)
+                ])
             }
         }
     }
     
-    func formView() -> UIView? {
-        return paymentContainerView
+    @IBAction func submitButtonTapped() {
+        paymentFlow?.submitForm()
     }
     
-    func submitForm() async {
-        // Form submitted
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        Task {
+            await createPayment(token: token)
+            
+            // Display additional views (e.g., 3DS) if needed
+            let additionalView = await paymentFlow?.continuePayment()
+            if let additionalView = additionalView {
+                // Display 3DS or additional verification views
+            }
+        }
     }
     
-    func yunoPaymentResult(_ result: PaymentResult) {
-        if result.status == .succeeded {
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
             navigateToSuccess()
+        default:
+            showError("Payment failed")
         }
     }
 }
@@ -289,15 +492,36 @@ class RenderModeVC: UIViewController, YunoPaymentRenderFlowProtocol {
 ## Example 7: Error Handling with Retry
 
 ```swift
-class PaymentWithRetryVC: UIViewController {
+import UIKit
+import YunoSDK
+
+class PaymentWithRetryViewController: UIViewController, YunoPaymentDelegate {
+    
+    private var _checkoutSession: String = ""
     var retryCount = 0
     let maxRetries = 3
+    
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
     
     func attemptPayment() {
         Task {
             do {
                 let session = try await createCheckoutSession()
-                await startPayment(session: session)
+                _checkoutSession = session.id
+                
+                let paymentSelected = SelectedPaymentMethod(
+                    paymentMethodType: "CARD",
+                    vaultedToken: nil
+                )
+                
+                Yuno.startPaymentLite(
+                    with: self,
+                    paymentSelected: paymentSelected,
+                    showPaymentStatus: true
+                )
             } catch {
                 await handlePaymentError(error)
             }
@@ -315,15 +539,27 @@ class PaymentWithRetryVC: UIViewController {
             }
         }
     }
-}
-
-extension PaymentWithRetryVC: YunoPaymentFullDelegate {
-    func yunoPaymentResult(_ result: PaymentResult) {
-        if result.status == .succeeded {
+    
+    func yunoCreatePayment(with token: String) {
+        Task {
+            await createPayment(token: token)
+            Yuno.continuePayment()
+        }
+    }
+    
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
             retryCount = 0
             navigateToSuccess()
-        } else if result.status == .failed {
-            Task { await handlePaymentError(result.error!) }
+        case .fail, .internalError:
+            Task { await handlePaymentError(NSError(domain: "Payment", code: -1)) }
+        case .reject:
+            showAlert("Payment was rejected")
+        case .processing:
+            showAlert("Payment is processing")
+        case .userCancelled:
+            break
         }
     }
 }
@@ -332,9 +568,19 @@ extension PaymentWithRetryVC: YunoPaymentFullDelegate {
 ## Example 8: Analytics Integration
 
 ```swift
+import UIKit
+import YunoSDK
 import FirebaseAnalytics
 
-class PaymentWithAnalyticsVC: UIViewController {
+class PaymentWithAnalyticsViewController: UIViewController, YunoPaymentFullDelegate {
+    
+    private var _checkoutSession: String = ""
+    private var paymentMethodsView: UIView?
+    
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { self }
     
     func startPayment() {
         Analytics.logEvent("checkout_started", parameters: [
@@ -344,40 +590,63 @@ class PaymentWithAnalyticsVC: UIViewController {
         
         Task {
             let session = try await createCheckoutSession()
-            let config = YunoConfig(checkoutSession: session.id, countryCode: "US")
-            Yuno.startPayment(with: config, delegate: self)
+            _checkoutSession = session.id
+            
+            paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+            // Add to view hierarchy...
+            
+            Yuno.startPayment()
         }
     }
-}
-
-extension PaymentWithAnalyticsVC: YunoPaymentFullDelegate {
-    func yunoPaymentResult(_ result: PaymentResult) {
+    
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        Task {
+            await createPayment(token: token)
+            Yuno.continuePayment()
+        }
+    }
+    
+    func yunoPaymentResult(_ result: Yuno.Result) {
         switch result.status {
         case .succeeded:
             Analytics.logEvent(AnalyticsEventPurchase, parameters: [
-                "transaction_id": result.paymentId,
                 "value": 25.00,
                 "currency": "USD"
             ])
             navigateToSuccess()
             
-        case .failed:
+        case .fail, .reject, .internalError:
             Analytics.logEvent("payment_failed", parameters: [
-                "error": result.error?.code ?? "unknown"
+                "status": String(describing: result.status)
             ])
-            showError(result.error?.message)
+            showError("Payment failed")
             
-        default:
-            break
+        case .processing:
+            Analytics.logEvent("payment_processing", parameters: nil)
+            
+        case .userCancelled:
+            Analytics.logEvent("payment_cancelled", parameters: nil)
         }
     }
+    
+    func yunoDidSelect(paymentMethod: PaymentMethodSelected) {
+        Analytics.logEvent("payment_method_selected", parameters: [
+            "method": paymentMethod.paymentMethodType
+        ])
+    }
+    
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) { }
+    func yunoDidUnenrollSuccessfully(_ success: Bool) { }
 }
 ```
 
 ## Example 9: Custom Styling
 
 ```swift
-class StyledPaymentVC: UIViewController {
+import UIKit
+import YunoSDK
+
+class StyledPaymentViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -385,21 +654,27 @@ class StyledPaymentVC: UIViewController {
     }
     
     func configureYunoAppearance() {
-        var appearance = Yuno.Appearance()
+        let appearance = Yuno.Appearance(
+            fontFamily: "SF Pro Display",
+            accentColor: UIColor(red: 0.2, green: 0.4, blue: 0.8, alpha: 1.0),
+            buttonBackgroundColor: UIColor(red: 0.2, green: 0.4, blue: 0.8, alpha: 1.0),
+            buttonTitleColor: .white,
+            buttonBorderColor: UIColor(red: 0.2, green: 0.4, blue: 0.8, alpha: 1.0),
+            secondaryButtonBackgroundColor: .systemGray6,
+            secondaryButtonTitleColor: .label,
+            secondaryButtonBorderColor: .systemGray4,
+            disableButtonBackgroundColor: .systemGray4,
+            disableButtonTitleColor: .systemGray,
+            checkboxColor: UIColor(red: 0.2, green: 0.4, blue: 0.8, alpha: 1.0)
+        )
         
-        appearance.primaryColor = UIColor(red: 0.2, green: 0.4, blue: 0.8, alpha: 1.0)
-        appearance.backgroundColor = .systemBackground
-        appearance.textColor = .label
-        appearance.errorColor = .systemRed
-        appearance.fontFamily = "SF Pro Display"
-        appearance.fontSize = 16
-        appearance.cornerRadius = 12
-        
-        Yuno.setAppearance(appearance)
-    }
-    
-    func startPayment() {
-        // Payment flow uses custom appearance
+        Yuno.initialize(
+            apiKey: "PUBLIC_API_KEY",
+            config: YunoConfig(appearance: appearance),
+            callback: {
+                print("SDK initialized with custom appearance")
+            }
+        )
     }
 }
 ```
@@ -408,50 +683,64 @@ class StyledPaymentVC: UIViewController {
 
 ```swift
 import Combine
+import YunoSDK
 
-class PaymentViewModel: ObservableObject {
+@MainActor
+class PaymentViewModel: ObservableObject, YunoPaymentFullDelegate {
     @Published var paymentState: PaymentState = .idle
     @Published var errorMessage: String?
+    
+    private var _checkoutSession: String = ""
+    private var paymentMethodsView: UIView?
+    
+    var checkoutSession: String { _checkoutSession }
+    var countryCode: String { "US" }
+    var language: String? { "en" }
+    var viewController: UIViewController? { nil }
     
     enum PaymentState {
         case idle, processing, succeeded, failed
     }
     
     func processPayment(amount: Int) async {
-        await MainActor.run {
-            paymentState = .processing
-        }
+        paymentState = .processing
         
         do {
             let session = try await createCheckoutSession(amount: amount)
-            await startYunoPayment(session: session)
+            _checkoutSession = session.id
+            
+            paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
+            Yuno.startPayment()
         } catch {
-            await MainActor.run {
-                paymentState = .failed
-                errorMessage = error.localizedDescription
-            }
+            paymentState = .failed
+            errorMessage = error.localizedDescription
         }
     }
     
-    private func startYunoPayment(session: CheckoutSession) async {
-        await MainActor.run {
-            let config = YunoConfig(checkoutSession: session.id, countryCode: "US")
-            Yuno.startPayment(with: config, delegate: self)
+    func yunoCreatePayment(with token: String, information: [String: Any]) {
+        Task {
+            await createPayment(token: token)
+            Yuno.continuePayment()
         }
     }
-}
-
-extension PaymentViewModel: YunoPaymentFullDelegate {
-    func yunoPaymentResult(_ result: PaymentResult) {
-        Task { @MainActor in
-            if result.status == .succeeded {
-                paymentState = .succeeded
-            } else {
-                paymentState = .failed
-                errorMessage = result.error?.message
-            }
+    
+    func yunoPaymentResult(_ result: Yuno.Result) {
+        switch result.status {
+        case .succeeded:
+            paymentState = .succeeded
+        case .fail, .reject, .internalError:
+            paymentState = .failed
+            errorMessage = "Payment failed"
+        case .processing:
+            paymentState = .processing
+        case .userCancelled:
+            paymentState = .idle
         }
     }
+    
+    func yunoDidSelect(paymentMethod: PaymentMethodSelected) { }
+    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) { }
+    func yunoDidUnenrollSuccessfully(_ success: Bool) { }
 }
 
 // Usage in SwiftUI
@@ -511,5 +800,23 @@ class YunoAPIClient {
         let (data, _) = try await URLSession.shared.data(for: request)
         return try JSONDecoder().decode(CustomerSession.self, from: data)
     }
+    
+    func createPayment(token: String, checkoutSession: String) async throws {
+        var request = URLRequest(url: URL(string: "https://api.example.com/payments")!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "payment_method": ["token": token],
+            "checkout_session": checkoutSession
+        ])
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 || httpResponse.statusCode == 201 else {
+            throw NSError(domain: "Payment", code: -1, userInfo: [NSLocalizedDescriptionKey: "Payment creation failed"])
+        }
+    }
 }
 ```
+
+<br />
