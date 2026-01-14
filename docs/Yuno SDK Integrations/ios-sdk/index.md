@@ -12,7 +12,7 @@ metadata:
 Add to your `Podfile`:
 
 ```ruby
-pod 'YunoSDK'
+pod 'YunoSDK', '~> 1.1.22'
 ```
 
 ```bash
@@ -27,7 +27,17 @@ In Xcode: File → Add Package Dependencies
 https://github.com/yuno-payments/yuno-sdk-ios
 ```
 
-> 📘 Requirements: iOS 14.0+, Swift 5.7+
+Or add to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "1.1.17"))
+]
+```
+
+> 📘 Requirements
+>
+> iOS 14.0+, Swift 5.7+
 
 ## Initialize
 
@@ -38,15 +48,65 @@ import YunoSDK
 
 // In AppDelegate
 func application(_ application: UIApplication, didFinishLaunchingWithOptions...) -> Bool {
-    Yuno.initialize(apiKey: "your-public-api-key")
+    Yuno.initialize(
+        apiKey: "PUBLIC_API_KEY",
+        config: YunoConfig(),
+        callback: { 
+            // Initialization complete
+        }
+    )
     return true
 }
 
 // Or in SwiftUI App struct
 init() {
-    Yuno.initialize(apiKey: "your-public-api-key")
+    Yuno.initialize(
+        apiKey: "PUBLIC_API_KEY",
+        config: YunoConfig(),
+        callback: { 
+            // Initialization complete
+        }
+    )
 }
 ```
+
+> 🚧 UISceneDelegate Usage
+>
+> If your app uses a `UISceneDelegate`, place your Yuno initialization code within your `SceneDelegate`.
+
+> 📘 Access Your API Key
+>
+> Retrieve your API Key from the [Developers section](doc:developers-credentials) in the Yuno Dashboard.
+
+### Configuration Options
+
+Customize the SDK appearance and behavior using `YunoConfig`:
+
+```swift
+let config = YunoConfig(
+    cardFormType: .oneStep,      // or .multiStep
+    appearance: customAppearance,
+    saveCardEnabled: true,
+    keepLoader: false,
+    localizableBundle: nil
+)
+
+Yuno.initialize(
+    apiKey: "PUBLIC_API_KEY",
+    config: config,
+    callback: {
+        print("SDK initialized")
+    }
+)
+```
+
+| Parameter           | Type              | Default      | Description                                                               |
+| ------------------- | ----------------- | ------------ | ------------------------------------------------------------------------- |
+| `cardFormType`      | `CardFormType`    | `.oneStep`   | Card form flow type. Options: `.oneStep` or `.multiStep`.                 |
+| `appearance`        | `Yuno.Appearance` | Yuno default | Custom appearance configuration for the SDK UI.                           |
+| `saveCardEnabled`   | `Bool`            | `false`      | When `true`, displays a "Save card" checkbox during payment.              |
+| `keepLoader`        | `Bool`            | `false`      | When `true`, you must manually call `hideLoader()` to dismiss the loader. |
+| `localizableBundle` | `Bundle?`         | `nil`        | Custom bundle for localization strings.                                   |
 
 ## Basic Payment Flow
 
@@ -109,16 +169,24 @@ class PaymentViewModel: ObservableObject, YunoPaymentFullDelegate {
     func yunoCreatePayment(with token: String, information: [String: Any]) {
         Task {
             await createPayment(token: token)
-            Yuno.continuePayment(showPaymentStatus: true)
+            Yuno.continuePayment()
         }
     }
     
     func yunoPaymentResult(_ result: Yuno.Result) {
-        switch result {
-        case .success:
+        switch result.status {
+        case .succeeded:
             print("Payment succeeded")
-        case .failure(let error):
-            print("Payment failed:", error)
+        case .fail:
+            print("Payment failed")
+        case .reject:
+            print("Payment was rejected")
+        case .processing:
+            print("Payment is processing")
+        case .internalError:
+            print("Internal error occurred")
+        case .userCancelled:
+            print("User cancelled payment")
         }
     }
     
@@ -130,6 +198,11 @@ class PaymentViewModel: ObservableObject, YunoPaymentFullDelegate {
     func yunoDidSelect(paymentMethod: PaymentMethodSelected) {
         // Called when user selects a payment method
         print("Selected payment method:", paymentMethod)
+    }
+    
+    func yunoDidUnenrollSuccessfully(_ success: Bool) {
+        // Called when a payment method is unenrolled
+        print("Unenroll success:", success)
     }
 }
 
@@ -200,16 +273,25 @@ class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
     func yunoCreatePayment(with token: String, information: [String: Any]) {
         Task {
             await createPayment(token: token, checkoutSession: _checkoutSession)
-            Yuno.continuePayment(showPaymentStatus: true)
+            Yuno.continuePayment()
         }
     }
     
     func yunoPaymentResult(_ result: Yuno.Result) {
-        switch result {
-        case .success:
+        switch result.status {
+        case .succeeded:
             navigationController?.pushViewController(SuccessViewController(), animated: true)
-        case .failure(let error):
-            showAlert(message: "Payment failed: \(error.localizedDescription)")
+        case .fail:
+            showAlert(message: "Payment failed")
+        case .reject:
+            showAlert(message: "Payment was rejected")
+        case .processing:
+            showAlert(message: "Payment is processing")
+        case .internalError:
+            showAlert(message: "An error occurred")
+        case .userCancelled:
+            // User cancelled - no action needed
+            break
         }
     }
     
@@ -223,104 +305,195 @@ class PaymentViewController: UIViewController, YunoPaymentFullDelegate {
         // Called when user selects a payment method
         print("Selected payment method:", paymentMethod)
     }
+    
+    func yunoDidUnenrollSuccessfully(_ success: Bool) {
+        // Called when a payment method is unenrolled
+        print("Unenroll success:", success)
+    }
 }
 ```
 
 ## Handling Payment Results
 
+The SDK returns the payment result through the `yunoPaymentResult(_:)` delegate method:
+
 ```swift
 func yunoPaymentResult(_ result: Yuno.Result) {
-    switch result {
-    case .success(let data):
-        switch data.status {
-        case "SUCCEEDED":
-            navigateToSuccess()
-        case "PENDING":
-            showPendingMessage()
-        default:
-            break
-        }
-        
-    case .failure(let error):
-        switch error.code {
-        case .cardDeclined:
-            showError("Card was declined")
-        case .insufficientFunds:
-            showError("Insufficient funds")
-        case .networkError:
-            showError("Network error, please try again")
-        default:
-            showError("Payment failed: \(error.localizedDescription)")
-        }
+    switch result.status {
+    case .succeeded:
+        print("Payment succeeded")
+        navigateToSuccess()
+    case .fail:
+        print("Payment failed")
+        showError("Payment failed")
+    case .processing:
+        print("Payment is processing")
+        showPendingMessage()
+    case .reject:
+        print("Payment was rejected")
+        showError("Payment was rejected")
+    case .internalError:
+        print("Internal error occurred")
+        showError("An error occurred")
+    case .userCancelled:
+        print("User canceled payment")
+        // Handle cancellation
+        break
     }
 }
 ```
 
+### Payment States
+
+| State           | Description                                                    | Action Required                       |
+| --------------- | -------------------------------------------------------------- | ------------------------------------- |
+| `succeeded`     | Payment completed successfully                                 | No                                    |
+| `fail`          | Payment failed due to validation, network, or technical issues | Yes - Investigate and retry           |
+| `processing`    | Payment in progress, awaiting approval                         | No                                    |
+| `reject`        | Payment rejected (insufficient funds, fraud detection, etc.)   | Yes - Inform user and suggest actions |
+| `internalError` | Unexpected internal error occurred                             | Yes - Technical intervention required |
+| `userCancelled` | User canceled the payment                                      | No                                    |
+
+### Payment Status Validation
+
+#### Sync Payment Methods (Apple Pay)
+
+For synchronous payment methods like Apple Pay, when a user cancels before PSP response:
+
+* **SDK Status**: Returns `userCancelled`
+* **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
+* **Important**: The SDK will not return `reject` or `processing` in this scenario
+
+#### Async Payment Methods (PIX, QR codes)
+
+For asynchronous payment methods like PIX, when a user closes the QR window:
+
+* **SDK Status**: Returns `processing`, optionally with sub-status
+* **Backend Payment Status**: Remains `PENDING` and QR code remains valid until expiry
+* **Checkout Session Reuse**: Re-opening the same session can display the same valid QR code
+* **No Automatic Cancellation**: Payment is not automatically canceled
+
 ## 3DS Authentication
 
-3DS is handled automatically. For asynchronous payment methods:
+3DS is handled automatically by the SDK. After creating the payment on your backend, call `continuePayment()`:
 
 ```swift
 func yunoCreatePayment(with token: String, information: [String: Any]) {
     Task {
         await createPayment(token: token)
         
-        // Handle redirects if needed
-        let result = await Yuno.continuePayment(showPaymentStatus: false)
-        
-        if let redirectURL = result?.redirectURL {
-            // Open redirect URL
-            UIApplication.shared.open(redirectURL)
-        }
+        // continuePayment() handles 3DS and other required actions
+        Yuno.continuePayment()
     }
 }
 ```
 
-## Configuration Options
+> 🚧 ContinuePayment Method Required
+>
+> Yuno **requires** you integrate the `continuePayment()` method after the payment is created because certain asynchronous payment methods require additional customer action to complete. The API will inform you via the `sdk_action_required` field (set to `true`). The `continuePayment()` function will display additional screens to customers where they can complete the payment.
 
-### Essential Parameters
+## Deep Link Handling
 
-| Parameter         | Type              | Description                       |
-| ----------------- | ----------------- | --------------------------------- |
-| `checkoutSession` | String            | Session ID from backend           |
-| `countryCode`     | String            | ISO country code (e.g., 'US')     |
-| `language`        | String?           | Language code (e.g., 'en')        |
-| `viewController`  | UIViewController? | For presenting payment UI (UIKit) |
-
-### Card Configuration
+Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back using a deep link. Update your `AppDelegate` to pass the incoming URL to the Yuno SDK:
 
 ```swift
-let config = YunoConfig(
-    checkoutSession: session.id,
-    countryCode: "US",
-    cardSaveEnable: true, // Show save checkbox
-    cardFormType: .default, // or .extended
-    allowedPaymentTypes: [.credit, .debit]
+func application(_ app: UIApplication,
+                 open url: URL,
+                 options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+
+    guard url.scheme == "yunoexample" else { return false }
+
+    return Yuno.receiveDeeplink(url)
+}
+```
+
+Make sure the `url.scheme` matches the `callback_url` you provided when creating the `checkout_session`.
+
+## Appearance Customization
+
+Customize SDK appearance using `Yuno.Appearance`:
+
+```swift
+let appearance = Yuno.Appearance(
+    fontFamily: "SF Pro Display",
+    accentColor: UIColor.systemBlue,
+    buttonBackgroundColor: UIColor.systemBlue,
+    buttonTitleColor: UIColor.white,
+    buttonBorderColor: UIColor.systemBlue,
+    secondaryButtonBackgroundColor: UIColor.systemGray6,
+    secondaryButtonTitleColor: UIColor.label,
+    secondaryButtonBorderColor: UIColor.systemGray4,
+    disableButtonBackgroundColor: UIColor.systemGray4,
+    disableButtonTitleColor: UIColor.systemGray
+)
+
+Yuno.initialize(
+    apiKey: "PUBLIC_API_KEY",
+    config: YunoConfig(appearance: appearance)
 )
 ```
 
-### Appearance
+| Field                            | Description                                            |
+| -------------------------------- | ------------------------------------------------------ |
+| `fontFamily`                     | Specifies the font family used in the SDK.             |
+| `accentColor`                    | Defines the accent color used in several SDK elements. |
+| `buttonBackgroundColor`          | Sets the background color for the primary buttons.     |
+| `buttonTitleColor`               | Determines the text color for the primary buttons.     |
+| `buttonBorderColor`              | Specifies the border color for the primary buttons.    |
+| `secondaryButtonBackgroundColor` | Sets the background color for the secondary buttons.   |
+| `secondaryButtonTitleColor`      | Determines the text color for the secondary buttons.   |
+| `secondaryButtonBorderColor`     | Specifies the border color for the secondary buttons.  |
+| `disableButtonBackgroundColor`   | Sets the background color for the disabled buttons.    |
+| `disableButtonTitleColor`        | Determines the text color for the disabled buttons.    |
+| `checkboxColor`                  | Sets the color for checkboxes.                         |
 
-```swift
-Yuno.Appearance.primaryColor = .systemBlue
-Yuno.Appearance.backgroundColor = .systemBackground
-Yuno.Appearance.font = .systemFont(ofSize: 16)
-Yuno.Appearance.cornerRadius = 8.0
-```
+> 📘 Color Configuration
+>
+> Ensure all colors are specified as UIColor to maintain compatibility.
+
+## Supported Languages
+
+| Code    | Language              |
+| ------- | --------------------- |
+| `en`    | English               |
+| `es`    | Spanish               |
+| `pt`    | Portuguese            |
+| `fr`    | French                |
+| `it`    | Italian               |
+| `de`    | German                |
+| `pl`    | Polish                |
+| `ru`    | Russian               |
+| `tr`    | Turkish               |
+| `nl`    | Dutch                 |
+| `sv`    | Swedish               |
+| `ko`    | Korean                |
+| `ja`    | Japanese              |
+| `zh-CN` | Chinese (Simplified)  |
+| `zh-TW` | Chinese (Traditional) |
+| `vi`    | Vietnamese            |
+| `th`    | Thai                  |
+| `ms`    | Malay                 |
+| `id`    | Indonesian            |
+| `fil`   | Filipino              |
+
+When not specified, the SDK uses the device's default language if supported, otherwise falls back to English.
 
 ## Next Steps
 
 Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-ios-sdk) guide for:
 
-* **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+* **Alternative Payment Flows** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
 * **Enrollment (Save Cards)** - Save payment methods for future use
 * **Vaulted Token Payments** - One-click payments with saved cards
 * **Custom UI (Headless Integration)** - Build completely custom payment forms
 * **Render Mode Integration** - Display payment form within your custom view
-* **Styling & Appearance** - Customize SDK appearance
 * **Swift 6 Concurrency** - Handle concurrency warnings with proper annotations
 
 See also:
 
 * [Code Examples](doc:code-examples-ios-sdk) - Copy-paste examples for common scenarios
 * [Release Notes](doc:release-notes-ios-sdk) - SDK versions, changes, and migration guides
+
+## Demo Application
+
+Yuno provides an example project showcasing iOS SDK integration. You can access the [project repository](https://github.com/yuno-payments/yuno-sdk-ios) or [download the project](https://github.com/yuno-payments/yuno-sdk-ios/archive/refs/heads/main.zip).
