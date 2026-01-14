@@ -50,8 +50,8 @@ Complete checkout flow with card payment.
           });
           yuno.continuePayment();
         },
-        yunoPaymentResult: (data) => {
-          if (data.status === 'SUCCEEDED') {
+        yunoPaymentResult: (status) => {
+          if (status === 'SUCCEEDED') {
             window.location.href = '/success';
           }
         }
@@ -66,38 +66,40 @@ Complete checkout flow with card payment.
 
 ## Example 2: Subscription Payment
 
-Recurring payment with card saving.
+Recurring payment with card saving using `mountEnrollmentLite()`.
 
 ```javascript
 async function setupSubscription() {
   const yuno = await Yuno.initialize('pk_test_your_key');
   
   // Create customer session for enrollment
-  const session = await fetch('/api/customer/session', {
+  const customerSession = await fetch('/api/customer/session', {
     method: 'POST',
     body: JSON.stringify({ customer_id: 'cus_123' })
   }).then(r => r.json());
   
-  // Enroll payment method
-  yuno.startEnrollment({
-    customerSession: session.id,
+  // Mount enrollment form
+  yuno.mountEnrollmentLite({
+    customerSession: customerSession.id,
     countryCode: 'US',
-    async yunoEnrolled(vaultedToken) {
+    language: 'en',
+    yunoEnrollmentStatus: async (enrollmentData) => {
       // Save vaulted token for future charges
       await fetch('/api/subscription/create', {
         method: 'POST',
         body: JSON.stringify({
           customer_id: 'cus_123',
-          vaulted_token: vaultedToken,
+          enrollment_data: enrollmentData,
           plan: 'premium_monthly'
         })
       });
       
       alert('Subscription created successfully!');
+    },
+    yunoError: (error) => {
+      console.error('Enrollment error:', error);
     }
   });
-  
-  yuno.mountEnrollment();
 }
 ```
 
@@ -319,7 +321,7 @@ Responsive payment form for mobile devices.
         checkoutSession: session.id,
         elementSelector: '#payment-container',
         countryCode: 'US',
-        renderMode: 'element', // Better for mobile than modal
+        renderMode: { type: 'element' }, // Better for mobile than modal
         card: {
           type: 'extends' // Separate fields easier on mobile
         },
@@ -368,16 +370,15 @@ async function checkoutWithAnalytics() {
       yuno.continuePayment();
     },
     
-    yunoPaymentResult: (data) => {
-      if (data.status === 'SUCCEEDED') {
+    yunoPaymentResult: (status) => {
+      if (status === 'SUCCEEDED') {
         gtag('event', 'purchase', {
-          transaction_id: data.payment_id,
           value: 25.00,
           currency: 'USD'
         });
       } else {
         gtag('event', 'payment_failed', {
-          reason: data.error?.message
+          status: status
         });
       }
     }
@@ -470,8 +471,8 @@ function PaymentComponent() {
           });
           yuno.continuePayment();
         },
-        yunoPaymentResult: (data) => {
-          if (data.status === 'SUCCEEDED') {
+        yunoPaymentResult: (status) => {
+          if (status === 'SUCCEEDED') {
             window.location.href = '/success';
           }
         }
@@ -533,8 +534,8 @@ export default {
           await this.$http.post('/api/payment', { token, session: session.data.id });
           this.yuno.continuePayment();
         },
-        yunoPaymentResult: (data) => {
-          if (data.status === 'SUCCEEDED') {
+        yunoPaymentResult: (status) => {
+          if (status === 'SUCCEEDED') {
             this.$router.push('/success');
           }
         }
@@ -578,13 +579,13 @@ async function paymentWithRetry() {
         }
       },
       
-      yunoError: async (error, data) => {
-        if (error.code === 'SESSION_EXPIRED' && retryCount < MAX_RETRIES) {
+      yunoError: async (message, data) => {
+        console.error('Payment error:', message, data);
+        
+        if (retryCount < MAX_RETRIES) {
           retryCount++;
-          session = await createSession(); // Create new session
-          startPayment(); // Retry
-        } else if (error.code === 'NETWORK_ERROR' && retryCount < MAX_RETRIES) {
-          retryCount++;
+          // Create new session and retry
+          session = await createSession();
           setTimeout(() => startPayment(), 2000); // Retry after 2s
         } else {
           alert('Payment failed. Please try again.');
@@ -601,7 +602,7 @@ async function paymentWithRetry() {
 
 ## Example 13: Installments Payment
 
-Enable installment options for cards.
+Enable installment options for cards. Installments are configured in the Yuno dashboard per payment method and country.
 
 ```javascript
 async function installmentsCheckout() {
@@ -612,19 +613,13 @@ async function installmentsCheckout() {
     checkoutSession: session.id,
     elementSelector: '#payment',
     countryCode: 'BR', // Brazil commonly uses installments
-    card: {
-      installments: {
-        enabled: true,
-        defaultValue: 1
-      }
-    },
     async yunoCreatePayment(token, tokenInfo) {
+      // tokenInfo may contain installment selection from the user
       await fetch('/api/payment', {
         method: 'POST',
         body: JSON.stringify({
           token,
-          session: session.id,
-          installments: tokenInfo.card_data?.installment
+          session: session.id
         })
       });
       yuno.continuePayment();
@@ -634,6 +629,8 @@ async function installmentsCheckout() {
   yuno.mountCheckout();
 }
 ```
+
+> **Note:** Installment options are automatically displayed when configured in the Yuno dashboard for the payment method and country.
 
 ## Example 14: Dynamic Checkout Session
 
@@ -710,8 +707,8 @@ async function guestCheckout(email, amount) {
       await processPayment(token, session.id);
       yuno.continuePayment();
     },
-    yunoPaymentResult: (data) => {
-      if (data.status === 'SUCCEEDED') {
+    yunoPaymentResult: (status) => {
+      if (status === 'SUCCEEDED') {
         window.location.href = `/order-confirmation?email=${email}`;
       }
     }
@@ -726,6 +723,7 @@ async function guestCheckout(email, amount) {
 Complete backend implementations:
 
 **Node.js/Express:**
+
 ```javascript
 const express = require('express');
 const app = express();
