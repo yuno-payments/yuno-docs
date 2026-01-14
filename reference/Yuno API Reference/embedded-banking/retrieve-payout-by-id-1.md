@@ -1,5 +1,5 @@
 ---
-title: Copy of Retrieve Payout by ID
+title: Retrieve Payout by ID
 api:
   file: payouts.json
   operationId: retrieve-payout-by-id-1
