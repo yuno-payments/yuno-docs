@@ -4,5 +4,5 @@ excerpt: This is your first endpoint! Edit this page to start documenting your A
 api:
   file: embedded-banking-v-2.json
   operationId: get_new-endpoint
-hidden: false
+hidden: true
 ---
