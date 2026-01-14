@@ -78,8 +78,8 @@ yuno.startCheckout({
     
     yuno.continuePayment({ showPaymentStatus: true });
   },
-  yunoPaymentResult: (data) => {
-    console.log('Payment completed:', data.status);
+  yunoPaymentResult: (status) => {
+    console.log('Payment completed:', status);
   }
 });
 ```
@@ -154,8 +154,8 @@ payButton.addEventListener('click', () => {
           });
           yuno.continuePayment();
         },
-        yunoPaymentResult: (data) => {
-          if (data.status === 'SUCCEEDED') {
+        yunoPaymentResult: (status) => {
+          if (status === 'SUCCEEDED') {
             window.location.href = '/success';
           }
         }
@@ -181,19 +181,25 @@ payButton.addEventListener('click', () => {
 ```javascript
 yuno.startCheckout({
   // ... other config
-  yunoPaymentResult: (data) => {
-    switch(data.status) {
+  yunoPaymentResult: (status) => {
+    switch(status) {
       case 'SUCCEEDED':
         window.location.href = '/success';
         break;
-      case 'FAILED':
-        alert('Payment failed: ' + data.error?.message);
+      case 'FAIL':
+        alert('Payment failed');
         break;
-      case 'PENDING':
+      case 'PROCESSING':
         console.log('Payment is being processed');
         break;
-      case 'REJECTED':
+      case 'REJECT':
         alert('Payment was rejected');
+        break;
+      case 'INTERNAL_ERROR':
+        alert('An internal error occurred');
+        break;
+      case 'CANCELED':
+        console.log('Payment was canceled');
         break;
     }
   },
@@ -224,13 +230,13 @@ async yunoCreatePayment(token) {
 
 ### Essential Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `checkoutSession` | string | Session ID from backend |
-| `elementSelector` | string | CSS selector for container |
-| `countryCode` | string | ISO country code (e.g., 'US') |
-| `language` | string | Language code (e.g., 'en-US') |
-| `yunoCreatePayment` | function | Payment creation callback |
+| Parameter           | Type     | Description                   |
+| ------------------- | -------- | ----------------------------- |
+| `checkoutSession`   | string   | Session ID from backend       |
+| `elementSelector`   | string   | CSS selector for container    |
+| `countryCode`       | string   | ISO country code (e.g., 'US') |
+| `language`          | string   | Language code (e.g., 'en-US') |
+| `yunoCreatePayment` | function | Payment creation callback     |
 
 ### Card Configuration
 
@@ -240,7 +246,6 @@ yuno.startCheckout({
   card: {
     type: 'extends', // or 'only'
     cardSaveEnable: true, // Show save checkbox
-    isCreditCardProcessingOnly: false, // Allow debit
     onChange: ({ error, data }) => {
       if (error) {
         console.log('Card validation error:', error);
@@ -267,13 +272,14 @@ yuno.startCheckout({
 
 Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-web-sdk) guide for:
 
-- **Alternative Mounting Options** - `mountCheckoutLite()` and `mountSeamlessCheckout()` for custom payment method selection
-- **Enrollment (Save Cards)** - Save payment methods for future use
-- **Vaulted Token Payments** - One-click payments with saved cards
-- **Custom UI (Headless Integration)** - Build completely custom payment forms
-- **Secure Fields** - Custom card forms with PCI compliance
-- **Styling & Customization** - Match the SDK to your brand
-- **Advanced Configuration** - Dynamic views, render mode, and more
+* **Alternative Mounting Options** - `mountCheckoutLite()` and `mountSeamlessCheckout()` for custom payment method selection
+* **Enrollment (Save Cards)** - Save payment methods for future use
+* **Vaulted Token Payments** - One-click payments with saved cards
+* **Custom UI (Headless Integration)** - Build completely custom payment forms
+* **Secure Fields** - Custom card forms with PCI compliance
+* **Styling & Customization** - Match the SDK to your brand
+* **Advanced Configuration** - Dynamic views, render mode, and more
 
 See also:
-- [Code Examples](doc:code-examples-web-sdk) - Copy-paste examples for common scenarios
+
+* [Code Examples](doc:code-examples-web-sdk) - Copy-paste examples for common scenarios
