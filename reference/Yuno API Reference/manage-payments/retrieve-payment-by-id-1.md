@@ -4,7 +4,7 @@ api:
   file: payments.json
   operationId: retrieve-payment-by-id-1
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
