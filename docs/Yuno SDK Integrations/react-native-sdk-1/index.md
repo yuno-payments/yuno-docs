@@ -70,7 +70,7 @@ export default function PaymentScreen() {
           navigateToSuccess();
           break;
         case 'FAILED':
-          showError(state.error?.message);
+          showError('Payment failed');
           break;
         case 'PROCESSING':
           console.log('Payment is being processed');
@@ -120,8 +120,8 @@ export default function PaymentScreen() {
         <YunoPaymentMethods
           checkoutSession={checkoutSession}
           countryCode="US"
-          onPaymentMethodSelected={(selected) => {
-            setPaymentMethodSelected(selected);
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
           }}
         />
       )}
@@ -194,7 +194,7 @@ export default function CheckoutScreen() {
           // Navigate to success screen
           break;
         case 'FAILED':
-          Alert.alert('Failed', state.error?.message || 'Payment failed');
+          Alert.alert('Failed', 'Payment failed');
           break;
         case 'PROCESSING':
           Alert.alert('Processing', 'Your payment is being processed');
@@ -251,8 +251,8 @@ export default function CheckoutScreen() {
         <YunoPaymentMethods
           checkoutSession={checkoutSession}
           countryCode="US"
-          onPaymentMethodSelected={(selected) => {
-            setPaymentMethodSelected(selected);
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
           }}
           style={{ marginBottom: 20 }}
         />
@@ -295,7 +295,7 @@ const paymentSubscription = YunoSdk.onPaymentStatus((state) => {
       navigation.navigate('Success');
       break;
     case 'FAILED':
-      Alert.alert('Payment Failed', state.error?.message);
+      Alert.alert('Payment Failed', 'Please try again');
       break;
     case 'PROCESSING':
       Alert.alert('Processing', 'Your payment is being processed');
