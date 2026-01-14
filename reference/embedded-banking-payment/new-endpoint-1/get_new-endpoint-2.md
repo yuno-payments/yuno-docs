@@ -1,5 +1,5 @@
 ---
-title: New Endpoint
+title: Payment Notifications
 excerpt: This is your first endpoint! Edit this page to start documenting your API.
 api:
   file: embedded-banking-payment.json
