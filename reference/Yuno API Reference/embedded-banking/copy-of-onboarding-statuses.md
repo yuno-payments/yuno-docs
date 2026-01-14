@@ -1,7 +1,7 @@
 ---
 title: Copy of Onboarding Statuses
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
