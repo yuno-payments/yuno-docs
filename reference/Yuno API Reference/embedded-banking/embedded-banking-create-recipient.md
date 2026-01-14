@@ -2,7 +2,7 @@
 title: Create Recipient
 excerpt: >-
   Creates a new recipient for Embedded banking scenarios. This endpoint allows
-  merchants to define recipients that can 
+  merchants to define recipients.
 api:
   file: openapi.json
   operationId: create-recipient-1
