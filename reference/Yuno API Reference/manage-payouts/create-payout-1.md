@@ -4,7 +4,7 @@ api:
   file: payouts.json
   operationId: create-payout-1
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
