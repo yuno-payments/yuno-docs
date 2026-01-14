@@ -24,7 +24,7 @@ It is designed for companies that need to hold or move user balances under a ban
 * High-yield savings accounts
 * P2P transfers between users within the same institution
 
-## Flow 1: Onboard user or entity and create account
+## Onboard user or entity and create account
 
 This flow covers registering a user or entity, completing KYC/KYB, and creating a virtual account once onboarding is approved.
 
@@ -41,7 +41,7 @@ This flow covers registering a user or entity, completing KYC/KYB, and creating 
 
 Status: `PENDING`
 
-## Flow 2: Incoming and outgoing transfers
+## Incoming and outgoing transfers
 
 Transfers are split into **incoming transfers (payins)** and **outgoing transfers (payouts)**, depending on the direction of funds.
 
@@ -56,7 +56,7 @@ Transfers are split into **incoming transfers (payins)** and **outgoing transfer
 1. **[Create payout](https://docs.y.uno/reference/create-payout)** to send funds to a beneficiary
 2. **[Retrieve payout](https://docs.y.uno/reference/retrieve-payout-by-id)** to track status and confirm completion
 
-## Flow 3: Card management
+## Card management
 
 This flow lets users request a physical or virtual card, view card details, and manage card status. Yuno's infrastructure turns PCI compliance into a simple, built-in part of your card program.
 
