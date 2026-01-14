@@ -1,5 +1,5 @@
 ---
-title: Get Recipient
+title: Copy of Get Recipient
 excerpt: Retrieves detailed information about a specific recipient.
 api:
   file: openapi.json
