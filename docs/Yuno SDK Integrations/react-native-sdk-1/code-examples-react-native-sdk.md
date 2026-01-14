@@ -5,6 +5,8 @@ hidden: false
 metadata:
   robots: index
 ---
+<br />
+
 Ready-to-use React Native code examples for common scenarios.
 
 ## Example 1: Basic Payment
@@ -57,8 +59,8 @@ export default function PaymentScreen() {
         <YunoPaymentMethods
           checkoutSession={checkoutSession}
           countryCode="US"
-          onPaymentMethodSelected={(selected) => {
-            setPaymentMethodSelected(selected);
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
           }}
         />
       )}
@@ -127,8 +129,8 @@ function CheckoutScreen({ navigation }) {
         <YunoPaymentMethods
           checkoutSession={checkoutSession}
           countryCode="US"
-          onPaymentMethodSelected={(selected) => {
-            setPaymentMethodSelected(selected);
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
           }}
         />
       )}
