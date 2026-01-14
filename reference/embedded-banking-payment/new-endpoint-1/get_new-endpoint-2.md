@@ -4,5 +4,5 @@ excerpt: This is your first endpoint! Edit this page to start documenting your A
 api:
   file: embedded-banking-payment.json
   operationId: post_v1-payments
-hidden: false
+hidden: true
 ---
