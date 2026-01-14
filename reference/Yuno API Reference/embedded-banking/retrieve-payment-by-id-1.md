@@ -1,5 +1,5 @@
 ---
-title: Copy of Retrieve Payment by ID
+title: Retrieve Payment by ID
 api:
   file: payments.json
   operationId: retrieve-payment-by-id-1
