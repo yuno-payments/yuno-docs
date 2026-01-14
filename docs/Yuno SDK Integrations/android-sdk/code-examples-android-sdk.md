@@ -7,505 +7,765 @@ metadata:
 ---
 Ready-to-use Android code examples for common scenarios.
 
-## Example 1: Basic Compose Payment
+## Example 1: Full SDK Payment Flow
+
+Complete payment flow using the Full SDK with PaymentMethodListView:
 
 ```kotlin
-@Composable
-fun PaymentScreen() {
-    val context = LocalContext.current as ComponentActivity
-    var showSuccess by remember { mutableStateOf(false) }
+import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
+import com.yuno.presentation.core.components.PaymentMethodListViewComponent
+import com.yuno.sdk.payments.continuePayment
+import com.yuno.sdk.payments.startCheckout
+import com.yuno.sdk.payments.startPayment
+import com.yuno.sdk.payments.updateCheckoutSession
+
+class FullPaymentActivity : AppCompatActivity() {
     
-    if (showSuccess) {
-        SuccessScreen()
-    } else {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text("$25.00", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Button(onClick = {
-                context.lifecycleScope.launch {
-                    val session = createCheckoutSession()
-                    Yuno.startCheckout(
-                        activity = context,
-                        checkoutSession = session.id,
-                        countryCode = "US",
-                        yunoCreatePayment = { token ->
-                            createPayment(token, session.id)
-                        },
-                        yunoPaymentResult = { result ->
-                            if (result.status == PaymentStatus.SUCCEEDED) {
-                                showSuccess = true
-                            }
-                        }
-                    )
-                }
-            }) {
-                Text("Pay Now")
-            }
-        }
-    }
-}
-```
-
-## Example 2: XML Views Payment
-
-```kotlin
-class PaymentActivity : AppCompatActivity() {
+    private lateinit var payButton: Button
+    private var checkoutSession: String = ""
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_payment)
         
-        findViewById<Button>(R.id.payButton).setOnClickListener {
+        payButton = findViewById(R.id.button_pay)
+        payButton.isEnabled = false
+        
+        // Step 1: Initialize checkout in onCreate
+        startCheckout(
+            callbackPaymentState = ::onPaymentStateChange
+        )
+        
+        // Step 2: Fetch checkout session from your backend
+        lifecycleScope.launch {
+            checkoutSession = fetchCheckoutSessionFromBackend()
+            setupPaymentMethods()
+        }
+        
+        payButton.setOnClickListener {
             processPayment()
         }
     }
     
+    private fun setupPaymentMethods() {
+        // Step 3: Update SDK with session and country
+        updateCheckoutSession(
+            checkoutSession = checkoutSession,
+            countryCode = "CO"
+        )
+        
+        // Step 4: Display payment methods
+        val composeView = findViewById<ComposeView>(R.id.compose_payment_methods)
+        composeView.setContent {
+            PaymentMethodListViewComponent(
+                activity = this@FullPaymentActivity,
+                onPaymentSelected = { isSelected ->
+                    payButton.isEnabled = isSelected
+                }
+            )
+        }
+    }
+    
     private fun processPayment() {
-        lifecycleScope.launch {
-            try {
-                val session = createCheckoutSession(2500)
+        // Step 5: Start payment
+        startPayment(
+            callbackOTT = ::onTokenReceived
+        )
+    }
+    
+    private fun onTokenReceived(token: String?) {
+        token?.let {
+            lifecycleScope.launch {
+                // Step 6: Create payment on your backend
+                val response = createPaymentOnBackend(it, checkoutSession)
                 
-                Yuno.startCheckout(
-                    activity = this@PaymentActivity,
-                    checkoutSession = session.checkoutSession,
-                    countryCode = "US",
-                    yunoCreatePayment = { token ->
-                        createPayment(token, session.checkoutSession)
-                    },
-                    yunoPaymentResult = { result ->
-                        handleResult(result)
-                    }
-                )
-            } catch (e: Exception) {
-                showError(e.message ?: "Payment failed")
+                // Step 7: Continue if SDK action required
+                if (response.sdkActionRequired) {
+                    continuePayment(
+                        callbackPaymentState = ::onPaymentStateChange
+                    )
+                }
             }
         }
     }
     
-    private fun handleResult(result: PaymentResult) {
-        when (result.status) {
-            PaymentStatus.SUCCEEDED -> {
-                startActivity(Intent(this, SuccessActivity::class.java))
+    private fun onPaymentStateChange(state: String?) {
+        when (state) {
+            "SUCCEEDED" -> {
+                Toast.makeText(this, "Payment successful!", Toast.LENGTH_SHORT).show()
                 finish()
             }
-            PaymentStatus.FAILED -> {
-                showError(result.error?.message ?: "Payment failed")
+            "FAIL" -> Toast.makeText(this, "Payment failed", Toast.LENGTH_LONG).show()
+            "PROCESSING" -> Toast.makeText(this, "Processing...", Toast.LENGTH_SHORT).show()
+            "REJECT" -> Toast.makeText(this, "Payment rejected", Toast.LENGTH_LONG).show()
+            "INTERNAL_ERROR" -> Toast.makeText(this, "Error occurred", Toast.LENGTH_LONG).show()
+            "CANCELED" -> Toast.makeText(this, "Canceled", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private suspend fun fetchCheckoutSessionFromBackend(): String {
+        // Call your backend API
+        return "checkout_session_id"
+    }
+    
+    private suspend fun createPaymentOnBackend(token: String, session: String): PaymentResponse {
+        // Call your backend API to create payment
+        return PaymentResponse(sdkActionRequired = false)
+    }
+}
+
+data class PaymentResponse(val sdkActionRequired: Boolean)
+```
+
+## Example 2: Lite SDK Payment Flow
+
+Custom payment method selection using the Lite SDK:
+
+```kotlin
+import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.yuno.presentation.core.components.PaymentSelected
+import com.yuno.sdk.payments.continuePayment
+import com.yuno.sdk.payments.startCheckout
+import com.yuno.sdk.payments.startPaymentLite
+import com.yuno.sdk.payments.updateCheckoutSession
+
+class LitePaymentActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_lite_payment)
+        
+        val checkoutSession = intent.getStringExtra("checkout_session") ?: return
+        val countryCode = intent.getStringExtra("country_code") ?: "CO"
+        
+        // Initialize checkout
+        startCheckout(
+            checkoutSession = checkoutSession,
+            countryCode = countryCode,
+            callbackPaymentState = ::onPaymentStateChange
+        )
+        
+        // Set up payment buttons
+        findViewById<Button>(R.id.button_pay_card).setOnClickListener {
+            payWithMethod("CARD")
+        }
+        
+        findViewById<Button>(R.id.button_pay_pix).setOnClickListener {
+            payWithMethod("PIX")
+        }
+    }
+    
+    private fun payWithMethod(paymentMethodType: String) {
+        startPaymentLite(
+            paymentSelected = PaymentSelected(
+                paymentMethodType = paymentMethodType,
+                vaultedToken = null
+            ),
+            callBackTokenWithInformation = { ottModel ->
+                Log.i("OTT Info", ottModel.toString())
+            },
+            callbackOTT = ::onTokenReceived,
+            showPaymentStatus = true
+        )
+    }
+    
+    private fun onTokenReceived(token: String?) {
+        token?.let {
+            lifecycleScope.launch {
+                createPaymentOnBackend(it)
             }
+        }
+    }
+    
+    private fun onPaymentStateChange(state: String?) {
+        when (state) {
+            "SUCCEEDED" -> navigateToSuccess()
+            "FAIL" -> showError("Payment failed")
+            "CANCELED" -> finish()
             else -> {}
         }
     }
 }
 ```
 
-## Example 3: Subscription Enrollment
+## Example 3: Enrollment Flow
+
+Save a payment method for future use:
 
 ```kotlin
-class SubscriptionActivity : ComponentActivity() {
-    
-    fun enrollCard() {
-        lifecycleScope.launch {
-            val customerSession = createCustomerSession("cus_123")
-            
-            Yuno.startEnrollment(
-                activity = this@SubscriptionActivity,
-                customerSession = customerSession.id,
-                countryCode = "US",
-                yunoEnrolled = { vaultedToken ->
-                    setupSubscription(vaultedToken)
-                }
-            )
-        }
-    }
-    
-    private suspend fun setupSubscription(vaultedToken: String) {
-        apiClient.post("/subscriptions", mapOf(
-            "customer_id" to "cus_123",
-            "vaulted_token" to vaultedToken,
-            "plan" to "premium_monthly"
-        ))
-        
-        Toast.makeText(this, "Subscription activated!", Toast.LENGTH_SHORT).show()
-    }
-}
-```
+import android.os.Bundle
+import android.util.Log
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.yuno.sdk.enrollment.initEnrollment
+import com.yuno.sdk.enrollment.startEnrollment
 
-## Example 4: One-Click Payment
-
-```kotlin
-@Composable
-fun SavedCardsScreen(cards: List<SavedCard>) {
-    val context = LocalContext.current as ComponentActivity
-    
-    LazyColumn {
-        items(cards) { card ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .clickable { payWithCard(context, card) }
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("${card.brand} ****${card.last4}")
-                    Spacer(Modifier.weight(1f))
-                    Text("Use this card", color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-    }
-}
-
-fun payWithCard(activity: ComponentActivity, card: SavedCard) {
-    activity.lifecycleScope.launch {
-        val session = createCheckoutSession()
-        
-        Yuno.startCheckout(
-            activity = activity,
-            checkoutSession = session.id,
-            countryCode = "US",
-            vaultedToken = card.vaultedToken,
-            yunoCreatePayment = { token ->
-                createPayment(token)
-            },
-            yunoPaymentResult = { result ->
-                if (result.status == PaymentStatus.SUCCEEDED) {
-                    activity.startActivity(Intent(activity, SuccessActivity::class.java))
-                }
-            }
-        )
-    }
-}
-```
-
-## Example 5: Custom Payment Method Selection
-
-```kotlin
-@Composable
-fun CustomMethodSelectionScreen() {
-    var paymentMethods by remember { mutableStateOf<List<PaymentMethod>>(emptyList()) }
-    val context = LocalContext.current as ComponentActivity
-    
-    LaunchedEffect(Unit) {
-        paymentMethods = fetchPaymentMethods()
-    }
-    
-    LazyColumn {
-        items(paymentMethods) { method ->
-            ListItem(
-                headlineContent = { Text(method.name) },
-                leadingContent = {
-                    AsyncImage(model = method.icon, contentDescription = null)
-                },
-                modifier = Modifier.clickable {
-                    startPaymentWithMethod(context, method)
-                }
-            )
-        }
-    }
-}
-
-fun startPaymentWithMethod(activity: ComponentActivity, method: PaymentMethod) {
-    activity.lifecycleScope.launch {
-        val session = createCheckoutSession()
-        
-        Yuno.startPaymentLite(
-            activity = activity,
-            checkoutSession = session.id,
-            countryCode = "US",
-            paymentMethodType = method.type,
-            yunoCreatePayment = { token -> createPayment(token) }
-        )
-    }
-}
-```
-
-## Example 6: Error Handling with Retry
-
-```kotlin
-class PaymentWithRetryActivity : ComponentActivity() {
-    private var retryCount = 0
-    private val maxRetries = 3
-    
-    fun attemptPayment() {
-        lifecycleScope.launch {
-            try {
-                val session = createCheckoutSession()
-                startPayment(session)
-            } catch (e: Exception) {
-                handleError(e)
-            }
-        }
-    }
-    
-    private fun handleError(error: Exception) {
-        if (retryCount < maxRetries) {
-            retryCount++
-            lifecycleScope.launch {
-                delay(2000) // Wait 2 seconds
-                attemptPayment()
-            }
-        } else {
-            Toast.makeText(this, "Payment failed after $maxRetries attempts", 
-                Toast.LENGTH_LONG).show()
-        }
-    }
-    
-    private fun startPayment(session: CheckoutSession) {
-        Yuno.startCheckout(
-            activity = this,
-            checkoutSession = session.id,
-            countryCode = "US",
-            yunoCreatePayment = { token -> createPayment(token) },
-            yunoPaymentResult = { result ->
-                when (result.status) {
-                    PaymentStatus.SUCCEEDED -> {
-                        retryCount = 0
-                        navigateToSuccess()
-                    }
-                    PaymentStatus.FAILED -> handleError(Exception(result.error?.message))
-                    else -> {}
-                }
-            }
-        )
-    }
-}
-```
-
-## Example 7: Analytics Integration
-
-```kotlin
-import com.google.firebase.analytics.FirebaseAnalytics
-
-class PaymentWithAnalyticsActivity : ComponentActivity() {
-    private lateinit var analytics: FirebaseAnalytics
+class EnrollmentActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        analytics = FirebaseAnalytics.getInstance(this)
+        setContentView(R.layout.activity_enrollment)
         
-        analytics.logEvent("checkout_started", Bundle().apply {
-            putDouble("value", 25.00)
-            putString("currency", "USD")
-        })
+        // Must be called in onCreate to register callback
+        initEnrollment(::onEnrollmentStateChange)
         
-        startPayment()
+        findViewById<Button>(R.id.button_enroll).setOnClickListener {
+            startEnrollmentFlow()
+        }
     }
     
-    private fun startPayment() {
-        lifecycleScope.launch {
-            val session = createCheckoutSession()
-            
-            Yuno.startCheckout(
-                activity = this@PaymentWithAnalyticsActivity,
-                checkoutSession = session.id,
-                countryCode = "US",
-                yunoCreatePayment = { token ->
-                    analytics.logEvent("begin_checkout", Bundle())
-                    createPayment(token)
-                },
-                yunoPaymentResult = { result ->
-                    when (result.status) {
-                        PaymentStatus.SUCCEEDED -> {
-                            analytics.logEvent(FirebaseAnalytics.Event.PURCHASE, Bundle().apply {
-                                putString("transaction_id", result.paymentId)
-                                putDouble("value", 25.00)
-                                putString("currency", "USD")
-                            })
-                            navigateToSuccess()
-                        }
-                        PaymentStatus.FAILED -> {
-                            analytics.logEvent("payment_failed", Bundle().apply {
-                                putString("reason", result.error?.code ?: "unknown")
-                            })
-                        }
-                        else -> {}
-                    }
+    private fun startEnrollmentFlow() {
+        val customerSession = intent.getStringExtra("customer_session") ?: return
+        
+        startEnrollment(
+            customerSession = customerSession,
+            countryCode = "CO",
+            showEnrollmentStatus = true
+        )
+    }
+    
+    private fun onEnrollmentStateChange(state: String?) {
+        state?.let {
+            Log.d("Enrollment", "State: $it")
+            when (it) {
+                "SUCCEEDED" -> {
+                    Toast.makeText(this, "Card saved successfully!", Toast.LENGTH_SHORT).show()
+                    finish()
                 }
-            )
+                "FAIL" -> {
+                    Toast.makeText(this, "Failed to save card", Toast.LENGTH_LONG).show()
+                }
+                "CANCELED" -> {
+                    Toast.makeText(this, "Enrollment canceled", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
+    }
+}
+```
+
+## Example 4: One-Click Payment with Saved Card
+
+Pay with a previously saved card using vaulted token:
+
+```kotlin
+import android.os.Bundle
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import com.yuno.presentation.core.components.PaymentSelected
+import com.yuno.sdk.payments.startCheckout
+import com.yuno.sdk.payments.startPaymentLite
+
+class SavedCardPaymentActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_saved_card)
+        
+        val checkoutSession = intent.getStringExtra("checkout_session") ?: return
+        val vaultedToken = intent.getStringExtra("vaulted_token") ?: return
+        
+        // Initialize checkout
+        startCheckout(
+            checkoutSession = checkoutSession,
+            countryCode = "CO",
+            callbackPaymentState = ::onPaymentStateChange
+        )
+        
+        findViewById<Button>(R.id.button_pay_saved_card).setOnClickListener {
+            payWithSavedCard(vaultedToken)
+        }
+    }
+    
+    private fun payWithSavedCard(vaultedToken: String) {
+        startPaymentLite(
+            paymentSelected = PaymentSelected(
+                paymentMethodType = "CARD",
+                vaultedToken = vaultedToken
+            ),
+            callBackTokenWithInformation = { ottModel ->
+                Log.i("OTT Info", ottModel.toString())
+            },
+            callbackOTT = ::onTokenReceived,
+            showPaymentStatus = true
+        )
+    }
+    
+    private fun onTokenReceived(token: String?) {
+        token?.let {
+            lifecycleScope.launch {
+                createPaymentOnBackend(it)
+            }
+        }
+    }
+    
+    private fun onPaymentStateChange(state: String?) {
+        when (state) {
+            "SUCCEEDED" -> navigateToSuccess()
+            "FAIL" -> showError("Payment failed")
+            else -> {}
+        }
+    }
+}
+```
+
+## Example 5: Keep Loader Flow
+
+Keep Yuno's loading screen until payment is created:
+
+```kotlin
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.yuno.sdk.payments.startCheckout
+import com.yuno.sdk.payments.startCompletePaymentFlow
+import com.yuno.sdk.payments.updateCheckoutSession
+
+// In Application class, set keepLoader = true
+// Yuno.initialize(this, "api_key", YunoConfig(keepLoader = true))
+
+class KeepLoaderPaymentActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_payment)
+        
+        val checkoutSession = intent.getStringExtra("checkout_session") ?: return
+        
+        startCheckout(
+            callbackPaymentState = ::onPaymentStateChange
+        )
+        
+        updateCheckoutSession(
+            checkoutSession = checkoutSession,
+            countryCode = "CO"
+        )
+        
+        // Set up payment methods view...
+    }
+    
+    private fun processPayment() {
+        startCompletePaymentFlow(
+            paymentSelected = null, // null for Full SDK
+            showPaymentStatus = true,
+            createPaymentFun = { ott ->
+                // Loader stays visible until this completes
+                createPaymentOnBackend(ott)
+            },
+            callbackPaymentState = ::onPaymentStateChange,
+            callbackOTT = { token ->
+                // Optional: handle token
+            }
+        )
+    }
+    
+    private suspend fun createPaymentOnBackend(ott: String) {
+        // Call your backend API
+        // Loader remains visible until this function returns
+    }
+    
+    private fun onPaymentStateChange(state: String?) {
+        when (state) {
+            "SUCCEEDED" -> navigateToSuccess()
+            "FAIL" -> showError("Payment failed")
+            else -> {}
+        }
+    }
+}
+```
+
+## Example 6: Deep Link Return Handling
+
+Handle return from external browser (3DS, bank redirects):
+
+```kotlin
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import com.yuno.sdk.payments.continuePayment
+import com.yuno.sdk.payments.startCheckout
+
+class DeepLinkPaymentActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_payment)
+        
+        // Initialize checkout
+        startCheckout(
+            callbackPaymentState = ::onPaymentStateChange
+        )
+        
+        // Check if opened via deep link
+        handleIntent(intent)
+    }
+    
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let { handleIntent(it) }
+    }
+    
+    private fun handleIntent(intent: Intent) {
+        intent.data?.let { uri ->
+            if (isPaymentReturnUri(uri)) {
+                handlePaymentReturn()
+            } else {
+                // Normal flow - set up payment UI
+                setupPaymentUI()
+            }
+        } ?: setupPaymentUI()
+    }
+    
+    private fun isPaymentReturnUri(uri: Uri): Boolean {
+        return uri.toString().contains("myapp://payment/return")
+    }
+    
+    private fun handlePaymentReturn() {
+        // Continue payment after returning from external browser
+        continuePayment(
+            showPaymentStatus = true,
+            callbackPaymentState = ::onPaymentStateChange
+        )
+    }
+    
+    private fun setupPaymentUI() {
+        // Set up normal payment flow
+    }
+    
+    private fun onPaymentStateChange(state: String?) {
+        when (state) {
+            "SUCCEEDED" -> navigateToSuccess()
+            "FAIL" -> showError("Payment failed")
+            else -> {}
+        }
+    }
+}
+```
+
+**AndroidManifest.xml:**
+
+```xml
+<activity android:name=".DeepLinkPaymentActivity"
+    android:launchMode="singleTask">
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="myapp"
+            android:host="payment"
+            android:path="/return" />
+    </intent-filter>
+</activity>
+```
+
+## Example 7: Custom Error Handling
+
+Handle all payment states with custom UI:
+
+```kotlin
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.yuno.sdk.payments.startCheckout
+import com.yuno.sdk.payments.startPayment
+
+class CustomErrorHandlingActivity : AppCompatActivity() {
+    
+    private lateinit var statusText: TextView
+    private lateinit var retryButton: Button
+    private var retryCount = 0
+    private val maxRetries = 3
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_custom_error)
+        
+        statusText = findViewById(R.id.text_status)
+        retryButton = findViewById(R.id.button_retry)
+        retryButton.visibility = View.GONE
+        
+        startCheckout(
+            callbackPaymentState = ::onPaymentStateChange
+        )
+        
+        retryButton.setOnClickListener {
+            retryPayment()
+        }
+    }
+    
+    private fun processPayment() {
+        statusText.text = "Processing payment..."
+        
+        startPayment(
+            callbackOTT = ::onTokenReceived,
+            showPaymentStatus = false // Handle status ourselves
+        )
+    }
+    
+    private fun onTokenReceived(token: String?) {
+        token?.let {
+            lifecycleScope.launch {
+                try {
+                    createPaymentOnBackend(it)
+                } catch (e: Exception) {
+                    handleError(e.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+    
+    private fun onPaymentStateChange(state: String?) {
+        when (state) {
+            "SUCCEEDED" -> {
+                statusText.text = "Payment successful!"
+                retryButton.visibility = View.GONE
+                navigateToSuccessDelayed()
+            }
+            "FAIL" -> {
+                handleError("Payment failed. Please try again.")
+            }
+            "REJECT" -> {
+                handleError("Payment was rejected. Please try a different payment method.")
+            }
+            "INTERNAL_ERROR" -> {
+                handleError("An error occurred. Please try again.")
+            }
+            "PROCESSING" -> {
+                statusText.text = "Your payment is being processed..."
+                retryButton.visibility = View.GONE
+            }
+            "CANCELED" -> {
+                statusText.text = "Payment canceled"
+                retryButton.visibility = View.VISIBLE
+                retryButton.text = "Try Again"
+            }
+        }
+    }
+    
+    private fun handleError(message: String) {
+        statusText.text = message
+        
+        if (retryCount < maxRetries) {
+            retryButton.visibility = View.VISIBLE
+            retryButton.text = "Retry (${maxRetries - retryCount} attempts left)"
+        } else {
+            retryButton.visibility = View.GONE
+            statusText.text = "$message\n\nMaximum retry attempts reached."
+        }
+    }
+    
+    private fun retryPayment() {
+        retryCount++
+        processPayment()
     }
 }
 ```
 
 ## Example 8: ViewModel Architecture
 
+Use ViewModel for payment state management:
+
 ```kotlin
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+
 class PaymentViewModel : ViewModel() {
-    private val _paymentState = MutableStateFlow<PaymentState>(PaymentState.Idle)
-    val paymentState: StateFlow<PaymentState> = _paymentState
     
-    sealed class PaymentState {
-        object Idle : PaymentState()
-        object Loading : PaymentState()
-        data class Success(val paymentId: String) : PaymentState()
-        data class Error(val message: String) : PaymentState()
+    private val _paymentState = MutableStateFlow<PaymentUiState>(PaymentUiState.Idle)
+    val paymentState: StateFlow<PaymentUiState> = _paymentState
+    
+    sealed class PaymentUiState {
+        object Idle : PaymentUiState()
+        object Loading : PaymentUiState()
+        object PaymentMethodSelected : PaymentUiState()
+        data class TokenReceived(val token: String) : PaymentUiState()
+        data class Success(val message: String) : PaymentUiState()
+        data class Error(val message: String) : PaymentUiState()
     }
     
-    fun processPayment(activity: ComponentActivity) {
+    fun onPaymentMethodSelected(isSelected: Boolean) {
+        _paymentState.value = if (isSelected) {
+            PaymentUiState.PaymentMethodSelected
+        } else {
+            PaymentUiState.Idle
+        }
+    }
+    
+    fun onTokenReceived(token: String?) {
+        token?.let {
+            _paymentState.value = PaymentUiState.TokenReceived(it)
+            createPayment(it)
+        }
+    }
+    
+    fun onPaymentStateChange(state: String?) {
+        _paymentState.value = when (state) {
+            "SUCCEEDED" -> PaymentUiState.Success("Payment successful!")
+            "FAIL" -> PaymentUiState.Error("Payment failed")
+            "REJECT" -> PaymentUiState.Error("Payment rejected")
+            "INTERNAL_ERROR" -> PaymentUiState.Error("An error occurred")
+            "PROCESSING" -> PaymentUiState.Loading
+            "CANCELED" -> PaymentUiState.Idle
+            else -> PaymentUiState.Idle
+        }
+    }
+    
+    private fun createPayment(token: String) {
         viewModelScope.launch {
-            _paymentState.value = PaymentState.Loading
-            
+            _paymentState.value = PaymentUiState.Loading
             try {
-                val session = createCheckoutSession()
-                
-                Yuno.startCheckout(
-                    activity = activity,
-                    checkoutSession = session.id,
-                    countryCode = "US",
-                    yunoCreatePayment = { token ->
-                        createPayment(token)
-                    },
-                    yunoPaymentResult = { result ->
-                        _paymentState.value = when (result.status) {
-                            PaymentStatus.SUCCEEDED -> PaymentState.Success(result.paymentId)
-                            PaymentStatus.FAILED -> PaymentState.Error(
-                                result.error?.message ?: "Payment failed"
-                            )
-                            else -> PaymentState.Idle
-                        }
-                    }
-                )
+                // Call backend API
+                _paymentState.value = PaymentUiState.Success("Payment created")
             } catch (e: Exception) {
-                _paymentState.value = PaymentState.Error(e.message ?: "Unknown error")
+                _paymentState.value = PaymentUiState.Error(e.message ?: "Unknown error")
             }
         }
     }
 }
 
-// Usage in Compose
-@Composable
-fun PaymentScreen(viewModel: PaymentViewModel = viewModel()) {
-    val state by viewModel.paymentState.collectAsState()
-    val context = LocalContext.current as ComponentActivity
+// Usage in Activity
+class PaymentActivity : AppCompatActivity() {
     
-    when (val currentState = state) {
-        is PaymentViewModel.PaymentState.Idle -> {
-            Button(onClick = { viewModel.processPayment(context) }) {
-                Text("Pay Now")
-            }
-        }
-        is PaymentViewModel.PaymentState.Loading -> {
-            CircularProgressIndicator()
-        }
-        is PaymentViewModel.PaymentState.Success -> {
-            Text("Payment successful!")
-        }
-        is PaymentViewModel.PaymentState.Error -> {
-            Text("Error: ${currentState.message}", color = Color.Red)
-        }
-    }
-}
-```
-
-## Example 9: Multi-Step Checkout
-
-```kotlin
-@Composable
-fun MultiStepCheckoutScreen() {
-    var currentStep by remember { mutableStateOf(CheckoutStep.CART) }
-    val context = LocalContext.current as ComponentActivity
+    private val viewModel: PaymentViewModel by viewModels()
     
-    when (currentStep) {
-        CheckoutStep.CART -> {
-            CartScreen(onProceed = { currentStep = CheckoutStep.SHIPPING })
-        }
-        CheckoutStep.SHIPPING -> {
-            ShippingScreen(onProceed = { currentStep = CheckoutStep.PAYMENT })
-        }
-        CheckoutStep.PAYMENT -> {
-            Column {
-                Text("Payment", fontSize = 24.sp)
-                Button(onClick = {
-                    processPayment(context) { success ->
-                        if (success) currentStep = CheckoutStep.CONFIRMATION
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        startCheckout(
+            callbackPaymentState = viewModel::onPaymentStateChange
+        )
+        
+        lifecycleScope.launch {
+            viewModel.paymentState.collect { state ->
+                when (state) {
+                    is PaymentViewModel.PaymentUiState.Idle -> {
+                        payButton.isEnabled = false
                     }
-                }) {
-                    Text("Pay $25.00")
+                    is PaymentViewModel.PaymentUiState.PaymentMethodSelected -> {
+                        payButton.isEnabled = true
+                    }
+                    is PaymentViewModel.PaymentUiState.Loading -> {
+                        showLoading()
+                    }
+                    is PaymentViewModel.PaymentUiState.Success -> {
+                        hideLoading()
+                        navigateToSuccess()
+                    }
+                    is PaymentViewModel.PaymentUiState.Error -> {
+                        hideLoading()
+                        showError(state.message)
+                    }
+                    else -> {}
                 }
             }
         }
-        CheckoutStep.CONFIRMATION -> {
-            ConfirmationScreen()
-        }
     }
-}
-
-enum class CheckoutStep {
-    CART, SHIPPING, PAYMENT, CONFIRMATION
-}
-```
-
-## Example 10: Themed Payment UI
-
-```kotlin
-@Composable
-fun ThemedPaymentScreen() {
-    MaterialTheme(
-        colorScheme = darkColorScheme(
-            primary = Color(0xFF007bff),
-            background = Color(0xFF1a1a1a),
-            surface = Color(0xFF2a2a2a)
+    
+    private fun processPayment() {
+        startPayment(
+            callbackOTT = viewModel::onTokenReceived
         )
-    ) {
-        Surface {
-            PaymentContent()
-        }
     }
-}
-
-// Apply Yuno theme
-fun applyYunoTheme(context: Context) {
-    Yuno.setTheme(R.style.YunoSDKTheme)
 }
 ```
 
 ## Backend API Helper
 
+Example backend API client:
+
 ```kotlin
-object YunoAPIClient {
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import com.google.gson.Gson
+
+object YunoBackendClient {
+    
     private val client = OkHttpClient()
     private val gson = Gson()
+    private const val BASE_URL = "https://your-backend.com/api"
     
-    suspend fun createCheckoutSession(amount: Int, currency: String = "USD"): CheckoutSession {
-        return withContext(Dispatchers.IO) {
-            val json = gson.toJson(mapOf(
-                "amount" to mapOf("currency" to currency, "value" to amount),
-                "customer_id" to "cus_123",
-                "country" to "US"
-            ))
+    suspend fun createCheckoutSession(
+        amount: Int,
+        currency: String,
+        customerId: String,
+        countryCode: String
+    ): CheckoutSessionResponse = withContext(Dispatchers.IO) {
+        val json = gson.toJson(mapOf(
+            "amount" to mapOf("currency" to currency, "value" to amount),
+            "customer_id" to customerId,
+            "country" to countryCode
+        ))
+        
+        val request = Request.Builder()
+            .url("$BASE_URL/checkout-sessions")
+            .post(json.toRequestBody("application/json".toMediaType()))
+            .build()
+        
+        val response = client.newCall(request).execute()
+        gson.fromJson(response.body?.string(), CheckoutSessionResponse::class.java)
+    }
+    
+    suspend fun createPayment(
+        oneTimeToken: String,
+        checkoutSession: String
+    ): PaymentResponse = withContext(Dispatchers.IO) {
+        val json = gson.toJson(mapOf(
+            "one_time_token" to oneTimeToken,
+            "checkout_session" to checkoutSession
+        ))
+        
+        val request = Request.Builder()
+            .url("$BASE_URL/payments")
+            .post(json.toRequestBody("application/json".toMediaType()))
+            .build()
+        
+        val response = client.newCall(request).execute()
+        gson.fromJson(response.body?.string(), PaymentResponse::class.java)
+    }
+    
+    suspend fun createCustomerSession(customerId: String): CustomerSessionResponse = 
+        withContext(Dispatchers.IO) {
+            val json = gson.toJson(mapOf("customer_id" to customerId))
             
             val request = Request.Builder()
-                .url("https://api.example.com/checkout")
+                .url("$BASE_URL/customer-sessions")
                 .post(json.toRequestBody("application/json".toMediaType()))
                 .build()
             
             val response = client.newCall(request).execute()
-            gson.fromJson(response.body?.string(), CheckoutSession::class.java)
+            gson.fromJson(response.body?.string(), CustomerSessionResponse::class.java)
         }
-    }
-    
-    suspend fun createPayment(token: String, sessionId: String): Payment {
-        return withContext(Dispatchers.IO) {
-            val json = gson.toJson(mapOf(
-                "one_time_token" to token,
-                "checkout_session" to sessionId
-            ))
-            
-            val request = Request.Builder()
-                .url("https://api.example.com/payment")
-                .post(json.toRequestBody("application/json".toMediaType()))
-                .build()
-            
-            val response = client.newCall(request).execute()
-            gson.fromJson(response.body?.string(), Payment::class.java)
-        }
-    }
 }
+
+data class CheckoutSessionResponse(
+    val checkoutSession: String,
+    val customerId: String
+)
+
+data class PaymentResponse(
+    val paymentId: String,
+    val status: String,
+    val sdkActionRequired: Boolean
+)
+
+data class CustomerSessionResponse(
+    val customerSession: String
+)
 ```
