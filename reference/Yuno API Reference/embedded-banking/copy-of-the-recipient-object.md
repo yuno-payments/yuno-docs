@@ -1,17 +1,15 @@
 ---
-title: Copy of The Recipient Object
+title: The Recipient Object
 deprecated: false
 hidden: true
 metadata:
   robots: index
 ---
-
-This object represents a recipient who will receive part of a [split payment](doc:split-payments-marketplace). It represents a seller's account within your marketplace. The split allows you to disperse the money of a purchase in your marketplace directly to the seller's account while your commission goes to your marketplace account.
+This object represents a recipient who will receive part of a [split payment](doc:split-payments-marketplace). It represents an entity or user within your Platform. The embedded banking allows you to onboard users and manage their accounts.
 
 ## Attributes
 
 <HTMLBlock>{`
-
 <div>
   <div class="yuno">
     <p><strong><code>id</code></strong> <small>string</small>
@@ -565,5 +563,4 @@ This object represents a recipient who will receive part of a [split payment](do
       padding: 0.25em;
     }
 </style>
-
 `}</HTMLBlock>
