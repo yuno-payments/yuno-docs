@@ -42,8 +42,12 @@ Similar to Lite but with automatic payment creation:
 ```typescript
 await YunoSdk.startPaymentSeamlessLite({
   checkoutSession: session.checkoutSession,
-  paymentMethodType: 'CARD',
+  methodSelected: {
+    paymentMethodType: 'CARD',
+    vaultedToken: null, // or saved token
+  },
   showPaymentStatus: true,
+  countryCode: 'US',
 });
 ```
 
@@ -136,8 +140,10 @@ const CustomPaymentForm = () => {
       // 2. Create payment with token
       await createPayment(result.token);
       
-      // 3. Handle 3DS if needed
-      if (result.needsChallenge) {
+      // 3. Handle 3DS if needed - use getThreeDSecureChallenge
+      const challengeResult = await YunoSdk.getThreeDSecureChallenge('session_id', 'US');
+      if (challengeResult.type === 'URL') {
+        // Open 3DS URL in WebView, then continue payment
         await YunoSdk.continuePayment('session_id', 'US', true);
       }
       
@@ -365,12 +371,14 @@ const handleDeepLink = async (url: string) => {
 };
 ```
 
-> 💡 Best Practices
->
-> - Always include `callback_url` in payment flows that may redirect
-> - Test deep link handling on both iOS and Android devices
-> - Handle missing or malformed deep link data gracefully
-> - Update payment status in your UI after returning from external browser
+<Callout icon="💡" theme="default">
+  ### Best Practices
+
+  * Always include `callback_url` in payment flows that may redirect
+  * Test deep link handling on both iOS and Android devices
+  * Handle missing or malformed deep link data gracefully
+  * Update payment status in your UI after returning from external browser
+</Callout>
 
 ## Fraud Prevention (ClearSale Integration)
 
@@ -445,9 +453,10 @@ Update `ios/YourApp/AppDelegate.mm`:
 ### Automatic Integration
 
 Once ClearSale is initialized, Yuno SDK automatically:
-- Collects device fingerprint data
-- Sends fingerprint with payment requests
-- No additional code needed in JavaScript
+
+* Collects device fingerprint data
+* Sends fingerprint with payment requests
+* No additional code needed in JavaScript
 
 ### Testing
 
@@ -519,20 +528,20 @@ const handlePaymentReturn = async (url: string) => {
 
 ### Minimum Version Requirements
 
-| Platform | Minimum Version |
-|----------|----------------|
-| iOS      | 14.0+          |
-| Android  | API 21 (5.0)+  |
-| React Native | 0.70+      |
+| Platform     | Minimum Version |
+| ------------ | --------------- |
+| iOS          | 14.0+           |
+| Android      | API 21 (5.0)+   |
+| React Native | 0.70+           |
 
 ### Platform-Specific Dependencies
 
 **Native SDK Versions:**
 
-| Platform | Native SDK | Version |
-|----------|-----------|---------|
-| Android  | `com.yuno.sdk:yuno-sdk-android` | 2.8.1 |
-| iOS      | `YunoSDK` | 2.9.0 |
+| Platform | Native SDK                      | Version |
+| -------- | ------------------------------- | ------- |
+| Android  | `com.yuno.sdk:yuno-sdk-android` | 2.8.1   |
+| iOS      | `YunoSDK`                       | 2.9.0   |
 
 ### Testing on Both Platforms
 
@@ -548,9 +557,9 @@ npx react-native run-android
 
 ### Common Platform Differences
 
-| Feature | iOS | Android |
-|---------|-----|---------|
-| Card Scanning | ❌ Not available | ✅ Available |
-| Deep Links | Universal Links | Intent Filters |
-| Permissions | Info.plist | AndroidManifest.xml |
-| UI Components | Native iOS components | Jetpack Compose |
+| Feature       | iOS                   | Android             |
+| ------------- | --------------------- | ------------------- |
+| Card Scanning | ❌ Not available       | ✅ Available         |
+| Deep Links    | Universal Links       | Intent Filters      |
+| Permissions   | Info.plist            | AndroidManifest.xml |
+| UI Components | Native iOS components | Jetpack Compose     |
