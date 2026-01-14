@@ -5,8 +5,6 @@ hidden: false
 metadata:
   robots: index
 ---
-<br />
-
 Ready-to-use React Native code examples for common scenarios.
 
 ## Example 1: Basic Payment
