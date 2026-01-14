@@ -1,5 +1,5 @@
 ---
-title: Copy of Continue Onboarding
+title: Continue Onboarding
 api:
   file: openapi.json
   operationId: continue-onboarding-1
