@@ -1,5 +1,5 @@
 ---
-title: Payment Notifications v2
+title: Payment Notifications
 api:
   file: embedded-banking-v-2.json
   operationId: post_v1-payments
