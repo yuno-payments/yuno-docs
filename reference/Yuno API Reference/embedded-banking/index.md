@@ -92,7 +92,7 @@ flowchart TD
 
 ## Card management
 
-This flow lets users request a physical or virtual card, view card details, and manage card status. Yuno's infrastructure turns PCI compliance into a simple, built-in part of your card program.
+Let users request a physical or virtual card, view card details, and manage card status. Yuno's infrastructure turns PCI compliance into a simple, built-in part of your card program.
 
 Status: `PENDING`
 
