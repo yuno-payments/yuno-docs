@@ -7,7 +7,7 @@ api:
   file: openapi.json
   operationId: update-onboarding-1
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
