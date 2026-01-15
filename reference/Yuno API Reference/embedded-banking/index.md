@@ -89,12 +89,3 @@ flowchart TD
   Payout -->|"Route funds"| Yuno
   Yuno -->|"Payout status"| Merchant
 ```
-
-## Glossary
-
-| E-commerce | BaaS              |
-| ---------- | ----------------- |
-| Merchant   | Partner           |
-| Customer   | User / Entity     |
-| Payment    | Incoming Transfer |
-| Payout     | Outgoing Transfer |
