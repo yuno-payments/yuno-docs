@@ -90,20 +90,6 @@ flowchart TD
   Yuno -->|"Payout status"| Merchant
 ```
 
-## Card management
-
-Let users request a physical or virtual card, view card details, and manage card status. Yuno's infrastructure turns PCI compliance into a simple, built-in part of your card program.
-
-Status: `PENDING`
-
-```mermaid
-flowchart LR
-  Merchant["Merchant"] -->|"Request card"| Yuno["Yuno"]
-  Yuno -->|"Issue card"| BankPartner["Banking partner"]
-  BankPartner -->|"Card issued"| Card["Card"]
-  Card -->|"Details/status"| Merchant
-```
-
 ## Glossary
 
 | E-commerce | BaaS              |
