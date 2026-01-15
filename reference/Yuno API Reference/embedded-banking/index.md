@@ -26,7 +26,7 @@ It is designed for companies that need to hold or move user balances under a ban
 
 ## Onboard user or entity and create account
 
-This flow covers registering a user or entity, completing KYC/KYB, and creating a virtual account once onboarding is approved.
+Register a user or entity, complete KYC/KYB, and create a virtual account once onboarding is approved.
 
 1. **[Create a recipient](https://docs.y.uno/reference/embedded-banking-create-recipient)** to register the user or entity profile
 2. **[Get recipient](https://docs.y.uno/reference/embedded-banking-get-recipient)** to confirm the profile details before onboarding
