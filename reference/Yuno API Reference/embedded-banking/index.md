@@ -106,48 +106,6 @@ flowchart LR
   Card -->|"Details/status"| Merchant
 ```
 
-## Interaction diagrams
-
-### Onboard user or entity and create account
-
-```mermaid
-flowchart LR
-  Merchant["Merchant"] -->|"Create recipient"| Yuno["Yuno"]
-  Yuno -->|"Create onboarding"| BankPartner["Banking partner"]
-  BankPartner -->|"KYC/KYB review"| Yuno
-  Yuno -->|"Create bank account"| Account["Bank account"]
-```
-
-### Incoming and outgoing transfers
-
-```mermaid
-flowchart TD
-  Merchant["Merchant"]
-  Yuno["Yuno"]
-  BankPartner["Banking partner"]
-  Payin["Incoming transfer (payin)"]
-  Payout["Outgoing transfer (payout)"]
-  Refund["Refund"]
-
-  BankPartner -->|"Payment notification"| Yuno
-  Yuno -->|"Notify merchant"| Merchant
-  Merchant -->|"Retrieve payment by ID"| Yuno
-  Merchant -->|"Create payout"| Yuno
-  Yuno -->|"Route payout"| BankPartner
-  BankPartner -->|"Payout status"| Yuno
-  Yuno -->|"Notify merchant"| Merchant
-```
-
-### Card management
-
-```mermaid
-flowchart LR
-  Merchant["Merchant"] -->|"Request card"| Yuno["Yuno"]
-  Yuno -->|"Issue card"| BankPartner["Banking partner"]
-  BankPartner -->|"Card issued"| Card["Card"]
-  Card -->|"Details/status"| Merchant
-```
-
 ## Glossary
 
 | E-commerce | BaaS              |
