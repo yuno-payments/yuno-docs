@@ -7328,15 +7328,15 @@
       }
     },
     "/recipients/{recipient_id}/onboardings/{onboarding_id}-1": {
-      "get": {
-        "summary": "Copy of Get Onboarding",
-        "description": "Retrieves detailed information about a specific onboarding for a recipient.",
-        "operationId": "get-onboarding-1",
+      "patch": {
+        "summary": "Copy of Update onboarding",
+        "description": "Updates an existing onboarding for a recipient. Only specified fields will be updated.",
+        "operationId": "update-onboarding-1",
         "parameters": [
           {
             "in": "path",
             "name": "recipient_id",
-            "description": "ID of the recipient",
+            "description": "ID of the recipient whose onboarding will be updated",
             "schema": {
               "type": "string"
             },
@@ -7346,7 +7346,7 @@
           {
             "in": "path",
             "name": "onboarding_id",
-            "description": "ID of the onboarding to retrieve",
+            "description": "ID of the onboarding to be updated",
             "schema": {
               "type": "string"
             },
@@ -7354,111 +7354,375 @@
             "example": "104911d-5df9-429e-8488-ad41abea1a4b"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "Unique id of the account in Yuno",
+                    "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "PREVIOUSLY_ONBOARDED",
+                      "ONE_STEP_ONBOARDING",
+                      "TWO_STEP_ONBOARDING"
+                    ],
+                    "description": "Type of onboarding flow. PREVIOUSLY_ONBOARDED for pre-existing accounts, ONE_STEP_ONBOARDING for account creation + KYC in one step, TWO_STEP_ONBOARDING for account creation first then KYC later",
+                    "example": "PREVIOUSLY_ONBOARDED"
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "enum": [
+                      "HOSTED_BY_PROVIDER",
+                      "HOSTED_BY_YUNO",
+                      "DIRECT"
+                    ],
+                    "description": "Workflow of the onboarding",
+                    "example": "HOSTED_BY_PROVIDER"
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL in case to redirect your customer after the onboarding process with the provider, if needed.",
+                    "example": "https://www.google.com"
+                  },
+                  "provider": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Provider id",
+                        "example": "PAGARME"
+                      },
+                      "connection_id": {
+                        "type": "string",
+                        "description": "Id of the connection in Yuno",
+                        "example": "104911d-5df9-429e-8488-ad41abea1a4b"
+                      },
+                      "recipient_id": {
+                        "type": "string",
+                        "description": "The unique identifier of the provider's recipient.",
+                        "example": "AAAAA01"
+                      },
+                      "recipient_type": {
+                        "type": "string",
+                        "description": "The type of recipient for the provider.",
+                        "enum": [
+                          "MEAL",
+                          "FOOD",
+                          "MULTI_BENEFITS",
+                          "FLEET"
+                        ],
+                        "example": "MEAL"
+                      }
+                    }
+                  },
+                  "documentation": {
+                    "type": "array",
+                    "description": "Specifies the documentation object.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "file_name",
+                        "content_type",
+                        "content_category",
+                        "content"
+                      ],
+                      "properties": {
+                        "file_name": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 255,
+                          "description": "The name of the documentation sent (MAX 255; MIN 3).",
+                          "example": "PDF"
+                        },
+                        "content_type": {
+                          "type": "string",
+                          "enum": [
+                            "application/pdf",
+                            "image/jpeg",
+                            "image/png"
+                          ],
+                          "description": "The type of the documentation sent by the merchant",
+                          "example": "application/pdf"
+                        },
+                        "content_category": {
+                          "type": "string",
+                          "enum": [
+                            "ACCOUNT_REQUIREMENT",
+                            "BANK_STATEMENT",
+                            "BUSINESS_ICON",
+                            "BUSINESS_LOGO",
+                            "CANCEL_POLICY",
+                            "CUSTOMER_INTERACTION",
+                            "DRIVERS_LICENCE",
+                            "IDENTIFICATION_DOCUMENT",
+                            "IDENTIFICATION_DOCUMENT_BACK",
+                            "IDENTIFICATION_DOCUMENT_FRONT",
+                            "LEGAL_AGREEMENT",
+                            "OTHERS",
+                            "PASSPORT",
+                            "PAYMENT_DETAIL",
+                            "PROOF_OF_ADDRESS",
+                            "PROOF_OF_AUTHENTICITY",
+                            "PROOF_OF_DELIVERY",
+                            "PROOF_OF_DIRECTOR",
+                            "PROOF_OF_INDUSTRY",
+                            "PROOF_OF_NATIONAL_ID_NUMBER",
+                            "PROOF_OF_OWNERSHIP",
+                            "PROOF_OF_REGISTRATION",
+                            "PROOF_OF_RELATIONSHIP",
+                            "PROOF_OF_SERVICE",
+                            "PROOF_OF_SOURCE_OF_FUNDS",
+                            "PROOF_OF_SOURCE_OF_WEALTH",
+                            "PROOF_OF_TAX",
+                            "PROVIDER_IDENTITY_DOCUMENT",
+                            "RECEIPT",
+                            "REFUND_POLICY",
+                            "SELFIE",
+                            "SERVICE_AGREEMENT",
+                            "SIGNATURE",
+                            "TERMS_AND_CONDITIONS",
+                            "VAT_DOCUMENT"
+                          ],
+                          "description": "The category of the documentation sent by the merchant"
+                        },
+                        "content": {
+                          "type": "string",
+                          "format": "byte",
+                          "description": "The content of the documentation sent by the merchant encoded in base64. Max size: 1MB.",
+                          "example": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCg=="
+                        }
+                      }
+                    }
+                  },
+                  "withdrawal_methods": {
+                    "type": "object",
+                    "description": "Specifies the withdrawal methods object.",
+                    "properties": {
+                      "bank": {
+                        "type": "object",
+                        "description": "struct",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "Bank´s code (MAX 3; MIN 3)",
+                            "example": "246"
+                          },
+                          "branch": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "Bank´s branch (MAX 3; MIN 3)",
+                            "example": "XXXX"
+                          },
+                          "branch_digit": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "Bank´s branch digit (MAX 3; MIN 3)"
+                          },
+                          "account": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 250,
+                            "description": "Beneficiary's bank account number (MAX 3; MIN 250)",
+                            "example": "1093333333"
+                          },
+                          "account_digit": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 250,
+                            "description": "Beneficiary's bank account digit (MAX 3; MIN 250)"
+                          },
+                          "account_type": {
+                            "type": "string",
+                            "enum": [
+                              "CHECKINGS",
+                              "SAVINGS",
+                              "VISTA",
+                              "PIX_EMAIL",
+                              "PIX_PHONE",
+                              "PIX_DOCUMENT_ID",
+                              "PIX_BANK_ACCOUNT"
+                            ],
+                            "description": "Beneficiary's bank account type (MAX 1; MIN 3). Could be: CHECKINGS, SAVINGS, VISTA, PIX_EMAIL, PIX_PHONE, PIX_DOCUMENT_ID, PIX_BANK_ACCOUNT",
+                            "example": "SAVINGS"
+                          },
+                          "routing": {
+                            "type": "string",
+                            "description": "Beneficiary's bank account routing number",
+                            "example": "XXXXYYYYC"
+                          },
+                          "country": {
+                            "type": "string",
+                            "minLength": 2,
+                            "maxLength": 2,
+                            "description": "The bank account's country (ISO 3166-1 MAX 2; MIN 2)",
+                            "example": "CO"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3,
+                            "description": "The bank account's currency (ISO 3166-1 MAX 3; MIN 3)",
+                            "example": "COP"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "legal_representatives": {
+                    "type": "array",
+                    "description": "Object to indicate the owners of the organization. Adyen, Stripe and dlocal have fields related to that.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "merchant_reference": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 255,
+                          "description": "Legal representative's identification id (MAX 255; MIN 3)."
+                        },
+                        "first_name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "Legal representative's name. (MAX 255; MIN 1).",
+                          "example": "John"
+                        },
+                        "last_name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "Legal representative's last name. (MAX 255; MIN 1).",
+                          "example": "Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "The Legal representative's email (MAX 255; MIN 1).",
+                          "example": "john.doe@email.com"
+                        },
+                        "date_of_birth": {
+                          "type": "string",
+                          "format": "date",
+                          "minLength": 10,
+                          "maxLength": 10,
+                          "description": "The Legal representative's date of birth in the YYYY-MM-DD format (MAX 10; MIN 10).",
+                          "example": "1990-02-28"
+                        },
+                        "country": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 2,
+                          "description": "The Legal representative's country (ISO 3166-1 MAX 2; MIN 2)",
+                          "example": "CO"
+                        },
+                        "nationality": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 2,
+                          "description": "The Legal representative's nationality (MAX 2; MIN 2; ISO 3166-1).",
+                          "example": "CO"
+                        },
+                        "title": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255,
+                          "description": "The title of the legal representative (MAX 255; MIN 1).",
+                          "example": "CTO"
+                        },
+                        "publicly_exposed_person": {
+                          "type": "boolean",
+                          "description": "Indicates if the legal representative is a publicly exposed person",
+                          "example": false
+                        },
+                        "ultimate_beneficial_owner": {
+                          "type": "boolean",
+                          "description": "Indicates if the legal representative is an ultimate beneficiary owner of the company",
+                          "example": false
+                        }
+                      }
+                    }
+                  },
+                  "terms_of_service": {
+                    "type": "object",
+                    "description": "Object describing terms of service.",
+                    "required": [
+                      "acceptance",
+                      "date"
+                    ],
+                    "properties": {
+                      "acceptance": {
+                        "type": "boolean",
+                        "description": "If the terms of service were accepted by the recipient",
+                        "example": true
+                      },
+                      "date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Date of the terms of service acceptance",
+                        "example": "2022-07-09T20:43:54.786342Z"
+                      },
+                      "ip": {
+                        "type": "string",
+                        "format": "ipv4",
+                        "description": "IP of the terms of service acceptance",
+                        "example": "192.168.1.100"
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Update Onboarding": {
+                  "value": {
+                    "account_id": "{{account-code}}",
+                    "provider": {
+                      "recipient_type": "MULTI_BENEFITS"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Onboarding details retrieved successfully",
+            "description": "Updated",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "The unique identifier of the onboarding",
-                      "example": "104911d-5df9-429e-8488-ad41abea1a4b"
-                    },
-                    "account_id": {
-                      "type": "string",
-                      "description": "Unique id of the account in Yuno",
-                      "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
-                    },
-                    "recipient_id": {
-                      "type": "string",
-                      "description": "The unique identifier of the recipient",
-                      "example": "9104911d-5df9-429e-8488-ad41abea1a4b"
-                    },
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "PREVIOUSLY_ONBOARDED",
-                        "ONE_STEP_ONBOARDING",
-                        "TWO_STEP_ONBOARDING"
-                      ],
-                      "description": "Type of onboarding flow",
-                      "example": "PREVIOUSLY_ONBOARDED"
-                    },
-                    "workflow": {
-                      "type": "string",
-                      "enum": [
-                        "HOSTED_BY_PROVIDER",
-                        "HOSTED_BY_YUNO",
-                        "DIRECT"
-                      ],
-                      "description": "Workflow of the onboarding",
-                      "example": "HOSTED_BY_PROVIDER"
-                    },
-                    "status": {
-                      "type": "string",
-                      "description": "Current status of the onboarding",
-                      "example": "ACTIVE"
-                    },
-                    "callback_url": {
-                      "type": "string",
-                      "format": "uri",
-                      "description": "URL to redirect after the onboarding process",
-                      "example": "https://www.google.com"
-                    },
-                    "provider": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "description": "Provider id",
-                          "example": "PAGARME"
-                        },
-                        "connection_id": {
-                          "type": "string",
-                          "description": "Id of the connection in Yuno",
-                          "example": "104911d-5df9-429e-8488-ad41abea1a4b"
-                        },
-                        "recipient_id": {
-                          "type": "string",
-                          "description": "The unique identifier of the provider's recipient",
-                          "example": "AAAAA01"
-                        }
-                      }
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "description": "Onboarding creation date",
-                      "example": "2024-01-15T10:30:00Z"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "description": "Onboarding last update date",
-                      "example": "2024-01-15T10:30:00Z"
-                    }
-                  }
+                  "$ref": "#/components/schemas/RecipientResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "examples": {
-                  "Success Response": {
+                  "Invalid Request": {
                     "value": {
-                      "id": "104911d-5df9-429e-8488-ad41abea1a4b",
-                      "account_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
-                      "recipient_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
-                      "type": "PREVIOUSLY_ONBOARDED",
-                      "workflow": "HOSTED_BY_PROVIDER",
-                      "status": "ACTIVE",
-                      "callback_url": "https://www.google.com",
-                      "provider": {
-                        "id": "PAGARME",
-                        "connection_id": "104911d-5df9-429e-8488-ad41abea1a4b",
-                        "recipient_id": "AAAAA01"
-                      },
-                      "created_at": "2024-01-15T10:30:00Z",
-                      "updated_at": "2024-01-15T10:30:00Z"
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request format"
+                      ]
                     }
                   }
                 }
