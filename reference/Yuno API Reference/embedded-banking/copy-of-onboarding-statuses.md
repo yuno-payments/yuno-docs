@@ -1,5 +1,5 @@
 ---
-title: Copy of Onboarding Statuses
+title: Onboarding Statuses
 deprecated: false
 hidden: true
 metadata:

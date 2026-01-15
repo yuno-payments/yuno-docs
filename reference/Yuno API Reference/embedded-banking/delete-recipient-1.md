@@ -1,5 +1,5 @@
 ---
-title: Copy of Delete Recipient
+title: Delete Recipient
 excerpt: Deletes a recipient. This action cannot be undone.
 api:
   file: openapi.json
