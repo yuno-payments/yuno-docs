@@ -28,8 +28,6 @@ It is designed for companies that need to hold or move user balances under a ban
 
 This flow covers registering a user or entity, completing KYC/KYB, and creating a virtual account once onboarding is approved.
 
-### Steps
-
 1. **[Create a recipient](https://docs.y.uno/reference/embedded-banking-create-recipient)** to register the user or entity profile
 2. **[Get recipient](https://docs.y.uno/reference/embedded-banking-get-recipient)** to confirm the profile details before onboarding
 3. **[Create onboarding](https://docs.y.uno/reference/embedded-banking-create-onboarding)** to initiate KYC/KYB and required validations
@@ -37,7 +35,7 @@ This flow covers registering a user or entity, completing KYC/KYB, and creating 
 5. **[Create bank account](https://docs.y.uno/reference/embedded-banking-create-bank-account)** after approval to open the account
 6. **[Retrieve bank account](https://docs.y.uno/reference/embedded-banking-retrieve-bank-account)** to confirm account details
 
-**Optional steps**
+**Optional steps:**
 
 1. **[Update onboarding](https://docs.y.uno/reference/eb-update-onboarding)** if profile data changes during review
 2. **[Check onboarding status](https://docs.y.uno/reference/embedded-banking-onboarding-statuses)** to monitor approval progress
@@ -97,6 +95,48 @@ flowchart TD
 This flow lets users request a physical or virtual card, view card details, and manage card status. Yuno's infrastructure turns PCI compliance into a simple, built-in part of your card program.
 
 Status: `PENDING`
+
+```mermaid
+flowchart LR
+  Merchant["Merchant"] -->|"Request card"| Yuno["Yuno"]
+  Yuno -->|"Issue card"| BankPartner["Banking partner"]
+  BankPartner -->|"Card issued"| Card["Card"]
+  Card -->|"Details/status"| Merchant
+```
+
+## Interaction diagrams
+
+### Onboard user or entity and create account
+
+```mermaid
+flowchart LR
+  Merchant["Merchant"] -->|"Create recipient"| Yuno["Yuno"]
+  Yuno -->|"Create onboarding"| BankPartner["Banking partner"]
+  BankPartner -->|"KYC/KYB review"| Yuno
+  Yuno -->|"Create bank account"| Account["Bank account"]
+```
+
+### Incoming and outgoing transfers
+
+```mermaid
+flowchart TD
+  Merchant["Merchant"]
+  Yuno["Yuno"]
+  BankPartner["Banking partner"]
+  Payin["Incoming transfer (payin)"]
+  Payout["Outgoing transfer (payout)"]
+  Refund["Refund"]
+
+  BankPartner -->|"Payment notification"| Yuno
+  Yuno -->|"Notify merchant"| Merchant
+  Merchant -->|"Retrieve payment by ID"| Yuno
+  Merchant -->|"Create payout"| Yuno
+  Yuno -->|"Route payout"| BankPartner
+  BankPartner -->|"Payout status"| Yuno
+  Yuno -->|"Notify merchant"| Merchant
+```
+
+### Card management
 
 ```mermaid
 flowchart LR
