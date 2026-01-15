@@ -50,6 +50,14 @@ Use bank account endpoints to manage the account lifecycle.
 * [Create bank account](https://docs.y.uno/reference/embedded-banking-create-bank-account)
 * [Retrieve bank account](https://docs.y.uno/reference/embedded-banking-retrieve-bank-account)
 
+```mermaid
+flowchart LR
+  Merchant["Merchant"] -->|"Create recipient"| Yuno["Yuno"]
+  Yuno -->|"Start onboarding"| BankPartner["Banking partner"]
+  BankPartner -->|"Approval"| Yuno
+  Yuno -->|"Create account"| Account
+```
+
 ## Incoming and outgoing transfers
 
 Transfers are split into **incoming transfers (payins)** and **outgoing transfers (payouts)**, depending on the direction of funds.
@@ -64,11 +72,39 @@ Transfers are split into **incoming transfers (payins)** and **outgoing transfer
 1. **[Create payout](https://docs.y.uno/reference/create-payout-1)** to send funds to a beneficiary
 2. **[Retrieve payout by ID](https://docs.y.uno/reference/retrieve-payout-by-id-1)** to track status and confirm completion
 
+```mermaid
+flowchart TD
+  Merchant["Merchant"]
+  Yuno["Yuno"]
+  BankPartner["Banking partner"]
+  Payin["Incoming transfer (payin)"]
+  Payout["Outgoing transfer (payout)"]
+  Refund["Refund"]
+
+  Merchant -->|"Create payment"| Payin
+  Payin -->|"Route funds"| Yuno
+  Yuno --> BankPartner
+  BankPartner -->|"Settlement"| Yuno
+  Yuno -->|"Status to merchant"| Merchant
+  Merchant -->|"Refund payment"| Refund
+  Merchant -->|"Create payout"| Payout
+  Payout -->|"Route funds"| Yuno
+  Yuno -->|"Payout status"| Merchant
+```
+
 ## Card management
 
 This flow lets users request a physical or virtual card, view card details, and manage card status. Yuno's infrastructure turns PCI compliance into a simple, built-in part of your card program.
 
 Status: `PENDING`
+
+```mermaid
+flowchart LR
+  Merchant["Merchant"] -->|"Request card"| Yuno["Yuno"]
+  Yuno -->|"Issue card"| BankPartner["Banking partner"]
+  BankPartner -->|"Card issued"| Card["Card"]
+  Card -->|"Details/status"| Merchant
+```
 
 ## Interaction diagrams
 
