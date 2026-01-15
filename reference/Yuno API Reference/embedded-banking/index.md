@@ -17,7 +17,7 @@ It is designed for companies that need to hold or move user balances under a ban
 * Manage transfers using local and international schemes (ACH, PIX, IBAN, SWIFT, Interac)
 * Issue and manage physical or virtual cards under PCI DSS environments
 
-## Other functionalities
+### Other functionalities
 
 * Bill payments
 * Cash top-ups (eCash)
