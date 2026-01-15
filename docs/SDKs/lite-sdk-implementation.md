@@ -1,7 +1,7 @@
 ---
 title: Lite SDK implementation
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   robots: index
 ---
