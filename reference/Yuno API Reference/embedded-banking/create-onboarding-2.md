@@ -1,5 +1,6 @@
 ---
 title: Create Onboarding
+excerpt: Creates an onboarding for a recipient.
 api:
   file: openapi.json
   operationId: post_{id}onboardings-1
