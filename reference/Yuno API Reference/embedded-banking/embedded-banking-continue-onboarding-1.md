@@ -1,5 +1,8 @@
 ---
 title: Continue Onboarding
+excerpt: >-
+  Continues the onboarding process for a recipient. This endpoint is used for
+  two-step onboarding flows to execute the KYC step after account creation.
 api:
   file: openapi.json
   operationId: continue-onboarding-1

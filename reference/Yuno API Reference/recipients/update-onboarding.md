@@ -1,5 +1,8 @@
 ---
 title: Update Onboarding
+excerpt: >-
+  Updates an existing onboarding for a recipient. Only specified fields will be
+  updated.
 api:
   file: openapi.json
   operationId: update-onboarding
