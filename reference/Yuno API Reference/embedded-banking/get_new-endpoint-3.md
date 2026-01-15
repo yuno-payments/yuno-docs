@@ -1,8 +1,8 @@
 ---
-title: Payment Notifications v2
+title: Payment Notifications
 api:
   file: embedded-banking-v-2.json
-  operationId: post_new-endpoint
+  operationId: post_v1-payments
 hidden: true
 ---
 This request creates a payment notification for the Embedded banking flow.
