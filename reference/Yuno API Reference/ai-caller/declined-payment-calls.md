@@ -1,5 +1,5 @@
 ---
-title: Copy of Declined Payment Calls
+title: Declined Payment Calls
 excerpt: >
   This endpoint allows you to initiate large-scale processing of calls and
   WhatsApp messages related to declined payments. To use the endpoint, you have
