@@ -18,7 +18,7 @@ This page guides you through the available integration methods with Yuno. After 
 
 Before proceeding, choose the integration method that best suits your needs. For an overview of available options and their capabilities, see [Choose the Right Integration for You](doc:choose-the-right-integration-for-you).
 
-## Available Integration Options
+## Available integration options
 
 Here are the primary integration methods available with Yuno, each designed to fit different needs and technical requirements:
 

@@ -14,7 +14,7 @@ next:
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/provider.mp4" />
 
-### How to Use Provider Installments?
+### How to use provider installments?
 
 While configuring your provider [Connection](doc:connections) in Yuno Dashboard, you can enable the installments available for the provider so we can use them in the Credit card form of the SDK for the customer to select from. For this scenario, there is no need to create a plan, as Yuno will use the plan defined by your payment processor.
 

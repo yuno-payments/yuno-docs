@@ -70,7 +70,7 @@ The Yuno SDK manages the enrollment flow on the client side, handling user inter
 * Shows screens for the user to complete enrollment
 * Display enrollment result (optional)
 
-#### Complete Flow
+#### Complete flow
 
 The following steps outline the complete interaction flow between all components of the SDK Headless Enrollment integration, detailing how each request and response moves through the system:
 

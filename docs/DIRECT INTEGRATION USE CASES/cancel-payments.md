@@ -38,7 +38,7 @@ To cancel a payment, you need to:
 >
 > Yuno provides [Postman Collections](/reference/postman-collections) that you can use to replicate the use cases locally.
 
-## Cancel a Payment
+## Cancel a payment
 
 You can cancel a payment only if it has the PENDING status. Use the [Cancel Payment endpoint](ref:cancel-payment) to cancel the payment. To identify the payment to be canceled, you need to provide its `id` and the `transaction_id`.
 

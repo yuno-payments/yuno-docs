@@ -308,13 +308,13 @@ Both options require you to provide the `oneTimeToken` and the `checkoutSession`
 
 After, you can check the payment status using the `yuno.mountStatusPayment` function. The following example uses the `createPayment` function to create the payment and the `mountStatusPayment` to display the payment status:
 
-### Payment Creation Flow
+### Payment creation flow
 
 1. **Create Payment**: Use the `createPayment` function with the one-time token and checkout session
 2. **Check SDK Action**: If `sdk_action_required` is true, call `yuno.continuePayment()` for additional customer actions
 3. **Mount Status**: If no SDK action is required, use `yuno.mountStatusPayment()` to display payment status
 
-### Mount Status Payment Parameters
+### Mount Status Payment parameters
 
 | Parameter           | Description                                            |
 | ------------------- | ------------------------------------------------------ |

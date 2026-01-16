@@ -14,7 +14,7 @@ You can use the Merchant Installments options when you, the merchant, have your 
 
 <Video src="https://github.com/writechoiceorg/yuno-images/raw/main/doc/yourPaymentsOperationSystem/installments.mp4" />
 
-## How to Use Merchant Installments?
+## How to use merchant installments?
 
 Depending on the way you are connected to Yuno, the process of configuring the installments may vary. Next, we present how you can inform Yuno of the installment option for the Direct workflow and the SDK integration.
 

@@ -18,7 +18,7 @@ Yuno supports payments in installments, which allows you to spread out the cost 
 
 ![](https://files.readme.io/5e3dd70-image.png)
 
-### Benefits of Using Payments in Installments
+### Benefits of using payments in installments
 
 There are several benefits to using installment payments for your customers:
 

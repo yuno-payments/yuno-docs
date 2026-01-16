@@ -23,7 +23,7 @@ Yuno's tokenization service and centralized vault enable you to handle recurring
 
 ## Available payment methods for enrollment
 
-| Payment Method            | Type                   |
+| Payment method            | Type                   |
 | ------------------------- | ---------------------- |
 | **Cards**                 | `CARD`                 |
 | **Nupay**                 | `NU_PAY_ENROLLMENT`    |

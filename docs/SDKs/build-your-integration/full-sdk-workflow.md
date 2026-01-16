@@ -128,7 +128,7 @@ If a customer has an enrolled payment method, they can use a **vaulted token** f
 
 <Image border={false} src="https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png" />
 
-### Vaulted Token Full Diagram
+### Vaulted token full diagram
 
 This diagram illustrates the process for handling vaulted tokens within the full payment flow, showing interactions between the Merchant Client, Merchant Server, Yuno Server, and Yuno SDK. It focuses on the use of pre-stored payment credentials for streamlined transactions.
 
