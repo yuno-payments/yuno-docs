@@ -1,7 +1,7 @@
 ---
 title: Copy of Monitors
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
