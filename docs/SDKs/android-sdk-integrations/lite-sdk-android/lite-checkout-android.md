@@ -123,9 +123,7 @@ data class YunoConfig(
     val saveCardEnabled: Boolean = false,
     val cardFormDeployed: Boolean = false,
     val language: YunoLanguage? = null,
-    val styles: YunoStyles? = null,
-    val cardNumberPlaceholder: String? = null, // Optional: Custom placeholder text for card number field
-    val hideCardholderName: Boolean? = null // Optional: Set to true to hide cardholder name field
+    val styles: YunoStyles? = null
 )
 ```
 
@@ -137,8 +135,6 @@ The following table describes each customization option:
 | **saveCardEnabled**  | Enables the **Save card checkbox** on card flows. See the [Save card](#save-card-for-future-payments) section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | **language**         | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
 | **styles**           | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, see the [`styles`](../docs/full-checkout-android#styles) section.                                                                                                                                                                                                                                                                                                                                   |
-| **cardNumberPlaceholder** | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation. |
-| **hideCardholderName** | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
 
 You also need to update your manifest to use your application:
 
@@ -154,7 +150,7 @@ Call the `startCheckout` method in the `onCreate()` function of the activity tha
 startCheckout(
   checkoutSession: "checkout_session",
   countryCode: "US",
-  callbackPaymentState: ((String?) -> Unit)?,
+  callbackPaymentState: ((String?, String?) -> Unit)?,
   merchantSessionId: String? = null
 )
 ```
@@ -165,12 +161,12 @@ The following table describes the required parameters to start the checkout:
 | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | A unique identifier for the checkout session associated with the payment. It is required to initialize the payment process and grants access to the customer's available payment methods. |
 | `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                            |
-| `callbackPaymentState` | It's a function that returns the current payment process. Sending this function is not mandatory if you do not need the result.                                                           |
+| `callbackPaymentState` | A function that returns the current payment process. It receives `paymentState` and `paymentSubState` values. Sending this function is not mandatory if you do not need the result.       |
 | `merchantSessionId`    | An identifier used by the merchant to track the payment.                                                                                                                                  |
 
 ### Callback Payment State
 
-The `callbackPaymentState` parameter is a function that returns the current payment process. Sending this function is not mandatory if you do not need the result. The following code block shows the possible states:
+The `callbackPaymentState` parameter is a function that returns the current payment process. It receives two parameters: `paymentState` (main state) and `paymentSubState` (additional detail). Sending this function is not mandatory if you do not need the result. The following code block shows the possible states:
 
 ```kotlin
 const val PAYMENT_STATE_SUCCEEDED = "SUCCEEDED"
@@ -296,7 +292,7 @@ continuePayment(
     showPaymentStatus: Boolean = true,
     checkoutSession: String? = null,
     countryCode: String? = null,
-    callbackPaymentState: ((String?) -> Unit)? = null
+    callbackPaymentState: ((String?, String?) -> Unit)? = null
 )
 ```
 
