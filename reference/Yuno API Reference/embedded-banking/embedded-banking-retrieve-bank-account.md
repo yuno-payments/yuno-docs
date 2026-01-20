@@ -1,6 +1,6 @@
 ---
 title: Retrieve Bank Account
-excerpt: This endpoint retrieves a bank account information.
+excerpt: This is your first endpoint! Edit this page to start documenting your API.
 api:
   file: test-api-creation.json
   operationId: >-
