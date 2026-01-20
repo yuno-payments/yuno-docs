@@ -1,6 +1,6 @@
 ---
 title: Retrieve Checkout Session
-excerpt: ''
+excerpt: This request retrieves a checkout session using its unique identifier.
 api:
   file: checkout-api.json
   operationId: get-checkout-session
