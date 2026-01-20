@@ -25,4 +25,3 @@ This endpoint allows you to add additional evidence to an existing dispute after
 > _Format_: File must be in PDF format, encoded as base64.  
 > _Size_: File must be no larger than 1 MB in size.  
 > _Language_: Dispute should be written in English or the country's local language.
-

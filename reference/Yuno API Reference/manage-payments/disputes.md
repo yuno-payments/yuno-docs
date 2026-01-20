@@ -26,4 +26,3 @@ The endpoint returns a standard payment response structure containing the update
 > *Language*: Dispute should be written in English or the country's local language.
 
 Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](ref:authentication#idempotency) page for more information.
-
