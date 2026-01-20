@@ -123,6 +123,8 @@ To confirm the enrollment, you can retrieve the enrolled payment methods. The `s
 
 > 📘 Fingerprint
 >
-> When a credit card is enrolled, you will also find the `fingerprint` in the API response. It is a field that represents your customer's card throughout your organization. When a customer enrolls a credit card multiple times related to one or many Yuno accounts, multiple vaulted_tokens will be generated, but the fingerprint lets you identify when the same card is used across multiple scenarios.
+> When a credit card is enrolled, you will also find the `fingerprint` in the API response. It is a field that represents your customer's card throughout your organization. When a customer enrolls a credit card multiple times, multiple `vaulted_token` values are generated. The fingerprint lets you identify the same card across those enrollments so you can deduplicate on your side. See [Card Fingerprint](doc:fingerprint).
+>
+> The fingerprint is available after enrollment and can be `null` for some providers. Always check for its presence before using it for deduplication.
 >
 > You will also find the fingerprint in the payment response when a transaction is made using an enrolled credit card.

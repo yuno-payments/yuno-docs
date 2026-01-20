@@ -28,6 +28,10 @@ Network tokens represent a significant advancement in the payment processing ind
 
 When the network tokens feature is enabled, Yuno generates network tokens for all cards enrolled and securely stored in our vault. This approach is fully aligned with how network tokenization is intended to work, as defined by Visa and Mastercard after the card validation — ensuring better performance, security, and reliability in recurring and future transactions. Cards not stored in Yuno — such as one-time use cards — are naturally excluded from this process, since network tokenization is not applicable in those cases.
 
+> 📘 Duplicate enrollments
+>
+> If the same card is enrolled multiple times, each enrollment creates a distinct `vaulted_token`. Use the [Card Fingerprint](doc:fingerprint) to detect duplicates on your side.
+
 ## Network tokens lifecycle
 
 Network tokens can have the statuses described in the section below.

@@ -28,6 +28,6 @@ Note that this request requires an `X-Idempotency-Key`. Check the [Authenticatio
 > We recommend listening to [Webhooks](https://docs.y.uno/docs/configure-webhooks) to stay up to date with the state of the enrolled payment methods of your customers.
 
   
-In case a customer enrolls the same card twice but with new expiration date or cardholder info, we will unenroll the previously enrolled card and keep the new one.
-
+ If a customer enrolls the same card multiple times, Yuno creates a new enrollment each time and returns a distinct `vaulted_token`. Use the card `fingerprint` in the enrollment response to detect duplicates on your side (the fingerprint may be `null` for some providers). See [Card Fingerprint](doc:fingerprint).
+ 
 > 🚧 Only available for PCI certified merchants.
