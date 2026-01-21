@@ -264,4 +264,4 @@ The following table provides additional information about the possible states:
 
 > 📘 Webhook Status Tracking
 >
-> Consider using the enrollment status received via [Webhooks](#webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
+> Consider using the enrollment status received via [Webhooks](#webhooks). Yuno recommends always using this status to base and make business decisions on your platform
