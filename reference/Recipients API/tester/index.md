@@ -1,4 +1,0 @@
----
-title: /tester
-hidden: false
----
