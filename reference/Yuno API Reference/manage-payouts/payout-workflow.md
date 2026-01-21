@@ -25,51 +25,12 @@ For every implementation, we recommend taking the payout `status` as the main re
 
 The following table presents all `status` and `response_code` you will find when handling payouts with the Yuno system. In addition, you will find the relation of `status`/`response_code` with the transaction status of the payout process.
 
-<HTMLBlock>{`
-<table>
-  <thead>
-    <tr>
-      <th>Status</th>
-      <th>Response code</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>CREATED</code></td>
-      <td><code>CREATED</code></td>
-      <td>Initial state when a payout is created. It is an internal state.</td>
-    </tr>
-    <tr>
-      <td><code>PENDING</code></td>
-      <td><code>PENDING_PROVIDER_CONFIRMATION</code></td>
-      <td>The payout has been delivered to the provider and is being analyzed.</td>
-    </tr>
-    <tr>
-      <td><code>PENDING</code></td>
-      <td><code>AUTHORIZED</code></td>
-      <td>The payout has been delivered to the provider, its authorized and its waiting merchant's confirmation to release the transaction. Only available for certain providers that support it.</td>
-    </tr>
-    <tr>
-      <td><code>SUCCEEDED</code></td>
-      <td><code>SUCCEEDED</code></td>
-      <td>The payout was successfully completed.</td>
-    </tr>
-    <tr>
-      <td><code>REJECTED</code></td>
-      <td><code>REJECTED</code></td>
-      <td>Payout rejected by Yuno. Please review the request fields.</td>
-    </tr>
-    <tr>
-      <td><code>DECLINED</code></td>
-      <td><code>DECLINED</code></td>
-      <td>The provider declined the payout.</td>
-    </tr>
-    <tr>
-      <td><code>ERROR</code></td>
-      <td><code>ERROR</code></td>
-      <td>Error.</td>
-    </tr>
-  </tbody>
-</table>
-`}</HTMLBlock>
+| Status    | Response code                 | Description                                                                                                                                     |
+|-----------|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `CREATED` | `CREATED`                    | Initial state when a payout is created. It is an internal state.                                                                                |
+| `PENDING` | `PENDING_PROVIDER_CONFIRMATION` | The payout has been delivered to the provider and is being analyzed.                                                                            |
+| `PENDING` | `AUTHORIZED`                  | The payout has been delivered to the provider, its authorized and its waiting merchant's confirmation to release the transaction. Only available for certain providers that support it. |
+| `SUCCEEDED` | `SUCCEEDED`                | The payout was successfully completed.                                                                                                          |
+| `REJECTED` | `REJECTED`                  | Payout rejected by Yuno. Please review the request fields.                                                                                      |
+| `DECLINED` | `DECLINED`                  | The provider declined the payout.                                                                                                               |
+| `ERROR`    | `ERROR`                     | Error.                                                                                                                                          |
