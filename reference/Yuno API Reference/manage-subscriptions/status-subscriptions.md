@@ -22,10 +22,10 @@ In the following workflow, you can find the different subscription statuses and 
 
 Subscriptions can have the status described in the table below.
 
-| Status       | Description                                                                                    |
-|--------------|------------------------------------------------------------------------------------------------|
-| `ACTIVE`     | The subscription has been created with an associated customer and is already active.           |
-| `PAUSED`     | The subscription has been paused and can be reactivated.                                       |
-| `COMPLETED`  | The subscription is completed because it reached the end date and time.                        |
-| `CANCELED`   | Subscription canceled.                                                                         |
-| `ERROR`      | An error occurred in the process.                                                              |
+| Status      | Description                                                                          |
+| ----------- | ------------------------------------------------------------------------------------ |
+| `ACTIVE`    | The subscription has been created with an associated customer and is already active. |
+| `PAUSED`    | The subscription has been paused and can be reactivated.                             |
+| `COMPLETED` | The subscription is completed because it reached the end date and time.              |
+| `CANCELED`  | Subscription canceled.                                                               |
+| `ERROR`     | An error occurred in the process.                                                    |
