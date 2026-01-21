@@ -294,6 +294,10 @@ The fingerprint behavior with card updates:
 | **Cardholder name changes** | ❌ Fingerprint **stays the same** |
 | **Card reissued (same number)** | ❌ Fingerprint **stays the same** |
 
+### Network token fingerprint
+
+For network tokens, Yuno uses a `network_token_fingerprint` that works like the card fingerprint and is scoped to your organization and the unique identifier of the network token in the PCI vault. This means duplicate enrollments for the same PAN can map to the same network token. For more details, see [Network Tokens](doc:network-tokens).
+
 ## Use Cases
 
 ### 1. Prevent Wallet Clutter

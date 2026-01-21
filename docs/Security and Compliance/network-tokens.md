@@ -30,7 +30,7 @@ When the network tokens feature is enabled, Yuno generates network tokens for al
 
 > 📘 Duplicate enrollments
 >
-> If the same card is enrolled multiple times, each enrollment creates a distinct `vaulted_token`. Use the [Card Fingerprint](doc:fingerprint) to detect duplicates on your side.
+> If the same card is enrolled multiple times, each enrollment creates a distinct `vaulted_token`. For network tokens, Yuno uses a `network_token_fingerprint` that works like the card fingerprint and is scoped to your organization and the unique identifier of the network token in the PCI vault. This means duplicate enrollments for the same PAN can map to the same network token. Use the [Card Fingerprint](doc:fingerprint) to detect vaulted token duplicates on your side.
 
 ## Network tokens lifecycle
 
