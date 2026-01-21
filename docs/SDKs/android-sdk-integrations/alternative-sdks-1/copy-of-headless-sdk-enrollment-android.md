@@ -1,5 +1,5 @@
 ---
-title: Copy of Headless SDK (Enrollment Android)
+title: Headless SDK (Enrollment Android)
 deprecated: false
 hidden: false
 metadata:
