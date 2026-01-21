@@ -25,41 +25,10 @@ In the following workflow, you can find the different payment link statuses and 
 
 The payment links can have the status described in the table below.
 
-<HTMLBlock>{`
-<table>
-<thead>
-  <tr>
-    <th>Status</th>
-    <th>Description</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>CREATED</td>
-    <td>The payment link is active and can be used to make a payment.</td>
-  </tr>
-  <tr>
-    <td>USED</td>
-    <td>The payment link has already been used.</td>
-  </tr>
-  <tr>
-    <td>CANCELED</td>
-    <td>Payment link canceled.</td>
-  </tr>
-  <tr>
-    <td>EXPIRED</td>
-    <td>The link expired before your customer was able to pay for it.</td>
-  </tr>
-  <tr>
-    <td>ERROR</td>
-    <td>An error occurred in the process.</td>
-  </tr>
-</tbody>
-</table>
-
-<style>
-  table th {
-    text-align: left;
-  }
-</style>
-`}</HTMLBlock>
+| Status   | Description                                                         |
+|----------|---------------------------------------------------------------------|
+| CREATED  | The payment link is active and can be used to make a payment.       |
+| USED     | The payment link has already been used.                             |
+| CANCELED | Payment link canceled.                                              |
+| EXPIRED  | The link expired before your customer was able to pay for it.       |
+| ERROR    | An error occurred in the process.                                   |
