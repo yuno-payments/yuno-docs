@@ -1,4 +1,0 @@
----
-title: Accounts
-hidden: false
----
