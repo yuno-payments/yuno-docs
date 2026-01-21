@@ -18,30 +18,11 @@ On this page, you will find airline information you may need when using Yuno API
 
 ## Passenger type
 
-<HTMLBlock>{`
-<table>
-<thead>
-  <tr>
-    <th><code>passenger_type</code></th>
-    <th>Description</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td><code>A</code></td>
-    <td>Adult</td>
-  </tr>
-  <tr>
-    <td><code>C</code></td>
-    <td>Child</td>
-  </tr>
-  <tr>
-    <td><code>I</code></td>
-    <td>Infant or Baby</td>
-  </tr>
-</tbody>
-</table>
-`}</HTMLBlock>
+| `passenger_type` | Description      |
+|------------------|-----------------|
+| `A`              | Adult           |
+| `C`              | Child           |
+| `I`              | Infant or Baby  |
 
 ## Fare class code
 
@@ -49,34 +30,9 @@ The values can be a letter (A-Z) but may vary depending on the airline's definit
 
 ## Loyalty tier
 
-<HTMLBlock>{`
-<table>
-<thead>
-  <tr>
-    <th><code>loyalty_tier</code></th>
-    <th>Description</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td><code>1</code></td>
-    <td>High classification level</td>
-  </tr>
-  <tr>
-    <td><code>2</code></td>
-    <td>Second classification level</td>
-  </tr>
-  <tr>
-    <td><code>3</code></td>
-    <td>Third classification level</td>
-  </tr>
-</tbody>
-</table>
-`}</HTMLBlock>
+| `loyalty_tier` | Description                 |
+|:--------------:|:---------------------------|
+| `1`            | High classification level   |
+| `2`            | Second classification level |
+| `3`            | Third classification level  |
 
-<HTMLBlock>{`
-<style>
-  table thead th {
-    text-align: left;
-</style>
-`}</HTMLBlock>
