@@ -43,7 +43,7 @@ The integration method you select affects multiple aspects of your business, inc
 
 Yuno provides 6 types of integrations. Below, you can see the specifications for each of them.
 
-// [INTERNAL: Do not delete or convert this HTMLBlock. This markup is required for custom table CSS. A Weglot Excluded URLs Rule has been added so this HTMLBlock/table is preserved across all language versions.]
+<!-- [INTERNAL: Do not delete or convert this HTMLBlock. This markup is required for custom table CSS. A Weglot Excluded URLs Rule has been added so this HTMLBlock/table is preserved across all language versions.] -->
 
 <HTMLBlock>{`
 <style>  
