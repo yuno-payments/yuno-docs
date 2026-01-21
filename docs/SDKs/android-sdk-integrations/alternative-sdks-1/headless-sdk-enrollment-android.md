@@ -238,30 +238,4 @@ apiClientPayment.continueEnrollment(data, context).observe(context) { response -
 }
 ```
 
-### Enrollment flow states
-
-The `apiClientEnroll.continueEnrollment` function returns a response that includes a `status` field indicating the current state of the enrollment process. The following are the possible states returned:
-
-```kotlin
-const val ENROLLMENT_STATE_SUCCEEDED = "SUCCEEDED"
-const val ENROLLMENT_STATE_FAIL = "FAIL"
-const val ENROLLMENT_STATE_PROCESSING = "PROCESSING"
-const val ENROLLMENT_STATE_REJECT = "REJECT"
-const val ENROLLMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
-const val ENROLLMENT_STATE_CANCELED_BY_USER = "CANCELED"
-```
-
-The following table provides additional information about the possible states:
-
-| **State**        | **Description**                                                                                                                | **Additional action required**                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `SUCCEEDED`      | The enrollment process was successfully completed without any errors.                                                          | No.                                                                                                           |
-| `FAIL`           | The enrollment attempt failed due to errors such as data validation issues, server connection failures, or technical problems. | Yes. Investigate the cause of failure (validation, network, server) and take corrective measures.             |
-| `PROCESSING`     | The enrollment is currently in progress, awaiting approval or verification.                                                    | No.                                                                                                           |
-| `REJECT`         | The enrollment was rejected due to reasons such as missing requirements or detected inconsistencies.                           | Yes. Inform the user of the rejection, provide the reason if possible, and suggest next steps.                |
-| `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the enrollment process.                                       | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
-| `CANCELED`       | The user voluntarily canceled the enrollment process or exited before completion.                                              | No.                                                                                                           |
-
-> 📘 Webhook Status Tracking
->
-> Consider using the enrollment status received via [Webhooks](#webhooks). Yuno recommends always using this status to base and make business decisions on your platform
+<br />
