@@ -1,7 +1,7 @@
 ---
 title: Headless SDK (Enrollment Android)
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
