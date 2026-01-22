@@ -58,19 +58,20 @@ You can install Yuno SDK in two ways:
 
 To initialize the Headless SDK, you need to import Yuno and provide a valid **PUBLIC_API_KEY**. If you don't have your API credentials, access the [Developers (Credentials)](doc:developers-credentials) page to check how to retrieve them from the dashboard.
 
-> 🚧 UISceneDelegate Initialization
->
-> If your app is using a `UISceneDelegate`, ensure to place your Yuno initialization code within your `SceneDelegate`. [Learn more](#scene-delegate-initialization)
-
 The code block below presents an example of importing and initializing the `Yuno`.
 
 ```swift
 import Yuno
 
 Yuno.initialize(
-    apiKey: "PUBLIC_API_KEY"
+    apiKey: "PUBLIC_API_KEY",
+    callback: { (value: Bool) in }
 )
 ```
+
+> 📘 UISceneDelegate Initialization
+>
+> If your app uses a `UISceneDelegate`, you can initialize Yuno within your `SceneDelegate`. However, if you prefer to initialize Yuno in a different part of your app, the initialization method provides a callback that notifies you when the process has finished.
 
 ## Step 3: Create a customer session
 
@@ -88,23 +89,29 @@ You need an enrollment payment method object to set Headless SDK integration for
 
 ## Step 5: Start the enrollment process
 
-Next, you will start the checkout process using the `apiClientEnroll` function, providing the necessary configuration parameters. Parameters
+Next, you will start the checkout process using the `apiClientEnroll` function, providing the necessary configuration parameters.
+
+> ⚠️ Error Handling
+>
+> This method throws an error if the Yuno SDK has not been initialized before calling it.
+
+Parameters
 
 The following table lists all required parameters and their descriptions.
 
 | Parameter          | Description                                                                                                                                                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:quickstart) page. |
-| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                    |
+| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `customerSession` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                    |
 
 The next code block presents an example of the parameter configuration.
 
 ```swift
 var apiClientEnroll: YunoEnrollHeadless?
 
-apiClientEnroll = Yuno.apiClientEnroll(
+apiClientEnroll = try Yuno.apiClientEnroll(
     countryCode: "CO",
-    customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+    customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
 )
 ```
 
@@ -134,7 +141,7 @@ let enrollmentCollectedData: EnrollmentCollectedData = EnrollmentCollectedData(
 let result = try await apiClientEnroll.continueEnrollment(data: enrollmentCollectedData)
 ```
 
-After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function. The response is a dictionary of type `[String: Any]`.
+After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block presents an example of a response from the `apiClientEnroll.continueEnrollment` function. The response is a dictionary of type `[String: String]`.
 
 ```swift
 [
@@ -153,9 +160,7 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
     CANCELED,
     ERROR,
     UNENROLLED;
- customer: [
-   session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
- ]
+ customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
 ]
 ```
 
