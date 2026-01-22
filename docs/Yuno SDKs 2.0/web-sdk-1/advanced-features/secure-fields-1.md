@@ -9,20 +9,6 @@ metadata:
 
 ## Step 3: Start the checkout process
 
-You will start the checkout process. To do it, use the `secureFields` function and provide the necessary configuration parameters:
-
-The essential parameters are the `countrycode`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.
-
-### Parameters
-
-Configure the secure fields with the following options:
-
-| Parameter           | Description                                                                                                                                                                                                                                                                                   |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countrycode`       | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
-| `checkoutSession`   | Refers to the current payment's [checkout session](ref:create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                            |
-| `installmentEnable` | This parameter is optional and is set false by default. If set True, the installments set for the account will be shown as a secure field.                                                                                                                                                    |
-
 ```javascript
 const secureFields = yuno.secureFields({
   countrycode: country,
@@ -31,17 +17,25 @@ const secureFields = yuno.secureFields({
 });
 ```
 
+Start the checkout process using the `secureFields` function:
+
+### Start checkout parameters
+
+| Parameter           | Description                                                                                                                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `countrycode`*      | Specifies the country for the payment process through an `ENUM` value with the desired country code. Visit the [Country Coverage](doc:country-coverage-yuno-sdk) page for the the full list of supported countries. |
+| `checkoutSession`*  | The payment's [checkout session](ref:create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                    |
+| `installmentEnable` | Optional, set `false` by default. If set `true`, the installments set for the account will be shown as a secure field.                                                                                              |
+
 > 📘 Customer and Merchant-Initiated Transactions
 >
-> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](../docs/stored-credentials).
->
-> The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You can find more information in [Stored credentials](../docs/stored-credentials). This page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases (in-store purchases, ATM withdrawals, etc.).
 
 ## Step 4: Mount the Secure Fields
 
 After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
 
-The following table shows all configurations available:
+See configurations available:
 
 | Parameters                      | Description                                                                                                                                                                         |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -311,7 +305,7 @@ if (payment.checkout.sdk_action_required) {
 
 ### Step 3: Create a customer session and an enrollment payment method object
 
-Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your secure fields integration for enrollment. While creating the payment method object, you will need to define which one will be available for your customer to enroll (in the case of secure fields, only CARD is available).
+Create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in your secure fields enrollment. While creating the payment method object, you will need to define which one will be available for your customer to enroll (in the case of secure fields, only CARD is available).
 
 > 📘 Verify
 >
