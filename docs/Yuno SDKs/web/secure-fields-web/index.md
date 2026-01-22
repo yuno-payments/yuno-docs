@@ -2,7 +2,7 @@
 title: Secure Fields (Web)
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
