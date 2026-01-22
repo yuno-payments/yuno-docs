@@ -1,5 +1,5 @@
 ---
-title: Web SDK Integration
+title: Web SDK
 deprecated: false
 hidden: false
 metadata:
@@ -78,8 +78,8 @@ yuno.startCheckout({
     
     yuno.continuePayment({ showPaymentStatus: true });
   },
-  yunoPaymentResult: (data) => {
-    console.log('Payment completed:', data.status);
+  yunoPaymentResult: (status) => {
+    console.log('Payment completed:', status);
   }
 });
 ```
@@ -154,8 +154,8 @@ payButton.addEventListener('click', () => {
           });
           yuno.continuePayment();
         },
-        yunoPaymentResult: (data) => {
-          if (data.status === 'SUCCEEDED') {
+        yunoPaymentResult: (status) => {
+          if (status === 'SUCCEEDED') {
             window.location.href = '/success';
           }
         }
@@ -176,148 +176,30 @@ payButton.addEventListener('click', () => {
 </html>
 ```
 
-## Alternative Mounting Options
-
-The basic flow above uses `mountCheckout()` which automatically displays all payment methods. For more control:
-
-### Custom Payment Method Selection (`mountCheckoutLite()`)
-
-Control which payment methods to display:
-
-```javascript
-// 1. Fetch available methods from API
-const methods = await fetch(
-  `https://api.y.uno/v1/checkout/sessions/${sessionId}/payment-methods`,
-  { headers: { 'X-Yuno-Api-Key': 'your-public-key' }}
-).then(r => r.json());
-
-// 2. Display methods in your UI
-// 3. Mount selected method
-yuno.mountCheckoutLite({
-  paymentMethodType: selectedMethod // 'CARD', 'PIX', 'PAYPAL', etc.
-});
-
-// 4. Still need startPayment()
-document.querySelector('#pay-button').addEventListener('click', () => {
-  yuno.startPayment();
-});
-```
-
-**Google Pay & Apple Pay with Lite:**
-
-```javascript
-await yuno.mountExternalButtons([
-  {
-    paymentMethodType: 'GOOGLE_PAY',
-    elementSelector: '#google-pay-button'
-  },
-  {
-    paymentMethodType: 'APPLE_PAY',
-    elementSelector: '#apple-pay-button'
-  }
-]);
-```
-
-### Simplified Flow (`mountSeamlessCheckout()`)
-
-Similar to `mountCheckoutLite()` but with automatic payment creation:
-
-```javascript
-// Use startSeamlessCheckout instead of startCheckout
-yuno.startSeamlessCheckout({
-  // Same configuration
-});
-
-// Mount
-yuno.mountSeamlessCheckout({
-  paymentMethodType: 'CARD'
-});
-
-// Still need startPayment()
-document.querySelector('#pay-button').addEventListener('click', () => {
-  yuno.startPayment();
-});
-```
-
-## Enrollment (Save Cards)
-
-### Save During Payment
-
-```javascript
-yuno.startCheckout({
-  checkoutSession: session.id,
-  elementSelector: '#payment-container',
-  countryCode: 'US',
-  card: {
-    cardSaveEnable: true // Shows "Save card" checkbox
-  },
-  async yunoCreatePayment(token) {
-    await fetch('/api/payment/create', {
-      method: 'POST',
-      body: JSON.stringify({
-        token,
-        vault_on_success: true // Save card after successful payment
-      })
-    });
-    yuno.continuePayment();
-  }
-});
-```
-
-### Separate Enrollment
-
-```javascript
-// Create customer session on backend
-const customerSession = await fetch('/api/customer/session', {
-  method: 'POST',
-  body: JSON.stringify({ customer_id: 'cus_123' })
-}).then(r => r.json());
-
-// Initialize enrollment
-yuno.startEnrollment({
-  customerSession: customerSession.id,
-  countryCode: 'US',
-  async yunoEnrolled(vaultedToken) {
-    console.log('Card saved:', vaultedToken);
-  }
-});
-
-// Mount enrollment form
-yuno.mountEnrollment();
-```
-
-## Vaulted Token Payments
-
-```javascript
-// Use saved card
-yuno.mountCheckout({
-  vaultedToken: 'vtok_saved_card_123'
-});
-
-// Still need startPayment()
-document.querySelector('#pay-button').addEventListener('click', () => {
-  yuno.startPayment();
-});
-```
-
 ## Handling Payment Results
 
 ```javascript
 yuno.startCheckout({
   // ... other config
-  yunoPaymentResult: (data) => {
-    switch(data.status) {
+  yunoPaymentResult: (status) => {
+    switch(status) {
       case 'SUCCEEDED':
         window.location.href = '/success';
         break;
-      case 'FAILED':
-        alert('Payment failed: ' + data.error?.message);
+      case 'FAIL':
+        alert('Payment failed');
         break;
-      case 'PENDING':
+      case 'PROCESSING':
         console.log('Payment is being processed');
         break;
-      case 'REJECTED':
+      case 'REJECT':
         alert('Payment was rejected');
+        break;
+      case 'INTERNAL_ERROR':
+        alert('An internal error occurred');
+        break;
+      case 'CANCELED':
+        console.log('Payment was canceled');
         break;
     }
   },
@@ -364,7 +246,6 @@ yuno.startCheckout({
   card: {
     type: 'extends', // or 'only'
     cardSaveEnable: true, // Show save checkbox
-    isCreditCardProcessingOnly: false, // Allow debit
     onChange: ({ error, data }) => {
       if (error) {
         console.log('Card validation error:', error);
@@ -386,3 +267,18 @@ yuno.startCheckout({
   }
 });
 ```
+
+## Next Steps
+
+Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-web-sdk) guide for:
+
+- **Alternative Mounting Options** - `mountCheckoutLite()` and `mountSeamlessCheckout()` for custom payment method selection
+- **Enrollment (Save Cards)** - Save payment methods for future use
+- **Vaulted Token Payments** - One-click payments with saved cards
+- **Custom UI (Headless Integration)** - Build completely custom payment forms
+- **Secure Fields** - Custom card forms with PCI compliance
+- **Styling & Customization** - Match the SDK to your brand
+- **Advanced Configuration** - Dynamic views, render mode, and more
+
+See also:
+- [Code Examples](doc:code-examples-web-sdk) - Copy-paste examples for common scenarios

@@ -1,5 +1,5 @@
 ---
-title: React Native SDK Integration
+title: React Native SDK
 deprecated: false
 hidden: false
 metadata:
@@ -21,7 +21,9 @@ cd ios && pod install
 
 No additional steps required.
 
-> 📘 Requirements: React Native 0.70+, Node.js 16+, Android Min SDK 21, iOS 13.0+
+> 📘 Requirements
+>
+> React Native 0.70+, Node.js 16+, Android Min SDK 21, iOS 14.0+
 
 > 📘 TypeScript Support
 >
@@ -50,48 +52,25 @@ export default function App() {
 
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
-import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+import { View, Button, Text, StyleSheet, ScrollView } from 'react-native';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 
 export default function PaymentScreen() {
   const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
   
   useEffect(() => {
     initializeCheckout();
-    setupListeners();
     
-    return () => {
-      YunoSdk.removeListeners();
-    };
-  }, []);
-  
-  const initializeCheckout = async () => {
-    try {
-      // 1. Create checkout session on backend
-      const session = await createCheckoutSession();
-      setCheckoutSession(session.checkoutSession);
-      
-      // 2. Show payment checkout
-      await YunoSdk.showPaymentCheckout({
-        checkoutSession: session.checkoutSession,
-        countryCode: 'US',
-      });
-      
-      setIsReady(true);
-    } catch (error) {
-      console.error('Checkout initialization failed:', error);
-    }
-  };
-  
-  const setupListeners = () => {
-    YunoSdk.yunoPaymentResult((event) => {
-      switch (event.status) {
+    // Subscribe to payment events
+    const paymentSubscription = YunoSdk.onPaymentStatus((state) => {
+      switch (state.status) {
         case 'SUCCEEDED':
           navigateToSuccess();
           break;
         case 'FAILED':
-          showError(event.error?.message);
+          showError('Payment failed');
           break;
         case 'PROCESSING':
           console.log('Payment is being processed');
@@ -101,14 +80,31 @@ export default function PaymentScreen() {
       }
     });
     
-    YunoSdk.yunoError((error) => {
-      console.error('Payment error:', error);
+    const tokenSubscription = YunoSdk.onOneTimeToken((token) => {
+      console.log('OTT received:', token);
+      // Send to backend for payment processing
     });
+    
+    return () => {
+      paymentSubscription.remove();
+      tokenSubscription.remove();
+    };
+  }, []);
+  
+  const initializeCheckout = async () => {
+    try {
+      // Create checkout session on backend
+      const session = await createCheckoutSession();
+      setCheckoutSession(session.checkoutSession);
+      setIsReady(true);
+    } catch (error) {
+      console.error('Checkout initialization failed:', error);
+    }
   };
   
   const handlePayment = async () => {
     try {
-      // 3. Start payment flow
+      // Start payment flow
       await YunoSdk.startPayment(true); // true = show payment status screen
     } catch (error) {
       console.error('Payment start failed:', error);
@@ -116,15 +112,26 @@ export default function PaymentScreen() {
   };
   
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.amount}>$25.00</Text>
+      
+      {/* Display payment methods */}
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
+          }}
+        />
+      )}
       
       <Button
         title="Pay Now"
         onPress={handlePayment}
-        disabled={!isReady}
+        disabled={!isReady || !paymentMethodSelected}
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -160,8 +167,8 @@ const styles = StyleSheet.create({
 
 ```typescript
 import React, { useState, useEffect } from 'react';
-import { View, Button, Text, ActivityIndicator, Alert } from 'react-native';
-import { YunoSdk, YunoPaymentResult, YunoError } from '@yuno-payments/yuno-sdk-react-native';
+import { View, Button, Text, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { YunoSdk, YunoPaymentMethods, YunoPaymentState } from '@yuno-payments/yuno-sdk-react-native';
 
 interface CheckoutSession {
   checkoutSession: string;
@@ -172,16 +179,33 @@ export default function CheckoutScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
   
   useEffect(() => {
     loadCheckout();
     
-    // Set up event listeners
-    YunoSdk.yunoPaymentResult(handlePaymentResult);
-    YunoSdk.yunoError(handleError);
+    // Subscribe to payment status
+    const paymentSubscription = YunoSdk.onPaymentStatus((state: YunoPaymentState) => {
+      setIsProcessing(false);
+      
+      switch (state.status) {
+        case 'SUCCEEDED':
+          Alert.alert('Success', 'Payment completed successfully!');
+          // Navigate to success screen
+          break;
+        case 'FAILED':
+          Alert.alert('Failed', 'Payment failed');
+          break;
+        case 'PROCESSING':
+          Alert.alert('Processing', 'Your payment is being processed');
+          break;
+        default:
+          break;
+      }
+    });
     
     return () => {
-      YunoSdk.removeListeners();
+      paymentSubscription.remove();
     };
   }, []);
   
@@ -189,41 +213,11 @@ export default function CheckoutScreen() {
     try {
       const session = await createCheckoutSession();
       setCheckoutSession(session.checkoutSession);
-      
-      await YunoSdk.showPaymentCheckout({
-        checkoutSession: session.checkoutSession,
-        countryCode: 'US',
-      });
-      
       setIsLoading(false);
     } catch (error) {
       Alert.alert('Error', 'Failed to load checkout');
       setIsLoading(false);
     }
-  };
-  
-  const handlePaymentResult = (result: YunoPaymentResult) => {
-    setIsProcessing(false);
-    
-    switch (result.status) {
-      case 'SUCCEEDED':
-        Alert.alert('Success', 'Payment completed successfully!');
-        // Navigate to success screen
-        break;
-      case 'FAILED':
-        Alert.alert('Failed', result.error?.message || 'Payment failed');
-        break;
-      case 'PROCESSING':
-        Alert.alert('Processing', 'Your payment is being processed');
-        break;
-      default:
-        break;
-    }
-  };
-  
-  const handleError = (error: YunoError) => {
-    setIsProcessing(false);
-    Alert.alert('Error', error.message);
   };
   
   const processPayment = async () => {
@@ -247,17 +241,29 @@ export default function CheckoutScreen() {
   }
   
   return (
-    <View style={{ flex: 1, padding: 20 }}>
+    <ScrollView style={{ flex: 1, padding: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
         Total: $25.00
       </Text>
       
+      {/* Display payment methods */}
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
+          }}
+          style={{ marginBottom: 20 }}
+        />
+      )}
+      
       <Button
         title={isProcessing ? 'Processing...' : 'Pay Now'}
         onPress={processPayment}
-        disabled={isProcessing}
+        disabled={isProcessing || !paymentMethodSelected}
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -280,110 +286,16 @@ async function createCheckoutSession(): Promise<CheckoutSession> {
 }
 ```
 
-## Alternative Mounting Options
-
-The basic flow above uses automatic payment method display. For more control:
-
-### Custom Payment Method Selection (`startPaymentLite`)
-
-Select which payment method to display:
-
-```typescript
-// 1. Fetch available methods
-const methods = await fetchPaymentMethods(sessionId);
-
-// 2. Display in your UI
-// 3. Start payment with selected method
-
-await YunoSdk.startPaymentLite(
-  {
-    checkoutSession: session.checkoutSession,
-    methodSelected: {
-      paymentMethodType: selectedMethod, // 'CARD', 'PIX', etc.
-      vaultedToken: null, // or saved token
-    },
-    showPaymentStatus: true,
-  },
-  'US' // Optional country code override
-);
-```
-
-### Simplified Flow (`startPaymentSeamlessLite`)
-
-Similar to Lite but with automatic payment creation:
-
-```typescript
-await YunoSdk.startPaymentSeamlessLite({
-  checkoutSession: session.checkoutSession,
-  paymentMethodType: 'CARD',
-  showPaymentStatus: true,
-});
-```
-
-## Enrollment (Save Cards)
-
-### Save During Payment
-
-```typescript
-// When creating payment on backend, include vault_on_success flag
-async function createPayment(token: string, checkoutSession: string) {
-  await fetch('/api/payment/create', {
-    method: 'POST',
-    body: JSON.stringify({
-      one_time_token: token,
-      checkout_session: checkoutSession,
-      vault_on_success: true, // Save after successful payment
-    }),
-  });
-}
-```
-
-### Separate Enrollment
-
-```typescript
-// Create customer session on backend
-const customerSession = await createCustomerSession('cus_123');
-
-// Set up listener
-YunoSdk.yunoEnrollmentStatus((result) => {
-  if (result.status === 'SUCCEEDED') {
-    console.log('Card saved:', result.vaultedToken);
-  }
-});
-
-// Show enrollment
-await YunoSdk.showEnrollmentLite({
-  customerSession: customerSession.id,
-  countryCode: 'US',
-});
-
-// Start enrollment flow
-await YunoSdk.startEnrollment(true); // true = show status screen
-```
-
-## Vaulted Token Payments
-
-```typescript
-await YunoSdk.startPaymentLite({
-  checkoutSession: session.checkoutSession,
-  methodSelected: {
-    paymentMethodType: 'CARD',
-    vaultedToken: 'vtok_saved_card_123',
-  },
-  showPaymentStatus: true,
-});
-```
-
 ## Handling Payment Results
 
 ```typescript
-YunoSdk.yunoPaymentResult((result) => {
-  switch (result.status) {
+const paymentSubscription = YunoSdk.onPaymentStatus((state) => {
+  switch (state.status) {
     case 'SUCCEEDED':
       navigation.navigate('Success');
       break;
     case 'FAILED':
-      Alert.alert('Payment Failed', result.error?.message);
+      Alert.alert('Payment Failed', 'Please try again');
       break;
     case 'PROCESSING':
       Alert.alert('Processing', 'Your payment is being processed');
@@ -396,10 +308,8 @@ YunoSdk.yunoPaymentResult((result) => {
   }
 });
 
-YunoSdk.yunoError((error) => {
-  console.error('Payment error:', error);
-  Alert.alert('Error', error.message);
-});
+// Remember to remove listener when done
+// paymentSubscription.remove();
 ```
 
 ## 3DS Authentication
@@ -410,30 +320,49 @@ YunoSdk.yunoError((error) => {
 
 ### Essential Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `checkoutSession` | string | Session ID from backend |
-| `countryCode` | string | ISO country code (e.g., 'US') |
-| `showPaymentStatus` | boolean | Show payment result screen |
+| Parameter           | Type    | Description                   |
+| ------------------- | ------- | ----------------------------- |
+| `checkoutSession`   | string  | Session ID from backend       |
+| `countryCode`       | string  | ISO country code (e.g., 'US') |
+| `showPaymentStatus` | boolean | Show payment result screen    |
 
 ### Event Listeners
 
 ```typescript
-// Payment result
-YunoSdk.yunoPaymentResult((result) => {
-  console.log('Payment result:', result.status);
+// Payment status
+const paymentSubscription = YunoSdk.onPaymentStatus((state) => {
+  console.log('Payment status:', state.status);
+  console.log('Token:', state.token);
 });
 
-// Errors
-YunoSdk.yunoError((error) => {
-  console.error('Error:', error.message);
+// One-time token
+const tokenSubscription = YunoSdk.onOneTimeToken((token) => {
+  console.log('Token:', token);
+  // Send to backend
 });
 
-// Enrollment result
-YunoSdk.yunoEnrollmentStatus((result) => {
-  console.log('Enrollment result:', result.status);
+// Enrollment status
+const enrollmentSubscription = YunoSdk.onEnrollmentStatus((state) => {
+  console.log('Enrollment status:', state.status);
 });
 
-// Remove all listeners (in cleanup)
-YunoSdk.removeListeners();
+// Remove listeners individually (in cleanup)
+paymentSubscription.remove();
+tokenSubscription.remove();
+enrollmentSubscription.remove();
 ```
+
+## Next Steps
+
+Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-react-native-sdk) guide for:
+
+* **Alternative Mounting Options** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
+* **Enrollment (Save Cards)** - Save payment methods for future use
+* **Vaulted Token Payments** - One-click payments with saved cards
+* **Custom UI (Headless Integration)** - Build completely custom payment forms
+* **Platform-Specific Configuration** - Handle iOS vs Android differences
+* **Styling** - Customize SDK appearance
+
+See also:
+
+* [Code Examples](doc:code-examples-react-native-sdk) - Copy-paste examples for common scenarios

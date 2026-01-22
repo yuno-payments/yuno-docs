@@ -1,11 +1,137 @@
 ---
-title: Web SDK - Advanced Features
+title: Advanced Features Web SDK
 deprecated: false
 hidden: false
 metadata:
   robots: index
 ---
 Advanced configuration options and custom integrations for the Yuno Web SDK.
+
+## Alternative Mounting Options
+
+The basic flow uses `mountCheckout()` for automatic payment method display. For more control, use these alternatives:
+
+### Custom Payment Method Selection (`mountCheckoutLite()`)
+
+Control which payment method to display:
+
+```javascript
+// 1. Fetch available methods from backend
+const methods = await fetch('/api/payment-methods').then(r => r.json());
+
+// 2. Display methods in your custom UI
+// 3. Mount selected payment method
+
+yuno.mountCheckoutLite({
+  paymentMethodType: selectedMethod, // 'CARD', 'PIX', etc.
+  vaultedToken: null // or saved token
+});
+
+// 4. Still need startPayment()
+document.querySelector('#pay-button').addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
+
+**Google Pay & Apple Pay with Lite:**
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay-button'
+  },
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay-button'
+  }
+]);
+```
+
+### Simplified Flow (`mountSeamlessCheckout()`)
+
+Similar to `mountCheckoutLite()` but with automatic payment creation:
+
+```javascript
+// Use startSeamlessCheckout instead of startCheckout
+yuno.startSeamlessCheckout({
+  // Same configuration
+});
+
+// Mount
+yuno.mountSeamlessCheckout({
+  paymentMethodType: 'CARD'
+});
+
+// Still need startPayment()
+document.querySelector('#pay-button').addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
+
+## Enrollment (Save Cards)
+
+### Save During Payment
+
+```javascript
+yuno.startCheckout({
+  checkoutSession: session.id,
+  elementSelector: '#payment-container',
+  countryCode: 'US',
+  card: {
+    cardSaveEnable: true // Shows "Save card" checkbox
+  },
+  async yunoCreatePayment(token) {
+    await fetch('/api/payment/create', {
+      method: 'POST',
+      body: JSON.stringify({
+        token,
+        vault_on_success: true // Save card after successful payment
+      })
+    });
+    yuno.continuePayment();
+  }
+});
+```
+
+### Separate Enrollment
+
+Use `mountEnrollmentLite()` to create a standalone enrollment flow for saving cards without a payment:
+
+```javascript
+// Create customer session on backend
+const customerSession = await fetch('/api/customer/session', {
+  method: 'POST',
+  body: JSON.stringify({ customer_id: 'cus_123' })
+}).then(r => r.json());
+
+// Mount enrollment form
+yuno.mountEnrollmentLite({
+  customerSession: customerSession.id,
+  countryCode: 'US',
+  language: 'en',
+  yunoEnrollmentStatus: (enrollmentData) => {
+    console.log('Enrollment status:', enrollmentData);
+  },
+  yunoError: (error) => {
+    console.error('Enrollment error:', error);
+  }
+});
+```
+
+## Vaulted Token Payments
+
+```javascript
+// Use saved card
+yuno.mountCheckout({
+  vaultedToken: 'vtok_saved_card_123'
+});
+
+// Still need startPayment()
+document.querySelector('#pay-button').addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
 
 ## Custom UI (Headless Integration)
 
@@ -109,59 +235,72 @@ Build custom card forms while maintaining PCI compliance using secure iframe fie
 const yuno = await Yuno.initialize('your-public-key');
 ```
 
-**2. Create Secure Fields**
-
-```html
-<div id="card-number-field"></div>
-<div id="cvv-field"></div>
-<div id="expiry-field"></div>
-```
+**2. Create Secure Fields Instance**
 
 ```javascript
-yuno.secureFields({
-  checkoutSession: 'session_id',
+// Initialize secure fields with configuration
+const secureFields = await yuno.secureFields({
   countryCode: 'US',
-  fields: {
-    cardNumber: {
-      elementSelector: '#card-number-field',
-      placeholder: '1234 5678 9012 3456'
-    },
-    cvv: {
-      elementSelector: '#cvv-field',
-      placeholder: 'CVV'
-    },
-    expiry: {
-      elementSelector: '#expiry-field',
-      placeholder: 'MM/YY'
-    }
-  },
-  onFieldChange: (field, isValid) => {
-    console.log(`${field} valid:`, isValid);
-  },
-  async onSubmit(token) {
-    await createPayment(token);
-  }
+  checkoutSession: 'session_id'
 });
 ```
 
-**3. Custom Styling**
+**3. Create and Render Individual Fields**
+
+```html
+<div id="pan-field"></div>
+<div id="cvv-field"></div>
+<div id="expiration-field"></div>
+```
 
 ```javascript
-fields: {
-  cardNumber: {
-    elementSelector: '#card-number-field',
-    style: {
-      base: {
-        color: '#333',
-        fontSize: '16px',
-        fontFamily: 'Arial, sans-serif'
-      },
-      invalid: {
-        color: '#ff0000'
-      }
+// Create card number field
+const panField = secureFields.create({
+  name: 'pan',
+  options: {
+    placeholder: '1234 5678 9012 3456',
+    onChange: (event) => {
+      console.log('Card number changed:', event);
     }
   }
-}
+});
+panField.render('#pan-field');
+
+// Create CVV field
+const cvvField = secureFields.create({
+  name: 'cvv',
+  options: {
+    placeholder: 'CVV',
+    onChange: (event) => {
+      console.log('CVV changed:', event);
+    }
+  }
+});
+cvvField.render('#cvv-field');
+
+// Create expiration field
+const expirationField = secureFields.create({
+  name: 'expiration',
+  options: {
+    placeholder: 'MM/YY',
+    onChange: (event) => {
+      console.log('Expiration changed:', event);
+    }
+  }
+});
+expirationField.render('#expiration-field');
+```
+
+**4. Generate Token**
+
+```javascript
+// When user submits the form
+const tokenResult = await secureFields.generateToken({
+  // Additional data if needed
+});
+
+// Use the token to create payment
+await createPayment(tokenResult.token);
 ```
 
 ## Multiple Currencies
@@ -189,39 +328,60 @@ yuno.startCheckout({
 
 ## Styling & Themes
 
-### Custom CSS
+### Custom CSS via Card Styles
+
+You can customize the appearance of card forms using CSS injection through the `card.styles` property:
 
 ```javascript
 yuno.startCheckout({
   // ... other config
-  cssCustomization: {
-    primaryColor: '#007bff',
-    errorColor: '#dc3545',
-    fontFamily: 'Inter, sans-serif'
+  card: {
+    styles: `
+      .yuno-input {
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+      }
+      .yuno-input:focus {
+        border-color: #0056b3;
+      }
+      .yuno-input.error {
+        border-color: #dc3545;
+      }
+    `
   }
 });
 ```
 
-### Custom Button Text
+### Custom Texts
+
+You can customize form labels and messages using the `texts` property:
 
 ```javascript
 yuno.startCheckout({
   // ... other config
   texts: {
-    pay: 'Complete Purchase',
-    processing: 'Processing...',
-    error: 'Payment Failed'
+    customerForm: {
+      // Customer form field labels
+    },
+    paymentOtp: {
+      // OTP form labels
+    }
   }
 });
 ```
 
 ## Render Modes
 
+The `renderMode` property controls how the payment form is displayed. It accepts an object with a `type` property:
+
 ### Modal Display
 
 ```javascript
 yuno.startCheckout({
-  renderMode: 'modal',
+  renderMode: {
+    type: 'modal'
+  },
   elementSelector: '#payment-container'
 });
 ```
@@ -230,7 +390,9 @@ yuno.startCheckout({
 
 ```javascript
 yuno.startCheckout({
-  renderMode: 'element',
+  renderMode: {
+    type: 'element'
+  },
   elementSelector: '#payment-container'
 });
 ```
@@ -262,23 +424,21 @@ yuno.startCheckout({
 
 ## Installments
 
-### Enable Installments
+Installments are configured in the Yuno dashboard per payment method and country. When enabled, the SDK will automatically display installment options to the user during checkout.
+
+To enable installments for secure fields, use the `installmentEnable` option:
 
 ```javascript
-yuno.startCheckout({
-  // ... other config
-  card: {
-    installments: {
-      enabled: true,
-      defaultValue: 1
-    }
-  }
+const secureFields = await yuno.secureFields({
+  countryCode: 'BR',
+  checkoutSession: 'session_id',
+  installmentEnable: true
 });
 ```
 
 ### Custom Installment Plans
 
-Configured in Yuno dashboard per payment method.
+Installment plans are configured in the Yuno dashboard per payment method and country.
 
 ## Loader Control
 
@@ -348,12 +508,14 @@ yuno.startCheckout({
 ```javascript
 yuno.startCheckout({
   showPaymentStatus: false, // Handle status yourself
-  yunoPaymentResult: (data) => {
-    // Redirect to custom status page
-    window.location.href = `/payment-status?id=${data.payment_id}&status=${data.status}`;
+  yunoPaymentResult: (status) => {
+    // Redirect to custom status page based on status
+    window.location.href = `/payment-status?status=${status}`;
   }
 });
 ```
+
+The `yunoPaymentResult` callback receives the payment status as a string. Possible values include: `SUCCEEDED`, `FAIL`, `PROCESSING`, `REJECT`, `INTERNAL_ERROR`, `CANCELED`.
 
 ## Event Callbacks
 
@@ -365,29 +527,30 @@ yuno.startCheckout({
   
   // Payment method selected
   yunoPaymentMethodSelected: (data) => {
-    console.log('Selected:', data.type);
+    console.log('Selected:', data.type, data.name);
     analytics.track('payment_method_selected', { type: data.type });
   },
   
   // Payment created (before processing)
-  async yunoCreatePayment(token, tokenInfo) {
-    console.log('Creating payment with token:', token);
-    await processPayment(token);
+  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+    console.log('Creating payment with token:', oneTimeToken);
+    // tokenWithInformation contains additional data like device fingerprint
+    await processPayment(oneTimeToken);
     yuno.continuePayment();
   },
   
-  // Payment completed
-  yunoPaymentResult: (data) => {
-    console.log('Payment result:', data.status);
-    if (data.status === 'SUCCEEDED') {
-      gtag('event', 'purchase', { value: data.amount });
+  // Payment completed - receives status string directly
+  yunoPaymentResult: (status) => {
+    console.log('Payment result:', status);
+    if (status === 'SUCCEEDED') {
+      gtag('event', 'purchase');
     }
   },
   
   // Error occurred
-  yunoError: (error, data) => {
-    console.error('Error:', error, data);
-    Sentry.captureException(error);
+  yunoError: (message, data) => {
+    console.error('Error:', message, data);
+    Sentry.captureException(new Error(message));
   },
   
   // Loading state changed
@@ -477,26 +640,20 @@ const yuno = await Yuno.initialize('pk_test_your_key_here');
 
 ## Error Handling
 
-### Common Error Codes
+### Handling Errors
+
+The `yunoError` callback receives an error message string and optional data:
 
 ```javascript
-yunoError: (error, data) => {
-  switch(error.code) {
-    case 'SESSION_EXPIRED':
-      // Recreate session
-      refreshSession();
-      break;
-    case 'INVALID_CARD':
-      showError('Please check your card details');
-      break;
-    case 'INSUFFICIENT_FUNDS':
-      showError('Insufficient funds');
-      break;
-    case 'NETWORK_ERROR':
-      showError('Connection error. Please try again.');
-      break;
-    default:
-      showError('An error occurred. Please try again.');
+yunoError: (message, data) => {
+  console.error('Payment error:', message);
+  
+  // Display error to user
+  showError(message || 'An error occurred. Please try again.');
+  
+  // Log additional data if available
+  if (data) {
+    console.log('Error details:', data);
   }
 }
 ```
@@ -525,21 +682,22 @@ app.post('/webhooks/yuno', (req, res) => {
 
 ## Environment Configuration
 
-### Development
+The SDK automatically determines the environment based on your API key prefix:
+
+### Development (Sandbox)
+
+Use test API keys (prefixed with `pk_test_`) for sandbox environment:
 
 ```javascript
-const yuno = await Yuno.initialize('pk_test_dev_key', {
-  environment: 'sandbox',
-  debug: true // Enable console logs
-});
+const yuno = await Yuno.initialize('pk_test_your_key_here');
 ```
 
 ### Production
 
+Use live API keys (prefixed with `pk_live_`) for production environment:
+
 ```javascript
-const yuno = await Yuno.initialize('pk_live_prod_key', {
-  environment: 'production',
-  debug: false
-});
+const yuno = await Yuno.initialize('pk_live_your_key_here');
 ```
 
+> **Note:** The environment is determined by your API key. Test keys (`pk_test_*`) connect to sandbox, and live keys (`pk_live_*`) connect to production.

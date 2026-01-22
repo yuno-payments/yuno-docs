@@ -1,5 +1,5 @@
 ---
-title: React Native SDK - Code Examples
+title: Code Examples React Native SDK
 deprecated: false
 hidden: false
 metadata:
@@ -10,43 +10,74 @@ Ready-to-use React Native code examples for common scenarios.
 ## Example 1: Basic Payment
 
 ```typescript
-import React, { useState } from 'react';
-import { View, Button, Text, StyleSheet } from 'react-native';
-import { Yuno } from '@yuno-payments/react-native-sdk';
+import React, { useState, useEffect } from 'react';
+import { View, Button, Text, StyleSheet, ScrollView } from 'react-native';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
 
 export default function PaymentScreen() {
   const [result, setResult] = useState('');
+  const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
   
-  const processPayment = async () => {
+  useEffect(() => {
+    // Initialize checkout on mount
+    initCheckout();
+    
+    // Subscribe to payment events
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        setResult('Payment successful!');
+      } else if (state.status === 'FAILED') {
+        setResult(`Error: Payment failed`);
+      }
+    });
+    
+    return () => subscription.remove();
+  }, []);
+  
+  const initCheckout = async () => {
     const session = await fetch('https://api.example.com/checkout', {
       method: 'POST',
       body: JSON.stringify({ amount: { currency: 'USD', value: 2500 } }),
     }).then(r => r.json());
     
-    await Yuno.startCheckout({
-      checkoutSession: session.id,
-      countryCode: 'US',
-      onPaymentSuccess: (data) => {
-        setResult('Payment successful!');
-      },
-      onPaymentError: (error) => {
-        setResult(`Error: ${error.message}`);
-      },
-    });
+    setCheckoutSession(session.checkoutSession);
+  };
+  
+  const processPayment = async () => {
+    await YunoSdk.startPayment(true);
   };
   
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.amount}>$25.00</Text>
-      <Button title="Pay Now" onPress={processPayment} />
-      {result ? <Text>{result}</Text> : null}
-    </View>
+      
+      {/* Display payment methods */}
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
+          }}
+        />
+      )}
+      
+      <Button 
+        title="Pay Now" 
+        onPress={processPayment}
+        disabled={!paymentMethodSelected}
+      />
+      
+      {result ? <Text style={styles.result}>{result}</Text> : null}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  container: { flex: 1, padding: 20 },
   amount: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 24 },
+  result: { marginTop: 20, textAlign: 'center', fontSize: 16 },
 });
 ```
 
@@ -55,46 +86,78 @@ const styles = StyleSheet.create({
 ```typescript
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Yuno } from '@yuno-payments/react-native-sdk';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
+import { useState, useEffect } from 'react';
+import { View, Button, Text, Alert, ScrollView } from 'react-native';
 
 const Stack = createStackNavigator();
 
 function CheckoutScreen({ navigation }) {
-  const handlePayment = async () => {
-    const session = await createCheckoutSession();
+  const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
+  
+  useEffect(() => {
+    initCheckout();
     
-    await Yuno.startCheckout({
-      checkoutSession: session.id,
-      countryCode: 'US',
-      onPaymentSuccess: (data) => {
-        navigation.navigate('Success', { paymentId: data.paymentId });
-      },
-      onPaymentError: (error) => {
-        Alert.alert('Payment Failed', error.message);
-      },
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        navigation.navigate('Success');
+      } else if (state.status === 'FAILED') {
+        Alert.alert('Payment Failed', 'Please try again');
+      }
     });
+    
+    return () => subscription.remove();
+  }, []);
+  
+  const initCheckout = async () => {
+    const session = await createCheckoutSession();
+    setCheckoutSession(session.checkoutSession);
+  };
+  
+  const handlePayment = async () => {
+    await YunoSdk.startPayment(true);
   };
   
   return (
-    <View>
+    <ScrollView style={{ padding: 20 }}>
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>Checkout</Text>
+      
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
+          }}
+        />
+      )}
+      
+      <Button 
+        title="Continue to Payment" 
+        onPress={handlePayment}
+        disabled={!paymentMethodSelected}
+      />
+    </ScrollView>
       <Button title="Pay" onPress={handlePayment} />
     </View>
   );
 }
 
-function SuccessScreen({ route }) {
-  const { paymentId } = route.params;
+function SuccessScreen() {
   return (
     <View>
       <Text>Payment Successful!</Text>
-      <Text>ID: {paymentId}</Text>
     </View>
   );
 }
 
 export default function App() {
   useEffect(() => {
-    Yuno.initialize({ publicKey: 'pk_test_key' });
+    YunoSdk.initialize({
+      apiKey: 'pk_test_key',
+      countryCode: 'US',
+    });
   }, []);
   
   return (
@@ -112,20 +175,25 @@ export default function App() {
 
 ```typescript
 function EnrollmentScreen() {
+  useEffect(() => {
+    const enrollmentSubscription = YunoSdk.onEnrollmentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        Alert.alert('Success', 'Subscription activated!');
+      } else if (state.status === 'FAILED') {
+        Alert.alert('Error', 'Failed to save card');
+      }
+    });
+    
+    return () => enrollmentSubscription.remove();
+  }, []);
+  
   const enrollCard = async () => {
     const customerSession = await createCustomerSession('cus_123');
     
-    await Yuno.startEnrollment({
+    await YunoSdk.enrollmentPayment({
       customerSession: customerSession.id,
       countryCode: 'US',
-      onEnrollmentSuccess: (vaultedToken) => {
-        saveToken(vaultedToken);
-        setupSubscription(vaultedToken);
-        Alert.alert('Success', 'Subscription activated!');
-      },
-      onEnrollmentError: (error) => {
-        Alert.alert('Error', error.message);
-      },
+      showPaymentStatus: true,
     });
   };
   
@@ -141,6 +209,14 @@ function SavedCardsScreen() {
   
   useEffect(() => {
     loadSavedCards();
+    
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        Alert.alert('Success', 'Payment completed!');
+      }
+    });
+    
+    return () => subscription.remove();
   }, []);
   
   const loadSavedCards = async () => {
@@ -151,14 +227,14 @@ function SavedCardsScreen() {
   const payWithCard = async (card) => {
     const session = await createCheckoutSession();
     
-    await Yuno.startCheckout({
+    await YunoSdk.startPaymentLite({
       checkoutSession: session.id,
-      countryCode: 'US',
-      vaultedToken: card.vaultedToken,
-      onPaymentSuccess: () => {
-        Alert.alert('Success', 'Payment completed!');
+      methodSelected: {
+        vaultedToken: card.vaultedToken,
+        paymentMethodType: 'CARD',
       },
-    });
+      showPaymentStatus: true,
+    }, 'US');
   };
   
   return (
@@ -182,26 +258,28 @@ function PaymentWithRetry() {
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 3;
   
+  useEffect(() => {
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        setRetryCount(0);
+        navigation.navigate('Success');
+      } else if (state.status === 'FAILED') {
+        if (retryCount < maxRetries) {
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => attemptPayment(), 2000);
+        } else {
+          Alert.alert('Payment Failed', `Failed after ${maxRetries} attempts`);
+        }
+      }
+    });
+    
+    return () => subscription.remove();
+  }, [retryCount]);
+  
   const attemptPayment = async () => {
     try {
       const session = await createCheckoutSession();
-      
-      await Yuno.startCheckout({
-        checkoutSession: session.id,
-        countryCode: 'US',
-        onPaymentSuccess: () => {
-          setRetryCount(0);
-          navigation.navigate('Success');
-        },
-        onPaymentError: (error) => {
-          if (retryCount < maxRetries) {
-            setRetryCount(retryCount + 1);
-            setTimeout(() => attemptPayment(), 2000);
-          } else {
-            Alert.alert('Payment Failed', `Failed after ${maxRetries} attempts`);
-          }
-        },
-      });
+      await YunoSdk.startPayment(true);
     } catch (error) {
       console.error('Payment error:', error);
     }
@@ -225,20 +303,23 @@ export function PaymentProvider({ children }) {
     success: false,
   });
   
+  useEffect(() => {
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        setPaymentState({ isProcessing: false, error: null, success: true });
+      } else if (state.status === 'FAILED') {
+        setPaymentState({ isProcessing: false, error: 'Payment failed', success: false });
+      }
+    });
+    
+    return () => subscription.remove();
+  }, []);
+  
   const processPayment = async (sessionId: string) => {
     setPaymentState({ isProcessing: true, error: null, success: false });
     
     try {
-      await Yuno.startCheckout({
-        checkoutSession: sessionId,
-        countryCode: 'US',
-        onPaymentSuccess: () => {
-          setPaymentState({ isProcessing: false, error: null, success: true });
-        },
-        onPaymentError: (error) => {
-          setPaymentState({ isProcessing: false, error: error.message, success: false });
-        },
-      });
+      await YunoSdk.startPayment(true);
     } catch (error) {
       setPaymentState({ isProcessing: false, error: error.message, success: false });
     }
@@ -275,6 +356,24 @@ function CheckoutScreen() {
 import analytics from '@react-native-firebase/analytics';
 
 function PaymentWithAnalytics() {
+  useEffect(() => {
+    const subscription = YunoSdk.onPaymentStatus(async (state) => {
+      if (state.status === 'SUCCEEDED') {
+        await analytics().logEvent('purchase', {
+          value: 25.00,
+          currency: 'USD',
+        });
+        navigation.navigate('Success');
+      } else if (state.status === 'FAILED') {
+        await analytics().logEvent('payment_failed', {
+          error_code: 'FAILED',
+        });
+      }
+    });
+    
+    return () => subscription.remove();
+  }, []);
+  
   const handlePayment = async () => {
     await analytics().logEvent('checkout_started', {
       value: 25.00,
@@ -282,24 +381,7 @@ function PaymentWithAnalytics() {
     });
     
     const session = await createCheckoutSession();
-    
-    await Yuno.startCheckout({
-      checkoutSession: session.id,
-      countryCode: 'US',
-      onPaymentSuccess: async (data) => {
-        await analytics().logEvent('purchase', {
-          transaction_id: data.paymentId,
-          value: 25.00,
-          currency: 'USD',
-        });
-        navigation.navigate('Success');
-      },
-      onPaymentError: async (error) => {
-        await analytics().logEvent('payment_failed', {
-          error_code: error.code,
-        });
-      },
-    });
+    await YunoSdk.startPayment(true);
   };
   
   return <Button title="Pay" onPress={handlePayment} />;
@@ -324,22 +406,24 @@ export function usePayment() {
     success: false,
   });
   
+  useEffect(() => {
+    const subscription = YunoSdk.onPaymentStatus((paymentState) => {
+      if (paymentState.status === 'SUCCEEDED') {
+        setState({ isProcessing: false, error: null, success: true });
+      } else if (paymentState.status === 'FAILED') {
+        setState({ isProcessing: false, error: 'Payment failed', success: false });
+      }
+    });
+    
+    return () => subscription.remove();
+  }, []);
+  
   const processPayment = useCallback(async (amount: number) => {
     setState({ isProcessing: true, error: null, success: false });
     
     try {
       const session = await createCheckoutSession(amount);
-      
-      await Yuno.startCheckout({
-        checkoutSession: session.id,
-        countryCode: 'US',
-        onPaymentSuccess: () => {
-          setState({ isProcessing: false, error: null, success: true });
-        },
-        onPaymentError: (error) => {
-          setState({ isProcessing: false, error: error.message, success: false });
-        },
-      });
+      await YunoSdk.startPayment(true);
     } catch (error) {
       setState({ isProcessing: false, error: error.message, success: false });
     }
@@ -395,4 +479,3 @@ export const YunoAPI = {
   },
 };
 ```
-
