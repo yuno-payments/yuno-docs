@@ -1,7 +1,7 @@
 ---
 title: Headless SDK (Enrollment iOS)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
