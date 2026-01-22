@@ -2,7 +2,7 @@
 title: SDK Customizations
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: SDK Customizations
   description: >-
