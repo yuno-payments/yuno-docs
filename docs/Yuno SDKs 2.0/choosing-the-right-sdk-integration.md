@@ -67,11 +67,11 @@ Below, you can see the specifications for each integration type.
   <thead>
     <tr>
       <th>Feature</th>
-      <th><a href="#full-sdk">Full</a></th>
-      <th><a href="#seamless-sdk">Seamless</a></th>
-      <th><a href="#lite-sdk">Lite</a></th>
-      <th><a href="#secure-fields-sdk">Secure Fields</a></th>
-      <th><a href="#headless-sdk">Headless</a></th>
+      <th><a href="#full">Full</a></th>
+      <th><a href="#seamless">Seamless</a></th>
+      <th><a href="#lite">Lite</a></th>
+      <th><a href="#secure-fields">Secure Fields</a></th>
+      <th><a href="#headless">Headless</a></th>
       <th><a href="#direct-api">Direct API</a></th>
       <th><a href="#plugins">Plugins</a></th>
     </tr>
