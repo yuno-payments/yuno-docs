@@ -423,8 +423,6 @@ Below, you can see the specifications for each integration type.
 </table>
 `}</HTMLBlock>
 
-## Integration options
-
 ### Full
 
 Our most comprehensive integration solution. It streamlines implementation, reduces maintenance and operational overhead, and removes the need to handle compliance, all while offering maximum flexibility.
