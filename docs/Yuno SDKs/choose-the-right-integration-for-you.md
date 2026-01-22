@@ -26,8 +26,8 @@ This page explains the importance of choosing the right integration, the factors
 > **Available Seamless SDK options:**
 >
 > * [Web Seamless SDK](doc:web)
-> * [iOS Seamless SDK](doc:quickstart-payment-ios)
-> * [Android Seamless SDK](doc:quickstart-payment-android)
+> * [iOS Seamless SDK](doc:ios)
+> * [Android Seamless SDK](doc:android)
 
 ## Why choosing the right integration matters
 

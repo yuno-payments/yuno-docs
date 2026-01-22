@@ -40,11 +40,7 @@ document.head.appendChild(script);
 ### 1. Initialize SDK
 
 ```javascript
-const yuno = await Yuno.initialize(
-  'your-public-api-key',
-  'optional-application-session', // Optional: for session tracking
-  { cookies: undefined }          // Optional: additional options
-);
+const yuno = await Yuno.initialize('your-public-api-key');
 ```
 
 ### 2. Create Checkout Session (Backend)
@@ -70,11 +66,7 @@ yuno.startCheckout({
   elementSelector: '#payment-container',
   countryCode: 'US',
   language: 'en-US',
-  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
-    // oneTimeToken: string - the token to send to your backend
-    // tokenWithInformation: object - additional token details (card info, etc.)
-    console.log('Token info:', tokenWithInformation);
-    
+  async yunoCreatePayment(oneTimeToken) {
     const result = await fetch('/api/payment/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -132,7 +124,7 @@ payButton.addEventListener('click', () => {
   
   <script>
     async function initPayment() {
-      // Initialize with optional parameters
+      // Initialize
       const yuno = await Yuno.initialize('pk_test_123');
       
       // Create session
@@ -151,13 +143,12 @@ payButton.addEventListener('click', () => {
         checkoutSession: session.checkout_session,
         elementSelector: '#payment-container',
         countryCode: 'US',
-        async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
-          // tokenWithInformation contains additional details like card brand, last 4 digits, etc.
+        async yunoCreatePayment(token) {
           await fetch('/api/payment/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              one_time_token: oneTimeToken, 
+              one_time_token: token, 
               checkout_session: session.checkout_session 
             })
           });
@@ -223,8 +214,8 @@ yuno.startCheckout({
 3DS is handled automatically by the SDK. For asynchronous payment methods:
 
 ```javascript
-async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
-  await createPaymentOnBackend(oneTimeToken);
+async yunoCreatePayment(token) {
+  await createPaymentOnBackend(token);
   
   // Handle redirect if needed
   const result = await yuno.continuePayment();
@@ -237,23 +228,15 @@ async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
 
 ## Configuration Options
 
-### Initialize Parameters
-
-| Parameter            | Type   | Required | Description                                         |
-| -------------------- | ------ | -------- | --------------------------------------------------- |
-| `publicApiKey`       | string | Yes      | Your public API key                                 |
-| `applicationSession` | string | No       | Optional session ID for tracking                    |
-| `options`            | object | No       | Additional options (e.g., `{ cookies: undefined }`) |
-
 ### Essential Parameters
 
-| Parameter           | Type     | Description                                                              |
-| ------------------- | -------- | ------------------------------------------------------------------------ |
-| `checkoutSession`   | string   | Session ID from backend                                                  |
-| `elementSelector`   | string   | CSS selector for container                                               |
-| `countryCode`       | string   | ISO country code (e.g., 'US')                                            |
-| `language`          | string   | Language code (e.g., 'en-US')                                            |
-| `yunoCreatePayment` | function | Payment creation callback `(oneTimeToken, tokenWithInformation) => void` |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `checkoutSession` | string | Session ID from backend |
+| `elementSelector` | string | CSS selector for container |
+| `countryCode` | string | ISO country code (e.g., 'US') |
+| `language` | string | Language code (e.g., 'en-US') |
+| `yunoCreatePayment` | function | Payment creation callback |
 
 ### Card Configuration
 
@@ -287,16 +270,15 @@ yuno.startCheckout({
 
 ## Next Steps
 
-Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-web-sdk) guide for:
+Ready to explore more advanced features? Check out the [Advanced Features](doc:web-advanced-features) guide for:
 
-* **Alternative Mounting Options** - `mountCheckoutLite()` and `mountSeamlessCheckout()` for custom payment method selection
-* **Enrollment (Save Cards)** - Save payment methods for future use
-* **Vaulted Token Payments** - One-click payments with saved cards
-* **Custom UI (Headless Integration)** - Build completely custom payment forms
-* **Secure Fields** - Custom card forms with PCI compliance
-* **Styling & Customization** - Match the SDK to your brand
-* **Advanced Configuration** - Dynamic views, render mode, and more
+- **Alternative Mounting Options** - `mountCheckoutLite()` and `mountSeamlessCheckout()` for custom payment method selection
+- **Enrollment (Save Cards)** - Save payment methods for future use
+- **Vaulted Token Payments** - One-click payments with saved cards
+- **Custom UI (Headless Integration)** - Build completely custom payment forms
+- **Secure Fields** - Custom card forms with PCI compliance
+- **Styling & Customization** - Match the SDK to your brand
+- **Advanced Configuration** - Dynamic views, render mode, and more
 
 See also:
-
-* [Code Examples](doc:code-examples-web-sdk) - Copy-paste examples for common scenarios
+- [Code Examples](doc:web-examples) - Copy-paste examples for common scenarios

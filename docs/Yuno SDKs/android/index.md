@@ -344,7 +344,7 @@ private fun onTokenReceived(token: String?) {
 
 ## Next Steps
 
-Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-android-sdk) guide for:
+Ready to explore more advanced features? Check out the [Advanced Features](doc:android-advanced-features) guide for:
 
 * **Lite SDK Flow** - Custom payment method selection with `startPaymentLite()`
 * **Enrollment (Save Cards)** - Save payment methods for future use
@@ -355,5 +355,5 @@ Ready to explore more advanced features? Check out the [Advanced Features](doc:a
 
 See also:
 
-* [Code Examples](doc:code-examples-android-sdk) - Copy-paste examples for common scenarios
+* [Code Examples](doc:android-examples) - Copy-paste examples for common scenarios
 * [Release Notes](doc:release-notes-android-sdk) - SDK versions, changes, and migration guides

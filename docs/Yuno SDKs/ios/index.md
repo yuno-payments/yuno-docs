@@ -478,7 +478,7 @@ When not specified, the SDK uses the device's default language if supported, oth
 
 ## Next Steps
 
-Ready to explore more advanced features? Check out the [Advanced Features](doc:advanced-features-ios-sdk) guide for:
+Ready to explore more advanced features? Check out the [Advanced Features](doc:ios-advanced-features) guide for:
 
 - **Alternative Payment Flows** - `startPaymentLite()` and `startPaymentSeamlessLite()` for custom payment method selection
 - **Enrollment (Save Cards)** - Save payment methods for future use
@@ -488,8 +488,8 @@ Ready to explore more advanced features? Check out the [Advanced Features](doc:a
 - **Swift 6 Concurrency** - Handle concurrency warnings with proper annotations
 
 See also:
-- [Code Examples](doc:code-examples-ios-sdk) - Copy-paste examples for common scenarios
-- [Release Notes](doc:release-notes-ios-sdk) - SDK versions, changes, and migration guides
+- [Code Examples](doc:ios-examples) - Copy-paste examples for common scenarios
+- [Release Notes](doc:ios-release-notes) - SDK versions, changes, and migration guides
 
 ## Demo Application
 

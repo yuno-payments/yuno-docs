@@ -389,7 +389,7 @@ Remember to replace the `yourPublicApiKey` with your actual public API key.
 
 If a transaction is rejected, you can persist the credit card data to retry a payment after the customer has entered the credit card details. To do that, you need to follow the steps below:
 
-1. Add the parameter presented in the following code block while creating the one-time token in [Step 5](doc:web-payment#step-5-generate-an-ott-one-time-token). It will enable you to receive any additional information the customer gives during checkout, such as installments, document type, or document number.
+1. Add the parameter presented in the following code block while creating the one-time token in [Step 5](doc:secure-fields-payment#step-5-generate-an-ott-one-time-token). It will enable you to receive any additional information the customer gives during checkout, such as installments, document type, or document number.
 
 ```javascript
 const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformation({ 
