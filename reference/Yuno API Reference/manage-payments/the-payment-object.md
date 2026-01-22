@@ -2633,6 +2633,11 @@ This object represents the payment created after generating the checkout session
                     <br /><small> Example: Y </small>
                   </p>
 
+                  <p><strong><code>has_challenge</code></strong> <small>boolean</small>
+                    <br />Indicates whether a 3DS challenge occurred. When <code>false</code>, the flow can be frictionless or data-only. Data-only is not explicitly flagged in the response.
+                    <br /><small> Example: false </small>
+                  </p>
+
                   <p><strong><code>acs_id</code></strong> <small>string</small>
                     <br />Unique identifier provided by the Access Control Server (ACS) during the 3-D Secure authentication process.
                     <br /><small> Example: ACS-1234567890 </small>
