@@ -5,3 +5,226 @@ hidden: false
 metadata:
   robots: index
 ---
+## Step 3: Create a checkout session
+
+<Callout icon="📘" theme="info">
+  If your workflow requires sending the `additional_data` object, it can be sent as part of the checkout session.
+</Callout>
+
+To initialize the payment flow, create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint.
+
+* First, [create a customer](ref:create-customer) or retrieve an existing customer ID
+* Include it when creating the `checkout_session`
+
+<Callout icon="💳" theme="info">
+  To control authorization and capture with cards, include `payment_method.detail.card.capture` in the checkout session: set `false` to authorize only, `true` to capture immediately.
+</Callout>
+
+### Key parameters
+
+| Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
+
+> 📘 `onPaymentMethodSelect` Event
+>
+> For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startSeamlessCheckout` before `mountSeamlessCheckout`.
+
+> 📘 Google Pay and Apple Pay Display
+>
+> From SDK version 1.5, Google Pay and Apple Pay appear as direct buttons instead of radio buttons in the payment methods list. They are displayed separately from other payment methods.
+
+## Step 4: Start the checkout process
+
+Use the configuration below to provide a seamless and user-friendly payment experience for your customers:
+
+```javascript
+yuno.startSeamlessCheckout({
+  checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+  elementSelector: "#root",
+  countryCode: "US",
+  language: "en-US",
+  showLoading: true,
+  issuersFormEnable: true,
+  showPaymentStatus: true,
+  onLoading: (args) => console.log(args),
+  renderMode: {
+    type: "modal",
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element",
+    },
+  },
+  card: {
+    type: "extends",
+    styles: "",
+    cardSaveEnable: false,
+    texts: {},
+    cardNumberPlaceholder: "Enter card number", // Optional: Custom placeholder text
+    hideCardholderName: false, // Optional: Set to true to hide cardholder name field
+  },
+  texts: {},
+  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+    await createPayment({ 
+      oneTimeToken, 
+      checkoutSession,
+      vault_on_success: true 
+    });
+    yuno.continuePayment({ showPaymentStatus: true });
+  },
+  yunoPaymentMethodSelected(data) {
+    console.log("Payment method selected:", data);
+  },
+  yunoPaymentResult(data) {
+    console.log("Payment result:", data);
+    yuno.hideLoader();
+  },
+  yunoError(error, data) {
+    console.error("An error occurred:", error);
+    yuno.hideLoader();
+  },
+});
+```
+
+When using `startSeamlessCheckout`, specify the callbacks to handle payments. You can also customize the checkout interface using the `texts` objects.
+
+### Parameters
+
+Configure the seamless checkout with the following options:
+
+| Parameter                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`           | Refers to the current payment's [checkout session](https://docs.y.uno/reference/create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `elementSelector`           | The HTML element where the checkout will be rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `countryCode`               | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `language`                  | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `showLoading`               | Controls the visibility of the Yuno loading/spinner page during the payment process. Default: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `onLoading`                 | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `issuersFormEnable`         | Enables the issuer's form (e.g., a list of banks). Default: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `showPaymentStatus`         | Shows the Yuno Payment Status page, which is useful when continuing a payment. Default: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `showPayButton`             | Controls the visibility of the pay button in the customer or card form. Default: `true`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `renderMode`                | Specify how and where the forms will be rendered. The options available are:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+|                             | ▪️ `type: modal` (default)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `card`                      | Defines the configuration for the card form. It contains settings like render mode, custom styles, save card option, optional `cardNumberPlaceholder` for customizing the card number field placeholder text, and optional `hideCardholderName` to hide the cardholder name field. The `cardNumberPlaceholder` supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default English placeholder ("Card number"). When `hideCardholderName` is set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. |
+| `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `yunoCreatePayment`         | Placeholder function for creating a payment. This function will not be called but should be implemented. When creating the payment, you can include `vault_on_success: true` to enroll the payment method after a successful payment. See [Enrolling payment methods](#enrolling-payment-methods-in-seamless-flow) for more details.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `yunoPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `yunoPaymentResult`         | Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `yunoError`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+
+> 📘 Customer and Merchant-Initiated Transactions
+>
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You find more information about their characteristics in [Stored credentials](../docs/stored-credentials).
+>
+> The step-by-step on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
+
+## Step 5: Mount the SDK
+
+To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckout()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
+
+```javascript
+yuno.mountSeamlessCheckout({
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  vaultedToken: VAULTED_TOKEN,
+});
+```
+
+See the [Payment type](ref:payment-type-list) page to view the complete list of payment method types you can use when mounting the SDK.
+
+The `vaultedToken` is optional. It represents a previously enrolled payment method. If you provide the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
+
+After mounting, you must start the checkout flow by calling `yuno.startPayment()`. If you skip this call, the payment form will not open.
+
+## Step 6: Start the payment flow (Required)
+
+Call `yuno.startPayment()` immediately after `yuno.mountSeamlessCheckout()` to open the selected payment method UI:
+
+```javascript
+yuno.mountSeamlessCheckout({
+  paymentMethodType: PAYMENT_METHOD_TYPE,
+  vaultedToken: VAULTED_TOKEN,
+});
+
+yuno.startPayment();
+```
+
+Alternatively, you can trigger the start from a user action such as a button click:
+
+```javascript
+const payButton = document.querySelector('#button-pay');
+payButton.addEventListener('click', () => {
+  yuno.startPayment();
+});
+```
+
+> 📘 Demo App
+>
+> In addition to the code examples provided, you can access the [Demo App](doc:demo-app) for a complete implementation of Yuno SDKs. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
+
+## Mount external buttons
+
+You can use the `mountExternalButtons` method to render Google Pay and Apple Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
+
+```javascript
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'APPLE_PAY',
+    elementSelector: '#apple-pay',
+  },
+  {
+    paymentMethodType: 'GOOGLE_PAY',
+    elementSelector: '#google-pay',
+  },
+]);
+```
+
+### Parameters
+
+| Parameter           | Description                                                                                                    |
+| :------------------ | :------------------------------------------------------------------------------------------------------------- |
+| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                       |
+| `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (e.g., `'#apple-pay'`, `'.button'`). |
+
+### Unmounting buttons
+
+You can unmount a single external button by payment method type:
+
+```javascript
+yuno.unmountExternalButton('APPLE_PAY');
+```
+
+Or unmount all external buttons at once:
+
+```javascript
+yuno.unmountAllExternalButtons();
+```
+
+## Enrolling payment methods in seamless flow
+
+You can enroll payment methods (store cards for future use) directly during the seamless payment flow by setting `payment_method.vault_on_success = true` in the [checkout session creation](https://docs.y.uno/reference/the-checkout-session-object).
+
+When `vault_on_success` is set to `true`:
+
+* The payment method will be automatically enrolled if the payment status is `SUCCEEDED`
+* If the payment does not succeed, no vaulting will occur
+* The payment response will include a `vaulted_token` that you can use for future transactions
+
+**Example:**
+
+```json
+{
+    "account_id": "...",
+    ...
+    "payment_method": {
+        "vault_on_success": true
+    }
+}
+```
+
+> 📘 Vaulting Requirements
+>
+> To generate and receive a `vaulted_token` when `vault_on_success = true`, the payment must reference an existing Yuno customer through `customer_payer.id` in the checkout session. Creating or sending the customer data inline inside the payment request does not create the customer on our side, so no vaulting will occur.
+
+For more information about enrolling payment methods, see [Enroll Payment Methods](doc:enroll-payment-methods).
