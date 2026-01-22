@@ -105,4 +105,16 @@ To optimize performance and reduce latency, we recommend adding `preconnect` lin
 <link rel="preconnect" href="https://sdk-web-card.prod.y.uno" />
 ```
 
+## Step 2: Initialize SDK with the public key
+
+Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`:
+
+```javascript
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+```
+
+> 📘 Credentials
+>
+> See the credentials page for more information: [https://docs.y.uno/reference/authentication](https://docs.y.uno/reference/authentication)
+
 <br />
