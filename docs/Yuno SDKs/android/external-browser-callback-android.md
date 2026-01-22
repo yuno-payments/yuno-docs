@@ -13,8 +13,6 @@ next:
 ---
 When a payment flow requires the user to complete an action in an external browser (e.g., 3DS challenge, bank redirect), it is essential to use the `callback_url` parameter to ensure the user returns to your app seamlessly.
 
-***
-
 ## 1. Set the callback_url when creating the checkout session
 
 Send the `callback_url` parameter when creating the checkout session:
