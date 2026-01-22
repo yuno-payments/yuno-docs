@@ -37,7 +37,7 @@ document.head.appendChild(script);
 
 ## Basic Payment Flow
 
-### 1. Initialize SDK
+### 1. Initialize SDK (Full)
 
 ```javascript
 const yuno = await Yuno.initialize(
@@ -239,20 +239,20 @@ async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
 
 ### Initialize Parameters
 
-| Parameter            | Type   | Required | Description                                      |
-| -------------------- | ------ | -------- | ------------------------------------------------ |
-| `publicApiKey`       | string | Yes      | Your public API key                              |
-| `applicationSession` | string | No       | Optional session ID for tracking                 |
+| Parameter            | Type   | Required | Description                                         |
+| -------------------- | ------ | -------- | --------------------------------------------------- |
+| `publicApiKey`       | string | Yes      | Your public API key                                 |
+| `applicationSession` | string | No       | Optional session ID for tracking                    |
 | `options`            | object | No       | Additional options (e.g., `{ cookies: undefined }`) |
 
 ### Essential Parameters
 
-| Parameter           | Type     | Description                                                      |
-| ------------------- | -------- | ---------------------------------------------------------------- |
-| `checkoutSession`   | string   | Session ID from backend                                          |
-| `elementSelector`   | string   | CSS selector for container                                       |
-| `countryCode`       | string   | ISO country code (e.g., 'US')                                    |
-| `language`          | string   | Language code (e.g., 'en-US')                                    |
+| Parameter           | Type     | Description                                                              |
+| ------------------- | -------- | ------------------------------------------------------------------------ |
+| `checkoutSession`   | string   | Session ID from backend                                                  |
+| `elementSelector`   | string   | CSS selector for container                                               |
+| `countryCode`       | string   | ISO country code (e.g., 'US')                                            |
+| `language`          | string   | Language code (e.g., 'en-US')                                            |
 | `yunoCreatePayment` | function | Payment creation callback `(oneTimeToken, tokenWithInformation) => void` |
 
 ### Card Configuration
