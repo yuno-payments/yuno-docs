@@ -4,8 +4,9 @@ excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: ''
-  description: ''
+  title: Headless SDK (Payment Web)
+  description: >-
+    Complete guide to implement Yuno's Headless Web SDK for payment functionality
   robots: index
 next:
   description: ''
@@ -27,13 +28,15 @@ The following steps describe creating a payment using Yuno's Headless SDK.
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, see the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Headless SDK implementation, see the [Web SDK Common Reference](doc:web-sdk-common-reference) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
-1. Direct HTML script inclusion
-2. Dynamic JavaScript injection
-3. NPM module installation
+* **Method 1 (HTML)**: Add a single script tag to your HTML file
+* **Method 2 (Dynamic JavaScript)**: Load the SDK programmatically with custom error handling
+* **Method 3 (NPM)**: Use our NPM package in modern JavaScript applications
+
+For detailed implementation steps for each method, see the [Web SDK Common Reference](doc:web-sdk-common-reference).
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the Headless checkout functionality.
 
@@ -253,7 +256,7 @@ The following code block shows the `apiClientPayment.generateToken` function res
 
 ## Step 5: Create the Payment
 
-After receiving the one-time token, you can create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment) to get the final payment result. You will inform the one-time token received in [Step 4](doc:headless-sdk-payment#step-4-generate-an-ott-one-time-token) through the request's `payment_method.token` parameter. The following code block shows a request example for creating a payment:
+After receiving the one-time token, you can create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment) to get the final payment result. You will inform the one-time token received in [Step 4](#step-4-generate-token) through the request's `payment_method.token` parameter. The following code block shows a request example for creating a payment:
 
 ```json
 {
@@ -282,7 +285,7 @@ After receiving the one-time token, you can create the payment using the [Create
 The endpoint response provides the `sdk_action_required` parameter that defines if additional actions are necessary to conclude the payment:
 
 * If your customer selects a synchronous payment method, the payment is completed instantly. In this scenario, the field `sdk_action_required` in the API response will be `false`, and the payment process concludes at this step.
-* When an additional interaction of the SDK is needed to complete the payment flow, `sdk_action_required` will be `true`. If this is the case, you need to follow the instructions from [Step 6](doc:headless-sdk-payment#step-6-get-the-3ds-challenge-url).
+* When an additional interaction of the SDK is needed to complete the payment flow, `sdk_action_required` will be `true`. If this is the case, you need to follow the instructions from [Step 6](#step-6-get-the-3ds-challenge-url).
 
 ## Step 6: Get the 3DS challenge URL
 

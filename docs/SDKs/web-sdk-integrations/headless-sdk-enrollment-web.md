@@ -4,11 +4,10 @@ excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: Head
+  title: Headless SDK (Enrollment Web)
   description: >-
-    The document outlines the steps for creating a payment using the Headless
-    Web SDK, including requirements, initialization, creating a customer
-    session, and generating a vaulted token.
+    Complete guide to implement Yuno's Headless Web SDK for enrollment functionality,
+    including requirements, initialization, creating a customer session, and generating a vaulted token.
   robots: index
 next:
   description: ''
@@ -25,20 +24,22 @@ The following steps describe creating a payment using Yuno's Headless SDK.
 
 ## Requirements
 
-To execute the enrollment process, you need to provide the `customer_session` to start the enrollment process in [Step 3](doc:headless-sdk-enrollment#step-3-create-a-customer-session). To acquire the  `customer_session`, you need to:
+To execute the enrollment process, you need to provide the `customer_session` to start the enrollment process in [Step 3](#step-3-create-a-customer-session). To acquire the  `customer_session`, you need to:
 
 1. **Create a customer**: A customer is required to enroll in payments. Use the [Create Customer](ref:create-customer) endpoint to create new customers. In the response, you will receive the customer `id`, which you use to create the customer session.
 2. **Create the customer session**: Use the  customer `id` and the [Create Customer Session](ref:create-customer-session) endpoint to receive the `customer_session`.
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, see the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Headless SDK implementation, see the [Web SDK Common Reference](doc:web-sdk-common-reference) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
-1. Direct HTML script inclusion
-2. Dynamic JavaScript injection
-3. NPM module installation
+* **Method 1 (HTML)**: Add a single script tag to your HTML file
+* **Method 2 (Dynamic JavaScript)**: Load the SDK programmatically with custom error handling
+* **Method 3 (NPM)**: Use our NPM package in modern JavaScript applications
+
+For detailed implementation steps for each method, see the [Web SDK Common Reference](doc:web-sdk-common-reference).
 
 Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the headless enrollment functionality.
 

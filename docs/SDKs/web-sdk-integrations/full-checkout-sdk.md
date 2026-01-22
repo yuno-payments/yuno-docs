@@ -1,10 +1,52 @@
 ---
-title: Full SDK (Web) Implementation
+title: Full SDK (Web)
+excerpt: ''
 deprecated: false
 hidden: false
 metadata:
+  title: Full SDK (WEB)
+  description: >-
+    Here, you will find an outline of the step-by-step process to enable the
+    Full SDK functionalities within your system.
+  keywords:
+    - Full SDK WEB Configuration
   robots: index
+next:
+  description: ''
 ---
+
+<br />
+
+> 👍 Recommended SDK
+>
+> We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+
+Welcome to the Yuno Full Web SDK guide. This guide will help you get started with Yuno's payment solutions. Whether you're looking to implement your first payment integration or enhance your existing setup, this guide provides all the information you need to create a seamless payment experience for your users.
+
+> 📘 Latest Version Documentation
+>
+> This guide covers the latest version of our Full Web SDK. To read about previous versions, explore the [related links](#related-links) or visit the [changelog](../changelog#/).
+
+## SDK Integration
+
+Before proceeding with the Full SDK implementation, see the [Web SDK Common Reference](doc:web-sdk-common-reference) for detailed instructions on how to properly integrate the SDK into your project.
+
+The integration guide provides three flexible methods:
+
+* **Method 1 (HTML)**: Add a single script tag to your HTML file. This is the simplest method, ideal for basic implementations and quick prototypes
+* **Method 2 (Dynamic JavaScript)**: Load the SDK programmatically with custom error handling and loading states. Best for applications needing more control over the integration
+* **Method 3 (NPM)**: Use our NPM package in modern JavaScript applications. This is our recommended approach, with dependency management, tree-shaking, and TypeScript support
+
+For detailed implementation steps for each method, see the [Web SDK Common Reference](doc:web-sdk-common-reference).
+
+## Improve performance using `preconnect`
+
+To optimize performance and reduce latency, we recommend adding `preconnect` links as early as possible within the `<head>` tag of your HTML document. These links allow browsers to quickly connect to our servers before resources are actually requested. This proactive approach can significantly improve loading times, especially for the initial SDK setup and subsequent API calls.
+
+For detailed information, see the [Web SDK Common Reference](doc:web-sdk-common-reference#improve-performance-using-preconnect).
+
+## Full SDK implementation
+
 This page provides a step-by-step guide to implement and enable Yuno's Full Web SDK functionality in your application.
 
 > 📘 Changelog Reference:
@@ -625,3 +667,4 @@ Learn about the additional configurations from the Full SDK by accessing [Comple
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
 
 <br />
+
