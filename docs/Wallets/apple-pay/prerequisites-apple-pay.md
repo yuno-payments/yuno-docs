@@ -143,11 +143,13 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 
 > ⚠️ Note
 >
-> You must also host Apple’s `apple-developer-merchantid-domain-association` file at:
+> You must also host Apple's `apple-developer-merchantid-domain-association` file at:
 >
 > ```
-> https://yourdomain.com/.well-known/apple-developer-merchantid-domain-association
+> `https://example.com/.well-known/apple-developer-merchantid-domain-association`
 > ```
+>
+> Replace `example.com` with your actual domain name.
 
 Once all steps are complete, you can proceed with the Dashboard setup.
 
