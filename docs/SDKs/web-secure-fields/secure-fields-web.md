@@ -2,7 +2,7 @@
 title: Secure Fields (Web)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
@@ -14,8 +14,8 @@ Yuno's Secure Fields provide a way to securely collect sensitive payment informa
 
 ## Available secure field integrations
 
-* [Secure Fields Enrollment](doc:secure-fields-enrollment): Enroll payment methods using secure fields
-* [Secure Fields Payment](doc:secure-fields-payment): Process payments using secure fields
+* [Secure Fields Enrollment](doc:web-enrollment): Enroll payment methods using secure fields
+* [Secure Fields Payment](doc:web-payment): Process payments using secure fields
 
 ## Key benefits
 

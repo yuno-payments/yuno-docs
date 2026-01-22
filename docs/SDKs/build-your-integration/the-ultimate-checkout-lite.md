@@ -2,7 +2,7 @@
 title: Lite SDK (Payment)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Lite SDK (Payment)
   description: >-
@@ -14,7 +14,7 @@ metadata:
 next:
   description: ''
 ---
-The **Lite SDK** provides full control over your payment experience. Unlike the [Full SDK](doc:full-sdk-workflow), this version allows you to query available payment methods and decide which to display at checkout. After the customer selects a payment method, the payment process follows the same steps as the Full SDK.
+The **Lite SDK** provides full control over your payment experience. Unlike the [Full SDK](doc:quickstart), this version allows you to query available payment methods and decide which to display at checkout. After the customer selects a payment method, the payment process follows the same steps as the Full SDK.
 
 Additionally, the Lite SDK supports enrolling payment methods for future use. For more details, see [Lite SDK (Enrollment)](doc:enrollment-lite).
 

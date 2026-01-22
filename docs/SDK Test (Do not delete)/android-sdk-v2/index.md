@@ -343,4 +343,4 @@ Ready to explore more advanced features? Check out the [Advanced Features](doc:a
 See also:
 
 * [Code Examples](doc:code-examples-android-sdk) - Copy-paste examples for common scenarios
-* [Release Notes](doc:release-notes-android-sdk) - SDK versions, changes, and migration guides
+* [Release Notes](doc:android) - SDK versions, changes, and migration guides

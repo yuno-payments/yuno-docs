@@ -2,7 +2,7 @@
 title: Headless SDK (Payment Android)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
@@ -31,7 +31,7 @@ The Headless SDK includes core features like:
 * 3DS authentication handling
 * Fraud prevention data collection
 
-For merchants preferring a pre-built UI solution, consider using our [Full SDK](doc:full-checkout-android) or [Lite SDK](doc:lite-checkout-android) instead.
+For merchants preferring a pre-built UI solution, consider using our [Full SDK](doc:android) or [Lite SDK](doc:lite-checkout-android) instead.
 
 ## Requirements
 
@@ -141,7 +141,7 @@ The following table describes the required parameters:
       </td>
 
       <td>
-        * The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page.
+        * The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:quickstart) page.
       </td>
     </tr>
 

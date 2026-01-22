@@ -2,7 +2,7 @@
 title: Choose the Right Integration for You
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Choose The Right Integration For You
   description: >-
@@ -25,9 +25,9 @@ This page explains the importance of choosing the right integration, the factors
 >
 > **Available Seamless SDK options:**
 >
-> * [Web Seamless SDK](doc:seamless-sdk-payment-web)
-> * [iOS Seamless SDK](doc:seamless-sdk-payment-ios)
-> * [Android Seamless SDK](doc:seamless-sdk-payment-android)
+> * [Web Seamless SDK](doc:web)
+> * [iOS Seamless SDK](doc:quickstart-payment-ios)
+> * [Android Seamless SDK](doc:quickstart-payment-android)
 
 ## Why choosing the right integration matters
 

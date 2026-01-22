@@ -90,7 +90,7 @@ Adding the 3DS2 verification step to the checkout process changes the normal wor
 
 > 📘 SDK v1.1 Enhancement
 >
-> With SDK v1.1, 3DS logic is handled automatically using the `continuePayment()` method - no separate 3DS setup is required. For more information, see the [Yuno Web SDK documentation](doc:seamless-sdk-payment-web).
+> With SDK v1.1, 3DS logic is handled automatically using the `continuePayment()` method - no separate 3DS setup is required. For more information, see the [Yuno Web SDK documentation](doc:web).
 
 You decide if your system will implement the 3DS2 or not. The 3DS2 verification step is added while defining your cards [dynamic routing](doc:routing#configuring-the-dynamic-routing). When starting your card routes, you can add the 3DS2 step before defining the payment provider. When adding the 3DS2 verification step, when a payment using a card is initialized, the Yuno system will analyze if the card needs an extra challenge. If an extra challenge is necessary, the user will be redirected to the bank environment to complete the authorization. On the other hand, the payment process will proceed normally.
 
@@ -124,7 +124,7 @@ In general terms, a 3DS integration requires a `setup_id`/`device_fingerprint` f
 
 Therefore, depending on your Yuno integration, you have three different options:
 
-1. **Checkout integration**: The Checkout workflow is part of the [Checkout](doc:build-your-integration#checkout) solution provided by Yuno. Use our SDKs so we can handle all the logic regarding external provider requirements and executions for 3DS. If you want to define specific cases for 3DS analysis, you can define that in the CARD route of your Yuno dashboard.
+1. **Checkout integration**: The Checkout workflow is part of the [Checkout](doc:quickstart) solution provided by Yuno. Use our SDKs so we can handle all the logic regarding external provider requirements and executions for 3DS. If you want to define specific cases for 3DS analysis, you can define that in the CARD route of your Yuno dashboard.
 2. **External integration**: Use your own 3DS and then send the corresponding authorization fields in the [payment creation](ref:create-payment) (card\_data - eci, cryptogram, etc). Only available for PCI-compliant merchants.
 3. **Direct integration**: The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. For each payment you'll have a:
    1. `PENDING/WAITING_ADDITIONAL_STEP` status/sub status.

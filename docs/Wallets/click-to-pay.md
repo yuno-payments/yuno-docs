@@ -125,4 +125,4 @@ For Android, include a `callback_url` that matches your app’s deeplink scheme 
 2. Extract `one_time_token` (and the optional `checkout_session`) from the URI.
 3. Send the OTT to your backend to call the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), then invoke `continuePayment` in the SDK to resume the flow.
 
-See the full SDK guides for detailed samples: [Android Full Checkout](doc:full-checkout-android) and [iOS Full Checkout](doc:full-checkout-ios).
+See the full SDK guides for detailed samples: [Android Full Checkout](doc:android) and [iOS Full Checkout](doc:ios).

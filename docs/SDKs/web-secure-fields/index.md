@@ -1,7 +1,7 @@
 ---
 title: Secure Fields
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---

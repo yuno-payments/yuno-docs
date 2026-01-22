@@ -2,7 +2,7 @@
 title: Web SDKs
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Web SDK Integrations
   description: >-

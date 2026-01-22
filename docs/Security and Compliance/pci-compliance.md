@@ -68,7 +68,7 @@ In the case of your business integrating the Yuno [Direct Flow](doc:direct-flow)
 
 ## Take advantage of Yuno solutions
 
-To leverage the capabilities of Yuno's PCI-DSS Level 1 solution, you can utilize one of our integration options based on Yuno SDKs. Choose from Full Checkout, Lite Checkout, and Secure Fields, each offering unique features to suit your specific requirements. These SDKs are available for both mobile and JavaScript versions. For detailed information on Yuno's SDKs, please refer to the [SDK guide](doc:yuno-sdks).
+To leverage the capabilities of Yuno's PCI-DSS Level 1 solution, you can utilize one of our integration options based on Yuno SDKs. Choose from Full Checkout, Lite Checkout, and Secure Fields, each offering unique features to suit your specific requirements. These SDKs are available for both mobile and JavaScript versions. For detailed information on Yuno's SDKs, please refer to the [SDK guide](doc:quickstart).
 
 <Image align="center" src="https://files.readme.io/158b4066d79b53ccbaa13042a21a244745cc9dcd03ca9509d88c94ee93ab5283-PCI_complience.png" />
 

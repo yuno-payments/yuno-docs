@@ -2,7 +2,7 @@
 title: Lite SDK (Payment Android)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Lite SDK (Payment)
   description: >-
@@ -32,7 +32,7 @@ The Lite SDK includes core features like:
 * Basic payment status handling
 * Essential error management
 
-For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-checkout-android) instead.
+For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:android) instead.
 
 ## Requirements
 
@@ -160,7 +160,7 @@ The following table describes the required parameters to start the checkout:
 | Parameter              | Description                                                                                                                                                                               |
 | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | A unique identifier for the checkout session associated with the payment. It is required to initialize the payment process and grants access to the customer's available payment methods. |
-| `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                            |
+| `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:quickstart) for a complete list of supported countries and their codes.                            |
 | `callbackPaymentState` | A function that returns the current payment process. It receives `paymentState` and `paymentSubState` values. Sending this function is not mandatory if you do not need the result.       |
 | `merchantSessionId`    | An identifier used by the merchant to track the payment.                                                                                                                                  |
 

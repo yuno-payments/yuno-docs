@@ -2,7 +2,7 @@
 title: Headless SDK (Enrollment)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''

@@ -2,7 +2,7 @@
 title: Yuno SDKs Introduction
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Yuno SDKs
   description: >-
@@ -34,7 +34,7 @@ Yuno's SDKs provide a range of benefits that can significantly enhance your paym
 
 > 📘 Country Coverage
 >
-> Yuno SDKs are available in several countries. Check the complete list by accessing the [Country coverage](doc:country-coverage-yuno-sdk) page.
+> Yuno SDKs are available in several countries. Check the complete list by accessing the [Country coverage](doc:quickstart) page.
 
 ## Start using Yuno SDKs
 

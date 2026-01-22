@@ -1,7 +1,7 @@
 ---
 title: Full SDK (Web) Implementation
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
@@ -57,7 +57,7 @@ The following table lists all the available parameters for the `startCheckout` m
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                                    |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                                                                                                                                            |
-| `countryCode`                     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page.                                         |
+| `countryCode`                     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page.                                         |
 | `language`                        | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available.                                                                                                                                                                     |
 | `onLoading`                       | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                                    |
 | `showLoading`                     | Control the visibility of the Yuno loading/spinner page during the payment process. By default, it's `true`.                                                                                                                                                                                                                          |
@@ -617,7 +617,7 @@ const yuno = await Yuno.initialize(publicApiKey, undefined, options);
 Learn about the additional configurations from the Full SDK by accessing [Complementary Features](doc:complementary-features-full-sdk). You can also access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
-* [Payment Status](doc:payment-status): Update the user about the payment process
+* [Payment Status](doc:web): Update the user about the payment process
 * [3DS Setup SDK](doc:3d-secure): Integrate 3DS into your payment flow
 
 ## Stay updated

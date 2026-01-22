@@ -106,7 +106,7 @@ class ViewController: UIViewController, YunoPaymentDelegate {
 | Parameter | Description |
 |-----------|-------------|
 | `checkoutSession` | The unique identifier for the checkout session. |
-| `countryCode` | Country code where the payment is performed. See [Country Coverage](doc:country-coverage-yuno-sdk) for supported countries. |
+| `countryCode` | Country code where the payment is performed. See [Country Coverage](doc:quickstart) for supported countries. |
 | `language` | Language code for the payment forms (e.g., `"en"`, `"es"`, `"pt"`). See [Supported Languages](#supported-languages) below. |
 | `viewController` | The `UIViewController` used to present the payment flow. Required for proper UI presentation. |
 | `yunoCreatePayment(with:)` | Called when a one-time token is generated. Create the payment on your backend. |

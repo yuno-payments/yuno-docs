@@ -2,7 +2,7 @@
 title: Deprecated Design
 excerpt: ''
 deprecated: true
-hidden: false
+hidden: true
 metadata:
   title: SDK Customizations - Deprecated Design
   description: >-

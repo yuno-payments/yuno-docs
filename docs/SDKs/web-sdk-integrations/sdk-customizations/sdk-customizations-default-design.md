@@ -2,7 +2,7 @@
 title: Default Design
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: SDK Customizations - Default Design
   description: >-

@@ -2,7 +2,7 @@
 title: Demo App
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Demo App
   description: >-

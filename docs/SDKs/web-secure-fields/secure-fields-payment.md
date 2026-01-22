@@ -2,7 +2,7 @@
 title: Secure Fields (Payment)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
@@ -14,7 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Secure Fields chec
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Secure Fields implementation, see the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Secure Fields implementation, see the [SDK Integration Overview](doc:quickstart) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -52,7 +52,7 @@ Configure the secure fields with the following options:
 
 | Parameter           | Description                                                                                                                                                                                                                                                                                   |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countrycode`       | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `countrycode`       | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page. |
 | `checkoutSession`   | Refers to the current payment's [checkout session](ref:create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                            |
 | `installmentEnable` | This parameter is optional and is set false by default. If set True, the installments set for the account will be shown as a secure field.                                                                                                                                                    |
 
@@ -389,7 +389,7 @@ Remember to replace the `yourPublicApiKey` with your actual public API key.
 
 If a transaction is rejected, you can persist the credit card data to retry a payment after the customer has entered the credit card details. To do that, you need to follow the steps below:
 
-1. Add the parameter presented in the following code block while creating the one-time token in [Step 5](doc:secure-fields-payment#step-5-generate-an-ott-one-time-token). It will enable you to receive any additional information the customer gives during checkout, such as installments, document type, or document number.
+1. Add the parameter presented in the following code block while creating the one-time token in [Step 5](doc:web-payment#step-5-generate-an-ott-one-time-token). It will enable you to receive any additional information the customer gives during checkout, such as installments, document type, or document number.
 
 ```javascript
 const oneTimeTokenWithInformation = await secureFields.generateTokenWithInformation({ 
@@ -452,7 +452,7 @@ secureFieldInstance.setCardType('CREDIT')
 You can access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand.
-* [Payment Status](doc:payment-status): Update the user about the payment process.
+* [Payment Status](doc:web): Update the user about the payment process.
 
 ## Stay Updated
 

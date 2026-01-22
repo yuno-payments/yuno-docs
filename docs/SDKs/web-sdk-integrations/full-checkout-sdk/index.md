@@ -2,7 +2,7 @@
 title: Full SDK (Web)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Full SDK (WEB)
   description: >-

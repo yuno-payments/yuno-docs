@@ -2,7 +2,7 @@
 title: Headless SDK (Payment iOS)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
@@ -74,7 +74,7 @@ The following table lists all required parameters and their descriptions.
 
 | Parameter          | Description                                                                                                                                                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:quickstart) page. |
 | `checkout_session` | Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                                                   |
 
 The following code block presents an example of the parameter configuration.

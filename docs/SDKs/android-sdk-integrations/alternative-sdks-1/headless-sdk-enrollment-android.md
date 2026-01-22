@@ -1,7 +1,7 @@
 ---
 title: Headless SDK (Enrollment Android)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
@@ -24,7 +24,7 @@ The Headless SDK includes core features like:
 
 For merchants requiring a pre-built UI solution or simpler integration, consider using our other SDK implementations:
 
-* [Full SDK](doc:full-checkout-android)
+* [Full SDK](doc:android)
 * [Lite SDK](doc:enrollment-android)
 
 ## Requirements
@@ -153,7 +153,7 @@ Use the `apiClientEnroll` function to start the enrollment process. This functio
 
 | Parameter          | Description                                                                                                                                                                                                                            |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:quickstart) page. |
 | `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
 
 The following code block shows an example of the parameter configuration:

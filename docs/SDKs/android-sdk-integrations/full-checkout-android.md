@@ -2,7 +2,7 @@
 title: Full SDK (Android)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Full SDK
   description: >-
@@ -142,7 +142,7 @@ Configure the checkout with the following options:
 | Parameter              | Description                                                                                                                                                                               |
 | :--------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | A unique identifier for the checkout session associated with the payment. It is required to initialize the payment process and grants access to the customer's available payment methods. |
-| `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                            |
+| `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:quickstart) for a complete list of supported countries and their codes.                            |
 | `callbackPaymentState` | A function that returns the current payment process. It receives `paymentState` and `paymentSubState` values. You don't need to send this function if you don't need the result.          |
 | `merchantSessionId`    | An identifier used by the merchant to track the payment.                                                                                                                                  |
 
@@ -302,7 +302,7 @@ The one-time token will be shared by Yuno using the `callbackOTT` function you p
 
 ## Step 8: Create the payment
 
-After receiving the one-time token from [Step 7](doc:full-checkout-android#step-7-get-the-one-time-token-ott), create the payment using the [Create payment endpoint](https://docs.y.uno/reference/create-payment). Use the `checkout_session` from [Step 3](doc:full-checkout-android#step-3-create-the-checkout-session) and the one-time token to create the payment.
+After receiving the one-time token, create the payment using the [Create payment endpoint](https://docs.y.uno/reference/create-payment). Use the `checkout_session` and the one-time token to create the payment. For the updated Android flow, see the [Android SDK integration guide](doc:android).
 
 The response from the Create payment endpoint will include the parameter `sdk_action_required`, which defines if additional actions are required to finish the payment based on the payment type.
 

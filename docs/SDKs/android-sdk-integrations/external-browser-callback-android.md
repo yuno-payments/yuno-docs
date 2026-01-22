@@ -1,7 +1,7 @@
 ---
 title: Handle External Browser Return (callback_url)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Handle external browser return (callback_url)
   description: >-

@@ -1,7 +1,7 @@
 ---
 title: Lite SDK (Enrollment Web)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
@@ -14,7 +14,7 @@ Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK enrol
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Lite SDK implementation, please refer to the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Lite SDK implementation, please refer to the [SDK Integration Overview](doc:quickstart) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -193,7 +193,7 @@ The configuration and mounting are done in the same step for the Enrollment Lite
 | Parameter | Description |
 | --- | --- |
 | `customerSession` | Refers to the current payment's [customer session](ref:create-customer). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`. |
-| `country_code` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](doc:country-coverage-yuno-sdk). |
+| `country_code` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](doc:quickstart). |
 | `language` | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available. |
 | `showLoading` | Controls visibility of the Yuno loading/spinner page during the payment process. |
 | `onLoading` | Required to receive notifications about server calls or loading events. |

@@ -2,7 +2,7 @@
 title: Lite SDK (Enrollment)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Lite SDK (Enrollment)
   description: >-
@@ -18,9 +18,9 @@ The **Lite SDK** provides full control over your payment experience. It allows y
 * Control the payment methods displayed to your customers.
 * Enroll new payment methods to the customer’s account.
 
-This page focuses on the **enrollment** process. For details on the payment process, refer to [Lite SDK (Payment)](doc:the-ultimate-checkout-lite).
+This page focuses on the **enrollment** process. For details on the payment process, refer to [Lite SDK (Payment)](doc:web).
 
-If you wish to save cards during the payment, you can do so while the customer pays. For more information, see [Lite SDK (Payment)](doc:the-ultimate-checkout-lite#enroll-a-credit-card-while-paying).
+If you wish to save cards during the payment, you can do so while the customer pays. For more information, see [Save During Payment](doc:web#save-during-payment).
 
 ## Enrollment workflow
 

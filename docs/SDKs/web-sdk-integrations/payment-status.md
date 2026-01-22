@@ -2,7 +2,7 @@
 title: Payment Status
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Payment Status
   description: >-
@@ -61,7 +61,7 @@ yuno.mountStatusPayment({
 | Parameter           | Description                                                                                                                                                                                                       |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`   | The checkout session ID for the payment you want to monitor                                                                                                                                                       |
-| `countryCode`       | The country code for the payment process. See [Country Coverage](doc:country-coverage-yuno-sdk) for supported countries                                                                                           |
+| `countryCode`       | The country code for the payment process. See [Country Coverage](doc:quickstart) for supported countries                                                                                           |
 | `language`          | Language for the status display. Supported options: en, fr, jp                                                                                                                                                    |
 | `yunoPaymentResult` | Callback function that receives the payment status. The data parameter can be: 'READY_TO_PAY', 'CREATED', 'SUCCEEDED', 'REJECTED', 'CANCELLED', 'ERROR', 'DECLINED', 'PENDING', 'EXPIRED', 'VERIFIED', 'REFUNDED' |
 

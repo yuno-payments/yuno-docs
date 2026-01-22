@@ -122,7 +122,7 @@ For the full list of languages supported, see [Supported Languages](doc:supporte
 ## Need Help?
 
 * **[Choose the Right Integration](doc:new-choose-the-right-integration-for-you)**: Compare all integration options
-* **[Country Coverage](doc:country-coverage-yuno-sdk)**: Check supported countries
+* **[Country Coverage](doc:quickstart)**: Check supported countries
 * **[SDK Integration Overview](doc:new-sdk-integration-overview)**: Understand different integration approaches
 
 ## Stay Updated

@@ -2,7 +2,7 @@
 title: Lite SDK (Enrollment Android)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Lite SDK (Enrollment)
   description: >-
@@ -26,7 +26,7 @@ The Lite SDK includes core features like:
 * Basic enrollment status handling
 * Essential error management
 
-For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:full-checkout-android) instead.
+For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](doc:android) instead.
 
 ## Requirements
 
@@ -221,7 +221,7 @@ The following table describes the `startEnrollment` parameters:
 | Parameter                 | Description                                                                                                                                                                                                                                                                                                      |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `customerSession`         | The session customer associated with the current enrollment process.                                                                                                                                                                                                                                             |
-| `countryCode`             | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes.                                                                                                                                                   |
+| `countryCode`             | Country code where the payment is performed. See [Country coverage](doc:quickstart) for a complete list of supported countries and their codes.                                                                                                                                                   |
 | `showEnrollmentStatus`    | Indicates whether the enrollment status should be shown. This parameter is optional and defaults to `true`.                                                                                                                                                                                                      |
 | `callbackEnrollmentState` | A function that returns the current state of the enrollment process. This parameter is optional and defaults to `null`. To register this callback, you must call `initEnrollment` method in the `onCreate` method of the activity. Check the [possible states](#callback-enrollment-state) that can be returned. |
 | `requestCode`             | It is an optional parameter you must inform if you are going to use the `onActivityResult` method to capture the enrollment states.                                                                                                                                                                              |

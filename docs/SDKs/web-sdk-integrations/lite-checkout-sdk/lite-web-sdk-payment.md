@@ -1,7 +1,7 @@
 ---
 title: Lite SDK (Payment Web)
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
@@ -39,7 +39,7 @@ The following table lists all required parameters and their descriptions. For op
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                                         |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                               |
-| `countryCode`                     | Determines the country for which the payment process is being configured. See [Country coverage](doc:country-coverage-yuno-sdk) for supported countries and their codes. |
+| `countryCode`                     | Determines the country for which the payment process is being configured. See [Country coverage](doc:quickstart) for supported countries and their codes. |
 | `language`                        | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available.        |
 | `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                              |
 | `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                |
@@ -88,7 +88,7 @@ yuno.startCheckout({
 
 ## Step 4: Mount the SDK
 
-Next, you have to mount the SDK, presenting the checkout based on the payment method selected by your customer. Remember, when using the Lite SDK, you're responsible for displaying the payment methods and capturing the customer's selection. Access [Lite SDK (Payment)](doc:the-ultimate-checkout-lite) for additional information.
+Next, you have to mount the SDK, presenting the checkout based on the payment method selected by your customer. Remember, when using the Lite SDK, you're responsible for displaying the payment methods and capturing the customer's selection. Access [Lite SDK (Payment)](doc:quickstart) for additional information.
 
 Use the `yuno.mountCheckoutLite()` function by selecting an HTML element and using a valid CSS selector (`#`, `.`, `[data-*]`) to display the checkout for the selected payment method.
 

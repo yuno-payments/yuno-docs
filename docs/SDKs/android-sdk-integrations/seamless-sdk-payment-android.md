@@ -2,7 +2,7 @@
 title: Seamless SDK (Payment Android)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''
@@ -29,7 +29,7 @@ The Seamless SDK includes features like:
 * Advanced payment status handling
 * Comprehensive error management
 
-For merchants requiring complete UI control or more advanced features, consider using our [Full SDK](doc:full-checkout-android) instead.
+For merchants requiring complete UI control or more advanced features, consider using our [Full SDK](doc:android) instead.
 
 <Image align="center" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
@@ -162,7 +162,7 @@ startCheckout(
 | Parameter              | Description                                                                                                                                                    |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | The `checkout_session` is related to the payment.                                                                                                              |
-| `country_code`         | Country code where the payment is performed. See [Country coverage](doc:country-coverage-yuno-sdk) for a complete list of supported countries and their codes. |
+| `country_code`         | Country code where the payment is performed. See [Country coverage](doc:quickstart) for a complete list of supported countries and their codes. |
 | `callbackPaymentState` | A function that returns the current payment process. Optional if you don't need the result.                                                                    |
 | `merchantSessionId`    | Optional identifier for merchant session tracking. Default is null.                                                                                            |
 

@@ -2,7 +2,7 @@
 title: Headless SDK (Enrollment Web)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Head
   description: >-
@@ -32,7 +32,7 @@ To execute the enrollment process, you need to provide the `customer_session` to
 
 ## Step 1: Include the library in your project
 
-Before proceeding with the Headless SDK implementation, see the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
+Before proceeding with the Headless SDK implementation, see the [SDK Integration Overview](doc:quickstart) for detailed instructions on how to properly integrate the SDK into your project.
 
 The integration guide provides three flexible methods:
 
@@ -82,7 +82,7 @@ Configure the enrollment with the following options:
 
 | Parameter          | Description                                                                                                                                                                                                                                                                                   |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `country_code`     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `country_code`     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page. |
 | `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                          |
 
 ```javascript

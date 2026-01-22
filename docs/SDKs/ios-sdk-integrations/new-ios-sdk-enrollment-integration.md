@@ -113,7 +113,7 @@ class ViewController: UIViewController, YunoEnrollmentDelegate {
 | Parameter | Description |
 |-----------|-------------|
 | `customerSession` | The unique identifier for the customer session. |
-| `countryCode` | Country code where the enrollment is performed. See [Country Coverage](doc:country-coverage-yuno-sdk) for supported countries. |
+| `countryCode` | Country code where the enrollment is performed. See [Country Coverage](doc:quickstart) for supported countries. |
 | `language` | Language code for the enrollment forms (e.g., `"en"`, `"es"`, `"pt"`). |
 | `viewController` | The `UIViewController` used to present the enrollment flow. Required for proper UI presentation. |
 | `yunoEnrollmentResult(_:)` | Called when the enrollment process completes with the final result. |

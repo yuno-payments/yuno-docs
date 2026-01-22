@@ -57,7 +57,7 @@ The following table lists all the available parameters for the `startCheckout` m
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                                                                                  |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                        |
-| `country_code`                    | Determines the country for which the payment process is being configured. See [Country coverage](doc:country-coverage-yuno-sdk) for supported countries and their codes.                                          |
+| `country_code`                    | Determines the country for which the payment process is being configured. See [Country coverage](doc:quickstart) for supported countries and their codes.                                          |
 | `language`                        | Defines the language for payment forms. Options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>tr (Turkish)</li></ul>. |
 | `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                                                                       |
 | `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                                                         |
@@ -92,7 +92,7 @@ yuno.startCheckout({
 
 ## Step 4: Mount the SDK
 
-Mount the SDK to present the checkout based on the payment method selected by your customer. Remember, when using the Lite SDK, you're responsible for displaying the payment methods and capturing the customer's selection. See [Lite SDK (Payment)](doc:the-ultimate-checkout-lite) for additional information.
+Mount the SDK to present the checkout based on the payment method selected by your customer. Remember, when using the Lite SDK, you're responsible for displaying the payment methods and capturing the customer's selection. See [Lite SDK (Payment)](doc:quickstart) for additional information.
 
 Use the `yuno.mountCheckoutLite()` function to display the checkout for the selected payment method:
 
@@ -500,7 +500,7 @@ const yuno = await Yuno.initialize(publicApiKey, undefined, options);
 Learn about the additional configurations from the Lite SDK by accessing [Complementary Features](#complementary-features). You can also access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
-* [Payment Status](doc:payment-status): Update the user about the payment process
+* [Payment Status](doc:web): Update the user about the payment process
 
 ## Stay Updated
 

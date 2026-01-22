@@ -71,7 +71,7 @@ The Yuno Payouts feature is available through Yuno API. You can use the API to c
 
 Payouts could be made to different payment methods, such as bank accounts and even card, depending on the provider. For Payouts to a card payment method where the merchant does not have the credit card information (not being PCI compliant) Yuno lets them send the Payout if the card was previously used in a payment. This is called a "Referenced Payout". 
 
-In order to be able to use this, you'll need to first charge the customer using one of our PCI compliant solutions (Any [Yuno SDK](doc:yuno-sdks)) and then make a Payout indicating the original transaction where we can find the credit card information. 
+In order to be able to use this, you'll need to first charge the customer using one of our PCI compliant solutions (Any [Yuno SDK](doc:quickstart)) and then make a Payout indicating the original transaction where we can find the credit card information. 
 
 ```json
 "withdrawal_method": {

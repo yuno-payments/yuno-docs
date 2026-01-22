@@ -2,7 +2,7 @@
 title: SDK Integration Overview
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Step by Step Integration Process
   description: >-
@@ -16,7 +16,7 @@ next:
 ---
 This page guides you through the available integration methods with Yuno. After [setting up your Yuno account](doc:step-1-set-up-your-account), you can choose the right SDK and learn about referencing the correct endpoints and integrating additional services.
 
-Before proceeding, choose the integration method that best suits your needs. For an overview of available options and their capabilities, see [Choose the Right Integration for You](doc:choose-the-right-integration-for-you).
+Before proceeding, choose the integration method that best suits your needs. For an overview of available options and their capabilities, see [Choose the Right Integration for You](doc:quickstart).
 
 ## Available integration options
 

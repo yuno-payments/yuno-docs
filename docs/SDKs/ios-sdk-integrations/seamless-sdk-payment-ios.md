@@ -2,7 +2,7 @@
 title: Seamless SDK (Payment iOS)
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: ''
   description: ''

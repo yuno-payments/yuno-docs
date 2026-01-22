@@ -52,7 +52,7 @@ You need to cover some steps to integrate Google Pay into your system using Yuno
 
 After performing the integration on Yuno, you can enable Google Pay with Yuno and perform integration tests using the following steps:
 
-1. First, integrate [Yuno's SDK](doc:android-sdk-integrations) into your app to ensure a smooth connection between your application and Yuno's platform.
+1. First, integrate [Yuno's SDK](doc:android) into your app to ensure a smooth connection between your application and Yuno's platform.
 2. Create a Google Wallet Test Account:
    1. Visit the [Google Wallet Test Account Sign-In](https://accounts.google.com/InteractiveLogin/signinchooser?continue=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F&followup=https%3A%2F%2Fpay.google.com%2Fbusiness%2Fconsole%2F&osid=1&passive=1209600&ifkv=AeDOFXjl_LLJZyuykU06uleha4p7uSXJNnLCv_n2jshX6QVJYCy9AKq3K28mIfpgyfS2NDHfimnAFg&flowName=GlifWebSignIn&flowEntry=ServiceLogin) page.
    2. If you don't have a Google account, you'll need to create one to proceed.
