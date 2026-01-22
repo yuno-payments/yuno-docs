@@ -146,7 +146,7 @@ The private key will be available as `MerchantIdentityCertificatePrivateKey.pem`
 > You must also host Apple's `apple-developer-merchantid-domain-association` file at:
 >
 > ```
-> `https://example.com/.well-known/apple-developer-merchantid-domain-association`
+> https://example.com/.well-known/apple-developer-merchantid-domain-association
 > ```
 >
 > Replace `example.com` with your actual domain name.
