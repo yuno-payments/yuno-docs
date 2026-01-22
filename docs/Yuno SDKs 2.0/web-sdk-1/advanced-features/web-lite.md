@@ -5,7 +5,7 @@ hidden: false
 metadata:
   robots: index
 ---
-## Payment
+# Payment
 
 ## Step 3: Create a customer session and an enrollment payment method object
 
