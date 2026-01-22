@@ -5,37 +5,25 @@ hidden: false
 metadata:
   robots: index
 ---
-# Payment
+<br />
 
-## Step 3: Start the checkout process
-
-```javascript
-const secureFields = yuno.secureFields({
-  countrycode: country,
-  checkoutSession,
-  installmentEnable: false
-});
-```
-
-Start the checkout process using the `secureFields` function:
-
-### Start checkout parameters
-
-| Parameter           | Description                                                                                                                                                                                                         |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countrycode`*      | Specifies the country for the payment process through an `ENUM` value with the desired country code. Visit the [Country Coverage](doc:country-coverage-yuno-sdk) page for the the full list of supported countries. |
-| `checkoutSession`*  | The payment's [checkout session](ref:create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                    |
-| `installmentEnable` | Optional, set `false` by default. If set `true`, the installments set for the account will be shown as a secure field.                                                                                              |
-
-> 📘 Customer and Merchant-Initiated Transactions
+<div
+  style={{
+  backgroundColor: "#FFFFFF",
+  padding: "16px",
+  display: "flex",
+  justifyContent: "center",
+  borderRadius: "14px",
+  maxWidth: "500px",
+  margin: "auto"
+}}
 >
-> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You can find more information in [Stored credentials](../docs/stored-credentials). This page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases (in-store purchases, ATM withdrawals, etc.).
+  <Image align="center" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" width="500px" />
+</div>
 
-## Step 4: Mount the Secure Fields
+<br />
 
-After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
-
-See configurations available:
+## `secureFields.create`
 
 | Parameters                      | Description                                                                                                                                                                         |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -72,13 +60,43 @@ The following code block shows an example of the parameter configuration for thr
 | `options.onFocus`               | Callback function triggered when field gains focus                                                                                                |
 | `options.onRenderedSecureField` | Callback function triggered when the secure field has finished rendering                                                                          |
 
+# Payment
+
+
+
 ### Data Available in onChange Callback
 
-When the `onChange` callback is triggered, the `data` parameter contains:
+<br />
 
-* **Card IIN Information**: Card issuer details including scheme, brand, type, and issuer information
-* **Installment Plans**: Available installment options for the account if configured
-* **Loading States**: `isCardIINLoading` and `isInstallmentLoading` boolean flags
+### Start checkout parameters
+
+| Parameter           | Description                                                                                                                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `countrycode`*      | Specifies the country for the payment process through an `ENUM` value with the desired country code. Visit the [Country Coverage](doc:country-coverage-yuno-sdk) page for the the full list of supported countries. |
+| `checkoutSession`*  | The payment's [checkout session](ref:create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                    |
+| `installmentEnable` | Optional, set `false` by default. If set `true`, the installments set for the account will be shown as a secure field.                                                                                              |
+
+## Step 3: Start the checkout process
+
+```javascript
+const secureFields = yuno.secureFields({
+  countrycode: country,
+  checkoutSession,
+  installmentEnable: false
+});
+```
+
+Start the checkout process using the `secureFields` function:
+
+
+
+> 📘 Customer and Merchant-Initiated Transactions
+>
+> Payments can be initiated by the customer (CIT) or by the merchant (MIT). You can find more information in [Stored credentials](../docs/stored-credentials). This page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases (in-store purchases, ATM withdrawals, etc.).
+
+## Step 4: Mount the Secure Fields
+
+After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
 
 ```javascript
 const secureNumber = secureFields.create({
@@ -171,21 +189,11 @@ const secureNumber = secureFields.create({
   secureCvv.render('#cvv')
 ```
 
-Below, you can see a GIF showing how you can configure the Secure Fields:
+When the `onChange` callback is triggered, the `data` parameter contains:
 
-<div
-  style={{
-  backgroundColor: "#FFFFFF",
-  padding: "16px",
-  display: "flex",
-  justifyContent: "center",
-  borderRadius: "14px",
-  maxWidth: "500px",
-  margin: "auto"
-}}
->
-  <Image align="center" src="https://files.readme.io/9cca28f-secure-fields-checkout-sdk-1.gif" width="500px" />
-</div>
+* **Card IIN Information**: Card issuer details including scheme, brand, type, and issuer information
+* **Installment Plans**: Available installment options for the account if configured
+* **Loading States**: `isCardIINLoading` and `isInstallmentLoading` boolean flags
 
 ## Step 5: Generate an OTT (one-time token)
 
@@ -333,27 +341,7 @@ const secureFields = yuno.secureFields({
 
 ### Step 5: Mount the Secure Fields
 
-After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
-
-The following table shows all configurations available:
-
-| Parameters                      | Description                                                                                                                                                                         |
-| :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                          | The available names for field names are **cvv**, **pan**, or **expiration**.                                                                                                        |
-| `options.placeholder`           | Default placeholder for the field.                                                                                                                                                  |
-| `options.styles`                | Additional CSS styles for the current field.                                                                                                                                        |
-| `options.label`                 | Field visible label.                                                                                                                                                                |
-| `options.showError`             | Defines if errors will be shown. Available options are `true` and `false`.                                                                                                          |
-| `options.onChange`              | An auxiliary function that can be configured and will run when the field content changes. Indicates if the fields have errors.                                                      |
-| `options.onBlur`                | An auxiliary function that can be configured and will run when blurring from the input.                                                                                             |
-| `options.validateOnBlur`        | Change the validation behavior, improving the user experience by providing validation feedback after the field loses focus. It is an optional parameter that is `false` as default. |
-| `options.onFocus`               | An auxiliary function that can be configured and will run when focussing on the input.                                                                                              |
-| `options.onRenderedSecureField` | An auxiliary function that can be configured and will run when the element finishes rendering                                                                                       |
-| `options.errorMessage`          | This allows for the definition of the field's error message.                                                                                                                        |
-
-Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
-
-The following code block shows an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user:
+The following code block shows an example of the parameter configuration for three Secure Fields, and as they are mounted, the fields are presented to the user::
 
 ```javascript
 const secureNumber = secureFields.create({
@@ -444,11 +432,31 @@ secureCvv.render('#cvv')
 
 ```
 
+After defining the parameters, you will define, configure, and mount the Secure Fields. For each Secure Field, you need to define the `name` and `options` when creating it with the `secureFields.create` function.
+
+**See mount secure fields link**
+
+The following table shows all configurations available:
+
+| Parameters                      | Description                                                                                                                                                                         |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                          | The available names for field names are **cvv**, **pan**, or **expiration**.                                                                                                        |
+| `options.placeholder`           | Default placeholder for the field.                                                                                                                                                  |
+| `options.styles`                | Additional CSS styles for the current field.                                                                                                                                        |
+| `options.label`                 | Field visible label.                                                                                                                                                                |
+| `options.showError`             | Defines if errors will be shown. Available options are `true` and `false`.                                                                                                          |
+| `options.onChange`              | An auxiliary function that can be configured and will run when the field content changes. Indicates if the fields have errors.                                                      |
+| `options.onBlur`                | An auxiliary function that can be configured and will run when blurring from the input.                                                                                             |
+| `options.validateOnBlur`        | Change the validation behavior, improving the user experience by providing validation feedback after the field loses focus. It is an optional parameter that is `false` as default. |
+| `options.onFocus`               | An auxiliary function that can be configured and will run when focussing on the input.                                                                                              |
+| `options.onRenderedSecureField` | An auxiliary function that can be configured and will run when the element finishes rendering                                                                                       |
+| `options.errorMessage`          | This allows for the definition of the field's error message.                                                                                                                        |
+
+Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
+
 > 📘 Enrollment for Payouts
 >
 > If you are enrolling a credit card for the payouts flow, only the credit/debit pan is required, so you can just use the `secureNumber` object before creating the vaulted_token and ignore the `secureExpiration` and `secureCvv` objects.
-
-After they are mounted, the three secure fields will be shown:
 
 ### Step 6: Create Vaulted Token
 
