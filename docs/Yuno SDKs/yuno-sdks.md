@@ -2,7 +2,7 @@
 title: Yuno SDKs Introduction
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Yuno SDKs
   description: >-
