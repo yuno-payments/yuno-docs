@@ -46,19 +46,11 @@ For detailed information, see the [Web SDK Common Reference](doc:web-sdk-common-
 
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK payment functionality in your application.
 
-### Step 1: Include the library in your project
-
-Ensure the Yuno SDK file is included in your webpage before closing the `</body>` tag. Refer to the example below:
-
-```html
-<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
-```
-
 > 📘 TypeScript Support
 >
 > If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
 
-### Step 2: Initialize SDK with the public key
+### Step 1: Initialize SDK with the public key
 
 In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](doc:developers-credentials) guide.
 
@@ -68,7 +60,7 @@ Like the example below, use the initialized class that is attributed to the `yun
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
-### Step 3: Start the checkout process
+### Step 2: Start the checkout process
 
 You will start the checkout process. To do it, use the `yuno.startCheckout` function and provide the necessary parameters.
 
@@ -125,7 +117,7 @@ yuno.startCheckout({
 >
 > The step-by-step presented on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
-### Step 4: Mount the SDK
+### Step 3: Mount the SDK
 
 Next, you have to mount the SDK, presenting the checkout based on the payment method selected by your customer. Remember, when using the Lite SDK, you're responsible for displaying the payment methods and capturing the customer's selection. Access [Lite SDK (Payment)](doc:the-ultimate-checkout-lite) for additional information.
 
@@ -154,7 +146,7 @@ For PayPal, the PayPal payment sheet now opens immediately after the shopper sel
 >
 > Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See [Mount external buttons](#mount-external-buttons) for more information.
 
-### Step 5: Mount external buttons (Optional)
+### Step 4: Mount external buttons (Optional)
 
 If you want to use Google Pay or Apple Pay in the Lite SDK, you can mount these payment buttons externally using the `mountExternalButtons` method. This method allows you to choose where each button is displayed in your UI.
 
@@ -191,7 +183,7 @@ Or unmount all external buttons at once:
 yuno.unmountAllExternalButtons();
 ```
 
-### Step 6: Initiate the payment process
+### Step 5: Initiate the payment process
 
 After the user has selected a payment method, remember to call `yuno.startPayment()` to initiate the payment flow. Below, you will find an example where `yuno.startPayment()` is called when the user clicks on `button-pay`:
 
@@ -203,7 +195,7 @@ PayButton.addEventListener("click", () => {
 });
 ```
 
-### Step 7: Get the OTT (one-time token)
+### Step 6: Get the OTT (one-time token)
 
 Once the customer fills out the requested data in Yuno's payment forms, the SDK provides the one-time token. The configuration function `yunoCreatePayment(oneTimeToken)` is then triggered with the one-time token.
 
@@ -221,7 +213,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation);
 >
 > The merchant is responsible for managing the loader. Yuno provides a default loader option, but merchants may implement their own loader if preferred. In that case, they are responsible for making the necessary configurations.
 
-### Step 8: Create the payment
+### Step 7: Create the payment
 
 Once you have completed the steps described before, you will be able to create a payment. The back-to-back payment creation must be carried out using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant should call their backend to create the payment within Yuno, using the one-time token and the checkout session.
 
@@ -233,17 +225,11 @@ Once you have completed the steps described before, you will be able to create a
 
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK enrollment functionality in your application.
 
-### Step 1: Include the library in your project
-
-Before proceeding with the Lite SDK implementation, please refer to the [SDK Integration Overview](doc:build-your-integration) for detailed instructions on how to properly integrate the SDK into your project.
-
-For detailed implementation steps, see the [Web SDK Common Reference](doc:web-sdk-common-reference).
-
 > 📘 TypeScript Library
 >
 > If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods available in the Yuno Web SDK.
 
-### Step 2: Initialize SDK with the public key
+### Step 1: Initialize SDK with the public key
 
 In your JavaScript application, create an instance of the `Yuno` class by providing a valid **PUBLIC_API_KEY**. Check the [Get your API credentials](https://docs.y.uno/docs/developers-credentials) guide if you do not have your credentials. In the example below, the initialized class is attributed to the `yuno`constant.
 
@@ -251,7 +237,7 @@ In your JavaScript application, create an instance of the `Yuno` class by provid
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
-### Step 3: Create a customer session and an enrollment payment method object
+### Step 2: Create a customer session and an enrollment payment method object
 
 Before continuing with the process, you will need to create a [customer session](ref:create-customer-session) and a [payment method object](ref:enroll-payment-method-checkout) to use in the setup of your SDK Lite integration for enrollment. While creating the payment method object, you will need to define which payment method is going to be available for your customer to enroll.
 
@@ -323,7 +309,7 @@ yuno.mountEnrollmentLite({
 >
 > In case you want to verify cards (zero value authorization) before the enrollment, you can complete the `verify` struct while defining the payment method object for the customer session.
 
-### Step 4: Mount the enrollment lite
+### Step 3: Mount the enrollment lite
 
 The configuration and mounting are done in the same step for the Enrollment Lite. To do it, use the `yuno.mountEnrollmentLite` function and provide the necessary parameters. The following table lists all parameters and their descriptions.
 

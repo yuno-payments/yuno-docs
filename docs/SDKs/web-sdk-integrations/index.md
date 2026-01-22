@@ -27,9 +27,7 @@ Select one of the user-friendly Web integration options available and start your
 
   <YunoCard title="Secure Fields" href="../docs/secure-fields-payment" titleSize="h4" description="Create and customize your own checkout with prebuilt UI components" badge="Secure" />
 
-  <YunoCard title="Headless SDK (Payment)" href="../docs/headless-sdk-payment-web" titleSize="h4" description="Customize the checkout without having to be PCI compliant" badge="Advanced" />
-
-  <YunoCard title="Headless SDK (Enrollment)" href="../docs/headless-sdk-enrollment-web" titleSize="h4" description="Customize the enrollment of new payment methods" badge="Advanced" />
+  <YunoCard title="Headless SDK" href="../docs/headless-sdk-web" titleSize="h4" description="Customize the checkout and enrollment without having to be PCI compliant" badge="Advanced" />
 
   <YunoCard title="Seamless SDK" href="../docs/seamless-sdk-payment-web" titleSize="h4" description="Fastest integration with pre-built UI components and maximum flexibility" badge="Recommended" />
 

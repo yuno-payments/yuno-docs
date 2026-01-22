@@ -1,12 +1,12 @@
 ---
-title: Headless SDK (Payment Web)
+title: Headless SDK (Web)
 excerpt: ''
 deprecated: false
 hidden: false
 metadata:
-  title: Headless SDK (Payment Web)
+  title: Headless SDK (Web)
   description: >-
-    Complete guide to implement Yuno's Headless Web SDK for payment functionality
+    Complete guide to implement Yuno's Headless Web SDK for payment and enrollment functionality
   robots: index
 next:
   description: ''
@@ -17,34 +17,30 @@ next:
 >
 > We recommend using the [Web Seamless SDK](seamless-sdk-payment-web) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
 
-Yuno's Headless SDK lets you create payments. Note that when using the Headless SDK, you will need to request and send via API all the mandatory fields the payment provider requires to generate payment in their API.
+Yuno's Headless SDK lets you create payments and enroll payment methods with full control over the UI. When using the Headless SDK, you will need to request and send via API all the mandatory fields the payment provider requires to generate payments in their API.
+
+## Use cases
+
+The Headless SDK supports two main use cases:
+
+### Payment
 
 Yuno's Headless SDK enables you to create payments in two different scenarios:
 
 * Create a [One-Time Use Token](doc:tokens) using credit card information, then create a payment.
 * Create a [One-Time Use Token](doc:tokens) using a `vaulted_token` from a previously enrolled credit card, then create a payment.
 
-The following steps describe creating a payment using Yuno's Headless SDK.
+### Enrollment
 
-## Step 1: Include the library in your project
+Yuno's Headless SDK lets you enroll in payment methods and tokenize cards, saving them for future usage.
 
 Before proceeding with the Headless SDK implementation, see the [Web SDK Common Reference](doc:web-sdk-common-reference) for detailed instructions on how to properly integrate the SDK into your project.
-
-The integration guide provides three flexible methods:
-
-* **Method 1 (HTML)**: Add a single script tag to your HTML file
-* **Method 2 (Dynamic JavaScript)**: Load the SDK programmatically with custom error handling
-* **Method 3 (NPM)**: Use our NPM package in modern JavaScript applications
-
-For detailed implementation steps for each method, see the [Web SDK Common Reference](doc:web-sdk-common-reference).
-
-Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the Headless checkout functionality.
 
 > 📘 TypeScript Library
 >
 > If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that you can use to see all available methods in the Yuno Web SDK.
 
-## Step 2: Initialize Headless SDK with the public key
+## Step 1: Initialize Headless SDK with the public key
 
 In your JavaScript application, create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`.
 
@@ -56,11 +52,15 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 >
 > See the credentials page for more information: [https://docs.y.uno/reference/authentication](https://docs.y.uno/reference/authentication)
 
-## Step 3: Start the checkout process
+## Payment flow
+
+The following steps describe creating a payment using Yuno's Headless SDK.
+
+### Step 2: Start the checkout process
 
 Next, you will start the checkout process using the `apiClientPayment` function, providing the necessary configuration parameters.
 
-### Parameters
+#### Parameters
 
 Configure the payment with the following options:
 
@@ -76,7 +76,7 @@ const apiClientPayment = yuno.apiClientPayment({
 });
 ```
 
-## Step 4: Generate token
+### Step 3: Generate token
 
 After collecting all user information, you can start the payment. First, you need to create a one-time token (OTT) using the function `apiClientpayment.generateToken`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. The following examples show different scenarios to create the one-time token:
 
@@ -115,7 +115,7 @@ const oneTimeToken = await apiClientPayment.generateToken({
 });
 ```
 
-### Parameters for Example 1
+#### Parameters for Example 1
 
 | Parameter                      | Description                                                                   |
 | ------------------------------ | ----------------------------------------------------------------------------- |
@@ -149,7 +149,7 @@ const oneTimeToken = await apiClientPayment.generateToken({
 });
 ```
 
-### Parameters for Example 2
+#### Parameters for Example 2
 
 | Parameter                      | Description                                                             |
 | ------------------------------ | ----------------------------------------------------------------------- |
@@ -254,7 +254,7 @@ The following code block shows the `apiClientPayment.generateToken` function res
 }
 ```
 
-## Step 5: Create the Payment
+### Step 4: Create the Payment
 
 After receiving the one-time token, you can create the payment using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment) to get the final payment result. You will inform the one-time token received in [Step 4](#step-4-generate-token) through the request's `payment_method.token` parameter. The following code block shows a request example for creating a payment:
 
@@ -285,9 +285,9 @@ After receiving the one-time token, you can create the payment using the [Create
 The endpoint response provides the `sdk_action_required` parameter that defines if additional actions are necessary to conclude the payment:
 
 * If your customer selects a synchronous payment method, the payment is completed instantly. In this scenario, the field `sdk_action_required` in the API response will be `false`, and the payment process concludes at this step.
-* When an additional interaction of the SDK is needed to complete the payment flow, `sdk_action_required` will be `true`. If this is the case, you need to follow the instructions from [Step 6](#step-6-get-the-3ds-challenge-url).
+* When an additional interaction of the SDK is needed to complete the payment flow, `sdk_action_required` will be `true`. If this is the case, you need to follow the instructions from [Step 5](#step-5-get-the-3ds-challenge-url).
 
-## Step 6: Get the 3DS challenge URL
+### Step 5: Get the 3DS challenge URL
 
 As described on the [3DS Card Verification](doc:3d-secure) page, a payment with 3DS may require an additional challenge to check the customer's identity. If an additional verification step is necessary related to a 3DS verification challenge, the response to the [Create Payment](ref:create-payment) endpoint will have the following information:
 
@@ -336,7 +336,7 @@ You are responsible for redirecting your customers to the URL provided by the `r
 
 To complete the Headless SDK payment flow, you need to use [Yuno Webhooks](doc:configure-webhooks), which will promptly notify you about the outcome of the 3DS challenge and the final payment status. Using webhooks ensures that you receive real-time updates on the progress of the payment transaction. In addition to the webhooks, you can retrieve the payment information using the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint.
 
-## Step 7: Get payment actions
+### Step 6: Get payment actions
 
 Sometimes the payment may require an extra action to continue the payment flow. To determine what action is needed, you should call the `getContinuePaymentAction` method, providing the `checkoutSession` used to create the payment.
 
@@ -346,7 +346,7 @@ const data = await apiClientPayment.getContinuePaymentAction({ checkoutSession: 
 
 The `getContinuePaymentAction` method returns a `ContinuePaymentAction` object that describes the specific action required to continue the payment flow, depending on the provider and the specific step required.
 
-### `ContinuePaymentAction` response structure
+#### `ContinuePaymentAction` response structure
 
 The response contains information about the type of action required and the necessary data to perform that action:
 
@@ -441,7 +441,7 @@ type ContinuePaymentAction = {
 };
 ```
 
-### `ContinuePaymentAction` Fields
+#### `ContinuePaymentAction` Fields
 
 | Field                     | Description                                                                      |
 | ------------------------- | -------------------------------------------------------------------------------- |
@@ -459,7 +459,7 @@ type ContinuePaymentAction = {
 | `info`                    | General information or messaging (e.g., show confirmation message)               |
 | `render_iframe`           | Used when the provider needs to render an iframe for user interaction            |
 
-### Provider Types and Actions
+#### Provider Types and Actions
 
 The following enums define the supported payment providers and possible actions:
 
@@ -497,7 +497,7 @@ export declare namespace Provider {
 }
 ```
 
-### Provider Types and Actions
+#### Provider Types and Actions
 
 | Provider Type     | Description                   |
 | ----------------- | ----------------------------- |
@@ -522,18 +522,18 @@ export declare namespace Provider {
 | `REDIRECT_URL`                | Redirect the user to external page  |
 | `FORM`                        | Render a form to collect user input |
 | `INFO`                        | Display informational screen        |
-| `OTP`                         | Require OTP input from user         |
+| `OTP`                         | Require OTP input from user          |
 | `SDK_PROVIDER`                | Use SDK to process payment          |
 | `THREE_D_SECURE_REDIRECT_URL` | Start 3DS authentication            |
 | `REQUEST_HTML`                | Submit an HTML form request         |
 | `RENDER_HTML`                 | Render static HTML in the app       |
 | `RENDER_IFRAME`               | Render iframe for provider UI       |
 
-### Handling different action types
+#### Handling different action types
 
 Based on the `action` field in the response, you should handle each type of action accordingly:
 
-#### `REDIRECT_URL` Action
+##### `REDIRECT_URL` Action
 
 When the action is `REDIRECT_URL`, you should redirect the user to the URL provided in `data.redirect.init_url`:
 
@@ -543,7 +543,7 @@ if (data.action === "REDIRECT_URL") {
 }
 ```
 
-#### Other Action Types
+##### Other Action Types
 
 Each action type requires specific handling based on the data provided:
 
@@ -557,10 +557,110 @@ Each action type requires specific handling based on the data provided:
 >
 > The specific implementation for handling each action type will depend on your application's UI framework and requirements. Ensure you handle all possible action types that your configured payment providers might return.
 
+## Enrollment flow
+
+The following steps describe enrolling a payment method using Yuno's Headless SDK.
+
+### Requirements
+
+To execute the enrollment process, you need to provide the `customer_session` to start the enrollment process. To acquire the  `customer_session`, you need to:
+
+1. **Create a customer**: A customer is required to enroll in payments. Use the [Create Customer](ref:create-customer) endpoint to create new customers. In the response, you will receive the customer `id`, which you use to create the customer session.
+2. **Create the customer session**: Use the  customer `id` and the [Create Customer Session](ref:create-customer-session) endpoint to receive the `customer_session`.
+
+### Create a customer session
+
+To start the enrollment process, you need to provide the `customer_session`. First, you need to create a customer. You need a customer to enroll payments with. Use the [Create Customer](ref:create-customer) endpoint to create new customers. In the response, you will receive the customer `id`, which you use to create the customer session.
+
+After creating the customer, you can create the customer session. Use the  customer `id` and the [Create Customer Session](ref:create-customer-session) endpoint. The `customer_session` will be provided in the response. You need a new `customer_session` every time you enroll in a new payment method.
+
+### Create an enrollment payment method object
+
+You need an enrollment payment method object to set Headless SDK integration for enrollment. You can create one using the [Enroll Payment Method](ref:enroll-payment-method-checkout) endpoint. While creating the payment method object, you need to define which payment method your customer can enroll in. Currently, only CARD is available for Headless SDK.
+
+> 🚧 Verify Card
+>
+> If you want to verify cards (zero value authorization) before enrollment, you need to provide the `verify` object when creating the payment method object for the customer session.
+
+### Start the enrollment process
+
+Next, you will start the enrollment process using the `apiClientEnroll` function, providing the necessary configuration parameters.
+
+#### Parameters
+
+Configure the enrollment with the following options:
+
+| Parameter          | Description                                                                                                                                                                                                                                                                                   |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:country-coverage-yuno-sdk) page. |
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                          |
+
+```javascript
+const apiClientEnroll = yuno.apiClientEnroll({
+  country_code: "CO",
+  customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+});
+```
+
+### Generate a vaulted token
+
+After collecting all user information, you can start the enrollment. First, you need to create a `vaulted_token` using the function `apiClientEnroll.continueEnrollment`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. The following example shows how to create a `vaulted_token`:
+
+```javascript
+const vaultedTokenResponse = await apiClientEnroll.continueEnrollment({
+  customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+  payment_method: {
+    type: "CARD",
+    card: {
+      detail: {
+        expiration_month: 11,
+        expiration_year: 25,
+        number: "4111111111111111",
+        security_code: "123",
+        holder_name: "ANDREA B",
+        type: "DEBIT"
+      }
+    },
+    customer: {
+    }
+  }
+});
+```
+
+After enrolling the new card, you will receive the `vaulted_token`, which you can use to make payments in the future without asking for your customer's card information. The following code block shows an example of a response from the `apiClientEnroll.continueEnrollment` function:
+
+```json
+{
+ vaulted_token: "9104911d-5df9-429e-8488-ad41abea1a4b",
+ customer: {
+   session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+ },
+ status: "ENROLLED"
+}
+```
+
+> 📘 Possible Status Values
+>
+> The `status` field can have one of the following values:
+>
+> * `CREATED`
+> * `EXPIRED`
+> * `REJECTED`
+> * `READY_TO_ENROLL`
+> * `ENROLL_IN_PROCESS`
+> * `UNENROLL_IN_PROCESS`
+> * `IN_PROCESS`
+> * `ENROLLED`
+> * `DECLINED`
+> * `CANCELED`
+> * `ERROR`
+> * `UNENROLLED`
+
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](#demo-app) for a complete implementation of Yuno SDKs.
+> In addition to the code examples provided, you can access the [Demo App](../docs/demo-app) for a complete implementation of Yuno SDKs.
 
 ## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.
+

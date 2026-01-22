@@ -22,25 +22,13 @@ Follow this step-by-step guide to implement and enable Yuno's Seamless Web SDK p
 
 <Image align="center" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
-## Step 1: Include the library in your project
-
 Before proceeding with the Seamless SDK implementation, see the [Web SDK Common Reference](doc:web-sdk-common-reference) for detailed instructions on how to properly integrate the SDK into your project.
-
-The integration guide provides three flexible methods:
-
-* **Method 1 (HTML)**: Add a single script tag to your HTML file
-* **Method 2 (Dynamic JavaScript)**: Load the SDK programmatically with custom error handling
-* **Method 3 (NPM)**: Use our NPM package in modern JavaScript applications
-
-For detailed implementation steps for each method, see the [Web SDK Common Reference](doc:web-sdk-common-reference).
-
-Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the Seamless functionality.
 
 > 📘 TypeScript Library
 >
 > If you are using TypeScript, Yuno offers a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that provides access to all available methods in the Yuno Web SDK.
 
-## Step 2: Initialize SDK with the public key
+## Step 1: Initialize SDK with the public key
 
 Initialize the Yuno SDK in your JavaScript application by providing a valid `PUBLIC_API_KEY`:
 
@@ -52,7 +40,7 @@ const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 >
 > See the credentials page for more information: [https://docs.y.uno/reference/authentication](https://docs.y.uno/reference/authentication)
 
-## Step 3: Create a checkout session
+## Step 2: Create a checkout session
 
 <Callout icon="📘" theme="info">
   If your workflow requires sending the `additional_data` object, it can be sent as part of the checkout session.
@@ -82,7 +70,7 @@ To initialize the payment flow, create a new `checkout_session` using the [Creat
 >
 > From SDK version 1.5, Google Pay and Apple Pay appear as direct buttons instead of radio buttons in the payment methods list. They are displayed separately from other payment methods.
 
-## Step 4: Start the checkout process
+## Step 3: Start the checkout process
 
 Use the configuration below to provide a seamless and user-friendly payment experience for your customers:
 
@@ -167,7 +155,7 @@ Configure the seamless checkout with the following options:
 >
 > The step-by-step on this page refers to a customer-initiated transaction without the recurrence option. Typically, it's used in one-time online purchases, in-store purchases, ATM withdrawals, etc.
 
-## Step 5: Mount the SDK
+## Step 4: Mount the SDK
 
 To present the checkout process based on the selected payment method, use the `yuno.mountSeamlessCheckout()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
 
@@ -184,7 +172,7 @@ The `vaultedToken` is optional. It represents a previously enrolled payment meth
 
 After mounting, you must start the checkout flow by calling `yuno.startPayment()`. If you skip this call, the payment form will not open.
 
-## Step 6: Start the payment flow (Required)
+## Step 5: Start the payment flow (Required)
 
 Call `yuno.startPayment()` immediately after `yuno.mountSeamlessCheckout()` to open the selected payment method UI:
 

@@ -53,27 +53,11 @@ This page provides a step-by-step guide to implement and enable Yuno's Full Web 
 >
 > This guide covers the current SDK version. For details on previous versions, see the [changelog](https://docs.y.uno/changelog/web-sdk-v13-changelog).
 
-## Step 1: Include the library in your project
-
-Add the following script tag to your HTML file to include the Yuno Web SDK:
-
-```html
-<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
-```
-
-Alternatively, you can install it via npm:
-
-```bash
-npm install @yuno-payments/sdk-web
-```
-
-After completing the SDK integration, proceed with the following steps to implement the full checkout functionality.
-
 > 📘 TypeScript Library
 >
 > If you are using TypeScript, Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) to see all methods available in the Yuno Web SDK.
 
-## Step 2: Initialize SDK with the public key
+## Step 1: Initialize SDK with the public key
 
 Create an instance of the `Yuno` class by providing a valid `PUBLIC_API_KEY`. See the [credentials](../docs/developers-credentials) page for more information.
 
@@ -83,7 +67,7 @@ Initialize the SDK with your public API key:
 const yuno = await Yuno.initialize(PUBLIC_API_KEY);
 ```
 
-## Step 3: Start the checkout process
+## Step 2: Start the checkout process
 
 Use the `yuno.startCheckout` function to start the checkout process with the necessary parameters.
 
@@ -159,7 +143,7 @@ For PayPal, the payment sheet now opens immediately after the shopper selects Pa
 >
 > From SDK version 1.5, Google Pay and Apple Pay appear as direct buttons instead of radio buttons in the payment methods list. They are displayed separately from other payment methods.
 
-## Step 4: Mount the SDK
+## Step 3: Mount the SDK
 
 Display the payment methods:
 
@@ -176,7 +160,7 @@ yuno.mountCheckout({
 });
 ```
 
-## Step 5: Initiate the payment process
+## Step 4: Initiate the payment process
 
 Call `yuno.startPayment()` to initiate the payment flow after the user selects a payment method:
 
@@ -188,7 +172,7 @@ PayButton.addEventListener("click", () => {
 });
 ```
 
-## Step 6: Get the OTT (one-time token)
+## Step 5: Get the OTT (one-time token)
 
 After the customer fills out the requested data in Yuno's payment forms, the SDK provides the one-time token. The configuration function `yuno.CreatePayment(oneTimeToken)` is then triggered with the one-time token.
 
@@ -206,7 +190,7 @@ yunoCreatePayment(oneTimeToken, tokenWithInformation);
 >
 > The merchant is responsible for managing the loader. Yuno provides a default loader option, but merchants may implement their own loader if preferred. In that case, they are responsible for making the necessary configurations.
 
-## Step 7: Create the payment
+## Step 6: Create the payment
 
 After completing the previous steps, proceed to create a payment. Back-to-back payment creation must be performed using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment). The merchant's backend should call this endpoint to create the payment in Yuno using the one-time token and checkout session.
 
