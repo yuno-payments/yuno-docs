@@ -56,8 +56,8 @@ class CheckoutLiteActivity : AppCompatActivity() {
         }
     }
     
-    private fun onPaymentStateChange(state: String?) {
-        when (state) {
+    private fun onPaymentStateChange(paymentState: String?, paymentSubState: String?) {
+        when (paymentState) {
             "SUCCEEDED" -> navigateToSuccess()
             "FAIL" -> showError("Payment failed")
             "PROCESSING" -> showPendingMessage()
@@ -65,6 +65,7 @@ class CheckoutLiteActivity : AppCompatActivity() {
             "INTERNAL_ERROR" -> showError("An error occurred")
             "CANCELED" -> showCanceledMessage()
         }
+        // paymentSubState provides additional details about the payment status
     }
 }
 ```
@@ -128,6 +129,11 @@ class PaymentActivity : AppCompatActivity() {
         // Call your backend API to create payment
         // Loader stays visible until this function completes
         apiClient.createPayment(ott)
+    }
+    
+    private fun onPaymentStateChange(paymentState: String?, paymentSubState: String?) {
+        // Handle payment state changes
+        // paymentSubState provides additional details about the payment status
     }
 }
 ```
@@ -454,8 +460,8 @@ Create `screen_payment_card_form.xml` to override the default card form:
 Handle errors in payment state callback:
 
 ```kotlin
-private fun onPaymentStateChange(state: String?) {
-    when (state) {
+private fun onPaymentStateChange(paymentState: String?, paymentSubState: String?) {
+    when (paymentState) {
         "SUCCEEDED" -> {
             // Payment successful
             navigateToSuccess()
@@ -481,6 +487,7 @@ private fun onPaymentStateChange(state: String?) {
             Toast.makeText(this, "Payment canceled", Toast.LENGTH_SHORT).show()
         }
     }
+    // paymentSubState provides additional details about the payment status
 }
 ```
 
@@ -579,6 +586,11 @@ private fun handlePaymentReturn(uri: Uri) {
         showPaymentStatus = true,
         callbackPaymentState = ::onPaymentStateChange
     )
+}
+
+private fun onPaymentStateChange(paymentState: String?, paymentSubState: String?) {
+    // Handle payment state changes
+    // paymentSubState provides additional details about the payment status
 }
 ```
 
