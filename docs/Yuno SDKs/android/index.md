@@ -63,21 +63,19 @@ class CustomApplication : Application() {
 data class YunoConfig(
     val cardFlow: CardFormType = CardFormType.ONE_STEP,
     val saveCardEnabled: Boolean = false,
-    val keepLoader: Boolean = false,
     val cardFormDeployed: Boolean = false,
     val language: YunoLanguage? = null,
-    val isDynamicViewEnabled: Boolean = false
+    val styles: YunoStyles? = null
 )
 ```
 
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `cardFlow` | CardFormType | ONE_STEP | Card form type: `ONE_STEP` or `STEP_BY_STEP` |
-| `saveCardEnabled` | Boolean | false | Show save card checkbox in card flows |
-| `keepLoader` | Boolean | false | Keep Yuno loading screen until payment is created |
-| `cardFormDeployed` | Boolean | false | Show card form deployed in payment methods list (Full SDK only) |
-| `language` | YunoLanguage? | null | SDK language (null uses device language) |
-| `isDynamicViewEnabled` | Boolean | false | Enable dynamic view |
+| Parameter          | Type          | Default  | Description                                                     |
+| ------------------ | ------------- | -------- | --------------------------------------------------------------- |
+| `cardFlow`         | CardFormType  | ONE_STEP | Card form type: `ONE_STEP` or `STEP_BY_STEP`                    |
+| `saveCardEnabled`  | Boolean       | false    | Show save card checkbox in card flows                           |
+| `cardFormDeployed` | Boolean       | false    | Show card form deployed in payment methods list (Full SDK only) |
+| `language`         | YunoLanguage? | null     | SDK language (null uses device language)                        |
+| `styles`           | YunoStyles?   | null     | SDK-wide UI customization (fonts, button styles)                |
 
 **Available Languages:**
 
@@ -87,7 +85,20 @@ enum class YunoLanguage {
     ENGLISH,
     PORTUGUESE,
     INDONESIAN,
-    MALAYSIAN
+    MALAYSIAN,
+    FRENCH,
+    POLISH,
+    ITALIAN,
+    GERMAN,
+    RUSSIAN,
+    TURKISH,
+    DUTCH,
+    SWEDISH,
+    THAI,
+    FILIPINO,
+    VIETNAMESE,
+    CHINESE_SIMPLIFIED,
+    CHINESE_TRADITIONAL
 }
 ```
 
@@ -161,8 +172,8 @@ class PaymentActivity : AppCompatActivity() {
         )
     }
     
-    private fun onPaymentStateChange(state: String?) {
-        when (state) {
+    private fun onPaymentStateChange(paymentState: String?, paymentSubState: String?) {
+        when (paymentState) {
             "SUCCEEDED" -> {
                 // Payment successful
                 navigateToSuccess()
@@ -188,6 +199,7 @@ class PaymentActivity : AppCompatActivity() {
                 Toast.makeText(this, "Payment canceled", Toast.LENGTH_SHORT).show()
             }
         }
+        // paymentSubState provides additional details about the payment status
     }
 }
 ```
@@ -257,15 +269,16 @@ class CheckoutLiteActivity : AppCompatActivity() {
         }
     }
     
-    private fun onPaymentStateChange(state: String?) {
+    private fun onPaymentStateChange(paymentState: String?, paymentSubState: String?) {
         // Handle payment state changes
+        // paymentSubState provides additional details about the payment status
     }
 }
 ```
 
 ## Payment States
 
-The SDK returns these payment states via `callbackPaymentState`:
+The SDK returns these payment states via `callbackPaymentState`. The callback receives two parameters: `paymentState` (the main state) and `paymentSubState` (additional details).
 
 ```kotlin
 const val PAYMENT_STATE_SUCCEEDED = "SUCCEEDED"
@@ -300,19 +313,19 @@ private fun onTokenReceived(token: String?) {
 
 ### Essential Parameters
 
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `checkoutSession` | String | Session ID from your backend |
-| `countryCode` | String | ISO country code (e.g., "CO", "US") |
-| `callbackPaymentState` | (String?) -> Unit | Payment state callback |
-| `callbackOTT` | (String?) -> Unit | One-time token callback |
+| Parameter              | Type                       | Description                              |
+| ---------------------- | -------------------------- | ---------------------------------------- |
+| `checkoutSession`      | String                     | Session ID from your backend             |
+| `countryCode`          | String                     | ISO country code (e.g., "CO", "US")      |
+| `callbackPaymentState` | (String?, String?) -> Unit | Payment state callback (state, subState) |
+| `callbackOTT`          | (String?) -> Unit          | One-time token callback                  |
 
 ### Optional Parameters
 
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `showPaymentStatus` | Boolean | true | Show Yuno's payment status screens |
-| `merchantSessionId` | String? | null | Anti-fraud session ID |
+| Parameter           | Type    | Default | Description                        |
+| ------------------- | ------- | ------- | ---------------------------------- |
+| `showPaymentStatus` | Boolean | true    | Show Yuno's payment status screens |
+| `merchantSessionId` | String? | null    | Anti-fraud session ID              |
 
 ## Proguard Rules
 
