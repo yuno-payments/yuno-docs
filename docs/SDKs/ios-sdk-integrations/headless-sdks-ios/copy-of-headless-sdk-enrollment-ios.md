@@ -1,5 +1,5 @@
 ---
-title: Copy of Headless SDK (Enrollment iOS)
+title: Headless SDK (Enrollment iOS)
 deprecated: false
 hidden: false
 metadata:
