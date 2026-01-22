@@ -201,11 +201,6 @@ The payments can have the following status and sub status.
           <td>Remains approved due to rejection in chargeback</td>
         </tr>
         <tr>
-          <td>Chargeback</td>
-          <td>Won</td>
-          <td>Review Won</td>
-        </tr>
-        <tr>
           <td class="substatus"><code>PARTIALLY_REFUNDED</code></td>
           <td>Refund</td>
           <td>Succeeded</td>
@@ -329,6 +324,8 @@ The payments can have the following status and sub status.
 > Note
 >
 > `PREVENTED` is a transaction status only for `type = CHARGEBACK` when the provider/network reports a [predispute deflection](doc:chargeback-management). In these scenarios, only the chargeback webhook is sent; no refund webhook is emitted.
+>
+> `REVIEW_WON` is a chargeback transaction status only. When a chargeback is won, the payment returns to its previous status (for example, `SUCCEEDED` / `APPROVED`) and no new payment status is emitted.
 
 ### Possible states for sync and async flows
 
