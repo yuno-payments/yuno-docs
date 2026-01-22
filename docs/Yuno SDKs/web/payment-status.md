@@ -2,7 +2,7 @@
 title: Payment Status
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Payment Status
   description: >-
