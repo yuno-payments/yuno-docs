@@ -38,21 +38,21 @@ Article 8 requires that when a merchant accepts both domestic and international 
 
 Regulation (EU) 2015/751 applies to all Member States of the European Union and the European Economic Area (EEA). The regulation entered into force on 8 June 2015, with Article 8 and related provisions applying from 9 June 2016.
 
-## SDK Integration (Out-of-the-box Compliance)
+## Yuno Solution
 
 When using Yuno SDKs, merchants are compliant with co-badged card regulations out-of-the-box. The SDK automatically handles network detection and selection, ensuring compliance without additional merchant configuration.
 
 ### Supported SDK Versions
 
 {/* TODO: Update with specific version numbers once confirmed */}
-Co-badged card compliance is supported in specific versions of each Yuno SDK. The following SDK versions support co-badged card compliance:
+Co-badged card compliance is supported in specific versions of each Yuno SDK:
 
 - **Web SDK**: ---
 - **iOS SDK**: Version 2.0.0 and later
 - **Android SDK**: Version 2.0.0 and later
 - **React Native SDK**: Version 1.0.16 and later
 
-### Automatic Compliance
+### How It Works
 
 The SDK automatically handles compliance with no configuration required. Compliance is enabled by default as soon as a merchant accepts both networks of a co-badged card.
 
@@ -73,7 +73,7 @@ When a customer selects a network for their first payment, the SDK automatically
 
 The SDK tracks and uses the selected network automatically—no additional merchant configuration is required.
 
-## Direct Integration Compliance
+## Direct Integration
 
 For merchants using direct API integrations (not SDKs), additional steps are required to ensure compliance with co-badged card regulations.
 
