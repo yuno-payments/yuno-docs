@@ -29,7 +29,7 @@ The Headless SDK includes core features like:
 
 For merchants requiring a pre-built UI solution or simpler integration, consider using our other SDK implementations:
 
-* [Full SDK](doc:android)
+* [Full SDK](doc:full-checkout-android)
 * [Lite SDK](doc:enrollment-android)
 
 ## Requirements
@@ -156,10 +156,10 @@ Create an enrollment payment method object using the [Enroll Payment Method](ref
 
 Use the `apiClientEnroll` function to start the enrollment process. This function requires configuration parameters that define how the enrollment will be processed. The following table describes the required parameters:
 
-| Parameter          | Description                                                                                                                                                                                                             |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:quickstart) page. |
-| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`      |
+| Parameter          | Description                                                                                                                                                                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
 
 The following code block shows an example of the parameter configuration:
 
@@ -177,7 +177,89 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 ## Step 8: Generate a vaulted token
 
-After collecting all required customer information, create a `vaulted_token` using the `apiClientEnroll.continueEnrollment` function. Since this is an asynchronous function, use a `try/catch` block to handle any errors that may occur. The following example shows how to create a `vaulted_token`:
+After collecting all required customer information, create a `vaulted_token` using the `apiClientEnroll.continueEnrollment` function. Since this is an asynchronous function, use a `try/catch` block to handle any errors that may occur.
+
+### **NEW: Standardized States (v2.9.2+)**
+
+Starting in version 2.9.2, you can use the `standardizeStates` parameter to receive business-friendly enrollment states instead of technical SDK states. This feature provides a simplified view of the enrollment process, making it easier to handle enrollment states in your application.
+
+**Parameter:**
+```kotlin
+standardizeStates: Boolean? = false
+```
+
+- **Default value**: `false` (returns technical states for backward compatibility)
+- **When `true`**: Returns standardized business states
+- **When `false` or `null`**: Returns technical SDK states (default behavior)
+
+**Example with standardized states:**
+
+```kotlin
+apiClientEnroll.continueEnrollment(
+ collectedData = EnrollmentCollectedData(
+   customerSession = "customer_session",
+   paymentMethod = EnrollmentMethod(
+     type = "CARD",
+     card = CardData(
+       save = true,
+       detail = Detail(
+         expirationMonth = 11,
+         expirationYear = 55,
+         number = "4111111111111111",
+         securityCode = "123",
+         holderName = "Firstname Lastname",
+         type = CardType.DEBIT
+       ),
+       customer = Customer(
+         id = "id",
+         merchantCustomerId = "merchant_customer_id",
+         firstName = "firstName",
+         email = "[email protected]",
+         country = "CO",
+         document = Document(
+           documentType = "PAS",
+           documentNumber = "PAS12312"
+         ),
+         phone = Phone(
+           number = "321123321123",
+           country_code = "57"
+         )
+       )
+     )
+   )
+ ),
+ context = this,
+ standardizeStates = true  // NEW: Enable standardized states
+)
+```
+
+The `apiClientEnroll.continueEnrollment` function returns an Observable type that extends `LiveData`. You can observe the response as a standard `LiveData` with type `SingleLiveEvent<Map<String, Any?>>`. This `LiveData` emits only once and returns a `Map` containing the complete response.
+
+**Example response with standardized states:**
+```json
+{
+  "vaulted_token": "9104911d-5df9-429e-8488-ad41abea1a4b",
+  "status": "ENROLLED",
+  "customer_session": "d4f19611-ca15-4dee-a5aa-161d6ce4b817"
+}
+```
+
+**Example observing the response:**
+```kotlin
+apiClientEnroll.continueEnrollment(data, context, standardizeStates = true).observe(context) { response ->
+ val status = response["status"] as String?
+ val vaultedToken = response["vaulted_token"] as String?
+  when (status) {
+   "ENROLLED" -> // Handle successful enrollment
+   "UNENROLLED" -> // Handle failed enrollment
+   "ENROLL_IN_PROCESS" -> // Handle enrollment in progress
+ }
+}
+```
+
+**Example without standardized states (default behavior):**
+
+The following example shows how to create a `vaulted_token`:
 
 ```kotlin
 apiClientEnroll.continueEnrollment( 
@@ -229,18 +311,45 @@ The `apiClientEnroll.continueEnrollment` function returns an Observable type tha
 }
 ```
 
-The following code block shows an example of observing the response:
+The following code block shows an example of observing the response without standardized states:
 
 ```kotlin
-apiClientPayment.continueEnrollment(data, context).observe(context) { response ->
+apiClientEnroll.continueEnrollment(data, context).observe(context) { response ->
    val status = response["status"] as String?
-   val vauldtedtoken = response["vaulted_token"] as String?
+   val vaultedToken = response["vaulted_token"] as String?
 }
 ```
 
 ### Enrollment flow states
 
-The `apiClientEnroll.continueEnrollment` function returns a response that includes a `status` field indicating the current state of the enrollment process. The following are the possible states returned:
+The `apiClientEnroll.continueEnrollment` function returns a response that includes a `status` field indicating the current state of the enrollment process.
+
+#### **Standardized States (when `standardizeStates = true`)**
+
+These business-friendly states provide a simplified view of the enrollment process:
+
+| **State** | **Description** | **Additional action required** |
+|-----------|-----------------|--------------------------------|
+| `READY_TO_ENROLL` | The payment method is ready to be enrolled. Initial state before enrollment starts. | Yes. Begin the enrollment process. |
+| `ENROLL_IN_PROCESS` | The enrollment is currently being processed, awaiting approval or verification. | No. Wait for the final state. |
+| `ENROLLED` | The payment method was successfully enrolled and can be used for future payments. | No. |
+| `UNENROLLED` | The enrollment failed, was rejected, canceled, or encountered an error. | Yes. Check error details and retry if appropriate. |
+| `UNENROLL_IN_PROCESS` | The payment method is currently being unenrolled. | No. Wait for completion. |
+
+**State mapping:**
+
+The following table shows how technical states map to standardized states:
+
+| **Technical State(s)** | **Standardized State** |
+|------------------------|------------------------|
+| `NONE` | `READY_TO_ENROLL` |
+| `CREATED`, `PENDING` | `ENROLL_IN_PROCESS` |
+| `SUCCEEDED` | `ENROLLED` |
+| `CANCELED`, `EXPIRED`, `ERROR`, `INTERNAL_ERROR` | `UNENROLLED` |
+
+#### **Technical States (when `standardizeStates = false` or not specified)**
+
+These are the detailed technical states returned by default:
 
 ```kotlin
 const val ENROLLMENT_STATE_SUCCEEDED = "SUCCEEDED"
@@ -251,18 +360,15 @@ const val ENROLLMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
 const val ENROLLMENT_STATE_CANCELED_BY_USER = "CANCELED"
 ```
 
-The following table provides additional information about the possible states:
-
-| **State**        | **Description**                                                                                                                | **Additional action required**                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `SUCCEEDED`      | The enrollment process was successfully completed without any errors.                                                          | No.                                                                                                           |
-| `FAIL`           | The enrollment attempt failed due to errors such as data validation issues, server connection failures, or technical problems. | Yes. Investigate the cause of failure (validation, network, server) and take corrective measures.             |
-| `PROCESSING`     | The enrollment is currently in progress, awaiting approval or verification.                                                    | No.                                                                                                           |
-| `REJECT`         | The enrollment was rejected due to reasons such as missing requirements or detected inconsistencies.                           | Yes. Inform the user of the rejection, provide the reason if possible, and suggest next steps.                |
-| `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the enrollment process.                                       | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
-| `CANCELED`       | The user voluntarily canceled the enrollment process or exited before completion.                                              | No.                                                                                                           |
+| **State** | **Description** | **Additional action required** |
+|-----------|-----------------|--------------------------------|
+| `SUCCEEDED` | The enrollment process was successfully completed without any errors. | No. |
+| `FAIL` | The enrollment attempt failed due to errors such as data validation issues, server connection failures, or technical problems. | Yes. Investigate the cause of failure (validation, network, server) and take corrective measures. |
+| `PROCESSING` | The enrollment is currently in progress, awaiting approval or verification. | No. |
+| `REJECT` | The enrollment was rejected due to reasons such as missing requirements or detected inconsistencies. | Yes. Inform the user of the rejection, provide the reason if possible, and suggest next steps. |
+| `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the enrollment process. | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
+| `CANCELED` | The user voluntarily canceled the enrollment process or exited before completion. | No. |
 
 > 📘 Webhook Status Tracking
 >
 > Consider using the enrollment status received via [Webhooks](#webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
-
