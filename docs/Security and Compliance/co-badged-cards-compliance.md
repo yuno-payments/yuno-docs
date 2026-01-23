@@ -127,12 +127,6 @@ The UI includes:
 
 ![Network Selection UI](../images/co-badged-cards-network-selection-ui.png)
 
-> 📘 Design Resources
->
-> For design reference, see the Figma designs:
-> - [Desktop Design](https://www.figma.com/design/xHSNqI6Mj8cIu6jI8uuKLK/SDK-form-_-CARD?node-id=6510-5929&t=UvaocxVhdE2xMl8a-4)
-> - [Mobile Design](https://www.figma.com/design/xHSNqI6Mj8cIu6jI8uuKLK/SDK-form-_-CARD?node-id=6510-5294&t=UvaocxVhdE2xMl8a-4)
-
 ### Recurring Payments
 
 When a customer selects a network for their first payment, the SDK automatically stores this preference. For all subsequent recurring payments with the same card, the SDK automatically uses the initially selected network, ensuring compliance with the regulation requirement that all subsequent purchases be processed through the same network.
