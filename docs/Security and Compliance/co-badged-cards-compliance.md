@@ -96,19 +96,17 @@ Merchants using direct API integrations must implement compliance measures thems
 
 ### Card IIN Detection
 
+{/* TODO: Add API endpoint or method details once confirmed */}
 Yuno provides methods to detect which networks are supported by a card based on the card IIN (Issuer Identification Number). The card IIN is the first 6-8 digits of the card number and identifies the card issuer and supported networks.
 
-> 📘 API Documentation Pending
->
-> Detailed API endpoint documentation and code examples for card IIN detection are being finalized and will be added in a future update.
+{/* TODO: Add API endpoint documentation or code examples */}
 
 ### API Requirements
 
-To process payments with the selected network, merchants must include the network selection in their payment API requests. When creating a payment, merchants must include the selected network in the payment request.
+{/* TODO: Add specific API endpoints and parameters once confirmed */}
+To process payments with the selected network, merchants must include the network selection in their payment API requests. When creating a payment, merchants must include the selected network in the payment request. The following parameters are used:
 
-> 📘 API Documentation Pending
->
-> Specific API endpoints, parameter names, and complete request examples are being finalized and will be added in a future update.
+{/* TODO: Add parameter names and examples */}
 
 ```json
 {
@@ -136,9 +134,7 @@ For recurring payments, merchants must ensure that the initially selected networ
 2. Including the stored network in all subsequent payment requests for that payment method
 3. Maintaining this preference across all recurring transactions
 
-> 📘 API Documentation Pending
->
-> Code examples and API documentation for storing and using network preference in recurring payments are being finalized and will be added in a future update.
+{/* TODO: Add code examples or API documentation for storing and using network preference */}
 
 
 ## Examples
