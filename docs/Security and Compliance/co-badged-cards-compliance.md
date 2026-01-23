@@ -125,10 +125,8 @@ The UI includes:
 - The Mastercard-required phrase "Select card brand (optional)" which is always displayed when applicable
 - User-friendly interface for network selection
 
-![Network Selection UI](https://github.com/yuno-payments/yuno-docs/raw/docs/co-badged-cards-compliance/docs/Security%20and%20Compliance/images/co-badged-cards-network-selection-ui.png)
-
+![Co-badged Cards Network Selection UI](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/co-badged-cards-network-selection-ui.png)
 ### Recurring Payments
-
 When a customer selects a network for their first payment, the SDK automatically stores this preference. For all subsequent recurring payments with the same card, the SDK automatically uses the initially selected network, ensuring compliance with the regulation requirement that all subsequent purchases be processed through the same network.
 
 The SDK tracks and uses the selected network automatically—no additional merchant configuration is required.
