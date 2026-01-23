@@ -1,13 +1,14 @@
 ---
 title: Headless SDK (Enrollment Android)
+excerpt: ''
 deprecated: false
-hidden: true
-link:
-  new_tab: false
+hidden: false
 metadata:
   title: ''
   description: ''
   robots: index
+next:
+  description: ''
 ---
 This page provides a guide to the Yuno Headless SDK for Android enrollment.
 
