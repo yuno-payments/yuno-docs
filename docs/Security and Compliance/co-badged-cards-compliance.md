@@ -55,7 +55,7 @@ Regulation (EU) 2015/751, also known as the Interchange Fee Regulation (IFR), is
 
 Article 8 of Regulation (EU) 2015/751 requires:
 
-- **Network Choice**: When a merchant accepts both domestic and international networks (e.g., Cartes Bancaires and Visa), the merchant must display a choice to EU consumers allowing them to select whether to pay with the domestic or international network.
+- **Network Choice**: When a merchant accepts both domestic and international networks (e.g., Cartes Bancaires and Visa), the merchant must display a choice to EEA consumers allowing them to select whether to pay with the domestic or international network.
 - **No Choice Required**: If a merchant only accepts one of the networks supported by the card, no network selection is required.
 - **Consumer Control**: The regulation ensures consumers have control over which network processes their payment, promoting competition and transparency.
 
@@ -95,7 +95,8 @@ The following SDK versions support co-badged card compliance:
 
 ### Automatic Compliance
 
-<!-- TODO: Add details about how SDK handles compliance automatically -->
+The SDK automatically handles compliance with no configuration required. Compliance is enabled by default as soon as a merchant accepts both networks of a co-badged card.
+
 The SDK automatically:
 
 - Detects which networks are supported by the customer's card based on the card IIN (Issuer Identification Number)
@@ -107,19 +108,27 @@ No additional configuration is required for basic compliance. The SDK handles al
 
 ### Network Selection UI
 
-<!-- TODO: Add details about how network selection is presented to users -->
-When a co-badged card is detected, the SDK automatically presents network selection options to the customer. The UI includes:
+When a co-badged card is detected, the SDK automatically presents network selection options to the customer. The UI is not customizable and is consistently displayed across all platforms (Web, iOS, Android, React Native).
+
+The UI includes:
 
 - Clear display of available networks (e.g., Cartes Bancaires, Visa, Mastercard)
-- The Mastercard-required phrase "Select card brand (optional)" when applicable
+- The Mastercard-required phrase "Select card brand (optional)" which is always displayed when applicable
 - User-friendly interface for network selection
 
-<!-- TODO: Add information about customization options if available -->
+![Network Selection UI](../images/co-badged-cards-network-selection-ui.png)
+
+> 📘 Design Resources
+>
+> For design reference, see the Figma designs:
+> - [Desktop Design](https://www.figma.com/design/xHSNqI6Mj8cIu6jI8uuKLK/SDK-form-_-CARD?node-id=6510-5929&t=UvaocxVhdE2xMl8a-4)
+> - [Mobile Design](https://www.figma.com/design/xHSNqI6Mj8cIu6jI8uuKLK/SDK-form-_-CARD?node-id=6510-5294&t=UvaocxVhdE2xMl8a-4)
 
 ### Recurring Payments
 
-<!-- TODO: Add details about how SDK tracks and uses selected network for recurring payments -->
-When a customer selects a network for their first payment, the SDK automatically stores this preference. For all subsequent recurring payments with the same card, the SDK uses the initially selected network, ensuring compliance with the regulation requirement that all subsequent purchases be processed through the same network.
+When a customer selects a network for their first payment, the SDK automatically stores this preference. For all subsequent recurring payments with the same card, the SDK automatically uses the initially selected network, ensuring compliance with the regulation requirement that all subsequent purchases be processed through the same network.
+
+The SDK tracks and uses the selected network automatically—no additional merchant configuration is required.
 
 ## Direct Integration Compliance
 
@@ -193,13 +202,14 @@ For recurring payments, merchants must ensure that the initially selected networ
 
 ### Network Preselection
 
+<!-- TODO: Add implementation details once confirmed by Romel and Andrea -->
 Merchants may preselect a card network for customers, but customers must still be able to change the selection if they prefer a different network. If preselection is implemented:
 
 - The preselected network should be clearly indicated
 - Customers must be able to easily change the selection
 - The preselection must comply with all other regulatory requirements
 
-<!-- TODO: Add implementation details once confirmed -->
+Implementation details for merchant preselection are being confirmed by the SDK and direct integration teams.
 
 ## Technical Details
 
@@ -211,7 +221,7 @@ Yuno uses the card IIN (Issuer Identification Number) to determine which network
 - Supported payment networks
 - Card type (credit, debit, prepaid)
 
-Based on the card IIN, Yuno can identify which networks are available for a given card, enabling automatic network detection and selection.
+Based on the card IIN, Yuno automatically identifies which networks are available for a given card, enabling automatic network detection and selection. This detection happens automatically in the SDK—no merchant configuration is required.
 
 ### Network Selection Storage
 
