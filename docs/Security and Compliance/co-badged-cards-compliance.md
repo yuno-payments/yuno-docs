@@ -53,7 +53,7 @@ Regulation (EU) 2015/751, also known as the Interchange Fee Regulation (IFR), is
 
 ### Key Requirements of Article 8
 
-Article 8 of Regulation (EU) 2015/751 requires:
+Article 8 establishes the specific requirements for co-badged card compliance. The regulation requires:
 
 - **Network Choice**: When a merchant accepts both domestic and international networks (e.g., Cartes Bancaires and Visa), the merchant must display a choice to EEA consumers allowing them to select whether to pay with the domestic or international network.
 - **No Choice Required**: If a merchant only accepts one of the networks supported by the card, no network selection is required.
@@ -61,7 +61,7 @@ Article 8 of Regulation (EU) 2015/751 requires:
 
 ### Regulation Objectives
 
-The Interchange Fee Regulation aims to:
+The Interchange Fee Regulation was created to address market fragmentation and promote fair competition in European payment processing. The regulation aims to:
 
 - Promote competition between payment networks
 - Give consumers control over which network processes their payments
@@ -70,6 +70,8 @@ The Interchange Fee Regulation aims to:
 - Lower costs for merchants and consumers
 
 ### Regulation Timeline
+
+Regulation (EU) 2015/751 has been implemented in phases:
 
 - **Entry into Force**: 8 June 2015
 - **Article 8 Application**: 9 June 2016 (along with Articles 7, 9, and 10)
@@ -86,7 +88,7 @@ When using Yuno SDKs, merchants are compliant with co-badged card regulations ou
 ### Supported SDK Versions
 
 <!-- TODO: Update with specific version numbers once confirmed by SDK team -->
-The following SDK versions support co-badged card compliance:
+Co-badged card compliance is supported in specific versions of each Yuno SDK. The following SDK versions support co-badged card compliance:
 
 - **Web SDK**: Version [TBD - awaiting confirmation from SDK team]
 - **iOS SDK**: Version [TBD - awaiting confirmation from SDK team]
@@ -137,7 +139,7 @@ For merchants using direct API integrations (not SDKs), additional steps are req
 ### Merchant Requirements
 
 <!-- TODO: Add specific requirements once confirmed by direct integration team -->
-To be compliant with EU IFR Regulation 2015/751 Article 8, merchants using direct integrations must:
+Merchants using direct API integrations must implement compliance measures themselves. To be compliant with EU IFR Regulation 2015/751 Article 8, merchants using direct integrations must:
 
 1. Detect which networks are supported by the customer's card
 2. Present network selection options to customers when multiple networks are available
@@ -155,7 +157,7 @@ Yuno provides methods to detect which networks are supported by a card based on 
 ### API Requirements
 
 <!-- TODO: Add specific API endpoints and parameters once confirmed by direct integration team -->
-When creating a payment, merchants must include the selected network in the payment request. The following parameters are used:
+To process payments with the selected network, merchants must include the network selection in their payment API requests. When creating a payment, merchants must include the selected network in the payment request. The following parameters are used:
 
 <!-- TODO: Add parameter names and examples -->
 
@@ -213,6 +215,8 @@ Implementation details for merchant preselection are being confirmed by the SDK 
 
 ## Technical Details
 
+This section explains the technical mechanisms behind co-badged card compliance, including how networks are detected and how selections are stored.
+
 ### Card IIN and Brand Detection
 
 Yuno uses the card IIN (Issuer Identification Number) to determine which networks are supported by a card. The IIN is the first 6-8 digits of the card number and provides information about:
@@ -234,6 +238,8 @@ When a customer selects a network, this preference must be stored and used for a
 This ensures that recurring payments maintain compliance by using the same network initially selected by the customer.
 
 ## Examples and Use Cases
+
+The following examples demonstrate how co-badged card compliance works in practice, showing both scenarios where network selection is required and where it is not.
 
 ### Example: Cartes Bancaires and Visa Co-badged Card
 
