@@ -5,21 +5,6 @@ hidden: true
 metadata:
   robots: index
 ---
----
-title: Co-badged Cards Compliance
-excerpt: ''
-deprecated: false
-hidden: false
-metadata:
-  title: Co-badged Cards Compliance
-  description: >-
-    Comply with EU IFR Regulation 2015/751 Article 8 by allowing customers to
-    choose their preferred card network for co-badged cards
-  robots: index
-next:
-  description: ''
----
-
 Co-badged cards are payment cards that support multiple payment networks (e.g., a card that supports both Cartes Bancaires and Visa). To comply with EU IFR Regulation 2015/751 Article 8, merchants must allow customers to choose which network to use when processing payments with co-badged cards.
 
 ## What are co-badged cards?
