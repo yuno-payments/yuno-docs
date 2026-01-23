@@ -2,7 +2,7 @@
 title: Co-badged Cards Compliance
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: Co-badged Cards Compliance
   description: >-
@@ -42,6 +42,13 @@ Compliance with EU IFR Regulation 2015/751 Article 8 is required when:
 - The transaction is processed within the European Economic Area (EEA)
 
 If a merchant only accepts one network, or if the customer's card only supports one network that the merchant accepts, no network selection is required.
+
+### Exceptions and Edge Cases
+
+- **Single Network Acceptance**: If a merchant only accepts one network (e.g., only Visa), no network selection is required even if the card supports multiple networks.
+- **Single Network Card**: If a customer's card only supports one network that the merchant accepts, no selection is needed.
+- **Non-EEA Transactions**: The regulation applies to transactions processed within the EEA. Transactions outside the EEA are not subject to this requirement.
+- **Network Unavailability**: If one of the supported networks is temporarily unavailable, merchants should still allow selection of the available network(s).
 
 > 📘 Regulation Scope
 >
@@ -211,6 +218,10 @@ Merchants may preselect a card network for customers, but customers must still b
 - Customers must be able to easily change the selection
 - The preselection must comply with all other regulatory requirements
 
+> ⚠️ Important
+>
+> Even when a network is preselected, customers must always have the ability to change their selection. The preselection should be a convenience feature, not a restriction.
+
 Implementation details for merchant preselection are being confirmed by the SDK and direct integration teams.
 
 ## Technical Details
@@ -237,6 +248,10 @@ When a customer selects a network, this preference must be stored and used for a
 
 This ensures that recurring payments maintain compliance by using the same network initially selected by the customer.
 
+> ⚠️ Compliance Requirement
+>
+> Once a customer selects a network for their first payment with a co-badged card, that same network must be used for all subsequent payments with that card. Changing the network for recurring payments would violate the regulation unless the customer explicitly requests a change.
+
 ## Examples and Use Cases
 
 The following examples demonstrate how co-badged card compliance works in practice, showing both scenarios where network selection is required and where it is not.
@@ -262,6 +277,20 @@ A customer uses a card that only supports Visa, and the merchant accepts Visa.
 2. System detects card only supports Visa
 3. No network selection is required (only one network available)
 4. Payment is processed through Visa network
+
+### Example: Merchant Accepts Only One Network
+
+A merchant only accepts Visa, and a customer uses a co-badged card that supports both Cartes Bancaires and Visa.
+
+**Compliant Flow:**
+1. Customer enters card details
+2. System detects card supports both Cartes Bancaires and Visa
+3. Merchant only accepts Visa, so no network selection is required
+4. Payment is processed through Visa network (the only accepted network)
+
+> 📘 Important Note
+>
+> Even if a card supports multiple networks, if the merchant only accepts one of those networks, no network selection is required. The regulation only applies when both the card and merchant support multiple networks.
 
 ## Summary
 
