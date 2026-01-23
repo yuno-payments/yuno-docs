@@ -52,10 +52,9 @@ When using Yuno SDKs, merchants are compliant with co-badged card regulations ou
 
 ### Supported SDK Versions
 
-{/* TODO: Update with specific version numbers once confirmed */}
 Co-badged card compliance is supported in specific versions of each Yuno SDK:
 
-- **Web SDK**: ---
+- **Web SDK**: Version 1.1.0 and later
 - **iOS SDK**: Version 2.0.0 and later
 - **Android SDK**: Version 2.0.0 and later
 - **React Native SDK**: Version 1.0.16 and later
@@ -87,7 +86,6 @@ For merchants using direct API integrations (not SDKs), additional steps are req
 
 ### Merchant Requirements
 
-{/* TODO: Add specific requirements once confirmed */}
 Merchants using direct API integrations must implement compliance measures themselves. To be compliant with EU IFR Regulation 2015/751 Article 8, merchants using direct integrations must:
 
 1. Detect which networks are supported by the customer's card
@@ -98,17 +96,19 @@ Merchants using direct API integrations must implement compliance measures thems
 
 ### Card IIN Detection
 
-{/* TODO: Add API endpoint or method details once confirmed */}
 Yuno provides methods to detect which networks are supported by a card based on the card IIN (Issuer Identification Number). The card IIN is the first 6-8 digits of the card number and identifies the card issuer and supported networks.
 
-{/* TODO: Add API endpoint documentation or code examples */}
+> 📘 API Documentation Pending
+>
+> Detailed API endpoint documentation and code examples for card IIN detection are being finalized and will be added in a future update.
 
 ### API Requirements
 
-{/* TODO: Add specific API endpoints and parameters once confirmed */}
-To process payments with the selected network, merchants must include the network selection in their payment API requests. When creating a payment, merchants must include the selected network in the payment request. The following parameters are used:
+To process payments with the selected network, merchants must include the network selection in their payment API requests. When creating a payment, merchants must include the selected network in the payment request.
 
-{/* TODO: Add parameter names and examples */}
+> 📘 API Documentation Pending
+>
+> Specific API endpoints, parameter names, and complete request examples are being finalized and will be added in a future update.
 
 ```json
 {
@@ -126,7 +126,7 @@ To process payments with the selected network, merchants must include the networ
 
 Merchants must implement their own UI for network selection. The UI must display all available networks for the customer's card, allow customers to select their preferred network, and display the Mastercard-required phrase "Select card brand (optional)" when applicable. This phrase must be clearly visible and displayed before or alongside network selection options.
 
-{/* TODO: Add UI/UX guidelines or examples if available */}
+The network selection UI shown in the SDK section above provides a reference for how network selection should be presented to customers.
 
 ### Recurring Payments
 
@@ -136,7 +136,9 @@ For recurring payments, merchants must ensure that the initially selected networ
 2. Including the stored network in all subsequent payment requests for that payment method
 3. Maintaining this preference across all recurring transactions
 
-{/* TODO: Add code examples or API documentation for storing and using network preference */}
+> 📘 API Documentation Pending
+>
+> Code examples and API documentation for storing and using network preference in recurring payments are being finalized and will be added in a future update.
 
 
 ## Examples
@@ -157,4 +159,3 @@ A merchant only accepts Visa, and a customer uses a co-badged card that supports
 - **Mastercard Requirement**: The phrase "Select card brand (optional)" must be displayed when applicable.
 - **Recurring Payments**: The initially selected network must be used for all subsequent payments with the same card.
 
-{/* TODO: Update all TBD sections and TODO comments once information is provided */}
