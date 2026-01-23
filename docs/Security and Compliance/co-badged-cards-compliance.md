@@ -2,7 +2,7 @@
 title: Co-badged Cards Compliance
 excerpt: ''
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Co-badged Cards Compliance
   description: >-
