@@ -2,7 +2,11 @@
 title: Headless SDK (Enrollment Android)
 deprecated: false
 hidden: true
+link:
+  new_tab: false
 metadata:
+  title: ''
+  description: ''
   robots: index
 ---
 This page provides a guide to the Yuno Headless SDK for Android enrollment.
@@ -151,10 +155,10 @@ Create an enrollment payment method object using the [Enroll Payment Method](ref
 
 Use the `apiClientEnroll` function to start the enrollment process. This function requires configuration parameters that define how the enrollment will be processed. The following table describes the required parameters:
 
-| Parameter          | Description                                                                                                                                                                                                                            |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter          | Description                                                                                                                                                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:quickstart) page. |
-| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`      |
 
 The following code block shows an example of the parameter configuration:
 
@@ -261,4 +265,3 @@ The following table provides additional information about the possible states:
 >
 > Consider using the enrollment status received via [Webhooks](#webhooks). Yuno recommends always using this status to base and make business decisions on your platform.
 
-<br />
