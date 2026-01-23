@@ -40,7 +40,9 @@ Regulation (EU) 2015/751 applies to all Member States of the European Union and 
 
 ## Yuno Solution
 
-When using Yuno SDKs, merchants are compliant with co-badged card regulations out-of-the-box. The SDK automatically handles network detection and selection, ensuring compliance without additional merchant configuration.
+> 👍 **Automatic Compliance**
+>
+> When using Yuno SDKs, merchants are compliant with co-badged card regulations out-of-the-box. The SDK automatically handles network detection and selection, ensuring compliance without additional merchant configuration.
 
 ### Supported SDK Versions
 
@@ -74,7 +76,9 @@ The SDK tracks and uses the selected network automatically—no additional merch
 
 ## Direct Integration
 
-For merchants using direct API integrations (not SDKs), additional steps are required to ensure compliance with co-badged card regulations.
+> ⚠️ **Manual Implementation Required**
+>
+> For merchants using direct API integrations (not SDKs), additional steps are required to ensure compliance with co-badged card regulations. Merchants must implement network detection, selection UI, and network storage themselves.
 
 ### Merchant Requirements
 
@@ -146,3 +150,4 @@ A merchant only accepts Visa, and a customer uses a co-badged card that supports
 - **Regulatory Requirement**: EU IFR Regulation 2015/751 Article 8 requires network selection for co-badged cards in the EEA. The regulation entered into force on 8 June 2015, with Article 8 applying from 9 June 2016.
 - **Mastercard Requirement**: The phrase "Select card brand (optional)" must be displayed when applicable.
 - **Recurring Payments**: The initially selected network must be used for all subsequent payments with the same card.
+
