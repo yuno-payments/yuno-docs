@@ -1,5 +1,5 @@
 ---
-title: Test page
+title: Co-badged Cards Compliance
 deprecated: false
 hidden: true
 metadata:
