@@ -211,7 +211,7 @@ For recurring payments, merchants must ensure that the initially selected networ
 
 ### Network Preselection
 
-<!-- TODO: Add implementation details once confirmed by Romel and Andrea -->
+<!-- TODO: Add implementation details once confirmed -->
 Merchants may preselect a card network for customers, but customers must still be able to change the selection if they prefer a different network. If preselection is implemented:
 
 - The preselected network should be clearly indicated
@@ -222,7 +222,7 @@ Merchants may preselect a card network for customers, but customers must still b
 >
 > Even when a network is preselected, customers must always have the ability to change their selection. The preselection should be a convenience feature, not a restriction.
 
-Implementation details for merchant preselection are being confirmed by the SDK and direct integration teams.
+Implementation details for merchant preselection are being confirmed.
 
 ## Technical Details
 
