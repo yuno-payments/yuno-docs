@@ -263,14 +263,6 @@ A customer uses a card that only supports Visa, and the merchant accepts Visa.
 3. No network selection is required (only one network available)
 4. Payment is processed through Visa network
 
-## Additional Resources
-
-For more information about co-badged card compliance, see:
-
-- [Adyen: Co-badged cards compliance](https://docs.adyen.com/online-payments/co-badged-cards-compliance)
-- [Stripe: Co-badged cards compliance](https://docs.stripe.com/co-badged-cards-compliance)
-- [Primer: Are you meeting the EU's co-badged card requirements?](https://primer.io/blog/are-you-meeting-the-eu-s-co-badged-card-requirements)
-
 ## Summary
 
 - **SDK Integration**: Merchants using Yuno SDKs are compliant out-of-the-box. No additional configuration required.
