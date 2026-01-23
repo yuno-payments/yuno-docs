@@ -48,7 +48,9 @@ Regulation (EU) 2015/751 applies to all Member States of the European Union and 
 
 ## Yuno Solution
 
-When using Yuno SDKs, merchants are compliant with co-badged card regulations out-of-the-box. The SDK automatically handles network detection and selection, ensuring compliance without additional merchant configuration.
+> 👍 **Automatic Compliance**
+>
+> When using Yuno SDKs, merchants are compliant with co-badged card regulations out-of-the-box. The SDK automatically handles network detection and selection, ensuring compliance without additional merchant configuration.
 
 ### Supported SDK Versions
 
@@ -82,7 +84,9 @@ The SDK tracks and uses the selected network automatically—no additional merch
 
 ## Direct Integration
 
-For merchants using direct API integrations (not SDKs), additional steps are required to ensure compliance with co-badged card regulations.
+> ⚠️ **Manual Implementation Required**
+>
+> For merchants using direct API integrations (not SDKs), additional steps are required to ensure compliance with co-badged card regulations. Merchants must implement network detection, selection UI, and network storage themselves.
 
 ### Merchant Requirements
 
