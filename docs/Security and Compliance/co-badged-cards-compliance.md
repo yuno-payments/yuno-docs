@@ -119,7 +119,7 @@ The UI includes:
 * The Mastercard-required phrase "Select card brand (optional)" which is always displayed when applicable
 * User-friendly interface for network selection
 
-<Image align="center" alt="Network Selection UI" border={false} src="https://github.com/yuno-payments/yuno-docs/raw/docs/co-badged-cards-compliance/docs/Security%20and%20Compliance/images/co-badged-cards-network-selection-ui.png" />
+<Image alt="Network Selection UI" border={false} src="https://github.com/yuno-payments/yuno-docs/raw/docs/co-badged-cards-compliance/docs/Security%20and%20Compliance/images/co-badged-cards-network-selection-ui.png" />
 
 ### Recurring Payments
 
