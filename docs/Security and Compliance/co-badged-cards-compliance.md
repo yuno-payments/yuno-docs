@@ -44,10 +44,9 @@ When using Yuno SDKs, merchants are compliant with co-badged card regulations ou
 
 ### Supported SDK Versions
 
-{/* TODO: Update with specific version numbers once confirmed */}
 Co-badged card compliance is supported in specific versions of each Yuno SDK:
 
-- **Web SDK**: ---
+- **Web SDK**: Version 1.1.0 and later
 - **iOS SDK**: Version 2.0.0 and later
 - **Android SDK**: Version 2.0.0 and later
 - **React Native SDK**: Version 1.0.16 and later
@@ -79,7 +78,6 @@ For merchants using direct API integrations (not SDKs), additional steps are req
 
 ### Merchant Requirements
 
-{/* TODO: Add specific requirements once confirmed */}
 Merchants using direct API integrations must implement compliance measures themselves. To be compliant with EU IFR Regulation 2015/751 Article 8, merchants using direct integrations must:
 
 1. Detect which networks are supported by the customer's card
@@ -118,7 +116,7 @@ To process payments with the selected network, merchants must include the networ
 
 Merchants must implement their own UI for network selection. The UI must display all available networks for the customer's card, allow customers to select their preferred network, and display the Mastercard-required phrase "Select card brand (optional)" when applicable. This phrase must be clearly visible and displayed before or alongside network selection options.
 
-{/* TODO: Add UI/UX guidelines or examples if available */}
+The network selection UI shown in the SDK section above provides a reference for how network selection should be presented to customers.
 
 ### Recurring Payments
 
@@ -149,4 +147,3 @@ A merchant only accepts Visa, and a customer uses a co-badged card that supports
 - **Mastercard Requirement**: The phrase "Select card brand (optional)" must be displayed when applicable.
 - **Recurring Payments**: The initially selected network must be used for all subsequent payments with the same card.
 
-{/* TODO: Update all TBD sections and TODO comments once information is provided */}
