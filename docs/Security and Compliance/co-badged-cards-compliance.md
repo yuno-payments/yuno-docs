@@ -11,8 +11,8 @@ Co-badged cards are payment cards that support multiple payment networks (e.g., 
 
 Co-badged cards are payment cards that carry multiple network logos and can be processed through different payment networks. Common examples include:
 
-- Cards that support both a domestic network (e.g., Cartes Bancaires in France) and an international network (e.g., Visa or Mastercard)
-- Cards that support multiple international networks
+* Cards that support both a domestic network (e.g., Cartes Bancaires in France) and an international network (e.g., Visa or Mastercard)
+* Cards that support multiple international networks
 
 When a merchant accepts payments through multiple networks supported by the same card, EU regulations require that customers be given a choice of which network to use.
 
@@ -20,9 +20,9 @@ When a merchant accepts payments through multiple networks supported by the same
 
 Compliance with EU IFR Regulation 2015/751 Article 8 is required when:
 
-- A merchant accepts both domestic and international networks (e.g., Cartes Bancaires and Visa)
-- The customer's card supports multiple networks that the merchant accepts
-- The transaction is processed within the European Economic Area (EEA)
+* A merchant accepts both domestic and international networks (e.g., Cartes Bancaires and Visa)
+* The customer's card supports multiple networks that the merchant accepts
+* The transaction is processed within the European Economic Area (EEA)
 
 If a merchant only accepts one network, or if the customer's card only supports one network that the merchant accepts, no network selection is required. The regulation applies to transactions processed within the EEA; transactions outside the EEA are not subject to this requirement.
 
@@ -50,10 +50,10 @@ Yuno simplifies co-badged card compliance by providing built-in support through 
 
 Co-badged card compliance is supported in specific versions of each Yuno SDK:
 
-- **Web SDK**: Version 1.1.0 and later
-- **iOS SDK**: Version 2.0.0 and later
-- **Android SDK**: Version 2.0.0 and later
-- **React Native SDK**: Version 1.0.16 and later
+* **Web SDK**: Version 1.1.0 and later
+* **iOS SDK**: Version 2.0.0 and later
+* **Android SDK**: Version 2.0.0 and later
+* **React Native SDK**: Version 1.0.16 and later
 
 ### How It Works
 
@@ -61,14 +61,14 @@ The SDK automatically handles compliance with no configuration required. Complia
 
 The SDK automatically:
 
-- Detects which networks are supported by the customer's card based on the card IIN (Issuer Identification Number)
-- Displays network selection options to customers when multiple networks are available
-- Handles the Mastercard-required phrase "Select card brand (optional)" automatically
-- Stores the selected network for use in recurring payments
+* Detects which networks are supported by the customer's card based on the card IIN (Issuer Identification Number)
+* Displays network selection options to customers when multiple networks are available
+* Handles the Mastercard-required phrase "Select card brand (optional)" automatically
+* Stores the selected network for use in recurring payments
 
 When a co-badged card is detected, the SDK automatically presents network selection options to the customer. The UI is not customizable and is consistently displayed across all platforms (Web, iOS, Android, React Native).
 
-![Co-badged Cards Network Selection UI](https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/co-badged-cards-network-selection-ui.png)
+<Image align="center" alt="Co-badged Cards Network Selection UI" border={false} width="75% " src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/co-badged-cards-network-selection-ui.png" />
 
 ### Recurring Payments
 
@@ -97,6 +97,7 @@ Merchants using direct API integrations must implement compliance measures thems
 ### Card IIN Detection
 
 {/* TODO: Add API endpoint or method details once confirmed */}
+
 Yuno provides methods to detect which networks are supported by a card based on the card IIN (Issuer Identification Number). The card IIN is the first 6-8 digits of the card number and identifies the card issuer and supported networks.
 
 {/* TODO: Add API endpoint documentation or code examples */}
@@ -104,6 +105,7 @@ Yuno provides methods to detect which networks are supported by a card based on 
 ### API Requirements
 
 {/* TODO: Add specific API endpoints and parameters once confirmed */}
+
 To process payments with the selected network, merchants must include the network selection in their payment API requests. When creating a payment, merchants must include the selected network in the payment request. The following parameters are used:
 
 {/* TODO: Add parameter names and examples */}
@@ -136,7 +138,6 @@ For recurring payments, merchants must ensure that the initially selected networ
 
 {/* TODO: Add code examples or API documentation for storing and using network preference */}
 
-
 ## Examples
 
 ### Example: Network Selection Required
@@ -149,9 +150,8 @@ A merchant only accepts Visa, and a customer uses a co-badged card that supports
 
 ## Summary
 
-- **SDK Integration**: Merchants using Yuno SDKs are compliant out-of-the-box. No additional configuration required.
-- **Direct Integration**: Merchants must implement network detection, selection UI, and network storage for recurring payments.
-- **Regulatory Requirement**: EU IFR Regulation 2015/751 Article 8 requires network selection for co-badged cards in the EEA. The regulation entered into force on 8 June 2015, with Article 8 applying from 9 June 2016.
-- **Mastercard Requirement**: The phrase "Select card brand (optional)" must be displayed when applicable.
-- **Recurring Payments**: The initially selected network must be used for all subsequent payments with the same card.
-
+* **SDK Integration**: Merchants using Yuno SDKs are compliant out-of-the-box. No additional configuration required.
+* **Direct Integration**: Merchants must implement network detection, selection UI, and network storage for recurring payments.
+* **Regulatory Requirement**: EU IFR Regulation 2015/751 Article 8 requires network selection for co-badged cards in the EEA. The regulation entered into force on 8 June 2015, with Article 8 applying from 9 June 2016.
+* **Mastercard Requirement**: The phrase "Select card brand (optional)" must be displayed when applicable.
+* **Recurring Payments**: The initially selected network must be used for all subsequent payments with the same card.
