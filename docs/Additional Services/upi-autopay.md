@@ -15,20 +15,20 @@ Autopay integrates seamlessly into Yuno's existing payment orchestration flow, u
 
 ```mermaid
 flowchart TB
-  A[Merchant create payment]
-  B[Yuno payment api]
-  C[Provider Adyen Billdesk]
+  A[Merchant creates payment]
+  B[Yuno payments API]
+  C[Provider]
 
   A --> B --> C
 
-  C --> D[use FIRST]
-  C --> E[use USED]
+  C --> D[use:FIRST]
+  C --> E[use:USED]
   C --> F[Scheduler]
 
   D --> R[Payment results]
 
-  E --> M[SMS Email messaging]
-  E --> S[Scheduler 36 48h]
+  E --> M[Messaging]
+  E --> S[Scheduler 36-48h]
   F --> S
 
   M --> CA[Customer action]
