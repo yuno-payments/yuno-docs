@@ -42,6 +42,19 @@ The `strong_customer_authentication_exemptions` array accepts the following valu
 * **`RECURRING_PAYMENT`**: Indicates that the transaction is a fixed-amount recurring payment to the same beneficiary.
   _Benefit_: Recurring payments may be exempt from SCA after the initial authentication, enhancing the customer experience for subscription services.
 
+> 📘 Cartes Bancaires Safe'R (France)
+>
+> Safe'R is a Cartes Bancaires (CB) program built on top of EMV 3DS 2.x and TRA. There is no dedicated `SAFER` flag in Yuno's API. To request Safe'R-eligible flows, use the `TRANSACTION_RISK_ANALYSIS` exemption and include the CB risk data fields in your payment request.
+>
+> Provide as much of the following as possible to maximize eligibility:
+>
+> * `customer_payer.ip_address`
+> * `customer_payer.email`
+> * `customer_payer.phone`
+> * `customer_payer.billing_address.*`
+> * `customer_payer.shipping_address.*`
+> * `customer_payer.browser_info.*` (for web flows)
+
 ## Implementation Example
 
 The Strong Customer Authentication exemptions come from either:
