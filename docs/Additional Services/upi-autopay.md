@@ -75,12 +75,12 @@ Use `stored_credentials.use` to declare the intent:
 
 If an MIT debit fails, Yuno retries instead of marking the payment as final failure immediately. The retry schedule is configurable per account.
 
-| Attempt    | Message                                                                |
-| ---------- | ---------------------------------------------------------------------- |
-| 1st fail   | "Payment failed. We'll retry tomorrow. No action needed."              |
-| 2nd fail   | "Payment still pending. Retry in 2 days (`update method link`)."       |
-| 3rd fail   | "Final retry scheduled for `date`. Please ensure funds are available." |
-| Final fail | "Payment could not be processed. Contact `merchant` to resolve."       |
+| Attempt    | Message                                                                     |
+| ---------- | --------------------------------------------------------------------------- |
+| 1st fail   | "Payment failed. We'll retry tomorrow. No action needed."                   |
+| 2nd fail   | "Payment still pending. Retry in 2 days (`link to update payment method`)." |
+| 3rd fail   | "Final retry scheduled for `date`. Please ensure funds are available."      |
+| Final fail | "Payment could not be processed. Contact `merchant` to resolve."            |
 
 ## Regulatory compliance
 
