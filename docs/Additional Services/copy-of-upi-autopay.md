@@ -16,11 +16,29 @@ Autopay integrates seamlessly with Yuno's existing payment flows through the `st
 ## How it works
 
 * **First charge**: The initial payment is a customer-initiated transaction (CIT) processed directly with the payment provider to create the mandate and authorize future debits.
+
+<br />
+
 * **PDNs**: For recurring debits, Yuno sends a pre-debit notification (PDN) that the customer receives by SMS or email, waits the required notice period, and then executes the debit automatically unless the customer cancels.
+
+<br />
+
 * **Messaging and opt-out**: PDNs include the merchant name, amount, and scheduled date, plus a cancellation link. Messages are localized (for example, English, Hindi, Tamil, Telugu, Bengali, Marathi). Email templates are white-labeled with merchant branding.
+
+<br />
+
 * **Webhook cancellation**: If the customer clicks the cancellation link, Yuno validates the transaction, cancels the scheduled debit, updates the payment status, and notifies the merchant.
+
+<br />
+
 * **Scheduling and retries**: Debits are scheduled to run after the notice period in approved IST windows. If a debit fails, Yuno schedules retries based on the configured schedule and retry limits.
+
+<br />
+
 * **Async status and webhooks**: Payment state updates run asynchronously and emit merchant events for PDN sent, cancellations, successes, retry scheduled, and final failure.
+
+<br />
+
 * **Provider support**: Autopay with PDN is initially launching through Adyen and Billdesk.
 
 ```mermaid
