@@ -79,8 +79,13 @@ flowchart TB
 
 Autopay uses amount thresholds to determine whether a charge can run as MIT or must be handled as a customer-initiated payment (CIT). This keeps recurring debits compliant and sets expectations for customer action.
 
-* **Below threshold (≤ INR 50,000)**: Yuno sends the PDN to the customer, waits the 36-48 hour notice period, and then executes the MIT debit in an IST window. If the customer cancels during the notice period, the debit is not executed.
-* **Above threshold (> INR 50,000)**: Yuno sends a CIT notification 72-48 hours in advance with a way for the customer to complete the payment. The customer must actively pay; if they do not, no MIT debit is executed.
+### Below threshold (≤ INR 50,000)
+
+Yuno sends the PDN to the customer, waits the 36-48 hour notice period, and then executes the MIT debit in an IST window. If the customer cancels during the notice period, the debit is not executed.
+
+### Above threshold (> INR 50,000)
+
+Yuno sends a CIT notification 72-48 hours in advance with a way for the customer to complete the payment. The customer must actively pay; if they do not, no MIT debit is executed.
 
 ## `stored_credentials` fields
 
@@ -108,10 +113,24 @@ If an MIT debit fails, Yuno retries instead of marking the payment as final fail
 
 Yuno follows the National Payments Corporation of India (NPCI) requirements for UPI Autopay.
 
-* **Advance notice window**: PDNs must be sent 36-48 hours before the debit. NPCI allows a minimum of 24 hours.
-* **Customer opt-out**: The PDN includes a webhook link delivered via SMS or email. If the customer cancels before the scheduled debit, Yuno stops the charge.
-* **Execution windows (IST)**: Debits are executed only in approved time windows: before 10:00 AM, 1:00-5:00 PM, or after 9:30 PM.
-* **MIT amount threshold**: MIT autopay is allowed up to INR 50,000. Any amount above that requires a customer-initiated payment (CIT).
-* **Retry limits**: NPCI allows 1 execution attempt plus up to 3 retries.
+### Advance notice window
+
+PDNs must be sent 36-48 hours before the debit. NPCI allows a minimum of 24 hours.
+
+### Customer opt-out
+
+The PDN includes a webhook link delivered via SMS or email. If the customer cancels before the scheduled debit, Yuno stops the charge.
+
+### Execution windows (IST)
+
+Debits are executed only in approved time windows: before 10:00 AM, 1:00-5:00 PM, or after 9:30 PM.
+
+### MIT amount threshold
+
+MIT autopay is allowed up to INR 50,000. Any amount above that requires a customer-initiated payment (CIT).
+
+### Retry limits
+
+NPCI allows 1 execution attempt plus up to 3 retries.
 
 <br />
