@@ -5,6 +5,8 @@ hidden: true
 metadata:
   robots: index
 ---
+<br />
+
 This guide covers Yuno's support for UPI Autopay recurring payments with Pre-Debit Notification (PDN).
 
 UPI Autopay uses a customer-approved mandate, which is the customer's standing authorization for recurring debits. Once the mandate is in place, Yuno can initiate scheduled debits without requiring the customer to take action each time. Before every recurring debit, Yuno sends a Pre-Debit Notification (PDN) to the customer in advance. This notice period gives the customer time to review the upcoming charge and cancel if needed, and the debit is only executed if the customer does not opt out.
