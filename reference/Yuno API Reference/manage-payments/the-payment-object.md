@@ -4001,7 +4001,7 @@ This object represents the payment created after generating the checkout session
   <details class="yuno">
     <summary><strong><code>metadata</code></strong> <small>array of objects</small>
       <br />
-      <p>Specifies a list of custom key–value pairs associated with the payment (for internal references, segmentation, or workflow tags). You can add up to 100 metadata objects.</p>
+      <p>Specifies a list of custom key–value pairs associated with the payment (for internal references, segmentation, or workflow tags). You can add up to 120 metadata objects.</p>
     </summary>
     <div>
       <details class="yuno">
