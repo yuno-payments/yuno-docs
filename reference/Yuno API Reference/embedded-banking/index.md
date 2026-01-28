@@ -17,13 +17,6 @@ It is designed for companies that need to hold or move user balances under a ban
 * Manage transfers using local and international schemes (ACH, PIX, IBAN, SWIFT, Interac)
 * Issue and manage physical or virtual cards under PCI DSS environments
 
-### Other functionalities
-
-* Bill payments
-* Cash top-ups (eCash)
-* High-yield savings accounts
-* P2P transfers between users within the same institution
-
 ## Onboard user or entity and create account
 
 Register a user or entity, complete KYC/KYB, and create a virtual account once onboarding is approved.
