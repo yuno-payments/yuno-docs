@@ -53,12 +53,12 @@ flowchart LR
 
 Transfers are split into **incoming transfers (payins)** and **outgoing transfers (payouts)**, depending on the direction of funds.
 
-### Incoming transfer (payin)
+### Incoming transfer (Payments)
 
 1. **[Receive payment notifications](https://docs.y.uno/reference/embedded-banking-payment-notifications)** to process payin updates
 2. **[Retrieve payment by ID](https://docs.y.uno/reference/retrieve-payment-by-id-1)** to confirm settlement details
 
-### Outgoing transfer (payout)
+### Outgoing transfer (Payouts)
 
 1. **[Create payout](https://docs.y.uno/reference/create-payout-1)** to send funds to a beneficiary
 2. **[Retrieve payout by ID](https://docs.y.uno/reference/retrieve-payout-by-id-1)** to track status and confirm completion
