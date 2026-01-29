@@ -51,14 +51,14 @@ To specify a [payment](ref:create-payment) with a processing type, use the `stor
 | Parameter                   | Type   | Description                                                                                                                                                                                    |
 | --------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `reason`                    | enum   | Indicates the reason for storing credentials for the transaction. <br /> `CARD_ON_FILE` <br /> `SUBSCRIPTION` <br /> `UNSCHEDULED_CARD_ON_FILE`                                                |
-| `use`                       | enum   | A credit card can be stored with or without an initial payment. This field indicates if this is the first time the vaulted_token/network_token is used or reused. <br /> `FIRST` <br /> `USED` |
+| `usage`                     | enum   | A credit card can be stored with or without an initial payment. This field indicates if this is the first time the vaulted_token/network_token is used or reused. <br /> `FIRST` <br /> `USED` |
 | `subscription_agreement_id` | string | The ID of the agreement with the customer, mandatory for certain markets (e.g., MX).                                                                                                           |
 | `network_transaction_id`    | string | The ID provided by Visa/Mastercard in the response of the initial payment, which is highly recommended for future use in merchant-initiated transactions (MIT).                                |
 
 > ❗️ Critical: Complete All Required Fields
 >
-> * When working with CIT and MIT transactions, it's essential to correctly populate the `use`, `reason`, and `network_transaction_id` fields. Failing to complete these fields properly can result in **decreased approval rates** and **loss of chargeback disputes**.
-> * Some providers (e.g., Adyen) require that the `reason` field remains consistent across the transaction lifecycle. If your first transaction (`use=FIRST`) uses `reason=SUBSCRIPTION`, all subsequent transactions (`use=USED`) must also use `reason=SUBSCRIPTION`.
+> * When working with CIT and MIT transactions, it's essential to correctly populate the `usage`, `reason`, and `network_transaction_id` fields. Failing to complete these fields properly can result in **decreased approval rates** and **loss of chargeback disputes**.
+> * Some providers (e.g., Adyen) require that the `reason` field remains consistent across the transaction lifecycle. If your first transaction (`usage=FIRST`) uses `reason=SUBSCRIPTION`, all subsequent transactions (`usage=USED`) must also use `reason=SUBSCRIPTION`.
 
 Store credential reasons
 
@@ -100,7 +100,7 @@ curl --request POST \
            "card": {
                "stored_credentials":{
                   "reason":"CARD_ON_FILE",
-                  "use": "USED",
+                  "usage": "USED",
                   "network_transaction_id":"583103536844189"
               }
            }
@@ -126,7 +126,7 @@ For certain markets (MX for example) and payment processors, when a subscription
            "card": {
                "stored_credentials":{
                   "reason":"CARD_ON_FILE",
-                  "use": "USED",
+                  "usage": "USED",
                   "subscription_agreement_id":"AA0001",
                   "network_transaction_id":"583103536844189"
               }
@@ -149,7 +149,7 @@ If the transaction is customer-initiated (CIT), the network transaction referenc
            "card": {
                "stored_credentials":{
                   "reason":"CARD_ON_FILE",
-                  "use": "USED",
+                  "usage": "USED",
                   "network_transaction_id":"583103536844189"
               }
            }
@@ -165,14 +165,14 @@ We associate the `network_transaction_id` with the `vaulted_token` for future tr
   * A card `vaulted_token`, or
   * Card data with `vault_on_success` set to `true`
 * _Stored credentials_:
-  * `use` set to `FIRST`
+  * `usage` set to `FIRST`
 
 <Callout icon="⚠️" theme="warning">
   When using <code>vault_on_success = true</code> in a direct integration, you must create the customer first and pass its <code>customer_payer.id</code> in the payment request. Sending customer details inline does not create the customer on Yuno's side, so the card cannot be stored and no <code>vaulted_token</code> will be returned.
 </Callout>
 
-If you already have the `network_transaction_id` for the card, you can include it in the payment in the corresponding field. If not, for MIT payments (with `stored_credentials.use=USED`), we will send the `network_transaction_id` associated with the `vaulted_token` to the provider.
+If you already have the `network_transaction_id` for the card, you can include it in the payment in the corresponding field. If not, for MIT payments (with `stored_credentials.usage=USED`), we will send the `network_transaction_id` associated with the `vaulted_token` to the provider.
 
 <Callout icon="❗️" theme="error">
-  Remember to specify the `use` in the `stored_credentials` section, as we trigger the `network_transaction_id` logic based on those fields.
+  Remember to specify the `usage` in the `stored_credentials` section, as we trigger the `network_transaction_id` logic based on those fields.
 </Callout>
