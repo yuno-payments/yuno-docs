@@ -196,7 +196,7 @@ Use the one-time token from Step 5 to create the payment in your backend. Call t
 
 The API response will indicate whether additional actions are required using the `sdk_action_required` field.
 
-### Step 7: Continue payment (when sdk_action_required: true)
+### Step 7: Continue payment
 
 Some payment methods require additional customer actions to complete the transaction, such as 3D Secure authentication or bank redirects. When the Create Payment API response includes `sdk_action_required: true`, you must call `continuePayment` to display these additional screens to the user.
 
