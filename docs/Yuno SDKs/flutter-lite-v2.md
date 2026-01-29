@@ -358,19 +358,19 @@ The following parameters are used in the integration flows above.
 
 ### `Appearance` (iOS)
 
-| Parameter                             | Description                                      |
-| :------------------------------------ | :----------------------------------------------- |
-| `fontFamily`                          | iOS font family name.                            |
-| `accentColor`                         | Accent color for highlights and active elements. |
-| `buttonBackgrounColor`                | Primary button background color.                 |
-| `buttonTitleBackgrounColor`           | Primary button title color.                      |
-| `buttonBorderBackgrounColor`          | Primary button border color.                     |
-| `secondaryButtonBackgrounColor`       | Secondary button background color.               |
-| `secondaryButtonTitleBackgrounColor`  | Secondary button title color.                    |
-| `secondaryButtonBorderBackgrounColor` | Secondary button border color.                   |
-| `disableButtonBackgrounColor`         | Disabled button background color.                |
-| `disableButtonTitleBackgrounColor`    | Disabled button title color.                     |
-| `checkboxColor`                       | Checkbox color.                                  |
+| Parameter                              | Description                                      |
+| :------------------------------------- | :----------------------------------------------- |
+| `fontFamily`                           | iOS font family name.                            |
+| `accentColor`                          | Accent color for highlights and active elements. |
+| `buttonBackgroundColor`                | Primary button background color.                 |
+| `buttonTitleBackgroundColor`           | Primary button title color.                      |
+| `buttonBorderBackgroundColor`          | Primary button border color.                     |
+| `secondaryButtonBackgroundColor`       | Secondary button background color.               |
+| `secondaryButtonTitleBackgroundColor`  | Secondary button title color.                    |
+| `secondaryButtonBorderBackgroundColor` | Secondary button border color.                   |
+| `disableButtonBackgroundColor`         | Disabled button background color.                |
+| `disableButtonTitleBackgroundColor`    | Disabled button title color.                     |
+| `checkboxColor`                        | Checkbox color.                                  |
 
 ### `StartPayment` (Lite)
 
@@ -409,19 +409,19 @@ iOS appearance is fully customizable through the `IosConfig.appearance` paramete
 
 #### Available iOS Customization Options
 
-| Parameter                             | Type   | Description                                                                                                 |
-| ------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
-| `fontFamily`                          | String | Custom font family name for all SDK text. Use the font name as registered in your iOS project's Info.plist. |
-| `accentColor`                         | Color  | Primary accent color used for highlights, active states, and interactive elements throughout the SDK.       |
-| `buttonBackgrounColor`                | Color  | Background color for primary action buttons (e.g., "Pay", "Confirm").                                       |
-| `buttonTitleBackgrounColor`           | Color  | Text color for primary button labels.                                                                       |
-| `buttonBorderBackgrounColor`          | Color  | Border color for primary buttons. Set to match background for borderless buttons.                           |
-| `secondaryButtonBackgrounColor`       | Color  | Background color for secondary/cancel buttons.                                                              |
-| `secondaryButtonTitleBackgrounColor`  | Color  | Text color for secondary button labels.                                                                     |
-| `secondaryButtonBorderBackgrounColor` | Color  | Border color for secondary buttons.                                                                         |
-| `disableButtonBackgrounColor`         | Color  | Background color for disabled buttons (when user cannot proceed).                                           |
-| `disableButtonTitleBackgrounColor`    | Color  | Text color for disabled button labels.                                                                      |
-| `checkboxColor`                       | Color  | Color for checkboxes like "Save card for future payments".                                                  |
+| Parameter                              | Type   | Description                                                                                                 |
+| -------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| `fontFamily`                           | String | Custom font family name for all SDK text. Use the font name as registered in your iOS project's Info.plist. |
+| `accentColor`                          | Color  | Primary accent color used for highlights, active states, and interactive elements throughout the SDK.       |
+| `buttonBackgroundColor`                | Color  | Background color for primary action buttons (e.g., "Pay", "Confirm").                                       |
+| `buttonTitleBackgroundColor`           | Color  | Text color for primary button labels.                                                                       |
+| `buttonBorderBackgroundColor`          | Color  | Border color for primary buttons. Set to match background for borderless buttons.                           |
+| `secondaryButtonBackgroundColor`       | Color  | Background color for secondary/cancel buttons.                                                              |
+| `secondaryButtonTitleBackgroundColor`  | Color  | Text color for secondary button labels.                                                                     |
+| `secondaryButtonBorderBackgroundColor` | Color  | Border color for secondary buttons.                                                                         |
+| `disableButtonBackgroundColor`         | Color  | Background color for disabled buttons (when user cannot proceed).                                           |
+| `disableButtonTitleBackgroundColor`    | Color  | Text color for disabled button labels.                                                                      |
+| `checkboxColor`                        | Color  | Color for checkboxes like "Save card for future payments".                                                  |
 
 > **Note:** When using `Color(0xFF...)` for iOS appearance customization, you must add `import 'dart:ui';` at the top of your file.
 
