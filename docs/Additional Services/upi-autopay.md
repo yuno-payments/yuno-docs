@@ -31,8 +31,8 @@ flowchart TB
 
   A --> B --> C
 
-  C --> D[use:FIRST]
-  C --> E[use:USED]
+  C --> D[usage:FIRST]
+  C --> E[usage:USED]
   C --> F[Scheduler]
 
   D --> R[Payment results]
@@ -64,12 +64,12 @@ Autopay uses amount thresholds to determine whether a charge can run as MIT or m
 
 Implement Autopay through the `stored_credentials` field available in endpoints like [Create payment](doc:create-payment). The full path for create payments is `payment_method.detail.detail.bank_transfer.stored_credentials`.
 
-Use `stored_credentials.use` to declare the intent:
+Use `stored_credentials.usage` to declare the intent:
 
-| Field | Value   | Behavior                                                                       |
-| ----- | ------- | ------------------------------------------------------------------------------ |
-| `use` | `FIRST` | Run the direct charge (CIT) and store the mandate reference for future debits. |
-| `use` | `USED`  | Send the PDN, wait the 24-hour notice period, then run the MIT debit.          |
+| Field   | Value   | Behavior                                                                       |
+| ------- | ------- | ------------------------------------------------------------------------------ |
+| `usage` | `FIRST` | Run the direct charge (CIT) and store the mandate reference for future debits. |
+| `usage` | `USED`  | Send the PDN, wait the 24-hour notice period, then run the MIT debit.          |
 
 ## Dunning and retries
 
