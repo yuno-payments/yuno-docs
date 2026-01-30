@@ -5,7 +5,7 @@ hidden: true
 metadata:
   robots: index
 ---
-Onboarding tracks the lifecycle of recipient (submerchant) registration with providers for split payments. Use the onboarding `status` to understand where a recipient is in the process and whether any action is required.
+Onboarding tracks the lifecycle of recipient registration with providers for embedded banking. Use the onboarding `status` to understand where a recipient is in the process and whether any action is required.
 
 See also:
 
