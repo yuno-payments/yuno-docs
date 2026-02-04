@@ -1,5 +1,5 @@
 ---
-title: Choose the right integration for you
+title: Choose the right Integration for You
 deprecated: false
 hidden: false
 metadata:
