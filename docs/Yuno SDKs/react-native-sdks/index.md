@@ -1,7 +1,7 @@
 ---
 title: React Native SDK
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
@@ -346,4 +346,3 @@ paymentSubscription.remove();
 tokenSubscription.remove();
 enrollmentSubscription.remove();
 ```
-
