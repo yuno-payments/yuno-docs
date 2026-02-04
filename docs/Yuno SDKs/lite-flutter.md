@@ -1,5 +1,5 @@
 ---
-title: Flutter Lite
+title: Flutter SDK Lite
 deprecated: false
 hidden: false
 metadata:
