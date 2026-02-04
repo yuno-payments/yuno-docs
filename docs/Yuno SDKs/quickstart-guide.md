@@ -1,5 +1,5 @@
 ---
-title: Quickstart guide
+title: Quickstart Guide
 deprecated: false
 hidden: false
 metadata:
