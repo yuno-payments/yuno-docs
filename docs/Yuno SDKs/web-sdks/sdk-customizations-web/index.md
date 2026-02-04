@@ -41,4 +41,3 @@ Choose the design system you want to customize:
 ## Address autocomplete
 
 Merchants can enable or disable address autocomplete functionality in the Web SDK. When enabled, the SDK automatically fills address fields based on postal code lookup. When disabled, users must manually enter all address information.
-
