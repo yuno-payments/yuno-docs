@@ -1,5 +1,5 @@
 ---
-title: Payment flows
+title: Payment Flows
 deprecated: false
 hidden: false
 metadata:
