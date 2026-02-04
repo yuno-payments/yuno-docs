@@ -1,5 +1,5 @@
 ---
-title: SDK customizations
+title: SDK Customizations
 deprecated: false
 hidden: false
 metadata:
