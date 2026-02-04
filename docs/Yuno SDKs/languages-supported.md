@@ -1,5 +1,5 @@
 ---
-title: Supported languages
+title: Supported Languages
 deprecated: false
 hidden: false
 metadata:
