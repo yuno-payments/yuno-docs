@@ -1,5 +1,5 @@
 ---
-title: Enrollment flows
+title: Enrollment Flows
 deprecated: false
 hidden: false
 metadata:
