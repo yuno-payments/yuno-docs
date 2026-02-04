@@ -1,5 +1,5 @@
 ---
-title: Understanding payment and enrollment flows
+title: Understanding Payment and Enrollment Flows
 deprecated: false
 hidden: false
 metadata:
@@ -73,4 +73,3 @@ If a customer has an enrolled payment method, they can use a **vaulted token** t
 10. Yuno SDK: Continue enrollment flow → Yuno SDK: Shows screens for the user to complete enrollment
 11. Merchant Server: Receive enrollment result via webhook → Yuno Server: Receive enrollment results from payment provider
 12. Yuno Server: Receive enrollment results from payment provider → Yuno SDK: Display enrollment result (optional)
-
