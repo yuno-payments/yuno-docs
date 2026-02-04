@@ -1,5 +1,5 @@
 ---
-title: Country coverage
+title: Country Coverage
 deprecated: false
 hidden: false
 metadata:
