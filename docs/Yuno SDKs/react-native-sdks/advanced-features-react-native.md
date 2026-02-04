@@ -1,7 +1,7 @@
 ---
 title: Advanced features React Native SDK
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
