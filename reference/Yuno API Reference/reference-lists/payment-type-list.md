@@ -13,11 +13,13 @@ metadata:
 next:
   description: ''
 ---
-On this page, you will find the payment method types available on the Yuno API. In addition, you have access to their categories and descriptions. You will use the payment method type and category for payment creation and enrollment.
+This reference lists all payment methods supported by Yuno's API, organized by category and provider. Use the `payment_method_type`, `category`, and `provider` values when creating payments or enrolling payment methods.
 
-> 📘 New Payment Methods
->
-> Yuno is committed to continuously expanding the range of payment methods and processors available. As a result, this page is regularly updated to ensure you stay up-to-date with the latest additions.
+<Callout icon="📘" theme="info">
+
+
+  **Updated regularly** with new payment methods and providers as they become available.
+</Callout>
 
 | **Integration Name**                     | **Provider**      | **Payment Method**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | **Category**    |
 | :--------------------------------------- | :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------- |
