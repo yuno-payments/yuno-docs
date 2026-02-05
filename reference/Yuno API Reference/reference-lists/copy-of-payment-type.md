@@ -1,7 +1,7 @@
 ---
 title: Copy of Payment type
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   description: >-
     Find the payment method types available on the Yuno API. In addition, you
