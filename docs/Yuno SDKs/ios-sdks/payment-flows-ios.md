@@ -355,7 +355,7 @@ func yunoPaymentResult(_ result: Yuno.Result) {
     case .reject:
         print("Payment was rejected")
         // Show rejection message
-    case .userCancell:
+    case .userCancelled:
         print("User canceled payment")
         // Handle cancellation
     case .internalError:
@@ -374,7 +374,7 @@ func yunoPaymentResult(_ result: Yuno.Result) {
 | `processing` | Payment in progress, awaiting approval | No |
 | `reject` | Payment rejected (insufficient funds, fraud detection, etc.) | Yes - Inform user and suggest actions |
 | `internalError` | Unexpected internal error occurred | Yes - Technical intervention required |
-| `userCancell` | User canceled the payment | No |
+| `userCancelled` | User canceled the payment | No |
 
 #### Payment status validation
 
@@ -384,7 +384,7 @@ This section explains how the SDK handles payment status when users cancel or le
 
 For synchronous payment methods like Apple Pay, when a user cancels before PSP response:
 
-- **SDK Status**: Returns `userCancell` (CANCELLED_BY_USER)
+- **SDK Status**: Returns `userCancelled` (CANCELLED_BY_USER)
 - **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
 - **Important**: The SDK will not return `reject` or `processing` in this scenario
 

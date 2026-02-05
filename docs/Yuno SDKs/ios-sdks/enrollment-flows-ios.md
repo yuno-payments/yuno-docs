@@ -144,7 +144,7 @@ class ViewController: UIViewController, YunoEnrollmentDelegate {
             print("Enrollment processing")
         case .reject:
             print("Enrollment rejected")
-        case .userCancell:
+        case .userCancelled:
             print("User canceled")
         case .internalError:
             print("Internal error")
@@ -220,7 +220,7 @@ func yunoEnrollmentResult(_ result: Yuno.Result) {
     case .reject:
         print("Enrollment rejected")
         // Show rejection message
-    case .userCancell:
+    case .userCancelled:
         print("User canceled")
         // Handle cancellation
     case .internalError:
@@ -239,7 +239,7 @@ func yunoEnrollmentResult(_ result: Yuno.Result) {
 | `processing` | Enrollment in progress, awaiting approval | No |
 | `reject` | Enrollment rejected (invalid data, fraud detection, etc.) | Yes - Inform user and suggest actions |
 | `internalError` | Unexpected internal error occurred | Yes - Technical intervention required |
-| `userCancell` | User canceled the enrollment | No |
+| `userCancelled` | User canceled the enrollment | No |
 
 `Yuno.Result` does not include tokens or error messages; it only returns a high-level status.
 
