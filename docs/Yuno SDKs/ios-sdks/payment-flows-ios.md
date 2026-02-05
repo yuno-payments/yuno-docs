@@ -29,7 +29,7 @@ The first step is always including the library in your project; this step is per
 Add to your Podfile:
 
 ```ruby
-pod 'YunoSDK', '~> 1.1.22'
+pod 'YunoSDK', '~> 2.11.1'
 ```
 
 Then run:
@@ -44,7 +44,7 @@ Add the package dependency:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "1.1.17"))
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.11.1"))
 ]
 ```
 

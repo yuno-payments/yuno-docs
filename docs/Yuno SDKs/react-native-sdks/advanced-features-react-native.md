@@ -442,8 +442,8 @@ const handlePaymentReturn = async (url: string) => {
 
 | Platform | Native SDK                      | Version |
 | -------- | ------------------------------- | ------- |
-| Android | `com.yuno.sdk:yuno-sdk-android` | 2.8.1   |
-| iOS     | `YunoSDK`                       | 2.9.0   |
+| Android | `com.yuno.sdk:yuno-sdk-android` | 2.9.0   |
+| iOS     | `YunoSDK`                       | 2.11.1  |
 
 ### Testing on both platforms
 

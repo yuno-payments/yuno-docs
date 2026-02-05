@@ -95,13 +95,13 @@ For a comprehensive overview of all Web SDK parameters, see [Web SDK Common Refe
 
 **CocoaPods**:
 ```ruby
-pod 'YunoSDK'
+pod 'YunoSDK', '~> 2.11.1'
 ```
 
 **Swift Package Manager**:
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "1.0.0")
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios", from: "2.11.1")
 ]
 ```
 

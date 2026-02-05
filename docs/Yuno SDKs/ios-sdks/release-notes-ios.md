@@ -10,7 +10,14 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.9.0    | **NEW**: Allow cards expiring in the current month and year. |
+| 2.11.1  | **FIX**: Various bug fixes and improvements. |
+| 2.11.0  | **FIX**: Podspec configuration updates. |
+|         | **FIX**: Various bug fixes and improvements. |
+| 2.10.1  | **FIX**: Update checksum. |
+|         | **FIX**: Various bug fixes and improvements. |
+| 2.10.0  | **FIX**: Various bug fixes and improvements. |
+|         | **IMPROVE**: Architecture improvements. |
+| 2.9.0   | **NEW**: Allow cards expiring in the current month and year. |
 |         | **FIX**: Various bug fixes and improvements. |
 |         | **NEW**: Reduce character limit for full list and payment button. |
 |         | **NEW**: Add support for Click to Pay passkey. |

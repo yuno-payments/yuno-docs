@@ -66,7 +66,7 @@ Including the library in your project is done in the same way as in payment flow
 #### CocoaPods
 
 ```ruby
-pod 'YunoSDK', '~> 1.1.22'
+pod 'YunoSDK', '~> 2.11.1'
 ```
 
 Run:
@@ -79,7 +79,7 @@ pod install
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "1.1.17"))
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.11.1"))
 ]
 ```
 
@@ -271,7 +271,7 @@ Including the library in your project is done in the same way as in payment flow
 #### CocoaPods
 
 ```ruby
-pod 'YunoSDK', '~> {last_version}'
+pod 'YunoSDK', '~> 2.11.1'
 ```
 
 Run:
@@ -284,7 +284,7 @@ pod install
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "{last_version}"))
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.11.1"))
 ]
 ```
 
