@@ -10,6 +10,8 @@ The Android SDK release notes offer a comprehensive overview of the updates, imp
 
 | Version   | Changes                                                                                                                                                                     |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.9.0     | **IMPROVE**: Added `subPaymentState` parameter to `callbackPaymentState` in `startCheckout()` and `continuePayment()` functions                                             |
+|           | **NEW**: Google Pay now supported in `startPayment` flow                                                                                                                    |
 | 2.8.1     | **IMPROVE**: Added new card type field (Google Pay)                                                                                                                         |
 | 2.8.0     | **NEW**: Card scanning (OCR) feature - scan credit or debit cards with device camera using Google Pay's OCR solution                                                        |
 | 2.5       | **NEW**: Brazil hybrid card support - process as credit by default, enable card saving                                                                                      |

@@ -36,7 +36,7 @@ maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 
 ```kotlin
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:{last_version}'
+    implementation 'com.yuno.payments:android-sdk:2.9.0'
 }
 ```
 

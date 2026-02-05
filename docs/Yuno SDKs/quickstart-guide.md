@@ -184,7 +184,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:1.0.0'
+    implementation 'com.yuno.payments:android-sdk:2.9.0'
 }
 ```
 
