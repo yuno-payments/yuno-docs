@@ -147,7 +147,7 @@ The following table describes the required parameters:
 
     <tr>
       <td>
-        `checkout_session`
+        `checkoutSession`
       </td>
 
       <td>

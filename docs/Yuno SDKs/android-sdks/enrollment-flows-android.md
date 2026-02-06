@@ -43,7 +43,7 @@ For the full list of parameters, see the [Android SDK Common Reference](android-
 | `callbackEnrollmentState` | Callback: enrollment state. Optional; requires `initEnrollment` in onCreate. |
 | `requestCode` | Optional; use if capturing result via `onActivityResult`. |
 | `countryCode` (Headless) | Country for the enrollment. Required for apiClientEnroll. |
-| `customer_session` (Headless) | Customer session ID. Required for apiClientEnroll. |
+| `customerSession` (Headless) | Customer session ID. Required for apiClientEnroll. |
 
 ## Lite Enrollment (Android)
 

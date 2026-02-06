@@ -157,17 +157,17 @@ Use the `apiClientEnroll` function to start the enrollment process. This functio
 
 | Parameter          | Description                                                                                                                                                                                                                            |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their codes is available on the [Country coverage](doc:quickstart) page. |
-| `customerSession`  | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
+| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their codes is available on the [Country coverage](doc:quickstart) page. |
+| `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
 
 The following code block shows an example of the parameter configuration:
 
 ```kotlin
 override fun onCreate(savedInstanceState: Bundle?) {
 	val apiClientEnroll = Yuno.apiClientEnroll(
-  	countryCode = "CO",
+  	country_code = "CO",
     
-    customerSession = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+    customer_session = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
 
     context = this 
   )
