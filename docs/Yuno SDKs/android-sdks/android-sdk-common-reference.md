@@ -53,7 +53,7 @@ Parameters for enrollment flows (Lite, Headless). All parameters used in [Enroll
 | `callbackEnrollmentState`| function | No       | Callback invoked when enrollment state changes. Requires registering `initEnrollment` in your Activity's `onCreate` (or equivalent) so the SDK can deliver results. Optional when using `onActivityResult` with `requestCode`.                                               |
 | `requestCode`            | int      | No       | Optional request code used when capturing the enrollment result via `onActivityResult`. Use when you prefer activity-result flow over callbacks.                                                                                                                              |
 | `countryCode`            | string   | No*      | (Headless) Country for the enrollment. Required for `apiClientEnroll`-style Headless enrollment.                                                                                                                                                                         |
-| `customer_session`       | string   | No*      | (Headless) Customer session ID. Required for `apiClientEnroll`-style Headless enrollment.                                                                                                                                                                                  |
+| `customerSession`        | string   | No*      | (Headless) Customer session ID. Required for `apiClientEnroll`-style Headless enrollment.                                                                                                                                                                                  |
 
 ## Enrolling payment methods
 
