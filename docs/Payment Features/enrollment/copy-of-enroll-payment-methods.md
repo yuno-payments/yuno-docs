@@ -10,6 +10,8 @@ metadata:
     payment methods.
   robots: index
 ---
+<br />
+
 ## Available payment methods for enrollment
 
 | **Provider Name**    | **Supported Card Schemes**                                | **PM Supporting Recurring Transactions**                                                                                                                                                                                                                                                                                                                                                                                                                                      |
