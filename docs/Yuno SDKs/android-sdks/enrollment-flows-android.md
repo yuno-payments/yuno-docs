@@ -42,7 +42,7 @@ For the full list of parameters, see the [Android SDK Common Reference](android-
 | `showEnrollmentStatus` | Show enrollment result screen. Optional; default true. |
 | `callbackEnrollmentState` | Callback: enrollment state. Optional; requires `initEnrollment` in onCreate. |
 | `requestCode` | Optional; use if capturing result via `onActivityResult`. |
-| `country_code` (Headless) | Country for the enrollment. Required for apiClientEnroll. |
+| `countryCode` (Headless) | Country for the enrollment. Required for apiClientEnroll. |
 | `customer_session` (Headless) | Customer session ID. Required for apiClientEnroll. |
 
 ## Lite Enrollment (Android)
@@ -202,15 +202,15 @@ Use `apiClientEnroll` to start enrollment. Required parameters:
 
 | Parameter          | Description                                                                                                                                                                                                                            |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `country_code`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](country-coverage) page. |
-| `customer_session` | Refers to the current enrollment's customer session received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
+| `countryCode`      | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their codes is available on the [Country coverage](country-coverage) page. |
+| `customerSession`  | Refers to the current enrollment's customer session received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                     |
 
 Example:
 
 ```kotlin
 override fun onCreate(savedInstanceState: Bundle?) {
   val apiClientEnroll = Yuno.apiClientEnroll(
-    country_code = "CO",
+    countryCode = "CO",
     customerSession = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
     context = this
   )
@@ -249,7 +249,7 @@ apiClientEnroll.continueEnrollment(
           ),
           phone = Phone(
             number = "321123321123",
-            country_code = "57"
+            countryCode = "57"
           )
         )
       )

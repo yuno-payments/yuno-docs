@@ -127,7 +127,7 @@ The following table describes the required parameters:
   <tbody>
     <tr>
       <td>
-        `country_code`
+        `countryCode`
       </td>
 
       <td>
@@ -141,7 +141,7 @@ The following table describes the required parameters:
       </td>
 
       <td>
-        * The complete list of supported countries and their `country_code` is available on the [Country coverage](doc:quickstart) page.
+        * The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:quickstart) page.
       </td>
     </tr>
 
@@ -171,7 +171,7 @@ The following code block shows an example of the parameter configuration:
 
 ```kotlin
  val apiClientPayment = Yuno.apiClientPayment(
-   country_code = "US",
+   countryCode = "US",
    checkoutSession = "74bf4b96-6b35-42a6-8c73-2fe094c34ca9",
    context = this
 )
@@ -227,7 +227,7 @@ apiClientPayment.generateToken(
                ),
                phone = Phone(
                    number = "321123321123",
-                   country_code = "1"
+                   countryCode = "1"
                )
            )
        )
