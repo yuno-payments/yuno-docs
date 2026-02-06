@@ -568,8 +568,8 @@ Start the checkout process using the `apiClientPayment` function with the necess
 
 ```javascript
 const apiClientPayment = yuno.apiClientPayment({
-  country_code: "US",
-  checkout_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+  countryCode: "US",
+  checkoutSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
 });
 ```
 

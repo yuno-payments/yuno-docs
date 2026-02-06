@@ -126,7 +126,7 @@ Use `yuno.mountEnrollmentLite` with the parameters below.
 | Parameter | Description |
 | --- | --- |
 | `customerSession` | Refers to the current enrollment's [customer session](ref:create-customer-session). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`. |
-| `country_code` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](country-coverage). |
+| `countryCode` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](country-coverage). |
 | `language` | Language for payment forms. Use any code listed in [Supported languages](languages-supported). Example: `en-US`. Defaults to browser language when available. |
 | `showLoading` | Controls visibility of the Yuno loading/spinner page during the payment process. |
 | `onLoading` | Required to receive notifications about server calls or loading events. |
@@ -145,7 +145,7 @@ yuno.mountEnrollmentLite({
   /**
    * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
    */
-  country_code: country,
+  countryCode: country,
   /**
   - Language for payment forms (see Supported languages)
   - Defaults to browser language when available
@@ -307,13 +307,13 @@ Call `apiClientEnroll` with the parameters below.
 
 | Parameter          | Description                                                                                                                                                                                                                                                                                   |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `country_code`     | This parameter specifies the country for which the enrollment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](country-coverage) page. |
-| `customer_session` | Refers to the current customer's [customer session](ref:create-customer-session). Example: `'eec6578e-ac2f-40a0-8065-25b5957f6dd3'`                                                                                                                                                             |
+| `countryCode`       | This parameter specifies the country for which the enrollment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](country-coverage) page. |
+| `customerSession`   | Refers to the current customer's [customer session](ref:create-customer-session). Example: `'eec6578e-ac2f-40a0-8065-25b5957f6dd3'`                                                                                                                                                             |
 
 ```javascript
 const apiClientEnroll = yuno.apiClientEnroll({
-  country_code: "US",
-  customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+  countryCode: "US",
+  customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
 });
 ```
 

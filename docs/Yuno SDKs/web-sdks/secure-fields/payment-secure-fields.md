@@ -40,7 +40,7 @@ See the [credentials page](https://docs.y.uno/reference/authentication) for more
 
 Use the `secureFields` function and provide the necessary configuration parameters:
 
-The essential parameters are the `countrycode`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.
+The essential parameters are the `countryCode`, which determines the country for which the payment process is configured, and `checkoutSession`, which refers to the current payment's checkout session.
 
 ### Parameters
 
@@ -48,13 +48,13 @@ Configure the secure fields with the following options:
 
 | Parameter           | Description                                                                                                                                                                                                                                                                                   |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countrycode`       | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](country-coverage) page. |
+| `countryCode`       | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](country-coverage) page. |
 | `checkoutSession`   | Refers to the current payment's [checkout session](ref:create-checkout-session). `Example: '438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                            |
 | `installmentEnable` | This parameter is optional and is set false by default. If set True, the installments set for the account will be shown as a secure field.                                                                                                                                                    |
 
 ```javascript
 const secureFields = yuno.secureFields({
-  countrycode: country,
+  countryCode: country,
   checkoutSession,
   installmentEnable: false
 });
@@ -290,7 +290,7 @@ Check payment status with `yuno.mountStatusPayment`. Example (`createPayment` an
 | Parameter           | Description                                            |
 | ------------------- | ------------------------------------------------------ |
 | `checkoutSession`   | The checkout session ID for the payment                |
-| `countrycode`       | Country code for the payment process                   |
+| `countryCode`       | Country code for the payment process                   |
 | `language`          | Language for the status display                        |
 | `yunoPaymentResult` | Callback function that receives payment status updates |
 
@@ -302,7 +302,7 @@ if (payment.checkout.sdk_action_required) {
 } else {
   yuno.mountStatusPayment({
     checkoutSession: checkoutSession,
-    countrycode: 'US',
+    countryCode: 'US',
     language: 'en',
     yunoPaymentResult(data) {
       console.log('yunoPaymentResult', data)

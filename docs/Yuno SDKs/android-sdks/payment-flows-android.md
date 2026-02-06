@@ -432,7 +432,7 @@ Call the `startCheckout` method in the `onCreate()` function of the activity tha
 ```kotlin
 startCheckout(
   checkoutSession: "checkout_session",
-  country_code: "US",
+  countryCode: "US",
   callbackPaymentState: ((String?) -> Unit)?,
   merchantSessionId: String? = null
 )
@@ -441,7 +441,7 @@ startCheckout(
 | Parameter              | Description                                                                                                                                                    |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | The `checkout_session` is related to the payment.                                                                                                              |
-| `country_code`         | Country code where the payment is performed. See [Country coverage](country-coverage) for a complete list of supported countries and their codes. |
+| `countryCode`          | Country code where the payment is performed. See [Country coverage](country-coverage) for a complete list of supported countries and their codes. |
 | `callbackPaymentState` | A function that returns the current payment process. Optional if you don't need the result.                                                                    |
 | `merchantSessionId`    | Optional identifier for merchant session tracking. Default is null.                                                                                            |
 
@@ -713,7 +713,7 @@ Call the `apiClientPayment` function after your customer selects a payment metho
 
 ```kotlin
 val apiClientPayment = yuno.apiClientPayment(
-  country_code = "US",
+  countryCode = "US",
   checkout_session = "checkout_session_id"
 )
 ```

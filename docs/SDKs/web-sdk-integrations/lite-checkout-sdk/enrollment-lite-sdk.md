@@ -193,7 +193,7 @@ The configuration and mounting are done in the same step for the Enrollment Lite
 | Parameter | Description |
 | --- | --- |
 | `customerSession` | Refers to the current payment's [customer session](ref:create-customer). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`. |
-| `country_code` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](doc:quickstart). |
+| `countryCode` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](doc:quickstart). |
 | `language` | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available. |
 | `showLoading` | Controls visibility of the Yuno loading/spinner page during the payment process. |
 | `onLoading` | Required to receive notifications about server calls or loading events. |
@@ -212,7 +212,7 @@ yuno.mountEnrollmentLite({
   /**
    * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
    */
-  country_code: country,
+  countryCode: country,
   /**
   * Language for payment forms (see Supported languages)
   * Defaults to browser language when available
