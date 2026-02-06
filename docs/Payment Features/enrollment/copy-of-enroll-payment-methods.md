@@ -1,7 +1,7 @@
 ---
 title: Copy of Enroll Payment Methods
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: Enroll Payment Methods
   description: >-
