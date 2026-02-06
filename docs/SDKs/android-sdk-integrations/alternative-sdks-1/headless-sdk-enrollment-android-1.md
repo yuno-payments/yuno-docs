@@ -167,7 +167,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 	val apiClientEnroll = Yuno.apiClientEnroll(
   	country_code = "CO",
     
-    customerSession = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+    customer_session = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
 
     context = this 
   )

@@ -511,7 +511,7 @@ Use `Yuno.startPaymentSeamlessLite` from your `ViewController` to start the seam
 ```swift
 let seamlessParams = SeamlessParams(
     checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
-    country_code: "BR",
+    countryCode: "BR",
     language: "en",
     viewController: self
 )
@@ -543,7 +543,7 @@ Yuno.startPaymentSeamlessLite(
 
 | Parameter | Description |
 | :-------- | :---------- |
-| `seamlessParams` | Configuration object containing `checkoutSession`, `country_code`, `language`, and `viewController`. |
+| `seamlessParams` | Configuration object containing `checkoutSession`, `countryCode`, `language`, and `viewController`. |
 | `paymentSelected` | Specifies the payment method, either through a vaulted token or a selected payment type. |
 | `showPaymentStatus` | When `true`, displays the SDK's default result screen. When `false`, handle status through callbacks. |
 

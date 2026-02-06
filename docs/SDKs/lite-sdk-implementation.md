@@ -57,7 +57,7 @@ The following table lists all the available parameters for the `startCheckout` m
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                                                                                  |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                        |
-| `country_code`                    | Determines the country for which the payment process is being configured. See [Country coverage](doc:quickstart) for supported countries and their codes.                                          |
+| `countryCode`                     | Determines the country for which the payment process is being configured. See [Country coverage](doc:quickstart) for supported countries and their codes.                                          |
 | `language`                        | Defines the language for payment forms. Options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>tr (Turkish)</li></ul>. |
 | `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                                                                       |
 | `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                                                         |
@@ -69,7 +69,7 @@ The following table lists all the available parameters for the `startCheckout` m
 yuno.startCheckout({
   checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
   elementSelector: "#root",
-  country_code: "FR",
+  countryCode: "FR",
   language: "fr",
   showLoading: true,
   issuersFormEnable: true,
