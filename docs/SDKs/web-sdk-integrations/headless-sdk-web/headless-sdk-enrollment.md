@@ -82,12 +82,12 @@ Configure the enrollment with the following options:
 
 | Parameter          | Description                                                                                                                                                                                                                                                                                   |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`      | This parameter specifies the country for which the enrollment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page. |
+| `country_code`     | This parameter specifies the country for which the enrollment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page. |
 | `customer_session` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                          |
 
 ```javascript
 const apiClientEnroll = yuno.apiClientEnroll({
-  countryCode: "CO",
+  country_code: "CO",
   customer_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
 });
 ```

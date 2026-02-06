@@ -63,12 +63,12 @@ Configure the payment with the following options:
 
 | Parameter          | Description                                                                                                                                                                                                                                                                                   |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`      | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page. |
+| `country_code`     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page. |
 | `checkout_session` | Refers to the current payment's checkout session created using the [Create Checkout Session](ref:create-checkout-session) endpoint. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                         |
 
 ```javascript
 const apiClientPayment = yuno.apiClientPayment({
-  countryCode: "US",
+  country_code: "US",
   checkout_session: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
 });
 ```
