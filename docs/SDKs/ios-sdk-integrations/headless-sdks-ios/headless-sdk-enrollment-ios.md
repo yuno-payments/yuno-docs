@@ -101,7 +101,7 @@ The following table lists all required parameters and their descriptions.
 
 | Parameter         | Description                                                                                                                                                                                                                           |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `countryCode`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage) page. |
 | `customerSession` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                    |
 
 The next code block presents an example of the parameter configuration.

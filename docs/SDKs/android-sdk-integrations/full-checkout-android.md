@@ -43,7 +43,7 @@ maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 
 > 📘 SDK Version
 >
-> Access the [Release notes](#docs/release-notes-android-sdk) or the [Yuno Android SDK repository](#https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
+> Access the [Release notes](doc:release-notes-android) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
 
 Then, include the following code in the `build.gradle` file to add the Yuno SDK dependency to the application:
 
@@ -120,7 +120,7 @@ Each payment requires a new `checkout_session`, which provides access to all ava
 
 > 📘 External Browser Return Handling
 >
-> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](../docs/external-browser-callback-android).
+> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](../../Yuno%20SDKs/android-sdks/payment-flows-android#step-3-create-the-checkout-session).
 
 ## Step 4: Start the checkout process
 
@@ -482,7 +482,7 @@ class PaymentActivity : ComponentActivity() {
 
 ## Complementary features
 
-The Yuno Android SDK provides additional services and configurations you can use to improve the customer experience. Use the [SDK customizations](doc:sdk-customizations-android) to change the SDK appearance to match your brand or to configure the loader:
+The Yuno Android SDK provides additional services and configurations you can use to improve the customer experience. Use the [SDK customizations](doc:android-customizations) to change the SDK appearance to match your brand or to configure the loader:
 
 ### Click to Pay (CTP) with Passkey
 
@@ -678,7 +678,7 @@ You can choose between two card form render options. The following screenshots s
 
 ### SDK customizations
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customizations](../docs/sdk-customizations-android) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customizations](../../Yuno%20SDKs/android-sdks/android-customizations) page.
 
 > 📘 Demo Application
 >

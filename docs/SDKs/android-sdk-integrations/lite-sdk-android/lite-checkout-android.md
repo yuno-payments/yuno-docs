@@ -46,7 +46,7 @@ Before starting the Yuno Android SDK integration, ensure your project meets the 
 
 > 📘 SDK Version
 >
-> See the [Release notes](#docs/release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
+> See the [Release notes](doc:release-notes-android) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
 
 ## Step 1: Create a customer
 
@@ -68,7 +68,7 @@ Create a new `checkout_session` using the [Create checkout session](ref:create-c
 
 > 🚧 External Browser Return Handling
 >
-> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](../docs/external-browser-callback-android).
+> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](../../Yuno%20SDKs/android-sdks/payment-flows-android#step-3-create-the-checkout-session).
 
 ## Step 3: Include the library in your project
 
@@ -367,7 +367,7 @@ class PaymentActivity : Activity() {
 
 ## Complementary features
 
-Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:sdk-customizations-android) to change the SDK appearance to match your brand or to configure the loader.
+Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:android-customizations) to change the SDK appearance to match your brand or to configure the loader.
 
 ### `styles`
 
@@ -420,7 +420,7 @@ You can choose between two card form render options. The following screenshots s
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../docs/sdk-customizations-android) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../../Yuno%20SDKs/android-sdks/android-customizations) page.
 
 > 📘 Demo App
 >

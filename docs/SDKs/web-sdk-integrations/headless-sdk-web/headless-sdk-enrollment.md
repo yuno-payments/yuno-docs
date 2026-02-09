@@ -148,7 +148,7 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](../docs/demo-app) for a complete implementation of Yuno SDKs.
+> In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs.
 
 ## Stay Updated
 

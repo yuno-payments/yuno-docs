@@ -25,7 +25,6 @@ Welcome to the Yuno getting started guide. This section is designed to provide d
 With Yuno's services, managing multiple payment gateways is simplified, streamlining the payment process. Instead of integrating with several payment providers individually, you only need to integrate with Yuno once to access numerous payment methods and gateways. For more information, visit the [How Yuno works](doc:what-is-yuno) section.
 
 To complete this guide, follow these steps:
-
 1. [Set up your account](doc:step-1-set-up-your-account)
 2. [Create your first payment](doc:step-2-your-first-payment)
 

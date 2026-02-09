@@ -575,7 +575,7 @@ func yunoCreatePayment(with token: String, information: [String: Any]) {
 
 * **[iOS Flow Complementary Features](doc:new-ios-sdk-complementary-features)**: Configuration options and UI customization
 * **[Enrollment Integration](doc:new-ios-sdk-enrollment-integration)**: Save payment methods for future use
-* **[Release Notes](doc:ios-release-notes)**: Latest SDK updates
+* **[Release Notes](doc:release-notes-ios)**: Latest SDK updates
 
 ## Demo Application
 

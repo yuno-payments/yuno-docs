@@ -45,7 +45,7 @@ Before starting the Yuno Android SDK integration, ensure your project meets the 
 
 > 📘 Verify SDK Version
 >
-> See the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
+> See the [Release notes](doc:release-notes-android) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
 
 ## Step 1: Create a customer
 
@@ -258,7 +258,7 @@ startPaymentSeamlessLite(
 
 ## Complementary features
 
-Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:sdk-customizations-android) to change the SDK appearance to match your brand or to configure the loader.
+Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:android-customizations) to change the SDK appearance to match your brand or to configure the loader.
 
 ### `styles`
 

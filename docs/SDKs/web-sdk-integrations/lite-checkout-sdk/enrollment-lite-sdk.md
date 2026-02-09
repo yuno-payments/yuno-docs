@@ -210,7 +210,7 @@ The next code block presents an example of the Enrollment Lite parameter configu
 yuno.mountEnrollmentLite({
   customerSession: 'e15648b0-fcd5-4799-a14c-cc463ae8a133',
   /**
-   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
+   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage
    */
   countryCode: country,
   /**
@@ -344,7 +344,7 @@ When the method returns an object, it allows you to handle your application's pa
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](doc:demo-app) for a complete implementation of Yuno SDKs. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
+> In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
 
 ## Complementary features
 

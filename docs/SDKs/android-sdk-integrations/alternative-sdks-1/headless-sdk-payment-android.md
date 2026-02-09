@@ -45,7 +45,7 @@ Before starting the Yuno Android SDK integration, ensure your project meets the 
 
 > 📘 Latest SDK Version
 >
-> Check the [Release notes](release-notes-android-sdk) or visit the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
+> Check the [Release notes](doc:release-notes-android) or visit the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
 
 ## Step 1: Create a customer
 
@@ -477,7 +477,7 @@ For the complete payment implementation guide, see [Headless SDK (Payment)](doc:
 
 ## Complementary features
 
-Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:sdk-customizations-android) to change the SDK appearance to match your brand or to configure the loader.
+Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:android-customizations) to change the SDK appearance to match your brand or to configure the loader.
 
 ### Loader
 
@@ -485,7 +485,7 @@ The loader functionality is controlled through the `keepLoader` parameter in the
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../docs/sdk-customizations-android) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../../Yuno%20SDKs/android-sdks/android-customizations) page.
 
 > 📘 Access the Demo App
 >

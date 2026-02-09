@@ -326,7 +326,7 @@ The classes available for customizing the form card modal element while using th
 
 The image below presents how each class will affect the form card modal element.
 
-<Image border={false} src="https://github.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-1.png?raw=true" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-1.png" />
 
 The code block below presents an example of how you can customize the form card modal element.
 
@@ -351,7 +351,7 @@ The code block below presents an example of how you can customize the form card 
 
 Result:
 
-<Image border={false} src="https://github.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-2.png?raw=true" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-card-modal-default-2.png" />
 
 #### APM Modal
 
@@ -375,7 +375,7 @@ The classes available for customizing the APM modal element while using the Defa
 
 The image below presents how each class will affect the APM modal element.
 
-<Image border={false} src="https://github.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-1-v2.png?raw=true" />
+<Image border={false} src="https://raw.githubusercontent.com/writechoiceorg/yuno-images/main/doc/SDKs/webSDK/customization-SDK-defaults/form-apm-modal-default-1-v2.png" />
 
 The code block below presents an example of how you can customize the APM modal element.
 

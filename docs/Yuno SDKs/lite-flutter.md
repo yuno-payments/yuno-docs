@@ -323,7 +323,7 @@ If the enrollment flow uses a deep link to return to your app on iOS:
 await Yuno.receiveDeeplink(url: uri);
 ```
 
-For Android deep link configuration, see [Android deep linking documentation](external-browser-callback-android).
+For Android deep link configuration, see [Android deep linking documentation](android-sdks/payment-flows-android#step-3-create-the-checkout-session).
 
 ## Parameters
 
