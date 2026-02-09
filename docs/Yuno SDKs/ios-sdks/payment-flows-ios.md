@@ -5,13 +5,12 @@ hidden: false
 metadata:
   robots: index
 ---
-
 The iOS SDK makes it easy to integrate payment flows into your iOS app.
 
 ## Additional resources
 
-- See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- Access the [Release notes](release-notes-ios) or the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) to verify the latest SDK version available.
+* See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
+* Access the [Release notes](release-notes-ios) or the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) to verify the latest SDK version available.
 
 ## Requirements
 
@@ -51,26 +50,28 @@ dependencies: [
 Once Step 1 is complete, continue with your desired integration.
 
 ### Basic flows
-- [Full (iOS)](#full-ios): Complete control with backend support and full customization options
-- [Seamless (payment iOS)](#seamless-payment-ios): Fastest integration with pre-built UI components
+
+* [Full (iOS)](#full-ios): Complete control with backend support and full customization options
+* [Seamless (payment iOS)](#seamless-payment-ios): Fastest integration with pre-built UI components
 
 ### Advanced flows
-- [Lite (iOS)](#lite-ios): Lightweight integration allowing you to control the UI and payment methods list, as well as backend support
-- [Headless (iOS)](#headless-ios): Full checkout experience customization without requiring PCI compliance
+
+* [Lite (iOS)](#lite-ios): Lightweight integration allowing you to control the UI and payment methods list, as well as backend support
+* [Headless (iOS)](#headless-ios): Full checkout experience customization without requiring PCI compliance
 
 ## Parameters
 
 For the full list of parameters and YunoConfig, see the [iOS SDK Common Reference](ios-sdk-common-reference).
 
-| Parameter | Description |
-|-----------|-------------|
-| `checkoutSession` | Checkout session ID from your backend (Create checkout session API). Required. |
-| `countryCode` | ISO country code (e.g. `BR`). Required. |
-| `language` | Language code for the UI. Optional. |
-| `viewController` | UIViewController that presents the payment flow. Required for delegate. |
-| `yunoCreatePayment(with:)` | Delegate: create payment on your backend with the one-time token. |
-| `yunoPaymentResult(_:)` | Delegate: payment finished with result. |
-| `YunoConfig` (initialize) | Optional: cardFormType, appearance, saveCardEnabled, keepLoader, hideCardholderName, cardNumberPlaceholder. See Common Reference. |
+| Parameter                  | Description                                                                                                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`          | Checkout session ID from your backend (Create checkout session API). Required.                                                                                         |
+| `countryCode`              | ISO country code (e.g. `BR`). Required.                                                                                                                                |
+| `language`                 | Language code for the UI. Optional.                                                                                                                                    |
+| `viewController`           | UIViewController that presents the payment flow. Required for delegate.                                                                                                |
+| `yunoCreatePayment(with:)` | Delegate: create payment on your backend with the one-time token.                                                                                                      |
+| `yunoPaymentResult(_:)`    | Delegate: payment finished. Receives `Yuno.Result` value (e.g., `.succeeded`, `.fail`, `.processing`). See [Payment Status reference](ref:payment) for status mapping. |
+| `YunoConfig` (initialize)  | Optional: cardFormType, appearance, saveCardEnabled, keepLoader, hideCardholderName, cardNumberPlaceholder. See Common Reference.                                      |
 
 ## Full (iOS)
 
@@ -113,15 +114,15 @@ struct YunoConfig {
 
 Customization options:
 
-| Customization option | Description |
-| :------------------- | :---------- |
-| `cardFormType` | Defines the card form flow. Options are `.oneStep` (all fields on one screen) or `.stepByStep` (fields displayed across multiple steps). Default is `.oneStep`. Check the Render options section for more information. |
-| `appearance` | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page. |
-| `saveCardEnabled` | Enables the Save card checkbox on card flows. Check the Save card section for more information. |
-| `keepLoader` | Controls loader display behavior. When `true`, the loader remains visible until manually hidden. |
-| `hideCardholderName` | When set to `true`, hides the cardholder name field in the card form. Default is `false`. Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
-| `cardNumberPlaceholder` | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation. |
-| `language` | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en` (English), `es` (Spanish), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), `th` (Thai), `zh-TW` (Chinese Traditional), `zh-CN` (Chinese Simplified), `vi` (Vietnamese), `fr` (French), `pl` (Polish), `it` (Italian), `de` (German), `ru` (Russian), `tr` (Turkish), `nl` (Dutch), `sv` (Swedish), `ko` (Korean), `ja` (Japanese). |
+| Customization option    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cardFormType`          | Defines the card form flow. Options are `.oneStep` (all fields on one screen) or `.stepByStep` (fields displayed across multiple steps). Default is `.oneStep`. Check the Render options section for more information.                                                                                                                                                                                                                                                       |
+| `appearance`            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                                 |
+| `saveCardEnabled`       | Enables the Save card checkbox on card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                              |
+| `keepLoader`            | Controls loader display behavior. When `true`, the loader remains visible until manually hidden.                                                                                                                                                                                                                                                                                                                                                                             |
+| `hideCardholderName`    | When set to `true`, hides the cardholder name field in the card form. Default is `false`. Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider.                                                                                                                                                                |
+| `cardNumberPlaceholder` | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                                   |
+| `language`              | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en` (English), `es` (Spanish), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), `th` (Thai), `zh-TW` (Chinese Traditional), `zh-CN` (Chinese Simplified), `vi` (Vietnamese), `fr` (French), `pl` (Polish), `it` (Italian), `de` (German), `ru` (Russian), `tr` (Turkish), `nl` (Dutch), `sv` (Swedish), `ko` (Korean), `ja` (Japanese). |
 
 ### Step 3: Create the checkout session
 
@@ -131,16 +132,18 @@ If your payment flow sends users to an external browser (e.g., for 3DS authentic
 
 #### Checkout session options
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `amount` | Yes | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount). |
-| `alternative_amount` | No | An alternative currency representation with the same structure as `amount`. Useful for multi-currency scenarios. |
-| `callback_url` | Recommended | URL to redirect users back to your app after external browser flows (3DS, bank redirects). |
-| `customer_id` | Yes | The customer ID obtained from the Create customer endpoint. |
+| Parameter            | Required    | Description                                                                                                      |
+| -------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| `amount`             | Yes         | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount).        |
+| `alternative_amount` | No          | An alternative currency representation with the same structure as `amount`. Useful for multi-currency scenarios. |
+| `callback_url`       | Recommended | URL to redirect users back to your app after external browser flows (3DS, bank redirects).                       |
+| `customer_id`        | Yes         | The customer ID obtained from the Create customer endpoint.                                                      |
 
-> 💳 Auth vs capture
->
-> Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
+<Callout icon="💳" theme="default">
+  ### Auth vs capture
+
+  Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
+</Callout>
 
 ### Step 4: Implement the payment delegate
 
@@ -180,15 +183,15 @@ class ViewController: UIViewController, YunoPaymentDelegate {
 
 #### Options
 
-| Parameter | Description |
-|-----------|-------------|
-| `checkoutSession` | The unique identifier for the checkout session. |
-| `countryCode` | Country code where the payment is performed. See [Country Coverage](country-coverage) for supported countries. |
-| `language` | Language code for the payment forms (e.g., `"en"`, `"es"`, `"pt"`). See [Supported languages](languages-supported). |
-| `viewController` | The `UIViewController` used to present the payment flow. Required for proper UI presentation. |
-| `yunoCreatePayment(with:)` | Called when a one-time token is generated. Create the payment on your backend. |
-| `yunoCreatePayment(with:information:)` | Alternative callback that includes additional token information. Use only one version. |
-| `yunoPaymentResult(_:)` | Called when the payment process completes with the final result. |
+| Parameter                              | Description                                                                                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`                      | The unique identifier for the checkout session.                                                                                                 |
+| `countryCode`                          | Country code where the payment is performed. See [Country Coverage](country-coverage) for supported countries.                                  |
+| `language`                             | Language code for the payment forms (e.g., `"en"`, `"es"`, `"pt"`). See [Supported languages](languages-supported).                             |
+| `viewController`                       | The `UIViewController` used to present the payment flow. Required for proper UI presentation.                                                   |
+| `yunoCreatePayment(with:)`             | Called when a one-time token is generated. Create the payment on your backend.                                                                  |
+| `yunoCreatePayment(with:information:)` | Alternative callback that includes additional token information. Use only one version.                                                          |
+| `yunoPaymentResult(_:)`                | Called when the payment process completes. Receives a `Yuno.Result` enum value. See [Payment Status reference](ref:payment) for status mapping. |
 
 > ❗ Important Note
 >
@@ -238,8 +241,9 @@ view.addSubview(paymentMethodsView)
 ```
 
 The SDK automatically returns the correct view type:
-- **UIKit**: Returns a `UIView`
-- **SwiftUI**: Returns a `some View`
+
+* **UIKit**: Returns a `UIView`
+* **SwiftUI**: Returns a `some View`
 
 > ❗ Important
 >
@@ -255,8 +259,8 @@ Yuno.startPayment(showPaymentStatus: true)
 
 #### Options
 
-| Parameter | Description |
-| :-------- | :---------- |
+| Parameter           | Description                                                                                                                                                                                                         |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `showPaymentStatus` | A boolean that specifies whether the payment status should be displayed within the Yuno interface. When `true`, the SDK displays default status screens. When `false`, you handle status display through callbacks. |
 
 ### Step 7: Get the one-time token (OTT)
@@ -367,14 +371,14 @@ func yunoPaymentResult(_ result: Yuno.Result) {
 
 #### Payment states
 
-| State | Description | Action Required |
-|-------|-------------|-----------------|
-| `succeeded` | Payment completed successfully | No |
-| `fail` | Payment failed due to validation, network, or technical issues | Yes - Investigate and retry |
-| `processing` | Payment in progress, awaiting approval | No |
-| `reject` | Payment rejected (insufficient funds, fraud detection, etc.) | Yes - Inform user and suggest actions |
-| `internalError` | Unexpected internal error occurred | Yes - Technical intervention required |
-| `userCancelled` | User canceled the payment | No |
+| State           | Description                                                    | Action Required                       |
+| --------------- | -------------------------------------------------------------- | ------------------------------------- |
+| `succeeded`     | Payment completed successfully                                 | No                                    |
+| `fail`          | Payment failed due to validation, network, or technical issues | Yes - Investigate and retry           |
+| `processing`    | Payment in progress, awaiting approval                         | No                                    |
+| `reject`        | Payment rejected (insufficient funds, fraud detection, etc.)   | Yes - Inform user and suggest actions |
+| `internalError` | Unexpected internal error occurred                             | Yes - Technical intervention required |
+| `userCancelled` | User canceled the payment                                      | No                                    |
 
 #### Payment status validation
 
@@ -384,9 +388,9 @@ This section explains how the SDK handles payment status when users cancel or le
 
 For synchronous payment methods like Apple Pay, when a user cancels before PSP response:
 
-- **SDK Status**: Returns `userCancelled` (CANCELLED_BY_USER)
-- **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
-- **Important**: The SDK will not return `reject` or `processing` in this scenario
+* **SDK Status**: Returns `userCancelled` (CANCELLED_BY_USER)
+* **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
+* **Important**: The SDK will not return `reject` or `processing` in this scenario
 
 This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
 
@@ -394,10 +398,10 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 For asynchronous payment methods like PIX, when a user closes the QR window:
 
-- **SDK Status**: Returns `processing`, optionally with a sub-status such as `CLOSED_BY_USER`
-- **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
-- **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
-- **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+* **SDK Status**: Returns `processing`, optionally with a sub-status such as `CLOSED_BY_USER`
+* **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
+* **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
+* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
 
 This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
 
@@ -405,8 +409,8 @@ This behavior allows users to return to the payment flow and complete the transa
 
 If a PIX QR code expires naturally:
 
-- **Backend Status**: Updated to `EXPIRED`
-- **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
+* **Backend Status**: Updated to `EXPIRED`
+* **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
 
 This ensures merchants receive accurate status information when a payment method has expired.
 
@@ -422,16 +426,16 @@ Seamless (payment iOS) for payments.
 
 This SDK is ideal for merchants who:
 
-- Want control over the payment flow while leveraging pre-built UI components
-- Need to customize the payment experience while maintaining PCI compliance
-- Require a balance between implementation speed and customization
+* Want control over the payment flow while leveraging pre-built UI components
+* Need to customize the payment experience while maintaining PCI compliance
+* Require a balance between implementation speed and customization
 
 Seamless (payment iOS) includes features like:
 
-- Pre-built payment UI components with customization options
-- Multiple payment method support
-- Advanced payment status handling
-- Comprehensive error management
+* Pre-built payment UI components with customization options
+* Multiple payment method support
+* Advanced payment status handling
+* Comprehensive error management
 
 For merchants requiring complete UI control or more advanced features, consider using our [Full](#full-ios) instead.
 
@@ -441,9 +445,9 @@ See [Requirements](#requirements) above.
 
 Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
 
-- Identify the person making the payment
-- Enable saved card functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved card functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -451,21 +455,23 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in Step 6 of the integration
-- Set `workflow` to `SDK_SEAMLESS` when creating the checkout session
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in Step 6 of the integration
+* Set `workflow` to `SDK_SEAMLESS` when creating the checkout session
 
-> 💳 **Auth vs capture**
->
-> Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
+<Callout icon="💳" theme="default">
+  ### **Auth vs capture**
+
+  Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
+</Callout>
 
 #### Checkout session options
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `amount` | Yes | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency). |
-| `alternative_amount` | No | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
-| `workflow` | Yes | Set to `SDK_SEAMLESS` for Seamless (payment iOS) integration. |
+| Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
+| `workflow`           | Yes      | Set to `SDK_SEAMLESS` for Seamless (payment iOS) integration.                                                                                                                                                                                                                                                      |
 
 > 🚧 Checkout session usage
 >
@@ -491,14 +497,14 @@ Configure the Seamless checkout using `YunoConfig` (for card form type, appearan
 
 Use the `YunoConfig` data class to set additional configurations. Options:
 
-| Option | Description |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **cardFormType** | Defines the card form flow. The default option is `.oneStep`. Check the Render options section for more information. |
-| **saveCardEnabled** | Enables the save card checkbox for card flows. Check the Save card section for more information. |
-| **language** | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en`, `es`, `pt`, `fil`, `id`, `ms`, `th`, `zh-TW`, `zh-CN`, `vi`, `fr`, `pl`, `it`, `de`, `ru`, `tr`, `nl`, `sv`, `ko`, `ja`. |
-| **appearance** | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page. |
-| **cardNumberPlaceholder** | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation. |
-| **hideCardholderName** | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
+| Option                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **cardFormType**          | Defines the card form flow. The default option is `.oneStep`. Check the Render options section for more information.                                                                                                                                                                                                                                                                                                                                                   |
+| **saveCardEnabled**       | Enables the save card checkbox for card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                       |
+| **language**              | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en`, `es`, `pt`, `fil`, `id`, `ms`, `th`, `zh-TW`, `zh-CN`, `vi`, `fr`, `pl`, `it`, `de`, `ru`, `tr`, `nl`, `sv`, `ko`, `ja`.                                                                                                                                                                                                                          |
+| **appearance**            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                           |
+| **cardNumberPlaceholder** | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                             |
+| **hideCardholderName**    | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
 
 ### Step 4: Implement the payment delegate
 
@@ -541,10 +547,10 @@ Yuno.startPaymentSeamlessLite(
 
 #### Options
 
-| Parameter | Description |
-| :-------- | :---------- |
-| `seamlessParams` | Configuration object containing `checkoutSession`, `countryCode`, `language`, and `viewController`. |
-| `paymentSelected` | Specifies the payment method, either through a vaulted token or a selected payment type. |
+| Parameter           | Description                                                                                           |
+| :------------------ | :---------------------------------------------------------------------------------------------------- |
+| `seamlessParams`    | Configuration object containing `checkoutSession`, `countryCode`, `language`, and `viewController`.   |
+| `paymentSelected`   | Specifies the payment method, either through a vaulted token or a selected payment type.              |
 | `showPaymentStatus` | When `true`, displays the SDK's default result screen. When `false`, handle status through callbacks. |
 
 Seamless (payment iOS) automatically handles payment creation on the backend. You still receive the payment result through the callback or return value, but you don't need to call the Create Payment API manually.
@@ -565,16 +571,16 @@ Lite (iOS) for payments.
 
 This SDK offers a streamlined integration process with essential payment functionality, making it ideal for merchants who:
 
-- Need a quick implementation with minimal customization requirements
-- Want to focus primarily on card payment processing
-- Prefer a ready-to-use UI that handles the payment flow
+* Need a quick implementation with minimal customization requirements
+* Want to focus primarily on card payment processing
+* Prefer a ready-to-use UI that handles the payment flow
 
 Lite (iOS) includes core features like:
 
-- Pre-built payment UI components
-- Card payment processing
-- Basic payment status handling
-- Essential error management
+* Pre-built payment UI components
+* Card payment processing
+* Basic payment status handling
+* Essential error management
 
 For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full](#full-ios) instead.
 
@@ -584,9 +590,9 @@ See [Requirements](#requirements) above.
 
 Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
 
-- Identify the person making the payment
-- Enable saved card functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved card functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -594,9 +600,9 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in later steps
-- Remember that the `checkout_session` is unique for each payment attempt and cannot be reused
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in later steps
+* Remember that the `checkout_session` is unique for each payment attempt and cannot be reused
 
 If your payment flow sends users to an external browser (e.g., for 3DS authentication or bank redirects), set the `callback_url` when creating your checkout session. See [Handle external browser return](#step-6-handle-external-browser-return-optional) for details.
 
@@ -677,16 +683,16 @@ Yuno's Headless iOS SDK lets you create payments and enroll payment methods with
 
 Headless (iOS) is ideal for merchants who:
 
-- Need full control over the payment UI and user experience
-- Want to build custom payment flows
-- Require advanced integration capabilities
+* Need full control over the payment UI and user experience
+* Want to build custom payment flows
+* Require advanced integration capabilities
 
 Headless (iOS) includes core features like:
 
-- Direct API access for payment processing
-- Token generation for payment methods
-- 3DS authentication handling
-- Fraud prevention data collection
+* Direct API access for payment processing
+* Token generation for payment methods
+* 3DS authentication handling
+* Fraud prevention data collection
 
 For merchants preferring a pre-built UI solution, consider using our [Full](#full-ios) or [Lite](#lite-ios) instead.
 
@@ -696,9 +702,9 @@ See [Requirements](#requirements) above.
 
 Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
 
-- Identify the person making the payment
-- Enable saved payment method functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved payment method functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -706,8 +712,8 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in later steps
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in later steps
 
 The `checkout_session` is unique for each payment attempt and cannot be reused.
 
@@ -776,9 +782,10 @@ do {
 After generating the token, create the payment on your backend using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), then handle 3DS challenges and continue payments as needed.
 
 **When to use Headless:**
-- You need complete control over the entire payment UI
-- You have specific design requirements that can't be met with SDK components
-- You're building a highly customized checkout experience
+
+* You need complete control over the entire payment UI
+* You have specific design requirements that can't be met with SDK components
+* You're building a highly customized checkout experience
 
 ## Common reference
 
