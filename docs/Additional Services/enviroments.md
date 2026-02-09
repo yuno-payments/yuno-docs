@@ -1,5 +1,5 @@
 ---
-title: Enviroments
+title: Environments
 deprecated: false
 hidden: false
 metadata:
