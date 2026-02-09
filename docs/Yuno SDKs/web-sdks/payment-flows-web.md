@@ -9,9 +9,9 @@ The Web SDK makes it easy to integrate payment flows into your web and browser-b
 
 ## Additional resources
 
-- Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
-- See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- See the [Demo App](doc:demo-app) for a complete implementation. [Clone from GitHub](https://github.com/yuno-payments/yuno-sdk-web).
+* Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
+* See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
+* See the [Demo App](doc:demo-app) for a complete implementation. [Clone from GitHub](https://github.com/yuno-payments/yuno-sdk-web).
 
 ## Requirements
 
@@ -62,21 +62,21 @@ Once Step 1 is complete, continue with your desired integration.
 
 These are the parameters covered in this guide. For the full list of parameters and callbacks, see the [Web SDK Common Reference](web-sdk-common-reference).
 
-| Parameter                         | Description                                                                                              |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `checkoutSession`                 | Checkout session ID from your backend (Create checkout session API). Required for all flows.             |
-| `elementSelector`                 | CSS selector for the element where the SDK mounts (e.g. `#root`).                                        |
-| `countryCode`                     | ISO country code where the payment runs (e.g. `FR`, `US`).                                               |
-| `language`                        | Language code for the UI (e.g. `fr-FR`). Optional; defaults to browser language when available.          |
-| `showLoading`                     | Show SDK loading spinner. Optional.                                                                      |
-| `showPaymentStatus`               | Show payment result screen. Optional.                                                                    |
-| `yunoCreatePayment(oneTimeToken)` | Callback: send one-time token to your backend to create the payment; then call `yuno.continuePayment()`. |
-| `yunoPaymentResult(status)`       | Callback: payment finished (e.g. succeeded, failed).                                                     |
-| `yunoError(message, data)`        | Callback: error during the flow.                                                                         |
-| `onLoading`                       | Callback: loading state updates.                                                                         |
-| `card`                            | Card form options (e.g. `onChange`, `isCreditCardProcessingOnly`). Optional.                             |
-| `vaultedToken`                    | (Seamless) Saved payment method token for one-click payment. Optional.                                   |
-| `paymentMethodType`               | (Seamless) Type of payment method to mount.                                                              |
+| Parameter                         | Description                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`                 | Checkout session ID from your backend (Create checkout session API). Required for all flows.                  |
+| `elementSelector`                 | CSS selector for the element where the SDK mounts (e.g. `#root`).                                             |
+| `countryCode`                     | ISO country code where the payment runs (e.g. `FR`, `US`).                                                    |
+| `language`                        | Language code for the UI (e.g. `fr-FR`). Optional; defaults to browser language when available.               |
+| `showLoading`                     | Show SDK loading spinner. Optional.                                                                           |
+| `showPaymentStatus`               | Show payment result screen. Optional.                                                                         |
+| `yunoCreatePayment(oneTimeToken)` | Callback: send one-time token to your backend to create the payment; then call `yuno.continuePayment()`.      |
+| `yunoPaymentResult(status)`       | Callback: payment finished. Receives [payment status](ref:payment) (e.g. `SUCCEEDED`, `DECLINED`, `PENDING`). |
+| `yunoError(message, data)`        | Callback: error during the flow.                                                                              |
+| `onLoading`                       | Callback: loading state updates.                                                                              |
+| `card`                            | Card form options (e.g. `onChange`, `isCreditCardProcessingOnly`). Optional.                                  |
+| `vaultedToken`                    | (Seamless) Saved payment method token for one-click payment. Optional.                                        |
+| `paymentMethodType`               | (Seamless) Type of payment method to mount.                                                                   |
 
 ## Full (Web)
 
