@@ -1,0 +1,141 @@
+---
+title: Webhooks (Domains)
+deprecated: false
+hidden: true
+metadata:
+  robots: index
+---
+Configure webhook endpoints to receive real-time notifications about domain registration events.
+
+## Webhook Configuration
+
+Webhooks are configured in the Yuno Dashboard under **Settings → Webhooks**. Once configured, all domain registration events will be sent to your webhook endpoint.
+
+## Webhook Events
+
+| Event                                       | Description                                                 |
+| ------------------------------------------- | ----------------------------------------------------------- |
+| `payment_method_domain.registered`          | Domain + payment method combination successfully registered |
+| `payment_method_domain.verified`            | Domain + payment method verification successful             |
+| `payment_method_domain.verification_failed` | Domain + payment method verification failed                 |
+| `payment_method_domain.deleted`             | Domain + payment method combination deleted                 |
+
+## Webhook Payload Format
+
+```json
+{
+  "event": "payment_method_domain.verified",
+  "event_id": "evt_1234567890",
+  "created_at": "2026-01-22T10:40:00Z",
+  "data": {
+    "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "domains": [
+      {
+        "id": "dom_1234567890abcdef",
+        "domain": "checkout.example.com",
+        "payment_method": "APPLE_PAY",
+        "status": "VERIFIED",
+        "created_at": "2026-01-22T10:30:00Z",
+        "updated_at": "2026-01-22T10:40:00Z"
+      }
+    ]
+  }
+}
+```
+
+## Example: Multiple registrations send multiple webhooks
+
+When registering `checkout.example.com` with both `APPLE_PAY` and `GOOGLE_PAY`, you'll receive two separate webhooks:
+
+```json
+// Webhook 1 - APPLE_PAY verified
+{
+  "event": "payment_method_domain.verified",
+  "event_id": "evt_001",
+  "created_at": "2026-01-22T10:40:00Z",
+  "data": {
+    "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "domains": [
+      {
+        "id": "dom_1234567890abcdef",
+        "domain": "checkout.example.com",
+        "payment_method": "APPLE_PAY",
+        "status": "VERIFIED",
+        "created_at": "2026-01-22T10:30:00Z",
+        "updated_at": "2026-01-22T10:40:00Z"
+      }
+    ]
+  }
+}
+
+// Webhook 2 - GOOGLE_PAY verified
+{
+  "event": "payment_method_domain.verified",
+  "event_id": "evt_002",
+  "created_at": "2026-01-22T10:40:15Z",
+  "data": {
+    "account_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "domains": [
+      {
+        "id": "dom_2345678901bcdefg",
+        "domain": "checkout.example.com",
+        "payment_method": "GOOGLE_PAY",
+        "status": "VERIFIED",
+        "created_at": "2026-01-22T10:30:00Z",
+        "updated_at": "2026-01-22T10:40:15Z"
+      }
+    ]
+  }
+}
+```
+
+## Webhook Security
+
+All webhook requests include `X-Yuno-Signature` header for verification:
+
+```
+X-Yuno-Signature: t=1674144000,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
+```
+
+### Signature Verification (Node.js example)
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(payload, signature, secret) {
+  const [timestamp, hash] = signature.split(',').map(s => s.split('=')[1]);
+  const signedPayload = `${timestamp}.${payload}`;
+  const expectedHash = crypto
+    .createHmac('sha256', secret)
+    .update(signedPayload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(hash),
+    Buffer.from(expectedHash)
+  );
+}
+
+// Usage in Express.js
+app.post('/webhooks/yuno/domains', (req, res) => {
+  const signature = req.headers['x-yuno-signature'];
+  const payload = JSON.stringify(req.body);
+
+  if (!verifyWebhookSignature(payload, signature, process.env.YUNO_WEBHOOK_SECRET)) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  // Process webhook
+  const { event, data } = req.body;
+  const domainInfo = data.domains[0]; // Each webhook contains one domain
+  console.log(`Received ${event} for ${domainInfo.domain} + ${domainInfo.payment_method}`);
+
+  res.status(200).send('OK');
+});
+```
+
+## Webhook Retry Logic
+
+* Failed webhooks retry with exponential backoff: 1s, 5s, 30s, 2m, 10m, 30m, 1h
+* Webhooks expire after 24 hours
+* Webhook delivery status is visible in Dashboard
