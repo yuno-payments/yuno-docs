@@ -4,7 +4,7 @@ api:
   file: domains.json
   operationId: post_v1-payment-methods-domains
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
