@@ -24,6 +24,10 @@ In the following workflow, you can find the different payment statuses and how t
 
 For every implementation, we recommend taking the payment <code>status</code> and <code>sub_status</code> as the main reference for the payment's state. A payment could have different [transactions](https://docs.y.uno/reference/transaction) associated with it. By focusing on the payment <code>status</code> / <code>sub_status</code>, you can have the latest state regardless of how many transactions were made, giving you clear inputs for decision-making.
 
+<Callout icon="📘" theme="info">
+  If <code>status = SUCCEEDED</code>, the payment has been successfully processed and funds have moved, regardless of the <code>sub_status</code> value. The <code>sub_status</code> provides additional context for decision-making but does not indicate payment failure when the main status is <code>SUCCEEDED</code>.
+</Callout>
+
 ## Payments status
 
 The payments can have the following status and sub status.
@@ -216,8 +220,7 @@ The payments can have the following status and sub status.
           <td class="substatus"><code>FRAUD_DECLINED</code></td>
           <td>Fraud screening</td>
           <td>Declined</td>
-          <td>Declined fraud screening post payment authorization. Only enable if no action is set in the payment method
-            route after the fraud screening validation post authorization. </td>
+          <td>Declined fraud screening. This can occur pre-authorization (fraud engine flagged before provider authorization, but payment still succeeded) or post-authorization (flagged after authorization, only if no action is set in the payment method route). In both cases, the payment has succeeded and funds have moved.</td>
         </tr>
         <tr>
           <td class="substatus"><code>REFUND_RETRY_IN_PROCESS</code></td>
