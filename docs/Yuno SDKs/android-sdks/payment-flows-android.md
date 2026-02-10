@@ -5,13 +5,12 @@ hidden: false
 metadata:
   robots: index
 ---
-
 The Android SDK makes it easy to integrate payment flows into your Android app.
 
 ## Additional resources
 
-- See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- Access the [Release notes](release-notes-android) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
+* See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
+* Access the [Release notes](release-notes-android) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
 
 ## Requirements
 
@@ -43,23 +42,25 @@ dependencies {
 Once Step 1 is complete, continue with your desired integration.
 
 ### Basic flows
-- [Full (Android)](#full-android): Complete control with backend support and full customization options
-- [Seamless (payment Android)](#seamless-payment-android): Fastest integration with pre-built UI components
+
+* [Full (Android)](#full-android): Complete control with backend support and full customization options
+* [Seamless (payment Android)](#seamless-payment-android): Fastest integration with pre-built UI components
 
 ### Advanced flows
-- [Lite (Android)](#lite-android): Lightweight integration allowing you to control the UI and payment methods list, as well as backend support
-- [Headless (Android)](#headless-android): Full checkout experience customization without requiring PCI compliance
+
+* [Lite (Android)](#lite-android): Lightweight integration allowing you to control the UI and payment methods list, as well as backend support
+* [Headless (Android)](#headless-android): Full checkout experience customization without requiring PCI compliance
 
 ## Parameters
 
 For the full list of parameters and YunoConfig details, see the [Android SDK Common Reference](android-sdk-common-reference).
 
-| Parameter | Description |
-|-----------|-------------|
-| `checkoutSession` | Checkout session ID from your backend (Create checkout session API). Required. |
-| `countryCode` | ISO country code (e.g. `US`). Required. |
-| `callbackPaymentState` | Callback: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT). |
-| `merchantSessionId` | Optional merchant session identifier. |
+| Parameter                 | Description                                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `checkoutSession`         | Checkout session ID from your backend (Create checkout session API). Required.                               |
+| `countryCode`             | ISO country code (e.g. `US`). Required.                                                                      |
+| `callbackPaymentState`    | Callback: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT).                                          |
+| `merchantSessionId`       | Optional merchant session identifier.                                                                        |
 | `YunoConfig` (initialize) | Optional: cardFlow, saveCardEnabled, cardFormDeployed, language, styles, placeholders. See Common Reference. |
 
 ## Full (Android)
@@ -107,15 +108,15 @@ data class YunoConfig(
 
 Customization options:
 
-| Customization option | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `cardFlow`           | It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the Render options section for more information.                                                                                                                                                                                                                                                                                                                                                                 |
-| `saveCardEnabled`    | Enables the Save card checkbox on card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `cardFormDeployed`   | This option is only available for Full (Android). If `TRUE`, the system presents the card form deployed on the payment methods list. If `FALSE`, presents the normal card form on another screen.                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `language`           | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
-| `cardNumberPlaceholder` | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation. |
-| `hideCardholderName` | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
-| `styles`             | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the styles section.                                                                                                                                                                                                                                                                                                                                 |
+| Customization option    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cardFlow`              | It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the Render options section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `saveCardEnabled`       | Enables the Save card checkbox on card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `cardFormDeployed`      | This option is only available for Full (Android). If `TRUE`, the system presents the card form deployed on the payment methods list. If `FALSE`, presents the normal card form on another screen.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `language`              | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
+| `cardNumberPlaceholder` | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                                                                                                                                                                    |
+| `hideCardholderName`    | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider.                                                                                                                                        |
+| `styles`                | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the styles section.                                                                                                                                                                                                                                                                                                                                                                           |
 
 Update your manifest to use your application:
 
@@ -172,9 +173,9 @@ This section explains how the SDK handles payment status when users cancel or le
 
 For synchronous payment methods like Google Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
 
-- **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER)
-- **Backend payment status**: Remains `PENDING` until PSP timeout or merchant cancellation
-- **Important**: The SDK will not return `REJECT` or `PROCESSING` in this scenario
+* **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER)
+* **Backend payment status**: Remains `PENDING` until PSP timeout or merchant cancellation
+* **Important**: The SDK will not return `REJECT` or `PROCESSING` in this scenario
 
 This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
 
@@ -182,10 +183,10 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
 
-- **SDK Status**: Returns `PROCESSING`, optionally with a sub-status such as `CLOSED_BY_USER`
-- **Backend payment status**: Remains `PENDING` and the QR code remains valid until expiry
-- **Checkout session reuse**: Re-opening the same checkout session can display the same valid QR code
-- **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+* **SDK Status**: Returns `PROCESSING`, optionally with a sub-status such as `CLOSED_BY_USER`
+* **Backend payment status**: Remains `PENDING` and the QR code remains valid until expiry
+* **Checkout session reuse**: Re-opening the same checkout session can display the same valid QR code
+* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
 
 This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
 
@@ -193,8 +194,8 @@ This behavior allows users to return to the payment flow and complete the transa
 
 If a PIX QR code expires naturally:
 
-- **Backend Status**: Updated to `EXPIRED`
-- **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
+* **Backend Status**: Updated to `EXPIRED`
+* **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
 
 This ensures merchants receive accurate status information when a payment method has expired.
 
@@ -216,10 +217,10 @@ fun PaymentMethodListViewComponent(
 
 #### Component options
 
-- `activity: Activity`: Current `Activity` where the component is hosted. Required for payment flows.
-- `modifier: Modifier?` (optional): Layout and appearance (e.g. padding, spacing). Defaults to `null`.
-- `onPaymentSelected: (Boolean) -> Unit`: Invoked when a payment method is selected or deselected (`true` = method selected, enable pay button; `false` = none selected).
-- `onUnEnrollSuccess: (Boolean) -> Unit` (optional): Invoked when a stored payment method is successfully removed.
+* `activity: Activity`: Current `Activity` where the component is hosted. Required for payment flows.
+* `modifier: Modifier?` (optional): Layout and appearance (e.g. padding, spacing). Defaults to `null`.
+* `onPaymentSelected: (Boolean) -> Unit`: Invoked when a payment method is selected or deselected (`true` = method selected, enable pay button; `false` = none selected).
+* `onUnEnrollSuccess: (Boolean) -> Unit` (optional): Invoked when a stored payment method is successfully removed.
 
 #### Example
 
@@ -323,20 +324,20 @@ Seamless (payment Android) for payments.
 
 This SDK is ideal for merchants who:
 
-- Want control over the payment flow while leveraging pre-built UI components
-- Need to customize the payment experience while maintaining PCI compliance
-- Require a balance between implementation speed and customization
+* Want control over the payment flow while leveraging pre-built UI components
+* Need to customize the payment experience while maintaining PCI compliance
+* Require a balance between implementation speed and customization
 
 Seamless (payment Android) includes features like:
 
-- Pre-built payment UI components with customization options
-- Multiple payment method support
-- Advanced payment status handling
-- Comprehensive error management
+* Pre-built payment UI components with customization options
+* Multiple payment method support
+* Advanced payment status handling
+* Comprehensive error management
 
 For merchants requiring complete UI control or more advanced features, consider using our [Full](#full-android) instead.
 
-![Seamless (payment Android) screenshot](https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png)
+<Image alt="Seamless (payment Android) screenshot" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
 
 See [Requirements](#requirements) above.
 
@@ -344,9 +345,9 @@ See [Requirements](#requirements) above.
 
 Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
 
-- Identify the person making the payment
-- Enable saved card functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved card functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -354,12 +355,14 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in Step 5 of the integration
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in Step 5 of the integration
 
-> 💳 **Auth vs capture**
->
-> Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
+<Callout icon="💳" theme="default">
+  ### **Auth vs capture**
+
+  Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
+</Callout>
 
 #### Checkout session options
 
@@ -405,10 +408,10 @@ Use the `YunoConfig` data class to set additional configurations. Options:
 
 | Option                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **cardFlow**              | Defines the card form flow. The default option is `CardFormType.ONE_STEP`. Check the section Render options for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| **saveCardEnabled**       | Enables the save card checkbox for card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **cardFlow**              | Defines the card form flow. The default option is `CardFormType.ONE_STEP`. Check the section Render options for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **saveCardEnabled**       | Enables the save card checkbox for card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | **language**              | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
-| **styles**                | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the styles section.                                                                                                                                                                                                                                                                                                                                 |
+| **styles**                | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the styles section.                                                                                                                                                                                                                                                                                                                                                                           |
 | **cardNumberPlaceholder** | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                                                                                                                                                                    |
 | **hideCardholderName**    | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider.                                                                                                                                        |
 
@@ -438,12 +441,12 @@ startCheckout(
 )
 ```
 
-| Parameter              | Description                                                                                                                                                    |
-| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkoutSession`      | The `checkout_session` is related to the payment.                                                                                                              |
-| `countryCode`          | Country code where the payment is performed. See [Country coverage](country-coverage) for a complete list of supported countries and their codes. |
-| `callbackPaymentState` | A function that returns the current payment process. Optional if you don't need the result.                                                                    |
-| `merchantSessionId`    | Optional identifier for merchant session tracking. Default is null.                                                                                            |
+| Parameter              | Description                                                                                                                                                                        |
+| :--------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`      | The `checkout_session` is related to the payment.                                                                                                                                  |
+| `countryCode`          | Country code where the payment is performed. See [Country coverage](country-coverage) for a complete list of supported countries and their codes.                                  |
+| `callbackPaymentState` | Returns the current payment process state (e.g., `SUCCEEDED`, `FAIL`, `PROCESSING`, `REJECT`), see [payment status reference](ref:payment). Optional if you don't need the result. |
+| `merchantSessionId`    | Optional identifier for merchant session tracking. Default is null.                                                                                                                |
 
 The possible payment states returned by `callbackPaymentState` are:
 
@@ -455,6 +458,8 @@ const val PAYMENT_STATE_REJECT = "REJECT"
 const val PAYMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
 const val PAYMENT_STATE_STATE_CANCELED_BY_USER = "CANCELED"
 ```
+
+See the [Payment Status reference](ref:payment) to understand how SDK states relate to the full payment status and sub-status returned by the API.
 
 Possible states:
 
@@ -475,9 +480,9 @@ This section explains how the SDK handles payment status when users cancel or le
 
 For synchronous payment methods like Google Pay, when a user cancels or closes the wallet UI before a payment service provider (PSP) response is received:
 
-- **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER)
-- **Backend payment status**: Remains `PENDING` until PSP timeout or merchant cancellation
-- **Important**: The SDK will not return `REJECT` or `PROCESSING` in this scenario
+* **SDK Status**: Returns `CANCELED` (CANCELLED_BY_USER)
+* **Backend payment status**: Remains `PENDING` until PSP timeout or merchant cancellation
+* **Important**: The SDK will not return `REJECT` or `PROCESSING` in this scenario
 
 This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
 
@@ -485,10 +490,10 @@ This ensures that the backend payment remains in a pending state and can be prop
 
 For asynchronous payment methods like PIX, when a user closes the QR code window (clicks X) before completing the payment:
 
-- **SDK Status**: Returns `PROCESSING`, optionally with a sub-status such as `CLOSED_BY_USER`
-- **Backend payment status**: Remains `PENDING` and the QR code remains valid until expiry
-- **Checkout session reuse**: Re-opening the same checkout session can display the same valid QR code
-- **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
+* **SDK Status**: Returns `PROCESSING`, optionally with a sub-status such as `CLOSED_BY_USER`
+* **Backend payment status**: Remains `PENDING` and the QR code remains valid until expiry
+* **Checkout session reuse**: Re-opening the same checkout session can display the same valid QR code
+* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
 
 This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
 
@@ -496,8 +501,8 @@ This behavior allows users to return to the payment flow and complete the transa
 
 If a PIX QR code expires naturally:
 
-- **Backend Status**: Updated to `EXPIRED`
-- **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
+* **Backend Status**: Updated to `EXPIRED`
+* **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
 
 This ensures merchants receive accurate status information when a payment method has expired.
 
@@ -515,11 +520,11 @@ startPaymentSeamlessLite(
 
 Parameters to start the payment:
 
-| Parameter              | Description                                                                              |
-| :--------------------- | :--------------------------------------------------------------------------------------- |
-| `paymentSelected`      | Specifies the payment method, either through a vaulted token or a selected payment type. |
-| `callbackPaymentState` | This is an optional parameter. This function handles the state updates.                  |
-| `showPaymentStatus`    | This is an optional parameter.  When `true`, displays the SDK's default result screen.   |
+| Parameter              | Description                                                                                        |
+| :--------------------- | :------------------------------------------------------------------------------------------------- |
+| `paymentSelected`      | Specifies the payment method, either through a vaulted token or a selected payment type.           |
+| `callbackPaymentState` | Optional function handling state updates. See [payment status reference](ref:payment) for mapping. |
+| `showPaymentStatus`    | This is an optional parameter.  When `true`, displays the SDK's default result screen.             |
 
 You will receive the payment status via `callbackPaymentState`, which will indicate whether the payment was successful or if an issue occurred.
 
@@ -543,16 +548,16 @@ For styling, themes, form options, and additional configurations, see [SDK custo
 
 Lite (Android) offers a streamlined integration process with essential payment functionality. Ideal for merchants who:
 
-- Need a quick implementation with minimal customization requirements
-- Want to focus primarily on card payment processing
-- Prefer a ready-to-use UI that handles the payment flow
+* Need a quick implementation with minimal customization requirements
+* Want to focus primarily on card payment processing
+* Prefer a ready-to-use UI that handles the payment flow
 
 Lite (Android) includes core features like:
 
-- Pre-built payment UI components
-- Card payment processing
-- Basic payment status handling
-- Essential error management
+* Pre-built payment UI components
+* Card payment processing
+* Basic payment status handling
+* Essential error management
 
 For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full](#full-android) instead.
 
@@ -562,9 +567,9 @@ See [Requirements](#requirements) above.
 
 Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
 
-- Identify the person making the payment
-- Enable saved card functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved card functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -572,9 +577,9 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in later steps
-- Remember that the `checkout_session` is unique for each payment attempt and cannot be reused
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in later steps
+* Remember that the `checkout_session` is unique for each payment attempt and cannot be reused
 
 > 🚧 External Browser Return Handling
 >
@@ -654,16 +659,16 @@ Yuno Headless Android SDK for payments.
 
 Headless (Android) is ideal for merchants who:
 
-- Need full control over the payment UI and user experience
-- Want to build custom payment flows
-- Require advanced integration capabilities
+* Need full control over the payment UI and user experience
+* Want to build custom payment flows
+* Require advanced integration capabilities
 
 Headless (Android) includes core features like:
 
-- Direct API access for payment processing
-- Token generation for payment methods
-- 3DS authentication handling
-- Fraud prevention data collection
+* Direct API access for payment processing
+* Token generation for payment methods
+* 3DS authentication handling
+* Fraud prevention data collection
 
 For merchants preferring a pre-built UI solution, consider using our [Full](#full-android) or [Lite](#lite-android) instead.
 
@@ -673,9 +678,9 @@ See [Requirements](#requirements) above.
 
 Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
 
-- Identify the person making the payment
-- Enable saved payment method functionality (if enabled)
-- Track payment history
+* Identify the person making the payment
+* Enable saved payment method functionality (if enabled)
+* Track payment history
 
 The customer ID returned from this endpoint will be used when creating the `checkout_session`.
 
@@ -683,8 +688,8 @@ The customer ID returned from this endpoint will be used when creating the `chec
 
 Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
 
-- Include the customer ID obtained from the previous step
-- Store the returned `checkout_session` ID for use in later steps
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in later steps
 
 The `checkout_session` is unique for each payment attempt and cannot be reused.
 
