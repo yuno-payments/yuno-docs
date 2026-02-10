@@ -38,7 +38,7 @@ You can skip this step if you have previously created the customer.
 
 This step is optional because you can send the customer information directly in the payment without creating a customer object in Yuno.
 
-<Callout icon="🚧">
+<Callout icon="🚧" theme="warn">
   Customer creation is required if you want to generate a `vaulted_token`.
 </Callout>
 
@@ -84,7 +84,7 @@ While using the Direct integration in Yuno, for Alternative Payment Methods (PSE
     ```
     <br />
 
-* **three_d_secure_setup_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
+* **three_d_secure_setup_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to make only one request. To successfully implement the Direct integration, follow the steps outlined in the [Payment](#payment) section above and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
 
 ## Enrollment
 
