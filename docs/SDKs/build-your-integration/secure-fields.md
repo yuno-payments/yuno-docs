@@ -40,13 +40,13 @@ The Secure Fields SDK enhances your checkout experience by simplifying payment c
 To implement the Secure Fields SDK integration, follow the platform-specific guide below:
 
 <Shelf classname="platform_shelf">
-  <YunoCard title="Web" href="../../Yuno%20SDKs/web-sdks/secure-fields/payment-secure-fields" />
+  <YunoCard title="Web" href="doc:payment-secure-fields" />
 </Shelf>
 
 > 📘 Choose your integration
 >
 > The Secure Fields SDK is designed to accept payments using cards. If you need to perform a payment using another payment method or a previously saved card, you need to choose another Yuno integration:
 >
-> * [Full SDK](../../Yuno%20SDKs/web-sdks/secure-fields/payment-secure-fields)
-> * [Lite SDK](../../Yuno%20SDKs/web-sdks/secure-fields/payment-secure-fields)
-> * [Direct Flow](../../Yuno%20SDKs/web-sdks/secure-fields/payment-secure-fields)
+> * [Full SDK](doc:full-sdk-workflow)
+> * [Lite SDK](doc:the-ultimate-checkout-lite)
+> * [Direct Flow](doc:direct-flow)
