@@ -68,7 +68,7 @@ Create a new `checkout_session` using the [Create checkout session](ref:create-c
 
 > 🚧 External Browser Return Handling
 >
-> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](../../Yuno%20SDKs/android-sdks/payment-flows-android#step-3-create-the-checkout-session).
+> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](payment-flows-android#step-3-create-the-checkout-session).
 
 ## Step 3: Include the library in your project
 
@@ -420,7 +420,7 @@ You can choose between two card form render options. The following screenshots s
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../../Yuno%20SDKs/android-sdks/android-customizations) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](doc:android-customizations) page.
 
 > 📘 Demo App
 >

@@ -485,7 +485,7 @@ The loader functionality is controlled through the `keepLoader` parameter in the
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../../Yuno%20SDKs/android-sdks/android-customizations) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](doc:android-customizations) page.
 
 > 📘 Access the Demo App
 >
