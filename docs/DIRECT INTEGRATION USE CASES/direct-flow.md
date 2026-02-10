@@ -38,7 +38,7 @@ You can skip this step if you have previously created the customer.
 
 This step is optional because you can send the customer information directly in the payment without creating a customer object in Yuno.
 
-<Callout icon="🚧">
+<Callout icon="🚧" theme="warn">
   Customer creation is required if you want to generate a `vaulted_token`.
 </Callout>
 
@@ -52,10 +52,12 @@ During the integration, we recommend taking the payment **status** and **sub_sta
 
 ### DIRECT vs REDIRECT Workflow
 
-While using the Direct integration in Yuno, for Alternative Payment Methods (PSE, Nequi, MercadoPago, PIX, etc.), you have two available `workflow` options:
+While using the Direct integration in Yuno, you have two available `workflow` options:
 
 * **DIRECT**: We return the raw response from the providers so you can build the experience however you like with the unfiltered data.
-* **REDIRECT**: While we also return the direct response from the providers, we also offer merchants the possibility to use a redirection link provided by Yuno where we handle the payment experience just for that payment. You can find such a URL in the `payment_method.detail.redirect_url` field in the payment's response.
+* **REDIRECT**: While we also return the direct response from the providers, we additionally offer merchants the possibility to use a redirection link provided by Yuno where we handle the payment experience just for that payment. You can find such a URL in the `payment_method.detail.redirect_url` field in the payment's response.
+
+Both workflows support Cards (including Cards with 3DS) and Alternative Payment Methods (PSE, Nequi, MercadoPago, PIX, etc.). For cards with 3DS, both workflows require PCI certification.
 
 ### Important Add-ons
 
@@ -84,7 +86,7 @@ While using the Direct integration in Yuno, for Alternative Payment Methods (PSE
     ```
     <br />
 
-* **three_d_secure_setup_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
+* **three_d_secure_setup_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [Payment](#payment) section above and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
 
 ## Enrollment
 
