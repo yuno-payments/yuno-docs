@@ -86,7 +86,7 @@ Both workflows support Cards (including Cards with 3DS) and Alternative Payment 
     ```
     <br />
 
-* **three_d_secure_setup_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [integration guideline](doc:direct-flow) and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
+* **three_d_secure_setup_id**: Use our JS only to get the `three_d_secure_setup_id` and then handle the payment as an only API integration. The Direct workflow is only available for PCI-compliant merchants. It provides a straightforward way to create a payment and validate user information, requiring the merchant to perform just one request to create the payment. To successfully implement the Direct integration, follow the steps outlined in the [Payment](#payment) section above and provide the required information as instructed. This service is not necessary for 3DS implementation using Yuno's SDK.
 
 ## Enrollment
 
