@@ -34,7 +34,7 @@ When you use Yuno's SDK, Yuno is responsible for presenting to the customer the 
 
 > 🚧 Secure Fields SDK Integration
 >
-> When using Secure Fields SDK integration, you will need to [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) while starting the checkout process.
+> When using Secure Fields SDK integration, you will need to [enable the installments option](doc:payment-secure-fields#step-3-start-the-checkout-process) while starting the checkout process.
 
 For merchant-created installments, you also have the possibility of specifying the plan for every session by either using:
 

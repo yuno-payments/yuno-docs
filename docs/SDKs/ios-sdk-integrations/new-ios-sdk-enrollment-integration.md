@@ -390,7 +390,7 @@ Yuno.hideLoader()
 
 * **[iOS Flow Complementary Features](doc:new-ios-sdk-complementary-features)**: Configuration options and UI customization
 * **[Payment Integration](doc:new-ios-sdk-payment-integration)**: Process payments with enrolled methods
-* **[Release Notes](doc:ios-release-notes)**: Latest SDK updates
+* **[Release Notes](doc:release-notes-ios)**: Latest SDK updates
 
 ## Demo Application
 

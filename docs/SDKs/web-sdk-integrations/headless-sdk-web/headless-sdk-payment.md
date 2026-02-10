@@ -556,7 +556,7 @@ Each action type requires specific handling based on the data provided:
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](#demo-app) for a complete implementation of Yuno SDKs.
+> In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs.
 
 ## Stay Updated
 

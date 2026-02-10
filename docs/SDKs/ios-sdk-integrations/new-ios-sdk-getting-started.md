@@ -157,7 +157,7 @@ Now that you've installed and initialized the SDK, choose your integration path:
 ## Additional Resources
 
 * **[iOS Flow Complementary Features](doc:new-ios-sdk-complementary-features)**: Complete configuration and customization reference
-* **[Release Notes](doc:ios-release-notes)**: Latest SDK updates and version history
+* **[Release Notes](doc:release-notes-ios)**: Latest SDK updates and version history
 
 ## Demo Application
 
@@ -165,7 +165,7 @@ Yuno provides an example project showcasing iOS SDK integration. You can access 
 
 ## Need Help?
 
-* **[Choose the Right Integration](doc:new-choose-the-right-integration-for-you)**: Compare all integration options
+* **[Choose the Right Integration](doc:choose-your-integration)**: Compare all integration options
 * **[Country Coverage](doc:quickstart)**: Check supported countries
 * **[SDK Integration Overview](doc:new-sdk-integration-overview)**: Understand different integration approaches
 

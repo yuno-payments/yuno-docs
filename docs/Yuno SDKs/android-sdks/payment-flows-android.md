@@ -128,7 +128,7 @@ Update your manifest to use your application:
 
 Each payment requires a new `checkout_session`. Use the [Create checkout session](ref:create-checkout-session) endpoint to create one; use that session to initiate the payment.
 
-If your payment flow sends users to an external browser (e.g., for 3DS authentication or bank redirects), set the `callback_url` when creating your checkout session. See [Handle external browser return (callback_url)](external-browser-callback-android) for details.
+If your payment flow sends users to an external browser (e.g., for 3DS authentication or bank redirects), set the `callback_url` when creating your checkout session. See [Handle external browser return (callback_url)](#step-3-create-the-checkout-session) for details.
 
 ### Step 4: Start the checkout process
 
@@ -583,7 +583,7 @@ Create a new `checkout_session` using the [Create checkout session](ref:create-c
 
 > 🚧 External Browser Return Handling
 >
-> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](external-browser-callback-android).
+> If your payment flow sends users to an external browser (for example, for 3DS authentication or bank redirects), make sure to set the `callback_url` when creating your checkout session. For a step-by-step guide on handling the return to your app, see [Handle external browser return (callback_url)](#step-3-create-the-checkout-session).
 
 Follow the steps in [Include the library in your project](#include-the-library-in-your-project) above.
 
