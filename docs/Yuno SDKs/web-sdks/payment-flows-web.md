@@ -11,7 +11,7 @@ The Web SDK makes it easy to integrate payment flows into your web and browser-b
 
 - Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
 - See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- See the [Demo App](doc:demo-app) for a complete implementation. [Clone from GitHub](https://github.com/yuno-payments/yuno-sdk-web).
+- See the [Demo App](doc:quickstart-guide) for a complete implementation. [Clone from GitHub](https://github.com/yuno-payments/yuno-sdk-web).
 
 ## Requirements
 

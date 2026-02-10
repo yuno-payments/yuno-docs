@@ -12,16 +12,16 @@ next:
 ---
 Yuno Web SDK provides additional services and configurations you can use to improve customers' experience:
 
-* [Form loader](doc:complementary-features-full-sdk#loader-control-the-use-of-the-loader)
-* [Render mode ](doc:complementary-features-full-sdk#mode-of-form-rendering)
-* [Card form configurations ](doc:complementary-features-full-sdk#card-form-configurations)
-  * [Save Card for future payments](doc:complementary-features-full-sdk#save-card-for-future-payments)
-  * [Render mode](doc:complementary-features-full-sdk#rendering-modes)
-  * [Text payment form buttons](doc:complementary-features-full-sdk#text-payment-form-buttons)
-  * [Persist credit card form to retry payments](doc:complementary-features-full-sdk#persist-credit-card-form-to-retry-payments)
-  * [Hide Pay button](doc:complementary-features-full-sdk#hide-pay-button)
-* [Mercado Pago Checkout Pro webview handling](doc:complementary-features-full-sdk#mercado-pago-checkout-pro-webview-handling)
-* [Optional initialization `options` parameter](doc:complementary-features-full-sdk#optional-initialization-options-parameter)
+* [Form loader](doc:complementary-features-sdk#loader-control-the-use-of-the-loader)
+* [Render mode ](doc:complementary-features-sdk#mode-of-form-rendering)
+* [Card form configurations ](doc:complementary-features-sdk#card-form-configurations)
+  * [Save Card for future payments](doc:complementary-features-sdk#save-card-for-future-payments)
+  * [Render mode](doc:complementary-features-sdk#rendering-modes)
+  * [Text payment form buttons](doc:complementary-features-sdk#text-payment-form-buttons)
+  * [Persist credit card form to retry payments](doc:complementary-features-sdk#persist-credit-card-form-to-retry-payments)
+  * [Hide Pay button](doc:complementary-features-sdk#hide-pay-button)
+* [Mercado Pago Checkout Pro webview handling](doc:complementary-features-sdk#mercado-pago-checkout-pro-webview-handling)
+* [Optional initialization `options` parameter](doc:complementary-features-sdk#optional-initialization-options-parameter)
 
 ## Form loader
 

@@ -492,7 +492,7 @@ Ready to explore more advanced features? Check out the [Advanced Features](doc:a
 See also:
 
 * [Code Examples](doc:code-examples-ios-sdk) - Copy-paste examples for common scenarios
-* [Release Notes](doc:release-notes-ios-sdk) - SDK versions, changes, and migration guides
+* [Release Notes](doc:release-notes-ios) - SDK versions, changes, and migration guides
 
 ## Demo Application
 

@@ -117,7 +117,7 @@ The iOS Flow supports multiple languages including:
 * Japanese, Korean
 * Indonesian, Malaysian, Thai, Filipino, Vietnamese
 
-For the full list of languages supported, see [Supported Languages](doc:supported-languages).
+For the full list of languages supported, see [Supported Languages](doc:languages-supported).
 
 ## Need Help?
 
