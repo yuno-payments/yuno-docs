@@ -14,7 +14,7 @@ Include the library in your project by following the same steps as in [payment f
 
 - Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
 - See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation. [Clone from GitHub](https://github.com/yuno-payments/yuno-sdk-web).
+- See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation (clone from the repository).
 
 - [Lite Enrollment (Web)](#lite-enrollment-web): Lightweight enrollment with UI control and backend support
 - [Headless Enrollment (Web)](#headless-enrollment-web): Full enrollment experience customization without requiring PCI compliance
@@ -273,7 +273,7 @@ For payment methods that require merchant-side action (e.g., when the payment pr
 } | null
 ```
 
-When the method returns an object, use it to handle redirects; when it returns null, no extra merchant-side action is needed. See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a full implementation, or clone from [GitHub](https://github.com/yuno-payments/yuno-sdk-web).
+When the method returns an object, use it to handle redirects; when it returns null, no extra merchant-side action is needed. See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a full implementation (clone from the repository).
 
 ### Complementary features
 
