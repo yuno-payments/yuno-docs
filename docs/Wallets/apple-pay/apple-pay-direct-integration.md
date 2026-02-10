@@ -51,7 +51,7 @@ The Apple Pay SDK returns an object like the example below, we call this respons
 
 ### Example one-time payment request
 
-Here is an example of a one-time Apple Pay payment request using Yuno's Direct API. The request includes the **stringified** Apple Pay response inside `payment_token`, as received from the Apple Pay SDK, along with required fields such as amount, currency, and account information. Adjust the values as needed for your integration..
+Here is an example of a one-time Apple Pay payment request using Yuno's Direct API. The request includes the **stringified** Apple Pay response inside `payment_token`, as received from the Apple Pay SDK, along with required fields such as amount, currency, and account information. Adjust the values as needed for your integration.
 
 ```json
 curl --location 'https://api-sandbox.y.uno/v1/payments' \
