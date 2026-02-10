@@ -58,7 +58,7 @@ The following table lists all the available parameters for the `startCheckout` m
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'`                                                                                                                                                                                                    |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                                                                                                                                                                                            |
 | `countryCode`                     | This parameter specifies the country for which the payment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](doc:quickstart) page.                                         |
-| `language`                        | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available.                                                                                                                                                                     |
+| `language`                        | Language for payment forms. Use any code listed in [Supported languages](doc:languages-supported). Example: `en-US`. Defaults to browser language when available.                                                                                                                                                                     |
 | `onLoading`                       | Required to receive notifications about server calls or loading events during the payment process.                                                                                                                                                                                                                                    |
 | `showLoading`                     | Control the visibility of the Yuno loading/spinner page during the payment process. By default, it's `true`.                                                                                                                                                                                                                          |
 | `issuersFormEnable`               | Enables the issuer's form. By default, it's `true`.                                                                                                                                                                                                                                                                                   |
@@ -196,7 +196,7 @@ When the method returns an object, you can handle your application's payment flo
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
+> In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs (clone from the repository).
 
 ## Complementary features
 
@@ -614,7 +614,7 @@ const yuno = await Yuno.initialize(publicApiKey, undefined, options);
 
 ## What's next?
 
-Learn about the additional configurations from the Full SDK by accessing [Complementary Features](doc:complementary-features-full-sdk). You can also access other functions available on the Yuno Web SDK:
+Learn about the additional configurations from the Full SDK by accessing [Complementary Features](doc:complementary-features-sdk). You can also access other functions available on the Yuno Web SDK:
 
 * [SDK Customizations](doc:sdk-customizations): Change the SDK appearance to match your brand
 * [Payment Status](doc:web): Update the user about the payment process
