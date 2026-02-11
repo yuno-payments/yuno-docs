@@ -253,8 +253,8 @@ After creating the customer, you'll receive an `id` that identifies them in Yuno
 >
 > * **Checkout workflow**: Requires customer session for most payment methods (Cards, Nupay, PayPal, Daviplata, dLocal methods, Astropay, Adyen PIX Biométrico)
 > * **Direct workflow**: Available for Cards only (PCI compliant merchants). Proceed directly to Step 3 using the customer `id` generated in Step 1.
-> * **SDK workflow**: Payment methods like Nequi and Bancolombia Tokenbox require SDK implementation. WALLET_CONNECT (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](doc:quickstart) for details.
-> * **Seamless SDK workflow**: You can enroll payment methods during the seamless payment flow by setting `vault_on_success: true` when creating the payment. The payment method will be automatically enrolled if the payment succeeds. See [Save During Payment](doc:web#save-during-payment) for more details.
+> * **SDK workflow**: Payment methods like Nequi and Bancolombia Tokenbox require SDK implementation. WALLET_CONNECT (MercadoPago) supports both SDK and Checkout workflows. Consult the [SDK documentation](doc:quickstart-guide) for details.
+> * **SDK Seamless workflow**: You can enroll payment methods during the seamless payment flow by setting `vault_on_success: true` when creating the payment. The payment method will be automatically enrolled if the payment succeeds.
 
 Create a customer session to store the customer's payment preferences using the [Create Customer Session](ref:create-customer-session) endpoint. Use the `id` from Step 1 as the `customer_id`.
 
