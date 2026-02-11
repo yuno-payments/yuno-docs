@@ -45,6 +45,6 @@ Every business model is unique, so we allow merchants to define specific rules t
 | Parameter        | Type   | Description                                                                                                                              | Example                          |
 | :--------------- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------- |
 | retry_on_decline | bool   | Indicates whether to retry a payment after a first decline. Defaults to false.                                                           | TRUE                             |
-| amount           | number | Specifies the number of retries the subscription plan will have to completion. If not set, or if higher than 7, the default is 7. Max: 7 | 4                                |
+| amount           | number | Specifies the number of retries the subscription plan will have to completion. If not set, or if higher than 6, the default is 6. Max: 6 | 4                                |
 | strategy         | string | Identifier for the retry strategy used.                                                                                                  | custom_schedule                  |
 | schedule         | object | Contains attempt and delay_seconds fields                                                                                                | Attempt: 2, delay_seconds: 86400 |
