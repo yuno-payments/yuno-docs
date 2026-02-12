@@ -1,0 +1,12 @@
+---
+title: Get Rule
+api:
+  file: communications-campaigns.json
+  operationId: get_campaigns-campaign-id-rules-rule-id
+deprecated: false
+hidden: false
+link:
+  new_tab: false
+metadata:
+  robots: index
+---
