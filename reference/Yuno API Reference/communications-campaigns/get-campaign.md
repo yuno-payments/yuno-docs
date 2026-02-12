@@ -1,5 +1,6 @@
 ---
 title: Get Campaign
+excerpt: Retrieves a single campaign by ID, including its rules.
 api:
   file: communications-campaigns.json
   operationId: get_campaigns-campaign-id
