@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Creates a new campaign. Campaigns are created with `ACTIVE` status by default.
