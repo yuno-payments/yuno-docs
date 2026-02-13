@@ -7,6 +7,17 @@ metadata:
 ---
 Learn how to integrate with the Yuno Campaigns API to automate personalized communications for declined payment recovery.
 
+## Endpoints
+
+* [Create campaign](ref:create-campaign)
+* [List campaigns](ref:list-campaigns)
+* [Get campaign](ref:get-campaign)
+* [Update campaign status](ref:update-campaign-status)
+* [Create rules](ref:create-rules)
+* [Get rule](ref:get-rule)
+* [Update rule](ref:update-rule)
+* [Update rule status](ref:update-rule-status)
+
 ## Overview
 
 The Campaigns API allows you to create automated communication campaigns that are triggered when a customer's payment is declined. When a payment event matches your campaign's targeting rules, Yuno automatically sends a personalized message to the customer through the configured channel (WhatsApp or phone call), helping recover the failed transaction.
