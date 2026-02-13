@@ -31,12 +31,10 @@ The Campaigns API allows you to create automated communication campaigns that ar
 
 ## How it works
 
-<br />
-
 ```mermaid
 flowchart TD
     1[Payment declined] --> 2[Evaluate against<br/>active campaigns]
-    2 --> 3[Check all rules<br/>AND logic]
+    2 --> 3[Check all rules<br/>using AND logic]
     3 --> 4{Rules pass?}
     4 -->|Yes| 5[Send communication<br/>via channel]
     4 -->|No| 6[Skip]
