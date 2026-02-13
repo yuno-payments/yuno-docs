@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Retrieves a specific rule from a campaign.
