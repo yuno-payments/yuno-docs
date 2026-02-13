@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Creates one or more rules for a campaign. All active rules must pass for a payment to trigger the campaign (AND logic).
