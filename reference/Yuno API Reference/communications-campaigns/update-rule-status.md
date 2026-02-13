@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Updates a rule's type, values, conditional, or metadata key.
