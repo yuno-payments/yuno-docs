@@ -5,19 +5,17 @@ hidden: false
 metadata:
   robots: index
 ---
-
 The Web SDK makes it easy to implement enrollment flows for saving payment methods to a customer account.
 
 Include the library in your project by following the same steps as in [payment flows](payment-flows-web#include-the-library-in-your-project). This lets you complete [step 1](#step-1-include-the-library-in-your-project) and continue with the enrollment flow below.
 
 ## Additional resources
 
-- Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
-- See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation (clone from the repository).
+* Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
 
-- [Lite Enrollment (Web)](#lite-enrollment-web): Lightweight enrollment with UI control and backend support
-- [Headless Enrollment (Web)](#headless-enrollment-web): Full enrollment experience customization without requiring PCI compliance
+* See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
+
+* See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation (clone from the repository).
 
 ## Requirements
 
@@ -28,18 +26,18 @@ Include the library in your project by following the same steps as in [payment f
 
 For the full list of parameters and callbacks, see the [Web SDK Common Reference](web-sdk-common-reference).
 
-| Parameter | Description |
-|-----------|-------------|
-| `customerSession` | Customer session ID from your backend (Create customer session API). Required. |
-| `countryCode` | ISO country code (e.g. `US`). |
-| `language` | Language code for the UI (e.g. `en`). Optional. |
-| `showLoading` | Show loading spinner. Optional. |
-| `onLoading` | Callback: loading state updates. Optional. |
-| `elementSelector` | CSS selector where the enrollment form mounts. Optional. |
-| `card` | Card form options. Optional. |
-| `yunoEnrollmentStatus` | Callback: enrollment ended; receives `vaultedToken` and `status`. |
-| `issuersFormEnable` | Show issuer (bank) list. Optional. |
-| `texts` | Custom button/label text. Optional. |
+| Parameter              | Description                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `customerSession`      | Customer session ID from your backend (Create customer session API). Required. |
+| `countryCode`          | ISO country code (e.g. `US`).                                                  |
+| `language`             | Language code for the UI (e.g. `en`). Optional.                                |
+| `showLoading`          | Show loading spinner. Optional.                                                |
+| `onLoading`            | Callback: loading state updates. Optional.                                     |
+| `elementSelector`      | CSS selector where the enrollment form mounts. Optional.                       |
+| `card`                 | Card form options. Optional.                                                   |
+| `yunoEnrollmentStatus` | Callback: enrollment ended; receives `vaultedToken` and `status`.              |
+| `issuersFormEnable`    | Show issuer (bank) list. Optional.                                             |
+| `texts`                | Custom button/label text. Optional.                                            |
 
 ## Lite Enrollment (Web)
 
@@ -123,19 +121,19 @@ To verify cards (zero-value authorization) before enrollment, add the `verify` s
 
 Use `yuno.mountEnrollmentLite` with the parameters below.
 
-| Parameter | Description |
-| --- | --- |
-| `customerSession` | Refers to the current enrollment's [customer session](ref:create-customer-session). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`. |
-| `countryCode` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](country-coverage). |
-| `language` | Language for payment forms. Use any code listed in [Supported languages](languages-supported). Example: `en-US`. Defaults to browser language when available. |
-| `showLoading` | Controls visibility of the Yuno loading/spinner page during the payment process. |
-| `onLoading` | Required to receive notifications about server calls or loading events. |
-| `elementSelector` | HTML element where the Yuno SDK is mounted. |
-| `card` | Define specific settings for the credit card form. |
-| `yunoEnrollmentStatus` | Callback after enrollment ends; receives `vaultedToken` and `status`. Status options: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
-| `issuersFormEnable` | Enable the issuer's form (bank list). |
-| `texts` | Custom text for payment form buttons to match your application's language or branding. |
-| `card.isCreditCardProcessingOnly` | Optional. Forces card transactions to process as credit only—useful where cards act as both credit and debit. |
+| Parameter                         | Description                                                                                                                                                                                                                                       |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`                 | Refers to the current enrollment's [customer session](ref:create-customer-session). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`.                                                                                                              |
+| `countryCode`                     | Country for the payment process. Use an `ENUM` value; see [Country Coverage](country-coverage).                                                                                                                                                   |
+| `language`                        | Language for payment forms. Use any code listed in [Supported languages](languages-supported). Example: `en-US`. Defaults to browser language when available.                                                                                     |
+| `showLoading`                     | Controls visibility of the Yuno loading/spinner page during the payment process.                                                                                                                                                                  |
+| `onLoading`                       | Required to receive notifications about server calls or loading events.                                                                                                                                                                           |
+| `elementSelector`                 | HTML element where the Yuno SDK is mounted.                                                                                                                                                                                                       |
+| `card`                            | Define specific settings for the credit card form.                                                                                                                                                                                                |
+| `yunoEnrollmentStatus`            | Callback after enrollment ends; receives `vaultedToken` and `status`. Status options: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
+| `issuersFormEnable`               | Enable the issuer's form (bank list).                                                                                                                                                                                                             |
+| `texts`                           | Custom text for payment form buttons to match your application's language or branding.                                                                                                                                                            |
+| `card.isCreditCardProcessingOnly` | Optional. Forces card transactions to process as credit only—useful where cards act as both credit and debit.                                                                                                                                     |
 
 The next code block presents an example of the Enrollment Lite parameter configuration and mounting.
 
@@ -305,10 +303,10 @@ Create an enrollment payment method with the [Enroll Payment Method](ref:enroll-
 
 Call `apiClientEnroll` with the parameters below.
 
-| Parameter          | Description                                                                                                                                                                                                                                                                                   |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`       | This parameter specifies the country for which the enrollment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](country-coverage) page. |
-| `customerSession`   | Refers to the current customer's [customer session](ref:create-customer-session). Example: `'eec6578e-ac2f-40a0-8065-25b5957f6dd3'`                                                                                                                                                             |
+| Parameter         | Description                                                                                                                                                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `countryCode`     | This parameter specifies the country for which the enrollment process is being set up. Use an `ENUM` value representing the desired country code. You can find the full list of supported countries and their corresponding codes on the [Country Coverage](country-coverage) page. |
+| `customerSession` | Refers to the current customer's [customer session](ref:create-customer-session). Example: `'eec6578e-ac2f-40a0-8065-25b5957f6dd3'`                                                                                                                                                 |
 
 ```javascript
 const apiClientEnroll = yuno.apiClientEnroll({
