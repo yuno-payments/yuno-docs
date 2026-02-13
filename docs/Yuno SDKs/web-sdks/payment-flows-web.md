@@ -9,9 +9,9 @@ The Web SDK makes it easy to integrate payment flows into your web and browser-b
 
 ## Additional resources
 
-- Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
-- See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation (clone from the repository).
+* Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
+* See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
+* See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation (clone from the repository).
 
 ## Requirements
 
@@ -19,6 +19,10 @@ The Web SDK makes it easy to integrate payment flows into your web and browser-b
 * Public API key (obtain from the [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**)
 
 ## Include the library in your project
+
+<Callout icon="📘" theme="info">
+  The web SDK supports Subresource Integrity (SRI), see the [common reference](doc:web-sdk-common-reference#subresource-integrity-sri) for details.
+</Callout>
 
 The first step is always including the library in your project; this step is performed regardless of which integration type you choose. The integration guide provides three flexible methods:
 
@@ -217,7 +221,7 @@ For styling, themes, form options, and additional configurations, see [SDK custo
 
 Implement Yuno's Seamless integration. Recommended for pre-built UI.
 
-<Image alt="Seamless (payment Web) screenshot" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+![Seamless (payment Web) screenshot](https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png)
 
 ### Step 1: Include the library in your project
 
