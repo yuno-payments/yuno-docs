@@ -5,11 +5,64 @@ hidden: false
 metadata:
   robots: index
 ---
-Parameters, customizations, and advanced features for all Web SDK flows. Setup: [Quickstart guide](quickstart-guide#web-sdk-integration), [integration modes](choose-your-integration).
+Parameters, customizations, and advanced features for all Web SDK flows. See [Quickstart guide](quickstart-guide#web-sdk-integration) and [Choose the Right Integration for You](choose-your-integration) for introductory information.
 
 ## TypeScript support
 
-TypeScript: Yuno provides a [library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) for all available methods.
+TypeScript: Yuno provides a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) for all available methods.
+
+## Subresource Integrity (SRI)
+
+This browser security feature lets you ensure a loaded script has not been tampered with. You provide a cryptographic hash alongside the script URL; the browser verifies the downloaded bytes match the declared hash before executing the code.
+
+* **Integrity**: Guarantees the exact code built and published is what runs in the browser.
+* **Immutability**: When paired with full semantic version URLs, it ensures stable, reproducible integrations.
+* **Defense-in-depth**: Mitigates risks from supply-chain or transport-layer compromise.
+
+### URL formats
+
+When implementing SRI, use the full semantic version URL format to ensure immutable, tamper-evident integrations.
+
+* **Full (immutable) URL with SRI**: Full semantic version path used for locked, tamper-evident integrations with an SRI hash.
+* **Partial (mutable) URL**: Version with major and minor (e.g., v1.5).  This version will receive patch improvements.  This is useful if you like to avoid updates in your code base.
+
+### How to integrate the SDK with SRI
+
+Replace `src` and `integrity` with the environment/version you target. `crossorigin="anonymous"` lets the browser validate the SRI for cross-origin scripts.
+
+The hash can be found in the manifest.json file at `files.["main.js"].integrity`.
+
+```html
+<script
+  src="https://sandbox.y.uno/sdk-static-bundles-ms/sdk-web/v1.5.0/main.js"
+  integrity="sha384-<paste-hash-here>"
+  crossorigin="anonymous"></script>
+```
+
+`src`for production is [https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.5.0/main.js](https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.5.0/main.js).
+
+### Using NPM package
+
+```javascript
+import { loadScript } from '@yuno-payments/sdk-web'
+
+const yuno = await loadScript({
+  sri: true
+})
+```
+
+### Validation notes
+
+* Open DevTools Network tab and confirm main.js returns `200` from the full-version path.
+* Verify the response headers allow cross-origin fetches for static assets if served from a distinct origin (`crossorigin="anonymous"` is set).
+* Ensure the integrity attribute exactly matches the generated hash, including the sha384- prefix.
+* Any change to main.js changes the hash. When changing versions, always regenerate or retrieve the new sha384 value and update the integrity attribute.
+
+### SRI Troubleshooting
+
+* Hash mismatchs cause the script to fail execution with an integrity error (e.g., you updated the file but not the hash). To fix, rebuild, retrieve the new sha384 from sri-manifest.json, and update integrity.
+
+* Browser blocks SRI on cross-origin request when the crossorigin attribute is missing or CORS is restrictive. To fix, add `crossorigin="anonymous"` and configure the static hosting to allow cross-origin fetches for JS assets.
 
 ## Key parameters (checkout session creation)
 
