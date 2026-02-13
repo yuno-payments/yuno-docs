@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Updates the status of a campaign. Use this to pause, resume, complete, or cancel a campaign.
