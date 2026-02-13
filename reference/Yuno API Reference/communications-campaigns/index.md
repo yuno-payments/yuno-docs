@@ -70,7 +70,7 @@ curl -X GET https://api-sandbox.y.uno/v1/campaigns \
 | `account_id`        | UUID   | Yuno account ID                                        |
 | `organization_code` | UUID   | Organization identifier                                |
 | `country`           | string | ISO 3166-1 alpha-2 country code                        |
-| `channel`           | string | `WHATSAPP_MESSAGE` or `PHONE_CALL`                     |
+| `channel`           | enum   | `WHATSAPP_MESSAGE` or `PHONE_CALL`                     |
 | `focus`             | string | Optional campaign focus descriptor                     |
 | `schedule`          | object | Scheduling configuration                               |
 | `duration`          | object | Campaign active period                                 |
