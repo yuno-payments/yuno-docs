@@ -34,13 +34,13 @@ The Campaigns API allows you to create automated communication campaigns that ar
 <br />
 
 ```mermaid
-flowchart TD
-    1[Customer's payment is declined] --> 2[Yuno evaluates the payment against your active campaigns]
-    2 --> 3[All rules in the campaign are checked AND logic]
-    3 --> 4{All rules pass?}
-    4 -->|Yes| 5[Communication is sent via the configured channel]
-    4 -->|No| 6[No communication sent]
-    5 --> 7[Customer receives a personalized WhatsApp message or phone call]
+flowchart LR
+    1[Payment declined] --> 2[Evaluate against<br/>active campaigns]
+    2 --> 3[Check all rules<br/>AND logic]
+    3 --> 4{Rules pass?}
+    4 -->|Yes| 5[Send communication<br/>via channel]
+    4 -->|No| 6[Skip]
+    5 --> 7[Customer receives<br/>message or call]
 ```
 
 **Example**: You create a campaign targeting declined payments in Colombia with amounts over 50,000 COP. When a Colombian customer's 80,000 COP payment is declined, Yuno automatically sends them a WhatsApp message with a personalized recovery suggestion.
