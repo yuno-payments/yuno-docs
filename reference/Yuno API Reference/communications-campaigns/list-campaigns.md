@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Lists campaigns with optional filtering and pagination.
