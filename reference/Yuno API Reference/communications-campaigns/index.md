@@ -10,8 +10,8 @@ Learn how to integrate with the Yuno Campaigns API to automate personalized comm
 ## Endpoints
 
 * [Create campaign](ref:create-campaign)
-* [List campaigns](ref:list-campaigns)
 * [Get campaign](ref:get-campaign)
+* [List campaigns](ref:list-campaigns)
 * [Update campaign status](ref:update-campaign-status)
 * [Create rules](ref:create-rules)
 * [Get rule](ref:get-rule)
