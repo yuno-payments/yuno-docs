@@ -45,7 +45,7 @@ Use Lite for enrollment only; for payments, use [Seamless (payment Web)](payment
 
 ### Step 1: Include the library in your project
 
-Including the library in your project is done in the same way as in payment flows. Follow the steps in [Include the library in your project](payment-flows-web#include-the-library-in-your-project) there.
+Including the library in your project is done in the same way as in [payment flows](payment-flows-web#include-the-library-in-your-project).
 
 ### Step 2: Initialize the SDK
 
