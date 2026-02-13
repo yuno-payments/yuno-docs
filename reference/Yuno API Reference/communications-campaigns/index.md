@@ -5,20 +5,20 @@ hidden: true
 metadata:
   robots: index
 ---
-Technical guide for integrating with the Yuno Campaigns API to automate personalized communications for declined payment recovery.
+Learn how to integrate with the Yuno Campaigns API to automate personalized communications for declined payment recovery.
 
 ## Overview
 
 The Campaigns API allows you to create automated communication campaigns that are triggered when a customer's payment is declined. When a payment event matches your campaign's targeting rules, Yuno automatically sends a personalized message to the customer through the configured channel (WhatsApp or phone call), helping recover the failed transaction.
 
-### Key Concepts
+### Key concepts
 
 * **Campaign**: Defines who to target, through which channel, and when to send communications.
 * **Rules**: Conditions attached to a campaign that determine which declined payments qualify. All active rules must pass for a payment to trigger the campaign (AND logic).
 * **Schedule**: Controls the daily time window and timezone for sending communications.
 * **Duration**: The start and end dates during which the campaign is active.
 
-## How It Works
+## How it works
 
 ```
 1. Customer's payment is declined
@@ -50,9 +50,9 @@ curl -X GET https://api-sandbox.y.uno/v1/campaigns \
   -H "X-Private-Secret-Key: your-private-secret-key"
 ```
 
-## Data Models
+## Data models
 
-### Campaign Object
+### Campaign object
 
 | Field               | Type   | Description                                            |
 | ------------------- | ------ | ------------------------------------------------------ |
@@ -70,7 +70,7 @@ curl -X GET https://api-sandbox.y.uno/v1/campaigns \
 | `created_at`        | string | ISO 8601 creation timestamp                            |
 | `updated_at`        | string | ISO 8601 last update timestamp                         |
 
-### Rule Object
+### Rule object
 
 | Field          | Type   | Description                                     |
 | -------------- | ------ | ----------------------------------------------- |
@@ -84,11 +84,11 @@ curl -X GET https://api-sandbox.y.uno/v1/campaigns \
 | `created_at`   | string | ISO 8601 creation timestamp                     |
 | `updated_at`   | string | ISO 8601 last update timestamp                  |
 
-### Rule Types Reference
+### Rule types reference
 
 Rules define which declined payments qualify for a campaign. All active rules on a campaign must pass (AND logic) for a communication to be triggered.
 
-#### Payment Data Rules
+#### Payment data rules
 
 These rules evaluate data directly available from the payment event.
 
@@ -99,7 +99,7 @@ These rules evaluate data directly available from the payment event.
 | `AMOUNT_AND_CURRENCY` | Combined amount + currency check | `["amount", "currency"]` | `["50000", "COP"]` |
 | `PAYMENT_STATUS`      | Filter by payment status         | `["status"]`             | `["DECLINED"]`     |
 
-#### Enriched Data Rules
+#### Enriched data rules
 
 These rules evaluate enriched transaction data (payment method, provider, card details, etc.).
 
@@ -112,7 +112,7 @@ These rules evaluate enriched transaction data (payment method, provider, card d
 | `ISO_RESPONSE_CODE` | Filter by ISO 8583 response code | `["code"]`        | `["51", "05"]`         |
 | `CATEGORY`          | Filter by transaction category   | `["category"]`    | `["ecommerce"]`        |
 
-#### Metadata Rules
+#### Metadata rules
 
 Evaluate custom metadata fields attached to the payment.
 
@@ -131,7 +131,7 @@ Evaluate custom metadata fields attached to the payment.
 }
 ```
 
-#### Rate Limiting Rules
+#### Rate limiting rules
 
 Control communication frequency to avoid sending too many messages to the same user.
 
@@ -146,7 +146,7 @@ Control communication frequency to avoid sending too many messages to the same u
 * `USER_COMMS_PER_DAY` does **not** require a `conditional` field. Only provide `values` with the daily limit.
 * `UNIQUE_BY_USER` requires **neither** `values` nor `conditional`. Simply include the `rule_type`.
 
-### Conditional Operators Reference
+### Conditional operators reference
 
 | Conditional             | Description                             | Applicable Rule Types                       | Values Count                       |
 | ----------------------- | --------------------------------------- | ------------------------------------------- | ---------------------------------- |
@@ -165,9 +165,9 @@ Control communication frequency to avoid sending too many messages to the same u
 
 > **Note on `BETWEEN` with `AMOUNT_AND_CURRENCY`**: When using `BETWEEN` with `AMOUNT_AND_CURRENCY`, provide 3 values: `["min", "max", "currency"]`. For other rule types, provide 2 values: `["min", "max"]`.
 
-## Getting Started
+## Getting started
 
-### Step 1: Create a Campaign
+### Step 1: Create a campaign
 
 Define who to target, which channel to use, and when communications should be sent.
 
@@ -196,7 +196,7 @@ curl -X POST https://api-sandbox.y.uno/v1/campaigns \
 
 > **Note**: The campaign is created with `ACTIVE` status by default. Save the returned `id` for the next step.
 
-### Step 2: Add Targeting Rules
+### Step 2: Add targeting rules
 
 Define which declined payments should trigger this campaign. Use the campaign `id` from Step 1.
 
@@ -237,7 +237,7 @@ This campaign will now trigger a WhatsApp message when:
 * Amount is greater than 50,000 **AND**
 * The user has received fewer than 2 communications today
 
-### Step 3: Verify Your Campaign
+### Step 3: Verify your campaign
 
 Confirm the campaign is set up correctly with its rules.
 
@@ -247,16 +247,16 @@ curl -X GET https://api-sandbox.y.uno/v1/campaigns/{campaign_id} \
   -H "X-Private-Secret-Key: your-private-secret-key"
 ```
 
-### Step 4: Monitor and Manage
+### Step 4: Monitor and manage
 
 * **Pause** a campaign temporarily: `PATCH` with `{"status": "PAUSED"}`
 * **Resume** a paused campaign: `PATCH` with `{"status": "ACTIVE"}`
 * **Disable a specific rule** without deleting it: `PATCH /rules/{rule_id}/status` with `{"status": "INACTIVE"}`
 * **End** a campaign permanently: `PATCH` with `{"status": "COMPLETED"}`
 
-## Use Case Examples
+## Use case examples
 
-### 1. Basic Declined Payment Recovery
+### 1. Basic declined payment recovery
 
 Send a WhatsApp message to customers in Mexico whose card payments are declined.
 
@@ -300,7 +300,7 @@ Send a WhatsApp message to customers in Mexico whose card payments are declined.
 }
 ```
 
-### 2. High-Value Transaction Recovery via Phone Call
+### 2. High-value transaction recovery via phone call
 
 Call customers whose transactions above 500 USD were declined.
 
@@ -348,7 +348,7 @@ Call customers whose transactions above 500 USD were declined.
 }
 ```
 
-### 3. Provider-Specific Recovery with Amount Range
+### 3. Provider-specific recovery with amount range
 
 Target declined payments from a specific provider within an amount range.
 
@@ -381,7 +381,7 @@ Target declined payments from a specific provider within an amount range.
 }
 ```
 
-### 4. Metadata-Based Segmentation
+### 4. Metadata-based segmentation
 
 Target specific customer segments using payment metadata (e.g., business vertical or customer tier).
 
@@ -414,7 +414,7 @@ Target specific customer segments using payment metadata (e.g., business vertica
 }
 ```
 
-### 5. Exclude Specific Response Codes
+### 5. Exclude specific response codes
 
 Send recovery messages for all declined payments except those with specific response codes that indicate fraud or permanent issues.
 
@@ -439,7 +439,7 @@ Send recovery messages for all declined payments except those with specific resp
 
 > **Note**: ISO codes `14` (invalid card number), `43` (stolen card), and `59` (suspected fraud) are excluded since these should not receive recovery communications.
 
-## Error Handling
+## Error handling
 
 All error responses follow a consistent format:
 
@@ -451,7 +451,7 @@ All error responses follow a consistent format:
 }
 ```
 
-### HTTP Status Codes
+### HTTP status codes
 
 | Code  | Description           | Common Causes                                                                                              |
 | ----- | --------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -460,7 +460,7 @@ All error responses follow a consistent format:
 | `422` | Unprocessable Entity  | Validation failed (e.g., invalid rule type, invalid conditional for rule type, `end_at` before `start_at`) |
 | `500` | Internal Server Error | Unexpected server error                                                                                    |
 
-### Common Validation Errors
+### Common validation errors
 
 | Error                     | Cause                                       | Solution                                                                                                  |
 | ------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
