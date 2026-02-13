@@ -34,7 +34,7 @@ The Campaigns API allows you to create automated communication campaigns that ar
 <br />
 
 ```mermaid
-flowchart LR
+flowchart TD
     1[Payment declined] --> 2[Evaluate against<br/>active campaigns]
     2 --> 3[Check all rules<br/>AND logic]
     3 --> 4{Rules pass?}
