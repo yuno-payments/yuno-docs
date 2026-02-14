@@ -9,6 +9,8 @@ Learn how to integrate with the Yuno Campaigns API to automate personalized comm
 
 ## Endpoints
 
+**Base URL**: `https://api-sandbox.y.uno/v1`
+
 * [Create campaign](ref:create-campaign)
 * [Get campaign](ref:get-campaign)
 * [List campaigns](ref:list-campaigns)
