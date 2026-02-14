@@ -280,6 +280,7 @@ Send a WhatsApp message to customers in Mexico whose card payments are declined.
   "organization_code": "YOUR_ORGANIZATION_CODE",
   "country": "MX",
   "channel": "WHATSAPP_MESSAGE",
+  "focus": "payment_recovery",
   "schedule": {
     "daily_start_time": "09:00",
     "daily_end_time": "20:00",
@@ -324,6 +325,7 @@ Call customers whose transactions above 500 USD were declined.
   "organization_code": "YOUR_ORGANIZATION_CODE",
   "country": "CO",
   "channel": "PHONE_CALL",
+  "focus": "payment_recovery",
   "schedule": {
     "daily_start_time": "09:00",
     "daily_end_time": "18:00",
