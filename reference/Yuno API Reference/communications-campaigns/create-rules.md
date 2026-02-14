@@ -11,3 +11,5 @@ metadata:
   robots: index
 ---
 Creates one or more rules for a campaign. All active rules must pass for a payment to trigger the campaign (AND logic).
+
+Visit the conditional [operators reference](https://docs.y.uno/reference/communications-campaigns#conditional-operators-reference) for more information on how to use them.
