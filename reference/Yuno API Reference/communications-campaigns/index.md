@@ -271,7 +271,7 @@ curl -X GET https://api-sandbox.y.uno/v1/campaigns/{campaign_id} \
 
 Send a WhatsApp message to customers in Mexico whose card payments are declined.
 
-**Campaign**:
+**[Campaign](https://docs.y.uno/reference/create-campaign)**:
 
 ```json
 {
@@ -292,7 +292,7 @@ Send a WhatsApp message to customers in Mexico whose card payments are declined.
 }
 ```
 
-**Rules**:
+**[Rules](https://docs.y.uno/reference/create-rules)**:
 
 ```json
 {
@@ -315,7 +315,7 @@ Send a WhatsApp message to customers in Mexico whose card payments are declined.
 
 Call customers whose transactions above 500 USD were declined.
 
-**Campaign**:
+**[Campaign](https://docs.y.uno/reference/create-campaign)**:
 
 ```json
 {
@@ -336,7 +336,7 @@ Call customers whose transactions above 500 USD were declined.
 }
 ```
 
-**Rules**:
+**[Rules](https://docs.y.uno/reference/create-rules)**:
 
 ```json
 {
@@ -363,7 +363,7 @@ Call customers whose transactions above 500 USD were declined.
 
 Target declined payments from a specific provider within an amount range.
 
-**Rules**:
+**[Rules](https://docs.y.uno/reference/create-rules)**:
 
 ```json
 {
@@ -396,7 +396,7 @@ Target declined payments from a specific provider within an amount range.
 
 Target specific customer segments using payment metadata (e.g., business vertical or customer tier).
 
-**Rules**:
+**[Rules](https://docs.y.uno/reference/create-rules)**:
 
 ```json
 {
@@ -429,7 +429,7 @@ Target specific customer segments using payment metadata (e.g., business vertica
 
 Send recovery messages for all declined payments except those with specific response codes that indicate fraud or permanent issues.
 
-**Rules**:
+**[Rules](https://docs.y.uno/reference/create-rules)**:
 
 ```json
 {
