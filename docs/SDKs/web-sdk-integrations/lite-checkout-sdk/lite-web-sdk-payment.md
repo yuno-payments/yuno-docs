@@ -582,6 +582,10 @@ If you hide the **Pay** button, you will need to start the one-time token creati
 yuno.submitOneTimeTokenForm();
 ```
 
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.
+
 ## Stay Updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.

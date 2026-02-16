@@ -272,6 +272,10 @@ When `vault_on_success` is set to `true`:
 
 For more information about enrolling payment methods, see [Enroll Payment Methods](doc:enroll-payment-methods).
 
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.
+
 ## Stay updated
 
 Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates and version history.

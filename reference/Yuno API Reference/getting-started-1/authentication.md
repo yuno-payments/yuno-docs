@@ -13,7 +13,7 @@ metadata:
 next:
   description: ''
 ---
-The Yuno API employs the ApiKey security schema to authenticate HTTP requests. These keys are access credentials composed of alphanumeric characters authorizing the use of specific features of our API.
+The Yuno API employs the ApiKey security schema to authenticate HTTP requests. These keys are access credentials composed of alphanumeric characters authorizing the use of specific features of our API. Use the **public key** in client-side or SDK contexts (e.g. browser, mobile app); use the **private secret key** only on your server for API calls that modify data or access sensitive resources.
 
 The requests need to include authorization headers such as `public-api-key`, `private-secret-key` and `X-idempotency-key`. You can find **your credentials**,  `public-api-key` and `private-secret-key`, in the *developers* section at the [Yuno Merchant Dashboard](https://auth.y.uno/u/login?state=hKFo2SB1dGdwd0VYZWxrOHpaLVdWck5FYWYtaW5GN0hhM25MNaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIExidWxTMDRSNG5qYnZQQklTN3JtY0hyME5fZDBRa25xo2NpZNkgbGNIOEVyS3A3UUl2Tkx1Y0JUOXpEQlhrbXlaN25CSnc). On the other hand, the `X-idempotency-key` is composed of up to 64 characters. Check the [Idempotency](ref:authentication#idempotency) section for additional information.
 
