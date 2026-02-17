@@ -1,5 +1,5 @@
 ---
-title: Create One Time Use Token
+title: Create One Time Use Token (Direct)
 excerpt: ''
 api:
   file: tokens.json
