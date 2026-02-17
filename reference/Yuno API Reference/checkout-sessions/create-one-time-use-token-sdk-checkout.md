@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Creates a one-time volatile token for secure payment processing within a checkout session.
