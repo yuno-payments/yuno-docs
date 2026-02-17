@@ -1,5 +1,5 @@
 ---
-title: Checkout Session Token (SDK Checkout)
+title: Create One Time Use Token (SDK Checkout)
 api:
   file: tokens.json
   operationId: post_checkout-sessions-checkout-session-token
