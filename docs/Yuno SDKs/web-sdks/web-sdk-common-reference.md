@@ -39,7 +39,7 @@ The hash can be found in the manifest.json file at `files.["main.js"].integrity`
   crossorigin="anonymous"></script>
 ```
 
-`src`for production is [https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.5.0/main.js](https://prod.y.uno/sdk-static-bundles-ms/sdk-web/v1.5.0/main.js).
+`src`for production is `https://sdk-web.y.uno/versions-sri.json` .
 
 ### Using NPM package
 
