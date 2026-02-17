@@ -15,4 +15,4 @@ metadata:
 next:
   description: ''
 ---
-Creates a customer session for enrolling and managing payment methods. Use this to allow customers to save cards, wallets, and other payment methods for future use. Uses the `id` obtained when [creating a customer](ref:create-customer) .
+Creates a customer session for enrolling and managing payment methods. Use this to save cards, wallets, and other payment methods for future use. Requires a `customer_id` from [Create Customer](ref:create-customer) .
