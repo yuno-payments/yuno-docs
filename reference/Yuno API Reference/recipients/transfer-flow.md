@@ -1,5 +1,5 @@
 ---
-title: Get Transfer ID
+title: Get Transfer by ID
 api:
   file: openapi.json
   operationId: get_transfers-transfer-id
