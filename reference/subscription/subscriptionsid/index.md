@@ -1,4 +1,4 @@
 ---
 title: /subscriptions/{id}
-hidden: false
+hidden: true
 ---
