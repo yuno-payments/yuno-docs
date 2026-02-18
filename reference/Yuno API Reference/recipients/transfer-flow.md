@@ -1,8 +1,8 @@
 ---
-title: Get Transfer Flow
+title: Get Transfer ID
 api:
   file: openapi.json
-  operationId: get_new-endpoint
+  operationId: get_transfers-transfer-id
 deprecated: false
 hidden: true
 link:
@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Retrieve a single transfer using the `transfer_id`.
