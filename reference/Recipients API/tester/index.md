@@ -1,4 +1,4 @@
 ---
 title: /tester
-hidden: false
+hidden: true
 ---
