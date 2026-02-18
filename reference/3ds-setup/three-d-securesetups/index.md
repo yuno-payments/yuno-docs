@@ -1,4 +1,4 @@
 ---
 title: /three-d-secure/setups
-hidden: false
+hidden: true
 ---
