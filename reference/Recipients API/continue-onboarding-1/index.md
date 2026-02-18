@@ -1,4 +1,4 @@
 ---
 title: /continue-onboarding
-hidden: false
+hidden: true
 ---
