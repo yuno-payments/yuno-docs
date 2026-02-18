@@ -1,4 +1,4 @@
 ---
 title: /next
-hidden: false
+hidden: true
 ---
