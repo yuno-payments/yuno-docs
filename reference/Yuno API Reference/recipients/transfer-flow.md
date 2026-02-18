@@ -1,5 +1,5 @@
 ---
-title: Transfer Flow
+title: Get Transfer Flow
 api:
   file: openapi.json
   operationId: get_new-endpoint
@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+∫
