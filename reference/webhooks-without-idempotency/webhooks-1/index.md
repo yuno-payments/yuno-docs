@@ -1,4 +1,4 @@
 ---
 title: /webhooks
-hidden: false
+hidden: true
 ---
