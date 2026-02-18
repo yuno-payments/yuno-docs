@@ -1,4 +1,4 @@
 ---
 title: /old
-hidden: false
+hidden: true
 ---
