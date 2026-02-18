@@ -1,7 +1,7 @@
 ---
 title: an
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
