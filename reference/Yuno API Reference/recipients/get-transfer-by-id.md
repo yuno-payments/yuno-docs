@@ -10,4 +10,4 @@ link:
 metadata:
   robots: index
 ---
-Retrieve a single transfer using the `transfer_id`.
+Retrieve a single transfer using its `transfer_id`.
