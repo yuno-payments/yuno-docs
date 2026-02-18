@@ -1,4 +1,4 @@
 ---
 title: /{id}/connections?
-hidden: false
+hidden: true
 ---
