@@ -1,4 +1,4 @@
 ---
 title: /start
-hidden: false
+hidden: true
 ---
