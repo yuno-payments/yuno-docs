@@ -26,6 +26,6 @@ A payment with a **PENDING** status due to an **AUTHORIZE** transaction status c
 >
 > Alternative payment methods such as PIX also support payment cancellation with a PENDING status. Reach out to your technical account manager for more information.
 
-If you need a receipt for the canceled transaction, you can retrieve it after it has been created. To do this, use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint and check the `receipt_url` field in the `payment.transaction` object.
+If you need a receipt for the canceled transaction, you can retrieve it after it has been created. To do this, use the [Retrieve Payment by ID](ref:retrieve-payment-by-id) endpoint and check the `receipt_url` field in the `payment.transaction` object (see [The Payment Object](ref:the-payment-object) for `receipt`, `receipt_url`, and `receipt_language`).
 
 To use this endpoint, you have to provide an `X-Idempotency-Key` in your request. Check the [Authentication](ref:authentication#idempotency) page for more information.
