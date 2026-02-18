@@ -22,4 +22,11 @@ Retrieve a single transfer using its `transfer_id`.
 | `created_at`             | timestamp | When the transfer was created                                               |
 | `updated_at`             | timestamp | When the transfer was last updated                                          |
 
-<br />
+## Inferring Transfer Status
+
+Check `destination_onboarding.status`:
+
+`SUCCEEDED`: Transfer completed successfully
+`PENDING`: Transfer in progress
+`FAILED`: Transfer failed
+`TRANSFERRED`: Origin onboarding was transferred out
