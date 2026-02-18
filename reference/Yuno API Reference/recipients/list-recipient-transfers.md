@@ -4,7 +4,7 @@ api:
   file: openapi.json
   operationId: get_recipients-recipient-id-transfers
 deprecated: false
-hidden: false
+hidden: true
 link:
   new_tab: false
 metadata:
