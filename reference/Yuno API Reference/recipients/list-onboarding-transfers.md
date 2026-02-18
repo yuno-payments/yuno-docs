@@ -10,4 +10,4 @@ link:
 metadata:
   robots: index
 ---
-List onboarding transfers using the `onboarding_id`.
+View all transfer operations associated with a specific onboarding (as origin or destination).
