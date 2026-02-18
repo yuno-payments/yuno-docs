@@ -1,4 +1,4 @@
 ---
 title: /
-hidden: false
+hidden: true
 ---
