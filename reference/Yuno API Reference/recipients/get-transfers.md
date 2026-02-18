@@ -174,3 +174,15 @@ GET /v1/recipients/770e8400-.../transfers
    * Origin/destination details
    * Current status
    * Provider information
+
+## Error Codes Reference
+
+|          Code          | HTTP Status |                 Description                |
+| :--------------------: | :---------: | :----------------------------------------: |
+|  `TRANSFER_NOT_FOUND`  |     404     |           Transfer does not exist          |
+|  `RECIPIENT_NOT_FOUND` |     404     |          Recipient does not exist          |
+| `ONBOARDING_NOT_FOUND` |     404     |          Onboarding does not exist         |
+|       `FORBIDDEN`      |     403     | Resource belongs to different organization |
+|     `UNAUTHORIZED`     |     401     |     Invalid authentication credentials     |
+
+<br />
