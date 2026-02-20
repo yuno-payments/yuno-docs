@@ -672,3 +672,7 @@ class MyService: YunoPaymentDelegate {
 * **`nonisolated`**: Means it can be accessed from any thread, so it must be thread-safe
 * **`viewController`**: Remains as `@MainActor` because UI components must run on the main thread
 
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference. To refund a payment, see [Refund payments](https://docs.y.uno/docs/refund-payments) and the [Refund payment](https://docs.y.uno/reference/refund-payment) API.
+

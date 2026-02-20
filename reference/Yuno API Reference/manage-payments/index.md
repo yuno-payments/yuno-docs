@@ -10,7 +10,7 @@ metadata:
 next:
   description: ''
 ---
-The Payments API lets you create and manage payments through Yuno. Here you’ll find details on request and response formats, available endpoints, common objects, and example payloads. Use this reference to understand workflows, status handling, and how to integrate payments seamlessly into your application. 
+The Payments API lets you create and manage payments through Yuno. Here you’ll find details on request and response formats, available endpoints, common objects, and example payloads. Use this reference to understand workflows, status handling, and how to integrate payments seamlessly into your application. To refund a payment, see [Refund payments](https://docs.y.uno/docs/refund-payments) and the [Refund payment](https://docs.y.uno/reference/refund-payment) API.
 
 <HTMLBlock>{`
 <body>

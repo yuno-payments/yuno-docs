@@ -61,6 +61,45 @@ x-hmac-signature: K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols=
 }
 ```
 
+## Verification code example
+
+Verify the `x-hmac-signature` header using the **raw request body** (before parsing JSON) and the same secret configured for the webhook in the Yuno dashboard.
+
+**Node.js (Express):** use a body parser that keeps the raw body for the webhook route (e.g. `express.raw()` for that path), then:
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhookSignature(rawBody, signatureHeader, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)
+    .digest('base64');
+  return crypto.timingSafeEqual(
+    Buffer.from(signatureHeader, 'base64'),
+    Buffer.from(expected, 'base64')
+  );
+}
+
+// Example: const isValid = verifyWebhookSignature(req.body, req.headers['x-hmac-signature'], process.env.WEBHOOK_SECRET);
+```
+
+**Python:** use the raw request body bytes and the `x-hmac-signature` header:
+
+```python
+import hmac
+import hashlib
+import base64
+
+def verify_webhook_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
+    expected = base64.b64encode(
+        hmac.new(secret.encode(), raw_body, hashlib.sha256).digest()
+    ).decode()
+    return hmac.compare_digest(signature_header, expected)
+```
+
+If the computed signature does not match the header, reject the webhook (e.g. return 401).
+
 ## Related documentation
 
 * [Configure Webhooks](doc:configure-webhooks)

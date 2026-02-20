@@ -362,3 +362,8 @@ When implementing concurrency in your delegate, keep these key points in mind:
 * `MainActor.assumeIsolated`: Only use when you guarantee it's called from `MainActor`. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
 * `nonisolated`: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
 * `viewController`: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
+
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.

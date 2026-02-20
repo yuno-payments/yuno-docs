@@ -683,3 +683,7 @@ You can change the SDK appearance to match your brand. For more information, see
 > 📘 Demo Application
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) for a complete implementation of Yuno Android SDKs.
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference. To refund a payment, see [Refund payments](https://docs.y.uno/docs/refund-payments) and the [Refund payment](https://docs.y.uno/reference/refund-payment) API.
