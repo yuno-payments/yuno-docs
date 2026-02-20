@@ -39,14 +39,20 @@ curl --request <Method> \\
 
 Idempotency is the ability to make multiple identical requests and always get the same response. This is useful when a request fails due to a connection issue and the outcome is unclear; you can retry using the same `X-Idempotency-Key` and the API will not duplicate the operation.
 
-Some requests include a unique identifier sent as the `X-Idempotency-Key` header. Set the value to `{$randomUUID}` to generate keys automatically (e.g., `7bf41af5-70ae-4e79-9b28-a8fa75c3ac53`). This key also serves to identify a specific transaction.
+Some requests include a unique identifier sent as the `X-Idempotency-Key` header (e.g., `7bf41af5-70ae-4e79-9b28-a8fa75c3ac53`). This key also serves to identify a specific transaction.
+
+<Callout icon="📘">
+  Set the `x-idempotency-key` value to `{$randomUUID}` to generate keys automatically.
+</Callout>
 
 Yuno stores the `X-Idempotency-Key` and the transaction status for 24 hours, regardless of the outcome (captured, authorized, or failed). Any subsequent request with the same key within that window returns the original response instead of creating a new transaction.
+
+If two requests are sent simultaneously, the API may receive the second before responding to the first. In that case, the second request returns a `409 Conflict`, indicating there is already an open call for that `X-Idempotency-Key`.
 
 <Callout icon="📘" theme="info">
   If two requests are sent with the same key but different body contents, the API processes only the first one.
 </Callout>
 
-If two requests are sent simultaneously, the API may receive the second before responding to the first. In that case, the second request returns a `409 Conflict`, indicating there is already an open call for that `X-Idempotency-Key`.
-
 Keys are not stored when a request fails with a `400` error. This allows you to correct the request and resubmit it with the same key. The same applies to `500` errors.
+
+<br />
