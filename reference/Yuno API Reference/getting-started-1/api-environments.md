@@ -1,6 +1,6 @@
 ---
 title: Environments
-excerpt: ''
+excerpt: API base URLs and the two environments (Sandbox and Production) for calling the Yuno API.
 deprecated: false
 hidden: false
 metadata:
@@ -10,41 +10,50 @@ metadata:
 next:
   description: ''
 ---
-You can interact with the Yuno API using two environments: 
 
-* Sandbox
-* Production
+This page explains the API base URLs and the two environments you can use when calling the Yuno API: **Sandbox** and **Production**.
 
-These environments are also available on the Dashboard, enabling you to connect and test different connections without requiring you to add the real account data. 
+For how to switch between Test Mode and Live Mode in the Yuno dashboard, see [Environments (Dashboard)](https://docs.y.uno/docs/environments).
 
-> 🚧 Credentials
+## Overview: Sandbox vs Production
+
+| Environment | Purpose | Base URL |
+|-------------|---------|----------|
+| **Sandbox** | Testing and development. No live data or real transactions. | `https://api-sandbox.y.uno` |
+| **Production** | Live environment. Real transactions and accounting. | `https://api.y.uno` |
+
+In the dashboard, Sandbox is referred to as **Test Mode** and Production as **Live Mode**. You use the same account for both; the dashboard toggle switches which environment you are using.
+
+## Credentials
+
+> 🚧 **Credentials**
 >
-> The credentials to use Yuno API in Sandbox are different from the Production credentials. Depending on the environment you select when accessing the Dashboard, you find different API keys and Account information.
+> Sandbox and Production use **different API keys**. The credentials you use in Test Mode (Sandbox) are not the same as those for Live Mode (Production). In the dashboard, the keys shown depend on which environment you have selected. See [Developers credentials](https://docs.y.uno/docs/developers-credentials) for where to find them.
 
+## Base URLs
 
-## Sandbox
+### Sandbox
 
-This is a controlled development environment where you can conduct tests during implementation. When performing tests in Sandbox, they do not affect live data and accounting since the data used during the test mode is false.
+Use this base URL for all API requests when testing. Data is simulated and does not affect live accounting or metrics.
 
-The base URL used for the Yuno API running in the Sandbox environment is formatted as shown below:
-
-```curl
+```
 https://api-sandbox.y.uno
 ```
 
-## Production
+### Production
 
-This is the environment where real events occur, affecting accounting and metrics. This environment is consumed once the integration tests have finished, and it is time to open it to the public.
+Use this base URL when your integration is live and you are processing real payments.
 
-```curl
+```
 https://api.y.uno
 ```
 
-> 📘 Processing Time
->
-> The processing time for each request varies depending on the processor/acquirer executing the transaction. The total processing time is the sum of Yuno's and the processor/acquirer's processing time. [Learn more](#processing-time)
+## Processing time and timeout
 
-
-> 🚧 Timeout
+> 📘 **Processing time**
 >
-> Yuno uses a timeout value of 60 seconds for all endpoints. Therefore, the total time available for a request to be processed and answered by our APIs is 60 seconds. The timeout value of 60 seconds is used to cover all cases from the processor/acquirer since their response time varies. **Important**: The response time will usually be a fraction of the timeout.
+> The processing time for each request depends on the processor or acquirer. Total time is the sum of Yuno's processing time and the processor's.
+
+> 🚧 **Timeout**
+>
+> Yuno uses a **60-second timeout** for all endpoints. The full request–response cycle must complete within 60 seconds. Response times are usually much shorter; 60 seconds covers slower processor responses.
