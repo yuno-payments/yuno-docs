@@ -1977,7 +1977,7 @@ On this page, you will find the country's information you need when using Yuno A
       </td>
 
       <td style={{ textAlign: "left" }}>
-        `BGN`
+        `EUR`
       </td>
 
       <td style={{ textAlign: "left" }}>
