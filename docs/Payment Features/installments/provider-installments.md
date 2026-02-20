@@ -20,7 +20,7 @@ While configuring your provider [Connection](doc:connections) in Yuno Dashboard,
 
 > 🚧 Secure Fields SDK
 >
-> When using Secure Fields SDK integration, you will need to [enable the installments option](secure-fields-payment#step-3-start-the-checkout-process) while starting the checkout process.
+> When using Secure Fields SDK integration, you will need to [enable the installments option](doc:payment-secure-fields#step-3-start-the-checkout-process) while starting the checkout process.
 
 This option is not enabled for all providers, only the ones that have Installment services that Yuno can access to get the information from. If you consider that a provider should have this feature enabled, please reach out to your account manager.
 

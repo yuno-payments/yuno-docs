@@ -251,7 +251,7 @@ const initializeYuno = async () => {
 
 | Property               | Type       | Default    | Description                                                          |
 | ---------------------- | ---------- | ---------- | -------------------------------------------------------------------- |
-| `language`             | `string`   | `'en'`     | UI language code. See [Supported Languages](doc:supported-languages) |
+| `language`             | `string`   | `'en'`     | UI language code. See [Supported Languages](doc:languages-supported) |
 | `cardFlow`             | `CardFlow` | `ONE_STEP` | Card input flow type (`ONE_STEP` or `STEP_BY_STEP`)                  |
 | `saveCardEnabled`      | `boolean`  | `false`    | Enable the save card checkbox                                        |
 | `keepLoader`           | `boolean`  | `false`    | Keep loader visible after operations                                 |
@@ -260,7 +260,7 @@ const initializeYuno = async () => {
 
 ### Supported languages
 
-For the a list of languages available within our SDKs, please visit the [supported languages](doc:supported-languages) page. Please note Japanese and Korean are not available for the React Native SDK.
+For the a list of languages available within our SDKs, please visit the [supported languages](doc:languages-supported) page. Please note Japanese and Korean are not available for the React Native SDK.
 
 ## Full SDK (React Native)
 

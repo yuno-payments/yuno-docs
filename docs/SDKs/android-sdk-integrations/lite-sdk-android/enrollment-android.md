@@ -332,7 +332,7 @@ Call the `initEnrollment` method in the `onCreate` method of activity to registe
 
 ## Complementary features
 
-Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:sdk-customizations-android) to change the SDK appearance to match your brand or to configure the loader.
+Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:android-customizations) to change the SDK appearance to match your brand or to configure the loader.
 
 ### `styles`
 
@@ -379,7 +379,7 @@ You can choose between two card form render options. The following screenshots s
 
 ### SDK customization
 
-You can change the SDK appearance to match your brand. For more information, see the [SDK customization](../docs/sdk-customizations-android) page.
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](doc:android-customizations) page.
 
 > 📘 Demo App
 >

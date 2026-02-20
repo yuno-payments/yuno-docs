@@ -5,7 +5,7 @@ hidden: true
 metadata:
   robots: index
 ---
-This object represents a recipient who will receive part of a [split payment](doc:split-payments-marketplace). It represents an entity or user within your Platform. The embedded banking allows you to onboard users and manage their accounts.
+This object represents a recipient for the embedded banking solution. It represents an entity or user within your Platform. The embedded banking allows you to onboard users and manage their accounts.
 
 ## Attributes
 

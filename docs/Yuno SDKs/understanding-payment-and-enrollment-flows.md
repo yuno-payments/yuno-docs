@@ -1,0 +1,75 @@
+---
+title: Understanding Payment and Enrollment Flows
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+---
+
+In Yuno SDKs, **payment flows** and **enrollment flows** are separate. Payment is the process of completing a transaction; enrollment is the process of saving a payment method (e.g. a card) to a customer account for future use. This page explains both flows at a high level with diagrams and step sequences. Use the Quickstart guide and platform flow pages for implementation details.
+
+## Payment flow
+
+The SDK provides a unified payment experience: customers complete transactions using multiple payment methods within a single integration. The diagram below illustrates the main payment workflow.
+
+![Full (Web) payment flow](https://files.readme.io/0b97d1a-Diagrama_-_Full_SDK.png)
+
+### Payment flow steps
+
+1. Merchant Server: Create Customer → Yuno Server: Creates Customer
+2. Merchant Client: Initiate Checkout → Merchant Server: Create Checkout session
+3. Merchant Server: Create Checkout session → Yuno Server: Creates Checkout session
+4. Merchant Client: Initiate Checkout → Initiate SDK to continue payment flow
+5. Merchant Client: Initiate SDK to continue payment flow → Yuno SDK: Receive checkout session
+6. Yuno SDK: Receive checkout session → List payment methods
+7. Yuno SDK: List payment methods → User selects payment methods
+8. Yuno SDK: User selects payment methods → Callback with the one-time token
+9. Yuno SDK: Callback with the one-time token → Merchant Client: Receive one-time token (single use)
+10. Merchant Client: Receive one-time token (single use) → Initiate payment
+11. Merchant Client: Initiate payment → Initiate SDK to continue payment flow
+12. Merchant Client: Initiate SDK to continue payment flow → Yuno SDK: Continue with the payment flow
+13. Yuno SDK: Continue with the payment flow → Show screen for the user to complete payment
+14. Yuno SDK: Show screen for the user to complete payment → Display payment result (optional)
+15. Merchant Client: Initiate payment → Merchant Server: Create payment
+16. Merchant Server: Create payment → Yuno Server: Creates payment in the payment provider
+
+### Payment flow using a vaulted token
+
+If a customer has an enrolled payment method, they can use a **vaulted token** to pay without entering payment details again.
+
+![Vaulted token payment flow](https://files.readme.io/e257d04-Diagrama_-_Vaulted_token_Full.png)
+
+#### Vaulted token flow steps
+
+1. Merchant Client: Initiate checkout → Merchant Server: Create Customer
+2. Merchant Server: Create Customer → Yuno Server: Create Customer
+3. Merchant Client: Initiate SDK with the checkout session → Yuno SDK: Receive checkout session
+4. Yuno SDK: Receive checkout session → List payment methods
+5. Yuno SDK: List payment methods → User selects payment methods
+6. Yuno SDK: User selects payment method → Callback with the one-time token
+7. Yuno SDK: Callback with the one-time token → Merchant Client: Initiate payment
+8. Merchant Client: Initiate payment → Merchant Server: Create payment
+9. Merchant Server: Create payment → Yuno Server: Creates payment in the payment provider
+10. Merchant Client: Show payment result → Merchant Server: Receive payment result
+11. Merchant Server: Receive payment result → Yuno Server: Provides payment result
+
+## Enrollment flow
+
+**Enrollment** is the process of saving a payment method (e.g. a card) to a customer’s account so it can be used later (e.g. with a vaulted token). Lite and Full support enrollment; the diagram below describes the enrollment workflow.
+
+![Lite enrollment flow](https://files.readme.io/deacb45-Diagrama_-_SDK_Lite_enrollment.png)
+
+### Enrollment flow steps
+
+1. Merchant Server: Create Customer → Yuno Server: Creates Customer
+2. Merchant Client: Add payment method → Merchant Server: Create customer session
+3. Merchant Server: Create customer session → Yuno Server: Creates customer session
+4. Merchant Client: Display payment methods to enroll → Merchant Server: Request available payment methods to enroll
+5. Merchant Server: Request available payment methods to enroll → Yuno Server: Returns available payment method
+6. Merchant Client: Display payment methods to enroll → Merchant Client: User selects payment method to enroll
+7. Merchant Client: User selects payment method to enroll → Merchant Client: Initiate enrollment
+8. Merchant Client: Initiate enrollment → Merchant Client: Initiate SDK to continue enrollment
+9. Merchant Client: Initiate SDK to continue enrollment → Yuno SDK: Continue enrollment flow
+10. Yuno SDK: Continue enrollment flow → Yuno SDK: Shows screens for the user to complete enrollment
+11. Merchant Server: Receive enrollment result via webhook → Yuno Server: Receive enrollment results from payment provider
+12. Yuno Server: Receive enrollment results from payment provider → Yuno SDK: Display enrollment result (optional)

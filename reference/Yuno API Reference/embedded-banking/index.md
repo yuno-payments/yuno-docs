@@ -17,13 +17,6 @@ It is designed for companies that need to hold or move user balances under a ban
 * Manage transfers using local and international schemes (ACH, PIX, IBAN, SWIFT, Interac)
 * Issue and manage physical or virtual cards under PCI DSS environments
 
-### Other functionalities
-
-* Bill payments
-* Cash top-ups (eCash)
-* High-yield savings accounts
-* P2P transfers between users within the same institution
-
 ## Onboard user or entity and create account
 
 Register a user or entity, complete KYC/KYB, and create a virtual account once onboarding is approved.
@@ -60,12 +53,12 @@ flowchart LR
 
 Transfers are split into **incoming transfers (payins)** and **outgoing transfers (payouts)**, depending on the direction of funds.
 
-### Incoming transfer (payin)
+### Incoming transfer (Payments)
 
 1. **[Receive payment notifications](https://docs.y.uno/reference/embedded-banking-payment-notifications)** to process payin updates
 2. **[Retrieve payment by ID](https://docs.y.uno/reference/retrieve-payment-by-id-1)** to confirm settlement details
 
-### Outgoing transfer (payout)
+### Outgoing transfer (Payouts)
 
 1. **[Create payout](https://docs.y.uno/reference/create-payout-1)** to send funds to a beneficiary
 2. **[Retrieve payout by ID](https://docs.y.uno/reference/retrieve-payout-by-id-1)** to track status and confirm completion

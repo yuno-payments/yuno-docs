@@ -12,7 +12,7 @@ metadata:
 next:
   description: ''
 ---
-This object represents the payment created after generating the checkout session for a customer.
+This object represents the payment created after generating the checkout session for a customer. To refund a payment, see [Refund payments](https://docs.y.uno/docs/refund-payments) and the [Refund payment](https://docs.y.uno/reference/refund-payment) API.
 
 <HTMLBlock>{`
 <style>
@@ -2398,6 +2398,26 @@ This object represents the payment created after generating the checkout session
         <br /><small> Example: DLOCAL </small>
       </p>
 
+      <p><strong><code>simplified_mode</code></strong> <small>boolean</small>
+        <br />When <code>true</code>, Yuno automatically retries capture or cancel operations if they fail. Default is <code>false</code>. You may also see this field in <code>delayed_capture_settings</code> or <code>delayed_cancel_settings</code>. For the full retry schedule, see <a href="https://docs.y.uno/docs/transaction-retries">Transaction Retries</a> and <a href="https://docs.y.uno/docs/cancel-and-capture-flow">Cancel and Capture Flow</a>.
+        <br /><small> Example: false </small>
+      </p>
+
+      <p><strong><code>receipt</code></strong> <small>boolean</small>
+        <br />Indicates whether a customer-facing receipt has been requested or generated for this transaction. When <code>true</code>, <code>receipt_url</code> may be available.
+        <br /><small> Example: false </small>
+      </p>
+
+      <p><strong><code>receipt_url</code></strong> <small>string | null</small>
+        <br />URL where you can access the generated receipt for this transaction (e.g. a PDF or hosted page). <code>null</code> if no receipt is available yet. Use the Retrieve Payment by ID endpoint and check this field in the <code>payment.transaction</code> object.
+        <br /><small> Example: null </small>
+      </p>
+
+      <p><strong><code>receipt_language</code></strong> <small>string | null</small>
+        <br />Language code for the generated receipt (e.g. <code>EN</code>, <code>ES</code>, <code>PT</code>). <code>null</code> if no receipt has been generated or no language was specified.
+        <br /><small> Example: EN </small>
+      </p>
+
 
       <details class="yuno">
         <summary>
@@ -4001,7 +4021,7 @@ This object represents the payment created after generating the checkout session
   <details class="yuno">
     <summary><strong><code>metadata</code></strong> <small>array of objects</small>
       <br />
-      <p>Specifies a list of custom key–value pairs associated with the payment (for internal references, segmentation, or workflow tags). You can add up to 100 metadata objects.</p>
+      <p>Specifies a list of custom key–value pairs associated with the payment (for internal references, segmentation, or workflow tags). You can add up to 120 metadata objects.</p>
     </summary>
     <div>
       <details class="yuno">

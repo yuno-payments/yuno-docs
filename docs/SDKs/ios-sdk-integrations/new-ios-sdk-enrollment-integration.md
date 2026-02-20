@@ -390,7 +390,7 @@ Yuno.hideLoader()
 
 * **[iOS Flow Complementary Features](doc:new-ios-sdk-complementary-features)**: Configuration options and UI customization
 * **[Payment Integration](doc:new-ios-sdk-payment-integration)**: Process payments with enrolled methods
-* **[Release Notes](doc:ios-release-notes)**: Latest SDK updates
+* **[Release Notes](doc:release-notes-ios)**: Latest SDK updates
 
 ## Demo Application
 
@@ -475,3 +475,8 @@ class MyService: YunoEnrollmentDelegate {
 * **`nonisolated`**: Means it can be accessed from any thread, so it must be thread-safe
 * **`viewController`**: Remains as `@MainActor` because UI components must run on the main thread
 
+
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.

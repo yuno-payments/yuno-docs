@@ -148,7 +148,11 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](../docs/demo-app) for a complete implementation of Yuno SDKs.
+> In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs (clone from the repository).
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed enrollment, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.
 
 ## Stay Updated
 

@@ -15,4 +15,4 @@ metadata:
 next:
   description: ''
 ---
-This request creates a customer session using the unique identifier generated when the Customer resource was created.
+Creates a customer session for enrolling and managing payment methods. Use this to save cards, wallets, and other payment methods for future use. Requires a `customer_id` from [Create Customer](ref:create-customer) .

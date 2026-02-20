@@ -91,9 +91,9 @@ The following steps outline the complete interaction flow between all components
 >
 > The Headless SDK is designed to accept payments using cards only. If you need to perform a payment using another payment method, you need to choose another Yuno integration:
 >
-> * [Full SDK](../docs/secure-fields-payment)
-> * [Lite SDK](../docs/secure-fields-payment)
-> * [Direct Flow](../docs/secure-fields-payment)
+> * [Full SDK](doc:full-sdk-workflow)
+> * [Lite SDK](doc:the-ultimate-checkout-lite)
+> * [Direct Flow](doc:direct-flow)
 
 ## Enroll a credit card while paying
 

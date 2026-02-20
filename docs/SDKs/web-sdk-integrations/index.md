@@ -25,7 +25,7 @@ Select one of the user-friendly Web integration options available and start your
 
   <YunoCard title="Lite SDK" href="../docs/lite-checkout-sdk" titleSize="h4" description="Lightweight integration with UI control and backend support" badge="Lightweight" />
 
-  <YunoCard title="Secure Fields" href="../docs/secure-fields-payment" titleSize="h4" description="Create and customize your own checkout with prebuilt UI components" badge="Secure" />
+  <YunoCard title="Secure Fields" href="doc:payment-secure-fields" titleSize="h4" description="Create and customize your own checkout with prebuilt UI components" badge="Secure" />
 
   <YunoCard title="Headless SDK (Payment)" href="../docs/headless-sdk-payment" titleSize="h4" description="Customize the checkout without having to be PCI compliant" badge="Advanced" />
 
@@ -76,4 +76,4 @@ Visit the [changelog](https://docs.y.uno/changelog) for the latest SDK updates a
 
 ## Supported languages
 
-For the full list of languages supported by our SDKs, see [this page](doc:supported-languages).
+For the full list of languages supported by our SDKs, see [this page](doc:languages-supported).

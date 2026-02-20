@@ -1,0 +1,4 @@
+---
+title: /old
+hidden: true
+---

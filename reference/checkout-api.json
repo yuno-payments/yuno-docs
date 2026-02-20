@@ -235,11 +235,11 @@
               "examples": {
                 "Checkout Session (full data)": {
                   "value": {
-                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "account_id": "{{account_id}}",
                     "merchant_order_id": "1717681150",
                     "payment_description": "Test Cards",
                     "country": "CO",
-                    "customer_id": "55006822-7c79-490b-bea1-81798b9afc74",
+                    "customer_id": "{{customer_id}}",
                     "callback_url": "https://www.example.com",
                     "amount": {
                       "currency": "COP",
@@ -259,33 +259,34 @@
                 },
                 "Checkout Session (min data)": {
                   "value": {
-                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-                    "merchant_order_id": "1717681150",
-                    "payment_description": "Test Cards",
                     "country": "US",
-                    "customer_id": "55006822-7c79-490b-bea1-81798b9afc74",
                     "amount": {
                       "currency": "USD",
-                      "value": 520
-                    }
+                      "value": 100
+                    },
+                    "alternative_amount": {
+                      "currency": "ARS",
+                      "value": "140000"
+                    },
+                    "account_id": "{{account_id}}",
+                    "merchant_order_id": "1717681150",
+                    "payment_description": "Test Cards",
+                    "customer_id": "{{customer_id}}"
                   }
                 },
-                "Checkout Session (with null alternative currency)": {
+                "Checkout Session (alternative currency omitted)": {
                   "value": {
-                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "account_id": "{{account_id}}",
                     "merchant_order_id": "1717681150",
                     "payment_description": "Test Cards",
                     "country": "CO",
-                    "customer_id": "55006822-7c79-490b-bea1-81798b9afc74",
+                    "customer_id": "{{customer_id}}",
                     "amount": {
                       "currency": "COP",
                       "value": 8000
-                    },
-                    "alternative_amount": {
-                      "currency": null,
-                      "value": 0
                     }
-                  }
+                  },
+                  "summary": "Checkout Session (alternative currency omitted)"
                 }
               }
             }
@@ -627,7 +628,86 @@
                                 "example": true,
                                 "default": true
                               },
-                              "rules": {}
+                              "rules": {
+                                "type": "array",
+                                "description": "List of condition rules (INCLUDE/EXCLUDE) applied to the payment method. Each rule has a type (e.g. METADATA, AMOUNT, COUNTRY) and values.",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "condition": {
+                                      "type": "string",
+                                      "description": "INCLUDE or EXCLUDE",
+                                      "example": "INCLUDE"
+                                    },
+                                    "condition_group_code": {
+                                      "type": "string",
+                                      "description": "UUID of the condition group",
+                                      "example": "2b273309-2c63-4ef8-b5f8-2953abf7ad4a"
+                                    },
+                                    "condition_name": {
+                                      "type": "string",
+                                      "description": "Human-readable name of the condition",
+                                      "example": "Country-US"
+                                    },
+                                    "type": {
+                                      "type": "string",
+                                      "description": "Rule type: METADATA, AMOUNT, COUNTRY, etc.",
+                                      "example": "COUNTRY"
+                                    },
+                                    "values": {
+                                      "type": "object",
+                                      "description": "Values used by the rule. Structure depends on rule type: `currency`, `max`, and `min` are strings (nullable); `countries` is an array of strings (e.g. [\"AF\"]); `metadata` is an array of objects with `key` and `value` (e.g. [{\"key\": \"test\", \"value\": \"test\"}]).",
+                                      "properties": {
+                                        "countries": {
+                                          "type": "array",
+                                          "description": "Array of country codes (e.g. [\"AF\"], [\"US\"]). Null when not used by the rule.",
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "nullable": true,
+                                          "example": [
+                                            "AF"
+                                          ]
+                                        },
+                                        "currency": {
+                                          "type": "string",
+                                          "description": "Currency code when rule type is AMOUNT. Null otherwise.",
+                                          "nullable": true,
+                                          "example": null
+                                        },
+                                        "max": {
+                                          "type": "string",
+                                          "description": "Maximum value when applicable. Null otherwise.",
+                                          "nullable": true,
+                                          "example": null
+                                        },
+                                        "metadata": {
+                                          "type": "array",
+                                          "description": "Array of key-value objects (e.g. [{\"key\": \"test\", \"value\": \"test\"}]). Null when not used by the rule.",
+                                          "nullable": true,
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "key": {
+                                                "type": "string"
+                                              },
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "min": {
+                                          "type": "string",
+                                          "description": "Minimum value when applicable. Null otherwise.",
+                                          "nullable": true,
+                                          "example": null
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -1032,7 +1112,103 @@
           }
         },
         "deprecated": false
-      },
+      }
+    },
+    "/checkout/sessions/{checkout_session}/payment-methods/{payment_method_id}/prefer": {},
+    "/checkout/sessions/{checkout_session}/payment-methods/{payment_method_id}/unprefer": {},
+    "/{checkout_session}/payment": {},
+    "/issuers": {
+      "get": {
+        "summary": "Retrieve Issuers",
+        "description": "",
+        "operationId": "retrieve-issuers",
+        "parameters": [
+          {
+            "name": "checkout_session",
+            "in": "query",
+            "description": "The checkout session identifier (UUID, 36 chars).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "country_code",
+            "in": "query",
+            "description": "Country code ([ISO 3166-1](doc:quickstart)).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "payment_method",
+            "in": "query",
+            "description": "Defines the payment method used to filter issuers. This parameter ensures the response includes only issuers that support the specified payment method",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": "{\n  \"issuers\": [\n    {\"id\": \"1001\", \"name\": \"BANCO DE BOGOTÁ\"},\n    {\"id\": \"1002\", \"name\": \"BANCO POPULAR\"},\n    {\"id\": \"1005\", \"name\": \"BANCO UNIÓN COLOMBIANO FD2\"},\n    {\"id\": \"1006\", \"name\": \"ITAÚ\"},\n    {\"id\": \"1007\", \"name\": \"BANCOLOMBIA\"},\n    {\"id\": \"1009\", \"name\": \"CITIBANK\"},\n    {\"id\": \"1012\", \"name\": \"BANCO GNB SUDAMERIS\"},\n    {\"id\": \"1013\", \"name\": \"BBVA COLOMBIA S.A.\"},\n    {\"id\": \"1019\", \"name\": \"SCOTIABANK COLPATRIA DESARROLLO\"},\n    {\"id\": \"1022\", \"name\": \"BANCO UNIÓN COLOMBIANO\"},\n    {\"id\": \"1023\", \"name\": \"BANCO DE OCCIDENTE\"},\n    {\"id\": \"1032\", \"name\": \"BANCO CAJA SOCIAL DESARROLLO\"},\n    {\"id\": \"1040\", \"name\": \"BANCO AGRARIO\"},\n    {\"id\": \"1051\", \"name\": \"BANCO DAVIVIENDA\"},\n    {\"id\": \"1052\", \"name\": \"BANCO COMERCIAL AV VILLAS S.A.\"},\n    {\"id\": \"1059\", \"name\": \"BANCAMÍA\"},\n    {\"id\": \"1060\", \"name\": \"BANCO PICHINCHA S.A.\"},\n    {\"id\": \"1061\", \"name\": \"BANCO COOMEVA S.A.\"},\n    {\"id\": \"1062\", \"name\": \"BANCO FALABELLA\"},\n    {\"id\": \"1063\", \"name\": \"BANCO FINANDINA S.A. BIC\"},\n    {\"id\": \"1065\", \"name\": \"BANCO SANTANDER COLOMBIA\"},\n    {\"id\": \"1066\", \"name\": \"BANCO COOPERATIVO COOPCENTRAL\"},\n    {\"id\": \"1069\", \"name\": \"BANCO SERFINANZA\"},\n    {\"id\": \"1070\", \"name\": \"LULO BANK\"},\n    {\"id\": \"1078\", \"name\": \"SCOTIABANK COLPATRIA UAT\"},\n    {\"id\": \"1097\", \"name\": \"DALE\"},\n    {\"id\": \"1283\", \"name\": \"COOPERATIVA FINANCIERA DE ANTIOQUIA CFA\"},\n    {\"id\": \"1289\", \"name\": \"COOPERATIVA FINANCIERA COTRAFA\"},\n    {\"id\": \"1291\", \"name\": \"COOFINEP COOPERATIVA FINANCIERA\"},\n    {\"id\": \"1292\", \"name\": \"CONFIAR COOPERATIVA FINANCIERA\"},\n    {\"id\": \"1370\", \"name\": \"COLTEFINANCIERA\"},\n    {\"id\": \"1637\", \"name\": \"IRIS\"},\n    {\"id\": \"1801\", \"name\": \"MOVII S.A.\"},\n    {\"id\": \"1802\", \"name\": \"DING TECNIPAGOS S.A.\"},\n    {\"id\": \"1803\", \"name\": \"POWWI\"},\n    {\"id\": \"1804\", \"name\": \"UALÁ\"},\n    {\"id\": \"1808\", \"name\": \"BOLD CF\"},\n    {\"id\": \"1809\", \"name\": \"NU\"},\n    {\"id\": \"1811\", \"name\": \"RAPPIPAY\"},\n    {\"id\": \"1812\", \"name\": \"COINK S.A.\"}\n  ]\n}"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "issuers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "example": "1001"
+                          },
+                          "name": {
+                            "type": "string",
+                            "example": "BANCO DE BOGOTÁ"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    },
+                    "summary": "Invalid Request"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/checkout/sessions/{checkout_session}": {
       "patch": {
         "summary": "Copy of Create Checkout Session",
         "description": "",
@@ -1090,7 +1266,8 @@
                   },
                   "account_id": {
                     "type": "string",
-                    "description": "The unique identifier of the account. You find this information on [the Yuno dashboard](https://dashboard.y.uno/) (UUID, 36 chars)."
+                    "description": "The unique identifier of the account. You find this information on [the Yuno dashboard](https://dashboard.y.uno/) (UUID, 36 chars).",
+                    "default": "{{account_id}}"
                   },
                   "amount": {
                     "type": "object",
@@ -1234,7 +1411,18 @@
               },
               "examples": {
                 "Update checkout session": {
-                  "value": "{\n  \"country\": \"BR\",\n  \"amount\": {\n    \"currency\": \"ARS\"\n  },\n  \"alternative_amount\": {\n    \"currency\": \"ARS\"\n  },\n  \"merchant_order_id\": \"007\",\n  \"payment_description\": \"Payment Test\",\n  \"account_id\": \"1e77dc24-9a01-4ffc-a465-7db5c2ced44d\"\n}\n'",
+                  "value": {
+                    "country": "BR",
+                    "amount": {
+                      "currency": "ARS"
+                    },
+                    "alternative_amount": {
+                      "currency": "ARS"
+                    },
+                    "merchant_order_id": "007",
+                    "payment_description": "Payment Test",
+                    "account_id": "{{account_id}}"
+                  },
                   "summary": "Update checkout session"
                 }
               }
@@ -1419,108 +1607,13 @@
         "parameters": [
           {
             "in": "path",
-            "name": "id",
+            "name": "checkout_session",
             "schema": {
               "type": "string"
             },
-            "required": true,
-            "description": "ID of the checkout session (UUID, 36 chars.)."
+            "required": true
           }
         ]
-      }
-    },
-    "/checkout/sessions/{checkout_session}/payment-methods/{payment_method_id}/prefer": {},
-    "/checkout/sessions/{checkout_session}/payment-methods/{payment_method_id}/unprefer": {},
-    "/{checkout_session}/payment": {},
-    "/issuers": {
-      "get": {
-        "summary": "Retrieve Issuers",
-        "description": "",
-        "operationId": "retrieve-issuers",
-        "parameters": [
-          {
-            "name": "checkout_session",
-            "in": "query",
-            "description": "The checkout session identifier (UUID, 36 chars).",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "country_code",
-            "in": "query",
-            "description": "Country code ([ISO 3166-1](doc:quickstart)).",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "payment_method",
-            "in": "query",
-            "description": "Defines the payment method used to filter issuers. This parameter ensures the response includes only issuers that support the specified payment method",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "200",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Result": {
-                    "value": "{\n  \"issuers\": [\n    {\"id\": \"1001\", \"name\": \"BANCO DE BOGOTÁ\"},\n    {\"id\": \"1002\", \"name\": \"BANCO POPULAR\"},\n    {\"id\": \"1005\", \"name\": \"BANCO UNIÓN COLOMBIANO FD2\"},\n    {\"id\": \"1006\", \"name\": \"ITAÚ\"},\n    {\"id\": \"1007\", \"name\": \"BANCOLOMBIA\"},\n    {\"id\": \"1009\", \"name\": \"CITIBANK\"},\n    {\"id\": \"1012\", \"name\": \"BANCO GNB SUDAMERIS\"},\n    {\"id\": \"1013\", \"name\": \"BBVA COLOMBIA S.A.\"},\n    {\"id\": \"1019\", \"name\": \"SCOTIABANK COLPATRIA DESARROLLO\"},\n    {\"id\": \"1022\", \"name\": \"BANCO UNIÓN COLOMBIANO\"},\n    {\"id\": \"1023\", \"name\": \"BANCO DE OCCIDENTE\"},\n    {\"id\": \"1032\", \"name\": \"BANCO CAJA SOCIAL DESARROLLO\"},\n    {\"id\": \"1040\", \"name\": \"BANCO AGRARIO\"},\n    {\"id\": \"1051\", \"name\": \"BANCO DAVIVIENDA\"},\n    {\"id\": \"1052\", \"name\": \"BANCO COMERCIAL AV VILLAS S.A.\"},\n    {\"id\": \"1059\", \"name\": \"BANCAMÍA\"},\n    {\"id\": \"1060\", \"name\": \"BANCO PICHINCHA S.A.\"},\n    {\"id\": \"1061\", \"name\": \"BANCO COOMEVA S.A.\"},\n    {\"id\": \"1062\", \"name\": \"BANCO FALABELLA\"},\n    {\"id\": \"1063\", \"name\": \"BANCO FINANDINA S.A. BIC\"},\n    {\"id\": \"1065\", \"name\": \"BANCO SANTANDER COLOMBIA\"},\n    {\"id\": \"1066\", \"name\": \"BANCO COOPERATIVO COOPCENTRAL\"},\n    {\"id\": \"1069\", \"name\": \"BANCO SERFINANZA\"},\n    {\"id\": \"1070\", \"name\": \"LULO BANK\"},\n    {\"id\": \"1078\", \"name\": \"SCOTIABANK COLPATRIA UAT\"},\n    {\"id\": \"1097\", \"name\": \"DALE\"},\n    {\"id\": \"1283\", \"name\": \"COOPERATIVA FINANCIERA DE ANTIOQUIA CFA\"},\n    {\"id\": \"1289\", \"name\": \"COOPERATIVA FINANCIERA COTRAFA\"},\n    {\"id\": \"1291\", \"name\": \"COOFINEP COOPERATIVA FINANCIERA\"},\n    {\"id\": \"1292\", \"name\": \"CONFIAR COOPERATIVA FINANCIERA\"},\n    {\"id\": \"1370\", \"name\": \"COLTEFINANCIERA\"},\n    {\"id\": \"1637\", \"name\": \"IRIS\"},\n    {\"id\": \"1801\", \"name\": \"MOVII S.A.\"},\n    {\"id\": \"1802\", \"name\": \"DING TECNIPAGOS S.A.\"},\n    {\"id\": \"1803\", \"name\": \"POWWI\"},\n    {\"id\": \"1804\", \"name\": \"UALÁ\"},\n    {\"id\": \"1808\", \"name\": \"BOLD CF\"},\n    {\"id\": \"1809\", \"name\": \"NU\"},\n    {\"id\": \"1811\", \"name\": \"RAPPIPAY\"},\n    {\"id\": \"1812\", \"name\": \"COINK S.A.\"}\n  ]\n}"
-                  }
-                },
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "issuers": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string",
-                            "example": "1001"
-                          },
-                          "name": {
-                            "type": "string",
-                            "example": "BANCO DE BOGOTÁ"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "400",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "Invalid Request": {
-                    "value": {
-                      "code": "INVALID_REQUEST",
-                      "messages": [
-                        "Invalid request"
-                      ]
-                    },
-                    "summary": "Invalid Request"
-                  }
-                },
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        },
-        "deprecated": false
       }
     }
   },
@@ -1532,7 +1625,7 @@
       }
     ],
     "explorer-enabled": true,
-    "proxy-enabled": false
+    "proxy-enabled": true
   },
   "x-readme-fauxas": true
 }

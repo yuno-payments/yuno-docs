@@ -157,7 +157,7 @@ If the transaction is customer-initiated (CIT), the network transaction referenc
     }
 ```
 
-### Usage
+### Use
 
 We associate the `network_transaction_id` with the `vaulted_token` for future transactions, so you don't have to manage the logic for each case. We will perform the association when a payment is created with:
 
@@ -174,5 +174,5 @@ We associate the `network_transaction_id` with the `vaulted_token` for future tr
 If you already have the `network_transaction_id` for the card, you can include it in the payment in the corresponding field. If not, for MIT payments (with `stored_credentials.usage=USED`), we will send the `network_transaction_id` associated with the `vaulted_token` to the provider.
 
 <Callout icon="❗️" theme="error">
-  Remember to specify the usage in the `stored_credentials` section, as we trigger the `network_transaction_id` logic based on those fields.
+  Remember to specify the `usage` in the `stored_credentials` section, as we trigger the `network_transaction_id` logic based on those fields.
 </Callout>

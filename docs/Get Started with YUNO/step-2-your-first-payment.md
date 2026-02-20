@@ -11,8 +11,8 @@ next:
   description: ''
   pages:
     - type: basic
-      slug: choose-the-right-integration-for-you
-      title: Choose The Right Integration For You
+      slug: choose-your-integration
+      title: Choose Your Integration
     - type: basic
       slug: build-your-integration
       title: Build Your Integration

@@ -16,13 +16,13 @@ Here, you find how to import the Yuno Collection and Environment. All endpoints 
 
 > 📘 Postman Collection
 >
-> If you know how to use Postman, you can access the Yuno API collection [here](https://documenter.getpostman.com/view/21179596/2s9XxyRt9S#dba8efb6-f39d-430c-8e89-bf2000f3e28e).
+> Access the Yuno APIs Postman collection [here](https://jonathancastrillon.postman.co/workspace/Yuno-Public-APIs~3f631c16-0632-416e-8529-6e3fad62e67b/collection/43923852-d2e00360-9d01-4454-8aa5-31f5fc459d56?action=share&creator=43923852&active-environment=43923852-100bb804-01a7-456b-ba2e-54f0420cda30).
 
 ## Step 1: Fork the Yuno Postman collection
 
 Before testing the endpoints, you need to fork the Yuno collection to your Postman account.
 
-1. Access the [Yuno Postman collection](https://documenter.getpostman.com/view/21179596/2s9XxyRt9S#dba8efb6-f39d-430c-8e89-bf2000f3e28e).
+1. Access the [Yuno Postman collection](https://jonathancastrillon.postman.co/workspace/Yuno-Public-APIs~3f631c16-0632-416e-8529-6e3fad62e67b/collection/43923852-d2e00360-9d01-4454-8aa5-31f5fc459d56?action=share&creator=43923852&active-environment=43923852-100bb804-01a7-456b-ba2e-54f0420cda30).
 2. Select the following **Run in Postman** button.
 3. Select if you want to run Postman on your Browser or using the Postman app.
 4. Sign up or log in to a Postman account.

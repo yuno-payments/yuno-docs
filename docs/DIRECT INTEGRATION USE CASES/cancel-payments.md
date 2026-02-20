@@ -20,7 +20,7 @@ In this guide, you will find step-by-step instructions on manually canceling a p
 
 > 🚧 Cancellable Payments
 > 
-> Only payments with **PENDING** status can be canceled. Check the [Payment status](../docs/payment-status) page for further details regarding the possible payment status.
+> Only payments with **PENDING** status can be canceled. Check the [Payment status](doc:payments-1) page for further details regarding the possible payment status.
 
 
 ## Requirements

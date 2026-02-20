@@ -187,7 +187,7 @@ The following steps outline the detailed sequence of interactions between the di
 With the Full SDK, you can save credit/debit cards for future purchases with the same payment request without the enrollment [integration](enrollment-lite). You can obtain the [vaulted token](doc:tokens) in two ways:
 
 * **Via API**: Set `vault_on_success = true` when using the [Create payment](ref:create-payment) endpoint. You will receive the `vaulted_token` that corresponds to the card used by the customer payer in the response.
-* **Via SDK settings**: Set `cardSaveEnable = true` in the SDK complementary features ([Web](doc:complementary-features-full-sdk), [iOS](doc:ios), and [Android](doc:android). The SDK will display a checkbox for users to select if they want to save the card for future purchases. If the user checks the box, you will receive the `vaulted_token`.
+* **Via SDK settings**: Set `cardSaveEnable = true` in the SDK complementary features ([Web](doc:complementary-features-sdk), [iOS](doc:ios), and [Android](doc:android)). The SDK will display a checkbox for users to select if they want to save the card for future purchases. If the user checks the box, you will receive the `vaulted_token`.
 
 > 📘 Card Enrollment Options
 >

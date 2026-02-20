@@ -100,7 +100,7 @@ Explore optional features and configurations:
 <Shelf classname="link_cards_container">
   <YunoCard title="Complementary Features" href="../docs/new-ios-sdk-complementary-features" titleSize="h4" description="YunoConfig options, UI customization, and fraud prevention" />
 
-  <YunoCard title="Release Notes" href="../docs/ios-release-notes" titleSize="h4" description="Latest SDK updates and version history" />
+  <YunoCard title="Release Notes" href="../docs/release-notes-ios" titleSize="h4" description="Latest SDK updates and version history" />
 </Shelf>
 
 ## SDK Project Example
@@ -117,16 +117,16 @@ The iOS Flow supports multiple languages including:
 * Japanese, Korean
 * Indonesian, Malaysian, Thai, Filipino, Vietnamese
 
-For the full list of languages supported, see [Supported Languages](doc:supported-languages).
+For the full list of languages supported, see [Supported Languages](doc:languages-supported).
 
 ## Need Help?
 
-* **[Choose the Right Integration](doc:new-choose-the-right-integration-for-you)**: Compare all integration options
+* **[Choose the Right Integration](doc:choose-your-integration)**: Compare all integration options
 * **[Country Coverage](doc:quickstart)**: Check supported countries
 * **[SDK Integration Overview](doc:new-sdk-integration-overview)**: Understand different integration approaches
 
 ## Stay Updated
 
-* **[Release Notes](doc:ios-release-notes)**: Latest SDK updates and version history
+* **[Release Notes](doc:release-notes-ios)**: Latest SDK updates and version history
 * **[GitHub Repository](https://github.com/yuno-payments/yuno-sdk-ios)**: View source code and contribute
 

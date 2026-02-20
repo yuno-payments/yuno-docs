@@ -40,7 +40,7 @@ The following table lists all required parameters and their descriptions. For op
 | `checkoutSession`                 | Refers to the current payment's [checkout session](ref:create-checkout-session). Example: `438413b7-4921-41e4-b8f3-28a5a0141638`                                         |
 | `elementSelector`                 | The element where the SDK will be mounted.                                                                                                                               |
 | `countryCode`                     | Determines the country for which the payment process is being configured. See [Country coverage](doc:quickstart) for supported countries and their codes. |
-| `language`                        | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available.        |
+| `language`                        | Language for payment forms. Use any code listed in [Supported languages](doc:languages-supported). Example: `en-US`. Defaults to browser language when available.        |
 | `onLoading`                       | Callback function to receive notifications about server calls or loading events during the payment process.                                                              |
 | `showLoading`                     | Controls visibility of Yuno loading/spinner page during payment process. Default: `true`.                                                                                |
 | `issuersFormEnable`               | Enables the issuer's form. Default: `true`.                                                                                                                              |
@@ -581,6 +581,10 @@ If you hide the **Pay** button, you will need to start the one-time token creati
  */
 yuno.submitOneTimeTokenForm();
 ```
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.
 
 ## Stay Updated
 

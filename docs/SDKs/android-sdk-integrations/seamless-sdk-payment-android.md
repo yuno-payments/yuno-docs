@@ -45,7 +45,7 @@ Before starting the Yuno Android SDK integration, ensure your project meets the 
 
 > 📘 Verify SDK Version
 >
-> See the [Release notes](release-notes-android-sdk) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
+> See the [Release notes](doc:release-notes-android) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
 
 ## Step 1: Create a customer
 
@@ -153,7 +153,7 @@ Call the `startCheckout` method in the `onCreate()` function of the activity tha
 ```kotlin
 startCheckout(
   checkoutSession: "checkout_session",
-  country_code: "US",
+  countryCode: "US",
   callbackPaymentState: ((String?) -> Unit)?,
   merchantSessionId: String? = null
 )
@@ -162,7 +162,7 @@ startCheckout(
 | Parameter              | Description                                                                                                                                                    |
 | :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkoutSession`      | The `checkout_session` is related to the payment.                                                                                                              |
-| `country_code`         | Country code where the payment is performed. See [Country coverage](doc:quickstart) for a complete list of supported countries and their codes. |
+| `countryCode`          | Country code where the payment is performed. See [Country coverage](doc:quickstart) for a complete list of supported countries and their codes. |
 | `callbackPaymentState` | A function that returns the current payment process. Optional if you don't need the result.                                                                    |
 | `merchantSessionId`    | Optional identifier for merchant session tracking. Default is null.                                                                                            |
 
@@ -258,7 +258,7 @@ startPaymentSeamlessLite(
 
 ## Complementary features
 
-Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:sdk-customizations-android) to change the SDK appearance to match your brand or to configure the loader.
+Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](doc:android-customizations) to change the SDK appearance to match your brand or to configure the loader.
 
 ### `styles`
 
@@ -312,3 +312,8 @@ You can choose between two card form render options. The following screenshots s
 > 📘 Demo App Access
 >
 > In addition to the code examples provided, you can see the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
+
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.

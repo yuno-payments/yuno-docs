@@ -216,8 +216,7 @@ The payments can have the following status and sub status.
           <td class="substatus"><code>FRAUD_DECLINED</code></td>
           <td>Fraud screening</td>
           <td>Declined</td>
-          <td>Declined fraud screening post payment authorization. Only enable if no action is set in the payment method
-            route after the fraud screening validation post authorization. </td>
+          <td>Fraud screening declined. Can occur before or after provider authorization. Payment succeeded and funds have moved. </td>
         </tr>
         <tr>
           <td class="substatus"><code>REFUND_RETRY_IN_PROCESS</code></td>

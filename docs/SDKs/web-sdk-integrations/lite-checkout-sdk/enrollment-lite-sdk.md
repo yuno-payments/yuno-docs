@@ -193,8 +193,8 @@ The configuration and mounting are done in the same step for the Enrollment Lite
 | Parameter | Description |
 | --- | --- |
 | `customerSession` | Refers to the current payment's [customer session](ref:create-customer). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`. |
-| `country_code` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](doc:quickstart). |
-| `language` | Language for payment forms. Use any code listed in [Supported languages](doc:supported-languages). Example: `en-US`. Defaults to browser language when available. |
+| `countryCode` | Country for the payment process. Use an `ENUM` value; see [Country Coverage](doc:quickstart). |
+| `language` | Language for payment forms. Use any code listed in [Supported languages](doc:languages-supported). Example: `en-US`. Defaults to browser language when available. |
 | `showLoading` | Controls visibility of the Yuno loading/spinner page during the payment process. |
 | `onLoading` | Required to receive notifications about server calls or loading events. |
 | `elementSelector` | HTML element where the Yuno SDK is mounted. |
@@ -210,9 +210,9 @@ The next code block presents an example of the Enrollment Lite parameter configu
 yuno.mountEnrollmentLite({
   customerSession: 'e15648b0-fcd5-4799-a14c-cc463ae8a133',
   /**
-   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage-yuno-sdk
+   * The complete list of country codes is available on https://docs.y.uno/docs/country-coverage
    */
-  country_code: country,
+  countryCode: country,
   /**
   * Language for payment forms (see Supported languages)
   * Defaults to browser language when available
@@ -344,7 +344,7 @@ When the method returns an object, it allows you to handle your application's pa
 
 > 📘 Demo App
 >
-> In addition to the code examples provided, you can access the [Demo App](doc:demo-app) for a complete implementation of Yuno SDKs. The demo app includes working examples of all Yuno SDKs and can be cloned from the [GitHub repository](https://github.com/yuno-payments/yuno-sdk-web).
+> In addition to the code examples provided, you can access the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation of Yuno SDKs (clone from the repository).
 
 ## Complementary features
 

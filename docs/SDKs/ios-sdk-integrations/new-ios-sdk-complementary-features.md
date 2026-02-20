@@ -510,7 +510,12 @@ Ensure your iOS project meets the following requirements:
 
 * **[Payment Integration](doc:new-ios-sdk-payment-integration)**: Process payments with the iOS Flow
 * **[Enrollment Integration](doc:new-ios-sdk-enrollment-integration)**: Save payment methods for future use
-* **[Release Notes](doc:ios-release-notes)**: Latest SDK updates and version history
+* **[Release Notes](doc:release-notes-ios)**: Latest SDK updates and version history
 * **[ClearSale Repository](https://github.com/yuno-payments/yuno-antifraud-clearsale-ios)**: ClearSale SDK source code and releases
 * **[Yuno iOS SDK Repository](https://github.com/yuno-payments/yuno-sdk-ios)**: Main SDK source code and examples
 
+
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.

@@ -96,7 +96,7 @@ The following table lists all required parameters and their descriptions.
 
 | Parameter         | Description                                                                                                                                                                                                                           |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `countryCode`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage-yuno-sdk) page. |
+| `countryCode`     | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `countryCode` is available on the [Country coverage](doc:country-coverage) page. |
 | `customerSession` | Refers to the current enrollment's [customer session](doc:sessions) received as a response to the [Create Customer Session](ref:create-customer-session) endpoint. Example: '438413b7-4921-41e4-b8f3-28a5a0141638'                    |
 
 The next code block presents an example of the parameter configuration.
@@ -166,3 +166,7 @@ After enrolling the new card, you will receive the `vaulted_token`, which you ca
 > 📘 Access the Demo Application
 >
 > In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](https://docs.y.uno/reference/status-and-response-codes) in the API reference.

@@ -49,7 +49,7 @@ You can obtain these credentials from the [Developers section of the Yuno dashbo
 
 > 📘 SDK Version Information
 >
-> Verify the current SDK version by accessing the [Release notes](release-notes-android-sdk) or visiting the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android).
+> Verify the current SDK version by accessing the [Release notes](doc:release-notes-android) or visiting the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android).
 
 ## Step 1: Create a customer
 
@@ -168,7 +168,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 	val apiClientEnroll = Yuno.apiClientEnroll(
   	country_code = "CO",
     
-    customerSession = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+    customer_session = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
 
     context = this 
   )
