@@ -32,7 +32,7 @@ The options below highlight essential information you will need to consider when
   </div>
 
   <div class="second_row">
-    <YunoCard title="SDKs" href="/docs/yuno-sdks">
+    <YunoCard title="SDKs" href="/docs/quickstart-guide">
       Explore the complete list of Yuno SDKs.
     </YunoCard>
 
