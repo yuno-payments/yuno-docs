@@ -95,7 +95,7 @@ This object represents a checkout session that can be created to make a payment.
   <details class="yuno">
     <summary><strong><code>metadata</code></strong> <small>array of objects</small>
       <br />
-      <p>Specifies a list of metadata objects. You can add up to 50 metadata objects.</p>
+      <p>Specifies a list of metadata objects. You can add up to 50 metadata objects. To use metadata to drive routing logic, it must be set here at the Checkout Session level.</p>
     </summary>
     <div>
       <details class="yuno">
