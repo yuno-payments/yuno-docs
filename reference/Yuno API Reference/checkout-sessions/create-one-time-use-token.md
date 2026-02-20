@@ -1,5 +1,5 @@
 ---
-title: Create One Time Use Token
+title: Create One Time Use Token (Direct)
 excerpt: ''
 api:
   file: tokens.json
@@ -13,7 +13,7 @@ metadata:
 next:
   description: ''
 ---
-> ❗️ This endpoint is for PCI compliant merchants only
+> 🚧 This endpoint is for PCI compliant merchants only
 
 Create a one-time-use token from the customer's card data as part of the `DIRECT` workflow.
 

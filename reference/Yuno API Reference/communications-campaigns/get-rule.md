@@ -4,7 +4,7 @@ api:
   file: communications-campaigns.json
   operationId: get_campaigns-campaign-id-rules-rule-id
 deprecated: false
-hidden: true
+hidden: false
 link:
   new_tab: false
 metadata:

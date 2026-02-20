@@ -5,7 +5,7 @@ api:
   operationId: >-
     post_payments-payment-id-transactions-transaction-id-split-marketplace-transfer-reversal
 deprecated: false
-hidden: true
+hidden: false
 link:
   new_tab: false
 metadata:
