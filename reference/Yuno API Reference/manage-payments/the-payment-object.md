@@ -14,10 +14,6 @@ next:
 ---
 This object represents the payment created after generating the checkout session for a customer. To refund a payment, see [Refund payments](https://docs.y.uno/docs/refund-payments) and the [Refund payment](https://docs.y.uno/reference/refund-payment) API.
 
-<Callout icon="📘" theme="info">
-  To use metadata to drive routing logic, it must be set at the [Checkout Session](the-checkout-session-object) level, not on the Payment object.
-</Callout>
-
 <HTMLBlock>{`
 <style>
   details {
@@ -111,6 +107,41 @@ This object represents the payment created after generating the checkout session
     <p><strong><code>updated_at</code></strong> <small>timestamp</small>
       <br /> The date and time of last update for the payment.
       <br /><small> Example: 2022-05-09T20:46:54.786342Z </small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>idempotency_key</code></strong> <small>string</small> <em>optional</em>
+      <br />The idempotency key sent when creating the payment; present when the payment was created with an idempotency key.
+      <br /><small> Example: fc0d89a1-8d18-4759-8d0a-ee1c6d0386e2 </small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>account_code</code></strong> <small>string</small> <em>optional</em>
+      <br />The account code associated with the payment (account identifier).
+      <br /><small> Example: 26a6626c-d3ec-4caa-bf7c-a994b145dc00 </small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>payment_link_code</code></strong> <small>string</small> <em>optional</em>
+      <br />Present when the payment was created via a payment link; identifies the payment link used.
+      <br /><small> Example: (empty string when not from a payment link) </small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>subscription_code</code></strong> <small>string | null</small> <em>optional</em>
+      <br />Present when the payment is associated with a subscription; the subscription identifier.
+      <br /><small> Example: null </small>
+    </p>
+  </div>
+
+  <div class="yuno">
+    <p><strong><code>simplified_mode</code></strong> <small>boolean</small> <em>optional</em>
+      <br />Indicates whether the payment was created in simplified mode (e.g. for certain flows such as subscription or retry).
+      <br /><small> Example: false </small>
     </p>
   </div>
 
@@ -4021,6 +4052,32 @@ This object represents the payment created after generating the checkout session
       <br /><small> Example: https://www.company.com/customer_1231324 </small>
     </p>
   </div>
+
+  <details class="yuno">
+    <summary><strong><code>metadata</code></strong> <small>array of objects</small>
+      <br />
+      <p>Specifies a list of custom key–value pairs associated with the payment (for internal references, segmentation, or workflow tags). You can add up to 120 metadata objects.</p>
+    </summary>
+    <div>
+      <details class="yuno">
+        <summary><strong><code>metadata object</code></strong> <small>object</small>
+          <br />
+          <p>Specifies a metadata key and the respective value.</p>
+          <p>Use to attach merchant-defined context (for example: <code>order_id</code>, <code>customer_tier</code>). Avoid sending sensitive or personal data.</p>
+        </summary>
+        <div>
+          <p><strong><code>key</code></strong> <small>string</small>
+            <br />Specifies one metadata key (MAX 48).
+            <br /><small> Example: age </small>
+          </p>
+          <p><strong><code>value</code></strong> <small>string</small>
+            <br />Specifies the value for the defined metadata key (MAX 512).
+            <br /><small> Example: 28 </small>
+          </p>
+        </div>
+      </details>
+    </div>
+  </details>
 
   <details class="yuno">
     <summary><strong><code>routing_rules</code></strong> <small>array of objects</small>
