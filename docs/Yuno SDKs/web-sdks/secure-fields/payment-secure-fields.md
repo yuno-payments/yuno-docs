@@ -77,14 +77,14 @@ Configurations:
 | `options.showError`             | Defines if errors will be shown. Available options are `true` and `false`.                                                                                                          |
 | `options.onChange`              | An auxiliary function that can be configured and will run when the field content changes. Indicates if the fields have errors or additional data.                                   |
 | `options.onBlur`                | An auxiliary function that can be configured and will run when blurring from the input.                                                                                             |
-| `options.validationType`        | When to run validation. Possible values: `'on_change'` (as the user types), `'on_blur'` (when the field loses focus), `'on_blur_full'` (full validation on blur). Default in checkout flows: `'on_blur_full'`. Recommended over the deprecated `validateOnBlur`. |
+| `options.validationType`        | When to run validation. Possible values: `'on_change'` (as the user types), `'on_blur'` (when the field loses focus), `'on_blur_full'` (full validation on blur). Default in checkout flows: `'on_blur_full'`. Outside checkout flows: no default — set explicitly if you want validation. Recommended over the deprecated `validateOnBlur`. |
 | `options.validateOnBlur`        | **Deprecated.** Use `validationType` instead. When `true`, validation runs when the field loses focus. Replaced by `validationType: 'on_blur'` (or `'on_blur_full'` for full validation on blur). Still accepted at runtime but removed from TypeScript types. |
 | `options.onFocus`               | An auxiliary function that can be configured and will run when focusing on the input.                                                                                              |
 | `options.onRenderedSecureField` | An auxiliary function that can be configured and will run when the element finishes rendering.                                                                                      |
 | `options.errorMessage`          | This allows for the definition of the field's error message.                                                                                                                        |
 | `options.inputMode`             | _(v1.2+ only)_ Defines the type of keyboard to display on mobile devices. Possible values: `'numeric'` (default) or `'text'`.                                                       |
 
-**Validation behaviour (`validationType`):** Use `options.validationType` to control when the field is validated: `'on_change'` validates as the user types; `'on_blur'` validates when the field loses focus; `'on_blur_full'` runs full validation on blur (this is the default in checkout flows). If you previously used `validateOnBlur: true`, migrate to `validationType: 'on_blur'` or, for full validation on blur, `validationType: 'on_blur_full'`.
+**Validation behaviour (`validationType`):** Use `options.validationType` to control when the field is validated: `'on_change'` validates as the user types; `'on_blur'` validates when the field loses focus; `'on_blur_full'` runs full validation on blur. **Default:** in checkout flows, `'on_blur_full'`. Outside checkout flows there is no default — specify `validationType` if you want validation. If you previously used `validateOnBlur: true`, migrate to `validationType: 'on_blur'` or, for full validation on blur, `validationType: 'on_blur_full'`.
 
 Once you have set the parameter, you will render the created Secure Field with the `render` function by selecting an HTML element using a valid CSS selector (`#`, `.`, `[data-*]`).
 
@@ -107,7 +107,7 @@ const secureNumber = secureFields.create({
       label: 'Card Number',
       showError: true,
       errorMessage: "Custom Error",
-      validationType: 'on_blur_full', // or 'on_change' | 'on_blur'; default in checkout is 'on_blur_full'
+      validationType: 'on_blur_full', // validates fully on blur (default in checkout)
       onChange: ({ error,data }) => {
         if (error) {
           console.log('error_pan')
