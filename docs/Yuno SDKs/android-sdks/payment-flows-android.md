@@ -279,6 +279,86 @@ Configure the payment with the following options:
 | `callbackOTT`                  | A required function that returns the updated one-time token (OTT) needed to complete the payment process. This token is required to complete the payment.              |
 | `callBackTokenWithInformation` | A function that supplies detailed information about the one-time token, wrapped in a `OneTimeTokenModel` object, allowing for comprehensive handling of token details. |
 
+#### OneTimeTokenModel
+
+The `callBackTokenWithInformation` callback provides detailed information about the one-time token through the `OneTimeTokenModel` object:
+
+```kotlin
+@Parcelize
+data class OneTimeTokenModel(
+    val token: String? = null,
+    val vaultedToken: String? = null,
+    val vaultOnSuccess: Boolean? = null,
+    val type: String? = null,
+    val cardData: CardInformationModel? = null,
+    val customer: CustomerPayerInformationModel? = null,
+) : Parcelable
+```
+
+**Card Information Model**
+
+```kotlin
+@Parcelize
+data class CardInformationModel(
+    val holderName: String? = null,
+    val iin: String? = null,
+    val lfd: String? = null,
+    val numberLength: Int? = null,
+    val securityCodeLength: Int? = null,
+    val brand: String? = null,
+    val type: String? = null,
+    val category: String? = null,
+    val issuerName: String? = null,
+    val issuerCode: String? = null,
+    val countryCode: String? = null,
+) : Parcelable
+```
+
+**Customer Payer Information Model**
+
+```kotlin
+`@Parcelize
+data class CustomerPayerInformationModel(
+    val name: String? = null,
+    val lastName: String? = null,
+    val email: String? = null,
+    val document: Document? = null,
+    val phone: Phone? = null,
+    val address: Address? = null,
+    val deviceFingerPrint: String? = null,
+    val thirdPartySessionId: String? = null,
+) : Parcelable
+```
+
+**Supporting Models**
+
+```kotlin
+@Parcelize
+data class Document(
+    val documentNumber: String? = null,
+    val documentType: String? = null,
+) : Parcelable
+
+@Parcelize
+data class Phone(
+    val number: String,
+    val countryCode: String,
+) : Parcelable
+
+@Parcelize
+data class Address(
+    val addressLine1: String? = null,
+    val addressLine2: String? = null,
+    val country: String? = null,
+    val city: String? = null,
+    val state: String? = null,
+    val zipCode: String? = null,
+    val neighborhood: String? = null,
+) : Parcelable
+```
+
+
+
 ### Step 7: Get the one-time token (OTT)
 
 After the customer fills out the requested data in Yuno's payment forms, you will obtain the one-time token, a required parameter to create a payment using the Yuno API.
@@ -337,7 +417,7 @@ Seamless (payment Android) includes features like:
 
 For merchants requiring complete UI control or more advanced features, consider using our [Full](#full-android) instead.
 
-<Image alt="Seamless (payment Android) screenshot" border={false} src="https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png" />
+![Seamless (payment Android) screenshot](https://files.readme.io/bb2c987a467228d113d98035f453a459aedfb41554aad3eb49fc50fed8dbf0a0-Screenshot_2025-06-04_at_10.45.05_AM.png)
 
 See [Requirements](#requirements) above.
 
