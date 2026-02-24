@@ -1,4 +1,4 @@
 ---
 title: /new-endpoint
-hidden: false
+hidden: true
 ---
