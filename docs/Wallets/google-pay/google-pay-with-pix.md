@@ -11,7 +11,7 @@ metadata:
 next:
   description: ''
 ---
-In Brazil, Yuno supports Google Pay as an interface for PIX payments. Customers select Google Pay at checkout, and the payment is processed through PIX, Brazil's instant payment system. This combines the convenience of Google Pay's stored payment methods with PIX's real-time settlement.
+In Brazil, Yuno supports Google Pay™ as an interface for PIX payments. Customers select Google Pay at checkout, and the payment is processed through PIX, Brazil's instant payment system. This combines the convenience of Google Pay's stored payment methods with PIX's real-time settlement.
 
 <Callout icon="📘" theme="info">
   Google Pay with PIX is available only in Brazil, with transactions in BRL (Brazilian Real).

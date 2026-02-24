@@ -12,7 +12,7 @@ metadata:
 next:
   description: ''
 ---
-With Direct integration, you integrate with the Google Pay API on your frontend, obtain the encrypted payment token from Google, and pass it to Yuno's API for processing. This gives you full control over the Google Pay user experience.
+With Direct integration, you integrate with the Google Pay™ API on your frontend, obtain the encrypted payment token from Google, and pass it to Yuno's API for processing. This gives you full control over the Google Pay user experience.
 
 **Workflow:** `DIRECT`
 

@@ -12,7 +12,7 @@ metadata:
 next:
   description: ""
 ---
-With provider integration, Google Pay is handled entirely by your payment provider (e.g., Adyen, Cielo). Yuno routes the transaction to the provider, which manages the Google Pay token decryption and processing. Card data does not pass through Yuno in this flow.
+With provider integration, Google Pay™ is handled entirely by your payment provider (e.g., Adyen, Cielo). Yuno routes the transaction to the provider, which manages the Google Pay token decryption and processing. Card data does not pass through Yuno in this flow.
 
 This is ideal if you are already using a provider's Google Pay solution or if the provider manages the Google Pay certification process on your behalf.
 

@@ -11,7 +11,7 @@ metadata:
 next:
   description: ''
 ---
-This guide covers how to integrate Google Pay with Yuno using the SDK. With this approach, Yuno's SDK manages the complete Google Pay experience: displaying the Google Pay button, presenting the payment sheet, and handling the payment token. You don't need to integrate directly with the Google Pay API.
+This guide covers how to integrate Google Pay™ with Yuno using the SDK. With this approach, Yuno's SDK manages the complete Google Pay experience: displaying the Google Pay button, presenting the payment sheet, and handling the payment token. You don't need to integrate directly with the Google Pay API.
 
 <Callout icon="📘" theme="info">
   Before implementing, review the [Google Pay requirements](doc:google-pay#requirements) and ensure Google Pay is available in your operating countries.
