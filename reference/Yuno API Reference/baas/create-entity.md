@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Create a Yuno entity representing an individual or organization.
