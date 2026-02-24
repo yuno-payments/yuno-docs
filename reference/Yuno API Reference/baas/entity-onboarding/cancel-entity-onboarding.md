@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Cancel a pending onboarding. Only onboardings that have not reached a terminal status can be cancelled. See [Onboarding statuses](ref:baas#onboarding-statuses) for which statuses are terminal.

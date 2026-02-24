@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Retrieve the details of an existing entity. Sensitive fields are masked in the response.

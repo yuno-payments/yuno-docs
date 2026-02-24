@@ -10,4 +10,4 @@ link:
 metadata:
   robots: index
 ---
-Use this endpoint to update compliance declarations, risk assessment, or add additional documentation.
+Update an existing onboarding with new compliance declarations, risk assessment results, or additional documentation. Typically used when the onboarding is in `PENDING_ADDITIONAL_DOCUMENTATION` status.

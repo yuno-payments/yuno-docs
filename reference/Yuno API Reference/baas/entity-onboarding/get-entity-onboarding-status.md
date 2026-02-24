@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Retrieve the current status of an entity onboarding. See [Onboarding statuses](ref:baas#onboarding-statuses) for the full status lifecycle.

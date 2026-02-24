@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Retrieve the current status and details of a transfer. See [Transfer statuses](ref:baas#transfer-statuses) for the full status lifecycle.

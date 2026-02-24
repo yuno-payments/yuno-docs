@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Close a BaaS account. The account must have a zero balance before it can be closed.

@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Update an existing BaaS account. Only include the fields you want to change.

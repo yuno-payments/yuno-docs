@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Update an existing entity's information. Only include the fields you want to change. The `national_entity` type cannot be changed after creation.

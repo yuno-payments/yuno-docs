@@ -10,3 +10,4 @@ link:
 metadata:
   robots: index
 ---
+Cancel a pending transfer. Only transfers in `PENDING` status can be cancelled. Transfers that have moved to `PROCESSING` or later statuses cannot be cancelled.
