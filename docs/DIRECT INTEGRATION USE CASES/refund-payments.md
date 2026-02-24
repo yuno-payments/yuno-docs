@@ -21,7 +21,7 @@ To refund a payment, you need to:
 
 * Access your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which consist of:
   * `public-api-key`
-  * `private-secrete-key`
+  * `private-secret-key`
 * Have the payment identification data received after creating the payment using the [Create Payment](ref:create-payment) endpoint and the capture data the capture operation was executed using the [Capture Payment](ref:capture-authorization):
   * `id`: The unique identifier of the payment, obtained from the parameter `id` after creating the payment.
   * `transaction_id`: The unique identifier of the transaction. You will use a different source for this information, depending on how you captured the payment.

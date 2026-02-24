@@ -24,7 +24,7 @@ Before starting following the steps described in this guide, you need to:
 
 * Access your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which are composed by:
   * `public-api-key`
-  * `private-secrete-key`
+  * `private-secret-key`
   * `account_id`
 * [Set up your connections](doc:connections) on your Yuno Dashboard account.
 * [Build a route](doc:routing) for the payment method to define how it will be processed.

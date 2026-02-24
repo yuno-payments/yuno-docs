@@ -28,7 +28,7 @@ To request a report, you will need to:
 
 * Access your [API credentials](doc:developers-credentials) on the Yuno Dashboard, which consist of:
   * `public-api-key`
-  * `private-secrete-key`
+  * `private-secret-key`
 
 > 📘 Explore Yuno Postman Collections
 > 
