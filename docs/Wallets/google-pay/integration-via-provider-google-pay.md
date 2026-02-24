@@ -5,21 +5,24 @@ deprecated: false
 hidden: false
 metadata:
   title: ""
-  description: ""
+  description: >-
+    Integrate Google Pay through a payment provider like Adyen or Cielo.
+    The provider handles Google Pay token processing while Yuno routes the transaction.
   robots: index
 next:
   description: ""
 ---
+With provider integration, Google Pay is handled entirely by your payment provider (e.g., Adyen, Cielo). Yuno routes the transaction to the provider, which manages the Google Pay token decryption and processing. Card data does not pass through Yuno in this flow.
 
-This page presents the procedures to connect and provide Google Pay™ as a payment option for your customers using the integration via a provider. Yuno uses Google integration for each provider without accessing card data in this integration. Each integration can only be used with the selected provider with this option.
+This is ideal if you are already using a provider's Google Pay solution or if the provider manages the Google Pay certification process on your behalf.
+
+<Callout icon="📘" theme="info">
+  Not sure which integration to use? See the [Google Pay overview](doc:google-pay#integration-options) to compare all three options.
+</Callout>
 
 ## Requirements
 
-Before starting the Google Pay integration process, you need to ensure it's in your country. Use the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en&visit_id=638246798082960127-380022514&rd=1#zippy=) to check if it supports the countries where you operate.
-
-Afterward, you must check the available processors using the [participating processors](https://developers.google.com/pay/api/) on Google's page.
-
-All merchants must adhere to the Google Pay APIs [Acceptable Use Policy](https://payments.developers.google.com/terms/aup) and accept the terms defined in the [Google Pay API Terms of Service](https://payments.developers.google.com/terms/sellertos).
+Ensure you meet the [general Google Pay requirements](doc:google-pay#requirements).
 
 ## Providers
 
@@ -80,3 +83,10 @@ Yuno supports both Google Pay API authorization methods:
 Both methods are supported globally across all countries where Yuno operates. On the frontend, include both `PAN_ONLY` and `CRYPTOGRAM_3DS` in your `allowedAuthMethods` array for maximum payment success rates.
 
 - **Provider-specific configuration**: The handling of Google Pay authorization methods may vary depending on your selected provider. Consult your provider's documentation for specific requirements and capabilities regarding `PAN_ONLY` and `CRYPTOGRAM_3DS` processing.
+
+## Related documentation
+
+- [Google Pay overview](doc:google-pay)
+- [Google Pay SDK integration](doc:google-pay-sdk-integration)
+- [Google Pay Direct integration](doc:google-pay-direct-integration)
+- [Google Pay with PIX](doc:google-pay-with-pix)

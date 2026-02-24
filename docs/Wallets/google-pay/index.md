@@ -6,36 +6,113 @@ hidden: false
 metadata:
   title: ''
   description: >-
-    Google Pay, a cutting-edge digital wallet and online payment system,
-    revolutionizes how users make payments by securely storing credit card
-    information. Unlike conventional payment methods, Google Pay ensures
-    enhanced security and privacy throughout the payment process.
+    Integrate Google Pay with Yuno to accept wallet payments. Choose from three
+    integration options: direct, via Yuno SDK, or through a payment provider.
   robots: index
 next:
   description: ''
 ---
-Google Pay™, a cutting-edge digital wallet and online payment system, revolutionizes how users make payments by securely storing credit card information. Unlike conventional payment methods, Google Pay ensures enhanced security and privacy throughout the payment process.
+Google Pay™ is a digital wallet that lets customers pay using credit and debit cards stored in their Google account or on their Android device. Instead of sharing card details with the merchant, Google Pay generates a secure token that represents the payment information, protecting customer data throughout the transaction.
 
-When utilizing Google Pay™, your confidential credit or debit card details are never directly shared with the merchant. Instead, a unique token is generated, serving as a representation of your payment information. This token is utilized to process the payment, provide an extra layer of protection, and prevent unauthorized access to your data.
+Yuno supports Google Pay for **card payments** and **PIX payments** (Brazil only).
 
-Considering the distinct mechanism of Google Pay™, it is essential to grasp its working principles before seamlessly integrating it with Yuno.
+## How Google Pay works with Yuno
 
-![](https://files.readme.io/0e1e3fe-Mod1-Pay_API_Pay-D2x1.png)
-
-Familiarizing yourself with how Google Pay™ operates and understanding the process of creating tokens is vital to ensure a successful and secure integration with the Yuno platform. By harnessing the power of Google Pay and its advanced security features, you can elevate your payment experience and provide your customers with a safe and efficient payment solution.
+1. The customer selects Google Pay at checkout.
+2. Google Pay returns an encrypted payment token containing the customer's payment credentials.
+3. The token is sent to Yuno (directly or through a provider) for processing.
+4. Yuno decrypts and routes the payment to your configured payment processor.
 
 ## Integration options
 
-Yuno provides two different integrations you can use to add Google Pay to your checkout:
+Yuno provides three ways to add Google Pay to your checkout. Choose the option that best fits your architecture:
 
-<Shelf classname="cards_container">
-  <div class="first_row">
-    <YunoCard title="Direct" href="google-pay-direct-integration">
-      Direct integration with Google Pay.
-    </YunoCard>
+### Yuno SDK
 
-    <YunoCard title="Via a Provider" href="integration-via-provider-google-pay">
-      Integration via a provider for Google Pay.
-    </YunoCard>
-  </div>
-</Shelf>
+Yuno's SDK handles the complete Google Pay flow, including displaying the Google Pay button, managing the payment sheet, and processing the token. You integrate Yuno's SDK into your app, and Yuno takes care of the Google Pay interaction.
+
+**Workflow:** `SDK_CHECKOUT`
+
+<YunoCard title="SDK integration guide" href="google-pay-sdk-integration">
+  Integrate Google Pay using Yuno's SDK for the fastest setup.
+</YunoCard>
+
+### Direct
+
+You integrate directly with the Google Pay API on your frontend, obtain the payment token from Google, and pass it to Yuno's API. This gives you full control over the Google Pay experience while Yuno handles the backend payment processing.
+
+**Workflow:** `DIRECT`
+
+<YunoCard title="Direct integration guide" href="google-pay-direct-integration">
+  Integrate directly with Google Pay and pass the token to Yuno.
+</YunoCard>
+
+### Via provider
+
+The Google Pay integration is handled entirely by your payment provider (e.g., Adyen, Cielo). Yuno routes the transaction to the provider, which manages the Google Pay token processing. This is ideal if you are already using a provider's Google Pay solution.
+
+<YunoCard title="Provider integration guide" href="integration-via-provider-google-pay">
+  Use your payment provider's Google Pay integration with Yuno.
+</YunoCard>
+
+## Google Pay with PIX
+
+In Brazil, Yuno supports Google Pay as a payment method for PIX transactions. Customers select Google Pay at checkout and complete the payment through PIX, combining the convenience of Google Pay with Brazil's instant payment system.
+
+<YunoCard title="Google Pay with PIX" href="google-pay-with-pix">
+  Learn how to accept PIX payments through Google Pay in Brazil.
+</YunoCard>
+
+## Supported card networks
+
+| Region | Supported networks |
+|---|---|
+| Global | Visa, Mastercard, American Express, Discover, JCB |
+| Brazil | Visa, Electron, Mastercard, Maestro, Elo, Elo Debit |
+
+## Authorization methods
+
+Yuno supports both Google Pay API authorization methods:
+
+- **`PAN_ONLY`**: Card credentials stored in the user's Google account. When used, Yuno automatically handles 3D Secure authentication if enabled.
+- **`CRYPTOGRAM_3DS`**: Device-based card credentials (from Android devices with NFC) that include built-in cryptographic authentication. No additional 3DS processing is required.
+
+Include both methods in your `allowedAuthMethods` array for maximum payment success rates.
+
+## Requirements
+
+Before integrating Google Pay:
+
+1. Verify Google Pay is available in your operating countries using the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en).
+2. Review [participating processors](https://developers.google.com/pay/api/) on Google's site.
+3. Comply with the Google Pay APIs [Acceptable Use Policy](https://payments.developers.google.com/terms/aup) and [Terms of Service](https://payments.developers.google.com/terms/sellertos).
+
+## Capabilities and limitations
+
+### By integration model
+
+| Capability | Yuno SDK | Direct | Via provider |
+|---|---|---|---|
+| Card payments via Google Pay | Yes | Yes | Yes (if provider supports) |
+| PIX via Google Pay (Brazil) | Yes (if configured) | Yes (if configured) | Depends on provider |
+| Control over Google Pay UI | Medium (SDK options) | Full (merchant-managed) | Low (provider-controlled) |
+| Responsibility for Google compliance | Yuno | Merchant | Provider |
+| Frontend implementation effort | Minimal | Significant | Minimal |
+
+### Cards vs PIX behavior
+
+| Behavior | Google Pay + Cards | Google Pay + PIX |
+|---|---|---|
+| Processing | Usually synchronous | Asynchronous |
+| Statuses | `SUCCEEDED` / `DECLINED` | `PENDING` / `SUCCEEDED` / `EXPIRED` |
+| Settlement | Depends on acquirer | Instant (PIX network) |
+| Requires QR code display | No | Possibly, depending on flow |
+| Recurring payments | Supported via vaulted tokens | Not supported |
+| Currency | Multiple | BRL only |
+| Availability | Global | Brazil only |
+
+## Additional resources
+
+- [Google Pay Web documentation](https://developers.google.com/pay/api/web/guides/setup) | [Integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist)
+- [Google Pay Android documentation](https://developers.google.com/pay/api/android/overview) | [Integration checklist](https://developers.google.com/pay/api/android/guides/test-and-deploy/integration-checklist)
+- [Google Pay Web brand guidelines](https://developers.google.com/pay/api/web/guides/brand-guidelines) | [Android brand guidelines](https://developers.google.com/pay/api/android/guides/brand-guidelines)

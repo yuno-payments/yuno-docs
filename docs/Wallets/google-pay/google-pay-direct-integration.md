@@ -5,20 +5,24 @@ deprecated: false
 hidden: false
 metadata:
   title: ''
-  description: ''
+  description: >-
+    Integrate Google Pay directly with Yuno. You handle the Google Pay frontend
+    and pass the payment token to Yuno's API for processing.
   robots: index
 next:
   description: ''
 ---
-This page provides instructions for connecting and offering Google Pay™ as a payment option to your customers using the Direct integration.
+With Direct integration, you integrate with the Google Pay API on your frontend, obtain the encrypted payment token from Google, and pass it to Yuno's API for processing. This gives you full control over the Google Pay user experience.
+
+**Workflow:** `DIRECT`
+
+<Callout icon="📘" theme="info">
+  Not sure which integration to use? See the [Google Pay overview](doc:google-pay#integration-options) to compare all three options.
+</Callout>
 
 ## Requirements
 
-Before starting the Google Pay integration process, ensure that Google Pay is available in your country. Use the [Google Pay support page](https://support.google.com/googlepay/answer/12429287?hl=en) to verify support for your operating countries.
-
-Next, check which processors are available by reviewing the [participating processors](https://developers.google.com/pay/api/) on Google's site.
-
-All merchants must comply with the Google Pay APIs [Acceptable Use Policy](https://payments.developers.google.com/terms/aup), accept the [Google Pay API Terms of Service](https://payments.developers.google.com/terms/sellertos), and register with the [Google Pay Business Console](https://pay.google.com/business/console) to obtain a Google merchant ID. Complete the Google Pay and Wallet Console configuration by following these steps:
+Before starting, ensure you meet the [general Google Pay requirements](doc:google-pay#requirements). Additionally, you need to register with the [Google Pay Business Console](https://pay.google.com/business/console) to obtain a Google merchant ID. Complete the console configuration by following these steps:
 
 1. Complete the **Business Profile**
 
@@ -92,22 +96,6 @@ Both methods are supported globally across all countries where Yuno operates. On
 * **Billing address requirements**: If your payment processing requires the customer's billing address (e.g., for AVS checks), configure this in your Google Pay API request. Google provides `BillingAddressParameters` to specify the required detail (e.g., MIN or FULL). See [Google's documentation](https://developers.google.com/pay/api/web/reference/request-objects#BillingAddressParameters). Only request billing address details if necessary, as this can increase checkout friction.
 * **Transaction data and payment cryptography**: Merchants integrate Yuno's SDKs (Android, iOS, Web) into their applications. When a customer chooses Google Pay, Yuno's SDK interacts with the Google Pay API and securely receives the encrypted payment data (payment token) from Google. This token is passed from your app to your backend server, which then uses Yuno's server-side APIs to submit the token for payment processing. Yuno handles decryption and processing with the payment processor.
 
-## Additional information
-
-For further questions about the integration process, contact Yuno support or consult:
-
-* [Web documentation](https://developers.google.com/pay/api/web/guides/setup) and [integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist)
-* [Android documentation](https://developers.google.com/pay/api/android/overview) and [integration checklist](https://developers.google.com/pay/api/android/guides/test-and-deploy/integration-checklist)
-
-Google provides brand guides for including the Google Pay brand in your website or app:
-
-* [Web](https://developers.google.com/pay/api/web/guides/brand-guidelines)
-* [Android](https://developers.google.com/pay/api/android/guides/brand-guidelines)
-
-### Card networks supported
-
-The card networks supported worldwide are AMEX, DISCOVER, JCB, MASTERCARD, and VISA. For Brazil, supported networks are VISA, ELECTRON, MASTERCARD, MAESTRO, ELO, and ELO_DEBIT.
-
 ## Pass Google Pay payment token in request
 
 When you initiate a transaction with Google Pay, a payment token containing encrypted payment data is returned. Pass the complete token received from Google Pay in the `payment_method.detail.wallet.payment_token` field as a JSON string in your payment request.
@@ -156,3 +144,10 @@ The Google Pay SDK returns the following object structure, which must be passed 
   }
 }
 ```
+
+## Related documentation
+
+- [Google Pay overview](doc:google-pay)
+- [Google Pay SDK integration](doc:google-pay-sdk-integration)
+- [Google Pay via provider](doc:integration-via-provider-google-pay)
+- [Google Pay with PIX](doc:google-pay-with-pix)
