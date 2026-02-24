@@ -295,7 +295,7 @@ data class OneTimeTokenModel(
 ) : Parcelable
 ```
 
-**Card Information Model:**
+**Card Information Model**
 
 ```kotlin
 @Parcelize
@@ -314,7 +314,7 @@ data class CardInformationModel(
 ) : Parcelable
 ```
 
-**Customer Payer Information Model:**
+**Customer Payer Information Model**
 
 ```kotlin
 `@Parcelize
@@ -330,7 +330,7 @@ data class CustomerPayerInformationModel(
 ) : Parcelable
 ```
 
-**Supporting Models:**
+**Supporting Models**
 
 ```kotlin
 @Parcelize
