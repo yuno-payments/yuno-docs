@@ -11,3 +11,9 @@ metadata:
   robots: index
 ---
 Onboard an existing [Entity](doc:create-entity) .
+
+## Onboarding Types
+
+`ONE_STEP`: Submit all information, compliance declarations, risk assessment, and documents at once. Provider processes immediately.
+
+`PREVIOUSLY_ONBOARDED`: Don't go to the provider, only generate the `id` internally at Yuno.
