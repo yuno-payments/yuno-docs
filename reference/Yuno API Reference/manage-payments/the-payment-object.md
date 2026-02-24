@@ -92,7 +92,7 @@ This object represents the payment created after generating the checkout session
   <div class="yuno">
     <p><strong><code>merchant_order_id</code></strong> <small>string</small>
       <br />The unique identifier of the customer's order (MAX 255; MIN 3).
-      <br /><small> Example: 2022-05-09T20:20:54.786342Z </small>
+      <br /><small> Example: 0000023 </small>
     </p>
   </div>
 
