@@ -202,7 +202,7 @@ apiClientEnroll.continueEnrollment(
                ),
              phone = Phone(
                    number = "321123321123",
-                   country_code = "57"
+                   countryCode = "57"
                )
             )
       )
