@@ -4,7 +4,7 @@ api:
   file: baa-s.json
   operationId: get_v1-baas-accounts-account-id-transfers-transfer-id
 deprecated: false
-hidden: true
+hidden: false
 link:
   new_tab: false
 metadata:
