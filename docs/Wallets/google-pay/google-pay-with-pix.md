@@ -17,6 +17,12 @@ In Brazil, Yuno supports Google Pay™ as an interface for PIX payments. Custome
   Google Pay with PIX is available only in Brazil, with transactions in BRL (Brazilian Real).
 </Callout>
 
+## What is Google Pay PIX
+
+Google Pay PIX uses **Open Finance** to enable PIX payments through the Google Pay wallet. Instead of opening their banking app to complete a PIX transfer, customers can pay directly from their Google Wallet, making the checkout experience faster and more convenient.
+
+To pay with Google Pay PIX, the end customer must first configure a bank account for PIX payments inside their Google Wallet. Google provides setup instructions at [Set up PIX in Google Wallet](https://support.google.com/wallet/answer/14600929?hl=pt-BR).
+
 ## How it works
 
 From the merchant's perspective, a Google Pay + PIX payment behaves like a standard asynchronous PIX payment, even though the customer starts in Google Pay.
@@ -53,11 +59,21 @@ sequenceDiagram
     Yuno->>Merchant: Webhook: SUCCEEDED
 ```
 
+## Supported providers
+
+Google Pay PIX is currently available through the following providers:
+
+- **Adyen**
+- **Santander**
+- **Itau**
+
+For other providers, contact your Yuno account manager to discuss availability and prioritize integration.
+
 ## Requirements
 
-- A Yuno account with a provider connection that supports both Google Pay and PIX in Brazil
+- A Yuno account with a connection to a [supported provider](#supported-providers)
 - Transactions must be in **BRL** (Brazilian Real)
-- The customer's Google account must have PIX enabled
+- The customer must have a bank account configured for PIX in their [Google Wallet](https://support.google.com/wallet/answer/14600929?hl=pt-BR)
 
 ## Integration
 
@@ -67,11 +83,11 @@ Google Pay with PIX follows the same integration patterns as Google Pay with car
 - **[Direct integration](doc:google-pay-direct-integration)**: You manage the Google Pay frontend and pass the PIX payment token to Yuno.
 - **[Provider integration](doc:integration-via-provider-google-pay)**: Your payment provider handles the Google Pay + PIX flow.
 
-When creating the payment, set the `payment_method.type` to `GOOGLE_PAY`. The SDK or provider determines whether the underlying transaction uses card or PIX based on the customer's selection within Google Pay.
+When creating the payment, set the `payment_method.type` to `GOOGLE_PAY_PIX`. This tells Yuno the payment is a PIX transaction initiated through Google Pay.
 
 ## Payment request
 
-Create a payment using the same `GOOGLE_PAY` payment method type. Set the country to `BR` and the currency to `BRL`:
+Create a payment using the `GOOGLE_PAY_PIX` payment method type. Set the country to `BR` and the currency to `BRL`:
 
 ```json
 {
@@ -87,13 +103,13 @@ Create a payment using the same `GOOGLE_PAY` payment method type. Set the countr
     "email": "customer@example.com"
   },
   "payment_method": {
-    "type": "GOOGLE_PAY"
+    "type": "GOOGLE_PAY_PIX"
   }
 }
 ```
 
-<Callout icon="⚠️" theme="warn">
-  The exact API fields that indicate a PIX payment was initiated through Google Pay may vary depending on your provider configuration. Contact your Technical Account Manager for the latest specification for your setup.
+<Callout icon="📘" theme="info">
+  For Google Pay PIX, use `payment_method.type = GOOGLE_PAY_PIX` instead of `GOOGLE_PAY`. This is different from Google Pay card payments, which use `GOOGLE_PAY`.
 </Callout>
 
 ## Payment statuses

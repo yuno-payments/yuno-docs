@@ -111,6 +111,26 @@ Before integrating Google Pay:
 | Currency | Multiple | BRL only |
 | Availability | Global | Brazil only |
 
+## FAQ
+
+**Do I have to integrate with Google Pay directly?**
+
+No. You can use Yuno's SDK (where Yuno handles the Google Pay interaction) or a provider's integration (where the provider handles it). Direct integration is only necessary if you want full control over the Google Pay setup, UX, and compliance.
+
+**Is Google Pay a card payment or a wallet payment?**
+
+Google Pay is a wallet that typically carries cards. In Yuno, it is modeled as a wallet payment method (`payment_method.type = GOOGLE_PAY`). For PIX payments through Google Pay in Brazil, use `payment_method.type = GOOGLE_PAY_PIX` instead. Yuno handles routing to the appropriate processor in both cases.
+
+**How do I enable Google Pay with PIX?**
+
+1. Confirm with your Yuno account manager that Google Pay PIX is available for your organization. It is currently supported through Adyen, Santander, and Itau.
+2. Set up a provider connection in your Yuno dashboard.
+3. Use `payment_method.type = GOOGLE_PAY_PIX` in your payment requests with country `BR` and currency `BRL`. See [Google Pay with PIX](doc:google-pay-with-pix) for the full integration guide.
+
+**What happens if a customer closes the Google Pay or PIX screen without completing the payment?**
+
+The frontend/SDK reports that the user left the flow, but the payment remains in `PENDING` status on the backend. The PIX reference is still valid and the customer can complete the transfer from their bank app. The payment only expires when the PIX deadline is reached. See [Handling user cancellation](doc:google-pay-with-pix#handling-user-cancellation) for implementation guidance.
+
 ## Additional resources
 
 - [Google Pay Web documentation](https://developers.google.com/pay/api/web/guides/setup) | [Integration checklist](https://developers.google.com/pay/api/web/guides/test-and-deploy/integration-checklist)
