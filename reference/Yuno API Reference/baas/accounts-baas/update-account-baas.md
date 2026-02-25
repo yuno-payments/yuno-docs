@@ -4,7 +4,7 @@ api:
   file: baa-s.json
   operationId: patch_v1-baas-accounts-account-id
 deprecated: false
-hidden: true
+hidden: false
 link:
   new_tab: false
 metadata:
