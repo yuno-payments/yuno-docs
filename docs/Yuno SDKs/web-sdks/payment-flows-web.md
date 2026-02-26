@@ -453,12 +453,16 @@ Payments can be initiated by the customer (CIT) or merchant (MIT). See [Stored c
 
 Mount the SDK for the selected payment method. You are responsible for displaying payment methods and capturing the customer's selection. See [Lite (Web)](#lite-web) above.
 
+<Callout icon="📘" theme="info">
+  **Wallet-type methods in Lite:** Google Pay, Apple Pay, and PayPal are not compatible with the standard Lite mount (`mountCheckoutLite`). Use them only via external buttons—see [Step 5: Mount external buttons](#step-5-mount-external-buttons-optional). For card and PIX, use `mountCheckoutLite` as shown below.
+</Callout>
+
 Use the `yuno.mountCheckoutLite()` function by selecting an HTML element and using a valid CSS selector (`#`, `.`, `[data-*]`) to display the checkout for the selected payment method.
 
 ```javascript
 yuno.mountCheckoutLite({
   /**
-   * can be one of 'PAYPAL' | 'PIX' | CARD
+   * Use 'PIX' or 'CARD' only. For PayPal, Google Pay, and Apple Pay, use mountExternalButtons (Step 5).
    */
   paymentMethodType: PAYMENT_METHOD_TYPE,
   /**
@@ -470,13 +474,13 @@ yuno.mountCheckoutLite({
 });
 ```
 
-After mounting the SDK, the selected payment method flow will start automatically. For PayPal, the PayPal payment sheet opens immediately after the shopper selects PayPal—no extra confirmation click required.
+After mounting the SDK, the selected payment method flow will start automatically.
 
-Google Pay and Apple Pay are not built-in in Lite. Use `mountExternalButtons`. See [SDK customizations](sdk-customizations-web) for details.
+For Google Pay, Apple Pay, and PayPal, use [Step 5: Mount external buttons](#step-5-mount-external-buttons-optional) (`mountExternalButtons`). See [SDK customizations](sdk-customizations-web) for details.
 
 ### Step 5: Mount external buttons (Optional)
 
-If you want to use Google Pay or Apple Pay in Lite, you can mount these payment buttons externally using the `mountExternalButtons` method. This method allows you to choose where each button is displayed in your UI.
+If you want to use Google Pay, Apple Pay, or PayPal in Lite, mount these payment buttons externally using the `mountExternalButtons` method. This method allows you to choose where each button is displayed in your UI. In Lite, these wallet-type methods must be mounted as external buttons; they are not supported with `mountCheckoutLite`.
 
 ```javascript
 // Mount external buttons
@@ -489,12 +493,16 @@ await yuno.mountExternalButtons([
     paymentMethodType: 'GOOGLE_PAY',
     elementSelector: '#google-pay',
   },
+  {
+    paymentMethodType: 'PAYPAL',
+    elementSelector: '#paypal',
+  },
 ]);
 ```
 
 The `mountExternalButtons` method accepts an array of objects, each containing:
 
-* `paymentMethodType`: Either `'APPLE_PAY'` or `'GOOGLE_PAY'`
+* `paymentMethodType`: `'APPLE_PAY'`, `'GOOGLE_PAY'`, or `'PAYPAL'`
 * `elementSelector`: The CSS selector for the HTML element where the button should be rendered
 
 #### Unmounting external buttons
