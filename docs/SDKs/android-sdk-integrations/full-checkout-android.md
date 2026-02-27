@@ -88,7 +88,6 @@ Use the data class `YunoConfig` to customize the SDK's behavior. Include this co
 
 ```kotlin
 data class YunoConfig(
-    val cardFlow: CardFormType = CardFormType.ONE_STEP,
     val saveCardEnabled: Boolean = false,
     val cardFormDeployed: Boolean = false,
     val language: YunoLanguage? = null,
@@ -96,13 +95,16 @@ data class YunoConfig(
 )
 ```
 
+> 🚧 cardFlow removed from YunoConfig
+>
+> Starting from version **2.11.0**, `cardFlow` is no longer part of `YunoConfig`. Card flow configuration is now handled exclusively through the **CheckoutBuilder**.
+
 Parameters
 
 The following table describes each customization available:
 
 | Customization option | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `cardFlow`           | It is an optional configuration that defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. Check the [Render options](../docs/full-checkout-android#render-options) section for more information.                                                                                                                                                                                                                                                                                                                                                                 |
 | `saveCardEnabled`    | Enables the Save card checkbox on card flows. Check the [Save card](../docs/full-checkout-android#save-card-for-future-payments) section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `cardFormDeployed`   | This option is only available for Full SDK. If `TRUE`, the system presents the card form deployed on the payment methods list. If `FALSE`, presents the normal card form on another screen.                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `language`           | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |

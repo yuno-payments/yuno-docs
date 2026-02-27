@@ -10,6 +10,7 @@ The Android SDK release notes offer a comprehensive overview of the updates, imp
 
 | Version   | Changes                                                                                                                                                                     |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.11.0    | **CHANGE**: Removed `cardFlow` from `YunoConfig`. Card flow configuration is now handled exclusively through the **CheckoutBuilder**                                        |
 | 2.9.0     | **IMPROVE**: Added `subPaymentState` parameter to `callbackPaymentState` in `startCheckout()` and `continuePayment()` functions                                             |
 |           | **NEW**: Google Pay now supported in `startPayment` flow                                                                                                                    |
 | 2.8.1     | **IMPROVE**: Added new card type field (Google Pay)                                                                                                                         |

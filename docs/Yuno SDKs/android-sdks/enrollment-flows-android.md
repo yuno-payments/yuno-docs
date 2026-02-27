@@ -69,7 +69,7 @@ Add the dependency in `build.gradle`:
 
 ```kotlin
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:2.9.0'
+    implementation 'com.yuno.payments:android-sdk:2.11.0'
 }
 ```
 
@@ -106,7 +106,6 @@ Use the data class `YunoConfig` to customize the SDK's behavior. Include this co
 
 ```kotlin
 data class YunoConfig(
-    val cardFlow: CardFormType = CardFormType.ONE_STEP,
     val saveCardEnabled: Boolean = false,
     val keepLoader: Boolean = false,
     val cardFormDeployed: Boolean = false,
@@ -114,6 +113,10 @@ data class YunoConfig(
     val styles: YunoStyles? = null
 )
 ```
+
+> 🚧 cardFlow removed from YunoConfig
+>
+> Starting from version **2.11.0**, `cardFlow` is no longer part of `YunoConfig`. Card flow configuration is now handled exclusively through the **CheckoutBuilder**.
 
 ### Step 4: Enroll a new payment method
 
@@ -169,7 +172,7 @@ Add the repository source and SDK dependency:
 maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
 
 dependencies {
-    implementation 'com.yuno.payments:android-sdk:2.9.0'
+    implementation 'com.yuno.payments:android-sdk:2.11.0'
 }
 ```
 
