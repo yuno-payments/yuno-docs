@@ -2,7 +2,7 @@
 title: Authorize Payment
 excerpt: ''
 api:
-  file: payment-api-create-payment-back-to-back.json
+  file: payment-api-authorize-payment.json
   operationId: authorize-payment
 deprecated: false
 hidden: false
