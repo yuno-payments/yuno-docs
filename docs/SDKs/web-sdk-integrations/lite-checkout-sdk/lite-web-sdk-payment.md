@@ -95,7 +95,7 @@ Use the `yuno.mountCheckoutLite()` function by selecting an HTML element and usi
 ```javascript
 yuno.mountCheckoutLite({
   /**
-   * can be one of 'PAYPAL' | 'PIX' | CARD
+   * can be one of 'PIX' | 'CARD'
    */
   paymentMethodType: PAYMENT_METHOD_TYPE,
   /**
@@ -109,15 +109,13 @@ yuno.mountCheckoutLite({
 
 After mounting the SDK, the selected payment method flow will start automatically.
 
-For PayPal, the PayPal payment sheet now opens immediately after the shopper selects PayPal—no extra confirmation click required.
-
-> 📘 Google Pay and Apple Pay in Lite SDK
+> 📘 PayPal, Google Pay, and Apple Pay in Lite SDK
 >
-> Google Pay and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must use the `mountExternalButtons` method. See [Mount external buttons](#mount-external-buttons) for more information.
+> PayPal, Google Pay, and Apple Pay are not available as built-in payment options in the Lite SDK. To use these payment methods, you must mount them as external buttons using the `mountExternalButtons` method. See [Mount external buttons](#mount-external-buttons) for more information.
 
 ## Step 5: Mount external buttons (Optional)
 
-If you want to use Google Pay or Apple Pay in the Lite SDK, you can mount these payment buttons externally using the `mountExternalButtons` method. This method allows you to choose where each button is displayed in your UI.
+If you want to use PayPal, Google Pay, or Apple Pay in the Lite SDK, you must mount these payment buttons externally using the `mountExternalButtons` method. This method allows you to choose where each button is displayed in your UI.
 
 ```javascript
 // Mount external buttons
@@ -130,12 +128,16 @@ await yuno.mountExternalButtons([
     paymentMethodType: 'GOOGLE_PAY',
     elementSelector: '#google-pay',
   },
+  {
+    paymentMethodType: 'PAYPAL',
+    elementSelector: '#paypal',
+  },
 ]);
 ```
 
 The `mountExternalButtons` method accepts an array of objects, each containing:
 
-* `paymentMethodType`: Either `'APPLE_PAY'` or `'GOOGLE_PAY'`
+* `paymentMethodType`: `'APPLE_PAY'`, `'GOOGLE_PAY'`, or `'PAYPAL'`
 * `elementSelector`: The CSS selector for the HTML element where the button should be rendered
 
 ### Unmounting external buttons

@@ -151,7 +151,7 @@ Parameters for `yuno.mountEnrollmentLite` and `yuno.mountEnrollmentHeadless`. Al
 
 ## Mount external buttons
 
-Use the `mountExternalButtons` method to render Google Pay and Apple Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
+Use the `mountExternalButtons` method to render PayPal, Google Pay, and Apple Pay buttons in custom locations within your UI. This gives you control over where these buttons are displayed.
 
 ```javascript
 await yuno.mountExternalButtons([
@@ -163,6 +163,10 @@ await yuno.mountExternalButtons([
     paymentMethodType: 'GOOGLE_PAY',
     elementSelector: '#google-pay',
   },
+  {
+    paymentMethodType: 'PAYPAL',
+    elementSelector: '#paypal',
+  },
 ]);
 ```
 
@@ -170,7 +174,7 @@ await yuno.mountExternalButtons([
 
 | Parameter           | Description                                                                                                    |
 | :------------------ | :------------------------------------------------------------------------------------------------------------- |
-| `paymentMethodType` | The payment method type. Must be either `'APPLE_PAY'` or `'GOOGLE_PAY'`.                                       |
+| `paymentMethodType` | The payment method type. Must be `'APPLE_PAY'`, `'GOOGLE_PAY'`, or `'PAYPAL'`.                                 |
 | `elementSelector`   | The CSS selector for the HTML element where the button should be rendered (e.g., `'#apple-pay'`, `'.button'`). |
 
 ### Unmounting buttons
