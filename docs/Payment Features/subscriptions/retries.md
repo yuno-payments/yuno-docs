@@ -39,9 +39,66 @@ Yuno uses a personalized approach for each unsuccessful payment, guided by conti
 
 Every business model is unique, so we allow merchants to define specific rules to enhance the flexibility of our retry schedule. When creating the subscription object, you can use the `retries` structure to make adjustments:
 
-| Parameter          | Type   | Description                                                                                                                              | Example                            |
-| :----------------- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
-| `retry_on_decline` | bool   | Indicates whether to retry a payment after a first decline. Defaults to false.                                                           | TRUE                               |
-| `amount`           | number | Specifies the number of retries the subscription plan will have to completion. If not set, or if higher than 6, the default is 6. Max: 6 | 4                                  |
-| `strategy`         | string | Identifier for the retry strategy used.                                                                                                  | `custom_schedule`                  |
-| `schedule`         | object | Contains attempt and delay_seconds fields                                                                                                | Attempt: 2, `delay_seconds`: 86400 |
+| Parameter            | Type    | Description                                                                                     |
+| :------------------- | :------ | :---------------------------------------------------------------------------------------------- |
+| `retry_on_decline`   | boolean | Whether to retry a payment after a first decline. Defaults to `false`.                          |
+| `strategy`           | string  | The retry strategy. Possible values: `DEFAULT`, `CUSTOM_SCHEDULE`.                              |
+| `amount`             | integer | Number of retry attempts. Used with `DEFAULT` strategy. Max: 6. Defaults to 6 if not set.       |
+| `schedule`           | array   | Custom retry schedule. Required with `CUSTOM_SCHEDULE` strategy. See schedule format below.      |
+| `stop_on_hard_decline` | boolean | Whether to stop the retry schedule after a hard decline.                                       |
+
+#### Retry strategies
+
+Yuno supports two retry strategies. The fields you need to provide depend on the strategy you choose:
+
+**`DEFAULT`** — Uses Yuno's built-in retry timing (see the [retry schedule](#retry-schedule) table above).
+
+* `amount` is required. If omitted or higher than 6, defaults to 6.
+* `schedule` is ignored even if provided.
+
+**`CUSTOM_SCHEDULE`** — Lets you define your own retry intervals.
+
+* `schedule` is required.
+* `amount` is ignored; the number of retries is determined by the schedule items.
+
+#### Schedule format
+
+When using `CUSTOM_SCHEDULE`, provide an array of schedule items. Each item requires:
+
+| Field           | Type    | Description                                      |
+| :-------------- | :------ | :----------------------------------------------- |
+| `attempt`       | integer | The retry attempt number. Must start at 1.       |
+| `delay_seconds` | integer | Seconds to wait before this retry attempt fires.  |
+
+**Validation rules:**
+
+* Both `attempt` and `delay_seconds` are required for each item.
+* Attempt numbers must be sequential starting at 1 (1, 2, 3, ...).
+* Duplicate attempt numbers are not allowed.
+
+**Example:**
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "strategy": "CUSTOM_SCHEDULE",
+    "schedule": [
+      { "attempt": 1, "delay_seconds": 300 },
+      { "attempt": 2, "delay_seconds": 3600 },
+      { "attempt": 3, "delay_seconds": 86400 }
+    ]
+  }
+}
+```
+
+#### Changing strategy on update
+
+You can change the retry strategy by sending an [Update Subscription](ref:update-subscription) request:
+
+* Switching to `CUSTOM_SCHEDULE` requires sending `schedule`.
+* Switching to `DEFAULT` requires sending `amount` (or it defaults to max).
+
+> 📘 Retries in progress
+>
+> If retries are already scheduled for the current billing cycle, updating the retry configuration does **not** modify them. The new configuration applies starting from the next payment.

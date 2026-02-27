@@ -349,18 +349,41 @@ This object represents a subscription that can be associated with a customer.
     <summary>
       <strong><code>retries</code></strong> <small>object</small>
       <br />
-      <p>Specifies the retries object. If we need to retry declined transactions in Yuno and the amount if necessary.
-      </p>
+      <p>Configures automatic retry behavior for declined subscription payments. See <a href="doc:retries">Smart Retries</a> for details on strategies and schedule format.</p>
     </summary>
     <div>
-      <p><strong><code>retry_on_decline</code></strong> <small>bool</small>
-        <br />If we should retry a payment or not after a first decline. False by default..
-        <br /><small> Example: TRUE </small>
+      <p><strong><code>retry_on_decline</code></strong> <small>boolean</small>
+        <br />Whether to retry a payment after a first decline. Defaults to false.
+        <br /><small> Example: true </small>
       </p>
-      <p><strong><code>amount</code></strong> <small>number</small>
-        <br />The number of retries that the subscription plan will have to completion. If not set, or higher than 7, 7
-        will be defined as default. Max: 7
+      <p><strong><code>strategy</code></strong> <small>string</small>
+        <br />The retry strategy to use. <code>DEFAULT</code> uses Yuno's built-in retry timing with the <code>amount</code> field. <code>CUSTOM_SCHEDULE</code> uses a merchant-defined <code>schedule</code>.
+        <br /><small> Possible values: <code>DEFAULT</code>, <code>CUSTOM_SCHEDULE</code></small>
+      </p>
+      <p><strong><code>amount</code></strong> <small>integer</small>
+        <br />Number of retry attempts. Used with the <code>DEFAULT</code> strategy. If not set or higher than 6, defaults to 6. Ignored when strategy is <code>CUSTOM_SCHEDULE</code>.
         <br /><small> Example: 4 </small>
+      </p>
+      <details class="yuno">
+        <summary>
+          <strong><code>schedule</code></strong> <small>array of objects</small>
+          <br />
+          <p>Custom retry schedule. Required when strategy is <code>CUSTOM_SCHEDULE</code>. Ignored when strategy is <code>DEFAULT</code>.</p>
+        </summary>
+        <div>
+          <p><strong><code>attempt</code></strong> <small>integer</small>
+            <br />The retry attempt number. Must be sequential starting at 1, with no duplicates.
+            <br /><small> Example: 1 </small>
+          </p>
+          <p><strong><code>delay_seconds</code></strong> <small>integer</small>
+            <br />Seconds to wait before this retry attempt.
+            <br /><small> Example: 86400 </small>
+          </p>
+        </div>
+      </details>
+      <p><strong><code>stop_on_hard_decline</code></strong> <small>boolean</small>
+        <br />Whether to stop the retry schedule after a hard decline.
+        <br /><small> Example: true </small>
       </p>
     </div>
   </details>

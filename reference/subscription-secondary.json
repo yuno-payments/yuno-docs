@@ -221,16 +221,43 @@
                   },
                   "retries": {
                     "type": "object",
-                    "description": "Specified the 'retries' object. If we need to retry declined transactions in Yuno and the amount if necessary. If modified, the retries will apply to the next payment intent.",
+                    "description": "Updates the retry configuration. If retries are already scheduled for the current billing cycle, this update does not modify them. The new configuration applies starting from the next payment.",
                     "properties": {
                       "retry_on_decline": {
                         "type": "boolean",
-                        "description": "If we should retry a payment or not after a first decline. False by default."
+                        "description": "Whether to retry a payment after a first decline. Defaults to false."
+                      },
+                      "strategy": {
+                        "type": "string",
+                        "enum": ["DEFAULT", "CUSTOM_SCHEDULE"],
+                        "description": "The retry strategy. `DEFAULT` uses Yuno's built-in retry timing with the `amount` field. `CUSTOM_SCHEDULE` uses a merchant-defined `schedule`. Switching to `CUSTOM_SCHEDULE` requires sending `schedule`. Switching to `DEFAULT` requires sending `amount`."
                       },
                       "amount": {
                         "type": "integer",
-                        "description": "The number of retries that the subscription plan will have to completion. If not set, or higher than 7, 7 will be defined as default. Max: 7",
+                        "description": "Number of retry attempts. Used with `DEFAULT` strategy. If not set or higher than 6, defaults to 6. Ignored when strategy is `CUSTOM_SCHEDULE`.",
                         "format": "int32"
+                      },
+                      "schedule": {
+                        "type": "array",
+                        "description": "Custom retry schedule. Required when strategy is `CUSTOM_SCHEDULE`, ignored when strategy is `DEFAULT`.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "attempt": {
+                              "type": "integer",
+                              "description": "The retry attempt number. Must be sequential starting at 1, with no duplicates."
+                            },
+                            "delay_seconds": {
+                              "type": "integer",
+                              "description": "Seconds to wait before this retry attempt."
+                            }
+                          },
+                          "required": ["attempt", "delay_seconds"]
+                        }
+                      },
+                      "stop_on_hard_decline": {
+                        "type": "boolean",
+                        "description": "Whether to stop the retry schedule after a hard decline."
                       }
                     }
                   },
