@@ -14,6 +14,12 @@ next:
 ---
 This object represents the payment created after generating the checkout session for a customer. To refund a payment, see [Refund payments](https://docs.y.uno/docs/refund-payments) and the [Refund payment](https://docs.y.uno/reference/refund-payment) API.
 
+<Callout icon="📘" theme="info">
+  **Metadata and routing logic**
+
+  For routing logic to work correctly, metadata must **also** be set at the [Checkout Session](ref:the-checkout-session-object) level. Setting it only on the Payment object will not trigger route logic.
+</Callout>
+
 <HTMLBlock>{`
 <style>
   details {
@@ -220,6 +226,32 @@ This object represents the payment created after generating the checkout session
         <br /> Defines if the payment is asynchronous and requires additional steps based on a request to the SDK.
         <br /><small> Example: false </small>
       </p>
+    </div>
+  </details>
+
+  <details class="yuno">
+    <summary><strong><code>metadata</code></strong> <small>array of objects</small>
+      <br />
+      <p>Specifies a list of custom key–value pairs associated with the payment (for internal references, segmentation, or workflow tags). You can add up to 120 metadata objects.</p>
+    </summary>
+    <div>
+      <details class="yuno">
+        <summary><strong><code>metadata object</code></strong> <small>object</small>
+          <br />
+          <p>Specifies a metadata key and the respective value.</p>
+          <p>Use to attach merchant-defined context (for example: <code>order_id</code>, <code>customer_tier</code>). Avoid sending sensitive or personal data.</p>
+        </summary>
+        <div>
+          <p><strong><code>key</code></strong> <small>string</small>
+            <br />Specifies one metadata key (MAX 48).
+            <br /><small> Example: age </small>
+          </p>
+          <p><strong><code>value</code></strong> <small>string</small>
+            <br />Specifies the value for the defined metadata key (MAX 512).
+            <br /><small> Example: 28 </small>
+          </p>
+        </div>
+      </details>
     </div>
   </details>
 

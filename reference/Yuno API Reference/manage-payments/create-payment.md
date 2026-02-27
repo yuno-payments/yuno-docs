@@ -27,6 +27,10 @@ If you want to process payments in a Single Step (Authorization and Capture simu
 
 To test all possible transaction outcomes within Yuno in **Sandbox**, please refer to the following [documentation](doc:yuno-testing-gateway#44-provide-the-payment-method-information) for **test data**.
 
+> ❗️ Metadata and routing logic
+>
+> If you use metadata to drive routing logic, it must also be set in the **[Checkout Session](ref:create-checkout-session)**. Filling it only in the Payment object will not activate route logic.
+
 On the other hand, if you wish to process the payment in Two Steps (First Authorization and then Capture), you need to send `payment_method.detail.card.capture` attribute as `false`. Please follow the steps below to implement a two-step flow:
 
 1. Create an authorization using the [Authorize Payment](ref:authorize-payment) request.
