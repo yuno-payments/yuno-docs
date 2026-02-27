@@ -5,7 +5,7 @@ api:
   file: subscription.json
   operationId: retry-subscription
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: ''
   description: ''
