@@ -108,7 +108,7 @@ All file uploads use base64 encoding with `file_name`, `content_type`, and `cont
 
 ## Webhook events
 
-Yuno sends webhook notifications to your configured endpoint for the following events:
+Yuno sends webhook notifications to your configured endpoint for the following events. For general webhook setup, delivery behavior, and retry logic, see [Webhooks Overview](doc:webhooks#baas-webhook-events).
 
 ### Entity events
 - `baas.entity.created` — Entity created
