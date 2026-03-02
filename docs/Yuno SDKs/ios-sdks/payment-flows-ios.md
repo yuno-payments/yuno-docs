@@ -71,7 +71,7 @@ For the full list of parameters and YunoConfig, see the [iOS SDK Common Referenc
 | `viewController`           | UIViewController that presents the payment flow. Required for delegate.                                                                                                |
 | `yunoCreatePayment(with:)` | Delegate: create payment on your backend with the one-time token.                                                                                                      |
 | `yunoPaymentResult(_:)`    | Delegate: payment finished. Receives `Yuno.Result` value (e.g., `.succeeded`, `.fail`, `.processing`). See [Payment Status reference](ref:payment) for status mapping. |
-| `YunoConfig` (initialize)  | Optional: cardFormType, appearance, saveCardEnabled, keepLoader, hideCardholderName, cardNumberPlaceholder. See Common Reference.                                      |
+| `YunoConfig` (initialize)  | Optional: appearance, saveCardEnabled, keepLoader, hideCardholderName, cardNumberPlaceholder. See Common Reference.                                      |
 
 ## Full (iOS)
 
@@ -101,7 +101,6 @@ The Full checkout enables you to configure the appearance and process through th
 
 ```swift
 struct YunoConfig {
-    var cardFormType: CardFormType = .oneStep
     var appearance: Appearance? = nil
     var saveCardEnabled: Bool = false
     var keepLoader: Bool = false
@@ -116,7 +115,6 @@ Customization options:
 
 | Customization option    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cardFormType`          | Defines the card form flow. Options are `.oneStep` (all fields on one screen) or `.stepByStep` (fields displayed across multiple steps). Default is `.oneStep`. Check the Render options section for more information.                                                                                                                                                                                                                                                       |
 | `appearance`            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                                 |
 | `saveCardEnabled`       | Enables the Save card checkbox on card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                              |
 | `keepLoader`            | Controls loader display behavior. When `true`, the loader remains visible until manually hidden.                                                                                                                                                                                                                                                                                                                                                                             |
@@ -499,7 +497,6 @@ Use the `YunoConfig` data class to set additional configurations. Options:
 
 | Option                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **cardFormType**          | Defines the card form flow. The default option is `.oneStep`. Check the Render options section for more information.                                                                                                                                                                                                                                                                                                                                                   |
 | **saveCardEnabled**       | Enables the save card checkbox for card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                       |
 | **language**              | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en`, `es`, `pt`, `fil`, `id`, `ms`, `th`, `zh-TW`, `zh-CN`, `vi`, `fr`, `pl`, `it`, `de`, `ru`, `tr`, `nl`, `sv`, `ko`, `ja`.                                                                                                                                                                                                                          |
 | **appearance**            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                           |
@@ -625,7 +622,7 @@ Yuno.initialize(
 )
 ```
 
-Use `YunoConfig` to configure `cardFormType`, `appearance`, `saveCardEnabled`, `keepLoader`, and optionally `hideCardholderName`.
+Use `YunoConfig` to configure `appearance`, `saveCardEnabled`, `keepLoader`, and optionally `hideCardholderName`.
 
 ### Step 4: Implement the payment delegate
 

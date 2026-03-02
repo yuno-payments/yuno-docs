@@ -251,7 +251,7 @@ When presenting the enrollment, you can also choose one of the render options fo
 * `ONE_STEP`
 * `STEP_BY_STEP`
 
-To change the render option, set the `cardFormType` equal one of the available options. Each option is presented below.
+You can change the render option; each option is presented below.
 
 <Image align="center" border={false} src="https://files.readme.io/ff9a74d50d3a8d3a4e550be1b917832bd6b8daa28cc4249d9ec22edef2f410bc-Full_SDK_ios.png" />
 

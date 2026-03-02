@@ -77,7 +77,6 @@ Customize the SDK appearance and behavior using `YunoConfig`:
 
 ```swift
 final class YunoConfig {
-    let cardFormType: CardFormType
     let appearance: Yuno.Appearance
     let saveCardEnabled: Bool
     let keepLoader: Bool
@@ -89,7 +88,6 @@ final class YunoConfig {
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `cardFormType` | `CardFormType` | `.oneStep` | Card form flow type. Options: `.oneStep` or `.stepByStep`. |
 | `appearance` | `Yuno.Appearance` | Yuno default | Custom appearance configuration for the SDK UI. |
 | `saveCardEnabled` | `Bool` | `false` | When `true`, displays a "Save card" checkbox during payment. |
 | `keepLoader` | `Bool` | `false` | When `true`, you must manually call `hideLoader()` to dismiss the loader. |
@@ -99,7 +97,6 @@ final class YunoConfig {
 
 ```swift
 let config = YunoConfig(
-    cardFormType: .oneStep,
     appearance: customAppearance,
     saveCardEnabled: true,
     keepLoader: false,

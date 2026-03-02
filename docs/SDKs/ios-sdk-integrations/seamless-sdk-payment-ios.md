@@ -68,7 +68,6 @@ The Seamless checkout enables you to configure the appearance of the SDK. It is 
 
 ```swift
 final class YunoConfig {
-    let cardFormType: CardFormType,
     let appearance: Yuno.Appearance,
     let saveCardEnabled: Bool,
     let keepLoader: Bool
@@ -79,7 +78,6 @@ Configure the SDK with the following options:
 
 | Parameter            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cardFormType`       | This field can be used to choose `Payment` and `Enrollment Card` flow. It's an optional property. It uses the `.oneStep` option by default.                                                                                                                                                                                                                                                                                                                            |
 | `appearance`         | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                                                                                                                                                                                                                                                                                                           |
 | `saveCardEnabled`    | This optional field lets you choose whether the **Save Card** checkbox is shown on card flows. It is false by default.                                                                                                                                                                                                                                                                                                                                                 |
 | `keepLoader`         | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to false.                                                                                                                                                                                                                                                                                    |
@@ -256,7 +254,7 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
 
 <Image alt="Example Checkbox" border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXe9dPjXE9Y8Uq3EKpmzUrsBpXHCHtspu98NLo41GsszFV1lCCGNsiXvB-9dmQRtPTExcDWQ7S-Qqoq0iFXaeogBZPpONcLy8Ep55cqog0KHHasbstgeCgSTR00BiFmIbcWd4NwHkO7LrLUOsQXnFV1_gT45?key=-31QL7MEbUE8QLWSURQp1jZt" />
 
-* You also can choose one of the render options for the card form. Below, you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
+* You can choose between one-step and step-by-step card form render options. Below are screenshots for ONE_STEP and STEP_BY_STEP.
 
 <Image alt="Render Options" border={false} src="https://lh7-rt.googleusercontent.com/docsz/AD_4nXcf2gb-FB3sHbyzXYhwBcio9JJ7i0Vh-WBwHQC1dLul3k5XKGExvmYCApNNdx7DfwZcNgK-ARnQgncc3lE-3ln0chmnKstQL7NBKXXjgM8OHk4JpAeCneddETCFUAIF6xpCGMSDrrsBy7N4lHPcgYncIu7J?key=-31QL7MEbUE8QLWSURQp1jZt" />
 

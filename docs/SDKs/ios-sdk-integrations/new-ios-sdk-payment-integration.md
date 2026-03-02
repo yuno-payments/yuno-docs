@@ -484,7 +484,6 @@ Enable card saving during the payment flow by setting `saveCardEnabled` in `Yuno
 
 ```swift
 let config = YunoConfig(
-    cardFormType: .oneStep,
     saveCardEnabled: true
 )
 

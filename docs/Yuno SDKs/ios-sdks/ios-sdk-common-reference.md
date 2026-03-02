@@ -35,7 +35,6 @@ Runtime behavior and appearance are configured via `YunoConfig` when calling `Yu
 
 | Parameter               | Type       | Required | Description                                                                                                                                                                                                                                     |
 | ----------------------- | ---------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cardFormType`          | enum       | No       | Configures the card form type or layout (e.g. step vs extended). Allowed values may vary by SDK version.                                                                                                                                        |
 | `appearance`            | Appearance | No       | Custom appearance (fonts, colors, buttons). Use `Yuno.Appearance(...)` to set `fontFamily`, `accentColor`, `buttonBackgroundColor`, `buttonTitleColor`, and related fields. See [SDK customizations (iOS)](ios-customizations) for all options. |
 | `saveCardEnabled`       | boolean    | No       | When `true`, allows the user to save or enroll the card during payment. Requires backend support for vaulting.                                                                                                                                  |
 | `keepLoader`            | boolean    | No       | When `true`, keeps the loader visible until explicitly dismissed or until the flow completes. Use to control loading UX.                                                                                                                        |
@@ -53,7 +52,7 @@ Parameters for enrollment flows (Lite, Headless). All parameters used in [Enroll
 | `language`                 | string           | No       | Language code for the SDK UI. Optional.                                                                                                                                                          |
 | `viewController`           | UIViewController | Yes*     | The view controller that presents the enrollment flow. Required for delegate-based enrollment.                                                                                                   |
 | `yunoEnrollmentResult(_:)` | delegate         | No       | Delegate method: invoked when enrollment finishes. Receives the result (e.g. vaulted token, status). Use for UI updates or navigation.                                                           |
-| `YunoConfig`               | YunoConfig       | No       | Same options as payment (e.g. `cardFormType`, `appearance`, `saveCardEnabled`, `keepLoader`, `hideCardholderName`). See [YunoConfig options (initialize)](#yunoconfig-options-initialize) above. |
+| `YunoConfig`               | YunoConfig       | No       | Same options as payment (e.g. `appearance`, `saveCardEnabled`, `keepLoader`, `hideCardholderName`). See [YunoConfig options (initialize)](#yunoconfig-options-initialize) above. |
 
 ## Enrolling payment methods
 
