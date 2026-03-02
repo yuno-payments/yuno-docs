@@ -95,6 +95,7 @@ Use the data class `YunoConfig` to customize the SDK's behavior. Include this co
 
 ```kotlin
 data class YunoConfig(
+    val cardFlow: CardFormType = CardFormType.ONE_STEP,
     val saveCardEnabled: Boolean = false,
     val keepLoader: Boolean = false,
     val cardFormDeployed: Boolean = false,
@@ -102,10 +103,6 @@ data class YunoConfig(
     val styles: YunoStyles? = null
 )
 ```
-
-> 🚧 cardFlow removed from YunoConfig
->
-> Starting from version **2.11.0**, `cardFlow` is no longer part of `YunoConfig`. Card flow configuration is now handled exclusively through the **CheckoutBuilder**.
 
 The following table describes each customization option:
 
@@ -123,6 +120,16 @@ The following table describes each customization option:
   </thead>
 
   <tbody>
+    <tr>
+      <td>
+        **cardFlow**
+      </td>
+
+      <td>
+        This optional configuration defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. See the [Render options](#render-options) section for more information.
+      </td>
+    </tr>
+
     <tr>
       <td>
         **saveCardEnabled**
@@ -366,7 +373,7 @@ The loader functionality is controlled through the `keepLoader` parameter in the
 
 ### Render options
 
-You can choose between two card form render options. The following screenshots show the difference between `cardFormType` `ONE_STEP` and `STEP_BY_STEP`:
+You can choose between two card form render options. The following screenshots show the difference between ONE_STEP and STEP_BY_STEP:
 
 <Image align="center" border={false} src="https://files.readme.io/7525725793bb95941157225f086e5abaa58875401b435703e4d3e69e217ca690-Full_SDK_android.png" />
 

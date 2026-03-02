@@ -27,7 +27,6 @@ Configure SDK behavior by passing a `YunoConfig` object when initializing Yuno:
 Yuno.initialize(
     apiKey: "your-public-api-key",
     config: YunoConfig(
-        cardFormType: .oneStep,
         appearance: customAppearance,
         saveCardEnabled: true,
         keepLoader: false,
@@ -43,7 +42,6 @@ Yuno.initialize(
 
 ```swift
 final class YunoConfig {
-    let cardFormType: CardFormType
     let appearance: Yuno.Appearance
     let saveCardEnabled: Bool
     let keepLoader: Bool
@@ -53,7 +51,6 @@ final class YunoConfig {
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `cardFormType` | `CardFormType` | `.oneStep` | Card form flow type. Options: `.oneStep` or `.stepByStep`. |
 | `appearance` | `Yuno.Appearance` | Yuno default | Custom appearance configuration for the SDK UI. Allows you to match the SDK appearance to your brand. |
 | `saveCardEnabled` | `Bool` | `false` | When `true`, displays a "Save card" checkbox during payment for future use. |
 | `keepLoader` | `Bool` | `false` | When `true`, you must manually call `hideLoader()` to dismiss the loader. Useful for custom loading states. |
@@ -73,10 +70,6 @@ All card fields displayed on a single screen:
 
 **Best for:** Quick checkout flows where users want to complete payment in one view.
 
-```swift
-let config = YunoConfig(cardFormType: .oneStep)
-```
-
 #### STEP_BY_STEP
 
 Card fields displayed across multiple steps for a guided experience:
@@ -87,17 +80,12 @@ Card fields displayed across multiple steps for a guided experience:
 
 **Best for:** Complex forms or when you want to guide users through each field.
 
-```swift
-let config = YunoConfig(cardFormType: .stepByStep)
-```
-
 ### Save Card Enabled
 
 When `saveCardEnabled` is set to `true`, a checkbox appears in the card form allowing customers to save their card for future payments:
 
 ```swift
 let config = YunoConfig(
-    cardFormType: .oneStep,
     saveCardEnabled: true
 )
 
@@ -145,7 +133,6 @@ Hide the cardholder name field in card forms:
 
 ```swift
 let config = YunoConfig(
-    cardFormType: .oneStep,
     hideCardholderName: true
 )
 
@@ -203,7 +190,6 @@ if let customFont = UIFont(name: "YourCustomFont-Regular", size: 16) {
 }
 
 let config = YunoConfig(
-    cardFormType: .oneStep,
     appearance: appearance
 )
 
@@ -286,7 +272,6 @@ darkAppearance.inputCornerRadius = 6.0
 darkAppearance.errorColor = UIColor(red: 1.0, green: 0.3, blue: 0.3, alpha: 1.0)
 
 let config = YunoConfig(
-    cardFormType: .oneStep,
     appearance: darkAppearance
 )
 ```

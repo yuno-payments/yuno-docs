@@ -334,20 +334,6 @@ Choose the card form render style:
 * **`ONE_STEP`**: All fields on one screen
 * **`STEP_BY_STEP`**: Fields displayed across multiple steps
 
-Set the `cardFormType` in `YunoConfig`:
-
-```swift
-let config = YunoConfig(
-    cardFormType: .stepByStep
-)
-
-Yuno.initialize(
-    apiKey: "PUBLIC_API_KEY",
-    config: config,
-    callback: { _ in }
-)
-```
-
 ### Loader Control
 
 Control when the loader is displayed and hidden using the `keepLoader` option in `YunoConfig`:

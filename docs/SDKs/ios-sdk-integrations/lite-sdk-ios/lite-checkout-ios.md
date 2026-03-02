@@ -79,7 +79,6 @@ Configure the SDK appearance and behavior using the `YunoConfig` class. This is 
 
 ```swift
 final class YunoConfig {
-    let cardFormType: CardFormType,
     let appearance: Yuno.Appearance,
     let saveCardEnabled: Bool,
     let keepLoader: Bool
@@ -90,7 +89,6 @@ Configure the SDK with the following options:
 
 | Parameter         | Description                                                                                                                                                                           |
 | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `cardFormType`    | This field can be used to choose Payment and Enrollment Card flow. It's an optional property and considers `.oneStep` by default.                                                   |
 | `appearance`      | This optional field defines the appearance of the checkout. By default, it uses Yuno styles.                                                                                          |
 | `saveCardEnabled` | This optional field can be used to choose if the **Save Card** checkbox is shown on card flows. It is false by default.                                                               |
 | `keepLoader`      | This optional field provides control over when to hide the loader. If set to `true`, the `hideLoader()` function must be called to hide the loader. By default, it is set to `false`. |
@@ -288,7 +286,7 @@ The Yuno iOS SDK provides additional features to enhance the customer experience
 
 <Image align="center" border={false} src="https://files.readme.io/89c94f120736a724c6b46a05f82ee8b95d3e892046d11a119635f5ab0d1d59a4-Card___save_for_future_payments.png" />
 
-* You also can choose one of the render options for the card form. Below, you find screenshots presenting the difference between the `cardFormType` `ONE_STEP` and `STEP_BY_STEP`.
+* You can choose between one-step and step-by-step card form render options. Below are screenshots for ONE_STEP and STEP_BY_STEP.
 
 <Image align="center" border={false} src="https://files.readme.io/602fa6e31d55d6e71826ec7b429fc6842e06b3cccbf2d00339e485f97d97a841-Full_SDK_ios.png" />
 
