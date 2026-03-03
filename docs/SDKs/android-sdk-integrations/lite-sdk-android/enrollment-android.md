@@ -93,9 +93,12 @@ class CustomApplication : Application() {
 
 Use the data class `YunoConfig` to customize the SDK's behavior. Include this configuration when calling `Yuno.initialize()`. The available options are:
 
+> 🚧 cardFlow removed from YunoConfig
+>
+> Starting from version **2.11.0**, `cardFlow` is no longer part of `YunoConfig`. Card flow configuration is now handled exclusively through the **CheckoutBuilder** in the Dashboard.
+
 ```kotlin
 data class YunoConfig(
-    val cardFlow: CardFormType = CardFormType.ONE_STEP,
     val saveCardEnabled: Boolean = false,
     val keepLoader: Boolean = false,
     val cardFormDeployed: Boolean = false,
@@ -120,16 +123,6 @@ The following table describes each customization option:
   </thead>
 
   <tbody>
-    <tr>
-      <td>
-        **cardFlow**
-      </td>
-
-      <td>
-        This optional configuration defines Payment and Enrollment Card flow. By default, the `CardFormType.ONE_STEP` option is used. See the [Render options](#render-options) section for more information.
-      </td>
-    </tr>
-
     <tr>
       <td>
         **saveCardEnabled**

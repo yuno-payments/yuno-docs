@@ -343,7 +343,6 @@ For the full list of parameters and options, see the subsections that follow.
 | Parameter             | Description                                                                                                                                                                                                                                                                                                                                   |
 | :-------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `lang`                | Defines the language used in the payment forms. Set it to one of the available options: en (English), es (Spanish), pt (Portuguese), ms (Malay), id (Indonesian), th (Thai), ar (Arabic). See [Supported languages](#supported-languages) for more details.                                                                                       |
-| `cardFlow`            | Card form render mode. Use `CardFlow.oneStep` for a single-page card form or `CardFlow.multiStep` for a step-by-step card input experience. Default: `CardFlow.oneStep`.                                                                                                                                                                      |
 | `saveCardEnable`      | Enables the Save card checkbox on card flows, allowing users to save their card for future payments. Default: `false`.                                                                                                                                                                                                                    |
 | `keepLoader`          | Keeps the SDK loader visible until you call `Yuno.hideLoader()` or the flow completes. When set to `true`, you must manually hide the loader. Default: `false`.                                                                                                                                                                               |
 | `isDynamicViewEnable` | Enables dynamic view updates for native UI components on Android and iOS. This allows the SDK to refresh UI elements based on payment method requirements.                                                                                                                                                                                    |
@@ -434,9 +433,12 @@ For Android, the Flutter SDK uses the native Android SDK's styling system. Custo
 
 The Android SDK supports comprehensive styling through the `YunoConfig` data class:
 
+> 🚧 cardFlow removed from YunoConfig (Android 2.11.0+)
+>
+> Card flow configuration is now handled exclusively through the **CheckoutBuilder** in the Dashboard. Omit `cardFlow` from `YunoConfig`.
+
 ```kotlin
 data class YunoConfig(
-    val cardFlow: CardFormType = CardFormType.ONE_STEP,
     val saveCardEnabled: Boolean = false,
     val language: YunoLanguage? = null,
     val styles: YunoStyles? = null
