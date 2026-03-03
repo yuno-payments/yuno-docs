@@ -388,7 +388,6 @@ await YunoSdk.initialize({
   countryCode: 'US',
   yunoConfig: {
     language: 'en',
-    cardFlow: Platform.OS === 'ios' ? CardFlow.ONE_STEP : CardFlow.STEP_BY_STEP,
   },
   ...(Platform.OS === 'ios' && {
     iosConfig: {

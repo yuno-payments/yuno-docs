@@ -224,7 +224,6 @@ const initializeYuno = async () => {
       countryCode: 'US', // ISO 3166-1 alpha-2 country code
       yunoConfig: {
         language: 'en',
-        cardFlow: CardFlow.ONE_STEP,
         saveCardEnabled: true,
         keepLoader: false,
         isDynamicViewEnabled: true,
@@ -252,7 +251,6 @@ const initializeYuno = async () => {
 | Property               | Type       | Default    | Description                                                          |
 | ---------------------- | ---------- | ---------- | -------------------------------------------------------------------- |
 | `language`             | `string`   | `'en'`     | UI language code. See [Supported Languages](doc:languages-supported) |
-| `cardFlow`             | `CardFlow` | `ONE_STEP` | Card input flow type (`ONE_STEP` or `STEP_BY_STEP`)                  |
 | `saveCardEnabled`      | `boolean`  | `false`    | Enable the save card checkbox                                        |
 | `keepLoader`           | `boolean`  | `false`    | Keep loader visible after operations                                 |
 | `isDynamicViewEnabled` | `boolean`  | `false`    | Enable dynamic views                                                 |
@@ -1048,7 +1046,6 @@ function PaymentScreen() {
         countryCode: 'US',
         yunoConfig: {
           language: 'en',
-          cardFlow: CardFlow.ONE_STEP,
           saveCardEnabled: true,
         },
       });
