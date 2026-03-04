@@ -268,7 +268,6 @@ yuno.startSeamlessCheckout({
     styles: "",
     cardSaveEnable: false,
     texts: {},
-    hideCardholderName: false, // Optional: Set to true to hide cardholder name field
   },
   texts: {},
   async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
