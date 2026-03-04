@@ -268,7 +268,6 @@ yuno.startSeamlessCheckout({
     styles: "",
     cardSaveEnable: false,
     texts: {},
-    cardNumberPlaceholder: "Enter card number", // Optional: Custom placeholder text
     hideCardholderName: false, // Optional: Set to true to hide cardholder name field
   },
   texts: {},
