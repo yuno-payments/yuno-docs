@@ -111,43 +111,43 @@ Yuno sends webhook notifications to your configured endpoint for the following e
 
 ### Entity events
 
-* `baas.entity.created` — Entity created
-* `baas.entity.updated` — Entity updated
-* `baas.entity.deleted` — Entity deleted
+* `banking.entity.created` — Entity created
+* `banking.entity.updated` — Entity updated
+* `banking.entity.deleted` — Entity deleted
 
 ### Onboarding events
 
-* `baas.onboarding.created` — Onboarding created
-* `baas.onboarding.pending` — Submitted, awaiting review
-* `baas.onboarding.pending_additional_documentation` — More documents required
-* `baas.onboarding.succeeded` — Onboarding approved
-* `baas.onboarding.failed` — Onboarding failed
-* `baas.onboarding.declined` — Provider declined
-* `baas.onboarding.cancelled` — Merchant cancelled
-* `baas.onboarding.expired` — Onboarding expired
+* `banking.onboarding.created` — Onboarding created
+* `banking.onboarding.pending` — Submitted, awaiting review
+* `banking.onboarding.pending_additional_documentation` — More documents required
+* `banking.onboarding.succeeded` — Onboarding approved
+* `banking.onboarding.failed` — Onboarding failed
+* `banking.onboarding.declined` — Provider declined
+* `banking.onboarding.cancelled` — Merchant cancelled
+* `banking.onboarding.expired` — Onboarding expired
 
 ### Account events
 
-* `baas.account.created` — Account created
-* `baas.account.updated` — Account updated
-* `baas.account.activated` — Account activated
-* `baas.account.closed` — Account closed
+* `banking.account.created` — Account created
+* `banking.account.updated` — Account updated
+* `banking.account.activated` — Account activated
+* `banking.account.closed` — Account closed
 
 ### Transfer events (outgoing)
 
-* `baas.transfer.pending` — Transfer pending
-* `baas.transfer.processing` — Transfer processing
-* `baas.transfer.completed` — Transfer completed
-* `baas.transfer.failed` — Transfer failed
-* `baas.transfer.cancelled` — Transfer cancelled
-* `baas.transfer.reversed` — Transfer reversed
+* `banking.transfer.pending` — Transfer pending
+* `banking.transfer.processing` — Transfer processing
+* `banking.transfer.completed` — Transfer completed
+* `banking.transfer.failed` — Transfer failed
+* `banking.transfer.cancelled` — Transfer cancelled
+* `banking.transfer.reversed` — Transfer reversed
 
 ### Transfer events (incoming)
 
-* `baas.transfer.incoming.pending` — Incoming transfer pending settlement
-* `baas.transfer.incoming.completed` — Incoming transfer settled
+* `banking.transfer.incoming.pending` — Incoming transfer pending settlement
+* `banking.transfer.incoming.completed` — Incoming transfer settled
 
-Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/baas/transfers`. See [Webhook Notifications](ref:webhook-notifications-baas) for the payload structure.
+Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/banking/transfers`. See [Webhook Notifications](ref:webhook-notifications-baas) for the payload structure.
 
 ## Error codes
 
