@@ -10,6 +10,7 @@ The iOS SDK release notes provide a comprehensive overview of the updates, impro
 
 | Version | Changes                                                                                                                                                                                                           |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.12.1 | **IMPROVE**: Improve Apple Pay initialization in render mode. |
 | 2.12.0  | **CHANGE**: Removed `cardFormType` from SDK initialization. Card form type (one-step vs step-by-step) must now be configured in the **Dashboard checkout builder**, not in code. |
 | 2.11.1  | **FIX**: Various bug fixes and improvements. |
 | 2.11.0  | **FIX**: Podspec configuration updates. |
