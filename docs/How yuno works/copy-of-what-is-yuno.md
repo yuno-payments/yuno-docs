@@ -1,7 +1,7 @@
 ---
 title: Copy of What is Yuno?
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   title: What is Yuno?
   description: >-
