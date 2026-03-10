@@ -1,7 +1,9 @@
 ---
 title: Copy of What is Yuno?
 deprecated: false
-hidden: false
+hidden: true
+link:
+  new_tab: false
 metadata:
   title: What is Yuno?
   description: >-
@@ -18,7 +20,7 @@ Yuno allows businesses to accept all available payment methods and manage fraud 
 
 With Yuno, these issues become a thing of the past. You can streamline the payment acceptance and management process, providing customers with a secure and seamless shopping experience.
 
-<Image border={false} src="https://files.readme.io/2b5357c12d09086043aba183e06fd8f0081f7933ac69d577d006eb5845e7cee0-desktop_overview.png" />
+![](https://files.readme.io/2b5357c12d09086043aba183e06fd8f0081f7933ac69d577d006eb5845e7cee0-desktop_overview.png)
 
 ## Benefits of using Yuno
 
