@@ -84,3 +84,18 @@ For incoming transfer payload structure, see [Webhook Notifications (BaaS)](ref:
 | --- | --- |
 | `baas.transfer.incoming.pending` | Incoming transfer pending settlement |
 | `baas.transfer.incoming.completed` | Incoming transfer settled |
+
+### Marketplace Transfer events
+
+| Event | Description |
+| --- | --- |
+| `split_transfer.created` | Transfer flow created |
+| `split_transfer.pending` | Transfer sent to provider |
+| `split_transfer.succeeded` | Transfer completed successfully |
+| `split_transfer.declined` | Transfer declined by provider |
+| `split_transfer.error` | Transfer error |
+| `split_transfer_reverse.created` | Reverse transaction created |
+| `split_transfer_reverse.pending` | Reversal sent to provider |
+| `split_transfer_reverse.succeeded` | Reversal completed successfully |
+| `split_transfer_reverse.declined` | Reversal declined by provider |
+| `split_transfer_reverse.error` | Reversal error |

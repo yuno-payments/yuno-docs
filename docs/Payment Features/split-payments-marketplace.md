@@ -491,6 +491,19 @@ This feature allows you to:
 - Manage revenue sharing for subscriptions or commission payments for affiliates.
 - Execute bulk payouts to multiple recipients.
 
+### Transfer Statuses
+
+A standalone transfer flow goes through multiple states depending on the provider's response and any subsequent reversals:
+
+| Status      | Description                                               | Terminal? |
+| ----------- | --------------------------------------------------------- | --------- |
+| `CREATED`   | Transfer flow created, not yet sent to provider.          | No        |
+| `PENDING`   | Sent to provider, awaiting confirmation.                  | No        |
+| `SUCCEEDED` | Forward transfer completed successfully.                  | No        |
+| `DECLINED`  | Provider declined the transfer.                           | Yes       |
+| `ERROR`     | Provider error during processing.                         | Yes       |
+| `REVERSED`  | Reverse transaction completed successfully.               | Yes       |
+
 ### Transactions and Reversals
 
 In the Standalone Transfer Flow, forward and reverse operations are treated as identical independent transactions to maintain an explicit audit trail. This means:
