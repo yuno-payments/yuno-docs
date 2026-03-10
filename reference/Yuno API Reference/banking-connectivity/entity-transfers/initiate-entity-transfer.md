@@ -1,5 +1,5 @@
 ---
-title: Initiate Entity Transfer
+title: Initiate Entity Transfer (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json
