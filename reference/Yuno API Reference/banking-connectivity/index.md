@@ -11,11 +11,11 @@ Yuno Banking Connectivity provides a unified API to create bank accounts, proces
 
 Follow these steps to go from entity creation to fund transfers:
 
-1. **Create an entity** — Register an individual or business using [Create Entity](ref:create-entity).
-2. **Onboard the entity** — Submit KYC/KYB documentation through [Create Entity Onboarding](ref:create-entity-onboarding).
-3. **Wait for onboarding approval** — Monitor the onboarding status via [Get Entity Onboarding Status](ref:get-entity-onboarding-status) or listen for webhook events.
-4. **Create a bank account** — Once onboarding succeeds, open an account with [Create Account](ref:create-account-baas).
-5. **Initiate transfers** — Send funds using [Initiate Entity Transfer](ref:initiate-entity-transfer).
+1. **Create an entity**: Register an individual or business using [Create Entity](ref:create-entity).
+2. **Onboard the entity**: Submit KYC/KYB documentation through [Create Entity Onboarding](ref:create-entity-onboarding).
+3. **Wait for onboarding approval**: Monitor the onboarding status via [Get Entity Onboarding Status](ref:get-entity-onboarding-status) or listen for webhook events.
+4. **Create a bank account**: Once onboarding succeeds, open an account with [Create Account](ref:create-account-banking).
+5. **Initiate transfers**: Send funds using [Initiate Entity Transfer](ref:initiate-entity-transfer).
 
 ## Entity types
 
@@ -41,7 +41,7 @@ The `national_entity` field determines the entity structure:
 | `PENDING`                          | Submitted to provider, awaiting review         | No       |
 | `PENDING_ADDITIONAL_DOCUMENTATION` | Provider requires more documents               | No       |
 | `UNDER_REVIEW`                     | Provider is reviewing the submission           | No       |
-| `SUCCEEDED`                        | Onboarding approved — entity can open accounts | Yes      |
+| `SUCCEEDED`                        | Onboarding approved: entity can open accounts | Yes      |
 | `FAILED`                           | Onboarding failed due to errors                | Yes      |
 | `DECLINED`                         | Provider declined the entity                   | Yes      |
 | `CANCELLED`                        | Onboarding cancelled by merchant               | Yes      |
@@ -79,7 +79,7 @@ Available payment rails depend on the provider's region:
 
 ## Account identifiers by region
 
-Responses from [Create Account](ref:create-account-baas) include region-specific banking identifiers:
+Responses from [Create Account](ref:create-account-banking) include region-specific banking identifiers:
 
 | Region    | Fields returned                       |
 | --------- | ------------------------------------- |
@@ -107,47 +107,47 @@ All file uploads use base64 encoding with `file_name`, `content_type`, and `cont
 
 ## Webhook events
 
-Yuno sends webhook notifications to your configured endpoint for the following events. For general webhook setup, delivery behavior, and retry logic, see [Webhooks Overview](doc:webhooks#baas-webhook-events).
+Yuno sends webhook notifications to your configured endpoint for the following events. For general webhook setup, delivery behavior, and retry logic, see [Webhooks Overview](doc:webhooks#banking_connectivity-webhook-events).
 
 ### Entity events
 
-* `banking.entity.created` — Entity created
-* `banking.entity.updated` — Entity updated
-* `banking.entity.deleted` — Entity deleted
+* `banking.entity.created`: Entity created
+* `banking.entity.updated`: Entity updated
+* `banking.entity.deleted`: Entity deleted
 
 ### Onboarding events
 
-* `banking.onboarding.created` — Onboarding created
-* `banking.onboarding.pending` — Submitted, awaiting review
-* `banking.onboarding.pending_additional_documentation` — More documents required
-* `banking.onboarding.succeeded` — Onboarding approved
-* `banking.onboarding.failed` — Onboarding failed
-* `banking.onboarding.declined` — Provider declined
-* `banking.onboarding.cancelled` — Merchant cancelled
-* `banking.onboarding.expired` — Onboarding expired
+* `banking.onboarding.created`: Onboarding created
+* `banking.onboarding.pending`: Submitted, awaiting review
+* `banking.onboarding.pending_additional_documentation`: More documents required
+* `banking.onboarding.succeeded`: Onboarding approved
+* `banking.onboarding.failed`: Onboarding failed
+* `banking.onboarding.declined`: Provider declined
+* `banking.onboarding.cancelled`: Merchant cancelled
+* `banking.onboarding.expired`: Onboarding expired
 
 ### Account events
 
-* `banking.account.created` — Account created
-* `banking.account.updated` — Account updated
-* `banking.account.activated` — Account activated
-* `banking.account.closed` — Account closed
+* `banking.account.created`: Account created
+* `banking.account.updated`: Account updated
+* `banking.account.activated`: Account activated
+* `banking.account.closed`: Account closed
 
 ### Transfer events (outgoing)
 
-* `banking.transfer.pending` — Transfer pending
-* `banking.transfer.processing` — Transfer processing
-* `banking.transfer.completed` — Transfer completed
-* `banking.transfer.failed` — Transfer failed
-* `banking.transfer.cancelled` — Transfer cancelled
-* `banking.transfer.reversed` — Transfer reversed
+* `banking.transfer.pending`: Transfer pending
+* `banking.transfer.processing`: Transfer processing
+* `banking.transfer.completed`: Transfer completed
+* `banking.transfer.failed`: Transfer failed
+* `banking.transfer.cancelled`: Transfer cancelled
+* `banking.transfer.reversed`: Transfer reversed
 
 ### Transfer events (incoming)
 
-* `banking.transfer.incoming.pending` — Incoming transfer pending settlement
-* `banking.transfer.incoming.completed` — Incoming transfer settled
+* `banking.transfer.incoming.pending`: Incoming transfer pending settlement
+* `banking.transfer.incoming.completed`: Incoming transfer settled
 
-Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/banking/transfers`. See [Webhook Notifications](ref:webhook-notifications-baas) for the payload structure.
+Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/banking/transfers`. See [Webhook Notifications](ref:webhook-notifications-banking) for the payload structure.
 
 ## Error codes
 
