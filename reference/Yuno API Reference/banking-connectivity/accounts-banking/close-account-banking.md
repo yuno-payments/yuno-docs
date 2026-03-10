@@ -1,5 +1,6 @@
 ---
 title: Close Account (Banking Connectivity)
+type: reference
 api:
   file: banking-connectivity.json
   operationId: delete_v1-banking-connectivity-accounts-account-id

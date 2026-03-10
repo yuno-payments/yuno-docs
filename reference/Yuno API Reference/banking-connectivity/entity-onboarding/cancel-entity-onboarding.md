@@ -1,5 +1,6 @@
 ---
 title: Cancel Entity Onboarding
+type: reference
 api:
   file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-entities-entity-id-onboardings-onboarding-id-cancel

@@ -1,5 +1,6 @@
 ---
 title: Initiate Entity Transfer
+type: reference
 api:
   file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-transfers

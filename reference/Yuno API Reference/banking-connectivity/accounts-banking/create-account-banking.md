@@ -1,5 +1,6 @@
 ---
 title: Create Account (Banking Connectivity)
+type: reference
 api:
   file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-accounts

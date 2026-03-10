@@ -1,5 +1,6 @@
 ---
 title: Update Account (Banking Connectivity)
+type: reference
 api:
   file: banking-connectivity.json
   operationId: patch_v1-banking-connectivity-accounts-account-id

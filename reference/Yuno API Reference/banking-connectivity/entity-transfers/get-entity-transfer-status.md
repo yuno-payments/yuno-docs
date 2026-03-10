@@ -1,5 +1,6 @@
 ---
 title: Get Entity Transfer Status
+type: reference
 api:
   file: banking-connectivity.json
   operationId: get_v1-banking-connectivity-accounts-account-id-transfers-transfer-id

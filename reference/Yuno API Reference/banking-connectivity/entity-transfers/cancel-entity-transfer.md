@@ -1,5 +1,6 @@
 ---
 title: Cancel Entity Transfer
+type: reference
 api:
   file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-accounts-account-id-transfers-transfer-id-cancel

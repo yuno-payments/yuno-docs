@@ -1,5 +1,6 @@
 ---
 title: Get Entity Onboarding Status
+type: reference
 api:
   file: banking-connectivity.json
   operationId: get_v1-banking-connectivity-entities-entity-id-onboardings-onboarding-id

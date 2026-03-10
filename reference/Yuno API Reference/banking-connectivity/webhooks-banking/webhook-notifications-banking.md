@@ -1,5 +1,6 @@
 ---
 title: Webhook Notifications (Banking Connectivity)
+type: reference
 api:
   file: banking-connectivity-merchant-base-url.json
   operationId: post_v1-banking-connectivity-transfers

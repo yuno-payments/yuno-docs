@@ -1,5 +1,6 @@
 ---
 title: Update Entity Onboarding
+type: reference
 api:
   file: banking-connectivity.json
   operationId: patch_v1-banking-connectivity-entities-entity-id-onboardings-onboarding-id
