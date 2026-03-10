@@ -1,8 +1,9 @@
 ---
 title: Get Entity Details
+type: reference
 api:
-  file: baa-s.json
-  operationId: get_v1-baas-entities-entity-id
+  file: banking-connectivity.json
+  operationId: get_v1-banking-connectivity-entities-entity-id
 deprecated: false
 hidden: false
 link:

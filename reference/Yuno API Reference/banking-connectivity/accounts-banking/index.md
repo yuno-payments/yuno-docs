@@ -1,5 +1,5 @@
 ---
-title: Accounts (BaaS)
+title: Accounts (Banking Connectivity)
 deprecated: false
 hidden: false
 metadata:
