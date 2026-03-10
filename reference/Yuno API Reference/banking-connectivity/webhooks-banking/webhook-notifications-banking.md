@@ -15,4 +15,4 @@ Yuno sends incoming transfer notifications to your endpoint at `{merchant_base_U
 
 Notifications include sender details, transfer amount, payment rail, and status. Yuno retries on `5xx` responses and timeouts with exponential backoff.
 
-See [Webhook events](ref:banking_connectivity#webhook-events) for the complete list of Banking Connectivity webhook event types.
+See [Webhook events](ref:banking-connectivity#webhook-events) for the complete list of Banking Connectivity webhook event types.

@@ -13,4 +13,4 @@ metadata:
 ---
 Create a bank account for an onboarded entity. The onboarding referenced by `onboarding_id` must have `status: SUCCEEDED`.
 
-The response includes region-specific banking identifiers. See [Account identifiers by region](ref:banking_connectivity#account-identifiers-by-region) for which fields are returned per region.
+The response includes region-specific banking identifiers. See [Account identifiers by region](ref:banking-connectivity#account-identifiers-by-region) for which fields are returned per region.

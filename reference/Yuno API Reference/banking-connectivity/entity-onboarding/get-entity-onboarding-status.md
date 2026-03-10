@@ -11,4 +11,4 @@ link:
 metadata:
   robots: index
 ---
-Retrieve the current status of an entity onboarding. See [Onboarding statuses](ref:banking_connectivity#onboarding-statuses) for the full status lifecycle.
+Retrieve the current status of an entity onboarding. See [Onboarding statuses](ref:banking-connectivity#onboarding-statuses) for the full status lifecycle.

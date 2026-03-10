@@ -11,4 +11,4 @@ link:
 metadata:
   robots: index
 ---
-Retrieve the current status and details of a transfer. See [Transfer statuses](ref:banking_connectivity#transfer-statuses) for the full status lifecycle.
+Retrieve the current status and details of a transfer. See [Transfer statuses](ref:banking-connectivity#transfer-statuses) for the full status lifecycle.

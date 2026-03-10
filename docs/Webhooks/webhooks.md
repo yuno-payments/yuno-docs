@@ -41,46 +41,46 @@ For incoming transfer payload structure, see [Webhook Notifications (Banking Con
 
 | Event | Description |
 | --- | --- |
-| `banking_connectivity.entity.created` | Entity created |
-| `banking_connectivity.entity.updated` | Entity updated |
-| `banking_connectivity.entity.deleted` | Entity deleted |
+| `banking.entity.created` | Entity created |
+| `banking.entity.updated` | Entity updated |
+| `banking.entity.deleted` | Entity deleted |
 
 ### Onboarding events
 
 | Event | Description |
 | --- | --- |
-| `banking_connectivity.onboarding.created` | Onboarding created |
-| `banking_connectivity.onboarding.pending` | Submitted, awaiting review |
-| `banking_connectivity.onboarding.pending_additional_documentation` | More documents required |
-| `banking_connectivity.onboarding.succeeded` | Onboarding approved |
-| `banking_connectivity.onboarding.failed` | Onboarding failed |
-| `banking_connectivity.onboarding.declined` | Provider declined |
-| `banking_connectivity.onboarding.cancelled` | Merchant cancelled |
-| `banking_connectivity.onboarding.expired` | Onboarding expired |
+| `banking.onboarding.created` | Onboarding created |
+| `banking.onboarding.pending` | Submitted, awaiting review |
+| `banking.onboarding.pending_additional_documentation` | More documents required |
+| `banking.onboarding.succeeded` | Onboarding approved |
+| `banking.onboarding.failed` | Onboarding failed |
+| `banking.onboarding.declined` | Provider declined |
+| `banking.onboarding.cancelled` | Merchant cancelled |
+| `banking.onboarding.expired` | Onboarding expired |
 
 ### Account events
 
 | Event | Description |
 | --- | --- |
-| `banking_connectivity.account.created` | Account created |
-| `banking_connectivity.account.updated` | Account updated |
-| `banking_connectivity.account.activated` | Account activated |
-| `banking_connectivity.account.closed` | Account closed |
+| `banking.account.created` | Account created |
+| `banking.account.updated` | Account updated |
+| `banking.account.activated` | Account activated |
+| `banking.account.closed` | Account closed |
 
 ### Transfer events (outgoing)
 
 | Event | Description |
 | --- | --- |
-| `banking_connectivity.transfer.pending` | Transfer pending |
-| `banking_connectivity.transfer.processing` | Transfer processing |
-| `banking_connectivity.transfer.completed` | Transfer completed |
-| `banking_connectivity.transfer.failed` | Transfer failed |
-| `banking_connectivity.transfer.cancelled` | Transfer cancelled |
-| `banking_connectivity.transfer.reversed` | Transfer reversed |
+| `banking.transfer.pending` | Transfer pending |
+| `banking.transfer.processing` | Transfer processing |
+| `banking.transfer.completed` | Transfer completed |
+| `banking.transfer.failed` | Transfer failed |
+| `banking.transfer.cancelled` | Transfer cancelled |
+| `banking.transfer.reversed` | Transfer reversed |
 
 ### Transfer events (incoming)
 
 | Event | Description |
 | --- | --- |
-| `banking_connectivity.transfer.incoming.pending` | Incoming transfer pending settlement |
-| `banking_connectivity.transfer.incoming.completed` | Incoming transfer settled |
+| `banking.transfer.incoming.pending` | Incoming transfer pending settlement |
+| `banking.transfer.incoming.completed` | Incoming transfer settled |

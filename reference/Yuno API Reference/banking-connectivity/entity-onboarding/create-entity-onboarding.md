@@ -18,6 +18,6 @@ Onboard an existing [Entity](ref:create-entity) with a Banking Connectivity prov
 - **`ONE_STEP`**: Submit all information, compliance declarations, risk assessment, and documents at once. The provider processes immediately.
 - **`PREVIOUSLY_ONBOARDED`**: Generate an internal Yuno onboarding ID without contacting the provider. Use when the entity was already onboarded externally.
 
-For `ONE_STEP`, include `compliance_declaration`, `risk_assessment`, `source_of_funds`, and `documentation`. See [Documentation types](ref:banking_connectivity#documentation-types) for the full list of supported document types.
+For `ONE_STEP`, include `compliance_declaration`, `risk_assessment`, `source_of_funds`, and `documentation`. See [Documentation types](ref:banking-connectivity#documentation-types) for the full list of supported document types.
 
-Monitor progress via [Get Entity Onboarding Status](ref:get-entity-onboarding-status) or webhook events. See [Onboarding statuses](ref:banking_connectivity#onboarding-statuses) for the full status lifecycle.
+Monitor progress via [Get Entity Onboarding Status](ref:get-entity-onboarding-status) or webhook events. See [Onboarding statuses](ref:banking-connectivity#onboarding-statuses) for the full status lifecycle.
