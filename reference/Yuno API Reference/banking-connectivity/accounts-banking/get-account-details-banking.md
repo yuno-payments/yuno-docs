@@ -1,7 +1,7 @@
 ---
 title: Get Account Details (Banking Connectivity)
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: get_v1-banking-connectivity-accounts-account-id
 deprecated: false
 hidden: false

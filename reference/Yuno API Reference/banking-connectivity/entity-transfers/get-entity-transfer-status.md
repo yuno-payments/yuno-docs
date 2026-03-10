@@ -1,7 +1,7 @@
 ---
 title: Get Entity Transfer Status
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: get_v1-banking-connectivity-accounts-account-id-transfers-transfer-id
 deprecated: false
 hidden: false

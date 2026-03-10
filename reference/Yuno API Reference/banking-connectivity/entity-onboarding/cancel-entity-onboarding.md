@@ -1,7 +1,7 @@
 ---
 title: Cancel Entity Onboarding
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-entities-entity-id-onboardings-onboarding-id-cancel
 deprecated: false
 hidden: false

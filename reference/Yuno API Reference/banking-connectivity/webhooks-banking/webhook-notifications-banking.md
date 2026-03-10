@@ -1,7 +1,7 @@
 ---
 title: Webhook Notifications (Banking Connectivity)
 api:
-  file: baa-s-merchant-base-url.json
+  file: banking-connectivity-merchant-base-url.json
   operationId: post_v1-banking-connectivity-transfers
 deprecated: false
 hidden: false

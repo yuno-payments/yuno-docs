@@ -1,7 +1,7 @@
 ---
 title: Create Entity
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-entities
 deprecated: false
 hidden: false

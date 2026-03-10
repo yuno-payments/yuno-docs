@@ -1,7 +1,7 @@
 ---
 title: Create Account (Banking Connectivity)
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-accounts
 deprecated: false
 hidden: false

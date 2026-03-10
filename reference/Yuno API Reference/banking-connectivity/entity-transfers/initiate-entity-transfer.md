@@ -1,7 +1,7 @@
 ---
 title: Initiate Entity Transfer
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: post_v1-banking-connectivity-transfers
 deprecated: false
 hidden: false

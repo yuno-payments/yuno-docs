@@ -1,7 +1,7 @@
 ---
 title: Close Account (Banking Connectivity)
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: delete_v1-banking-connectivity-accounts-account-id
 deprecated: false
 hidden: false

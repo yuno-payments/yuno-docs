@@ -1,7 +1,7 @@
 ---
 title: Update Account (Banking Connectivity)
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: patch_v1-banking-connectivity-accounts-account-id
 deprecated: false
 hidden: false

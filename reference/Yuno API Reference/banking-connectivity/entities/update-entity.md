@@ -1,7 +1,7 @@
 ---
 title: Update Entity
 api:
-  file: baa-s.json
+  file: banking-connectivity.json
   operationId: patch_v1-banking-connectivity-entities-entity-id
 deprecated: false
 hidden: false
