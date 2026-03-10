@@ -1,11 +1,11 @@
 ---
-title: Banking as a Service (BaaS)
+title: Banking as a Service (Banking Connectivity)
 deprecated: false
 hidden: true
 metadata:
   robots: index
 ---
-Embedded Banking, or **Banking as a Service (BaaS)**, is a model where licensed banks or virtual banks provide **banking infrastructure to partners**, including **virtual accounts**, **fund custody**, **transfers**, and **payment instruments (cards)**. This enables partners to embed regulated financial services directly into their products without holding a banking license themselves.
+Embedded Banking, or **Banking as a Service (Banking Connectivity)**, is a model where licensed banks or virtual banks provide **banking infrastructure to partners**, including **virtual accounts**, **fund custody**, **transfers**, and **payment instruments (cards)**. This enables partners to embed regulated financial services directly into their products without holding a banking license themselves.
 
 It is designed for companies that need to hold or move user balances under a banking license, such as **fintechs**, **exchanges**, **crypto wallets**, and **platforms that manage user funds**.
 
@@ -108,7 +108,7 @@ flowchart LR
 
 ## Glossary
 
-| E-commerce | BaaS              |
+| E-commerce | Banking Connectivity              |
 | ---------- | ----------------- |
 | Merchant   | Partner           |
 | Customer   | User / Entity     |

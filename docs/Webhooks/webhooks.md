@@ -31,56 +31,56 @@ Yuno webhooks expects to receive an **HTTP 200 OK** status as a response to conf
 
 If no response is received within the specified time, Yuno will retry sending the event notification up to seven times to ensure no information is lost. Refer to the [Receipt Confirmation Process](../docs/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.
 
-## BaaS webhook events
+## Banking Connectivity webhook events
 
-BaaS (Banking as a Service) webhook notifications follow the same delivery and retry behavior described above. Yuno sends these events to your configured webhook endpoint when the status of a BaaS resource changes.
+Banking Connectivity (Banking as a Service) webhook notifications follow the same delivery and retry behavior described above. Yuno sends these events to your configured webhook endpoint when the status of a Banking Connectivity resource changes.
 
-For incoming transfer payload structure, see [Webhook Notifications (BaaS)](ref:webhook-notifications-baas). Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/baas/transfers`.
+For incoming transfer payload structure, see [Webhook Notifications (Banking Connectivity)](ref:webhook-notifications-banking). Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/banking/transfers`.
 
 ### Entity events
 
 | Event | Description |
 | --- | --- |
-| `baas.entity.created` | Entity created |
-| `baas.entity.updated` | Entity updated |
-| `baas.entity.deleted` | Entity deleted |
+| `banking_connectivity.entity.created` | Entity created |
+| `banking_connectivity.entity.updated` | Entity updated |
+| `banking_connectivity.entity.deleted` | Entity deleted |
 
 ### Onboarding events
 
 | Event | Description |
 | --- | --- |
-| `baas.onboarding.created` | Onboarding created |
-| `baas.onboarding.pending` | Submitted, awaiting review |
-| `baas.onboarding.pending_additional_documentation` | More documents required |
-| `baas.onboarding.succeeded` | Onboarding approved |
-| `baas.onboarding.failed` | Onboarding failed |
-| `baas.onboarding.declined` | Provider declined |
-| `baas.onboarding.cancelled` | Merchant cancelled |
-| `baas.onboarding.expired` | Onboarding expired |
+| `banking_connectivity.onboarding.created` | Onboarding created |
+| `banking_connectivity.onboarding.pending` | Submitted, awaiting review |
+| `banking_connectivity.onboarding.pending_additional_documentation` | More documents required |
+| `banking_connectivity.onboarding.succeeded` | Onboarding approved |
+| `banking_connectivity.onboarding.failed` | Onboarding failed |
+| `banking_connectivity.onboarding.declined` | Provider declined |
+| `banking_connectivity.onboarding.cancelled` | Merchant cancelled |
+| `banking_connectivity.onboarding.expired` | Onboarding expired |
 
 ### Account events
 
 | Event | Description |
 | --- | --- |
-| `baas.account.created` | Account created |
-| `baas.account.updated` | Account updated |
-| `baas.account.activated` | Account activated |
-| `baas.account.closed` | Account closed |
+| `banking_connectivity.account.created` | Account created |
+| `banking_connectivity.account.updated` | Account updated |
+| `banking_connectivity.account.activated` | Account activated |
+| `banking_connectivity.account.closed` | Account closed |
 
 ### Transfer events (outgoing)
 
 | Event | Description |
 | --- | --- |
-| `baas.transfer.pending` | Transfer pending |
-| `baas.transfer.processing` | Transfer processing |
-| `baas.transfer.completed` | Transfer completed |
-| `baas.transfer.failed` | Transfer failed |
-| `baas.transfer.cancelled` | Transfer cancelled |
-| `baas.transfer.reversed` | Transfer reversed |
+| `banking_connectivity.transfer.pending` | Transfer pending |
+| `banking_connectivity.transfer.processing` | Transfer processing |
+| `banking_connectivity.transfer.completed` | Transfer completed |
+| `banking_connectivity.transfer.failed` | Transfer failed |
+| `banking_connectivity.transfer.cancelled` | Transfer cancelled |
+| `banking_connectivity.transfer.reversed` | Transfer reversed |
 
 ### Transfer events (incoming)
 
 | Event | Description |
 | --- | --- |
-| `baas.transfer.incoming.pending` | Incoming transfer pending settlement |
-| `baas.transfer.incoming.completed` | Incoming transfer settled |
+| `banking_connectivity.transfer.incoming.pending` | Incoming transfer pending settlement |
+| `banking_connectivity.transfer.incoming.completed` | Incoming transfer settled |

@@ -15,7 +15,7 @@ This endpoint creates an onboarding for a recipient, enabling merchant to be int
 
 ## Overview
 
-Onboarding is the first step in the [split payments marketplace](https://docs.y.uno/docs/split-payments-marketplace#/) workflow. Each recipient  must be onboarded with BaaS providers before they can receive process transactions.
+Onboarding is the first step in the [split payments marketplace](https://docs.y.uno/docs/split-payments-marketplace#/) workflow. Each recipient  must be onboarded with Banking Connectivity providers before they can receive process transactions.
 
 The onboarding process supports two flows:
 

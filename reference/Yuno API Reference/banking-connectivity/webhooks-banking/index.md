@@ -1,5 +1,5 @@
 ---
-title: Webhooks (BaaS)
+title: Webhooks (Banking Connectivity)
 deprecated: false
 hidden: false
 metadata:
