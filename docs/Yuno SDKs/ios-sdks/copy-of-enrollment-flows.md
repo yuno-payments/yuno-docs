@@ -1,22 +1,23 @@
 ---
 title: Copy of Enrollment Flows
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
-
 The iOS SDK makes it easy to implement enrollment flows for saving payment methods to a customer account.
 
 Include the library in your project by following the same steps as in [payment flows](payment-flows-ios#include-the-library-in-your-project). This lets you complete [step 2](#step-2-include-the-library-in-your-project) and continue with the enrollment flow below.
 
 ## Additional resources
 
-- See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-- Access the [Release notes](release-notes-ios) or the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) to verify the latest SDK version available.
+* See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
 
-- [Lite Enrollment (iOS)](#lite-enrollment-ios): Lightweight enrollment with UI control and backend support
-- [Headless Enrollment (iOS)](#headless-enrollment-ios): Full enrollment experience customization without requiring PCI compliance
+* Access the [Release notes](release-notes-ios) or the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) to verify the latest SDK version available.
+
+* [Lite Enrollment (iOS)](#lite-enrollment-ios): Lightweight enrollment with UI control and backend support
+
+* [Headless Enrollment (iOS)](#headless-enrollment-ios): Full enrollment experience customization without requiring PCI compliance
 
 ## Requirements
 
@@ -29,14 +30,14 @@ Include the library in your project by following the same steps as in [payment f
 
 For the full list of parameters, see the [iOS SDK Common Reference](ios-sdk-common-reference).
 
-| Parameter | Description |
-|-----------|-------------|
-| `customerSession` | Customer session ID from Create customer session API. Required. |
-| `countryCode` | ISO country code (e.g. `BR`). Required. |
-| `language` | Language code for the UI. Optional. |
-| `viewController` | UIViewController that presents the enrollment flow. Required for delegate. |
-| `yunoEnrollmentResult(_:)` | Delegate: enrollment finished with result. |
-| `YunoConfig` (initialize) | Optional: appearance, saveCardEnabled, keepLoader, hideCardholderName. See Common Reference. |
+| Parameter                  | Description                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
+| `customerSession`          | Customer session ID from Create customer session API. Required.                              |
+| `countryCode`              | ISO country code (e.g. `BR`). Required.                                                      |
+| `language`                 | Language code for the UI. Optional.                                                          |
+| `viewController`           | UIViewController that presents the enrollment flow. Required for delegate.                   |
+| `yunoEnrollmentResult(_:)` | Delegate: enrollment finished with result.                                                   |
+| `YunoConfig` (initialize)  | Optional: appearance, saveCardEnabled, keepLoader, hideCardholderName. See Common Reference. |
 
 ## Lite Enrollment (iOS)
 
@@ -154,13 +155,13 @@ class ViewController: UIViewController, YunoEnrollmentDelegate {
 
 #### Options
 
-| Parameter | Description |
-|-----------|-------------|
-| `customerSession` | The unique identifier for the customer session. |
-| `countryCode` | Country code where the enrollment is performed. See [Country Coverage](country-coverage) for supported countries. |
-| `language` | Language code for the enrollment forms (e.g., `"en"`, `"es"`, `"pt"`). See [Supported languages](languages-supported). |
-| `viewController` | The `UIViewController` used to present the enrollment flow. Required for proper UI presentation. |
-| `yunoEnrollmentResult(_:)` | Called when the enrollment process completes with the final result. |
+| Parameter                  | Description                                                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`          | The unique identifier for the customer session.                                                                        |
+| `countryCode`              | Country code where the enrollment is performed. See [Country Coverage](country-coverage) for supported countries.      |
+| `language`                 | Language code for the enrollment forms (e.g., `"en"`, `"es"`, `"pt"`). See [Supported languages](languages-supported). |
+| `viewController`           | The `UIViewController` used to present the enrollment flow. Required for proper UI presentation.                       |
+| `yunoEnrollmentResult(_:)` | Called when the enrollment process completes with the final result.                                                    |
 
 ### Step 5: Start the enrollment process
 
@@ -176,10 +177,10 @@ The SDK presents a full-screen `UIViewController` modally using the `viewControl
 
 #### Options
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `delegate` | `YunoEnrollmentDelegate` | The delegate object that handles enrollment callbacks. |
-| `showPaymentStatus` | `Bool` | Whether to display status views during the enrollment process. When `true`, the SDK displays default status screens. When `false`, you handle status display through callbacks. |
+| Parameter           | Type                     | Description                                                                                                                                                                     |
+| ------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `delegate`          | `YunoEnrollmentDelegate` | The delegate object that handles enrollment callbacks.                                                                                                                          |
+| `showPaymentStatus` | `Bool`                   | Whether to display status views during the enrollment process. When `true`, the SDK displays default status screens. When `false`, you handle status display through callbacks. |
 
 In SwiftUI, wrap a `UIViewController` and return it from the `viewController` property so the SDK can present the UI.
 
@@ -231,14 +232,14 @@ func yunoEnrollmentResult(_ result: Yuno.Result) {
 
 #### Enrollment Result States
 
-| State | Description | Action Required |
-|-------|-------------|-----------------|
-| `succeeded` | Enrollment completed successfully | No |
-| `fail` | Enrollment failed due to validation or technical issues | Yes - Investigate and retry |
-| `processing` | Enrollment in progress, awaiting approval | No |
-| `reject` | Enrollment rejected (invalid data, fraud detection, etc.) | Yes - Inform user and suggest actions |
-| `internalError` | Unexpected internal error occurred | Yes - Technical intervention required |
-| `userCancelled` | User canceled the enrollment | No |
+| State           | Description                                               | Action Required                       |
+| --------------- | --------------------------------------------------------- | ------------------------------------- |
+| `succeeded`     | Enrollment completed successfully                         | No                                    |
+| `fail`          | Enrollment failed due to validation or technical issues   | Yes - Investigate and retry           |
+| `processing`    | Enrollment in progress, awaiting approval                 | No                                    |
+| `reject`        | Enrollment rejected (invalid data, fraud detection, etc.) | Yes - Inform user and suggest actions |
+| `internalError` | Unexpected internal error occurred                        | Yes - Technical intervention required |
+| `userCancelled` | User canceled the enrollment                              | No                                    |
 
 `Yuno.Result` does not include tokens or error messages; it only returns a high-level status.
 
@@ -341,9 +342,10 @@ let result = try await apiClientEnroll.continueEnrollment(data: enrollmentCollec
 After enrolling the new card, you receive the `vaulted_token` and enrollment status in the result, which you can use for future payments or to update your customer records.
 
 **When to use Headless Enrollment:**
-- You need complete control over the enrollment UI
-- You have specific design requirements
-- You're building a highly customized enrollment experience
+
+* You need complete control over the enrollment UI
+* You have specific design requirements
+* You're building a highly customized enrollment experience
 
 ### Complementary features
 
