@@ -1,8 +1,9 @@
 ---
 title: Cancel Entity Transfer
+type: reference
 api:
-  file: baa-s.json
-  operationId: post_v1-baas-accounts-account-id-transfers-transfer-id-cancel
+  file: banking-connectivity.json
+  operationId: post_v1-banking-connectivity-accounts-account-id-transfers-transfer-id-cancel
 deprecated: false
 hidden: false
 link:

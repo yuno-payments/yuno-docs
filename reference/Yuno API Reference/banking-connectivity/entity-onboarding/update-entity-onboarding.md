@@ -1,8 +1,9 @@
 ---
 title: Update Entity Onboarding
+type: reference
 api:
-  file: baa-s.json
-  operationId: patch_v1-baas-entities-entity-id-onboardings-onboarding-id
+  file: banking-connectivity.json
+  operationId: patch_v1-banking-connectivity-entities-entity-id-onboardings-onboarding-id
 deprecated: false
 hidden: false
 link:
