@@ -1,5 +1,6 @@
 ---
 title: Create Standalone Transfer
+type: reference
 api:
   file: split-marketplace-transfers.json
   operationId: create-standalone-transfer

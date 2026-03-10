@@ -1,5 +1,6 @@
 ---
 title: Get Onboarding
+type: reference
 excerpt: Retrieves detailed information about a specific onboarding for a recipient.
 api:
   file: openapi.json

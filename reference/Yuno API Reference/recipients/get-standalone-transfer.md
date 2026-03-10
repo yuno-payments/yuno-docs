@@ -1,5 +1,6 @@
 ---
 title: Get Standalone Transfer
+type: reference
 api:
   file: split-marketplace-transfers.json
   operationId: get-standalone-transfer

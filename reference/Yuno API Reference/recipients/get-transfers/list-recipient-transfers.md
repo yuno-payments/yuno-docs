@@ -1,5 +1,6 @@
 ---
 title: List Recipient Transfers
+type: reference
 api:
   file: openapi.json
   operationId: get_recipients-recipient-id-transfers

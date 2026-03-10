@@ -511,9 +511,7 @@ In the Standalone Transfer Flow, forward and reverse operations are treated as i
 1. **Forward Transfer (`SPLIT_TRANSFER`):** You create a transfer moving funds from your balance to the recipient's connection. 
 2. **Reverse Transfer (`SPLIT_TRANSFER_REVERSE`):** You can fully or partially reverse the `SPLIT_TRANSFER` to return the funds to your balance. The original forward transfer _must be_ in `SUCCEEDED` status for a reverse to take place.
 
-> [!NOTE] Standalone vs Payment-linked Reversals 
-> Reversing a standalone transfer is different from reversing a Split Payment. 
-> To reverse a transfer linked directly to a payment checkout, use the `SPLIT_TRANSFER_REVERSAL` transaction type via the [transfer reversal endpoint](ref:transfer-reversal).
+
 
 ### Idempotency
 

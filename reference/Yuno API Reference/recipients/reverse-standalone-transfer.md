@@ -1,5 +1,6 @@
 ---
 title: Reverse Standalone Transfer
+type: reference
 api:
   file: split-marketplace-transfers.json
   operationId: reverse-standalone-transfer
