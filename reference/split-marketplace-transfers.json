@@ -1,0 +1,339 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Transfer Flow API",
+    "version": "1.0.0",
+    "description": "API for managing standalone forward and reverse transfers within the Marketplace."
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "public_api_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY"
+      },
+      "private_secret_key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY"
+      }
+    },
+    "schemas": {
+      "Amount": {
+        "type": "object",
+        "required": ["value", "currency"],
+        "properties": {
+          "value": {
+            "type": "number",
+            "example": 150.00
+          },
+          "currency": {
+            "type": "string",
+            "example": "USD"
+          }
+        }
+      },
+      "Metadata": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ProviderData": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "adyen"
+          },
+          "recipient_id": {
+            "type": "string",
+            "example": "SE322KT223222B5CM82WL9TB"
+          },
+          "transfer_id": {
+            "type": "string",
+            "example": "TRF_8535296827453920"
+          },
+          "response_code": {
+            "type": "string",
+            "example": "000"
+          },
+          "response_message": {
+            "type": "string",
+            "example": "Transfer completed"
+          }
+        }
+      },
+      "Transfer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "TRF_7kB2mQ9xPnL4vR"
+          },
+          "recipient_id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUCCEEDED"
+          },
+          "reason": {
+            "type": "string",
+            "example": "ORDER_CANCELLED"
+          },
+          "description": {
+            "type": "string",
+            "example": "Weekly marketplace earnings"
+          },
+          "merchant_reference": {
+            "type": "string",
+            "example": "TRANSFER-2026-02-15-001"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
+          "provider_data": {
+            "$ref": "#/components/schemas/ProviderData"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-02-16T10:30:00Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-02-16T10:30:15Z"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-02-16T10:30:15Z"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "public_api_key": [],
+      "private_secret_key": []
+    }
+  ],
+  "paths": {
+    "/split-marketplace/transfers": {
+      "post": {
+        "summary": "Create Standalone Transfer",
+        "operationId": "create-standalone-transfer",
+        "tags": ["Transfers"],
+        "description": "Create a forward transfer to distribute funds from your organization balance to your recipients independently of a payment.",
+        "parameters": [
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique key for request idempotency."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_id", "recipient_id", "provider_id", "amount"],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The unique identifier of the account."
+                  },
+                  "recipient_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The target recipient identifier."
+                  },
+                  "provider_id": {
+                    "type": "string",
+                    "description": "The payment provider code to use (e.g., adyen, stripe)."
+                  },
+                  "amount": {
+                    "$ref": "#/components/schemas/Amount"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "A human-readable description for the transfer (3-255 chars). This is sent to the provider."
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Merchant's unique identifier for idempotency and tracking."
+                  },
+                  "metadata": {
+                    "$ref": "#/components/schemas/Metadata"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Possible errors: PROVIDER_NOT_FOUND, ONBOARDING_NOT_VALID, CURRENCY_NOT_SUPPORTED, INVALID_AMOUNT, INSUFFICIENT_BALANCE"
+          },
+          "404": {
+            "description": "Not Found. Possible errors: RECIPIENT_NOT_FOUND"
+          },
+          "502": {
+            "description": "Bad Gateway. Possible errors: PROVIDER_INTERNAL_ERROR"
+          }
+        }
+      }
+    },
+    "/split-marketplace/transfers/{transfer_id}": {
+      "get": {
+        "summary": "Get Standalone Transfer",
+        "operationId": "get-standalone-transfer",
+        "tags": ["Transfers"],
+        "description": "Retrieve the current status, provider information, and metadata for a specific transfer using its unique ID.",
+        "parameters": [
+          {
+            "name": "transfer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique ID of the transfer (e.g., TRF_7kB2mQ9xPnL4vR)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found. Possible errors: TRANSFER_NOT_FOUND"
+          }
+        }
+      }
+    },
+    "/split-marketplace/transfers/{transfer_id}/reverse": {
+      "post": {
+        "summary": "Reverse Standalone Transfer",
+        "operationId": "reverse-standalone-transfer",
+        "tags": ["Transfers"],
+        "description": "Reverse a specific standalone transfer. This endpoint allows you to fully or partially reverse a SUCCEEDED forward transfer.",
+        "parameters": [
+          {
+            "name": "transfer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique ID of the transfer flow to reverse."
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique key for request idempotency."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_id"],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The unique identifier of the account."
+                  },
+                  "amount": {
+                    "$ref": "#/components/schemas/Amount"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "The reason for the reversal."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "A human-readable description for the reversal."
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Merchant's unique identifier for tracking this reversal."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Possible errors: TRANSFER_NOT_REVERSIBLE, TRANSFER_ALREADY_REVERSED, REVERSAL_AMOUNT_EXCEEDS, INVALID_CURRENCY"
+          },
+          "404": {
+            "description": "Not Found. Possible errors: TRANSFER_NOT_FOUND"
+          },
+          "502": {
+            "description": "Bad Gateway. Possible errors: PROVIDER_INTERNAL_ERROR"
+          }
+        }
+      }
+    }
+  }
+}
