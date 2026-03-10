@@ -1,5 +1,5 @@
 ---
-title: Create Entity
+title: Create Entity (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

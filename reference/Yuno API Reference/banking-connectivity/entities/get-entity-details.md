@@ -1,5 +1,5 @@
 ---
-title: Get Entity Details
+title: Get Entity Details (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

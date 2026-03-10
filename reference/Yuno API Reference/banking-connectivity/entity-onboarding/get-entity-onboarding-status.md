@@ -1,5 +1,5 @@
 ---
-title: Get Entity Onboarding Status
+title: Get Entity Onboarding Status (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

@@ -1,5 +1,5 @@
 ---
-title: Close Account (Banking Connectivity)
+title: Close Account
 type: reference
 api:
   file: banking-connectivity.json

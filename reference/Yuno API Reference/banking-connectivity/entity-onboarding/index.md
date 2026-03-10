@@ -1,5 +1,5 @@
 ---
-title: Entity Onboarding
+title: Entity Onboarding (Banking Connectivity)
 deprecated: false
 hidden: false
 metadata:

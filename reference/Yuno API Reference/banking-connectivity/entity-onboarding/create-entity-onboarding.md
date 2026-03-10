@@ -1,5 +1,5 @@
 ---
-title: Create Entity Onboarding
+title: Create Entity Onboarding (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

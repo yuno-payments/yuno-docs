@@ -1,5 +1,5 @@
 ---
-title: Cancel Entity Transfer
+title: Cancel Entity Transfer (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

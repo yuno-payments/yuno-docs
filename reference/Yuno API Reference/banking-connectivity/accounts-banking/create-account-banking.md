@@ -1,5 +1,5 @@
 ---
-title: Create Account (Banking Connectivity)
+title: Create Account
 type: reference
 api:
   file: banking-connectivity.json
