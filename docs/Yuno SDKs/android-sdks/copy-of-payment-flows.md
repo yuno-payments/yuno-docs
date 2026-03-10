@@ -1,7 +1,7 @@
 ---
 title: Copy of Payment Flows
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
@@ -61,7 +61,7 @@ For the full list of parameters and YunoConfig details, see the [Android SDK Com
 | `countryCode`             | ISO country code (e.g. `US`). Required.                                                                      |
 | `callbackPaymentState`    | Callback: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT).                                          |
 | `merchantSessionId`       | Optional merchant session identifier.                                                                        |
-| `YunoConfig` (initialize) | Optional: saveCardEnabled, cardFormDeployed, language, styles, placeholders. See Common Reference. |
+| `YunoConfig` (initialize) | Optional: saveCardEnabled, language, styles. See Common Reference. |
 
 ## Full (Android)
 
@@ -95,11 +95,8 @@ See the [credentials page](https://docs.y.uno/reference/authentication) for more
 ```kotlin
 data class YunoConfig(
     val saveCardEnabled: Boolean = false,
-    val cardFormDeployed: Boolean = false,
     val language: YunoLanguage? = null,
-    val styles: YunoStyles? = null,
-    val cardNumberPlaceholder: String? = null, // Optional: Custom placeholder text for card number field
-    val hideCardholderName: Boolean? = null // Optional: Set to true to hide cardholder name field
+    val styles: YunoStyles? = null
 )
 ```
 
@@ -114,10 +111,7 @@ Customization options:
 | Customization option    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `saveCardEnabled`       | Enables the Save card checkbox on card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `cardFormDeployed`      | This option is only available for Full (Android). If `TRUE`, the system presents the card form deployed on the payment methods list. If `FALSE`, presents the normal card form on another screen.                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `language`              | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
-| `cardNumberPlaceholder` | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                                                                                                                                                                    |
-| `hideCardholderName`    | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider.                                                                                                                                        |
+| `language`              | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>ar (Arabic)</li><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
 | `styles`                | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the styles section.                                                                                                                                                                                                                                                                                                                                                                           |
 
 Update your manifest to use your application:
@@ -491,10 +485,8 @@ Use the `YunoConfig` data class to set additional configurations. Options:
 | Option                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **saveCardEnabled**       | Enables the save card checkbox for card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| **language**              | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
+| **language**              | Defines the language to be used in the payment forms. You can set it to one of the available language options: <ul><li>ar (Arabic)</li><li>es (Spanish)</li><li>en (English)</li><li>pt (Portuguese)</li><li>fil (Filipino)</li><li>id (Indonesian)</li><li>ms (Malay)</li><li>th (Thai)</li><li>zh-TW (Chinese (Traditional, Taiwan))</li><li>zh-CN (Chinese (Simplified, China))</li><li>vi (Vietnamese)</li><li>fr (French)</li><li>pl (Polish)</li><li>it (Italian)</li><li>de (German)</li><li>ru (Russian)</li><li>tr (Turkish)</li><li>nl (Dutch)</li><li>sv (Swedish)</li><li>ko (Korean)</li><li>ja (Japanese)</li></ul> |
 | **styles**                | Enables SDK-wide UI customization. Use it to define global visual styles like font family and button appearance (color, padding, radius, typography) through a `YunoStyles` object. For more information, check the styles section.                                                                                                                                                                                                                                                                                                                                                                           |
-| **cardNumberPlaceholder** | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                                                                                                                                                                    |
-| **hideCardholderName**    | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider.                                                                                                                                        |
 
 > 🚧 cardFlow removed from YunoConfig
 >
@@ -506,9 +498,7 @@ Example (`YunoConfig`):
 data class YunoConfig(
     val saveCardEnabled: Boolean = false,
     val language: YunoLanguage? = null,
-    val styles: YunoStyles? = null,
-    val cardNumberPlaceholder: String? = null, // Optional: Custom placeholder text for card number field
-    val hideCardholderName: Boolean? = null // Optional: Set to true to hide cardholder name field
+    val styles: YunoStyles? = null
 )
 ```
 
