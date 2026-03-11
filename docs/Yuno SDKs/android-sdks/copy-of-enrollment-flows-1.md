@@ -5,7 +5,6 @@ hidden: true
 metadata:
   robots: index
 ---
-
 The Android SDK makes it easy to implement enrollment flows for saving payment methods to a customer account.
 
 Include the library in your project by following the same steps as in [payment flows](payment-flows-android#include-the-library-in-your-project). This lets you complete [step 2](#step-2-include-the-library-in-your-project) and continue with the enrollment flow below.
@@ -42,6 +41,7 @@ For the full list of parameters, see the [Android SDK Common Reference](android-
 | `showEnrollmentStatus` | Show enrollment result screen. Optional; default true. |
 | `callbackEnrollmentState` | Callback: enrollment state. Optional; requires `initEnrollment` in onCreate. |
 | `requestCode` | Optional; use if capturing result via `onActivityResult`. |
+| `YunoConfig` (initialize) | Optional: `saveCardEnabled`, `keepLoader`, `language`, `styles`. See Common Reference. |
 | `countryCode` (Headless) | Country for the enrollment. Required for apiClientEnroll. |
 | `customerSession` (Headless) | Customer session ID. Required for apiClientEnroll. |
 
@@ -108,7 +108,6 @@ Use the data class `YunoConfig` to customize the SDK's behavior. Include this co
 data class YunoConfig(
     val saveCardEnabled: Boolean = false,
     val keepLoader: Boolean = false,
-    val cardFormDeployed: Boolean = false,
     val language: YunoLanguage? = null,
     val styles: YunoStyles? = null
 )
