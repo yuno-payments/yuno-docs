@@ -35,7 +35,7 @@ For the full list of parameters, see the [iOS SDK Common Reference](ios-sdk-comm
 | `language` | Language code for the UI. Optional. |
 | `viewController` | UIViewController that presents the enrollment flow. Required for delegate. |
 | `yunoEnrollmentResult(_:)` | Delegate: enrollment finished with result. |
-| `YunoConfig` (initialize) | Optional: appearance, saveCardEnabled, keepLoader. See Common Reference. |
+| `YunoConfig` (initialize) | Optional: `appearance`, `saveCardEnabled`, `keepLoader`. See Common Reference. |
 
 ## Lite Enrollment (iOS)
 
