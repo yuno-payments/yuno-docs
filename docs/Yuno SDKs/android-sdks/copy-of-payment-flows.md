@@ -61,7 +61,7 @@ For the full list of parameters and YunoConfig details, see the [Android SDK Com
 | `countryCode`             | ISO country code (e.g. `US`). Required.                                                                      |
 | `callbackPaymentState`    | Callback: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT).                                          |
 | `merchantSessionId`       | Optional merchant session identifier.                                                                        |
-| `YunoConfig` (initialize) | Optional: saveCardEnabled, language, styles. See Common Reference. |
+| `YunoConfig` (initialize) | Optional: `saveCardEnabled`, `language`, `styles`. See Common Reference. |
 
 ## Full (Android)
 
