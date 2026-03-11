@@ -1,7 +1,7 @@
 ---
 title: Copy of Enrollment Flows
 deprecated: false
-hidden: false
+hidden: true
 metadata:
   robots: index
 ---
