@@ -504,7 +504,7 @@ curl --request POST \
                 "installments": 0,
                 "installments_plan_id": null,
                 "first_installment_deferral": 0,
-                "installments_type": "",
+                "installments_type": "MERCHANT",
                 "installment_amount": null,
                 "expires_at": null
             }
@@ -594,7 +594,7 @@ curl --request POST \
                     "installments": 0,
                     "installments_plan_id": null,
                     "first_installment_deferral": 0,
-                    "installments_type": "",
+                    "installments_type": "MERCHANT",
                     "installment_amount": null,
                     "expires_at": null
                 }
@@ -660,7 +660,7 @@ curl --request POST \
                         "installments": 0,
                         "installments_plan_id": null,
                         "first_installment_deferral": 0,
-                        "installments_type": "",
+                        "installments_type": "MERCHANT",
                         "installment_amount": null,
                         "expires_at": null
                     }

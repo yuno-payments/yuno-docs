@@ -161,7 +161,7 @@ After executing the 3DS for each scenario, you'll receive all the necessary info
                 "installments": 1,
                 "installments_plan_id": null,
                 "first_installment_deferral": 0,
-                "installments_type": "",
+                "installments_type": "MERCHANT",
                 "installment_amount": null,
                 "soft_descriptor": "",
                 "authorization_code": "",
