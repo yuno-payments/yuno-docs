@@ -5,41 +5,76 @@ hidden: true
 metadata:
   robots: index
 ---
-The iOS SDK makes it easy to integrate payment flows into your iOS app.
+The iOS SDK makes it easy to implement enrollment flows for saving payment methods to a customer account.
+
+Include the library in your project by following the same steps as in [payment flows](payment-flows-ios#include-the-library-in-your-project). This lets you complete [step 2](#step-2-include-the-library-in-your-project) and continue with the enrollment flow below.
 
 ## Additional resources
 
-* See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
-* Access the [Release notes](release-notes-ios) or the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) to verify the latest SDK version available.
+- See [Choose the right integration for you](choose-your-integration) if you're unsure which flow to follow.
+- Access the [Release notes](release-notes-ios) or the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) to verify the latest SDK version available.
+
+- [Lite Enrollment (iOS)](#lite-enrollment-ios): Lightweight enrollment with UI control and backend support
+- [Headless Enrollment (iOS)](#headless-enrollment-ios): Full enrollment experience customization without requiring PCI compliance
 
 ## Requirements
 
-* [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) or [Swift Package Manager](https://www.swift.org/package-manager/)
-* iOS 14.0 or above
+* CocoaPods or [Swift Package Manager](https://www.swift.org/package-manager/)
+* iOS 14.0 or later
 * Active Yuno account; API credentials (obtain from the [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**)
-* Create `checkout_session` and payment via the API; create a customer using the [Create customer endpoint](ref:create-customer) before creating a payment
+* Create a customer using the [Create customer endpoint](ref:create-customer) before enrolling
 
-## Include the library in your project
+## Parameters
 
-The first step is always including the library in your project; this step is performed regardless of which integration type you choose. You can add the Yuno iOS SDK using CocoaPods or Swift Package Manager.
+For the full list of parameters, see the [iOS SDK Common Reference](ios-sdk-common-reference).
 
-**Option 1: CocoaPods**
+| Parameter | Description |
+|-----------|-------------|
+| `customerSession` | Customer session ID from Create customer session API. Required. |
+| `countryCode` | ISO country code (e.g. `BR`). Required. |
+| `language` | Language code for the UI. Optional. |
+| `viewController` | UIViewController that presents the enrollment flow. Required for delegate. |
+| `yunoEnrollmentResult(_:)` | Delegate: enrollment finished with result. |
+| `YunoConfig` (initialize) | Optional: `appearance`, `saveCardEnabled`, `keepLoader`. See Common Reference. |
 
-Add to your Podfile:
+## Lite Enrollment (iOS)
+
+The Yuno Lite iOS SDK provides enrollment with pre-built UI, card enrollment, status handling, and basic error management. Use it when you need minimal customization and a ready-to-use enrollment flow. See [Requirements](#requirements) above.
+
+### Step 1: Create a customer and customer session
+
+Create a customer in Yuno's system using the [Create customer endpoint](ref:create-customer) before enrolling payment methods. This endpoint will return a `customer_id` that you'll use to associate enrolled payment methods with the specific customer.
+
+Then create a customer session using the [Create Customer Session](ref:create-customer-session) endpoint. The session information will be used when calling the enrollment methods.
+
+```json
+POST /v1/customer-session
+
+{
+  "country": "BR",
+  "customer_id": "6c85a4e3-0a6c-423d-a12a-10045320ab4a"
+}
+```
+
+The response includes a `customer_session` ID that you'll use in the next step.
+
+### Step 2: Include the library in your project
+
+Including the library in your project is done in the same way as in payment flows. Follow the steps in [Include the library in your project](payment-flows-ios#include-the-library-in-your-project) there.
+
+#### CocoaPods
 
 ```ruby
 pod 'YunoSDK', '~> 2.11.1'
 ```
 
-Then run:
+Run:
 
 ```ruby
 pod install
 ```
 
-**Option 2: Swift Package Manager**
-
-Add the package dependency:
+#### Swift Package Manager
 
 ```swift
 dependencies: [
@@ -47,45 +82,14 @@ dependencies: [
 ]
 ```
 
-Once Step 1 is complete, continue with your desired integration.
+Check the [Release notes](release-notes-ios) or [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) for the current SDK version.
 
-### Basic flows
+### Step 3: Initialize SDK with the public key
 
-* [Full (iOS)](#full-ios): Complete control with backend support and full customization options
-* [Seamless (payment iOS)](#seamless-payment-ios): Fastest integration with pre-built UI components
+Initialize the SDK:
 
-### Advanced flows
-
-* [Lite (iOS)](#lite-ios): Lightweight integration allowing you to control the UI and payment methods list, as well as backend support
-* [Headless (iOS)](#headless-ios): Full checkout experience customization without requiring PCI compliance
-
-## Parameters
-
-For the full list of parameters and YunoConfig, see the [iOS SDK Common Reference](ios-sdk-common-reference).
-
-| Parameter                  | Description                                                                                                                                                            |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkoutSession`          | Checkout session ID from your backend (Create checkout session API). Required.                                                                                         |
-| `countryCode`              | ISO country code (e.g. `BR`). Required.                                                                                                                                |
-| `language`                 | Language code for the UI. Optional.                                                                                                                                    |
-| `viewController`           | UIViewController that presents the payment flow. Required for delegate.                                                                                                |
-| `yunoCreatePayment(with:)` | Delegate: create payment on your backend with the one-time token.                                                                                                      |
-| `yunoPaymentResult(_:)`    | Delegate: payment finished. Receives `Yuno.Result` value (e.g., `.succeeded`, `.fail`, `.processing`). See [Payment Status reference](ref:payment) for status mapping. |
-| `YunoConfig` (initialize)  | Optional: appearance, saveCardEnabled, keepLoader. See Common Reference.                                                                                  |
-
-## Full (iOS)
-
-Implement the Full iOS SDK: complete payment solution with automatic payment method display and minimal UI customization. See [Requirements](#requirements) above.
-
-### Step 1: Include the library in your project
-
-Follow the steps in [Include the library in your project](#include-the-library-in-your-project) above.
-
-### Step 2: Initialize SDK with the public key
-
-Retrieve your public API keys from the [Yuno Dashboard](https://dashboard.y.uno/).
-
-To start running the Yuno iOS Full checkout, import and initialize Yuno:
+1. Get your Public API Key from the [Yuno Dashboard](https://dashboard.y.uno/)
+2. Initialize the SDK by calling `Yuno.initialize()` with your API key:
 
 ```swift
 import YunoSDK
@@ -97,7 +101,7 @@ Yuno.initialize(
 )
 ```
 
-The Full checkout enables you to configure the appearance and process through the `YunoConfig` class. The available options are:
+Use the `YunoConfig` data class to customize the SDK's behavior. Include this configuration when calling `Yuno.initialize()`. For example:
 
 ```swift
 struct YunoConfig {
@@ -107,219 +111,79 @@ struct YunoConfig {
 }
 ```
 
-#### Options
+### Step 4: Implement the enrollment delegate
 
-Customization options:
-
-| Customization option    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `appearance`            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                                 |
-| `saveCardEnabled`       | Enables the Save card checkbox on card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                              |
-| `keepLoader`            | Controls loader display behavior. When `true`, the loader remains visible until manually hidden.                                                                                                                                                                                                                                                                                                                                                                             |
-| `language`              | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en` (English), `es` (Spanish), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), `th` (Thai), `zh-TW` (Chinese Traditional), `zh-CN` (Chinese Simplified), `vi` (Vietnamese), `fr` (French), `pl` (Polish), `it` (Italian), `de` (German), `ru` (Russian), `tr` (Turkish), `nl` (Dutch), `sv` (Swedish), `ko` (Korean), `ja` (Japanese). |
-
-### Step 3: Create the checkout session
-
-Each payment requires a new `checkout_session`. Use the [Create checkout session](ref:create-checkout-session) endpoint to create one; use that session to initiate the payment.
-
-If your payment flow sends users to an external browser (e.g., for 3DS authentication or bank redirects), set the `callback_url` when creating your checkout session. See [Handle external browser return](#step-6-handle-external-browser-return-optional) for details.
-
-#### Checkout session options
-
-| Parameter            | Required    | Description                                                                                                      |
-| -------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
-| `amount`             | Yes         | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount).        |
-| `alternative_amount` | No          | An alternative currency representation with the same structure as `amount`. Useful for multi-currency scenarios. |
-| `callback_url`       | Recommended | URL to redirect users back to your app after external browser flows (3DS, bank redirects).                       |
-| `customer_id`        | Yes         | The customer ID obtained from the Create customer endpoint.                                                      |
-
-<Callout icon="💳" theme="default">
-  ### Auth vs capture
-
-  Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
-</Callout>
-
-### Step 4: Implement the payment delegate
-
-Create a class that adopts the `YunoPaymentDelegate` protocol:
+Create a class that adopts the `YunoEnrollmentDelegate` protocol:
 
 ```swift
-protocol YunoPaymentDelegate: AnyObject {
-    var checkoutSession: String { get }
+protocol YunoEnrollmentDelegate: AnyObject {
+    var customerSession: String { get }
     var countryCode: String { get }
     var language: String? { get }
     var viewController: UIViewController? { get }
 
-    func yunoCreatePayment(with token: String)
-    func yunoCreatePayment(with token: String, information: [String: Any])
-    func yunoPaymentResult(_ result: Yuno.Result)
+    func yunoEnrollmentResult(_ result: Yuno.Result)
 }
 
-class ViewController: UIViewController, YunoPaymentDelegate {
-    var checkoutSession: String { "438413b7-4921-41e4-b8f3-28a5a0141638" }
+class ViewController: UIViewController, YunoEnrollmentDelegate {
+    var customerSession: String { "cus_ses_123456" }
     var countryCode: String { "BR" }
     var language: String? { "en" }
     var viewController: UIViewController? { self }
 
-    func yunoCreatePayment(with token: String) {
-        // Create payment on your backend
-    }
-
-    func yunoCreatePayment(with token: String, information: [String: Any]) {
-        // Create payment with additional information
-    }
-
-    func yunoPaymentResult(_ result: Yuno.Result) {
-        // Handle payment result
-    }
-}
-```
-
-#### Options
-
-| Parameter                              | Description                                                                                                                                     |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `checkoutSession`                      | The unique identifier for the checkout session.                                                                                                 |
-| `countryCode`                          | Country code where the payment is performed. See [Country Coverage](country-coverage) for supported countries.                                  |
-| `language`                             | Language code for the payment forms (e.g., `"en"`, `"es"`, `"pt"`). See [Supported languages](languages-supported).                             |
-| `viewController`                       | The `UIViewController` used to present the payment flow. Required for proper UI presentation.                                                   |
-| `yunoCreatePayment(with:)`             | Called when a one-time token is generated. Create the payment on your backend.                                                                  |
-| `yunoCreatePayment(with:information:)` | Alternative callback that includes additional token information. Use only one version.                                                          |
-| `yunoPaymentResult(_:)`                | Called when the payment process completes. Receives a `Yuno.Result` enum value. See [Payment Status reference](ref:payment) for status mapping. |
-
-> ❗ Important Note
->
-> Use either `yunoCreatePayment(with:)` **OR** `yunoCreatePayment(with:information:)` based on your needs—not both. Calling both may cause issues.
-
-### Step 5: Mount the SDK with automatic payment method display
-
-Use `getPaymentMethodViewAsync()` to display all available payment methods automatically. Implement the `YunoPaymentFullDelegate` protocol:
-
-```swift
-protocol YunoPaymentFullDelegate: YunoPaymentDelegate {
-    func yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected)
-    func yunoDidUnenrollSuccessfully(_ success: Bool)
-    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat)
-}
-
-class ViewController: UIViewController, YunoPaymentFullDelegate {
-    // ... YunoPaymentDelegate implementation ...
-
-    func yunoDidSelect(paymentMethod: YunoSDK.PaymentMethodSelected) {
-        print("Payment method selected: \(paymentMethod.paymentMethodType)")
-    }
-
-    func yunoDidUnenrollSuccessfully(_ success: Bool) {
-        if success {
-            print("Payment method removed successfully")
-        }
-    }
-
-    func yunoUpdatePaymentMethodsViewHeight(_ height: CGFloat) {
-        // Update container height if needed
-    }
-}
-```
-
-Then call `getPaymentMethodViewAsync()` to retrieve the payment methods view:
-
-```swift
-let paymentMethodsView = await Yuno.getPaymentMethodViewAsync(delegate: self)
-
-// Add the view to your UI
-// For UIKit:
-view.addSubview(paymentMethodsView)
-
-// For SwiftUI:
-// Use the returned view in your SwiftUI body
-```
-
-The SDK automatically returns the correct view type:
-
-* **UIKit**: Returns a `UIView`
-* **SwiftUI**: Returns a `some View`
-
-> ❗ Important
->
-> Always ensure the payment methods view container has proper constraints or layout configuration. The SDK will notify you of height changes through `yunoUpdatePaymentMethodsViewHeight(_:)` if needed.
-
-### Step 6: Start the payment process
-
-After displaying the payment methods, call `startPayment()`:
-
-```swift
-Yuno.startPayment(showPaymentStatus: true)
-```
-
-#### Options
-
-| Parameter           | Description                                                                                                                                                                                                         |
-| :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `showPaymentStatus` | A boolean that specifies whether the payment status should be displayed within the Yuno interface. When `true`, the SDK displays default status screens. When `false`, you handle status display through callbacks. |
-
-### Step 7: Get the one-time token (OTT)
-
-After the customer fills out the requested data in Yuno's payment forms, you will obtain the one-time token, a required parameter to create a payment using the Yuno API.
-
-The one-time token will be shared by Yuno using the `yunoCreatePayment` function you provided in Step 4 when implementing the delegate. The one-time token will be available in the callback.
-
-A loader can be shown while the one-time token is generated. Use Yuno's default or implement your own with the required configuration.
-
-### Step 8: Create the payment
-
-After receiving the one-time token from [Step 7](#step-7-get-the-one-time-token-ott), create the payment using the [Create payment endpoint](https://docs.y.uno/reference/create-payment). Use the `checkout_session` from [Step 3](#step-3-create-the-checkout-session) and the one-time token to create the payment.
-
-```swift
-func yunoCreatePayment(with token: String) {
-    // Call your backend to create the payment
-    createPaymentOnBackend(token: token) { result in
+    func yunoEnrollmentResult(_ result: Yuno.Result) {
         switch result {
-        case .success:
-            // Payment created successfully
-            // Call continuePayment() if needed
-            Yuno.continuePayment()
-        case .failure(let error):
-            // Handle error
-            print("Payment creation failed: \(error)")
+        case .succeeded:
+            print("Enrollment successful")
+        case .fail:
+            print("Enrollment failed")
+        case .processing:
+            print("Enrollment processing")
+        case .reject:
+            print("Enrollment rejected")
+        case .userCancelled:
+            print("User canceled")
+        case .internalError:
+            print("Internal error")
         }
     }
 }
 ```
 
-In your backend, call the Create Payment endpoint:
+#### Options
 
-```http
-POST /v1/payments
+| Parameter | Description |
+|-----------|-------------|
+| `customerSession` | The unique identifier for the customer session. |
+| `countryCode` | Country code where the enrollment is performed. See [Country Coverage](country-coverage) for supported countries. |
+| `language` | Language code for the enrollment forms (e.g., `"en"`, `"es"`, `"pt"`). See [Supported languages](languages-supported). |
+| `viewController` | The `UIViewController` used to present the enrollment flow. Required for proper UI presentation. |
+| `yunoEnrollmentResult(_:)` | Called when the enrollment process completes with the final result. |
 
-{
-  "payment_method": {
-    "token": "9ee44ac7-9134-4598-ae28-a26fec03099d"
-  },
-  "checkout_session": "438413b7-4921-41e4-b8f3-28a5a0141638"
+### Step 5: Start the enrollment process
+
+Call the `enrollPayment()` method to display the enrollment flow:
+
+```swift
+func startEnrollment() {
+    Yuno.enrollPayment(with: self, showPaymentStatus: true)
 }
 ```
 
-The response from the Create payment endpoint will include the parameter `sdk_action_required`, which defines if additional actions are required to finish the payment based on the payment type.
+The SDK presents a full-screen `UIViewController` modally using the `viewController` provided in your delegate. In SwiftUI, wrap a `UIViewController` and return it via the `viewController` property.
 
-> 🚧 **Required:** Integrate the `continuePayment` method after the payment is created. Some asynchronous payment methods require additional customer actions. When the API response sets `sdk_action_required` to `true`, call `Yuno.continuePayment()` to display the necessary screens.
+#### Options
 
-### Step 9: Continue payment
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `delegate` | `YunoEnrollmentDelegate` | The delegate object that handles enrollment callbacks. |
+| `showPaymentStatus` | `Bool` | Whether to display status views during the enrollment process. When `true`, the SDK displays default status screens. When `false`, you handle status display through callbacks. |
 
-Yuno requires integrating the SDK's `continuePayment` method after the payment is created, as certain asynchronous payment methods require additional customer actions to complete. The response from the [Create payment endpoint](https://docs.y.uno/reference/create-payment), from Step 8, will include a `sdk_action_required` field. If it returns `TRUE`, you need to call the `continuePayment()` function to show additional screens that allow the customer to complete the payment. Otherwise, this step is not necessary.
+In SwiftUI, wrap a `UIViewController` and return it from the `viewController` property so the SDK can present the UI.
 
-```swift
-Yuno.continuePayment()
-```
+### Step 6: Handle deep link return (Optional)
 
-To show your payment status screens, handle status through the `yunoPaymentResult(_:)` delegate method instead of using the SDK's default status display.
-
-### Step 10: Handle external browser return (Optional)
-
-> ❗ Deep Links and Mercado Pago Checkout Pro
->
-> This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don't use deep links, you can skip this step.
-
-Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back using a deep link. Update your `AppDelegate` to pass the incoming URL to the Yuno SDK:
+Only needed when the enrollment flow uses deep links. If your payment method does not use deep links, skip this step. Otherwise, handle the return in your `AppDelegate`:
 
 ```swift
 func application(_ app: UIApplication,
@@ -328,33 +192,33 @@ func application(_ app: UIApplication,
 
     guard url.scheme == "yunoexample" else { return false }
 
-    return Yuno.receiveDeeplink(url)
+    return Yuno.receiveDeeplink(url, showStatusView: true)
 }
 ```
 
-Make sure the `url.scheme` matches the `callback_url` you provided when creating the `checkout_session`.
+Make sure the `url.scheme` matches the `callback_url` used when creating the `customer_session`.
 
-### Step 11: Handle payment result
+### Step 7: Handle enrollment result
 
-The SDK returns the payment result through the `yunoPaymentResult(_:)` delegate method:
+The SDK calls your `yunoEnrollmentResult(_:)` delegate method with the final status:
 
 ```swift
-func yunoPaymentResult(_ result: Yuno.Result) {
+func yunoEnrollmentResult(_ result: Yuno.Result) {
     switch result {
     case .succeeded:
-        print("Payment succeeded")
-        // Navigate to success screen
+        print("Enrollment successful")
+        // Navigate to success screen or update UI
     case .fail:
-        print("Payment failed")
+        print("Enrollment failed")
         // Show error message
     case .processing:
-        print("Payment is processing")
+        print("Enrollment still processing")
         // Show processing message
     case .reject:
-        print("Payment was rejected")
+        print("Enrollment rejected")
         // Show rejection message
     case .userCancelled:
-        print("User canceled payment")
+        print("User canceled")
         // Handle cancellation
     case .internalError:
         print("Internal error occurred")
@@ -363,354 +227,67 @@ func yunoPaymentResult(_ result: Yuno.Result) {
 }
 ```
 
-#### Payment states
+#### Enrollment Result States
 
-| State           | Description                                                    | Action Required                       |
-| --------------- | -------------------------------------------------------------- | ------------------------------------- |
-| `succeeded`     | Payment completed successfully                                 | No                                    |
-| `fail`          | Payment failed due to validation, network, or technical issues | Yes - Investigate and retry           |
-| `processing`    | Payment in progress, awaiting approval                         | No                                    |
-| `reject`        | Payment rejected (insufficient funds, fraud detection, etc.)   | Yes - Inform user and suggest actions |
-| `internalError` | Unexpected internal error occurred                             | Yes - Technical intervention required |
-| `userCancelled` | User canceled the payment                                      | No                                    |
+| State | Description | Action Required |
+|-------|-------------|-----------------|
+| `succeeded` | Enrollment completed successfully | No |
+| `fail` | Enrollment failed due to validation or technical issues | Yes - Investigate and retry |
+| `processing` | Enrollment in progress, awaiting approval | No |
+| `reject` | Enrollment rejected (invalid data, fraud detection, etc.) | Yes - Inform user and suggest actions |
+| `internalError` | Unexpected internal error occurred | Yes - Technical intervention required |
+| `userCancelled` | User canceled the enrollment | No |
 
-#### Payment status validation
-
-This section explains how the SDK handles payment status when users cancel or leave payment flows, and how the SDK status relates to the backend payment status in these scenarios.
-
-##### Sync payment methods (Apple Pay)
-
-For synchronous payment methods like Apple Pay, when a user cancels before PSP response:
-
-* **SDK Status**: Returns `userCancelled` (CANCELLED_BY_USER)
-* **Backend Payment Status**: Remains `PENDING` until PSP timeout or merchant cancellation
-* **Important**: The SDK will not return `reject` or `processing` in this scenario
-
-This ensures that the backend payment remains in a pending state and can be properly handled by the merchant's system.
-
-##### Async payment methods (PIX, QR codes)
-
-For asynchronous payment methods like PIX, when a user closes the QR window:
-
-* **SDK Status**: Returns `processing`, optionally with a sub-status such as `CLOSED_BY_USER`
-* **Backend Payment Status**: Remains `PENDING` and the QR code remains valid until expiry
-* **Checkout Session Reuse**: Re-opening the same checkout session can display the same valid QR code
-* **No Automatic Cancellation**: The PIX payment is not automatically cancelled when the user closes the QR window
-
-This behavior allows users to return to the payment flow and complete the transaction using the same QR code before it expires.
-
-##### Expired async payments
-
-If a PIX QR code expires naturally:
-
-* **Backend Status**: Updated to `EXPIRED`
-* **SDK Status**: SDK callbacks and polling endpoints return `EXPIRED` consistently
-
-This ensures merchants receive accurate status information when a payment method has expired.
+`Yuno.Result` does not include tokens or error messages; it only returns a high-level status.
 
 ### Complementary features
 
 For styling, themes, form options, and additional configurations, see [SDK customizations](ios-customizations).
 
-## Seamless (payment iOS)
+## Headless Enrollment (iOS)
 
-Seamless (payment iOS) for payments.
+Headless (iOS) lets you enroll payment methods and tokenize cards for future use, with full control over the UI and direct API access. See [Requirements](#requirements) above.
 
-**Recommended**: Use Seamless (payment iOS) for pre-built UI and customization.
+### Step 1: Create a customer and customer session
 
-This SDK is ideal for merchants who:
+Create a customer using the [Create Customer](ref:create-customer) endpoint before enrolling payment methods. Then create a new `customer_session` using the [Create Customer Session](ref:create-customer-session) endpoint and store the `customer_session` ID for the enrollment calls.
 
-* Want control over the payment flow while leveraging pre-built UI components
-* Need to customize the payment experience while maintaining PCI compliance
-* Require a balance between implementation speed and customization
+```json
+POST /v1/customer-session
 
-Seamless (payment iOS) includes features like:
-
-* Pre-built payment UI components with customization options
-* Multiple payment method support
-* Advanced payment status handling
-* Comprehensive error management
-
-For merchants requiring complete UI control or more advanced features, consider using our [Full](#full-ios) instead.
-
-See [Requirements](#requirements) above.
-
-### Step 1: Create a customer
-
-Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
-
-* Identify the person making the payment
-* Enable saved card functionality (if enabled)
-* Track payment history
-
-The customer ID returned from this endpoint will be used when creating the `checkout_session`.
-
-### Step 2: Create a checkout session
-
-Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
-
-* Include the customer ID obtained from the previous step
-* Store the returned `checkout_session` ID for use in Step 6 of the integration
-* Set `workflow` to `SDK_SEAMLESS` when creating the checkout session
-
-<Callout icon="💳" theme="default">
-  ### **Auth vs capture**
-
-  Control auth vs capture by sending `payment_method.detail.card.capture` in the checkout session: `false` = authorize only, `true` = capture immediately.
-</Callout>
-
-#### Checkout session options
-
-| Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
-| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
-| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
-| `workflow`           | Yes      | Set to `SDK_SEAMLESS` for Seamless (payment iOS) integration.                                                                                                                                                                                                                                                      |
-
-> 🚧 Checkout session usage
->
-> The `checkout_session` is unique for each payment attempt and cannot be reused.
-
-Follow the steps in [Include the library in your project](#include-the-library-in-your-project) above.
-
-### Step 3: Initialize SDK
-
-Retrieve your public API keys from the [Yuno Dashboard](https://dashboard.y.uno/).
-
-```swift
-import YunoSDK
-
-Yuno.initialize(
-    apiKey: "PUBLIC_API_KEY",
-    config: YunoConfig(),
-    callback: { (value: Bool) in }
-)
+{
+  "country": "BR",
+  "customer_id": "6c85a4e3-0a6c-423d-a12a-10045320ab4a"
+}
 ```
 
-Configure the Seamless checkout using `YunoConfig` (for card form type, appearance, save card, and loader behavior).
+### Step 2: Add the SDK to your project
 
-Use the `YunoConfig` data class to set additional configurations. Options:
+Including the library in your project is done in the same way as in payment flows. Follow the steps in [Include the library in your project](payment-flows-ios#include-the-library-in-your-project) there.
 
-| Option                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **saveCardEnabled**       | Enables the save card checkbox for card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                       |
-| **language**              | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en`, `es`, `pt`, `fil`, `id`, `ms`, `th`, `zh-TW`, `zh-CN`, `vi`, `fr`, `pl`, `it`, `de`, `ru`, `tr`, `nl`, `sv`, `ko`, `ja`.                                                                                                                                                                                                                          |
-| **appearance**            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                           |
+#### CocoaPods
 
-### Step 4: Implement the payment delegate
-
-Create a class that adopts the `YunoPaymentDelegate` protocol as described in the Full (iOS) section.
-
-### Step 5: Start the checkout and payment process
-
-Use `Yuno.startPaymentSeamlessLite` from your `ViewController` to start the seamless checkout UI:
-
-```swift
-let seamlessParams = SeamlessParams(
-    checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
-    countryCode: "BR",
-    language: "en",
-    viewController: self
-)
-
-let paymentSelected = PaymentMethodSelected(
-    paymentMethodType: "CARD",
-    vaultedToken: nil
-)
-
-// Using async/await
-let result = await Yuno.startPaymentSeamlessLite(
-    with: seamlessParams,
-    paymentSelected: paymentSelected,
-    showPaymentStatus: true
-)
-
-// Or using callbacks
-Yuno.startPaymentSeamlessLite(
-    with: seamlessParams,
-    paymentSelected: paymentSelected,
-    showPaymentStatus: true,
-    callback: { result in
-        // Handle result
-    }
-)
+```ruby
+pod 'YunoSDK', '~> 2.11.1'
 ```
 
-#### Options
+Run:
 
-| Parameter           | Description                                                                                           |
-| :------------------ | :---------------------------------------------------------------------------------------------------- |
-| `seamlessParams`    | Configuration object containing `checkoutSession`, `countryCode`, `language`, and `viewController`.   |
-| `paymentSelected`   | Specifies the payment method, either through a vaulted token or a selected payment type.              |
-| `showPaymentStatus` | When `true`, displays the SDK's default result screen. When `false`, handle status through callbacks. |
-
-Seamless (payment iOS) automatically handles payment creation on the backend. You still receive the payment result through the callback or return value, but you don't need to call the Create Payment API manually.
-
-### Step 6: Handle payment result
-
-The SDK returns the payment result through the callback or return value. Handle it as described in the Full (iOS) section.
-
-### Complementary features
-
-For styling, themes, form options, and additional configurations, see [SDK customizations](ios-customizations).
-
-## Lite (iOS)
-
-Lite (iOS) for payments.
-
-**Recommended**: Use the [Seamless](#seamless-payment-ios) for pre-built UI; use Lite for a streamlined card-focused integration.
-
-This SDK offers a streamlined integration process with essential payment functionality, making it ideal for merchants who:
-
-* Need a quick implementation with minimal customization requirements
-* Want to focus primarily on card payment processing
-* Prefer a ready-to-use UI that handles the payment flow
-
-Lite (iOS) includes core features like:
-
-* Pre-built payment UI components
-* Card payment processing
-* Basic payment status handling
-* Essential error management
-
-For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full](#full-ios) instead.
-
-See [Requirements](#requirements) above.
-
-### Step 1: Create a customer
-
-Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
-
-* Identify the person making the payment
-* Enable saved card functionality (if enabled)
-* Track payment history
-
-The customer ID returned from this endpoint will be used when creating the `checkout_session`.
-
-### Step 2: Create a checkout session
-
-Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
-
-* Include the customer ID obtained from the previous step
-* Store the returned `checkout_session` ID for use in later steps
-* Remember that the `checkout_session` is unique for each payment attempt and cannot be reused
-
-If your payment flow sends users to an external browser (e.g., for 3DS authentication or bank redirects), set the `callback_url` when creating your checkout session. See [Handle external browser return](#step-6-handle-external-browser-return-optional) for details.
-
-Follow the steps in [Include the library in your project](#include-the-library-in-your-project) above.
-
-### Step 3: Initialize SDK with the public key
-
-Initialize the SDK:
-
-1. Get your public API keys from the [Yuno Dashboard](https://dashboard.y.uno/)
-2. Initialize the SDK by calling `Yuno.initialize()` with your API key and configuration:
-
-```swift
-import YunoSDK
-
-Yuno.initialize(
-    apiKey: "PUBLIC_API_KEY",
-    config: YunoConfig(),
-    callback: { (value: Bool) in }
-)
+```ruby
+pod install
 ```
 
-Use `YunoConfig` to configure `appearance`, `saveCardEnabled`, and `keepLoader`.
-
-### Step 4: Implement the payment delegate
-
-Create a `ViewController` that adopts `YunoPaymentDelegate` as described in the Full (iOS) section.
-
-### Step 5: Start the Lite checkout process
-
-After initializing the SDK and creating the checkout session, start the payment process using Lite (iOS). Fetch available payment methods from the API, display them in your UI, then mount the selected method.
-
-**Step 1: Fetch available payment methods**
-
-Call the API to retrieve payment methods available for the checkout session:
+#### Swift Package Manager
 
 ```swift
-// Backend API call
-GET /v1/checkout/sessions/{checkout_session}/payment-methods
+dependencies: [
+    .package(url: "https://github.com/yuno-payments/yuno-sdk-ios.git", .upToNextMajor(from: "2.11.1"))
+]
 ```
-
-**Step 2: Display payment methods in your UI**
-
-Present the payment methods to your customer and capture their selection.
-
-**Step 3: Mount the selected payment method**
-
-```swift
-let paymentSelected = PaymentMethodSelected(
-    paymentMethodType: "CARD", // User's selection
-    vaultedToken: nil // Optional: for enrolled methods
-)
-
-Yuno.startPaymentLite(
-    with: self,
-    paymentSelected: paymentSelected,
-    showPaymentStatus: true
-)
-```
-
-The payment starts automatically when you call `startPaymentLite()`.
-
-A loader can be shown while the one-time token is generated. Use Yuno's default or implement your own with the required configuration.
-
-### Step 6: Create the payment
-
-After receiving the one-time token from Lite (iOS), create the payment using the [Create payment endpoint](https://docs.y.uno/reference/create-payment). Use the `checkout_session` from the previous steps and the one-time token to create the payment.
-
-The response from the Create payment endpoint will include the parameter `sdk_action_required`, which defines if additional actions are required to finish the payment based on the payment type. If `sdk_action_required` is `true`, you must call `continuePayment()` to complete the flow.
-
-## Headless (iOS)
-
-Yuno Headless iOS SDK for payments.
-
-**Recommended**: Use the [Seamless](#seamless-payment-ios) for pre-built UI; use Headless for maximum customization and UI control.
-
-Yuno's Headless iOS SDK lets you create payments and enroll payment methods without relying on pre-built UI.
-
-Headless (iOS) is ideal for merchants who:
-
-* Need full control over the payment UI and user experience
-* Want to build custom payment flows
-* Require advanced integration capabilities
-
-Headless (iOS) includes core features like:
-
-* Direct API access for payment processing
-* Token generation for payment methods
-* 3DS authentication handling
-* Fraud prevention data collection
-
-For merchants preferring a pre-built UI solution, consider using our [Full](#full-ios) or [Lite](#lite-ios) instead.
-
-See [Requirements](#requirements) above.
-
-### Step 1: Create a customer
-
-Create a customer using the [Create customer endpoint](ref:create-customer) before initiating payments. This step is required to:
-
-* Identify the person making the payment
-* Enable saved payment method functionality (if enabled)
-* Track payment history
-
-The customer ID returned from this endpoint will be used when creating the `checkout_session`.
-
-### Step 2: Create a checkout session
-
-Create a new `checkout_session` using the [Create checkout session](ref:create-checkout-session) endpoint to initialize the payment flow. Make sure to:
-
-* Include the customer ID obtained from the previous step
-* Store the returned `checkout_session` ID for use in later steps
-
-The `checkout_session` is unique for each payment attempt and cannot be reused.
-
-Follow the steps in [Include the library in your project](#include-the-library-in-your-project) above.
 
 ### Step 3: Initialize Headless with the public key
+
+Retrieve your public API keys from the [Yuno Dashboard](https://dashboard.y.uno/). Then initialize the SDK:
 
 ```swift
 import YunoSDK
@@ -720,32 +297,29 @@ Yuno.initialize(
 )
 ```
 
-### Step 4: Start the checkout process
+### Step 4: Start the enrollment process
 
-Use `Yuno.apiClientPayment` to configure a headless checkout client:
+Use `Yuno.apiClientEnroll` to configure the headless enrollment client:
 
 ```swift
-var apiClientPayment: YunoPaymentHeadless?
+var apiClientEnroll: YunoEnrollHeadless?
 
-apiClientPayment = Yuno.apiClientPayment(
+apiClientEnroll = try Yuno.apiClientEnroll(
     countryCode: "CO",
-    checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638"
+    customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
 )
 ```
 
-Then use `apiClientPayment.generateToken(...)` to generate one-time tokens:
+### Step 5: Generate a vaulted token
+
+After collecting all user information, create a `vaulted_token` using `apiClientEnroll.continueEnrollment(data:)`. Use `do/catch` to handle errors:
 
 ```swift
-// Step 1: Collect payment information in your custom UI
-
-// Step 2: Generate token with card data
-let tokenCollectedData = TokenCollectedData(
-    checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
+let enrollmentCollectedData: EnrollmentCollectedData = EnrollmentCollectedData(
+    customerSession: "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
     paymentMethod: CollectedData(
         type: "CARD",
-        vaultedToken: nil,
         card: CardData(
-            save: true,
             detail: CardData.Detail(
                 number: "4111111111111111",
                 expirationMonth: 12,
@@ -759,24 +333,19 @@ let tokenCollectedData = TokenCollectedData(
     )
 )
 
-do {
-    let result = try await apiClientPayment.generateToken(data: tokenCollectedData)
-    // Extract token from result and create payment
-    if let token = result["token"] as? String {
-        // Call Create Payment API on your backend
-    }
-} catch {
-    print("Token generation failed: \(error)")
-}
+let result = try await apiClientEnroll.continueEnrollment(data: enrollmentCollectedData)
 ```
 
-After generating the token, create the payment on your backend using the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), then handle 3DS challenges and continue payments as needed.
+After enrolling the new card, you receive the `vaulted_token` and enrollment status in the result, which you can use for future payments or to update your customer records.
 
-**When to use Headless:**
+**When to use Headless Enrollment:**
+- You need complete control over the enrollment UI
+- You have specific design requirements
+- You're building a highly customized enrollment experience
 
-* You need complete control over the entire payment UI
-* You have specific design requirements that can't be met with SDK components
-* You're building a highly customized checkout experience
+### Complementary features
+
+For styling, themes, form options, and additional configurations, see [SDK customizations](ios-customizations).
 
 ## Common reference
 
