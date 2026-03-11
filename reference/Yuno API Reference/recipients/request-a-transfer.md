@@ -1,6 +1,5 @@
 ---
 title: Request a Transfer
-type: reference
 api:
   file: openapi.json
   operationId: >-

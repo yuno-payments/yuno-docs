@@ -1,6 +1,5 @@
 ---
 title: Continue Onboarding
-type: reference
 excerpt: >-
   Continues the onboarding process for a recipient. This endpoint is used for
   two-step onboarding flows to execute the KYC step after account creation.

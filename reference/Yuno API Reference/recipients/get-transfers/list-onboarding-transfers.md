@@ -1,6 +1,5 @@
 ---
 title: List Onboarding Transfers
-type: reference
 api:
   file: openapi.json
   operationId: get_onboardings-onboarding-id-transfers

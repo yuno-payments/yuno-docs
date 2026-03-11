@@ -1,6 +1,5 @@
 ---
 title: Create Onboarding
-type: reference
 excerpt: Creates an onboarding for a recipient.
 api:
   file: openapi.json

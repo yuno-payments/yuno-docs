@@ -1,5 +1,5 @@
 ---
-title: Accounts (Banking Connectivity)
+title: Accounts
 deprecated: false
 hidden: false
 metadata:

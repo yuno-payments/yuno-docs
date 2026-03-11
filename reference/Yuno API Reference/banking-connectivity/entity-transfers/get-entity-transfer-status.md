@@ -1,5 +1,5 @@
 ---
-title: Get Entity Transfer Status
+title: Get Entity Transfer Status (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

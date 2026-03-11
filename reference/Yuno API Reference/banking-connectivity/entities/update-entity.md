@@ -1,5 +1,5 @@
 ---
-title: Update Entity
+title: Update Entity (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

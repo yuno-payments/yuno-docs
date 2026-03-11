@@ -82,20 +82,16 @@ For incoming transfer payload structure, see [Webhook Notifications (Banking Con
 
 | Event | Description |
 | --- | --- |
-| `baas.transfer.incoming.pending` | Incoming transfer pending settlement |
-| `baas.transfer.incoming.completed` | Incoming transfer settled |
+| `banking.transfer.incoming.pending` | Incoming transfer pending settlement |
+| `banking.transfer.incoming.completed` | Incoming transfer settled |
 
-### Marketplace Transfer events
+### Marketplace Split Transfer events
 
 | Event | Description |
 | --- | --- |
-| `split_transfer.created` | Transfer flow created |
-| `split_transfer.pending` | Transfer sent to provider |
-| `split_transfer.succeeded` | Transfer completed successfully |
-| `split_transfer.declined` | Transfer declined by provider |
-| `split_transfer.error` | Transfer error |
-| `split_transfer_reverse.created` | Reverse transaction created |
-| `split_transfer_reverse.pending` | Reversal sent to provider |
-| `split_transfer_reverse.succeeded` | Reversal completed successfully |
-| `split_transfer_reverse.declined` | Reversal declined by provider |
-| `split_transfer_reverse.error` | Reversal error |
+| `split_transfer.created` | Split transfer created |
+| `split_transfer.succeeded` | Split transfer succeeded |
+| `split_transfer.failed` | Split transfer failed |
+| `split_transfer_reverse.created` | Split transfer reversal created |
+| `split_transfer_reverse.succeeded` | Split transfer reversal succeeded |
+| `split_transfer_reverse.failed` | Split transfer reversal failed |

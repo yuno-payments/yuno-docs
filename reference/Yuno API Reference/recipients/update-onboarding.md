@@ -1,6 +1,5 @@
 ---
 title: Update Onboarding
-type: reference
 excerpt: >-
   Updates an existing onboarding for a recipient. Only specified fields will be
   updated.

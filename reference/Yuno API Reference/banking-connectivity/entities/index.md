@@ -1,5 +1,5 @@
 ---
-title: Entities
+title: Entities (Banking Connectivity)
 deprecated: false
 hidden: false
 metadata:

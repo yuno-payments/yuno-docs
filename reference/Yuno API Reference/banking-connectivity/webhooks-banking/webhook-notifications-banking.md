@@ -1,5 +1,5 @@
 ---
-title: Webhook Notifications (Banking Connectivity)
+title: Webhook Notifications
 type: reference
 api:
   file: banking-connectivity-merchant-base-url.json

@@ -532,11 +532,11 @@ In this section, we outline the necessary validations to ensure successful split
 
 This section lists the API endpoints involved in managing split payments.
 
-* **[Create recipients](ref:create-recipient-1)**: `POST /v1/recipients`
-* **[Create onboarding](ref:create-onboarding)**: `POST /v1/recipients/{recipient_id}/onboardings`
+* **[Create recipients](ref:create-recipient)**: `POST /v1/recipients`
+* **[Create onboarding](ref:post_{id}onboardings)**: `POST /v1/recipients/{recipient_id}/onboardings`
 * **[Continue onboarding](ref:continue-onboarding)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/continue`
-* **[Transfer onboarding](ref:transfer-onboarding)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
-* **[Reverse onboarding transfer](ref:reverse-onboarding)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`
+* **[Transfer onboarding](ref:post_recipients{:id}onboardings{:id}transfer)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
+* **[Reverse onboarding transfer](ref:post_recipients{:id}onboardings{:onboarding}reverse-transfer)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`
 * **[Create payment](ref:create-payment)**: `POST /v1/payments`
 * **[Capture authorization](ref:capture-authorization)**: `POST /v1/payments/{id}/transactions/{transaction_id}/capture`
 * **[Refund payment](ref:refund-payment)**: `POST /v1/payments/{id}/transactions/{transaction_id}/refund`

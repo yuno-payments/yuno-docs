@@ -1,5 +1,5 @@
 ---
-title: Cancel Entity Onboarding
+title: Cancel Entity Onboarding (Banking Connectivity)
 type: reference
 api:
   file: banking-connectivity.json

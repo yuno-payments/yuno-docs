@@ -1,5 +1,5 @@
 ---
-title: Get Account Details (Banking Connectivity)
+title: Get Account Details
 type: reference
 api:
   file: banking-connectivity.json

@@ -1,5 +1,5 @@
 ---
-title: Update Account (Banking Connectivity)
+title: Update Account
 type: reference
 api:
   file: banking-connectivity.json
