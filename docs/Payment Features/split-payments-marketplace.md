@@ -18,6 +18,7 @@ The key features of the split payments marketplace include:
 * **Integration with providers**: Splits can be executed by payment providers that support this functionality.
 * **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
 * **Onboarding transfer**: Allows the transfer of onboardings between different recipients.
+* **Standalone transfers**: Execute forward transfers from the organization balance to recipients and reverse them dynamically.
 
 To use this feature, you must **first onboard your recipients** for the payment split, and **then create the payment** specifying the necessary information.
 
@@ -480,6 +481,42 @@ If you decide to transfer the onboarding to another recipient, continue the flow
 
 The `onboarding` object includes a `history` element that stores the complete traceability of the onboarding. This history includes not only updates to the object but also events related to transfers between recipients, ensuring full lifecycle visibility.
 
+## 4. Standalone Transfers
+
+Merchants often need to send funds to recipients (sellers, vendors, contractors) independently of a payment lifecycle, directly from their organization balance. This is known as a **Standalone Transfer** or **Forward Transfer**. 
+
+This feature allows you to:
+- Distribute sales proceeds to sellers in a Marketplace.
+- Pay contractors after completed jobs (Gig Economy).
+- Manage revenue sharing for subscriptions or commission payments for affiliates.
+- Execute bulk payouts to multiple recipients.
+
+### Transfer Statuses
+
+A standalone transfer flow goes through multiple states depending on the provider's response and any subsequent reversals:
+
+| Status      | Description                                               | Terminal? |
+| ----------- | --------------------------------------------------------- | --------- |
+| `CREATED`   | Transfer flow created, not yet sent to provider.          | No        |
+| `PENDING`   | Sent to provider, awaiting confirmation.                  | No        |
+| `SUCCEEDED` | Forward transfer completed successfully.                  | No        |
+| `DECLINED`  | Provider declined the transfer.                           | Yes       |
+| `ERROR`     | Provider error during processing.                         | Yes       |
+| `REVERSED`  | Reverse transaction completed successfully.               | Yes       |
+
+### Transactions and Reversals
+
+In the Standalone Transfer Flow, forward and reverse operations are treated as identical independent transactions to maintain an explicit audit trail. This means:
+
+1. **Forward Transfer (`SPLIT_TRANSFER`):** You create a transfer moving funds from your balance to the recipient's connection. 
+2. **Reverse Transfer (`SPLIT_TRANSFER_REVERSE`):** You can fully or partially reverse the `SPLIT_TRANSFER` to return the funds to your balance. The original forward transfer _must be_ in `SUCCEEDED` status for a reverse to take place.
+
+
+
+### Idempotency
+
+Both the creation and reversal of standalone transfers require an **Idempotency Key** via the `X-Idempotency-Key` header. This allows you to safely retry requests without accidentally duplicating fund distribution. These keys are retained for 24 hours. Duplicate requests using the same combination of `account_id` and idempotency key will return the original transfer object.
+
 ## Validations
 
 In this section, we outline the necessary validations to ensure successful split payments.
@@ -495,13 +532,16 @@ In this section, we outline the necessary validations to ensure successful split
 
 This section lists the API endpoints involved in managing split payments.
 
-* **[Create recipients](ref:create-recipient-1)**: **POST**: `https://api-sandbox.y.uno/v1/recipients`
-* **[Create onboarding](ref:create-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings`
-* **[Continue onboarding](ref:continue-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/continue`
-* **[Create payment](ref:create-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments`
-* **[Capture authorization](ref:capture-authorization)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/capture`
-* **[Refund payment](ref:refund-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/refund`
-* **[Cancel or refund a payment](https://docs.y.uno/reference/cancel-or-refund-a-payment)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/cancel-or-refund`
-* **[Cancel or refund a payment with transaction](https://docs.y.uno/reference/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
-* **[Transfer onboarding](https://docs.y.uno/reference/transfer-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
-* **[Reverse onboarding transfer](https://docs.y.uno/reference/reverse-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`
+* **[Create recipients](ref:create-recipient)**: `POST /v1/recipients`
+* **[Create onboarding](ref:post_{id}onboardings)**: `POST /v1/recipients/{recipient_id}/onboardings`
+* **[Continue onboarding](ref:continue-onboarding)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/continue`
+* **[Transfer onboarding](ref:post_recipients{:id}onboardings{:id}transfer)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
+* **[Reverse onboarding transfer](ref:post_recipients{:id}onboardings{:onboarding}reverse-transfer)**: `POST /v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`
+* **[Create payment](ref:create-payment)**: `POST /v1/payments`
+* **[Capture authorization](ref:capture-authorization)**: `POST /v1/payments/{id}/transactions/{transaction_id}/capture`
+* **[Refund payment](ref:refund-payment)**: `POST /v1/payments/{id}/transactions/{transaction_id}/refund`
+* **[Cancel or refund a payment](ref:cancel-or-refund-a-payment)**: `POST /v1/payments/{id}/cancel-or-refund`
+* **[Cancel or refund a payment with transaction](ref:cancel-or-refund-payment-with-transaction)**: `POST /v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
+* **[Create standalone transfer](ref:create-standalone-transfer)**: `POST /v1/split-marketplace/transfers`
+* **[Get standalone transfer](ref:get-standalone-transfer)**: `GET /v1/split-marketplace/transfers/{transfer_id}`
+* **[Reverse standalone transfer](ref:reverse-standalone-transfer)**: `POST /v1/split-marketplace/transfers/{transfer_id}/reverse`

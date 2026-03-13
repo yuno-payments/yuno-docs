@@ -84,3 +84,14 @@ For incoming transfer payload structure, see [Webhook Notifications (Banking Con
 | --- | --- |
 | `banking.transfer.incoming.pending` | Incoming transfer pending settlement |
 | `banking.transfer.incoming.completed` | Incoming transfer settled |
+
+### Marketplace Split Transfer events
+
+| Event | Description |
+| --- | --- |
+| `split_transfer.created` | Split transfer created |
+| `split_transfer.succeeded` | Split transfer succeeded |
+| `split_transfer.failed` | Split transfer failed |
+| `split_transfer_reverse.created` | Split transfer reversal created |
+| `split_transfer_reverse.succeeded` | Split transfer reversal succeeded |
+| `split_transfer_reverse.failed` | Split transfer reversal failed |

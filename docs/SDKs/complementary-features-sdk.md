@@ -517,3 +517,5 @@ To enable the card scanning feature, you must activate it in the Checkout Builde
 > 📘 Learn more about Checkout Builder
 >
 > Visit the [Checkout Builder](doc:checkout-builder) page for additional information.
+
+---
