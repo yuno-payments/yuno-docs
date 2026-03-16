@@ -50,7 +50,7 @@ Parameters for enrollment flows (Lite, Headless). All parameters used in [Enroll
 | `language`                 | string           | No       | Language code for the SDK UI. Optional.                                                                                                                                                          |
 | `viewController`           | UIViewController | Yes*     | The view controller that presents the enrollment flow. Required for delegate-based enrollment.                                                                                                   |
 | `yunoEnrollmentResult(_:)` | delegate         | No       | Delegate method: invoked when enrollment finishes. Receives the result (e.g. vaulted token, status). Use for UI updates or navigation.                                                           |
-| `YunoConfig`               | YunoConfig       | No       | Same options as payment (e.g. `appearance`, `saveCardEnabled`, `keepLoader`, `hideCardholderName`). See [YunoConfig options (initialize)](#yunoconfig-options-initialize) above. |
+| `YunoConfig`               | YunoConfig       | No       | Same options as payment (e.g. `appearance`, `saveCardEnabled`, `keepLoader`). See [YunoConfig options (initialize)](#yunoconfig-options-initialize) above. |
 
 ## Enrolling payment methods
 
