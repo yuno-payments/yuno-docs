@@ -345,8 +345,6 @@ For the full list of parameters and options, see the subsections that follow.
 | `lang`                | Defines the language used in the payment forms. Set it to one of the available options: en (English), es (Spanish), pt (Portuguese), ms (Malay), id (Indonesian), th (Thai), ar (Arabic). See [Supported languages](#supported-languages) for more details.                                                                                       |
 | `saveCardEnable`      | Enables the Save card checkbox on card flows, allowing users to save their card for future payments. Default: `false`.                                                                                                                                                                                                                    |
 | `keepLoader`          | Keeps the SDK loader visible until you call `Yuno.hideLoader()` or the flow completes. When set to `true`, you must manually hide the loader. Default: `false`.                                                                                                                                                                               |
-| `isDynamicViewEnable` | Enables dynamic view updates for native UI components on Android and iOS. This allows the SDK to refresh UI elements based on payment method requirements.                                                                                                                                                                                    |
-| `cardFormDeployed`    | Enables card form deployment mode for supported flows. When enabled, the card form is displayed in an expanded state by default, showing all fields at once.                                                                                                                                                                                 |
 
 ### `IosConfig`
 
@@ -397,7 +395,7 @@ For the full list of parameters and options, see the subsections that follow.
 
 You can customize SDK behavior and appearance using the configuration options:
 
-* `YunoConfig` for language, card flow render mode, save card, and loader handling
+* `YunoConfig` for language, save card, and loader handling
 * `IosConfig.appearance` for iOS UI styling
 * Android styling through native configuration (see below)
 
