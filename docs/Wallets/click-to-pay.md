@@ -119,10 +119,50 @@ If the deeplink contains a `one_time_token`:
 
 ### Android Passkey flow
 
-For Android, include a `callback_url` that matches your app’s deeplink scheme when creating the checkout session, add the corresponding `intent-filter` in `AndroidManifest.xml`, and handle the deeplink in both `onCreate` and `onNewIntent`. When the deeplink arrives:
+For Android, include a `callback_url` that matches your app’s deeplink scheme when creating the checkout session, add the corresponding `intent-filter` in `AndroidManifest.xml`, and handle the deeplink in both `onCreate` and `onNewIntent`.
 
-1. Check `has_error` to manage cancellations or failures.
-2. Extract `one_time_token` (and the optional `checkout_session`) from the URI.
-3. Send the OTT to your backend to call the [Create Payment endpoint](https://docs.y.uno/reference/create-payment), then invoke `continuePayment` in the SDK to resume the flow.
+#### 1. Configure the deep link in AndroidManifest.xml
+
+Add an `intent-filter` to the activity that will handle the return from the Passkey authentication flow.
+
+```xml
+<activity android:name=".YourActivity" android:launchMode="singleTask">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="myapp" android:host="pay" android:path="/ctp" />
+    </intent-filter>
+</activity>
+```
+
+#### 2. Handle the deep link and process the token
+
+In your activity, extract the one-time token (OTT) from the deep link and use it to complete the payment.
+
+```kotlin
+// In onCreate() or onNewIntent()
+intent.data?.let { uri ->
+    val uriStr = uri.toString()
+
+    when {
+        uriStr.contains("one_time_token=") -> {
+            // Extract OTT and session from the deeplink
+            val ott = uriStr.substringAfter("one_time_token=", "").substringBefore('&')
+            val session = uriStr.substringAfter("checkout_session=", "").substringBefore('&')
+
+            updateCheckoutSession(session, countryCode)  // Re-sync session
+            createPayment(ott = ott)                     // Create payment with the OTT
+            continuePayment(showPaymentStatus = true) { state, subState ->
+                // Handle result: SUCCEEDED, FAILED, PENDING…
+            }
+        }
+        uriStr.contains("has_error=true") -> {
+            val msg = uriStr.substringAfter("message=", "Unknown error")
+            // Show error message to the user
+        }
+    }
+}
+```
 
 See the full SDK guides for detailed samples: [Android Full Checkout](doc:android) and [iOS Full Checkout](doc:ios).
