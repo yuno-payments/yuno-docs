@@ -108,6 +108,7 @@ Use the data class `YunoConfig` to customize the SDK's behavior. Include this co
 data class YunoConfig(
     val saveCardEnabled: Boolean = false,
     val keepLoader: Boolean = false,
+    val cardFormDeployed: Boolean = false,
     val language: YunoLanguage? = null,
     val styles: YunoStyles? = null
 )

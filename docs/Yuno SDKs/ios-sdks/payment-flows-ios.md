@@ -71,7 +71,7 @@ For the full list of parameters and YunoConfig, see the [iOS SDK Common Referenc
 | `viewController`           | UIViewController that presents the payment flow. Required for delegate.                                                                                                |
 | `yunoCreatePayment(with:)` | Delegate: create payment on your backend with the one-time token.                                                                                                      |
 | `yunoPaymentResult(_:)`    | Delegate: payment finished. Receives `Yuno.Result` value (e.g., `.succeeded`, `.fail`, `.processing`). See [Payment Status reference](ref:payment) for status mapping. |
-| `YunoConfig` (initialize)  | Optional: appearance, saveCardEnabled, keepLoader, hideCardholderName, cardNumberPlaceholder. See Common Reference.                                      |
+| `YunoConfig` (initialize)  | Optional: appearance, saveCardEnabled, keepLoader. See Common Reference.                                      |
 
 ## Full (iOS)
 
@@ -104,8 +104,6 @@ struct YunoConfig {
     var appearance: Appearance? = nil
     var saveCardEnabled: Bool = false
     var keepLoader: Bool = false
-    var hideCardholderName: Bool = false
-    var cardNumberPlaceholder: String? = nil
 }
 ```
 
@@ -118,8 +116,6 @@ Customization options:
 | `appearance`            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                                 |
 | `saveCardEnabled`       | Enables the Save card checkbox on card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                              |
 | `keepLoader`            | Controls loader display behavior. When `true`, the loader remains visible until manually hidden.                                                                                                                                                                                                                                                                                                                                                                             |
-| `hideCardholderName`    | When set to `true`, hides the cardholder name field in the card form. Default is `false`. Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider.                                                                                                                                                                |
-| `cardNumberPlaceholder` | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                                   |
 | `language`              | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en` (English), `es` (Spanish), `pt` (Portuguese), `fil` (Filipino), `id` (Indonesian), `ms` (Malay), `th` (Thai), `zh-TW` (Chinese Traditional), `zh-CN` (Chinese Simplified), `vi` (Vietnamese), `fr` (French), `pl` (Polish), `it` (Italian), `de` (German), `ru` (Russian), `tr` (Turkish), `nl` (Dutch), `sv` (Swedish), `ko` (Korean), `ja` (Japanese). |
 
 ### Step 3: Create the checkout session
@@ -491,7 +487,7 @@ Yuno.initialize(
 )
 ```
 
-Configure the Seamless checkout using `YunoConfig` (for card form type, appearance, save card, loader behavior, and optionally `hideCardholderName`).
+Configure the Seamless checkout using `YunoConfig` (for card form type, appearance, save card, and loader behavior).
 
 Use the `YunoConfig` data class to set additional configurations. Options:
 
@@ -500,8 +496,6 @@ Use the `YunoConfig` data class to set additional configurations. Options:
 | **saveCardEnabled**       | Enables the save card checkbox for card flows. Check the Save card section for more information.                                                                                                                                                                                                                                                                                                                                                                       |
 | **language**              | Defines the language to be used in the payment forms. You can set it to one of the available language options: `en`, `es`, `pt`, `fil`, `id`, `ms`, `th`, `zh-TW`, `zh-CN`, `vi`, `fr`, `pl`, `it`, `de`, `ru`, `tr`, `nl`, `sv`, `ko`, `ja`.                                                                                                                                                                                                                          |
 | **appearance**            | Enables SDK-wide UI customization. Use it to define global visual styles like colors, fonts, and button appearance. For more information, check the SDK customizations page.                                                                                                                                                                                                                                                                                           |
-| **cardNumberPlaceholder** | This optional field allows you to customize the placeholder text for the card number field. Supports alphanumeric characters, spaces, and UTF-8 characters for localization. If not provided, the SDK uses the default placeholder ("Card number"). This customization does not affect card formatting, masking, BIN logic, or validation.                                                                                                                             |
-| **hideCardholderName**    | This optional field allows you to hide the cardholder name field in the card form. When set to `true`, the cardholder name field is not rendered. When not specified or set to `false`, the cardholder name field is displayed (default behavior). Hiding the field does not affect PAN, expiry, CVV collection, BIN logic, or 3DS/provider validations. The merchant is responsible for ensuring cardholder name is provided when required by their payment provider. |
 
 ### Step 4: Implement the payment delegate
 
@@ -622,7 +616,7 @@ Yuno.initialize(
 )
 ```
 
-Use `YunoConfig` to configure `appearance`, `saveCardEnabled`, `keepLoader`, and optionally `hideCardholderName`.
+Use `YunoConfig` to configure `appearance`, `saveCardEnabled`, and `keepLoader`.
 
 ### Step 4: Implement the payment delegate
 

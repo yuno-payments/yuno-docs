@@ -38,8 +38,6 @@ Runtime behavior and appearance are configured via `YunoConfig` when calling `Yu
 | `appearance`            | Appearance | No       | Custom appearance (fonts, colors, buttons). Use `Yuno.Appearance(...)` to set `fontFamily`, `accentColor`, `buttonBackgroundColor`, `buttonTitleColor`, and related fields. See [SDK customizations (iOS)](ios-customizations) for all options. |
 | `saveCardEnabled`       | boolean    | No       | When `true`, allows the user to save or enroll the card during payment. Requires backend support for vaulting.                                                                                                                                  |
 | `keepLoader`            | boolean    | No       | When `true`, keeps the loader visible until explicitly dismissed or until the flow completes. Use to control loading UX.                                                                                                                        |
-| `hideCardholderName`    | boolean    | No       | When `true`, hides the cardholder name field in the card form. Default `false`.                                                                                                                                                                 |
-| `cardNumberPlaceholder` | string     | No       | Placeholder text for the card number field. If not set, the SDK uses a default. Does not affect formatting or validation.                                                                                                                       |
 
 ## Enrollment parameters (full reference)
 
