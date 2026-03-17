@@ -42,7 +42,7 @@ Sample configuration (HTTP transport):
   "mcpServers": {
     "Yuno": {
       "transport": "http",
-      "url": "https://prod.y.uno/yuno-mcp/mcp",
+      "url": "https://mcp.prod.y.uno/mcp",
       "headers": {
         "public-api-key": "<YOUR_PUBLIC_API_KEY>",
         "private-secret-key": "<YOUR_PRIVATE_SECRET_KEY>",
