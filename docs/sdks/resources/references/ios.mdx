@@ -1,0 +1,59 @@
+---
+title: iOS Reference
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+---
+Parameters, customizations, and advanced features for all Yuno iOS SDK flows. For integration setup, see [Payment flows (iOS)](/docs/sdks/full-checkout/ios-payments), [Enrollment flows (iOS)](/docs/sdks/card-enrollment/ios-enrollment), and [integration modes](/docs/sdks/overview/choose-integration).
+
+## Key parameters (checkout session creation)
+
+When creating a checkout session on your backend for payment flows, the following parameters are commonly used across iOS SDKs:
+
+| Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
+
+## Payment parameters (full reference)
+
+Parameters for payment flows. All parameters used in [Payment flows (iOS)](/docs/sdks/full-checkout/ios-payments) are listed here with full detail.
+
+| Parameter                  | Type             | Required | Description                                                                                                                                                                                                                                                                |
+| -------------------------- | ---------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`          | string           | Yes      | Checkout session ID from your backend (Create checkout session API). Required for all payment flows.                                                                                                                                                                       |
+| `countryCode`              | string           | Yes      | ISO country code where the payment runs (e.g. `BR`, `US`). Determines available payment methods and compliance.                                                                                                                                                            |
+| `language`                 | string           | No       | Language code for the SDK UI (e.g. `en`, `pt-BR`). Optional. See [Supported languages](/docs/sdks/resources/languages-supported) when available.                                                                                                                                                |
+| `viewController`           | UIViewController | Yes*     | The view controller that presents the payment flow. The SDK uses it to present modals and capture result.                                                                                                                                                                 |
+| `yunoCreatePayment(with:)` | delegate         | Yes      | Delegate method: create the payment on your backend using the one-time token provided by the SDK. After creating the payment via the API, inform the SDK so it can continue the flow.                                                                                      |
+| `yunoPaymentResult(_:)`    | delegate         | No       | Delegate method: invoked when the payment flow finishes. Receives a `Yuno.Result` enum value (`.succeeded`, `.fail`, `.processing`, `.reject`, `.userCancelled`, `.internalError`). These values map to [payment statuses](/reference/getting-started/response-codes). Use for UI updates or navigation. |
+
+## YunoConfig options (initialize)
+
+Runtime behavior and appearance are configured via `YunoConfig` when calling `Yuno.initialize(apiKey:config:)`. All parameters used across iOS payment and enrollment flows are listed below. For visual styling (fonts, colors, buttons), see [SDK customizations (iOS)](/docs/sdks/customization/ios).
+
+| Parameter               | Type       | Required | Description                                                                                                                                                                                                                                     |
+| ----------------------- | ---------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appearance`            | Appearance | No       | Custom appearance (fonts, colors, buttons). Use `Yuno.Appearance(...)` to set `fontFamily`, `accentColor`, `buttonBackgroundColor`, `buttonTitleColor`, and related fields. See [SDK customizations (iOS)](/docs/sdks/customization/ios) for all options. |
+| `saveCardEnabled`       | boolean    | No       | When `true`, allows the user to save or enroll the card during payment. Requires backend support for vaulting.                                                                                                                                  |
+| `keepLoader`            | boolean    | No       | When `true`, keeps the loader visible until explicitly dismissed or until the flow completes. Use to control loading UX.                                                                                                                        |
+| `hideCardholderName`    | boolean    | No       | When `true`, hides the cardholder name field in the card form. Default `false`.                                                                                                                                                                 |
+| `cardNumberPlaceholder` | string     | No       | Placeholder text for the card number field. If not set, the SDK uses a default. Does not affect formatting or validation.                                                                                                                       |
+
+## Enrollment parameters (full reference)
+
+Parameters for enrollment flows. All parameters used in [Enrollment flows (iOS)](/docs/sdks/card-enrollment/ios-enrollment) are listed here with full detail.
+
+| Parameter                  | Type             | Required | Description                                                                                                                                                                                      |
+| -------------------------- | ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `customerSession`          | string           | Yes      | Customer session ID from Create customer session API. Required. Associates the enrolled payment method with a specific customer.                                                                 |
+| `countryCode`              | string           | Yes      | ISO country code (e.g. `BR`, `US`). Required for enrollment.                                                                                                                                     |
+| `language`                 | string           | No       | Language code for the SDK UI. Optional.                                                                                                                                                          |
+| `viewController`           | UIViewController | Yes*     | The view controller that presents the enrollment flow. Required for delegate-based enrollment.                                                                                                   |
+| `yunoEnrollmentResult(_:)` | delegate         | No       | Delegate method: invoked when enrollment finishes. Receives the result (e.g. vaulted token, status). Use for UI updates or navigation.                                                           |
+| `YunoConfig`               | YunoConfig       | No       | Same options as payment (e.g. `appearance`, `saveCardEnabled`, `keepLoader`, `hideCardholderName`). See [YunoConfig options (initialize)](#yunoconfig-options-initialize) above. |
+
+## Enrolling payment methods
+
+You can enroll payment methods (store cards for future use) during the payment flow or via dedicated enrollment flows. For payment flows, enable save card in `YunoConfig` and set `payment_method.vault_on_success` (or equivalent) when creating the checkout session where supported. For dedicated enrollment, see [Enrollment flows (iOS)](/docs/sdks/card-enrollment/ios-enrollment).

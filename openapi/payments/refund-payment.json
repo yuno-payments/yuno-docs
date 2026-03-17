@@ -1,0 +1,2339 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "payment-api-refundcancel-payment",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1/payments"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your public-api-key>",
+        "name": "public-api-key"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your private-secret-key>",
+        "name": "private-secret-key"
+      },
+      "sec2": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your X-Idempotency-Key>",
+        "name": "X-Idempotency-Key"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": [],
+      "sec2": []
+    }
+  ],
+  "paths": {
+    "/{id}/transactions/{transaction_id}/refund": {
+      "post": {
+        "summary": "Refund Payment",
+        "description": "",
+        "operationId": "refund-payment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the payment (UUID, 36 chars).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "The unique identifier of the transaction (UUID, 36 chars).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "merchant_reference"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "description": "Description of the refund. (MAX 255; MIN 3)."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Indicating the reason for the refund. If set, possible values are `DUPLICATE`, `FRAUDULENT`, `REQUESTED_BY_CUSTOMER`, and `REVERSE`. Use `REVERSE` to request an automatic reverse of the recipient funds when a recipient is involved in the transaction.",
+                    "enum": [
+                      "DUPLICATE",
+                      "FRAUDULENT",
+                      "REQUESTED_BY_CUSTOMER",
+                      "REVERSE"
+                    ]
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Identification of the payment transaction defined by the merchant (MAX 255; MIN 3)."
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Specifies the amount object for refund. **Only required for partial refunds**.",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "The currency used to make the payment. For a full list of currency codes, see [Country reference](https://docs.y.uno/docs/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                      },
+                      "value": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "The refund amount (multiple of 0.0001)."
+                      }
+                    }
+                  },
+                  "split_marketplace": {
+                    "type": "array",
+                    "description": "Split marketplace array of objects",
+                    "items": {
+                      "properties": {
+                        "recipient_id": {
+                          "type": "string",
+                          "description": "The unique identifier of the recipient in the Yuno system. <br/> You must provide the [`recipient_id`](https://docs.y.uno/reference/create-recipient-1) (Yuno-generated) or the `provider_recipient_id` (external provider's ID) when creating a payment."
+                        },
+                        "provider_recipient_id": {
+                          "type": "string",
+                          "description": "The recipient ID provided by the external payment provider, if applicable. <br/> You must provide the `provider_recipient_id` or the [`recipient_id`](https://docs.y.uno/reference/create-recipients) (Yuno-generated) when creating a payment."
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description for the split. (MAX 255; MIN 3)."
+                        },
+                        "type": {
+                          "type": "string",
+                          "description": "The type of split. `recipient_id` is mandatory for `PURCHASE` and `MARKETPLACE`.",
+                          "enum": [
+                            "PURCHASE",
+                            "PAYMENTFEE",
+                            "VAT",
+                            "COMMISSION",
+                            "MARKETPLACE",
+                            "SHIPPING"
+                          ]
+                        },
+                        "merchant_reference": {
+                          "type": "string",
+                          "description": "Optional unique identifier for the split transaction (MAX 255; MIN 3)."
+                        },
+                        "recipient_type": {
+                          "type": "string",
+                          "description": "The type of recipient for the provider.",
+                          "enum": [
+                            "MEAL",
+                            "FOOD",
+                            "MULTI_BENEFITS",
+                            "FLEET"
+                          ],
+                          "example": "MEAL"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Defines the amount of the split.",
+                          "required": [
+                            "value",
+                            "currency"
+                          ],
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "description": "The split amount (multiple of 0.0001).",
+                              "format": "float"
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "The currency used to make the payment. For a full list of currency codes, see [Country reference](https://docs.y.uno/docs/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                            }
+                          }
+                        },
+                        "liability": {
+                          "type": "object",
+                          "description": "Optional information regarding the recipient's liability for fees and chargebacks.",
+                          "properties": {
+                            "processing_fee": {
+                              "type": "string",
+                              "description": "Indicates who will be charged the transaction fee.",
+                              "enum": [
+                                "MERCHANT",
+                                "RECIPIENT",
+                                "SHARED"
+                              ]
+                            },
+                            "chargebacks": {
+                              "type": "boolean",
+                              "description": "The recipient is responsible in case of a chargeback."
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "simplified_mode": {
+                    "type": "boolean",
+                    "description": "Determines whether Yuno should automatically attempt to refund a payment after an initial error or decline. When set to `true`, Yuno will retry the process if the first attempt fails. By default, this is set to `false`. Access [Transaction Retries](https://docs.y.uno/docs/transaction-retries) for more details."
+                  },
+                  "response_additional_data": {
+                    "type": "object",
+                    "description": "Specifies additional data for required the transaction response",
+                    "properties": {
+                      "receipt": {
+                        "type": "boolean",
+                        "description": "Indicates if a receipt is necessary for the transaction response"
+                      },
+                      "receipt_language": {
+                        "type": "string",
+                        "description": "Indicates the language of the receipt to be generated",
+                        "enum": [
+                          "ES",
+                          "EN",
+                          "PT"
+                        ]
+                      }
+                    }
+                  },
+                  "customer_payer": {
+                    "type": "object",
+                    "description": "Specifies customer object for payments.",
+                    "properties": {
+                      "first_name": {
+                        "type": "string",
+                        "description": "The customer's first name (MAX 255; MIN 3)."
+                      },
+                      "last_name": {
+                        "type": "string",
+                        "description": "The customer's last name (MAX 255; MIN 3)."
+                      },
+                      "gender": {
+                        "type": "string",
+                        "description": "The customer's gender (MAX 2; MIN 1). <br/>- M=Male <br/>- F=Female <br/>- NB=Non Binary <br/>- NA=Not applicable <br/>- NK=Not Known <br/>- U=Undefined.",
+                        "enum": [
+                          "M",
+                          "F",
+                          "NB",
+                          "NA",
+                          "NK",
+                          "U"
+                        ]
+                      },
+                      "date_of_birth": {
+                        "type": "string",
+                        "description": "The customer's date of birth in the `YYYY-MM-DD` format (Length: 10)."
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "The customer's e-mail (MAX 255; MIN 3)."
+                      },
+                      "nationality": {
+                        "type": "string",
+                        "description": "The customer's nationality (MAX 2; MIN 2; [ISO 3166-1](https://docs.y.uno/reference/country-reference))."
+                      },
+                      "document": {
+                        "type": "object",
+                        "description": "Specifies the customer's document object, including its number and type.",
+                        "required": [
+                          "document_number",
+                          "document_type"
+                        ],
+                        "properties": {
+                          "document_number": {
+                            "type": "string",
+                            "description": "Document number for customer (MAX 40; MIN 3)"
+                          },
+                          "document_type": {
+                            "type": "string",
+                            "description": "The customer's document type (MAX 6, MIN 2). Access [Document Type List](https://docs.y.uno/reference/country-reference) for more details.",
+                            "enum": [
+                              "DNI",
+                              "CI",
+                              "LC",
+                              "LE",
+                              "CUIT",
+                              "CUIL",
+                              "PAS",
+                              "CPF",
+                              "RG",
+                              "CNH",
+                              "CNPJ",
+                              "RUT",
+                              "RUN",
+                              "CC",
+                              "CE",
+                              "NIT",
+                              "DUI",
+                              "PIC",
+                              "DPI",
+                              "IFR",
+                              "INE",
+                              "CP",
+                              "RFC",
+                              "CURP",
+                              "CIP",
+                              "CIC",
+                              "CUI",
+                              "RUC"
+                            ]
+                          }
+                        }
+                      },
+                      "phone": {
+                        "type": "object",
+                        "description": "Specifies the customer's phone object.",
+                        "properties": {
+                          "country_code": {
+                            "type": "string",
+                            "description": "The country code of the customer's phone (MAX 3; MIN 1)."
+                          },
+                          "number": {
+                            "type": "string",
+                            "description": "The customer's phone number, without the country code (MAX 32; MIN 1)."
+                          }
+                        }
+                      },
+                      "billing_address": {
+                        "type": "object",
+                        "description": "Specifies the customer's billing address object.",
+                        "properties": {
+                          "address_line_1": {
+                            "type": "string",
+                            "description": "The primary billing address line of the customer (MAX 255; MIN 3)."
+                          },
+                          "address_line_2": {
+                            "type": "string",
+                            "description": "The secondary billing address line of the customer (MAX 255; MIN 3)."
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "The city considered for the billing address (MAX 255; MIN 3)."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "The country considered for the billing address (MAX 2; MIN 2; [ISO 3166-1](https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1)).",
+                            "enum": [
+                              "AR",
+                              "BO",
+                              "BR",
+                              "CL",
+                              "CO",
+                              "CR",
+                              "EC",
+                              "SV",
+                              "GT",
+                              "HN",
+                              "MX",
+                              "NI",
+                              "PA",
+                              "PY",
+                              "PE",
+                              "US",
+                              "UY"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "The state considered for the billing address (MAX 255; MIN 3)."
+                          },
+                          "zip_code": {
+                            "type": "string",
+                            "description": "The zipcode considered for the billing address (MAX 10; MIN 5)."
+                          }
+                        }
+                      },
+                      "shipping_address": {
+                        "type": "object",
+                        "description": "Specifies the customer's shipping address object.",
+                        "properties": {
+                          "address_line_1": {
+                            "type": "string",
+                            "description": "The primary shipping address line of the customer (MAX 255; MIN 3)."
+                          },
+                          "address_line_2": {
+                            "type": "string",
+                            "description": "The secondary shipping address line of the customer (MAX 255; MIN 3)."
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "The city considered for the shipping address (MAX 255; MIN 3)."
+                          },
+                          "country": {
+                            "type": "string",
+                            "description": "The country considered for the shipping address (MAX 2; MIN 2; [ISO 3166-1](https://docs.y.uno/reference/customer-object#country-code-list-iso-3166-1)).",
+                            "enum": [
+                              "AR",
+                              "BO",
+                              "BR",
+                              "CL",
+                              "CO",
+                              "CR",
+                              "EC",
+                              "SV",
+                              "GT",
+                              "HN",
+                              "MX",
+                              "NI",
+                              "PA",
+                              "PY",
+                              "PE",
+                              "US",
+                              "UY"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "description": "The state considered for the shipping address (MAX 255; MIN 3)."
+                          },
+                          "zip_code": {
+                            "type": "string",
+                            "description": "The zipcode considered for the shipping address (MAX 10; MIN 5)."
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "payment_method": {
+                    "type": "object",
+                    "description": "Specifies payment method object for payments.",
+                    "properties": {
+                      "detail": {
+                        "type": "object",
+                        "description": "Specifies the payment method detail object.",
+                        "properties": {
+                          "bank_transfer": {
+                            "type": "object",
+                            "description": "Specifies bank transfer payment method details.",
+                            "properties": {
+                              "account_type": {
+                                "type": "string",
+                                "description": "Type of bank account (MAX 255; MIN 3)",
+                                "enum": [
+                                  "CHECKINGS",
+                                  "SAVINGS"
+                                ]
+                              },
+                              "bank_name": {
+                                "type": "string",
+                                "description": "Name of the bank (MAX 255; MIN 3)"
+                              },
+                              "bank_id": {
+                                "type": "string",
+                                "description": "ID of the bank (MAX 255; MIN 3)"
+                              },
+                              "beneficiary_name": {
+                                "type": "string",
+                                "description": "Name of the account holder (MAX 255; MIN 3)"
+                              },
+                              "bank_account": {
+                                "type": "string",
+                                "description": "Bank account number (MAX 255; MIN 3)"
+                              },
+                              "beneficiary_document_type": {
+                                "type": "string",
+                                "description": "Document type of the account holder (MAX 255; MIN 3)"
+                              },
+                              "beneficiary_document": {
+                                "type": "string",
+                                "description": "Document number of the account holder (MAX 255; MIN 3)"
+                              },
+                              "reference": {
+                                "type": "string",
+                                "description": "Reference code for the user (MAX 255; MIN 1)"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Full Refund": {
+                  "value": {
+                    "description": "Duplicate",
+                    "reason": "REQUESTED_BY_CUSTOMER",
+                    "merchant_reference": "AAB01-432245"
+                  }
+                },
+                "Partial Refund": {
+                  "value": {
+                    "amount": {
+                      "currency": "USD",
+                      "value": 30
+                    },
+                    "description": "Duplicate transaction",
+                    "reason": "REQUESTED_BY_CUSTOMER",
+                    "merchant_reference": "US-INV-432245"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Full Refund": {
+                    "value": {
+                      "id": "f2d6884a-f737-4565-ae32-ff60b19089e3",
+                      "account_id": "",
+                      "description": "Duplicate",
+                      "country": "US",
+                      "status": "REFUNDED",
+                      "sub_status": "REFUNDED",
+                      "merchant_order_id": "AAB01-432245",
+                      "created_at": "2025-04-14T17:51:45.179645Z",
+                      "updated_at": "2025-04-14T17:52:07.908698Z",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "USD",
+                        "currency_conversion": null,
+                        "refunded": 30000,
+                        "value": 30000
+                      },
+                      "checkout": {
+                        "session": "",
+                        "sdk_action_required": false
+                      },
+                      "payment_method": {
+                        "vaulted_token": "",
+                        "type": "CARD",
+                        "vault_on_success": false,
+                        "token": "",
+                        "parent_payment_method_type": null,
+                        "payment_method_detail": {
+                          "card": {
+                            "verify": false,
+                            "capture": false,
+                            "installments": 1,
+                            "installments_plan_id": null,
+                            "first_installment_deferral": 0,
+                            "installments_type": "MERCHANT",
+                            "installment_amount": null,
+                            "soft_descriptor": "",
+                            "authorization_code": "216303",
+                            "retrieval_reference_number": "",
+                            "voucher": null,
+                            "card_data": {
+                              "holder_name": "John Doe",
+                              "iin": "41111111",
+                              "lfd": "1111",
+                              "number_length": 16,
+                              "security_code_length": 3,
+                              "brand": "VISA",
+                              "issuer_name": "CHASE BANK USA",
+                              "issuer_code": null,
+                              "country_code": "US",
+                              "category": "CLASSIC",
+                              "type": "DEBIT",
+                              "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
+                              },
+                              "fingerprint": "d244e20d-43a1-43f7-9b48-0a76423be35e",
+                              "expiration_month": 3,
+                              "expiration_year": 26
+                            },
+                            "stored_credentials": {
+                              "reason": null,
+                              "usage": null,
+                              "subscription_agreement_id": null,
+                              "network_transaction_id": null
+                            }
+                          }
+                        }
+                      },
+                      "customer_payer": {
+                        "id": null,
+                        "merchant_customer_id": "1744653105",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "M",
+                        "date_of_birth": "1990-02-28",
+                        "email": "john.doe@example.com",
+                        "nationality": "US",
+                        "ip_address": "192.168.1.1",
+                        "device_fingerprint": null,
+                        "device_fingerprints": [],
+                        "browser_info": null,
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "123-45-6789"
+                        },
+                        "phone": {
+                          "number": "5551234567",
+                          "country_code": "1"
+                        },
+                        "billing_address": {
+                          "address_line_1": "1234 Elm Street",
+                          "address_line_2": "Apt 5B",
+                          "country": "US",
+                          "state": "California",
+                          "city": "Los Angeles",
+                          "zip_code": "90001",
+                          "neighborhood": null
+                        },
+                        "shipping_address": {
+                          "address_line_1": "1234 Elm Street",
+                          "address_line_2": "Apt 5B",
+                          "country": "US",
+                          "state": "California",
+                          "city": "Los Angeles",
+                          "zip_code": "90001",
+                          "neighborhood": null
+                        },
+                        "merchant_customer_created_at": null
+                      },
+                      "additional_data": null,
+                      "transactions": {
+                        "id": "5414f862-51e6-433f-a54c-b46b176e87a0",
+                        "type": "REFUND",
+                        "status": "SUCCEEDED",
+                        "category": "CARD",
+                        "amount": 30000,
+                        "provider_id": "YUNO_TEST_PAYMENT_GW",
+                        "payment_method": {
+                          "vaulted_token": "",
+                          "type": "CARD",
+                          "vault_on_success": false,
+                          "token": "",
+                          "parent_payment_method_type": null,
+                          "detail": {
+                            "card": {
+                              "verify": false,
+                              "capture": false,
+                              "installments": 1,
+                              "installments_plan_id": null,
+                              "first_installment_deferral": 0,
+                              "installments_type": "MERCHANT",
+                              "installment_amount": null,
+                              "soft_descriptor": "",
+                              "authorization_code": "216303",
+                              "retrieval_reference_number": "",
+                              "voucher": null,
+                              "card_data": {
+                                "holder_name": "John Doe",
+                                "iin": "41111111",
+                                "lfd": "1111",
+                                "number_length": 16,
+                                "security_code_length": 3,
+                                "brand": "VISA",
+                                "issuer_name": "CHASE BANK USA",
+                                "issuer_code": null,
+                                "country_code": "US",
+                                "category": "CLASSIC",
+                                "type": "DEBIT",
+                                "three_d_secure": {
+                                  "version": null,
+                                  "electronic_commerce_indicator": null,
+                                  "cryptogram": null,
+                                  "transaction_id": null,
+                                  "directory_server_transaction_id": null,
+                                  "pares_status": null,
+                                  "acs_id": null
+                                },
+                                "fingerprint": "d244e20d-43a1-43f7-9b48-0a76423be35e",
+                                "expiration_month": 3,
+                                "expiration_year": 26
+                              },
+                              "stored_credentials": {
+                                "reason": null,
+                                "usage": null,
+                                "subscription_agreement_id": null,
+                                "network_transaction_id": null
+                              }
+                            }
+                          }
+                        },
+                        "response_code": "SUCCEEDED",
+                        "response_message": "Transaction successful",
+                        "reason": "REQUESTED_BY_CUSTOMER",
+                        "description": "Test refund",
+                        "merchant_reference": "REFUND_001",
+                        "provider_data": {
+                          "id": "YUNO_TEST_PAYMENT_GW",
+                          "transaction_id": "2e5c04d5-4cf7-4d2a-b57a-dd5eb9a687bc",
+                          "account_id": "",
+                          "status": "",
+                          "sub_status": "",
+                          "status_detail": "",
+                          "response_message": null,
+                          "response_code": "SUCCEEDED",
+                          "raw_response": {
+                            "message": "provider response"
+                          },
+                          "third_party_transaction_id": null,
+                          "third_party_account_id": null,
+                          "iso8583_response_code": null,
+                          "iso8583_response_message": null
+                        },
+                        "connection_data": null,
+                        "created_at": "2025-04-14T17:52:07.768528Z",
+                        "updated_at": "2025-04-14T17:52:07.862912Z"
+                      },
+                      "transactions_history": null,
+                      "metadata": [],
+                      "fraud_screening": null,
+                      "payment_link_id": "",
+                      "subscription_code": null,
+                      "routing_rules": null,
+                      "simplified_mode": false
+                    }
+                  },
+                  "Partial Refund": {
+                    "value": {
+                      "id": "b908fd70-9af7-41a6-8e1c-3a5ec78ea88b",
+                      "account_id": "",
+                      "description": "Duplicate transaction",
+                      "country": "US",
+                      "status": "SUCCEEDED",
+                      "sub_status": "PARTIALLY_REFUNDED",
+                      "merchant_order_id": "0000023",
+                      "created_at": "2025-04-14T17:50:55.936358Z",
+                      "updated_at": "2025-04-14T17:51:23.347308Z",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "USD",
+                        "currency_conversion": null,
+                        "refunded": 30,
+                        "value": 300
+                      },
+                      "checkout": {
+                        "session": "",
+                        "sdk_action_required": false
+                      },
+                      "payment_method": {
+                        "vaulted_token": "",
+                        "type": "CARD",
+                        "vault_on_success": false,
+                        "token": "",
+                        "parent_payment_method_type": null,
+                        "payment_method_detail": {
+                          "card": {
+                            "verify": false,
+                            "capture": false,
+                            "installments": 1,
+                            "installments_plan_id": null,
+                            "first_installment_deferral": 0,
+                            "installments_type": "MERCHANT",
+                            "installment_amount": null,
+                            "soft_descriptor": "",
+                            "authorization_code": "344836",
+                            "retrieval_reference_number": "",
+                            "voucher": null,
+                            "card_data": {
+                              "holder_name": "John Doe",
+                              "iin": "41111111",
+                              "lfd": "1111",
+                              "number_length": 16,
+                              "security_code_length": 3,
+                              "brand": "VISA",
+                              "issuer_name": "CHASE BANK USA",
+                              "issuer_code": null,
+                              "country_code": "US",
+                              "category": "CLASSIC",
+                              "type": "DEBIT",
+                              "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
+                              },
+                              "fingerprint": "d244e20d-43a1-43f7-9b48-0a76423be35e",
+                              "expiration_month": 3,
+                              "expiration_year": 26
+                            },
+                            "stored_credentials": {
+                              "reason": null,
+                              "usage": null,
+                              "subscription_agreement_id": null,
+                              "network_transaction_id": null
+                            }
+                          }
+                        }
+                      },
+                      "customer_payer": {
+                        "id": null,
+                        "merchant_customer_id": "1744653056",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "M",
+                        "date_of_birth": "1990-02-28",
+                        "email": "john.doe@example.com",
+                        "nationality": "US",
+                        "ip_address": "192.0.2.1",
+                        "device_fingerprint": null,
+                        "device_fingerprints": [],
+                        "browser_info": null,
+                        "document": {
+                          "document_type": "SSN",
+                          "document_number": "123-45-6789"
+                        },
+                        "phone": {
+                          "number": "5551234567",
+                          "country_code": "1"
+                        },
+                        "billing_address": {
+                          "address_line_1": "456 Maple Ave",
+                          "address_line_2": "Apt 12C",
+                          "country": "US",
+                          "state": "New York",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": null
+                        },
+                        "shipping_address": {
+                          "address_line_1": "456 Maple Ave",
+                          "address_line_2": "Apt 12C",
+                          "country": "US",
+                          "state": "New York",
+                          "city": "New York",
+                          "zip_code": "10001",
+                          "neighborhood": null
+                        },
+                        "merchant_customer_created_at": null
+                      },
+                      "additional_data": null,
+                      "transactions": {
+                        "id": "3f47548e-a1c9-418e-b899-40d30da9c699",
+                        "type": "REFUND",
+                        "status": "SUCCEEDED",
+                        "category": "CARD",
+                        "amount": 30,
+                        "provider_id": "YUNO_TEST_PAYMENT_GW",
+                        "payment_method": {
+                          "vaulted_token": "",
+                          "type": "CARD",
+                          "vault_on_success": false,
+                          "token": "",
+                          "parent_payment_method_type": null,
+                          "detail": {
+                            "card": {
+                              "verify": false,
+                              "capture": false,
+                              "installments": 1,
+                              "installments_plan_id": null,
+                              "first_installment_deferral": 0,
+                              "installments_type": "MERCHANT",
+                              "installment_amount": null,
+                              "soft_descriptor": "",
+                              "authorization_code": "344836",
+                              "retrieval_reference_number": "",
+                              "voucher": null,
+                              "card_data": {
+                                "holder_name": "John Doe",
+                                "iin": "41111111",
+                                "lfd": "1111",
+                                "number_length": 16,
+                                "security_code_length": 3,
+                                "brand": "VISA",
+                                "issuer_name": "CHASE BANK USA",
+                                "issuer_code": null,
+                                "country_code": "US",
+                                "category": "CLASSIC",
+                                "type": "DEBIT",
+                                "three_d_secure": {
+                                  "version": null,
+                                  "electronic_commerce_indicator": null,
+                                  "cryptogram": null,
+                                  "transaction_id": null,
+                                  "directory_server_transaction_id": null,
+                                  "pares_status": null,
+                                  "acs_id": null
+                                },
+                                "fingerprint": "d244e20d-43a1-43f7-9b48-0a76423be35e",
+                                "expiration_month": 3,
+                                "expiration_year": 26
+                              },
+                              "stored_credentials": {
+                                "reason": null,
+                                "usage": null,
+                                "subscription_agreement_id": null,
+                                "network_transaction_id": null
+                              }
+                            }
+                          }
+                        },
+                        "response_code": "SUCCEEDED",
+                        "response_message": "Transaction successful",
+                        "reason": "REQUESTED_BY_CUSTOMER",
+                        "description": "Test refund",
+                        "merchant_reference": "US-INV-432245",
+                        "provider_data": {
+                          "id": "YUNO_TEST_PAYMENT_GW",
+                          "transaction_id": "831017b2-928f-4f19-8f0b-0e0ae14013bd",
+                          "account_id": "",
+                          "status": "",
+                          "sub_status": "",
+                          "status_detail": "",
+                          "response_message": null,
+                          "response_code": "SUCCEEDED",
+                          "raw_response": {
+                            "message": "provider response"
+                          },
+                          "third_party_transaction_id": null,
+                          "third_party_account_id": null,
+                          "iso8583_response_code": null,
+                          "iso8583_response_message": null
+                        },
+                        "connection_data": null,
+                        "created_at": "2025-04-14T17:51:23.232152Z",
+                        "updated_at": "2025-04-14T17:51:23.322335Z"
+                      },
+                      "transactions_history": null,
+                      "metadata": [],
+                      "fraud_screening": null,
+                      "payment_link_id": "",
+                      "subscription_code": null,
+                      "routing_rules": null,
+                      "simplified_mode": false
+                    }
+                  }
+                },
+                "schema": {
+                  "oneOf": [
+                    {
+                      "title": "Full Refund",
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "f2d6884a-f737-4565-ae32-ff60b19089e3"
+                        },
+                        "account_id": {
+                          "type": "string",
+                          "example": ""
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Duplicate"
+                        },
+                        "country": {
+                          "type": "string",
+                          "example": "US"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "REFUNDED"
+                        },
+                        "sub_status": {
+                          "type": "string",
+                          "example": "REFUNDED"
+                        },
+                        "merchant_order_id": {
+                          "type": "string",
+                          "example": "AAB01-432245"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "example": "2025-04-14T17:51:45.179645Z"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "example": "2025-04-14T17:52:07.908698Z"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "captured": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "currency_conversion": {},
+                            "refunded": {
+                              "type": "integer",
+                              "example": 30000,
+                              "default": 0
+                            },
+                            "value": {
+                              "type": "integer",
+                              "example": 30000,
+                              "default": 0
+                            }
+                          }
+                        },
+                        "checkout": {
+                          "type": "object",
+                          "properties": {
+                            "session": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "sdk_action_required": {
+                              "type": "boolean",
+                              "example": false,
+                              "default": true
+                            }
+                          }
+                        },
+                        "payment_method": {
+                          "type": "object",
+                          "properties": {
+                            "vaulted_token": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "type": {
+                              "type": "string",
+                              "example": "CARD"
+                            },
+                            "vault_on_success": {
+                              "type": "boolean",
+                              "example": false,
+                              "default": true
+                            },
+                            "token": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "parent_payment_method_type": {},
+                            "payment_method_detail": {
+                              "type": "object",
+                              "properties": {
+                                "card": {
+                                  "type": "object",
+                                  "properties": {
+                                    "verify": {
+                                      "type": "boolean",
+                                      "example": false,
+                                      "default": true
+                                    },
+                                    "capture": {
+                                      "type": "boolean",
+                                      "example": false,
+                                      "default": true
+                                    },
+                                    "installments": {
+                                      "type": "integer",
+                                      "example": 1,
+                                      "default": 0
+                                    },
+                                    "installments_plan_id": {},
+                                    "first_installment_deferral": {
+                                      "type": "integer",
+                                      "example": 0,
+                                      "default": 0
+                                    },
+                                    "installments_type": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "installment_amount": {},
+                                    "soft_descriptor": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "authorization_code": {
+                                      "type": "string",
+                                      "example": "216303"
+                                    },
+                                    "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "voucher": {},
+                                    "card_data": {
+                                      "type": "object",
+                                      "properties": {
+                                        "holder_name": {
+                                          "type": "string",
+                                          "example": "John Doe"
+                                        },
+                                        "iin": {
+                                          "type": "string",
+                                          "example": "41111111"
+                                        },
+                                        "lfd": {
+                                          "type": "string",
+                                          "example": "1111"
+                                        },
+                                        "number_length": {
+                                          "type": "integer",
+                                          "example": 16,
+                                          "default": 0
+                                        },
+                                        "security_code_length": {
+                                          "type": "integer",
+                                          "example": 3,
+                                          "default": 0
+                                        },
+                                        "brand": {
+                                          "type": "string",
+                                          "example": "VISA"
+                                        },
+                                        "issuer_name": {
+                                          "type": "string",
+                                          "example": "CHASE BANK USA"
+                                        },
+                                        "issuer_code": {},
+                                        "country_code": {
+                                          "type": "string",
+                                          "example": "US"
+                                        },
+                                        "category": {
+                                          "type": "string",
+                                          "example": "CLASSIC"
+                                        },
+                                        "type": {
+                                          "type": "string",
+                                          "example": "DEBIT"
+                                        },
+                                        "three_d_secure": {
+                                          "type": "object",
+                                          "properties": {
+                                            "version": {},
+                                            "electronic_commerce_indicator": {},
+                                            "cryptogram": {},
+                                            "transaction_id": {},
+                                            "directory_server_transaction_id": {},
+                                            "pares_status": {},
+                                            "acs_id": {}
+                                          }
+                                        },
+                                        "fingerprint": {
+                                          "type": "string",
+                                          "example": "d244e20d-43a1-43f7-9b48-0a76423be35e"
+                                        },
+                                        "expiration_month": {
+                                          "type": "integer",
+                                          "example": 3,
+                                          "default": 0
+                                        },
+                                        "expiration_year": {
+                                          "type": "integer",
+                                          "example": 26,
+                                          "default": 0
+                                        }
+                                      }
+                                    },
+                                    "stored_credentials": {
+                                      "type": "object",
+                                      "properties": {
+                                        "reason": {},
+                                        "usage": {},
+                                        "subscription_agreement_id": {},
+                                        "network_transaction_id": {}
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "customer_payer": {
+                          "type": "object",
+                          "properties": {
+                            "id": {},
+                            "merchant_customer_id": {
+                              "type": "string",
+                              "example": "1744653105"
+                            },
+                            "first_name": {
+                              "type": "string",
+                              "example": "John"
+                            },
+                            "last_name": {
+                              "type": "string",
+                              "example": "Doe"
+                            },
+                            "gender": {
+                              "type": "string",
+                              "example": "M"
+                            },
+                            "date_of_birth": {
+                              "type": "string",
+                              "example": "1990-02-28"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "john.doe@example.com"
+                            },
+                            "nationality": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "ip_address": {
+                              "type": "string",
+                              "example": "192.168.1.1"
+                            },
+                            "device_fingerprint": {},
+                            "device_fingerprints": {
+                              "type": "array"
+                            },
+                            "browser_info": {},
+                            "document": {
+                              "type": "object",
+                              "properties": {
+                                "document_type": {
+                                  "type": "string",
+                                  "example": "SSN"
+                                },
+                                "document_number": {
+                                  "type": "string",
+                                  "example": "123-45-6789"
+                                }
+                              }
+                            },
+                            "phone": {
+                              "type": "object",
+                              "properties": {
+                                "number": {
+                                  "type": "string",
+                                  "example": "5551234567"
+                                },
+                                "country_code": {
+                                  "type": "string",
+                                  "example": "1"
+                                }
+                              }
+                            },
+                            "billing_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "1234 Elm Street"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 5B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "California"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "Los Angeles"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "90001"
+                                },
+                                "neighborhood": {}
+                              }
+                            },
+                            "shipping_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "1234 Elm Street"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 5B"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "California"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "Los Angeles"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "90001"
+                                },
+                                "neighborhood": {}
+                              }
+                            },
+                            "merchant_customer_created_at": {}
+                          }
+                        },
+                        "additional_data": {},
+                        "transactions": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "5414f862-51e6-433f-a54c-b46b176e87a0"
+                            },
+                            "type": {
+                              "type": "string",
+                              "example": "REFUND"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "category": {
+                              "type": "string",
+                              "example": "CARD"
+                            },
+                            "amount": {
+                              "type": "integer",
+                              "example": 30000,
+                              "default": 0
+                            },
+                            "provider_id": {
+                              "type": "string",
+                              "example": "YUNO_TEST_PAYMENT_GW"
+                            },
+                            "payment_method": {
+                              "type": "object",
+                              "properties": {
+                                "vaulted_token": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "type": {
+                                  "type": "string",
+                                  "example": "CARD"
+                                },
+                                "vault_on_success": {
+                                  "type": "boolean",
+                                  "example": false,
+                                  "default": true
+                                },
+                                "token": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "parent_payment_method_type": {},
+                                "detail": {
+                                  "type": "object",
+                                  "properties": {
+                                    "card": {
+                                      "type": "object",
+                                      "properties": {
+                                        "verify": {
+                                          "type": "boolean",
+                                          "example": false,
+                                          "default": true
+                                        },
+                                        "capture": {
+                                          "type": "boolean",
+                                          "example": false,
+                                          "default": true
+                                        },
+                                        "installments": {
+                                          "type": "integer",
+                                          "example": 1,
+                                          "default": 0
+                                        },
+                                        "installments_plan_id": {},
+                                        "first_installment_deferral": {
+                                          "type": "integer",
+                                          "example": 0,
+                                          "default": 0
+                                        },
+                                        "installments_type": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
+                                        "installment_amount": {},
+                                        "soft_descriptor": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
+                                        "authorization_code": {
+                                          "type": "string",
+                                          "example": "216303"
+                                        },
+                                        "retrieval_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
+                                        "voucher": {},
+                                        "card_data": {
+                                          "type": "object",
+                                          "properties": {
+                                            "holder_name": {
+                                              "type": "string",
+                                              "example": "John Doe"
+                                            },
+                                            "iin": {
+                                              "type": "string",
+                                              "example": "41111111"
+                                            },
+                                            "lfd": {
+                                              "type": "string",
+                                              "example": "1111"
+                                            },
+                                            "number_length": {
+                                              "type": "integer",
+                                              "example": 16,
+                                              "default": 0
+                                            },
+                                            "security_code_length": {
+                                              "type": "integer",
+                                              "example": 3,
+                                              "default": 0
+                                            },
+                                            "brand": {
+                                              "type": "string",
+                                              "example": "VISA"
+                                            },
+                                            "issuer_name": {
+                                              "type": "string",
+                                              "example": "CHASE BANK USA"
+                                            },
+                                            "issuer_code": {},
+                                            "country_code": {
+                                              "type": "string",
+                                              "example": "US"
+                                            },
+                                            "category": {
+                                              "type": "string",
+                                              "example": "CLASSIC"
+                                            },
+                                            "type": {
+                                              "type": "string",
+                                              "example": "DEBIT"
+                                            },
+                                            "three_d_secure": {
+                                              "type": "object",
+                                              "properties": {
+                                                "version": {},
+                                                "electronic_commerce_indicator": {},
+                                                "cryptogram": {},
+                                                "transaction_id": {},
+                                                "directory_server_transaction_id": {},
+                                                "pares_status": {},
+                                                "acs_id": {}
+                                              }
+                                            },
+                                            "fingerprint": {
+                                              "type": "string",
+                                              "example": "d244e20d-43a1-43f7-9b48-0a76423be35e"
+                                            },
+                                            "expiration_month": {
+                                              "type": "integer",
+                                              "example": 3,
+                                              "default": 0
+                                            },
+                                            "expiration_year": {
+                                              "type": "integer",
+                                              "example": 26,
+                                              "default": 0
+                                            }
+                                          }
+                                        },
+                                        "stored_credentials": {
+                                          "type": "object",
+                                          "properties": {
+                                            "reason": {},
+                                            "usage": {},
+                                            "subscription_agreement_id": {},
+                                            "network_transaction_id": {}
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "response_code": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "response_message": {
+                              "type": "string",
+                              "example": "Transaction successful"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "example": "REQUESTED_BY_CUSTOMER"
+                            },
+                            "description": {
+                              "type": "string",
+                              "example": "Test refund"
+                            },
+                            "merchant_reference": {
+                              "type": "string",
+                              "example": "REFUND_001"
+                            },
+                            "provider_data": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "example": "YUNO_TEST_PAYMENT_GW"
+                                },
+                                "transaction_id": {
+                                  "type": "string",
+                                  "example": "2e5c04d5-4cf7-4d2a-b57a-dd5eb9a687bc"
+                                },
+                                "account_id": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "sub_status": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "status_detail": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "response_message": {},
+                                "response_code": {
+                                  "type": "string",
+                                  "example": "SUCCEEDED"
+                                },
+                                "raw_response": {
+                                  "type": "object",
+                                  "properties": {
+                                    "message": {
+                                      "type": "string",
+                                      "example": "provider response"
+                                    }
+                                  }
+                                },
+                                "third_party_transaction_id": {},
+                                "third_party_account_id": {},
+                                "iso8583_response_code": {},
+                                "iso8583_response_message": {}
+                              }
+                            },
+                            "connection_data": {},
+                            "created_at": {
+                              "type": "string",
+                              "example": "2025-04-14T17:52:07.768528Z"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "example": "2025-04-14T17:52:07.862912Z"
+                            }
+                          }
+                        },
+                        "transactions_history": {},
+                        "metadata": {
+                          "type": "array"
+                        },
+                        "fraud_screening": {},
+                        "payment_link_id": {
+                          "type": "string",
+                          "example": ""
+                        },
+                        "subscription_code": {},
+                        "routing_rules": {},
+                        "simplified_mode": {
+                          "type": "boolean",
+                          "example": false,
+                          "default": true
+                        }
+                      }
+                    },
+                    {
+                      "title": "Partial Refund",
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "example": "b908fd70-9af7-41a6-8e1c-3a5ec78ea88b"
+                        },
+                        "account_id": {
+                          "type": "string",
+                          "example": ""
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "Duplicate transaction"
+                        },
+                        "country": {
+                          "type": "string",
+                          "example": "US"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "SUCCEEDED"
+                        },
+                        "sub_status": {
+                          "type": "string",
+                          "example": "PARTIALLY_REFUNDED"
+                        },
+                        "merchant_order_id": {
+                          "type": "string",
+                          "example": "0000023"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "example": "2025-04-14T17:50:55.936358Z"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "example": "2025-04-14T17:51:23.347308Z"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "captured": {
+                              "type": "integer",
+                              "example": 0,
+                              "default": 0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "currency_conversion": {},
+                            "refunded": {
+                              "type": "integer",
+                              "example": 30,
+                              "default": 0
+                            },
+                            "value": {
+                              "type": "integer",
+                              "example": 300,
+                              "default": 0
+                            }
+                          }
+                        },
+                        "checkout": {
+                          "type": "object",
+                          "properties": {
+                            "session": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "sdk_action_required": {
+                              "type": "boolean",
+                              "example": false,
+                              "default": true
+                            }
+                          }
+                        },
+                        "payment_method": {
+                          "type": "object",
+                          "properties": {
+                            "vaulted_token": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "type": {
+                              "type": "string",
+                              "example": "CARD"
+                            },
+                            "vault_on_success": {
+                              "type": "boolean",
+                              "example": false,
+                              "default": true
+                            },
+                            "token": {
+                              "type": "string",
+                              "example": ""
+                            },
+                            "parent_payment_method_type": {},
+                            "payment_method_detail": {
+                              "type": "object",
+                              "properties": {
+                                "card": {
+                                  "type": "object",
+                                  "properties": {
+                                    "verify": {
+                                      "type": "boolean",
+                                      "example": false,
+                                      "default": true
+                                    },
+                                    "capture": {
+                                      "type": "boolean",
+                                      "example": false,
+                                      "default": true
+                                    },
+                                    "installments": {
+                                      "type": "integer",
+                                      "example": 1,
+                                      "default": 0
+                                    },
+                                    "installments_plan_id": {},
+                                    "first_installment_deferral": {
+                                      "type": "integer",
+                                      "example": 0,
+                                      "default": 0
+                                    },
+                                    "installments_type": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "installment_amount": {},
+                                    "soft_descriptor": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "authorization_code": {
+                                      "type": "string",
+                                      "example": "344836"
+                                    },
+                                    "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "voucher": {},
+                                    "card_data": {
+                                      "type": "object",
+                                      "properties": {
+                                        "holder_name": {
+                                          "type": "string",
+                                          "example": "John Doe"
+                                        },
+                                        "iin": {
+                                          "type": "string",
+                                          "example": "41111111"
+                                        },
+                                        "lfd": {
+                                          "type": "string",
+                                          "example": "1111"
+                                        },
+                                        "number_length": {
+                                          "type": "integer",
+                                          "example": 16,
+                                          "default": 0
+                                        },
+                                        "security_code_length": {
+                                          "type": "integer",
+                                          "example": 3,
+                                          "default": 0
+                                        },
+                                        "brand": {
+                                          "type": "string",
+                                          "example": "VISA"
+                                        },
+                                        "issuer_name": {
+                                          "type": "string",
+                                          "example": "CHASE BANK USA"
+                                        },
+                                        "issuer_code": {},
+                                        "country_code": {
+                                          "type": "string",
+                                          "example": "US"
+                                        },
+                                        "category": {
+                                          "type": "string",
+                                          "example": "CLASSIC"
+                                        },
+                                        "type": {
+                                          "type": "string",
+                                          "example": "DEBIT"
+                                        },
+                                        "three_d_secure": {
+                                          "type": "object",
+                                          "properties": {
+                                            "version": {},
+                                            "electronic_commerce_indicator": {},
+                                            "cryptogram": {},
+                                            "transaction_id": {},
+                                            "directory_server_transaction_id": {},
+                                            "pares_status": {},
+                                            "acs_id": {}
+                                          }
+                                        },
+                                        "fingerprint": {
+                                          "type": "string",
+                                          "example": "d244e20d-43a1-43f7-9b48-0a76423be35e"
+                                        },
+                                        "expiration_month": {
+                                          "type": "integer",
+                                          "example": 3,
+                                          "default": 0
+                                        },
+                                        "expiration_year": {
+                                          "type": "integer",
+                                          "example": 26,
+                                          "default": 0
+                                        }
+                                      }
+                                    },
+                                    "stored_credentials": {
+                                      "type": "object",
+                                      "properties": {
+                                        "reason": {},
+                                        "usage": {},
+                                        "subscription_agreement_id": {},
+                                        "network_transaction_id": {}
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "customer_payer": {
+                          "type": "object",
+                          "properties": {
+                            "id": {},
+                            "merchant_customer_id": {
+                              "type": "string",
+                              "example": "1744653056"
+                            },
+                            "first_name": {
+                              "type": "string",
+                              "example": "John"
+                            },
+                            "last_name": {
+                              "type": "string",
+                              "example": "Doe"
+                            },
+                            "gender": {
+                              "type": "string",
+                              "example": "M"
+                            },
+                            "date_of_birth": {
+                              "type": "string",
+                              "example": "1990-02-28"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "john.doe@example.com"
+                            },
+                            "nationality": {
+                              "type": "string",
+                              "example": "US"
+                            },
+                            "ip_address": {
+                              "type": "string",
+                              "example": "192.0.2.1"
+                            },
+                            "device_fingerprint": {},
+                            "device_fingerprints": {
+                              "type": "array"
+                            },
+                            "browser_info": {},
+                            "document": {
+                              "type": "object",
+                              "properties": {
+                                "document_type": {
+                                  "type": "string",
+                                  "example": "SSN"
+                                },
+                                "document_number": {
+                                  "type": "string",
+                                  "example": "123-45-6789"
+                                }
+                              }
+                            },
+                            "phone": {
+                              "type": "object",
+                              "properties": {
+                                "number": {
+                                  "type": "string",
+                                  "example": "5551234567"
+                                },
+                                "country_code": {
+                                  "type": "string",
+                                  "example": "1"
+                                }
+                              }
+                            },
+                            "billing_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "456 Maple Ave"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 12C"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {}
+                              }
+                            },
+                            "shipping_address": {
+                              "type": "object",
+                              "properties": {
+                                "address_line_1": {
+                                  "type": "string",
+                                  "example": "456 Maple Ave"
+                                },
+                                "address_line_2": {
+                                  "type": "string",
+                                  "example": "Apt 12C"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "city": {
+                                  "type": "string",
+                                  "example": "New York"
+                                },
+                                "zip_code": {
+                                  "type": "string",
+                                  "example": "10001"
+                                },
+                                "neighborhood": {}
+                              }
+                            },
+                            "merchant_customer_created_at": {}
+                          }
+                        },
+                        "additional_data": {},
+                        "transactions": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "example": "3f47548e-a1c9-418e-b899-40d30da9c699"
+                            },
+                            "type": {
+                              "type": "string",
+                              "example": "REFUND"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "category": {
+                              "type": "string",
+                              "example": "CARD"
+                            },
+                            "amount": {
+                              "type": "integer",
+                              "example": 30,
+                              "default": 0
+                            },
+                            "provider_id": {
+                              "type": "string",
+                              "example": "YUNO_TEST_PAYMENT_GW"
+                            },
+                            "payment_method": {
+                              "type": "object",
+                              "properties": {
+                                "vaulted_token": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "type": {
+                                  "type": "string",
+                                  "example": "CARD"
+                                },
+                                "vault_on_success": {
+                                  "type": "boolean",
+                                  "example": false,
+                                  "default": true
+                                },
+                                "token": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "parent_payment_method_type": {},
+                                "detail": {
+                                  "type": "object",
+                                  "properties": {
+                                    "card": {
+                                      "type": "object",
+                                      "properties": {
+                                        "verify": {
+                                          "type": "boolean",
+                                          "example": false,
+                                          "default": true
+                                        },
+                                        "capture": {
+                                          "type": "boolean",
+                                          "example": false,
+                                          "default": true
+                                        },
+                                        "installments": {
+                                          "type": "integer",
+                                          "example": 1,
+                                          "default": 0
+                                        },
+                                        "installments_plan_id": {},
+                                        "first_installment_deferral": {
+                                          "type": "integer",
+                                          "example": 0,
+                                          "default": 0
+                                        },
+                                        "installments_type": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
+                                        "installment_amount": {},
+                                        "soft_descriptor": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
+                                        "authorization_code": {
+                                          "type": "string",
+                                          "example": "344836"
+                                        },
+                                        "retrieval_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
+                                        "voucher": {},
+                                        "card_data": {
+                                          "type": "object",
+                                          "properties": {
+                                            "holder_name": {
+                                              "type": "string",
+                                              "example": "John Doe"
+                                            },
+                                            "iin": {
+                                              "type": "string",
+                                              "example": "41111111"
+                                            },
+                                            "lfd": {
+                                              "type": "string",
+                                              "example": "1111"
+                                            },
+                                            "number_length": {
+                                              "type": "integer",
+                                              "example": 16,
+                                              "default": 0
+                                            },
+                                            "security_code_length": {
+                                              "type": "integer",
+                                              "example": 3,
+                                              "default": 0
+                                            },
+                                            "brand": {
+                                              "type": "string",
+                                              "example": "VISA"
+                                            },
+                                            "issuer_name": {
+                                              "type": "string",
+                                              "example": "CHASE BANK USA"
+                                            },
+                                            "issuer_code": {},
+                                            "country_code": {
+                                              "type": "string",
+                                              "example": "US"
+                                            },
+                                            "category": {
+                                              "type": "string",
+                                              "example": "CLASSIC"
+                                            },
+                                            "type": {
+                                              "type": "string",
+                                              "example": "DEBIT"
+                                            },
+                                            "three_d_secure": {
+                                              "type": "object",
+                                              "properties": {
+                                                "version": {},
+                                                "electronic_commerce_indicator": {},
+                                                "cryptogram": {},
+                                                "transaction_id": {},
+                                                "directory_server_transaction_id": {},
+                                                "pares_status": {},
+                                                "acs_id": {}
+                                              }
+                                            },
+                                            "fingerprint": {
+                                              "type": "string",
+                                              "example": "d244e20d-43a1-43f7-9b48-0a76423be35e"
+                                            },
+                                            "expiration_month": {
+                                              "type": "integer",
+                                              "example": 3,
+                                              "default": 0
+                                            },
+                                            "expiration_year": {
+                                              "type": "integer",
+                                              "example": 26,
+                                              "default": 0
+                                            }
+                                          }
+                                        },
+                                        "stored_credentials": {
+                                          "type": "object",
+                                          "properties": {
+                                            "reason": {},
+                                            "usage": {},
+                                            "subscription_agreement_id": {},
+                                            "network_transaction_id": {}
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "response_code": {
+                              "type": "string",
+                              "example": "SUCCEEDED"
+                            },
+                            "response_message": {
+                              "type": "string",
+                              "example": "Transaction successful"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "example": "REQUESTED_BY_CUSTOMER"
+                            },
+                            "description": {
+                              "type": "string",
+                              "example": "Test refund"
+                            },
+                            "merchant_reference": {
+                              "type": "string",
+                              "example": "US-INV-432245"
+                            },
+                            "provider_data": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "example": "YUNO_TEST_PAYMENT_GW"
+                                },
+                                "transaction_id": {
+                                  "type": "string",
+                                  "example": "831017b2-928f-4f19-8f0b-0e0ae14013bd"
+                                },
+                                "account_id": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "sub_status": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "status_detail": {
+                                  "type": "string",
+                                  "example": ""
+                                },
+                                "response_message": {},
+                                "response_code": {
+                                  "type": "string",
+                                  "example": "SUCCEEDED"
+                                },
+                                "raw_response": {
+                                  "type": "object",
+                                  "properties": {
+                                    "message": {
+                                      "type": "string",
+                                      "example": "provider response"
+                                    }
+                                  }
+                                },
+                                "third_party_transaction_id": {},
+                                "third_party_account_id": {},
+                                "iso8583_response_code": {},
+                                "iso8583_response_message": {}
+                              }
+                            },
+                            "connection_data": {},
+                            "created_at": {
+                              "type": "string",
+                              "example": "2025-04-14T17:51:23.232152Z"
+                            },
+                            "updated_at": {
+                              "type": "string",
+                              "example": "2025-04-14T17:51:23.322335Z"
+                            }
+                          }
+                        },
+                        "transactions_history": {},
+                        "metadata": {
+                          "type": "array"
+                        },
+                        "fraud_screening": {},
+                        "payment_link_id": {
+                          "type": "string",
+                          "example": ""
+                        },
+                        "subscription_code": {},
+                        "routing_rules": {},
+                        "simplified_mode": {
+                          "type": "boolean",
+                          "example": false,
+                          "default": true
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Bad Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid credentials"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Forbidden": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "AUTHORIZATION_REQUIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "The merchant has no authorization to use this API."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

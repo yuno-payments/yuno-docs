@@ -1,0 +1,260 @@
+---
+title: Web Enrollment
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+---
+The Web SDK makes it easy to implement enrollment flows for saving payment methods to a customer account.
+
+Include the library in your project by following the same steps as in [payment flows](/docs/sdks/full-checkout/web-payments#include-the-library-in-your-project). This lets you complete [step 1](#step-1-include-the-library-in-your-project) and continue with the enrollment flow below.
+
+## Additional resources
+
+* Yuno offers a [TypeScript library](https://www.npmjs.com/package/@yuno-payments/sdk-web-types) that complements the SDK.
+
+* See [Choose the right integration for you](/docs/sdks/overview/choose-integration) if you're unsure which flow to follow.
+
+* See the [Demo App](https://github.com/yuno-payments/yuno-sdk-web) for a complete implementation (clone from the repository).
+
+## Requirements
+
+* A [customer](/reference/customers/create-customer) created in Yuno, a [customer session](/reference/customer-sessions-enrollment/create-customer-session), and an [enrollment payment method object](/reference/payment-methods-checkout/enroll-payment-method-checkout): reference each API when setting up your backend.
+* Public API key (obtain from the [Yuno Dashboard](https://dashboard.y.uno/) → **Developers** > **Credentials**)
+
+## Parameters
+
+For the full list of parameters and callbacks, see the [Web SDK Common Reference](/docs/sdks/resources/references/web).
+
+| Parameter              | Description                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `customerSession`      | Customer session ID from your backend (Create customer session API). Required. |
+| `countryCode`          | ISO country code (e.g. `US`).                                                  |
+| `language`             | Language code for the UI (e.g. `en`). Optional.                                |
+| `showLoading`          | Show loading spinner. Optional.                                                |
+| `onLoading`            | Callback: loading state updates. Optional.                                     |
+| `elementSelector`      | CSS selector where the enrollment form mounts. Optional.                       |
+| `card`                 | Card form options. Optional.                                                   |
+| `yunoEnrollmentStatus` | Callback: enrollment ended; receives `vaultedToken` and `status`.              |
+| `issuersFormEnable`    | Show issuer (bank) list. Optional.                                             |
+| `texts`                | Custom button/label text. Optional.                                            |
+
+## full-checkout Enrollment (Web)
+
+Use full-checkout for a seamless integration with pre-built UI. Implement enrollment as follows.
+
+### Step 1: Include the library in your project
+
+Including the library in your project is done in the same way as in [payment flows](/docs/sdks/full-checkout/web-payments#include-the-library-in-your-project).
+
+### Step 2: Initialize the SDK
+
+See [Quickstart guide](/docs/sdks/overview/quickstart#web-sdk-integration) for initialization.
+
+### Step 3: Create a customer session and an enrollment payment method object
+
+Create a [customer session](/reference/customer-sessions-enrollment/create-customer-session) and an [enrollment payment method object](/reference/payment-methods-checkout/enroll-payment-method-checkout) on your **server-side** to keep private API keys secure; define which payment method the customer can enroll when creating the payment method object.
+
+#### Server-side example
+
+Create a customer session and enrollment payment method on your backend. This keeps your private API keys secure.
+
+```javascript
+// 1. Create customer session
+const customerSession = await fetch(
+  "https://api-sandbox.y.uno/v1/customers/sessions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      customer_id: "your-customer-id",
+      country: "US",
+    }),
+  }
+).then((res) => res.json());
+
+// 2. Create enrollment payment method
+const enrollment = await fetch(
+  `https://api-sandbox.y.uno/v1/customers/sessions/${customerSession.id}/payment-methods`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      type: "CARD",
+    }),
+  }
+).then((res) => res.json());
+
+// Return customerSession to your client
+return customerSession;
+```
+
+#### Client-side example
+
+After receiving the `customerSession` from your server, initialize the Yuno SDK and mount the enrollment form on the client-side.
+
+```javascript
+// Initialize Yuno SDK
+const yuno = await Yuno.initialize(PUBLIC_API_KEY);
+
+// Mount the enrollment form
+yuno.mountEnrollment({
+  customerSession, // Received from your server
+  countryCode: "US",
+  language: "en",
+  showLoading: true,
+  onLoading: (args) => {
+    console.log(args);
+  },
+});
+```
+
+To verify cards (zero-value authorization) before enrollment, add the `verify` struct when defining the payment method object on the server.
+
+### Step 4: Mount the enrollment
+
+Use `yuno.mountEnrollment` with the parameters below.
+
+| Parameter                         | Description                                                                                                                                                                                                                                       |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`                 | Refers to the current enrollment's [customer session](/reference/customer-sessions-enrollment/create-customer-session). Example: `e15648b0-fcd5-4799-a14c-cc463ae8a133`.                                                                                                              |
+| `countryCode`                     | Country for the payment process. Use an `ENUM` value; see [Country Coverage](/docs/sdks/resources/country-coverage).                                                                                                                                                   |
+| `language`                        | Language for payment forms. Use any code listed in [Supported languages](/docs/sdks/resources/languages-supported). Example: `en-US`. Defaults to browser language when available.                                                                                     |
+| `showLoading`                     | Controls visibility of the Yuno loading/spinner page during the payment process.                                                                                                                                                                  |
+| `onLoading`                       | Required to receive notifications about server calls or loading events.                                                                                                                                                                           |
+| `elementSelector`                 | HTML element where the Yuno SDK is mounted.                                                                                                                                                                                                       |
+| `card`                            | Define specific settings for the credit card form.                                                                                                                                                                                                |
+| `yunoEnrollmentStatus`            | Callback after enrollment ends; receives `vaultedToken` and `status`. Status options: `CREATED`, `EXPIRED`, `REJECTED`, `READY_TO_ENROLL`, `ENROLL_IN_PROCESS`, `UNENROLL_IN_PROCESS`, `ENROLLED`, `DECLINED`, `CANCELED`, `ERROR`, `UNENROLLED`. |
+| `issuersFormEnable`               | Enable the issuer's form (bank list).                                                                                                                                                                                                             |
+| `texts`                           | Custom text for payment form buttons to match your application's language or branding.                                                                                                                                                            |
+| `card.isCreditCardProcessingOnly` | Optional. Forces card transactions to process as credit only—useful where cards act as both credit and debit.                                                                                                                                     |
+
+The next code block presents an example of the Enrollment parameter configuration and mounting.
+
+```javascript
+yuno.mountEnrollment({
+  customerSession: 'e15648b0-fcd5-4799-a14c-cc463ae8a133',
+  /**
+   * The complete list of country codes is available on /docs/sdks/resources/country-coverage
+   */
+  countryCode: country,
+  /**
+  - Language for payment forms (see Supported languages)
+  - Defaults to browser language when available
+  */
+  language: 'en-US',
+  /**
+   * Hide or show the Yuno loading/spinner page
+   * Default is true
+   * @optional
+   */
+  showLoading: true,
+  /**
+   * Required if you'd like to be informed if there is a server call
+   * @param { isLoading: boolean, type: 'DOCUMENT' | 'ONE_TIME_TOKEN'  } data
+   * @optional
+   */
+  onLoading: (args) => {
+    console.log(args);
+  }
+  /**
+   *  API card
+   *  @optional
+   */
+  card: {
+    /**
+     * Mode render card can be step or extends
+     * Default extends
+     */
+    type: "extends",
+    /**
+     * Write custom CSS to style the card form. Your CSS will be injected into the iframe.
+     * Example:
+     * `@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+     *  .Yuno-front-side-card__name-label {
+     *    color: red !important;
+     *    font-family: 'Luckiest Guy' !important;
+     *   }`
+     */
+    styles: '',
+    /**
+     * Show checkbox for save/enroll card
+     * Default is false
+     */
+    cardSaveEnable: false,
+    /**
+     * Custom texts in Card forms buttons
+     * Example:
+     *
+     *  texts: {
+     *    cardForm?: {
+     *      enrollmentSubmitButton?: string;
+     *       paymentSubmitButton?: string;
+     *     }
+     *     cardStepper?: {
+     *       numberCardStep?: {
+     *         nextButton?: string;
+     *       },
+     *       cardHolderNameStep?: {
+     *         prevButton?: string;
+     *         nextButton?: string;
+     *       },
+     *       expirationDateStep?: {
+     *         prevButton?: string;
+     *         nextButton?: string;
+     *       },
+     *       cvvStep?: {
+     *         prevButton?: string;
+     *         nextButton?: string;
+     *       }
+     *     }
+     *  }
+     */
+    texts: {},
+    /**
+     * Hide or show the document fields into card form
+     * Default is true
+     * @optional
+     */
+    documentEnable: true,
+  },
+  /**
+   * Call back is called with the following object
+   * @param {{
+   *  status: 'CREATED'
+   *    | 'EXPIRED',
+   *    | 'REJECTED',
+   *    | 'READY_TO_ENROLL',
+   *    | 'ENROLL_IN_PROCESS',
+   *    | 'UNENROLL_IN_PROCESS',
+   *    | 'ENROLLED',
+   *    | 'DECLINED',
+   *    | 'CANCELED',
+   *    | 'ERROR',
+   *    | 'UNENROLLED',
+   *  vaultedToken: string,
+   * }}
+   */
+  yunoEnrollmentStatus: ({ status, vaultedToken}) => {
+    console.log('status', { status, vaultedToken})
+  },
+  /**
+   * If this is called the SDK should be mounted again
+   * @param { error: 'CANCELED_BY_USER' | any }
+   * @optional
+   */
+  yunoError: (error) => {
+    console.log('There was an error', error)
+  },
+});
+```
+
+## Common reference
+
+For full parameter and customization details, see the [Web SDK Common Reference](/docs/sdks/resources/references/web).
