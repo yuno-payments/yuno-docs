@@ -39,7 +39,7 @@ npm install @yuno-payments/sdk-web
 **Option 2: HTML Script Tag**
 
 ```html
-<script src="https://sdk-web.y.uno/v1.6/main.js"></script>
+<script src="https://sdk-web.y.uno/v1.6/main.js" async defer></script>
 ```
 
 **Option 3: Dynamic JavaScript**
@@ -47,6 +47,8 @@ npm install @yuno-payments/sdk-web
 ```javascript
 const script = document.createElement('script');
 script.src = 'https://sdk-web.y.uno/v1.6/main.js';
+script.async = true;
+script.defer = true;
 document.head.appendChild(script);
 ```
 
