@@ -39,14 +39,14 @@ npm install @yuno-payments/sdk-web
 **Option 2: HTML Script Tag**
 
 ```html
-<script src="https://sdk-web.y.uno/v1.5/main.js"></script>
+<script src="https://sdk-web.y.uno/v1.6/main.js"></script>
 ```
 
 **Option 3: Dynamic JavaScript**
 
 ```javascript
 const script = document.createElement('script');
-script.src = 'https://sdk-web.y.uno/v1.5/main.js';
+script.src = 'https://sdk-web.y.uno/v1.6/main.js';
 document.head.appendChild(script);
 ```
 
