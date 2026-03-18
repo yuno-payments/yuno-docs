@@ -1,5 +1,5 @@
 ---
-title: Get Transfers
+title: Get Transfers Onboarding
 deprecated: false
 hidden: false
 metadata:
