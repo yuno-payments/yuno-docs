@@ -1,0 +1,39 @@
+---
+title: Payment Method Types
+description: Detail on the polymorphic payment_method structure for Sellers.
+hidden: true
+---
+
+Each entry in the `payment_method` array maps a payment method type to a specific provider and its merchant credentials.
+
+## Structure
+
+The `payment_method` array uses a polymorphic `detail` structure. The shape of the detail object depends on the `payment_method_type` field.
+
+| Field | Type | Required | Description |
+| :---- | :---- | :---- | :---- |
+| `payment_method_type` | string (enum) | Yes | The payment method type: `CARD`, `APPLE_PAY`, `GOOGLE_PAY`, etc. |
+| `detail` | object | Yes | Type-specific detail object. Contains either `card` or `wallet` key. |
+
+### CARD type 
+
+**Path:** `detail.card.provider`
+
+| Field | Type | Required | Description |
+| :---- | :---- | :---- | :---- |
+| `id` | string | Yes | The payment provider identifier (e.g., `CIELO`, `ADYEN`, `STRIPE`). |
+| `merchant_id` | string | Yes | The merchant ID assigned by this provider for this seller (MAX 255). |
+
+### APPLE_PAY type
+
+**Path:** `detail.wallet.provider`
+
+| Field | Type | Required | Description |
+| :---- | :---- | :---- | :---- |
+| `id` | string | Yes | The wallet provider identifier (e.g., `APPLE_PAY`). |
+| `merchant_id` | string | Yes | The merchant ID assigned by the wallet provider (MAX 255). |
+| `payment_processing_key` | string | Yes | Base64-encoded .pem content for the payment processing private key. |
+| `payment_processing_certificate` | string | Yes | Base64-encoded .pem content for the payment processing certificate. |
+| `merchant_identity_key` | string | Yes | Base64-encoded .pem content for the merchant identity private key. |
+| `merchant_identity_certificate` | string | Yes | Base64-encoded .pem content for the merchant identity certificate. |
+| `merchant_identity_password` | string | Yes | Password for the merchant identity certificate (MAX 255). |
