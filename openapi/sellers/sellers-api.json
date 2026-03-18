@@ -1,0 +1,380 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sellers (Franchise) API",
+    "description": "The Sellers API allows franchise merchants to register per-provider seller identities so the correct `merchant_id` is automatically resolved at payment time.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno/v1",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/sellers": {
+      "post": {
+        "summary": "Create Seller",
+        "operationId": "create-seller",
+        "tags": ["Sellers"],
+        "description": "Creates a new franchise seller mapping.",
+        "parameters": [
+          {
+            "name": "public-api-key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+             "name": "private-secret-key",
+             "in": "header",
+             "required": true,
+             "schema": { "type": "string" }
+          },
+          {
+             "name": "X-account-code",
+             "in": "header",
+             "required": true,
+             "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+             "name": "X-Idempotency-Key",
+             "in": "header",
+             "required": false,
+             "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SellerCreate" },
+              "examples": {
+                "CardProvider": {
+                   "summary": "Seller with card provider",
+                   "value": {
+                     "account_code": "11111111-2222-3333-4444-555555555555",
+                     "merchant_seller_id": "FRANCHISE_STORE_001",
+                     "name": "Franchise Store São Paulo",
+                     "email": "store001@franchise.com",
+                     "phone": { "country_code": "55", "number": "11999999999" },
+                     "document": { "type": "CNPJ", "number": "12345678000199" },
+                     "address": {
+                       "street": "Av Paulista",
+                       "number": "1000",
+                       "city": "São Paulo",
+                       "state": "SP",
+                       "country": "BR",
+                       "zip_code": "01310-100"
+                     },
+                     "country": "BR",
+                     "merchant_category_code": "5812",
+                     "payment_method": [
+                       {
+                         "payment_method_type": "CARD",
+                         "detail": {
+                           "card": {
+                             "provider": {
+                               "id": "CIELO",
+                               "merchant_id": "CIELO_CC_12345"
+                             }
+                           }
+                         }
+                       }
+                     ]
+                   }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Seller" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/sellers/{merchant_seller_id}": {
+      "parameters": [
+        {
+          "name": "merchant_seller_id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "public-api-key",
+          "in": "header",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+           "name": "private-secret-key",
+           "in": "header",
+           "required": true,
+           "schema": { "type": "string" }
+        },
+        {
+           "name": "X-account-code",
+           "in": "header",
+           "required": true,
+           "schema": { "type": "string", "format": "uuid" }
+        }
+      ],
+      "get": {
+        "summary": "Get Seller",
+        "operationId": "get-seller",
+        "tags": ["Sellers"],
+        "description": "Retrieves a franchise seller mapping by the merchant's own identifier.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Seller" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "summary": "Update Seller",
+        "operationId": "update-seller",
+        "tags": ["Sellers"],
+        "description": "Fully replaces the seller details and payment method configurations.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SellerUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Seller" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "summary": "Delete Seller",
+        "operationId": "delete-seller",
+        "tags": ["Sellers"],
+        "description": "Soft-deletes a franchise seller mapping.",
+        "responses": {
+          "204": { "description": "No Content" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Seller": {
+        "type": "object",
+        "properties": {
+          "seller_id": { "type": "string", "format": "uuid" },
+          "account_code": { "type": "string", "format": "uuid" },
+          "merchant_seller_id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "phone": { "$ref": "#/components/schemas/Phone" },
+          "document": { "$ref": "#/components/schemas/Document" },
+          "address": { "$ref": "#/components/schemas/Address" },
+          "country": { "type": "string", "maxLength": 2 },
+          "website": { "type": "string" },
+          "industry": { "type": "string" },
+          "merchant_category_code": { "type": "string", "maxLength": 4 },
+          "payment_method": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PaymentMethodConfig" }
+          },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SellerCreate": {
+        "type": "object",
+        "required": ["account_code", "merchant_seller_id"],
+        "properties": {
+          "account_code": { "type": "string", "format": "uuid" },
+          "merchant_seller_id": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "name": { "type": "string", "maxLength": 255 },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "$ref": "#/components/schemas/Phone" },
+          "document": { "$ref": "#/components/schemas/Document" },
+          "address": { "$ref": "#/components/schemas/Address" },
+          "country": { "type": "string", "maxLength": 2 },
+          "website": { "type": "string" },
+          "industry": { "type": "string", "maxLength": 255 },
+          "merchant_category_code": { "type": "string", "maxLength": 4 },
+          "payment_method": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PaymentMethodConfig" }
+          }
+        }
+      },
+      "SellerUpdate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "phone": { "$ref": "#/components/schemas/Phone" },
+          "document": { "$ref": "#/components/schemas/Document" },
+          "address": { "$ref": "#/components/schemas/Address" },
+          "country": { "type": "string" },
+          "industry": { "type": "string" },
+          "merchant_category_code": { "type": "string" },
+          "payment_method": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PaymentMethodConfig" }
+          }
+        }
+      },
+      "Phone": {
+        "type": "object",
+        "properties": {
+          "country_code": { "type": "string" },
+          "number": { "type": "string" }
+        }
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "number": { "type": "string" }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "street": { "type": "string" },
+          "number": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "country": { "type": "string" },
+          "zip_code": { "type": "string" }
+        }
+      },
+      "PaymentMethodConfig": {
+        "type": "object",
+        "required": ["payment_method_type", "detail"],
+        "properties": {
+          "payment_method_type": { "type": "string" },
+          "detail": {
+            "type": "object",
+            "oneOf": [
+              { "$ref": "#/components/schemas/CardDetail" },
+              { "$ref": "#/components/schemas/ApplePayDetail" }
+            ]
+          }
+        }
+      },
+      "CardDetail": {
+        "type": "object",
+        "properties": {
+          "card": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "object",
+                "required": ["id", "merchant_id"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "merchant_id": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ApplePayDetail": {
+        "type": "object",
+        "properties": {
+          "wallet": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "object",
+                "required": ["id", "merchant_id", "payment_processing_key", "payment_processing_certificate", "merchant_identity_key", "merchant_identity_certificate", "merchant_identity_password"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "merchant_id": { "type": "string" },
+                  "payment_processing_key": { "type": "string" },
+                  "payment_processing_certificate": { "type": "string" },
+                  "merchant_identity_key": { "type": "string" },
+                  "merchant_identity_certificate": { "type": "string" },
+                  "merchant_identity_password": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": { "type": "string" },
+                "message": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
