@@ -35,11 +35,16 @@ You can reference a seller using either identifier (they are **mutually exclusiv
 
 ### Example — Payment with field overrides
 
-When you send additional seller fields alongside the seller reference, those fields **override** the stored seller values for that payment only.
+When you send additional seller fields alongside the seller reference, those fields **override** the stored seller values for that payment only. They are not persisted back to the seller mapping.
 
 ```json
 {
   "amount": { "currency": "BRL", "value": 10000 },
+  "country": "BR",
+  "payment_method": {
+    "type": "CARD",
+    "token": "pm_tok_abc123"
+  },
   "additional_data": {
     "seller_details": {
       "merchant_seller_id": "FRANCHISE_STORE_001",
@@ -55,11 +60,11 @@ When you send additional seller fields alongside the seller reference, those fie
 
 ## How Resolution Works
 
-1. The merchant sends a payment request with `merchant_seller_id` or `seller_id`.
-2. Routing selects a provider (e.g., Cielo).
-3. The system looks up the franchise mapping by `(organization, seller_identifier, provider, payment_method_type)`.
-4. **If found:** the connection's `merchant_id` is overridden with the resolved `merchant_id`.
-5. **If not found:** the payment proceeds with the connection's default `merchant_id` (graceful fallback).
+1. The merchant sends a payment request with `merchant_seller_id` or `seller_id` inside `additional_data.seller_details`.
+2. The payment flows through the standard pipeline. Routing selects a provider (e.g., Cielo).
+3. After routing, the system looks up the franchise mapping by `(organization, seller_identifier, provider, payment_method_type)`.
+4. **If found:** the connection's `merchant_id` is overridden with the resolved `merchant_id`. Any seller fields sent in the request override the stored values for this payment.
+5. **If not found or service unavailable:** the payment proceeds with the connection's default `merchant_id` (graceful fallback).
 
 ### Backward Compatibility
 
