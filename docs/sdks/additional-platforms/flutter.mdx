@@ -78,134 +78,80 @@ No additional iOS-specific configuration is required beyond the Flutter package 
 
 ## Payment
 
-### Step 1: Create a customer and checkout session
+Follow these steps to integrate the Yuno payment flow in your Flutter application.
 
-Before initiating a payment through the SDK, create a customer and checkout session using Yuno's server-side API. The customer represents the person making the payment; the checkout session contains transaction details such as amount, currency, and available payment methods. Create these in your backend to ensure security and prevent client-side tampering.
+<Steps>
+  <Step title="Create a customer and checkout session">
+    Before initiating a payment, create a customer and checkout session using Yuno's server-side API.
+    * Use [Create customer](/reference/customers/create-customer) to represent the person making the payment.
+    * Use [Create checkout session](/reference/checkout-sessions/create-checkout-session) to define transaction details.
+    Keep the returned `checkout_session` ID for the next steps.
+  </Step>
 
-Create a customer using the [Create customer endpoint](/reference/customers/create-customer). This customer is required for checkout sessions and saved cards.
+  <Step title="Initialize the SDK">
+    Initialize the Yuno SDK in your Flutter app, typically before `runApp` in `main.dart`.
+    ```dart
+    await Yuno.init(
+      apiKey: 'YOUR_PUBLIC_API_KEY',
+      countryCode: 'CO',
+      yunoConfig: const YunoConfig(),
+      iosConfig: const IosConfig(),
+    );
+    ```
+  </Step>
 
-Create a new `checkout_session` using the [Create checkout session](/reference/checkout-sessions/create-checkout-session) endpoint. Keep the returned `checkout_session` ID for use in Step 4.
+  <Step title="Start the checkout process">
+    Set up a payment listener (e.g., `YunoPaymentListener`) in your widget tree to receive events.
+    ```dart
+    YunoPaymentListener(
+      listener: (context, state) {
+        final ott = state.token;
+        if (ott.isNotEmpty) {
+          // Send ott to your backend
+        }
+      },
+      child: YourWidget(),
+    )
+    ```
+  </Step>
 
-### Step 2: Initialize the SDK
+  <Step title="Initiate payment">
+    Start the Lite payment flow by calling `startPaymentLite` with the selected payment method.
+    ```dart
+    await Yuno.startPaymentLite(
+      arguments: StartPayment(
+        checkoutSession: checkoutSessionId,
+        methodSelected: const MethodSelected(
+          paymentMethodType: 'CARD',
+        ),
+      ),
+    );
+    ```
+  </Step>
 
-Initialize the Yuno SDK in your Flutter app before any payment or enrollment operations. This configures the SDK with your API key and sets regional, language, and UI preferences for the payment flow.
-
-Call `Yuno.init()` before `runApp` in your `main.dart` file:
-
-```dart
-await Yuno.init(
-  apiKey: 'YOUR_PUBLIC_API_KEY',
-  countryCode: 'CO',
-  yunoConfig: const YunoConfig(),
-  iosConfig: const IosConfig(),
-);
-```
-
-See [`Yuno.init`](#yunoinit), [`YunoConfig`](#yunoconfig), and [`IosConfig`](#iosconfig) parameters for detailed configuration options.
-
-### Step 3: Start the checkout process
-
-Set up a payment listener in your widget tree to receive payment events and status updates from the SDK. Place the listener in the widget tree before initiating the payment flow so it can capture the one-time token and payment status.
-
-Use `YunoPaymentListener` or `YunoMultiListener` to receive the OTT from the SDK:
-
-```dart
-YunoPaymentListener(
-  listener: (context, state) {
-    final ott = state.token;
-    if (ott.isNotEmpty) {
-      // Send ott to your backend to create the payment
+  <Step title="Get the OTT (one-time token)">
+    After the user completes the form, the SDK generates an OTT delivered to your `YunoPaymentListener`.
+    ```dart
+    listener: (context, state) {
+      final ott = state.token;
+      if (ott.isNotEmpty) {
+        // Send ott to your backend
+      }
     }
-  },
-  child: YourWidget(),
-)
-```
+    ```
+  </Step>
 
-Alternatively, use `YunoMultiListener` to handle both payment and enrollment flows:
+  <Step title="Create the payment">
+    Use the OTT from Step 5 to create the payment in your backend via the [Create payment](/reference/payments/create-payment) endpoint.
+  </Step>
 
-```dart
-YunoMultiListener(
-  paymentListener: (context, state) {
-    final ott = state.token;
-    if (ott.isNotEmpty) {
-      // Send ott to your backend to create the payment
-    }
-  },
-  enrollmentListener: (context, state) {
-    final status = state.enrollmentStatus;
-    // Handle enrollment status updates
-  },
-  child: YourWidget(),
-)
-```
-
-#### Payment status values
-
-The SDK returns different transaction states through the `YunoStatus` enum:
-
-| Status          | Description                                                                                                                                                                                                                      | Additional action required                                                                                                                            |
-| :-------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `succeeded`     | The transaction or payment process was completed successfully.                                                                                                                                                              | No. The payment was processed successfully.                                                                                                           |
-| `fail`          | The transaction failed due to errors such as data validation issues, server connection failures, or technical/network problems.                                                                                                  | Yes. Investigate the cause of failure (validation, network, server) and take corrective measures. Allow the user to retry with corrected information. |
-| `processing`    | The transaction is currently being processed. Typically used when there is a delay, such as waiting for approval from a third-party service or financial institution.                                                            | No. Wait for the final status. For asynchronous payment methods, this may be the final SDK status while the payment completes in the background.      |
-| `reject`        | The transaction was rejected. Rejection can occur for various reasons, such as insufficient funds, fraudulent activity, or a request that violates specific rules or policies.                                          | Yes. Inform the user of the rejection with a clear message. If possible, provide the reason and suggest alternative payment methods or actions.       |
-| `internalError` | An unexpected error occurred within the system or infrastructure handling the transaction. This state suggests a problem on the server or backend side rather than the user's input or request. | Yes. Requires technical intervention to review logs and identify the issue. Allow the user to retry or provide alternative payment options.           |
-| `cancelByUser`  | The user voluntarily canceled or aborted the transaction or payment process. Typically used when the user closes the payment form or explicitly cancels the operation.                                         | No. The user intentionally canceled the payment. You may want to track this for analytics purposes.                                                   |
-
-### Step 4: Initiate payment
-
-Start the Lite payment flow by calling `startPaymentLite` with the selected payment method. With Lite (Flutter), you are responsible for displaying available payment methods and capturing the user's selection. The SDK handles the payment form and processing for the selected method.
-
-```dart
-await Yuno.startPaymentLite(
-  arguments: StartPayment(
-    checkoutSession: checkoutSessionId,
-    methodSelected: const MethodSelected(
-      paymentMethodType: 'CARD',
-    ),
-  ),
-);
-```
-
-The Lite payment flow does not render a payment method list. Your app must show the available methods and pass the selected `paymentMethodType` (and `vaultedToken` if applicable).
-
-See [`StartPayment`](#startpayment-lite) and [`MethodSelected`](#methodselected) parameters for detailed options.
-
-### Step 5: Get the OTT (one-time token)
-
-After the user completes the payment form, the SDK generates a one-time token (OTT) that securely represents the payment details. This token is delivered to your `YunoPaymentListener` callback and must be sent to your backend to create the actual payment.
-
-The OTT is available in the listener you set up in Step 3:
-
-```dart
-listener: (context, state) {
-  final ott = state.token;
-  if (ott.isNotEmpty) {
-    // Send ott to your backend to create the payment
-  }
-}
-```
-
-### Step 6: Create the payment
-
-Use the one-time token from Step 5 to create the payment in your backend. Call the [Create payment endpoint](/reference/payments/create-payment) from your server with:
-
-* `one_time_token` from Step 5
-* `checkout_session` from Step 1
-
-The API response will indicate whether additional actions are required using the `sdk_action_required` field.
-
-### Step 7: Continue payment
-
-Some payment methods require additional customer actions to complete the transaction, such as 3D Secure authentication or bank redirects. When the Create Payment API response includes `sdk_action_required: true`, call `continuePayment` to display these additional screens to the user.
-
-If the API response includes `sdk_action_required: true`, call:
-
-```dart
-await Yuno.continuePayment(showPaymentStatus: true);
-```
-
-This method handles asynchronous payment flows automatically, including authentication challenges, redirect pages, and payment confirmations.
+  <Step title="Continue payment">
+    If the response includes `sdk_action_required: true`, call `continuePayment` to handle 3DS or redirects.
+    ```dart
+    await Yuno.continuePayment(showPaymentStatus: true);
+    ```
+  </Step>
+</Steps>
 
 ### Payment status validation
 
@@ -243,87 +189,65 @@ This ensures merchants receive accurate status information when a payment method
 
 ## Enrollment
 
-### Step 1: Create customer and customer session
+Follow these steps to enroll payment methods in your Flutter application.
 
-Before enrolling a payment method, create a customer and customer session in your backend. The customer session is specifically designed for enrollment flows and associates the enrolled payment method with the customer for future use.
+<Steps>
+  <Step title="Create customer and session">
+    Create a customer and a `customer_session` in your backend using the [Create customer session](/reference/customer-sessions-enrollment/create-customer-session) endpoint.
+  </Step>
 
-Create a customer and a `customer_session` using the [Create customer session endpoint](/reference/customer-sessions-enrollment/create-customer-session). Keep the returned `customer_session` ID for use in Step 4.
+  <Step title="Initialize the SDK">
+    Ensure the SDK is initialized with your API key and configuration.
+    ```dart
+    await Yuno.init(
+      apiKey: 'YOUR_PUBLIC_API_KEY',
+      countryCode: 'CO',
+    );
+    ```
+  </Step>
 
-### Step 2: Initialize the SDK
+  <Step title="Start enrollment process">
+    Set up a `YunoEnrollmentListener` to receive status updates.
+    ```dart
+    YunoEnrollmentListener(
+      listener: (context, state) {
+        final status = state.enrollmentStatus;
+        // Handle status updates
+      },
+      child: YourWidget(),
+    )
+    ```
+  </Step>
 
-If you have not already initialized the SDK for payment flows, initialize it now with your API key and configuration preferences. This step can be shared between payment and enrollment flows.
+  <Step title="Initiate enrollment">
+    Call `enrollmentPayment` with the customer session ID.
+    ```dart
+    await Yuno.enrollmentPayment(
+      arguments: EnrollmentArguments(
+        customerSession: customerSessionId,
+        showPaymentStatus: true,
+      ),
+    );
+    ```
+  </Step>
 
-Call `Yuno.init()` before any enrollment operations:
+  <Step title="Listen for status">
+    Monitor the enrollment status through your listener callback.
+    ```dart
+    listener: (context, state) {
+      final status = state.enrollmentStatus;
+      // Handle completion or errors
+    }
+    ```
+  </Step>
 
-```dart
-await Yuno.init(
-  apiKey: 'YOUR_PUBLIC_API_KEY',
-  countryCode: 'CO',
-  yunoConfig: const YunoConfig(),
-  iosConfig: const IosConfig(),
-);
-```
-
-See [`Yuno.init`](#yunoinit), [`YunoConfig`](#yunoconfig), and [`IosConfig`](#iosconfig) parameters for detailed configuration options.
-
-### Step 3: Start enrollment process
-
-Set up an enrollment listener in your widget tree to receive enrollment status updates from the SDK. The listener captures the enrollment result and any errors during the process.
-
-Use `YunoEnrollmentListener` or `YunoMultiListener`:
-
-```dart
-YunoEnrollmentListener(
-  listener: (context, state) {
-    final status = state.enrollmentStatus;
-    // Handle status updates
-  },
-  child: YourWidget(),
-)
-```
-
-### Step 4: Initiate enrollment
-
-Start the enrollment flow by calling `enrollmentPayment` with the customer session. The SDK will display the appropriate enrollment form for the payment method the user wants to save.
-
-```dart
-await Yuno.enrollmentPayment(
-  arguments: EnrollmentArguments(
-    customerSession: customerSessionId,
-    showPaymentStatus: true,
-  ),
-);
-```
-
-See [`EnrollmentArguments`](#enrollmentarguments) parameters for detailed options.
-
-### Step 5: Listen for enrollment status
-
-Monitor the enrollment status through the listener you configured in Step 3. The status indicates whether the payment method was successfully enrolled, failed, or requires additional actions.
-
-The enrollment status is delivered to your `YunoEnrollmentListener` callback:
-
-```dart
-listener: (context, state) {
-  final status = state.enrollmentStatus;
-  // Handle enrollment completion, errors, or user cancellation
-}
-```
-
-### Step 6: Handle deep links (optional)
-
-Some enrollment flows redirect users to external authentication pages (such as bank portals) and return to your app via deep links. This step is only required if you are enrolling payment methods that use external authentication or verification.
-
-If the enrollment flow uses a deep link to return to your app on iOS:
-
-1. Configure your URL scheme in `Info.plist` to match the `callback_url` used in the `customer_session`.
-2. Pass the URL to the SDK:
-
-```dart
-await Yuno.receiveDeeplink(url: uri);
-```
-
-For Android deep link configuration, see [Android deep linking documentation](/docs/sdks/full-checkout/android-payments#step-3-create-the-checkout-session).
+  <Step title="Handle deep links (optional)">
+    For methods using external authentication, pass the redirect URL to the SDK.
+    ```dart
+    await Yuno.receiveDeeplink(url: uri);
+    ```
+  </Step>
+</Steps>
 
 ## Parameters
 
