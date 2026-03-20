@@ -227,7 +227,7 @@ export const FeatureCards = () => {
             </Card>
 
             {/* ── AI Optimization (blue card) ── */}
-            <Card ai>
+            <Card ai className="hover:-translate-y-1">
               <div className="absolute top-4 right-4 bg-emerald-500 text-white px-2 py-1 text-xs font-semibold">
                 NEW
               </div>
@@ -244,19 +244,19 @@ export const FeatureCards = () => {
                 <FeatureItem
                    href="/docs/ai-capabilities/aida-ai-agent"
                   title="Aida AI Agent"
-                  desc=" - Use AI-powered assistance to streamline payment operations."
+                  desc=" - **Aida AI Agent**: Use **AI-powered assistance** to streamline payment operations."
                   ai
                 />
                 <FeatureItem
                    href="/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp"
                   title="LLM & MCP integrations"
-                  desc=" - Build smarter workflows with language model integrations."
+                  desc=" - **LLM & MCP integrations**: Build smarter workflows with **language model integrations**."
                   ai
                 />
                 <FeatureItem
                    href="/docs/ai-capabilities/remote-yuno-mcp-server"
                   title="Remote Yuno MCP Server"
-                  desc=" - AI-driven routing to optimize success rates and costs."
+                  desc=" - **Remote Yuno MCP Server**: **AI-driven routing** to optimize success rates and costs."
                   ai
                 />
               </ul>
