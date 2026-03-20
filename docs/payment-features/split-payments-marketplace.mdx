@@ -461,6 +461,40 @@ If you decide to transfer the onboarding to another recipient, continue the flow
 
 The `onboarding` object includes a `history` element that stores the complete traceability of the onboarding. This history includes not only updates to the object but also events related to transfers between recipients, ensuring full lifecycle visibility.
 
+## 4. Standalone Transfers
+
+Merchants often need to send funds to recipients (sellers, vendors, contractors) independently of a payment lifecycle, directly from their organization balance. This is known as a **Standalone Transfer** or **Forward Transfer**. 
+
+This feature allows you to:
+- Distribute sales proceeds to sellers in a Marketplace.
+- Pay contractors after completed jobs (Gig Economy).
+- Manage revenue sharing for subscriptions or commission payments for affiliates.
+- Execute bulk payouts to multiple recipients.
+
+### Transfer Statuses
+
+A standalone transfer flow goes through multiple states depending on the provider's response and any subsequent reversals:
+
+| Status      | Description                                               | Terminal? |
+| ----------- | --------------------------------------------------------- | --------- |
+| `CREATED`   | Transfer flow created, not yet sent to provider.          | No        |
+| `PENDING`   | Sent to provider, awaiting confirmation.                  | No        |
+| `SUCCEEDED` | Forward transfer completed successfully.                  | No        |
+| `DECLINED`  | Provider declined the transfer.                           | Yes       |
+| `ERROR`     | Provider error during processing.                         | Yes       |
+| `REVERSED`  | Reverse transaction completed successfully.               | Yes       |
+
+### Transactions and Reversals
+
+In the Standalone Transfer Flow, forward and reverse operations are treated as identical independent transactions to maintain an explicit audit trail. This means:
+
+1. **Forward Transfer (`SPLIT_TRANSFER`):** You create a transfer moving funds from your balance to the recipient's connection. 
+2. **Reverse Transfer (`SPLIT_TRANSFER_REVERSE`):** You can fully or partially reverse the `SPLIT_TRANSFER` to return the funds to your balance. The original forward transfer _must be_ in `SUCCEEDED` status for a reverse to take place.
+
+### Idempotency
+
+Both the creation and reversal of standalone transfers require an **Idempotency Key** via the `X-Idempotency-Key` header. This allows you to safely retry requests without accidentally duplicating fund distribution. These keys are retained for 24 hours. Duplicate requests using the same combination of `account_id` and idempotency key will return the original transfer object.
+
 ## Validations
 
 In this section, we outline the necessary validations to ensure successful split payments.
@@ -486,3 +520,6 @@ This section lists the API endpoints involved in managing split payments.
 * **[Cancel or refund a payment with transaction](/reference/cancel-or-refund-payment-with-transaction)**: **POST**: `https://api-sandbox.y.uno/v1/payments/{id}/transactions/{transaction_id}/cancel-or-refund`
 * **[Transfer onboarding](/reference/transfer-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/transfer`
 * **[Reverse onboarding transfer](/reference/reverse-onboarding)**: **POST**: `https://api-sandbox.y.uno/v1/recipients/{recipient_id}/onboardings/{onboarding_id}/reverse-transfer`
+* **[Create standalone transfer](/reference/create-standalone-transfer)**: **POST**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers`
+* **[Get standalone transfer](/reference/get-standalone-transfer)**: **GET**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers/{transfer_id}`
+* **[Reverse standalone transfer](/reference/reverse-standalone-transfer)**: **POST**: `https://api-sandbox.y.uno/v1/split-marketplace/transfers/{transfer_id}/reverse`
