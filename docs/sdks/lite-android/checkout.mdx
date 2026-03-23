@@ -1,0 +1,157 @@
+---
+title: Lite SDK (Payment Android)
+excerpt: ''
+deprecated: false
+hidden: true
+metadata:
+  title: Lite SDK (Payment Android)
+  description: >-
+    Step-by-step guide on integrating Yuno's Lite SDK (Payment Android) into
+    your mobile application for a streamlined checkout experience.
+  robots: index
+---
+
+<br />
+
+<Tip>
+**Recommended SDK**
+
+We recommend using the [Android Seamless SDK](/docs/sdks/full-checkout/android-payments) for a smooth integration experience. This option provides a flexible payment solution with pre-built UI components and customization options.
+</Tip>
+
+This page provides a guide to the Yuno Lite SDK for Android payments. This SDK offers a streamlined integration process with essential payment functionality, making it ideal for merchants who:
+
+* Need a quick implementation with minimal customization requirements
+* Want to focus primarily on card payment processing
+* Prefer a ready-to-use UI that handles the payment flow
+
+The Lite SDK includes core features like:
+
+* Pre-built payment UI components
+* Card payment processing
+* Basic payment status handling
+* Essential error management
+
+For merchants requiring more advanced features like multiple payment methods, custom UI, or advanced fraud prevention, consider using our [Full SDK](/docs/sdks/full-checkout/android-payments) instead.
+
+## Requirements
+
+Before starting the Yuno Android SDK integration, ensure your project meets the [technical requirements](/docs/sdks/resources/references/android). Also, ensure the following prerequisites are in place:
+
+* You must have an active Yuno account.
+* You need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers credentials section](/reference/getting-started/authentication) of the Yuno dashboard.
+
+## Step 1: Create a customer
+
+Create a customer using the [Create customer endpoint](/reference/customers/create-customer) before initiating payments. The customer ID returned from this endpoint will be used when creating the `checkout_session`.
+
+## Step 2: Create a checkout session
+
+Create a new `checkout_session` using the [Create checkout session](/reference/checkout-sessions/create-checkout-session) endpoint to initialize the payment flow.
+
+## Step 3: Include the library in your project
+
+Include the Yuno SDK file in your project through Gradle. Add the repository source:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+Include the following code in the `build.gradle` file to add the Yuno SDK dependency:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:{last_version}'
+}
+```
+
+## Step 4: Initialize SDK with the public key
+
+Initialize the SDK by calling `Yuno.initialize()` in your application's `onCreate()` method:
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config = YunoConfig(
+        saveCardEnabled = false,
+        language = YunoLanguage.EN,
+      )
+    )
+  }
+}
+```
+
+### YunoConfig customization
+
+| Option | Description |
+| --- | --- |
+| `saveCardEnabled` | Enables the **Save card checkbox**. |
+| `language` | Defines the language (e.g., `ES`, `EN`, `PT`). |
+| `styles` | Pre-defined [styles](/docs/sdks/resources/references/android#styles). |
+
+## Step 5: Start the checkout process
+
+Call the `startCheckout` method in your activity:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "US",
+  callbackPaymentState = { state, subState ->
+    println("Payment State: $state, Substate: $subState")
+  }
+)
+```
+
+### Callback states
+
+| State | Description |
+| --- | --- |
+| `SUCCEEDED` | Transaction completed successfully. |
+| `FAIL` | Transaction failed. |
+| `PROCESSING` | In progress, awaiting verification. |
+| `REJECT` | Rejected (e.g., insufficient funds). |
+| `CANCELED` | User canceled the process. |
+
+## Step 6: Initiate the payment process
+
+Call `startPaymentLite` to start the process:
+
+```kotlin
+startPaymentLite(
+    paymentSelected = PaymentSelected(
+      paymentMethodType = "CARD",
+      vaultedToken = null
+    ),
+    callbackOTT = { ott -> println("OTT: $ott") },
+    callBackTokenWithInformation = { info -> println("Token Info: $info") },
+    showStatusYuno = true,
+)
+```
+
+## Step 7: Create the payment
+
+After obtaining the One-Time Token (OTT), create the payment via your backend using the [Create Payment](/reference/payments/create-payment) API.
+
+## Step 8: Continue payment (Required)
+
+If the API response has `sdk_action_required: true`, call `continuePayment()`:
+
+```kotlin
+continuePayment(
+    showPaymentStatus = true,
+    checkoutSession = "checkout_session",
+    countryCode = "US",
+    callbackPaymentState = { state, subState -> ... }
+)
+```
+
+<Note>
+**Demo App**
+
+See the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) for full implementation examples.
+</Note>
