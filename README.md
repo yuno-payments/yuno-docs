@@ -26,6 +26,8 @@ Official documentation for [Yuno](https://y.uno) — the payment orchestration p
 - **API Spec:** OpenAPI 3.1.0 (`api-reference/openapi.json`)
 - **Config:** `docs.json`
 
+---
+
 ## LLM Readability
 
 This documentation is optimized for AI/LLM consumption:
