@@ -1,0 +1,444 @@
+---
+title: Headless SDK (Payment Android)
+description: >-
+  Step-by-step guide on integrating Yuno's Headless SDK (Payment Android) into
+  your mobile application.
+robots: index
+hidden: true
+---
+
+<br />
+
+<Tip>
+**Recommended SDK**
+
+For a smooth integration experience, we recommend using the [Android Seamless SDK](/docs/sdks/full-checkout/android-payments). This option provides a flexible payment solution with pre-built UI components and customization options.
+</Tip>
+
+This page provides a guide to the Yuno Headless Android SDK for payments.
+
+This SDK is ideal for merchants who:
+
+* Need full control over the payment UI and user experience
+* Want to build custom payment flows
+* Require advanced integration capabilities
+
+The Headless SDK includes core features like:
+
+* Direct API access for payment processing
+* Token generation for payment methods
+* 3DS authentication handling
+* Fraud prevention data collection
+
+For merchants preferring a pre-built UI solution, consider using our [Full Checkout SDK](/docs/sdks/full-checkout/android-payments) or [Lite SDK](/docs/sdks/lite-android/checkout) instead.
+
+## Requirements
+
+Before starting the Yuno Android SDK integration, ensure your project meets the technical requirements. Also, ensure the following prerequisites are in place:
+
+* You must have an active Yuno account.
+* You need your Yuno API credentials (`account_id`, `public-api-key`, and `private-secret-key`), which you can obtain from the [Developers section of the Yuno dashboard](/docs/using-yuno/settings/developers-credentials). These credentials are required to authenticate requests to the Yuno API. The API is used to:
+  * Create a `customer`, which is required before initiating payments
+  * Create a `checkout_session`, which initializes the payment flow
+  * Create the payment associated with the session
+
+<Info>
+**Latest SDK Version**
+
+Check the Release notes or visit the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the current SDK version available.
+</Info>
+
+## Step 1: Create a customer
+
+Create a customer using the [Create customer endpoint](/reference/customers/create-customer) before initiating payments. This step is required to:
+
+* Identify the person making the payment
+* Enable saved payment method functionality (if enabled)
+* Track payment history
+
+The customer ID returned from this endpoint will be used when creating the `checkout_session`.
+
+## Step 2: Create a checkout session
+
+Create a new `checkout_session` using the [Create checkout session](/reference/checkout-sessions/create-checkout-session) endpoint to initialize the payment flow. Make sure to:
+
+* Include the customer ID obtained from the previous step
+* Store the returned `checkout_session` ID for use in later steps
+
+The `checkout_session` is unique for each payment attempt and cannot be reused.
+
+## Step 3: Include the library in your project
+
+Include the Yuno SDK in your project through Gradle. Add the repository source:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+Add the Yuno SDK dependency to your application in the `build.gradle` file:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:{last_version}'
+}
+```
+
+Yuno SDK includes, by default, the `INTERNET` permission, which is required to make network requests.
+
+`<uses-permission android:name="android.permission.INTERNET" />`
+
+## Step 4: Initialize headless SDK with the public key
+
+Import Yuno and provide a valid **PUBLIC_API_KEY** to initialize the Headless SDK. If you don't have your API credentials, see the [Developers (Credentials)](/docs/using-yuno/settings/developers-credentials) page to check how to retrieve them from the dashboard.
+
+Create a custom application if you haven't already. In the `onCreate()` method of your application class, initialize the SDK by calling the `Yuno.initialize()` function:
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config: YunoConfig,
+    )
+  }
+}
+```
+
+## Step 5: Start the checkout process
+
+Call the `apiClientPayment` function after your customer selects a payment method to start the checkout process. This function requires configuration parameters and initiates the collection of information needed for 3DS authentication and fraud prevention tools configured in your routing.
+
+The following table describes the required parameters:
+
+| Parameter | Description |
+| --- | --- |
+| `country_code` | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](/docs/sdks/resources/country-coverage) page. |
+| `checkout_session` | Refers to the current payment's checkout session created using the [Create Checkout Session](/reference/checkout-sessions/create-checkout-session) endpoint. Example: `'438413b7-4921-41e4-b8f3-28a5a0141638'` |
+
+The following code block shows an example of the parameter configuration:
+
+```kotlin
+ val apiClientPayment = Yuno.apiClientPayment(
+   countryCode = "US",
+   checkoutSession = "74bf4b96-6b35-42a6-8c73-2fe094c34ca9",
+   context = this
+)
+
+```
+
+## Step 6: Generate token
+
+After collecting the user information, create a one-time token (OTT) using the `apiClientPayment.generateToken` function. Since this is an asynchronous function, use a `try/catch` block to handle any errors that may occur. The following examples show two different scenarios for creating a one-time token:
+
+1. **Example 1**: Create a one-time token using a card as the payment method and including all required card information.
+2. **Example 2**: Create a one-time token using the `vaulted_token` information.
+
+### Benefits of using a vaulted token
+
+When you use a vaulted token with the SDK, all the fraud information from the providers you configured in your card routing is collected and attached to the one-time token. You can also add installment information and a security code if the provider requires it.
+
+```kotlin Example 1
+apiClientPayment.generateToken(
+   collectedData = TokenCollectedData(
+       checkoutSession = "checkout_session",
+       paymentMethod = PaymentMethod (
+           type = "CARD",
+           vaultedToken = null,
+           card = CardData(
+               save = true,
+               detail = Detail(
+                   expirationMonth = 11,
+                   expirationYear = 55,
+                   number = "4111111111111111",
+                   securityCode = "123",
+                   holderName = "Firstname Lastname",
+                   type = CardType.DEBIT
+               ),
+               installment = Installment(
+                   id = "id",
+                   value = 12
+               )
+           ),
+           customer = Customer(
+               id = "id",
+               merchantCustomerId = "merchant_customer_id",
+               firstName = "firstName",
+               lastName = "lastName",
+               gender = Gender.NB,
+               dateOfBirth = "DD/MM/YYYY",
+               email = "email@email.com",
+               country = "US",
+               document = Document(
+                   documentType = "PAS",
+                   documentNumber = "PAS12312"
+               ),
+               phone = Phone(
+                   number = "321123321123",
+                   countryCode = "1"
+               )
+           )
+       )
+   ),
+   context = this
+)
+
+```
+```javascript Example 2
+apiClientPayment.generateToken(
+   collectedData = TokenCollectedData(
+       checkoutSession = "checkout_session",
+       paymentMethod = PaymentMethod(
+           type = "CARD",
+           vaultedToken = "a1c7c5d1-b260-4dc6-909a-8368704233cf",
+           card = CardData(
+               save = true,
+               detail = Detail(
+                   expirationMonth = 11,
+                   expirationYear = 55,
+                   number = "4111111111111111",
+                   securityCode = "123",
+                   holderName = "Firstname Lastname",
+                   type = CardType.DEBIT
+               ),
+               installment = Installment(
+                   id = "id",
+                   value = 12
+               )
+           ),
+           customer = Customer(
+               id = "id",
+               merchantCustomerId = "merchant_customer_id",
+               firstName = "firstName",
+               lastName = "lastName",
+               lastName = "lastName",
+               gender = Gender.NB,
+               dateOfBirth = "DD/MM/YYYY",
+               email = "email@email.com",
+               country = "CO",
+               document = Document(
+                   documentType = "PAS",
+                   documentNumber = "PAS12312"
+               ),
+               phone = Phone(
+                   number = "321123321123",
+                   countryCode = "57"
+               )
+           )
+       )
+   ),
+   context = this
+)
+
+```
+
+The **apiClientPayment.generateToken** function returns an Observable type, which is a subclass of `LiveData`. You can observe the response as a common `LiveData` with the following type `SingleLiveEvent<Map<String, Any?>>`, which is a `LiveData` that only emits once. The response type is a `Map` containing the whole response. The following code block shows examples of responses after calling the `apiClientPayment.generateToken` function.
+
+```json Example 1
+["token": "9ee44ac7-9134-4598-ae28-a26fec03099d",
+     "type": "CARD",
+     "customer": ["billing_address": null,
+                  "first_name": null,
+                  "gender": "",
+                  "phone": nil,
+                  "browser_info": ["color_depth": null,
+                                   "language": "en",
+                                   "accept_header": "*/*",
+                                   "browser_time_difference": null,
+                                   "accept_content": null,
+                                   "accept_browser": null,
+                                   "java_enabled": null,
+                                   "user_agent": "YunoSDK_Example/1 CFNetwork/1406.0.4 Darwin/22.6.0",
+                                   "screen_height": "844.0",
+                                   "screen_width": "390.0",
+                                   "javascript_enabled": null],
+                  "document": null,
+                  "last_name": null,
+                  "device_fingerprint":null,
+                  "email": null],
+     "country": "US",
+     "vaulted_token": null,
+     "installment": ["rate": "",
+                     "id": "cca80084-961b-4212-9c34-54f03f4f10ae",
+                     "value": 24,
+                     "amount": null],
+     "card_data": null]
+
+```
+```json Example 2
+["token": "9ee44ac7-9134-4598-ae28-a26fec03099d",
+     "type": "CARD",
+     "customer": ["billing_address": null,
+                  "first_name": null,
+                  "gender": "",
+                  "phone": nil,
+                  "browser_info": ["color_depth": null,
+                                   "language": "en",
+                                   "accept_header": "*/*",
+                                   "browser_time_difference": null,
+                                   "accept_content": null,
+                                   "accept_browser": null,
+                                   "java_enabled": null,
+                                   "user_agent": "YunoSDK_Example/1 CFNetwork/1406.0.4 Darwin/22.6.0",
+                                   "screen_height": "844.0",
+                                   "screen_width": "390.0",
+                                   "javascript_enabled": null],
+                  "document": null,
+                  "last_name": null,
+                  "device_fingerprint":null,
+                  "email": null],
+     "country": "BR",
+     "vaulted_token":"a1c7c5d1-b260-4dc6-909a-8368704233cf",
+     "installment": ["rate": "",
+                     "id": "cca80084-961b-4212-9c34-54f03f4f10ae",
+                     "value": 24,
+                     "amount": null],
+     "card_data": null]
+
+```
+
+The endpoint response provides the `sdk_action_required` parameter that defines if additional actions are necessary.
+
+The following code block shows an example of observing the response:
+
+```kotlin
+apiClientPayment.generateToken(data, context).observe(context) { response ->
+   val token = response["token"] as String?
+   val error = response["error"] as String?
+}
+
+```
+
+## Step 7: Create the payment
+
+After generating the one-time token, create the payment by calling the [Create Payment endpoint](/reference/payments/create-payment). Include the one-time token obtained in Step 6 in the `payment_method.token` parameter of your request. The following code block shows an example of a payment creation request:
+
+```json
+{
+  "merchant_order_id": "0000022",
+  "country": "US",
+  "account_id": "<Your account_id>",
+  "description": "Test",
+  "amount": {
+    "currency": "USD",
+    "value": 500
+  },
+  "customer_payer": {
+    "id": "cfae0941-7234-427a-a739-ef4fce966c79"
+  },
+  "checkout": {
+    "session": "<checkout session>"
+  },
+  "workflow": "SDK_CHECKOUT",
+  "payment_method": {
+    "type":"CARD",
+    "token": "2cd31999-e44e-4de3-bbe4-179981ff4295"
+  }
+}
+```
+
+The endpoint response includes the `sdk_action_required` parameter that indicates whether additional actions are needed to complete the payment:
+
+* For synchronous payment methods, the payment completes instantly. In this case, `sdk_action_required` will be `false` in the API response and the payment process ends
+* For payment flows requiring additional SDK interaction, `sdk_action_required` will be `true`. When this happens, proceed to Step 8 for next steps
+
+## Step 8: Get the 3DS challenge URL (if required)
+
+When a payment requires 3DS authentication, an additional challenge may be needed to verify the customer's identity. For more details about this process, see the [3D Secure](/docs/security-and-compliance/3d-secure) page. If a 3DS verification challenge is required, the Create Payment endpoint response will include the following:
+
+* A `THREE_D_SECURE `transaction type
+* Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
+* `sdk_action_required = true`
+
+Call the `getThreeDSecureChallenge` function and provide the `checkoutSession` used to create the payment to get the 3DS challenge URL. After obtaining the URL, redirect your customer to complete the challenge. The following code block shows how to use the `getThreeDSecureChallenge` function:
+
+```kotlin
+fun ApiClientPayment.getThreeDSecureChallenge(
+   context: Context,
+   checkoutSession: String? = null,
+): SingleLiveEvent<ThreeDSecureChallengeResponse>
+
+```
+
+The `getThreeDSecureChallenge` function returns the `ThreeDSecureChallengeResponse` data class, described in the following code block:
+
+```kotlin
+data class ThreeDSecureChallengeResponse(
+   val type: String,
+   val data: String,
+)
+```
+
+The `type` can return `ERROR` or `URL`, defining if the function returned a valid URL for the challenge:
+
+* If `type = URL`, `data` will contain the URL your customer needs to access to complete the 3DS challenge.
+* If `type = ERROR`, `data` will contain the error message, informing the source of the problem.
+
+The following code block shows an example of how you can observe the response from `ThreeDSecureChallengeResponse`:
+
+```kotlin
+apiClientPayment.getThreeDSecureChallenge(this)?.observe(this) {
+   if (it.type == "URL") {
+   } else 
+}
+
+```
+
+When the response type is "URL", you can load the 3DS challenge URL in your preferred view (WebView, Custom Tab, or browser). If the response type is not "URL", it indicates an error occurred and you should handle it appropriately by displaying an error message to the user.
+
+To complete the 3DS challenge, redirect customers to the URL returned by `getThreeDSecureChallenge(context)`. After successful completion, customers are automatically redirected to the `callback_url` that you specified when creating the `checkout_session` using the [Create Checkout Session](/reference/checkout-sessions/create-checkout-session) endpoint. The following example shows how to load the 3DS challenge URL in a WebView:
+
+```kotlin
+val webView = WebView(this)
+webViewContainer.addView(
+   webView,
+   ConstraintLayout.LayoutParams(
+       ConstraintLayout.LayoutParams.MATCH_PARENT,
+       ConstraintLayout.LayoutParams.MATCH_PARENT
+   )
+)
+webView.settings.javaScriptEnabled = true
+webView.addJavascriptInterface(
+   object {
+       @JavascriptInterface
+       fun messageFromWeb(data: String?) {
+       }
+   },
+   "Android"
+)
+webView.loadUrl(url)
+
+```
+
+The JavaScript interface must use the name `messageFromWeb(data : String?)` and be added with the name `Android`. This allows you to capture challenge events and determine when they complete.
+
+To complete the Headless SDK payment flow:
+
+1. Use [Yuno Webhooks](/docs/webhooks/index) to receive notifications about:
+   * The outcome of the 3DS challenge
+   * The final payment status
+
+2. Optionally, retrieve payment details using the [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) endpoint.
+
+## Complementary features
+
+Yuno Android SDK provides additional services and configurations you can use to improve customers' experience. Use the [SDK customization](/docs/sdks/customization/android) to change the SDK appearance to match your brand or to configure the loader.
+
+### Loader
+
+The loader functionality is controlled through the `keepLoader` parameter in the `YunoConfig` data class, which is documented inline in the SDK configuration section above.
+
+### SDK customization
+
+You can change the SDK appearance to match your brand. For more information, see the [SDK customization](/docs/sdks/customization/android) page.
+
+<Info>
+**Access the Demo App**
+
+In addition to the code examples provided, you can see the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
+</Info>
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](/reference/payments/status-and-response-codes/index) in the API reference.
