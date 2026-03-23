@@ -6,6 +6,7 @@ Official documentation for [Yuno](https://y.uno) — the payment orchestration p
 
 ## What's Inside
 
+
 | Section | Pages | Description |
 |---------|-------|-------------|
 | **Getting Started** | 5 | Authentication, environments, quickstart with multi-language examples |
