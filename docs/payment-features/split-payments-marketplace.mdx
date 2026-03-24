@@ -86,8 +86,34 @@ The onboarding workflow follows a structured process that ensures submerchants a
 4. **Payment Creation**: Once recipients are successfully onboarded (`SUCCEEDED` status), the marketplace can create payments with the `split_marketplace` object.
 
 5. **Split Processing**: The payment provider executes the split according to the defined distribution, transferring funds to each recipient's designated share.
-
-## 2. Payment split integration
+ 
++### Auto split configuration
++
++Yuno allows you to define automatic split rules at the recipient level. When a recipient is configured with a `split_configuration`, Yuno will automatically calculate their share of the payment during the creation process, eliminating the need to provide manual `amount` values for every transaction.
++
++A `split_configuration` consists of:
++
++* **Calculation Type**:
++  * `PERCENTAGE`: Calculated as a percentage of the total payment amount.
++  * `FIXED`: A set amount in a specific currency.
++  * `MIXED`: A combination of both a percentage and a fixed amount.
++* **Value**: The percentage or fixed amount to be applied.
++* **Currency**: (For `FIXED` or `MIXED`) The currency for the fixed portion.
++* **Rounding Mode**: Always `HALF_EVEN` to ensure consistency.
++
++#### Calculation examples
++
++Given a total payment of **$100.00**:
++
++| Type | Formula | Configuration | Result |
++| :--- | :--- | :--- | :--- |
++| **PERCENTAGE** | `Total * Percentage` | `10.5%` | **$10.50** |
++| **FIXED** | `Fixed Amount` | `$5.00` | **$5.00** |
++| **MIXED** | `(Total * Percentage) + Fixed` | `10.5% + $5.00` | **$15.50** |
++
++To configure this, include the `split_configuration` object when [creating](/reference/create-recipient-1) or [updating](/reference/update-recipient-1) a recipient.
++
+ ## 2. Payment split integration
 
 In this section, we explore how the `split_marketplace` object is used to divide a [payment](/reference/payments/create-payment) among multiple recipients. This object is an array where each entry specifies a recipient and their corresponding share of the payment.
 
@@ -259,7 +285,7 @@ In this section, we explore how the `split_marketplace` object is used to divide
 
     <tr>
       <td>
-        `amount`\*
+        `amount`
       </td>
 
       <td>
@@ -271,10 +297,12 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        Yes
+        Conditional
       </td>
 
-      <td />
+      <td>
+        Required if the recipient does not have a `split_configuration` defined.
+      </td>
     </tr>
 
     <tr>
@@ -434,6 +462,25 @@ In this section, we explore how the `split_marketplace` object is used to divide
 }
 ```
 
+#### Example: Implicit split using auto-calculation
+
+If a recipient has a `split_configuration` (e.g., 10% percentage split), the `amount` object can be omitted.
+
+```json Implicit auto-calculation
+{
+  "split_marketplace": [
+    {
+      "recipient_id": "rec_with_auto_split_123",
+      "type": "PURCHASE"
+    },
+    {
+      "recipient_id": "rec_with_auto_split_456",
+      "type": "COMMISSION"
+    }
+  ]
+}
+```
+
 ## 3. Onboarding transfer
 
 The goal of this flow is to allow the transfer of onboardings between recipients in a controlled and reversible way.
@@ -499,11 +546,13 @@ Both the creation and reversal of standalone transfers require an **Idempotency 
 
 In this section, we outline the necessary validations to ensure successful split payments.
 
-* The total of all splits must match the overall payment amount.
-* For each split, an object must be sent for every participant, ensuring the sum of amounts equals the total payment amount.
-* In scenarios where a direct recipient ID is not needed for the marketplace owner (e.g., with Adyen), the `type` field can serve as a flag (e.g., `COMMISSION`) to denote the marketplace owner's share, making the `provider_recipient_id` optional for that specific split.
+* **Total amount consistency**: The total of all splits (calculated and manual) must match the overall payment amount.
+* **Calculated splits**:
+  * If a recipient has a `split_configuration`, the `amount` in `split_marketplace` is optional.
+  * If provided, the manual `amount` must match the result of the automatic calculation.
+* **Currency matching**: For `FIXED` or `MIXED` splits, the `split_configuration.currency` must match the payment currency.
+* **Rounding logic**: All automatic calculations use the `HALF_EVEN` rounding mode.
 * Either `recipient_id` or `provider_recipient_id` must be included for the split, but not both.
-* If any required fields are missing or invalid, the request will result in an error.
 * If using multiple payment providers for split payments, we recommend utilizing the [recipients object](/reference/recipients-for-marketplace/create-recipient-1), as it allows defining more than one provider for each recipient.
 
 ## API endpoints involved
