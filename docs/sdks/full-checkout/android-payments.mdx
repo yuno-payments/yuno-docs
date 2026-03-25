@@ -10,6 +10,7 @@ The Android SDK makes it easy to integrate payment flows into your Android app.
 ## Additional resources
 
 * See [Choose the right integration for you](/docs/sdks/overview/choose-integration) if you're unsure which flow to follow.
+* See [Render mode integration](#render-mode-integration) for advanced UI customization.
 * Access the [Release notes](/docs/sdks/resources/release-notes/android) or the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android) to verify the latest SDK version available.
 
 ## Requirements
@@ -385,6 +386,134 @@ continuePayment(
 ```
 
 To show your payment status screens, send `FALSE` in the `showPaymentStatus` parameter. Then, get the payment state by callback.
+
+
+### Render mode integration
+
+Render mode offers enhanced UI flexibility, allowing you to integrate payment flows with complete control over the user interface while maintaining full SDK functionality.
+
+#### Main function: `startPaymentRender`
+
+The `startPaymentRender` function allows you to integrate the payment process in a more detailed and customizable manner. This function provides full control over when and how payment forms are displayed, facilitating a smoother integration with your existing application UI.
+
+Key benefits:
+* Integrate payment forms in a customized manner within your own UI.
+* Precisely control when payment data forms are displayed.
+* Gain detailed control over the payment confirmation process.
+* Provide a more fluid and consistent user experience.
+
+#### Syntax
+
+```kotlin
+fun startPaymentRender(
+    paymentMethodSelected: PaymentChosen,
+    callbackPaymentState: (onPaymentState: String?) -> Unit
+): PaymentRender?
+```
+
+#### Parameters
+
+| Parameter               | Type                    | Description                                                                                             |
+| ----------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| `paymentMethodSelected` | `PaymentChosen`         | The payment method selected by the user. Must include the `vaultedToken` (if it exists) and the `type`. |
+| `callbackPaymentState`  | `(String?) -> Unit`     | A callback to receive the final payment state.                                                          |
+
+#### Return value
+
+Returns an instance of `PaymentRender`, which provides methods to handle the payment rendering flow.
+
+#### PaymentRender interface
+
+The `PaymentRender` interface includes the following methods:
+
+#### render(onResult: (View?) -> Unit)
+
+* **Purpose**: Gets the form view to capture payment data.
+* **Behavior**:
+  * If the payment method requires a form, it provides a `View` with the corresponding form through the `onResult` callback.
+  * If no form is needed (e.g., for already configured methods), `onResult` receives `null`.
+* **When to use**: Call immediately after creating the payment flow instance.
+
+#### startPayment()
+
+* **Purpose**: Submits form data for validation.
+* **Behavior**: Executes all necessary validations and, if successful, proceeds to generate a new one-time token.
+* **When to use**: When the user triggers the "pay" action in your application.
+
+#### continuePayment(onResult: (View?) -> Unit)
+
+* **Purpose**: Continues the payment process after the one-time token is generated.
+* **Behavior**:
+  * If an additional view (e.g., 3DS authentication) is required, it provides a `View` through the `onResult` callback.
+  * If no additional view is required, `onResult` receives `null`.
+* **When to use**: After receiving the one-time token and creating the payment on your backend.
+
+#### Implementation flow
+
+**Step 1: Initial setup**
+
+Ensure the SDK is properly initialized and you have a valid `checkoutSession`.
+
+```kotlin
+Yuno.initialize(this, "your_api_key")
+```
+
+**Step 2: Create payment flow instance**
+
+```kotlin
+val paymentRender = Yuno.startPaymentRender(
+    paymentMethodSelected = PaymentChosen(
+        type = "CARD",
+        vaultedToken = "optional_vaulted_token"
+    ),
+    callbackPaymentState = { state ->
+        // Handle final state (SUCCEEDED, FAIL, etc.)
+    }
+)
+```
+
+**Step 3: Render and display the form**
+
+```kotlin
+paymentRender?.render { formView ->
+    if (formView != null) {
+        // Add formView to your layout
+        myContainer.addView(formView)
+    } else {
+        // No form needed, you can proceed to startPayment() directly
+        // or show a confirmation button
+    }
+}
+```
+
+**Step 4: Start payment and handle OTT**
+
+When the user clicks your "Pay" button, call `paymentRender?.startPayment()`. You will receive the token through the `callbackOTT` provided during setup (or through the activity result, depending on your implementation).
+
+```kotlin
+// Inside your activity or fragment
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+    Yuno.onActivityResult(requestCode, resultCode, data)
+}
+
+// Ensure you handle the OTT to create the payment on your backend
+fun onTokenUpdated(ott: String?) {
+    if (ott != null) {
+        createPaymentOnBackend(ott) { success ->
+            if (success) {
+                paymentRender?.continuePayment { additionalView ->
+                    if (additionalView != null) {
+                        // Display 3DS or other additional views
+                        myContainer.removeAllViews()
+                        myContainer.addView(additionalView)
+                    }
+                }
+            }
+        }
+    }
+}
+```
 
 ### Complementary features
 
