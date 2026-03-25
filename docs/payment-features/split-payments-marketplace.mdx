@@ -11,7 +11,8 @@ The split payment functionality depends on the support of the selected payment p
 The key features of the split payments marketplace include:
 
 * **Split payments**: Define how the total payment amount is distributed among different recipients.
-* **Flexible configuration**: Supports absolute-based splits.
+* **Flexible configuration**: Supports both absolute-based and auto-calculation splits.
+* **Auto Split Configuration**: Define rules at the recipient level (percentage, fixed, or mixed) to automate split calculations without specifying amounts in each payment request.
 * **Integration with providers**: Splits can be executed by payment providers that support this functionality.
 * **Detailed handling of fees**: The system allows for fine-tuning of how transaction fees and chargebacks are managed.
 * **Onboarding transfer**: Allows the transfer of onboardings between different recipients.
@@ -87,7 +88,47 @@ The onboarding workflow follows a structured process that ensures submerchants a
 
 5. **Split Processing**: The payment provider executes the split according to the defined distribution, transferring funds to each recipient's designated share.
 
-## 2. Payment split integration
+## 2. Auto Split Configuration
+
+Yuno allows you to define **automatic split rules** at the recipient level. When a payment is created without an explicit `amount` for a recipient in the `split_marketplace` array, Yuno uses these rules to calculate the split automatically.
+
+### Calculation types
+
+The `split_configuration` object supports three calculation methods:
+
+| Type | Description | Formula |
+| :--- | :--- | :--- |
+| `PERCENTAGE` | A percentage of the total payment amount. | `Split = Total * (Percentage / 100)` |
+| `FIXED` | A constant fixed amount in a specific currency. | `Split = fixed_amount` |
+| `MIXED` | Combines a percentage and a fixed amount. | `Split = (Total * (Percentage / 100)) + fixed_amount` |
+
+### Rounding mode
+
+To ensure precision across different currencies, Yuno supports three rounding strategies for automatic calculations:
+
+| Mode | Description | Strategy |
+| :--- | :--- | :--- |
+| `STANDARD` | Rounds to the nearest even number (Bankers' Rounding). | `HALF_EVEN` |
+| `ROUND_UP` | Always rounds away from zero. | `CEILING` |
+| `ROUND_DOWN` | Always rounds towards zero. | `FLOOR` |
+
+### Implementation
+
+You can define the `split_configuration` when [creating](/reference/create-recipient-1) or [updating](/reference/update-recipient-1) a recipient.
+
+```json Example Recipient with Auto Split
+{
+  "merchant_recipient_id": "seller-123",
+  "split_configuration": {
+    "calculation_type": "PERCENTAGE",
+    "percentage": 10.5,
+    "rounding_mode": "STANDARD",
+    "currency": "USD"
+  }
+}
+```
+
+## 3. Payment split integration
 
 In this section, we explore how the `split_marketplace` object is used to divide a [payment](/reference/payments/create-payment) among multiple recipients. This object is an array where each entry specifies a recipient and their corresponding share of the payment.
 
@@ -259,7 +300,7 @@ In this section, we explore how the `split_marketplace` object is used to divide
 
     <tr>
       <td>
-        `amount`\*
+        `amount`
       </td>
 
       <td>
@@ -267,11 +308,11 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        Specifies the amount for the split.
+        Specifies the amount for the split. **Optional** if the recipient has a `split_configuration` defined.
       </td>
 
       <td>
-        Yes
+        Conditional
       </td>
 
       <td />
@@ -279,7 +320,7 @@ In this section, we explore how the `split_marketplace` object is used to divide
 
     <tr>
       <td>
-            `value`\*
+            `value`
       </td>
 
       <td>
@@ -287,11 +328,11 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        The monetary value of the split (e.g., 7500 for 75.00).
+        The monetary value of the split (e.g., 7500 for 75.00). Required if `amount` is provided.
       </td>
 
       <td>
-        Yes
+        Conditional
       </td>
 
       <td>
@@ -301,7 +342,7 @@ In this section, we explore how the `split_marketplace` object is used to divide
 
     <tr>
       <td>
-            `currency`\*
+            `currency`
       </td>
 
       <td>
@@ -309,11 +350,11 @@ In this section, we explore how the `split_marketplace` object is used to divide
       </td>
 
       <td>
-        The currency in which the payment is made (ISO 4217, 3 characters).
+        The currency in which the payment is made (ISO 4217, 3 characters). Required if `amount` is provided.
       </td>
 
       <td>
-        Yes
+        Conditional
       </td>
 
       <td>
@@ -384,6 +425,23 @@ In this section, we explore how the `split_marketplace` object is used to divide
         `false`
       </td>
     </tr>
+    <tr>
+      <td>
+        **Note:**
+      </td>
+ 
+      <td />
+ 
+      <td>
+        **Auto Split Calculation**
+ 
+        If `amount` is omitted, Yuno will use the recipient's `split_configuration` to calculate the share. If both are present, the `amount` in the request takes precedence.
+      </td>
+ 
+      <td />
+ 
+      <td />
+    </tr>
   </tbody>
 </table>
 
@@ -428,6 +486,26 @@ In this section, we explore how the `split_marketplace` object is used to divide
       "amount": {
         "value": 30,
         "currency": "EUR"
+      }
+    }
+  ]
+}
+```
+
+```json Example with Implicit Auto-calculation
+{
+  "split_marketplace": [
+    {
+      "recipient_id": "4b31a9b8-4cd2-4e47-93cf-03729241bd68",
+      "type": "PURCHASE"
+      // The amount is omitted, Yuno uses the recipient's split_configuration
+    },
+    {
+      "recipient_id": "9104911d-5df9-429e-8488-ad41abea1a4b",
+      "type": "COMMISSION",
+      "amount": {
+        "value": 50,
+        "currency": "USD"
       }
     }
   ]
