@@ -113,20 +113,35 @@ To ensure precision across different currencies, Yuno supports three rounding st
 | `ROUND_DOWN` | Always rounds towards zero. | `FLOOR` |
 
 ### Implementation
-
-You can define the `split_configuration` when [creating](/reference/create-recipient-1) or [updating](/reference/update-recipient-1) a recipient.
-
-```json Example Recipient with Auto Split
-{
-  "merchant_recipient_id": "seller-123",
-  "split_configuration": {
-    "calculation_type": "PERCENTAGE",
-    "percentage": 10.5,
-    "rounding_mode": "STANDARD",
-    "currency": "USD"
-  }
-}
-```
+ 
+ You can define the `split_configuration` when [creating](/reference/create-recipient-1) or [updating](/reference/update-recipient-1) a recipient.
+ 
+ | Field | Type | Description | Required |
+ | :--- | :--- | :--- | :--- |
+ | `calculation_type` | `string` (enum) | The method used to calculate the split: `PERCENTAGE`, `FIXED`, `MIXED`. | **Yes** |
+ | `currency` | `string` | ISO 4217 currency code. Must match the payment currency. | **Yes** |
+ | `percentage` | `number` | Percentage of the total payment. | Optional* |
+ | `fixed_amount` | `number` | Flat amount to be split. | Optional* |
+ | `rounding_mode` | `string` (enum) | Rounding strategy: `STANDARD`, `ROUND_UP`, `ROUND_DOWN`. | Optional* |
+ 
+ <Note>
+   *Requirement depends on `calculation_type`:
+   - **PERCENTAGE**: `percentage` and `rounding_mode` are required.
+   - **FIXED**: `fixed_amount` is required.
+   - **MIXED**: `percentage`, `fixed_amount`, and `rounding_mode` are required.
+ </Note>
+ 
+ ```json Example Recipient with Auto Split
+ {
+   "merchant_recipient_id": "seller-123",
+   "split_configuration": {
+     "calculation_type": "PERCENTAGE",
+     "percentage": 10.5,
+     "rounding_mode": "STANDARD",
+     "currency": "USD"
+   }
+ }
+ ```
 
 ## 3. Payment split integration
 
@@ -573,16 +588,22 @@ In the Standalone Transfer Flow, forward and reverse operations are treated as i
 
 Both the creation and reversal of standalone transfers require an **Idempotency Key** via the `X-Idempotency-Key` header. This allows you to safely retry requests without accidentally duplicating fund distribution. These keys are retained for 24 hours. Duplicate requests using the same combination of `account_id` and idempotency key will return the original transfer object.
 
-## Validations
-
-In this section, we outline the necessary validations to ensure successful split payments.
-
-* The total of all splits must match the overall payment amount.
-* For each split, an object must be sent for every participant, ensuring the sum of amounts equals the total payment amount.
-* In scenarios where a direct recipient ID is not needed for the marketplace owner (e.g., with Adyen), the `type` field can serve as a flag (e.g., `COMMISSION`) to denote the marketplace owner's share, making the `provider_recipient_id` optional for that specific split.
-* Either `recipient_id` or `provider_recipient_id` must be included for the split, but not both.
-* If any required fields are missing or invalid, the request will result in an error.
-* If using multiple payment providers for split payments, we recommend utilizing the [recipients object](/reference/recipients-for-marketplace/create-recipient-1), as it allows defining more than one provider for each recipient.
+ 
+ ## Validations
+ 
+ To ensure successful split payments, the following validations are enforced:
+ 
+- **Total Split Matching**: The sum of all splits must match the overall payment amount.
+- **Recipient Existence**: Every `recipient_id` included in the split must correspond to a successfully onboarded recipient.
+- **Auto Split Currency**: If a recipient has a `split_configuration`, its `currency` must exactly match the payment's `amount.currency`.
+- **Amount Consistency**: If you provide an `amount.value` for a recipient with `split_configuration`, it must match the result of the automatic calculation.
+- **Individual Split Limits**: Each individual split's resolved value must be greater than zero and less than or equal to the total payment amount.
+- **Minimum Precision**: For `PERCENTAGE` splits, the calculated value must be at least `0.0001` (platform minimum).
+- **Required Fields**:
+    - For manual splits (no `split_configuration`): `amount.value` and `amount.currency` are mandatory.
+    - If `split_configuration` is provided during recipient creation: `calculation_type` and `currency` are always mandatory.
+- **Exclusion Rule**: You must include either `recipient_id` or `provider_recipient_id` for each split item, but never both.
+- **Multiple Providers**: For recipients linked to multiple payment providers, use the [recipients object](/reference/recipients-for-marketplace/create-recipient-1) to manage the split logic across connections.
 
 ## API endpoints involved
 
