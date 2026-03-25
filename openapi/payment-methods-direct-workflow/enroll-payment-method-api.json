@@ -1,0 +1,916 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "customer-api-register-payment-method",
+    "version": "1.0.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your private-secret-key>",
+        "name": "private-secret-key"
+      },
+      "sec2": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Idempotency-Key",
+        "x-default": "<Your X-Idempotency-Key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": [],
+      "sec2": []
+    }
+  ],
+  "paths": {
+    "/customers/{customer_id}/payment-methods": {
+      "post": {
+        "summary": "Enroll Payment Method",
+        "description": "",
+        "operationId": "enroll-payment-method-api",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "description": "The unique identifier of the customer, created using the [Create Customer](https://docs.y.uno/reference/create-customer) endpoint (MAX 64; MIN 36).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "country",
+                  "type"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The unique identifier of the account. You find this information on [Yuno's Dashboard](https://dashboard.y.uno/) (MAX 64; MIN 36)."
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "The transaction's country code (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference)).",
+                    "enum": [
+                      "AR",
+                      "BO",
+                      "BR",
+                      "CL",
+                      "CO",
+                      "CR",
+                      "EC",
+                      "SV",
+                      "GT",
+                      "HN",
+                      "MX",
+                      "NI",
+                      "PA",
+                      "PY",
+                      "PE",
+                      "US",
+                      "UY",
+                      ""
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "The payment method type (MAX 255; MIN 3; [Payment type](/reference/payment-type-list)).",
+                    "enum": [
+                      "CARD",
+                      "NU_PAY_ENROLLMENT"
+                    ]
+                  },
+                  "workflow": {
+                    "type": "string",
+                    "description": "The payment workflow indicates whether the integration will use Yuno's SDK or will be a back to back connection. Since you are in the Direct workflow, the value must be `DIRECT`.",
+                    "default": "DIRECT",
+                    "enum": [
+                      "DIRECT"
+                    ]
+                  },
+                  "provider_data": {
+                    "type": "object",
+                    "description": "Specifies the provider_data object. This object should only be sent if the merchant requires a token migration process and as long as this has already been agreed with your commercial advisor in Yuno.",
+                    "required": [
+                      "id",
+                      "payment_method_token"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The unique identifier of the payment provider."
+                      },
+                      "payment_method_token": {
+                        "type": "string",
+                        "description": "The payment method token for the provider specified in `id`."
+                      }
+                    }
+                  },
+                  "card_data": {
+                    "type": "object",
+                    "description": "Specifies the details of the card. Only for `DIRECT` workflow integration.",
+                    "required": [
+                      "number",
+                      "expiration_month",
+                      "expiration_year"
+                    ],
+                    "properties": {
+                      "number": {
+                        "type": "string",
+                        "description": "Card’s number without any separators (MAX 19; MIN 8) - only available for PCI certified merchants."
+                      },
+                      "expiration_month": {
+                        "type": "integer",
+                        "description": "Card’s expiration month - MM (MAX 2; MIN 2) - only available for PCI certified merchants.",
+                        "format": "int32"
+                      },
+                      "expiration_year": {
+                        "type": "integer",
+                        "description": "Card’s expiration year - YYYY  (MAX 4; MIN 4) - only available for PCI certified merchants.",
+                        "format": "int32"
+                      },
+                      "security_code": {
+                        "type": "string",
+                        "description": "Card’s security code (MAX 4; MIN 3) - only available for PCI certified merchants."
+                      },
+                      "holder_name": {
+                        "type": "string",
+                        "description": "Cardholder’s full name as it appears on the card (MAX 26; MIN 3) - only available for PCI certified merchants."
+                      }
+                    }
+                  },
+                  "callback_url": {
+                    "type": "string",
+                    "description": "URL to return the customer after an enrollment in a provider´s environment. Only necessary for alternative payment methods integrations (MAX 255; MIN 3)."
+                  },
+                  "verify": {
+                    "type": "object",
+                    "description": "Indicates whether to verify the payment with a verify transaction or not. You’ll need to have a provider defined in your CARD route. False by default.",
+                    "required": [
+                      "vault_on_success"
+                    ],
+                    "properties": {
+                      "vault_on_success": {
+                        "type": "boolean",
+                        "description": "Indicates whether to verify the payment with a verify transaction or not. You’ll need to have a provider defined in your CARD route. False by default."
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Currency of the card verification. For a full list of currency codes, see [Country reference](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Card Direct": {
+                  "value": {
+                    "account_id": "dbf0c133-86bc-4be0-94a5-ca2ff6778451",
+                    "country": "US",
+                    "type": "CARD",
+                    "callback_url": "www.google.com",
+                    "workflow": "DIRECT",
+                    "card_data": {
+                      "holder_name": "John Doe",
+                      "expiration_month": 3,
+                      "expiration_year": 26,
+                      "number": "4111111111111111",
+                      "security_code": "123"
+                    },
+                    "customer_payer": {
+                      "document": {
+                        "document_type": "SSN",
+                        "document_number": "123-45-6789"
+                      }
+                    }
+                  }
+                },
+                "Token migration process": {
+                  "value": {
+                    "account_id": "dbf0c133-86bc-4be0-94a5-ca2ff6778451",
+                    "country": "US",
+                    "type": "CARD",
+                    "workflow": "DIRECT",
+                    "provider_data": {
+                      "id": "DLOCAL",
+                      "payment_method_token": "123456"
+                    }
+                  }
+                },
+                "Card Enrollment With Verification": {
+                  "value": {
+                    "account_id": "dbf0c133-86bc-4be0-94a5-ca2ff6778451",
+                    "country": "US",
+                    "type": "CARD",
+                    "workflow": "DIRECT",
+                    "card_data": {
+                      "holder_name": "John Doe",
+                      "expiration_month": 3,
+                      "expiration_year": 30,
+                      "number": "4111111111111111",
+                      "security_code": "123"
+                    },
+                    "verify": {
+                      "vault_on_success": true,
+                      "currency": "USD"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "idempotency_key": "2ca58c6d-8794-4c8f-a2f6-bba4b7498b74",
+                      "name": "VISA ****1111",
+                      "description": "VISA ****1111",
+                      "type": "CARD",
+                      "category": "CARD",
+                      "country": "US",
+                      "status": "ENROLLED",
+                      "sub_status": null,
+                      "vaulted_token": "cbdcc878-ceb4-4dd8-b0f0-49d444855de0",
+                      "callback_url": "www.example.com",
+                      "action": null,
+                      "created_at": "2024-06-06T13:32:49.715656Z",
+                      "updated_at": "2024-06-06T13:32:49.715656Z",
+                      "card_data": {
+                        "iin": "41111111",
+                        "lfd": "1111",
+                        "expiration_month": 3,
+                        "expiration_year": 26,
+                        "number_length": 16,
+                        "security_code_length": 3,
+                        "brand": "VISA",
+                        "issuer": "JPMORGAN CHASE BANK N A",
+                        "issuer_code": null,
+                        "category": "CREDIT",
+                        "type": "CREDIT",
+                        "fingerprint": "55a7fe38-cdc3-45dc-8c5f-820751799c76"
+                      },
+                      "last_successfully_used": null,
+                      "last_successfully_used_at": null,
+                      "preferred": null,
+                      "verify": {
+                        "vault_on_success": false,
+                        "payment": null
+                      }
+                    }
+                  },
+                  "With Verify": {
+                    "value": {
+                      "idempotency_key": "2ca58c6d-8794-4c8f-a2f6-bba4b7498b74",
+                      "name": "VISA ****0000",
+                      "description": "VISA ****0000",
+                      "type": "CARD",
+                      "category": "CARD",
+                      "country": "US",
+                      "status": "ENROLLED",
+                      "sub_status": null,
+                      "vaulted_token": "9c298b36-b005-42ed-92e1-808b2a785e5f",
+                      "callback_url": null,
+                      "action": null,
+                      "created_at": "2023-09-04T16:37:55.314018Z",
+                      "updated_at": "2023-09-04T16:37:55.314019Z",
+                      "card_data": {
+                        "iin": "49880800",
+                        "lfd": "0000",
+                        "expiration_month": 3,
+                        "expiration_year": 30,
+                        "number_length": 16,
+                        "security_code_length": 3,
+                        "brand": "VISA",
+                        "issuer": "JPMORGAN CHASE BANK N A",
+                        "issuer_code": null,
+                        "category": "BUSINESS ENHANCED",
+                        "type": "CREDIT",
+                        "fingerprint": "55a7fe38-cdc3-45dc-8c5f-820751799c76"
+                      },
+                      "last_successfully_used": null,
+                      "last_successfully_used_at": null,
+                      "preferred": null,
+                      "verify": {
+                        "vault_on_success": true,
+                        "currency": "USD",
+                        "payment": {
+                          "id": "2ff3872a-9b62-412f-be3e-69689b184e5f",
+                          "account_id": "ad59c347-407c-4f11-841b-f3ac260cd018",
+                          "description": "VERIFY CARD",
+                          "country": "US",
+                          "status": "SUCCEEDED",
+                          "sub_status": "VERIFIED",
+                          "merchant_order_id": "VERIFY_CARD_9c298b36-b005-42ed-92e1-808b2a785e5f",
+                          "created_at": "2023-09-04T16:37:55.352948Z",
+                          "updated_at": "2023-09-04T16:37:56.429675Z",
+                          "amount": {
+                            "currency": "USD",
+                            "value": 0,
+                            "refunded": 0,
+                            "captured": 0
+                          },
+                          "transactions": [
+                            {
+                              "id": "1e501f45-583b-4187-b42e-8c3e620d1ef5",
+                              "type": "VERIFY",
+                              "status": "SUCCEEDED",
+                              "response_code": "SUCCEEDED",
+                              "response_message": "Transaction successful",
+                              "category": "CARD",
+                              "merchant_reference": "VERIFY_CARD_9c298b36-b005-42ed-92e1-808b2a785e5f",
+                              "provider_data": {
+                                "id": "ADYEN",
+                                "transaction_id": "SKCN8ZR5S8NKGK82",
+                                "account_id": "",
+                                "status": "Cancelled",
+                                "sub_status": "",
+                                "status_detail": "",
+                                "response_message": "",
+                                "raw_response": {
+                                  "additionalData": {
+                                    "threeds2.cardEnrolled": "false"
+                                  },
+                                  "merchantReference": "VERIFY_CARD_9c298b36-b005-42ed-92e1-808b2a785e5f",
+                                  "pspReference": "SKCN8ZR5S8NKGK82",
+                                  "refusalReason": "FRAUD-CANCELLED",
+                                  "refusalReasonCode": "22",
+                                  "resultCode": "Cancelled"
+                                },
+                                "third_party_transaction_id": null
+                              },
+                              "created_at": "2023-09-04T16:37:55.482510Z",
+                              "updated_at": "2023-09-04T16:37:56.348742Z"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "idempotency_key": {
+                          "type": "string",
+                          "example": "2ca58c6d-8794-4c8f-a2f6-bba4b7498b74"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "VISA ****1111"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "VISA ****1111"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "category": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "country": {
+                          "type": "string",
+                          "example": "US"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "ENROLLED"
+                        },
+                        "sub_status": {},
+                        "vaulted_token": {
+                          "type": "string",
+                          "example": "cbdcc878-ceb4-4dd8-b0f0-49d444855de0"
+                        },
+                        "callback_url": {
+                          "type": "string",
+                          "example": "www.example.com"
+                        },
+                        "action": {},
+                        "created_at": {
+                          "type": "string",
+                          "example": "2024-06-06T13:32:49.715656Z"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "example": "2024-06-06T13:32:49.715656Z"
+                        },
+                        "card_data": {
+                          "type": "object",
+                          "properties": {
+                            "iin": {
+                              "type": "string",
+                              "example": "41111111"
+                            },
+                            "lfd": {
+                              "type": "string",
+                              "example": "1111"
+                            },
+                            "expiration_month": {
+                              "type": "integer",
+                              "example": 3,
+                              "default": 0
+                            },
+                            "expiration_year": {
+                              "type": "integer",
+                              "example": 26,
+                              "default": 0
+                            },
+                            "number_length": {
+                              "type": "integer",
+                              "example": 16,
+                              "default": 0
+                            },
+                            "security_code_length": {
+                              "type": "integer",
+                              "example": 3,
+                              "default": 0
+                            },
+                            "brand": {
+                              "type": "string",
+                              "example": "VISA"
+                            },
+                            "issuer": {
+                              "type": "string",
+                              "example": "JPMORGAN CHASE BANK N A"
+                            },
+                            "issuer_code": {},
+                            "category": {
+                              "type": "string",
+                              "example": "CREDIT"
+                            },
+                            "type": {
+                              "type": "string",
+                              "example": "CREDIT"
+                            },
+                            "fingerprint": {
+                              "type": "string",
+                              "example": "55a7fe38-cdc3-45dc-8c5f-820751799c76"
+                            }
+                          }
+                        },
+                        "last_successfully_used": {},
+                        "last_successfully_used_at": {},
+                        "preferred": {},
+                        "verify": {
+                          "type": "object",
+                          "properties": {
+                            "vault_on_success": {
+                              "type": "boolean",
+                              "example": false,
+                              "default": true
+                            },
+                            "payment": {}
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "title": "With Verify",
+                      "type": "object",
+                      "properties": {
+                        "idempotency_key": {
+                          "type": "string",
+                          "example": "2ca58c6d-8794-4c8f-a2f6-bba4b7498b74"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "VISA ****0000"
+                        },
+                        "description": {
+                          "type": "string",
+                          "example": "VISA ****0000"
+                        },
+                        "type": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "category": {
+                          "type": "string",
+                          "example": "CARD"
+                        },
+                        "country": {
+                          "type": "string",
+                          "example": "US"
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "ENROLLED"
+                        },
+                        "sub_status": {},
+                        "vaulted_token": {
+                          "type": "string",
+                          "example": "9c298b36-b005-42ed-92e1-808b2a785e5f"
+                        },
+                        "callback_url": {},
+                        "action": {},
+                        "created_at": {
+                          "type": "string",
+                          "example": "2023-09-04T16:37:55.314018Z"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "example": "2023-09-04T16:37:55.314019Z"
+                        },
+                        "card_data": {
+                          "type": "object",
+                          "properties": {
+                            "iin": {
+                              "type": "string",
+                              "example": "49880800"
+                            },
+                            "lfd": {
+                              "type": "string",
+                              "example": "0000"
+                            },
+                            "expiration_month": {
+                              "type": "integer",
+                              "example": 3,
+                              "default": 0
+                            },
+                            "expiration_year": {
+                              "type": "integer",
+                              "example": 30,
+                              "default": 0
+                            },
+                            "number_length": {
+                              "type": "integer",
+                              "example": 16,
+                              "default": 0
+                            },
+                            "security_code_length": {
+                              "type": "integer",
+                              "example": 3,
+                              "default": 0
+                            },
+                            "brand": {
+                              "type": "string",
+                              "example": "VISA"
+                            },
+                            "issuer": {
+                              "type": "string",
+                              "example": "JPMORGAN CHASE BANK N A"
+                            },
+                            "issuer_code": {},
+                            "category": {
+                              "type": "string",
+                              "example": "BUSINESS ENHANCED"
+                            },
+                            "type": {
+                              "type": "string",
+                              "example": "CREDIT"
+                            },
+                            "fingerprint": {
+                              "type": "string",
+                              "example": "55a7fe38-cdc3-45dc-8c5f-820751799c76"
+                            }
+                          }
+                        },
+                        "last_successfully_used": {},
+                        "last_successfully_used_at": {},
+                        "preferred": {},
+                        "verify": {
+                          "type": "object",
+                          "properties": {
+                            "vault_on_success": {
+                              "type": "boolean",
+                              "example": true,
+                              "default": true
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "USD"
+                            },
+                            "payment": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "example": "2ff3872a-9b62-412f-be3e-69689b184e5f"
+                                },
+                                "account_id": {
+                                  "type": "string",
+                                  "example": "ad59c347-407c-4f11-841b-f3ac260cd018"
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "example": "VERIFY CARD"
+                                },
+                                "country": {
+                                  "type": "string",
+                                  "example": "US"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "example": "SUCCEEDED"
+                                },
+                                "sub_status": {
+                                  "type": "string",
+                                  "example": "VERIFIED"
+                                },
+                                "merchant_order_id": {
+                                  "type": "string",
+                                  "example": "VERIFY_CARD_9c298b36-b005-42ed-92e1-808b2a785e5f"
+                                },
+                                "created_at": {
+                                  "type": "string",
+                                  "example": "2023-09-04T16:37:55.352948Z"
+                                },
+                                "updated_at": {
+                                  "type": "string",
+                                  "example": "2023-09-04T16:37:56.429675Z"
+                                },
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "currency": {
+                                      "type": "string",
+                                      "example": "USD"
+                                    },
+                                    "value": {
+                                      "type": "integer",
+                                      "example": 0,
+                                      "default": 0
+                                    },
+                                    "refunded": {
+                                      "type": "integer",
+                                      "example": 0,
+                                      "default": 0
+                                    },
+                                    "captured": {
+                                      "type": "integer",
+                                      "example": 0,
+                                      "default": 0
+                                    }
+                                  }
+                                },
+                                "transactions": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "example": "1e501f45-583b-4187-b42e-8c3e620d1ef5"
+                                      },
+                                      "type": {
+                                        "type": "string",
+                                        "example": "VERIFY"
+                                      },
+                                      "status": {
+                                        "type": "string",
+                                        "example": "SUCCEEDED"
+                                      },
+                                      "response_code": {
+                                        "type": "string",
+                                        "example": "SUCCEEDED"
+                                      },
+                                      "response_message": {
+                                        "type": "string",
+                                        "example": "Transaction successful"
+                                      },
+                                      "category": {
+                                        "type": "string",
+                                        "example": "CARD"
+                                      },
+                                      "merchant_reference": {
+                                        "type": "string",
+                                        "example": "VERIFY_CARD_9c298b36-b005-42ed-92e1-808b2a785e5f"
+                                      },
+                                      "provider_data": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string",
+                                            "example": "ADYEN"
+                                          },
+                                          "transaction_id": {
+                                            "type": "string",
+                                            "example": "SKCN8ZR5S8NKGK82"
+                                          },
+                                          "account_id": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
+                                          "status": {
+                                            "type": "string",
+                                            "example": "Cancelled"
+                                          },
+                                          "sub_status": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
+                                          "status_detail": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
+                                          "response_message": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
+                                          "raw_response": {
+                                            "type": "object",
+                                            "properties": {
+                                              "additionalData": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "threeds2.cardEnrolled": {
+                                                    "type": "string",
+                                                    "example": "false"
+                                                  }
+                                                }
+                                              },
+                                              "merchantReference": {
+                                                "type": "string",
+                                                "example": "VERIFY_CARD_9c298b36-b005-42ed-92e1-808b2a785e5f"
+                                              },
+                                              "pspReference": {
+                                                "type": "string",
+                                                "example": "SKCN8ZR5S8NKGK82"
+                                              },
+                                              "refusalReason": {
+                                                "type": "string",
+                                                "example": "FRAUD-CANCELLED"
+                                              },
+                                              "refusalReasonCode": {
+                                                "type": "string",
+                                                "example": "22"
+                                              },
+                                              "resultCode": {
+                                                "type": "string",
+                                                "example": "Cancelled"
+                                              }
+                                            }
+                                          },
+                                          "third_party_transaction_id": {}
+                                        }
+                                      },
+                                      "created_at": {
+                                        "type": "string",
+                                        "example": "2023-09-04T16:37:55.482510Z"
+                                      },
+                                      "updated_at": {
+                                        "type": "string",
+                                        "example": "2023-09-04T16:37:56.348742Z"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Bad Request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid credentials"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "AUTHORIZATION_REQUIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "The merchant has no authorization to use this API."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}
