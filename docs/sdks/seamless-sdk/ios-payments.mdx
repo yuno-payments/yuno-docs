@@ -165,7 +165,7 @@ The following table describes each parameter from `SeamlessParams`:
 <Info>
 **Swift 6 Concurrency Requirements**
 
-If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. Swift 6 introduces stricter thread safety requirements that affect how you implement delegates. See the [Implementing `YunoPaymentDelegate` with Swift 6 Concurrency](#implementing-yunopaymentdelegate-with-swift-6-concurrency) section for detailed implementation options and best practices.
+If you're using Swift 6, you'll need to implement the `YunoPaymentDelegate` protocol with specific concurrency considerations. See the [Swift 6 Concurrency](/docs/sdks/resources/swift-6-concurrency) guide for detailed implementation options and best practices.
 </Info>
 
 ## Step 4: Handle payment status (Optional)
@@ -276,108 +276,7 @@ Yuno iOS SDK provides additional services and configurations you can use to impr
   alt="Render Options"
 />
 
-## Implementing `YunoPaymentDelegate` with Swift 6 Concurrency
 
-Swift 6 introduces stricter concurrency requirements that affect how you implement the `YunoPaymentDelegate` protocol. This section explains the challenges and provides solutions for different implementation scenarios.
-
-<Info>
-**Understanding Concurrency in Swift 6**
-
-Concurrency is the ability of your app to manage multiple tasks simultaneously. With Swift 6, concurrency rules have become more stringent to enhance app stability and prevent crashes.
-</Info>
-
-### The problem
-
-With Swift 6, protocols that inherit from `Sendable` require all their implementations to be thread-safe. This generates warnings when implementing the delegate in classes marked as `@MainActor`.
-
-Thread-safe means your code can be safely called from multiple threads without causing crashes or unexpected behavior. `@MainActor` ensures code runs on the main thread (UI thread).
-
-### Our design decision
-
-We do not mark protocols as `@MainActor` because:
-
-* It would force all implementations to be `MainActor` compatible
-* It would reduce flexibility for merchants who don't use `MainActor`
-* Each implementation has different concurrency needs
-
-### Merchant's responsibility
-
-It's the merchant's responsibility to handle concurrency according to their implementation. Below are three different approaches you can use depending on your specific needs.
-
-#### Option 1: Immutable properties
-
-This approach uses immutable properties that are automatically thread-safe, making them ideal for simple configurations. It is best suited for simple apps with fixed configuration values that don't change during runtime.
-
-```swift
-@MainActor
-class MyViewController: UIViewController, YunoPaymentDelegate {
-    
-    private let _countryCode = "CO"
-    private let _language = "EN"
-    
-    nonisolated var countryCode: String { _countryCode }
-    nonisolated var language: String? { _language }
-    nonisolated var checkoutSession: String { _checkoutSession }
-    
-    nonisolated func yunoPaymentResult(_ result: Yuno.Result) {
-        Task { @MainActor in
-        }
-    }
-}
-```
-
-#### Option 2: Mutable properties with `MainActor.assumeIsolated`
-
-This approach, best for apps where configuration values might change during runtime (like user preferences), allows for mutable properties while maintaining thread safety by using `MainActor.assumeIsolated`.
-
-```swift
-@MainActor
-class MyViewController: UIViewController, YunoPaymentDelegate {
-    
-    @Published var configLanguage: String = "EN"
-    @Published var configCountryCode: String = "CO"
-    
-    nonisolated var language: String? {
-        MainActor.assumeIsolated { configLanguage }
-    }
-    
-    nonisolated var countryCode: String {
-        MainActor.assumeIsolated { configCountryCode }
-    }
-}
-```
-
-#### Option 3: For non `MainActor` classes
-
-This approach is suitable for service classes that don't require `MainActor` isolation, making it best for background services or utility classes that don't interact with the UI.
-
-```swift
-class MyService: YunoPaymentDelegate {
-    
-    let countryCode: String
-    let language: String?
-    let checkoutSession: String
-    let viewController: UIViewController?
-    
-    init(countryCode: String, language: String?, checkoutSession: String, viewController: UIViewController?) {
-        self.countryCode = countryCode
-        self.language = language
-        self.checkoutSession = checkoutSession
-        self.viewController = viewController
-    }
-    
-    func yunoPaymentResult(_ result: Yuno.Result) {
-    }
-}
-```
-
-### ⚠️ Important considerations
-
-When implementing concurrency in your delegate, keep these key points in mind:
-
-* `MainActor.assumeIsolated`: Only use when you guarantee it's called from `MainActor`. This is a safety mechanism that tells Swift "trust me, I know this is running on the main thread."
-* `nonisolated`: Means it can be accessed from any thread, so it must be thread-safe. Use this when your properties or methods don't depend on UI state.
-* `viewController`: Remains as `@MainActor` because it should always be accessed from the main thread. UI components must always run on the main thread to prevent crashes.
 
 
 ## Error handling
