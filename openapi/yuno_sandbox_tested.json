@@ -1,0 +1,3368 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno Payments API",
+    "version": "1.0.0",
+    "description": "The Yuno Payments API is built around REST principles, using standard HTTP methods and JSON payloads.\n\n## Authentication\nAll requests require two headers:\n```\npublic-api-key: YOUR_PUBLIC_KEY\nprivate-secret-key: YOUR_PRIVATE_KEY\n```\n\n## Idempotency\nPayment mutations (create, capture, cancel, refund, payout) require an `X-Idempotency-Key` header (UUID).\nThe API stores the key and returns the same response for duplicate requests within 24 hours.\n\n## Environments\n| Environment | Base URL |\n|-------------|----------|\n| Sandbox | `https://api-sandbox.y.uno/v1` |\n| Production | `https://api.y.uno/v1` |\n",
+    "contact": {
+      "name": "Yuno Support",
+      "url": "https://docs.y.uno"
+    },
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno",
+      "description": "Sandbox"
+    },
+    {
+      "url": "https://api.y.uno",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "PublicApiKey": [],
+      "PrivateSecretKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Customers",
+      "description": "Create and manage customer records."
+    },
+    {
+      "name": "Checkout Sessions",
+      "description": "Initialize the Yuno SDK on the front-end."
+    },
+    {
+      "name": "Payment Methods",
+      "description": "Enroll and manage vaulted payment methods."
+    },
+    {
+      "name": "Payments",
+      "description": "Create and manage payment transactions."
+    },
+    {
+      "name": "Payment Links",
+      "description": "Hosted payment pages requiring no SDK."
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Recurring billing management."
+    },
+    {
+      "name": "Payouts",
+      "description": "Disburse funds to individuals or entities."
+    },
+    {
+      "name": "Reports",
+      "description": "Generate and download transaction reports."
+    },
+    {
+      "name": "Currency Conversion",
+      "description": "Dynamic currency conversion (DCC)."
+    }
+  ],
+  "paths": {
+    "/v1/customers": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Create Customer",
+        "operationId": "create-customer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerRequest"
+              },
+              "example": {
+                "merchant_customer_id": "customer-001",
+                "first_name": "John",
+                "last_name": "Doe",
+                "email": "john.doe@example.com",
+                "gender": "M",
+                "date_of_birth": "1990-01-15",
+                "nationality": "US",
+                "country": "US",
+                "document": {
+                  "document_type": "DNI",
+                  "document_number": "123456789"
+                },
+                "phone": {
+                  "country_code": "+1",
+                  "number": "5550000001"
+                },
+                "billing_address": {
+                  "address_line_1": "123 Main St",
+                  "city": "New York",
+                  "state": "NY",
+                  "zip_code": "10001",
+                  "country": "US"
+                },
+                "metadata": [
+                  {
+                    "key": "source",
+                    "value": "web"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/customers/{customer_id}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get Customer",
+        "operationId": "get-customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Update Customer",
+        "operationId": "update-customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerRequest"
+              },
+              "example": {
+                "email": "john.updated@example.com",
+                "phone": {
+                  "country_code": "+1",
+                  "number": "5550000099"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Delete Customer",
+        "operationId": "delete-customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Customer deleted"
+          }
+        }
+      }
+    },
+    "/v1/customers/external/{merchant_customer_id}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get Customer by External ID",
+        "operationId": "get-customer-by-external-id",
+        "parameters": [
+          {
+            "name": "merchant_customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your internal customer identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/checkout/sessions": {
+      "post": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Create Checkout Session",
+        "operationId": "create-checkout-session",
+        "description": "Creates a checkout session to initialize the Yuno SDK.\nPass the returned `checkout_session` to `Yuno.initialize()` on the front-end.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCheckoutSessionRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "merchant_order_id": "order-001",
+                "payment_description": "Order #001",
+                "country": "US",
+                "customer_id": "CUSTOMER_UUID",
+                "amount": {
+                  "currency": "USD",
+                  "value": 10000
+                },
+                "callback_url": "https://example.com/checkout/callback",
+                "workflow": "SDK_CHECKOUT"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/checkout/sessions/{checkout_session_id}": {
+      "get": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Get Checkout Session",
+        "operationId": "get-checkout-session",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CheckoutSessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checkout session details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSession"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Update Checkout Session",
+        "operationId": "update-checkout-session",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CheckoutSessionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCheckoutSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/checkout/sessions/{checkout_session_id}/payment-methods": {
+      "get": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Get Payment Methods for Session",
+        "operationId": "get-payment-methods-for-session",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CheckoutSessionId"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by payment method category"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available payment methods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentMethodOption"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customer-sessions": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Create Customer Session",
+        "operationId": "create-customer-session",
+        "description": "Creates an enrollment session token. Pass to the Yuno SDK to vault a card.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "customer_id",
+                  "country"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "customer_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "country": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "customer_session": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers/sessions/{customer_session}/payment-methods": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Enroll Payment Method \u2014 Checkout Flow",
+        "operationId": "enroll-payment-method-checkout",
+        "parameters": [
+          {
+            "name": "customer_session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollPaymentMethodCheckoutRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "payment_method_type": "CARD",
+                "country": "US",
+                "verify": {
+                  "vault_on_success": true,
+                  "currency": "USD"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment method enrolled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers/{customer_id}/payment-methods": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Enroll Payment Method \u2014 Direct API",
+        "operationId": "enroll-payment-method-direct",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollPaymentMethodDirectRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "country": "US",
+                "type": "CARD",
+                "workflow": "DIRECT",
+                "callback_url": "https://example.com/enrollment/callback",
+                "verify": {
+                  "vault_on_success": true,
+                  "currency": "USD"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment method enrolled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/enrolled-payment-methods": {
+      "get": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Get Enrolled Payment Methods",
+        "operationId": "get-enrolled-payment-methods",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of enrolled payment methods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Create Payment",
+        "operationId": "create-payment",
+        "description": "Creates a payment.\n\n- `capture: true` \u2014 single-step: authorize and charge immediately.\n- `capture: false` \u2014 two-step: authorize only, charge later via **Capture Authorization**.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              },
+              "examples": {
+                "single_step": {
+                  "summary": "Single-step (capture now)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "description": "Order #001",
+                    "country": "US",
+                    "merchant_order_id": "order-001",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 10000
+                    },
+                    "customer_payer": {
+                      "id": "CUSTOMER_UUID",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "john.doe@example.com",
+                      "country": "US"
+                    },
+                    "checkout": {
+                      "session": "CHECKOUT_SESSION_UUID"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "VAULTED_TOKEN_UUID",
+                      "detail": {
+                        "card": {
+                          "capture": true,
+                          "installments": 1
+                        }
+                      }
+                    },
+                    "additional_data": {
+                      "order": {
+                        "items": [
+                          {
+                            "id": "prod-001",
+                            "name": "Product Name",
+                            "quantity": 1,
+                            "unit_amount": 100.0,
+                            "category": "electronics"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "authorize_only": {
+                  "summary": "Authorize only (capture later)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "description": "Pre-authorization",
+                    "country": "US",
+                    "merchant_order_id": "order-auth-001",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 10000
+                    },
+                    "customer_payer": {
+                      "id": "CUSTOMER_UUID"
+                    },
+                    "checkout": {
+                      "session": "CHECKOUT_SESSION_UUID"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "VAULTED_TOKEN_UUID",
+                      "detail": {
+                        "card": {
+                          "capture": false
+                        }
+                      }
+                    },
+                    "additional_data": {
+                      "order": {
+                        "items": [
+                          {
+                            "id": "prod-001",
+                            "name": "Product Name",
+                            "quantity": 1,
+                            "unit_amount": 100.0,
+                            "category": "electronics"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get Payment by Merchant Order ID",
+        "operationId": "get-payment-by-merchant-order-id",
+        "parameters": [
+          {
+            "name": "merchant_order_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get Payment",
+        "operationId": "get-payment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "name": "transactions_history",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "raw_response",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/capture": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Capture Authorization",
+        "operationId": "capture-payment",
+        "description": "Captures a previously authorized payment. Charges the customer.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptureRequest"
+              },
+              "example": {
+                "merchant_reference": "capture-001",
+                "reason": "PRODUCT_CONFIRMED",
+                "amount": {
+                  "currency": "USD",
+                  "value": 10000
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment captured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/cancel": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Cancel Payment",
+        "operationId": "cancel-payment",
+        "description": "Cancels an authorized (not yet captured) payment, releasing the held funds.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              },
+              "example": {
+                "merchant_reference": "cancel-001",
+                "description": "Order cancelled by customer",
+                "reason": "REQUESTED_BY_CUSTOMER"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/refund": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Refund Payment",
+        "operationId": "refund-payment",
+        "description": "Issues a full or partial refund.\n\nOmit `amount` for a full refund. Include `amount` for a partial refund.\n\n> Do not run multiple simultaneous refunds on the same transaction.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequest"
+              },
+              "examples": {
+                "full_refund": {
+                  "summary": "Full refund",
+                  "value": {
+                    "merchant_reference": "refund-001",
+                    "description": "Customer request",
+                    "reason": "REQUESTED_BY_CUSTOMER"
+                  }
+                },
+                "partial_refund": {
+                  "summary": "Partial refund",
+                  "value": {
+                    "merchant_reference": "partial-refund-001",
+                    "description": "Partial refund",
+                    "reason": "REQUESTED_BY_CUSTOMER",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 5000
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Refund processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/cancel-or-refund": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Cancel or Refund",
+        "operationId": "cancel-or-refund",
+        "description": "Smart endpoint \u2014 cancels if authorized-only, refunds if already captured.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancelled or refunded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/fulfillment": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Notify Fulfillment",
+        "operationId": "notify-fulfillment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fulfilled_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "reference": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fulfillment notified"
+          }
+        }
+      }
+    },
+    "/v1/payment-links": {
+      "post": {
+        "tags": [
+          "Payment Links"
+        ],
+        "summary": "Create Payment Link",
+        "operationId": "create-payment-link",
+        "description": "Creates a hosted payment page. Returns `checkout_url` \u2014 share with your customer.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentLinkRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "country": "US",
+                "amount": {
+                  "currency": "USD",
+                  "value": 10000
+                },
+                "payment_method_types": [
+                  "CARD"
+                ],
+                "description": "Payment Link #001",
+                "merchant_order_id": "order-link-001",
+                "capture": true,
+                "one_time_use": true,
+                "callback_url": "https://example.com/payment/success",
+                "availability": {
+                  "start_at": "2026-01-01T00:00:00Z",
+                  "finish_at": "2026-12-31T23:59:59Z"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment link created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLink"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment-links/{payment_link_id}": {
+      "get": {
+        "tags": [
+          "Payment Links"
+        ],
+        "summary": "Get Payment Link",
+        "operationId": "get-payment-link",
+        "parameters": [
+          {
+            "name": "payment_link_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment link details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLink"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment-links/{payment_link_id}/cancel": {
+      "post": {
+        "tags": [
+          "Payment Links"
+        ],
+        "summary": "Cancel Payment Link",
+        "operationId": "cancel-payment-link",
+        "parameters": [
+          {
+            "name": "payment_link_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment link cancelled"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Create Subscription",
+        "operationId": "create-subscription",
+        "description": "Creates a recurring billing subscription.\n\n**Prerequisite:** Enroll a card first to obtain `vaulted_token`.\n\n**frequency.type:** `DAY` | `WEEK` | `MONTH`\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "name": "Monthly Subscription Plan",
+                "description": "Billed monthly",
+                "merchant_reference": "sub-001",
+                "country": "US",
+                "amount": {
+                  "currency": "USD",
+                  "value": 9900
+                },
+                "frequency": {
+                  "type": "MONTH",
+                  "value": 1
+                },
+                "billing_cycles": {
+                  "total": 12
+                },
+                "customer_payer": {
+                  "id": "CUSTOMER_UUID"
+                },
+                "payment_method": {
+                  "type": "CARD",
+                  "vaulted_token": "VAULTED_TOKEN_UUID"
+                },
+                "availability": {
+                  "start_at": "2026-04-01T00:00:00Z",
+                  "finish_at": "2027-03-31T23:59:59Z"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscription created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get Subscription",
+        "operationId": "get-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Update Subscription",
+        "operationId": "update-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionRequest"
+              },
+              "example": {
+                "retries": {
+                  "retry_on_decline": true,
+                  "amount": 3
+                },
+                "frequency": {
+                  "type": "MONTH",
+                  "value": 1,
+                  "monthly_billing_day": 1
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/pause": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Pause Subscription",
+        "operationId": "pause-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription paused"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/resume": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Resume Subscription",
+        "operationId": "resume-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription resumed"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/cancel": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Cancel Subscription",
+        "operationId": "cancel-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription cancelled"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/retry": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Retry Subscription",
+        "operationId": "retry-subscription",
+        "description": "Manually retry a failed billing cycle.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription retried"
+          }
+        }
+      }
+    },
+    "/v1/payouts": {
+      "post": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Create Payout",
+        "operationId": "create-payout",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayoutRequest"
+              },
+              "examples": {
+                "card_payout": {
+                  "summary": "Card payout (US)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "merchant_reference": "payout-001",
+                    "country": "US",
+                    "purpose": "PROVIDER_SERVICES",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 10000
+                    },
+                    "beneficiary": {
+                      "merchant_beneficiary_id": "beneficiary-001",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "Jane",
+                      "last_name": "Smith",
+                      "email": "jane.smith@example.com",
+                      "country": "US",
+                      "document": {
+                        "document_type": "DNI",
+                        "document_number": "987654321"
+                      }
+                    },
+                    "withdrawal_method": {
+                      "type": "CARD",
+                      "provider_id": "UNLIMINT"
+                    }
+                  }
+                },
+                "pix_payout": {
+                  "summary": "PIX payout (Brazil)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "merchant_reference": "pix-001",
+                    "country": "BR",
+                    "purpose": "REMITTANCES",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 10000
+                    },
+                    "beneficiary": {
+                      "merchant_beneficiary_id": "br-beneficiary-001",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "Carlos",
+                      "last_name": "Silva",
+                      "email": "carlos.silva@example.com",
+                      "country": "BR",
+                      "document": {
+                        "document_type": "CPF",
+                        "document_number": "12345678901"
+                      }
+                    },
+                    "withdrawal_method": {
+                      "type": "PIX_PAYOUT"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payout created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payout"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payouts/{payout_id}": {
+      "get": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Get Payout",
+        "operationId": "get-payout",
+        "parameters": [
+          {
+            "name": "payout_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payout details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payout"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payouts/merchant-reference/{merchant_reference}": {
+      "get": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Get Payout by Merchant Reference",
+        "operationId": "get-payout-by-reference",
+        "parameters": [
+          {
+            "name": "merchant_reference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payout details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payout"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Create Report",
+        "operationId": "create-report",
+        "description": "Generates an asynchronous report. Poll **Get Report** until `status: COMPLETED`, then download.\n\n**Dates must be exactly 24 characters:** `2026-03-01T00:00:00.000Z`\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportRequest"
+              },
+              "example": {
+                "type": "TRANSACTIONS",
+                "start_date": "2026-03-01T00:00:00.000Z",
+                "end_date": "2026-03-31T23:59:59.000Z",
+                "account_id": "YOUR_ACCOUNT_ID",
+                "transaction_type": "PURCHASE,REFUND,CAPTURE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Report created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "List Reports",
+        "operationId": "list-reports",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Report"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports/{report_id}": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Get Report",
+        "operationId": "get-report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          },
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports/{report_id}/download": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Download Report",
+        "operationId": "download-report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          },
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report file (CSV or JSON)"
+          }
+        }
+      }
+    },
+    "/v1/currency-conversion": {
+      "post": {
+        "tags": [
+          "Currency Conversion"
+        ],
+        "summary": "Get Conversion Rate",
+        "operationId": "get-conversion-rate",
+        "description": "Returns a real-time FX rate for dynamic currency conversion (DCC).\n\nPass the returned `id` in the payment's `amount.currency_conversion.id` field.\n\n**provider_data.id:** `CIBC` | `MERCADO_PAGO`\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrencyConversionRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "amount": {
+                  "value": 10000,
+                  "currency": "USD",
+                  "currency_conversion": {
+                    "cardholder_currency": "BRL"
+                  }
+                },
+                "provider_data": {
+                  "id": "CIBC"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversion rate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyConversionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "parameters": {
+      "CustomerId": {
+        "name": "customer_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "CheckoutSessionId": {
+        "name": "checkout_session_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PaymentId": {
+        "name": "payment_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "TransactionId": {
+        "name": "transaction_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "SubscriptionId": {
+        "name": "subscription_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "X-Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": "Unique UUID per request. Prevents duplicate processing on retries."
+      },
+      "OrgCode": {
+        "name": "X-Organization-Code",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Required for all Reports API endpoints."
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request \u2014 schema violation or missing required field",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Invalid or missing API credentials",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Country": {
+        "type": "string",
+        "enum": [
+          "AR",
+          "BO",
+          "BR",
+          "CL",
+          "CO",
+          "CR",
+          "EC",
+          "SV",
+          "GT",
+          "HN",
+          "MX",
+          "NI",
+          "PA",
+          "PY",
+          "PE",
+          "US",
+          "UY"
+        ],
+        "description": "ISO 3166-1 alpha-2 country code"
+      },
+      "Currency": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "description": "ISO 4217 currency code (e.g. USD, BRL, MXN)"
+      },
+      "Amount": {
+        "type": "object",
+        "required": [
+          "currency",
+          "value"
+        ],
+        "properties": {
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "value": {
+            "type": "number",
+            "multipleOf": 0.0001,
+            "description": "Amount in cents (e.g. 10000 = $100.00)"
+          }
+        }
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "document_type": {
+            "type": "string",
+            "enum": [
+              "DNI",
+              "CI",
+              "LC",
+              "LE",
+              "CUIT",
+              "CUIL",
+              "PAS",
+              "CPF",
+              "RG",
+              "CNH",
+              "CNPJ",
+              "RUT",
+              "RUN",
+              "CC",
+              "CE",
+              "NIT",
+              "DUI",
+              "PIC",
+              "DPI",
+              "IFR",
+              "INE",
+              "CP",
+              "RFC",
+              "CURP",
+              "CIP",
+              "CIC",
+              "CUI",
+              "RUC"
+            ]
+          },
+          "document_number": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40
+          }
+        }
+      },
+      "Phone": {
+        "type": "object",
+        "properties": {
+          "country_code": {
+            "type": "string",
+            "example": "+1"
+          },
+          "number": {
+            "type": "string",
+            "example": "5550000001"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "address_line_1": {
+            "type": "string"
+          },
+          "address_line_2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "zip_code": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "neighborhood": {
+            "type": "string"
+          }
+        }
+      },
+      "Metadata": {
+        "type": "array",
+        "maxItems": 120,
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "maxLength": 48
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      },
+      "CreateCustomerRequest": {
+        "type": "object",
+        "required": [
+          "merchant_customer_id"
+        ],
+        "properties": {
+          "merchant_customer_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "first_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "last_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "M",
+              "F",
+              "NB",
+              "NA",
+              "NK",
+              "U"
+            ]
+          },
+          "date_of_birth": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "example": "1990-01-15"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "nationality": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "UpdateCustomerRequest": {
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_customer_id": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateCheckoutSessionRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "merchant_order_id",
+          "payment_description",
+          "country"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_order_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "payment_description": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "workflow": {
+            "type": "string",
+            "enum": [
+              "SDK_CHECKOUT",
+              "CHECKOUT",
+              "SDK_SEAMLESS"
+            ],
+            "default": "SDK_CHECKOUT"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "UpdateCheckoutSessionRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "payment_description": {
+            "type": "string"
+          }
+        }
+      },
+      "CheckoutSession": {
+        "type": "object",
+        "properties": {
+          "checkout_session": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_order_id": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "payment_description": {
+            "type": "string"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "workflow": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaymentMethodOption": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "vaulted_token": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "format": "uri"
+          },
+          "card_data": {
+            "type": "object",
+            "properties": {
+              "iin": {
+                "type": "string"
+              },
+              "lfd": {
+                "type": "string",
+                "description": "Last 4 digits"
+              },
+              "brand": {
+                "type": "string"
+              },
+              "issuer": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "EnrollPaymentMethodCheckoutRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "payment_method_type",
+          "country"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payment_method_type": {
+            "type": "string",
+            "enum": [
+              "CARD",
+              "MERCADO_PAGO_WALLET",
+              "NEQUI",
+              "BANCOLOMBIA_TOKENBOX",
+              "NU_PAY_ENROLLMENT"
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "verify": {
+            "type": "object",
+            "required": [
+              "vault_on_success"
+            ],
+            "properties": {
+              "vault_on_success": {
+                "type": "boolean"
+              },
+              "currency": {
+                "$ref": "#/components/schemas/Currency"
+              }
+            }
+          }
+        }
+      },
+      "EnrollPaymentMethodDirectRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "country",
+          "type",
+          "workflow"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CARD",
+              "NU_PAY_ENROLLMENT"
+            ]
+          },
+          "workflow": {
+            "type": "string",
+            "enum": [
+              "DIRECT"
+            ]
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "verify": {
+            "type": "object",
+            "properties": {
+              "vault_on_success": {
+                "type": "boolean"
+              },
+              "currency": {
+                "$ref": "#/components/schemas/Currency"
+              }
+            }
+          }
+        }
+      },
+      "EnrolledPaymentMethod": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "VISA ****1111"
+          },
+          "type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "vaulted_token": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ENROLLED",
+              "READY_TO_ENROLL"
+            ]
+          },
+          "card_data": {
+            "type": "object",
+            "properties": {
+              "iin": {
+                "type": "string"
+              },
+              "lfd": {
+                "type": "string"
+              },
+              "brand": {
+                "type": "string"
+              },
+              "issuer": {
+                "type": "string"
+              },
+              "fingerprint": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "CreatePaymentRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "description",
+          "country",
+          "merchant_order_id",
+          "amount",
+          "payment_method",
+          "checkout",
+          "additional_data"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "merchant_order_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "customer_payer": {
+            "$ref": "#/components/schemas/CustomerPayer"
+          },
+          "checkout": {
+            "type": "object",
+            "required": [
+              "session"
+            ],
+            "properties": {
+              "session": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethodInput"
+          },
+          "additional_data": {
+            "$ref": "#/components/schemas/AdditionalData"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "CustomerPayer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          }
+        }
+      },
+      "PaymentMethodInput": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "CARD"
+          },
+          "vaulted_token": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "detail": {
+            "type": "object",
+            "properties": {
+              "card": {
+                "type": "object",
+                "properties": {
+                  "capture": {
+                    "type": "boolean",
+                    "description": "true = charge now, false = authorize only"
+                  },
+                  "installments": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AdditionalData": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "quantity",
+                    "unit_amount",
+                    "category"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer"
+                    },
+                    "unit_amount": {
+                      "type": "number"
+                    },
+                    "category": {
+                      "type": "string",
+                      "enum": [
+                        "electronics",
+                        "clothing",
+                        "food",
+                        "services",
+                        "art",
+                        "baby",
+                        "beauty_&_personal_care",
+                        "books",
+                        "coupons",
+                        "entertainment",
+                        "health",
+                        "home",
+                        "sports",
+                        "toys",
+                        "travel"
+                      ]
+                    },
+                    "brand": {
+                      "type": "string"
+                    },
+                    "sku_code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CaptureRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference",
+          "reason",
+          "amount"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "PRODUCT_CONFIRMED",
+              "REQUESTED_BY_CUSTOMER"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          }
+        }
+      },
+      "CancelRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "DUPLICATE",
+              "FRAUDULENT",
+              "REQUESTED_BY_CUSTOMER"
+            ]
+          }
+        }
+      },
+      "RefundRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "DUPLICATE",
+              "FRAUDULENT",
+              "REQUESTED_BY_CUSTOMER",
+              "REVERSE"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount",
+            "description": "Include for partial refund. Omit for full refund."
+          }
+        }
+      },
+      "Payment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_order_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "payment_status": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "CREATED",
+                  "READY_TO_PAY",
+                  "SUCCEEDED",
+                  "DECLINED",
+                  "CANCELED",
+                  "REFUNDED",
+                  "EXPIRED",
+                  "PENDING"
+                ]
+              },
+              "transactions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PURCHASE",
+              "CAPTURE",
+              "CANCEL",
+              "REFUND",
+              "VERIFY"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatePaymentLinkRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "country",
+          "amount",
+          "payment_method_types"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "payment_method_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "merchant_order_id": {
+            "type": "string"
+          },
+          "capture": {
+            "type": "boolean",
+            "default": true
+          },
+          "one_time_use": {
+            "type": "boolean",
+            "default": false
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "start_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finish_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "customer_payer": {
+            "$ref": "#/components/schemas/CustomerPayer"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "PaymentLink": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "checkout_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "USED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "start_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finish_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "CreateSubscriptionRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "account_id",
+          "country",
+          "amount",
+          "frequency",
+          "payment_method"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "frequency": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH"
+                ]
+              },
+              "value": {
+                "type": "integer",
+                "default": 1
+              }
+            }
+          },
+          "billing_cycles": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "customer_payer": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "payment_method": {
+            "type": "object",
+            "required": [
+              "type",
+              "vaulted_token"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "CARD"
+                ]
+              },
+              "vaulted_token": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "start_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finish_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "additional_data": {
+            "$ref": "#/components/schemas/AdditionalData"
+          }
+        }
+      },
+      "UpdateSubscriptionRequest": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH"
+                ]
+              },
+              "value": {
+                "type": "integer"
+              },
+              "monthly_billing_day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            }
+          },
+          "retries": {
+            "type": "object",
+            "properties": {
+              "retry_on_decline": {
+                "type": "boolean"
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7
+              }
+            }
+          }
+        }
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PAUSED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "frequency": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "value": {
+                "type": "integer"
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatePayoutRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "merchant_reference",
+          "country",
+          "purpose",
+          "amount",
+          "beneficiary",
+          "withdrawal_method"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "FAMILY_AND_FRIENDS",
+              "PERSONAL_TRANSFER",
+              "REMITTANCES",
+              "PROVIDER_SERVICES",
+              "EXPENSES",
+              "REFUND",
+              "SALARY",
+              "PENSION",
+              "LOAN",
+              "DIVIDENDS"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "beneficiary": {
+            "$ref": "#/components/schemas/Beneficiary"
+          },
+          "withdrawal_method": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "CARD",
+                  "PIX_PAYOUT",
+                  "PAYPAL_PAYOUT",
+                  "NEQUI_PAYOUT",
+                  "ASTROPAY_PAYOUT",
+                  "STP_PAYOUT",
+                  "TRANSFIYA_PAYOUT",
+                  "UNLIMINT_PAYOUT",
+                  "QI_PAYOUT"
+                ]
+              },
+              "provider_id": {
+                "type": "string",
+                "enum": [
+                  "ASTROPAY",
+                  "NEQUI",
+                  "PAYPAL",
+                  "UNLIMINT"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "Beneficiary": {
+        "type": "object",
+        "required": [
+          "merchant_beneficiary_id",
+          "country"
+        ],
+        "properties": {
+          "merchant_beneficiary_id": {
+            "type": "string"
+          },
+          "national_entity": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "ENTITY"
+            ]
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "legal_name": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Required when national_entity is ENTITY"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "Payout": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "PENDING",
+              "DECLINED",
+              "PROCESSING"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateReportRequest": {
+        "type": "object",
+        "required": [
+          "type",
+          "start_date",
+          "end_date"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PAYMENTS",
+              "TRANSACTIONS",
+              "PAYOUTS",
+              "SETTLEMENTS",
+              "TRANSACTION_RECONCILIATION",
+              "COMMUNICATIONS"
+            ]
+          },
+          "start_date": {
+            "type": "string",
+            "minLength": 24,
+            "maxLength": 24,
+            "example": "2026-03-01T00:00:00.000Z",
+            "description": "Must be exactly 24 characters"
+          },
+          "end_date": {
+            "type": "string",
+            "minLength": 24,
+            "maxLength": 24,
+            "example": "2026-03-31T23:59:59.000Z",
+            "description": "Must be exactly 24 characters"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Comma-separated UUIDs for multiple accounts"
+          },
+          "payment_status": {
+            "type": "string",
+            "description": "Comma-separated: CREATED,SUCCEEDED,DECLINED,CANCELED,REFUNDED"
+          },
+          "transaction_type": {
+            "type": "string",
+            "description": "Comma-separated: PURCHASE,REFUND,CAPTURE,CANCEL,VERIFY"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Comma-separated ISO 4217 codes"
+          },
+          "country": {
+            "type": "string",
+            "description": "Comma-separated ISO 3166-1 codes"
+          }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROCESS",
+              "COMPLETED",
+              "FAILED"
+            ]
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CurrencyConversionRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "amount",
+          "provider_data"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "object",
+            "required": [
+              "value",
+              "currency",
+              "currency_conversion"
+            ],
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "currency": {
+                "$ref": "#/components/schemas/Currency"
+              },
+              "currency_conversion": {
+                "type": "object",
+                "required": [
+                  "cardholder_currency"
+                ],
+                "properties": {
+                  "cardholder_currency": {
+                    "$ref": "#/components/schemas/Currency"
+                  }
+                }
+              }
+            }
+          },
+          "provider_data": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "enum": [
+                  "CIBC",
+                  "MERCADO_PAGO"
+                ]
+              }
+            }
+          },
+          "payment_method": {
+            "type": "object",
+            "properties": {
+              "vaulted_token": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        }
+      },
+      "CurrencyConversionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "currency_conversion": {
+                "type": "object",
+                "properties": {
+                  "cardholder_currency": {
+                    "type": "string"
+                  },
+                  "cardholder_amount": {
+                    "type": "number"
+                  },
+                  "rate": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "expired_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}
