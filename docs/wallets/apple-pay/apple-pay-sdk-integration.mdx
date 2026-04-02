@@ -68,7 +68,53 @@ The collected `email` and `phone` are forwarded from the `shippingContact` to th
 
 ## Recurring payments with SDK
 
-The SDK streamlines recurring payments by managing both Customer‑Initiated (CIT) and Merchant‑Initiated (MIT) transactions while securely handling payment tokens.
+The SDK streamlines recurring payments by managing both Customer‑Initiated (CIT) and Merchant‑Initiated (MIT) transactions while securely handling payment tokens. The overall flow is: 
+1. Create a checkout session with the `recurring_payment` object.
+2. Perform a CIT to authorize and vault the customer's payment method. 
+3. Then use the returned `vaulted_token` for subsequent MIT charges.
+
+### Create checkout session for recurring payments
+
+Before creating the transaction, you need to create the checkout session with the `recurring_payment` object populated in your checkout session request:
+
+```json
+{
+  "account_id": "123444",
+  "merchant_order_id": "12333",
+  "country": "US",
+  "callback_url": "https://your-callback-url.com",
+  "customer_id": "12333",
+  "amount": {
+    "currency": "EUR",
+    "value": 2000
+  },
+  "checkout_session": {
+    "payment_description": "Basic Plan — 3-day free trial",
+    "workflow": "SDK_CHECKOUT"
+  },
+  "recurring_payment": {
+    "description": "Basic Plan",
+    "management_url": "https://yourURL.com/subscriptions",
+    "billing_agreement": "After your 3-day free trial ends, you will be charged EUR 11.99/month until you cancel. Cancel anytime via account settings or by contacting support@test.com.",
+    "regular_billing": {
+      "label": "Monthly Plan",
+      "amount": 11.99,
+      "interval_unit": "month",
+      "interval_count": 1
+    },
+    "trial_billing": {
+      "label": "3-Day Free Trial",
+      "amount": 0,
+      "interval_unit": "day",
+      "interval_count": 3
+    },
+    "availability": {
+      "start_at": "2026-09-13T20:00:00Z",
+      "finish_at": "2026-09-30T16:10:00Z"
+    }
+  }
+}
+```
 
 ### Customer Initiated Transaction (CIT)
 
@@ -117,15 +163,8 @@ The CIT is the initial transaction where the customer authorizes recurring payme
       "platform": "WEB"
     }
   },
-  "subscription": {
-    "id": "d67a4295-7bb3-4183-99ce-9f5d26d92709",
-    "billing_date": {
-      "type": "fixed_day",
-      "day": 18
-    }
-  },
   "merchant_order_id": "merchant-order-123",
-  "country": "CO",
+  "country": "US",
   "description": "Apple Pay recurring setup",
   "workflow": "SDK_CHECKOUT"
 }
@@ -135,7 +174,6 @@ The CIT is the initial transaction where the customer authorizes recurring payme
 
 * **`vault_on_success: true`**: This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
 * **`stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
-* **`subscription`**: Required object containing subscription details for Apple Pay recurrence
 
 ### Merchant Initiated Transaction (MIT)
 
@@ -174,7 +212,7 @@ MIT transactions are processed automatically for subsequent billing cycles using
 
 #### Key parameters for MIT
 
-* **`token`**: The payment token generated during the CIT
+* **`vaulted_token`**: The token returned in the CIT response; used to charge the customer in subsequent billing cycles without requiring re-authorization
 * **`stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
 * **No `payment_token` required**: Uses the stored token instead
 
