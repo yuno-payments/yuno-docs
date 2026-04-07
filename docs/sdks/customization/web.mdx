@@ -1,0 +1,156 @@
+---
+title: Web Styling
+description: Customize the appearance and behavior of the Yuno Web SDK to match your brand's identity and integration needs.
+hidden: true
+metadata:
+  robots: noindex
+---
+
+The Yuno Web SDK offers several configuration options to modify its visual presentation and functional flow. You can control everything from display modes (Modal vs. Element) to fine-grained CSS injection for card forms.
+
+<Tip>
+  For a complete list of all initialization parameters and their possible values, visit the [Web SDK Reference](/docs/sdks/resources/references/web).
+</Tip>
+
+## Display Modes
+
+The `renderMode` parameter determines how the payment forms are presented to your customers. You can choose between a popup modal or embedding the SDK directly into an HTML element on your page.
+
+| Mode | Description |
+| :--- | :--- |
+| `modal` | Displays the payment flow in a overlay centered on the screen. **Default mode.** |
+| `element` | Renders the SDK inside a specific container in your application. Requires `elementSelector`. |
+
+### Example: Embedding as an Element
+
+If you choose `element`, you must provide a selector for the container where the APM form and the Action form (e.g., PIX QR code) will be mounted.
+
+```javascript
+yuno.startCheckout({
+  renderMode: {
+    type: 'element',
+    elementSelector: {
+      apmForm: "#form-element",
+      actionForm: "#action-form-element"
+    } 
+  },
+})
+```
+
+---
+
+## Card Form Customization
+
+The `card` configuration object allows you to modify the look and feel of the sensitive card data fields (Card Number, Expiry, CVV), which are rendered inside a secure iframe for PCI compliance.
+
+### CSS Injection
+
+Use the `styles` property to inject custom CSS directly into the card form iframe. This is the most powerful way to match the SDK to your site's aesthetic.
+
+```javascript
+yuno.startCheckout({
+  card: {
+    // Inject a raw CSS string to style inputs and buttons inside the iframe
+    styles: `
+      .Yuno-input {
+        border-radius: 8px;
+        border: 1px solid #E0E0E0;
+        padding: 12px;
+      }
+      .Yuno-label {
+        font-family: 'Inter', sans-serif;
+        color: #333333;
+      }
+    `,
+    cardSaveEnable: true, // Shows the "Save card for future payments" checkbox
+  },
+})
+```
+
+### Custom Labels and Texts
+
+You can override the default placeholder and button labels to better fit your application's tone or language requirements.
+
+```javascript
+yuno.startCheckout({
+  card: {
+    texts: {
+      cardPlaceholder: "0000 0000 0000 0000",
+      cvvPlaceholder: "CVC",
+      expirationDatePlaceholder: "MM/YY",
+      submitButton: "Authorize Payment"
+    }
+  },
+})
+```
+
+---
+
+## General UI Controls
+
+Modify general SDK behaviors such as loaders, issuer forms, and button visibility.
+
+### SDK Loader Control
+
+By default, Yuno shows a loading spinner during transitions. You can hide it if you prefer to use your own application's loading state.
+
+```javascript
+yuno.startCheckout({
+  showLoading: true, // Set to false to hide the Yuno loading spinner
+})
+```
+
+### Pay Button Visibility
+
+In scenarios where you want to trigger the payment precisely from your own UI logic, you can hide the SDK's built-in "Pay" button.
+
+<Warning>
+  If you hide the Pay button, you **must** call `yuno.submitOneTimeTokenForm()` programmatically to proceed with the payment.
+</Warning>
+
+```javascript
+yuno.startCheckout({
+  showPayButton: false, // Hides the main payment submission button
+})
+
+// Triggering the submission from your own code
+document.getElementById('my-custom-submit').addEventListener('click', () => {
+  yuno.submitOneTimeTokenForm();
+});
+```
+
+---
+
+## Advanced Flow Management
+
+### Performance and Retries
+
+If a transaction fails, you can update the session without unmounting the form, ensuring a smoother user experience for retries.
+
+| Parameter | Purpose |
+| :--- | :--- |
+| `automaticallyUnmount` | Set to `false` to keep the card form mounted after a token is created, allowing for easy retries. |
+| `updateCheckoutSession` | Method to refresh the session with new totals or items if needed during the flow. |
+
+```javascript
+yuno.startCheckout({
+  automaticallyUnmount: false, // Prevents the form from closing after token creation
+});
+
+// On rejection, notify the SDK and update the session
+yuno.notifyError();
+yuno.updateCheckoutSession(newCheckoutSession);
+```
+
+### WebView Considerations (Mercado Pago)
+
+If you are integrating in a **WebView** environment and using Mercado Pago Checkout Pro, you must handle the redirect results returned by `continuePayment()`.
+
+```javascript
+const result = await yuno.continuePayment();
+
+if (result && result.action === 'REDIRECT_URL') {
+   // Redirect the customer manually using result.redirect.init_url
+   window.location.assign(result.redirect.init_url);
+}
+```
