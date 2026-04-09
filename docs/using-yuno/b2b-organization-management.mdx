@@ -1,17 +1,9 @@
 ---
 title: "B2B Organization Management"
-description: "Learn how to programmatically manage account groups, accounts, and users for whitelabel partnerships."
+description: "Learn how to manage account groups, accounts, and users for whitelabel partnerships."
 ---
 
-Yuno provides a suite of B2B Organization Management APIs designed for platforms and whitelabel partners who need to manage multiple sub-organizations and their users programmatically.
-
-## Overview
-
-With these APIs, you can automate the onboarding and management of your merchants by creating a hierarchical structure:
-
-1.  **Account Groups**: Top-level containers (sub-organizations) that group related accounts.
-2.  **Accounts**: Individual merchant environments within an account group.
-3.  **Users**: Physical persons who have access to specific accounts or account groups with defined roles.
+Yuno provides a suite of B2B Organization Management APIs designed for platforms and whitelabel partners who need to manage multiple sub-organizations and their users. These APIs allow you to automate your merchants' onboarding by creating a hierarchical structure of Account Groups, Accounts, and Users.
 
 <Note>
   **Prerequisites**
@@ -20,68 +12,73 @@ With these APIs, you can automate the onboarding and management of your merchant
 
 ## Core Management Flow
 
-Follow these steps to set up a new merchant environment programmatically.
+Follow these steps to set up a new merchant environment.
 
-### 1. Create an Account Group
+<Steps>
+  <Step title="Create an Account Group">
+    The account group acts as the parent entity for your merchant, centralizing the management of related accounts. Use the [Create Account Group](/reference/organizations/create-account-group) endpoint to initialize this group.
 
-The account group acts as the parent entity for your merchant.
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/account-groups \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "Acme Payments",
+        "merchant_id": "acme_001"
+      }'
+    ```
 
-```bash
-curl --request POST \
-  --url https://api-sandbox.y.uno/v1/organizations/account-groups \
-  --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
-  --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "name": "Acme Payments",
-    "merchant_id": "acme_001"
-  }'
-```
+    **Output & Next Steps**: The response will include a unique `id` for the Account Group. Store this ID, as you will need it to create specific merchant accounts in the next step.
+  </Step>
 
-### 2. Create an Account
+  <Step title="Create an Account">
+    Within the newly created account group, you can create one or more accounts. This structure allows you to separate business logic, regions, or business lines for the same merchant. Use the [Create Account](/reference/organizations/create-account) endpoint.
 
-Within the newly created account group, you can create one or more accounts (e.g., for different regions or business lines).
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/account-groups/{account_group_id}/accounts \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "name": "Acme Production"
+      }'
+    ```
 
-```bash
-curl --request POST \
-  --url https://api-sandbox.y.uno/v1/organizations/account-groups/{account_group_id}/accounts \
-  --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
-  --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "name": "Acme Production"
-  }'
-```
+    **Output & Next Steps**: You will receive an `id` for the merchant account. This ID is used to scope payments, sessions, and configurations specifically to this merchant environment.
+  </Step>
 
-### 3. Create a User and Assign Permissions
+  <Step title="Create a User and Assign Permissions">
+    Finally, create a physical user and grant them access to the account or the entire account group. Assigning roles (like `merchant-admin`) ensures the user has the necessary permissions to manage the merchant dashboard. Use the [Create User](/reference/organizations/create-user) endpoint.
 
-Finally, create a user and grant them access to the account or the entire account group. You must provide at least one permission assignment.
+    ```bash
+    curl --request POST \
+      --url https://api-sandbox.y.uno/v1/organizations/users \
+      --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
+      --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "email": "admin@acmepay.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "account_group_permissions": [
+          {
+            "account_group_id": "{account_group_id}",
+            "role_id": "merchant-admin"
+          }
+        ]
+      }'
+    ```
 
-```bash
-curl --request POST \
-  --url https://api-sandbox.y.uno/v1/organizations/users \
-  --header 'PRIVATE-SECRET-KEY: <YOUR_PRIVATE_SECRET_KEY>' \
-  --header 'PUBLIC-API-KEY: <YOUR_PUBLIC_API_KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "email": "admin@acmepay.com",
-    "first_name": "John",
-    "last_name": "Doe",
-    "account_group_permissions": [
-      {
-        "account_group_id": "{account_group_id}",
-        "role_id": "merchant-admin"
-      }
-    ]
-  }'
-```
+    **Output & Next Steps**: The user will be created in the system. To allow them to log in to your whitelabel portal, use the [Authenticate Whitelabel User](/reference/organizations/authenticate-whitelabel-user) endpoint to generate a secure access token.
+  </Step>
+</Steps>
 
 ## Environment Availability
 
-The B2B Organization Management APIs are available in both **Sandbox** and **Production** environments. Ensure you use the correct API keys for each environment.
-
-- **Sandbox URL**: `https://api-sandbox.y.uno/v1`
-- **Production URL**: `https://api.y.uno/v1`
+The B2B Organization Management APIs are available in both **Sandbox** and **Production** environments. For more information on how to manage your API keys and base URLs, visit the [Environments](/docs/using-yuno/environments) page.
 
 ## Next Steps
 
@@ -91,3 +88,4 @@ Explore the full API reference for more advanced management options:
 - [Accounts Reference](/reference/organizations/list-accounts)
 - [Users Reference](/reference/organizations/list-users)
 - [User Permissions Reference](/reference/organizations/retrieve-user-account-permissions)
+
