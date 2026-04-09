@@ -11,7 +11,48 @@ metadata:
   robots: index
 ---
 
-## Step 1: Adopt YunoEnrollmentDelegate
+Follow this step-by-step guide to implement and enable Yuno's Lite iOS SDK enrollment functionality in your application.
+
+## Step 1: Include the library in your project
+
+Before proceeding with the Lite SDK implementation, see the [SDK Integration Overview](/docs/sdks/overview/quickstart) for detailed instructions on how to properly integrate the SDK into your project using CocoaPods or Swift Package Manager.
+
+Choose the integration method that best suits your development workflow and technical requirements. After completing the SDK integration, you can proceed with the following steps to implement the lite enrollment functionality.
+
+## Step 2: Initialize SDK
+
+Initialize the Yuno SDK in your `AppDelegate` (or `App` struct for SwiftUI) by providing a valid `PUBLIC_API_KEY`:
+
+```swift
+import YunoSDK
+
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        Yuno.initialize(
+            apiKey: "YOUR_PUBLIC_API_KEY",
+            config: YunoConfig()
+        )
+        return true
+    }
+}
+```
+
+<Note>
+**Credentials**
+
+See the credentials page for more information: [/reference/getting-started/authentication](/reference/getting-started/authentication)
+</Note>
+
+## Step 3: Create a customer session
+
+To start the enrollment process, you need to provide the `customer_session`. First, you need to create a customer. Use the [Create Customer](/reference/customers/create-customer) endpoint to create new customers. In the response, you will receive the customer `id`, which you use to create the customer session.
+
+After creating the customer, you can create the customer session. Use the customer `id` and the [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session) endpoint. The `customer_session` will be provided in the response. You need a new `customer_session` every time you enroll in a new payment method.
+
+## Step 4: Adopt YunoEnrollmentDelegate
+
+To handle the enrollment process, your class (typically a `UIViewController`) must adopt the `YunoEnrollmentDelegate` protocol.
 
 <Info>
 **Swift 6 Concurrency Requirements**
@@ -20,33 +61,66 @@ If you're using Swift 6, you'll need to implement the `YunoEnrollmentDelegate` p
 </Info>
 
 ```swift
-protocol YunoEnrollmentDelegate: AnyObject {
-    var customerSession: String { get }
-    var countryCode: String { get }
-    var viewController: UIViewController? { get }
+class EnrollmentViewController: UIViewController, YunoEnrollmentDelegate {
+    // Required delegate properties
+    var customerSession: String { "CUSTOMER_SESSION" }
+    var countryCode: String { "US" }
+    var viewController: UIViewController? { self }
 
-    func yunoEnrollmentResult(_ result: Yuno.Result)
+    func yunoEnrollmentResult(_ result: Yuno.Result) {
+        switch result {
+        case .succeeded:
+            print("Enrollment succeeded!")
+        case .fail:
+            print("Enrollment failed")
+        case .reject:
+            print("Enrollment rejected")
+        case .processing:
+            print("Enrollment processing")
+        case .internalError:
+            print("Internal error")
+        case .userCancell:
+            print("User canceled")
+        @unknown default:
+            break
+        }
+    }
 }
 ```
 
-## Step 2: Start the enrollment flow
+### Delegate Properties
+
+| Property         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession` | Refers to the current enrollment's [customer session](/reference/customer-sessions-enrollment/create-customer-session).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `countryCode`     | This parameter specifies the country code for which the enrollment is being set up.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `viewController`  | The view controller from which the enrollment UI will be presented.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+## Step 5: Start the enrollment flow
+
+Once you have implemented the delegate, call `enrollPayment` to launch the enrollment UI:
 
 ```swift
 Yuno.enrollPayment(with: self, showPaymentStatus: true)
 ```
 
-### Possible status values
+### Parameters
 
-* `success`
-* `fail`
-* `reject`
-* `processing`
-* `internalError`
-* `userCancell`
-
+| Parameter            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `with`               | The object that implements the `YunoEnrollmentDelegate`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `showPaymentStatus`  | Controls whether the SDK shows its own status screens after the enrollment process.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 <Note>
 **Demo App**
 
-See the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) for full implementation examples.
+In addition to the code examples provided, you can access the [Yuno iOS SDK repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno SDKs.
 </Note>
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed enrollment, validation errors). For HTTP status and response codes, see [Status and response codes](/reference/getting-started/response-codes) in the API reference.
+
+## Stay updated
+
+Visit the [release notes](/docs/sdks/resources/release-notes/ios) for the latest SDK updates and version history.
