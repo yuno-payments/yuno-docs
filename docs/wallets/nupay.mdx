@@ -1,10 +1,12 @@
 ---
 title: "NuPay"
+description: "Accept payments with NuPay, the digital payment method from NuBank, using the Direct workflow for one-time payments, enrollment, and 2FA mode."
 ---
 
 This guide explores Yuno's NuPay integration using the Direct workflow. You'll learn how to:
 
 * Enroll NuPay as a customer payment method
+* Make payments without enrollment (2FA mode)
 * Make payments with installments (payment conditions)
 * Set up subscriptions
 
@@ -62,6 +64,48 @@ Use [Retrieve Enrolled Payment Method by id](/reference/retrieve-enrolled-paymen
 <Warning>
   The enrollment is only complete after Yuno receives Nu’s confirmation.
 </Warning>
+
+## Payments without enrollment (2FA mode)
+
+You can accept one-time payments with NuPay without requiring the customer to enroll their payment method. This is often referred to as **2FA mode**, as the customer authenticates each transaction individually.
+
+### Step 1: Create a payment
+
+Use [Create payment](/reference/create-payment) with the Direct workflow and the `NU_PAY` payment method type. In this mode, you don't need a `vaulted_token`.
+
+```json
+{
+  "description": "One-time NuPay Payment",
+  "account_id": "{{account_id}}",
+  "merchant_order_id": "0000024",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 150
+  },
+  "customer_payer": {
+    "id": "{{customer_id}}"
+  },
+  "workflow": "DIRECT",
+  "callback_url": "https://your-callback.com",
+  "payment_method": {
+    "type": "NU_PAY"
+  }
+}
+```
+
+### Step 2: Handle the response
+
+Since this mode requires customer authentication, the response will return an action to redirect the user.
+
+*   **status**: `READY_TO_PAY`
+*   **sub_status**: `WAITING_ADDITIONAL_STEP`
+*   **action**: `REDIRECT_URL`
+*   **redirect_url**: URL to redirect the customer to Nu for 2FA authentication.
+
+### Step 3: Confirm payment
+
+After the customer completes the authentication, use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
 
 ## Payments with payment conditions (installments)
 
