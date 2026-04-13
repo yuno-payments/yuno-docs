@@ -82,10 +82,11 @@
     document.body.appendChild(lb);
 
     /* ── Helpers ── */
-    function openLb(src) {
+    function openLb(src, title) {
       // Append lightbox flag
       var finalSrc = src + (src.indexOf('?') > -1 ? '&' : '?') + 'lightbox=true';
       frame.src = finalSrc;
+      frame.title = title || 'Diagram Window';
       lb.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       document.body.classList.add('__diag_lb_active__');
@@ -97,6 +98,7 @@
     function closeLb() {
       lb.style.display = 'none';
       frame.src = 'about:blank'; // Clear to stop animations/logic
+      frame.title = '';
       document.body.style.overflow = '';
       document.body.classList.remove('__diag_lb_active__');
     }
@@ -118,7 +120,7 @@
       if (e.origin !== window.location.origin) return;
       if (e.data && e.data.type === 'diagram-expand') {
         if (lb.style.display === 'flex') return;
-        openLb(e.data.src);
+        openLb(e.data.src, e.data.title);
       }
     });
 
