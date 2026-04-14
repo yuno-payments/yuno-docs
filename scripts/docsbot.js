@@ -36,7 +36,13 @@
       });
     };
 
-    DocsBotAI.init({ id: "kt3kQQ36OPdxGR171DX9/Rn7KueLwOWNLimA1gKYM" });
+    DocsBotAI.init({
+      id: "kt3kQQ36OPdxGR171DX9/Rn7KueLwOWNLimA1gKYM",
+      options: {
+        customCSS:
+          ".docsbot-chat-inner-container { border-radius: 0; } .floating-button { border-radius: 0; bottom: 0 !important; }",
+      },
+    });
   }
 
   if (document.readyState === "loading") {
