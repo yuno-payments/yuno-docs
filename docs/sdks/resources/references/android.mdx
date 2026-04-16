@@ -35,7 +35,7 @@ Runtime behavior and appearance are configured via the `YunoConfig` data class w
 | Parameter          | Type    | Required | Description                                                                                                                                                                                                                                                                 |
 | ------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `saveCardEnabled`  | boolean | No       | When `true`, allows the user to save or enroll the card during payment. Requires backend support for vaulting (e.g. `payment_method.vault_on_success` in checkout session).                                                                                               |
-| `keepLoader`       | boolean | No       | When `true`, the SDK loader remains visible after the payment is initiated. Use for consistent UI during external redirects or long polling.                                                                                                                               |
+| `keepLoader`       | boolean | No       | If `true`, the SDK loader persists from OTT generation until `continuePayment()` is called, preventing UI flickering. If payment creation fails, call `hideLoader()` to manually dismiss it. |
 | `language`         | string  | No       | Language code for the SDK UI (e.g. `en`, `es`). Use a code from [Supported languages](/docs/sdks/resources/languages-supported) when available.                                                                                                                     |
 | `styles`           | object  | No       | Custom styles applied to SDK UI elements. Define in your app's styles and reference here, or use theme overrides. See [SDK customizations (Android)](/docs/sdks/customization/android) for font, button, and color options.                                                       |
 
@@ -51,6 +51,122 @@ Parameters for enrollment flows. All parameters used in [Enrollment flows (Andro
 | `callbackEnrollmentState`| function | No       | Callback invoked when enrollment state changes. Requires registering `initEnrollment` in your Activity's `onCreate` (or equivalent) so the SDK can deliver results. Optional when using `onActivityResult` with `requestCode`.                                               |
 | `requestCode`            | int      | No       | Optional request code used when capturing the enrollment result via `onActivityResult`. Use when you prefer activity-result flow over callbacks.                                                                                                                              |
 
+## Public methods
+
+The following methods are available globally via the `Yuno` object or as `Activity` extensions.
+
+### `Activity.hideLoader()`
+
+Dismisses the SDK loader when `keepLoader` is active. Use this method when a backend payment creation fails and you cannot proceed with `continuePayment()`.
+
+```kotlin
+fun Activity.hideLoader()
+```
+
+### `Yuno.continuePayment()`
+
+Resumes the payment flow for asynchronous methods (3ds, PIX, etc.) after a payment has been created on your backend.
+
+```kotlin
+fun continuePayment(
+    showPaymentStatus: Boolean = true,
+    checkoutSession: String? = null,
+    countryCode: String? = null,
+    callbackPaymentState: ((String?) -> Unit)? = null
+)
+```
+
 ## Enrolling payment methods
 
 You can enroll payment methods (store cards for future use) during the payment flow or via dedicated enrollment flows. For payment flows, enable save card in `YunoConfig` and set `payment_method.vault_on_success` (or equivalent) when creating the checkout session where supported. For dedicated enrollment, see [Enrollment flows (Android)](/docs/sdks/card-enrollment/android-enrollment).
+
+## `keepLoader` parameter
+
+> **Available since Android SDK v2.13.0**
+
+### Overview
+
+The `keepLoader` parameter allows you to persist the SDK's loading indicator across the entire `startPayment` → `continuePayment` flow, providing a seamless visual experience without the loader flickering between steps.
+
+By default, the SDK hides its loader after generating the One-Time Token (OTT) and shows it again when `continuePayment` is called. With `keepLoader` enabled, the loader stays visible continuously from the moment the user submits the payment form until the payment is fully processed (or explicitly dismissed).
+
+### How it works
+
+#### Default behavior (`keepLoader = false`)
+
+```
+startPayment → [Loader] → OTT generated → [Loader hidden] → callbackOTT → continuePayment → [Loader] → Payment result
+```
+
+The loader briefly disappears between OTT generation and `continuePayment`, which can cause a visual flash.
+
+#### With `keepLoader = true`
+
+```
+startPayment → [Loader] → OTT generated → callbackOTT → continuePayment → Payment result
+                                                                           [Loader hidden]
+```
+
+The loader stays visible from form submission through `continuePayment` completion.
+
+### Integration
+
+#### 1. Enable in YunoConfig
+
+```kotlin
+Yuno.initialize(
+    applicationContext = this,
+    apiKey = "YOUR_PUBLIC_API_KEY",
+    config = YunoConfig(
+        keepLoader = true,
+    ),
+)
+```
+
+#### 2. Handle OTT and call `continuePayment`
+
+When `keepLoader` is enabled, the OTT callback fires while the loader is still visible. Create your payment on your backend and then call `continuePayment` as usual:
+
+```kotlin
+activity.startCheckout(
+    checkoutSession = checkoutSession,
+    countryCode = countryCode,
+    callbackOTT = { token ->
+        // The loader is still visible at this point.
+        // Create payment on your backend using the token,
+        // then call continuePayment:
+        activity.continuePayment(showPaymentStatus = true)
+    },
+    callbackPaymentState = { state, subState ->
+        // Handle final payment state
+    },
+)
+```
+
+#### 3. Handle errors with `hideLoader`
+
+If your backend call fails and you cannot proceed with `continuePayment`, call `hideLoader()` to dismiss the loader and finish the payment flow:
+
+```kotlin
+callbackOTT = { token ->
+    try {
+        val payment = createPaymentOnBackend(token)
+        activity.continuePayment(showPaymentStatus = true)
+    } catch (e: Exception) {
+        // Dismiss the loader on failure
+        activity.hideLoader()
+    }
+}
+```
+
+<Warning>
+  **Handling Failures**  
+  When `keepLoader` is active and payment creation fails, you **must** call `hideLoader()`. Otherwise, the loader will remain on the screen indefinitely (until the built-in timeout triggers).
+</Warning>
+
+### Compatibility
+
+- Works with both **Full** and **Lite** payment flows (`startPayment` and `startPaymentLite`).
+- Compatible with vaulted tokens.
+- The loader respects the SDK's built-in timeout — if neither `continuePayment` nor `hideLoader` is called, the loader will automatically dismiss after the timeout period.
+- Not applicable to the **Seamless** flow (`startPaymentSeamlessLite`), which does not use the `startPayment` → `continuePayment` two-step pattern.
