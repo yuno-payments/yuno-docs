@@ -2,11 +2,14 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Yuno Payments API",
-    "description": "Yuno payment orchestration API for processing payments across Latin America",
     "version": "1.0.0",
+    "description": "The Yuno Payments API is built around REST principles, using standard HTTP methods and JSON payloads.\n\n## Authentication\nAll requests require two headers:\n```\npublic-api-key: YOUR_PUBLIC_KEY\nprivate-secret-key: YOUR_PRIVATE_KEY\n```\n\n## Idempotency\nPayment mutations (create, capture, cancel, refund, payout) require an `X-Idempotency-Key` header (UUID).\nThe API stores the key and returns the same response for duplicate requests within 24 hours.\n\n## Environments\n| Environment | Base URL |\n|-------------|----------|\n| Sandbox | `https://api-sandbox.y.uno/v1` |\n| Production | `https://api.y.uno/v1` |\n",
     "contact": {
       "name": "Yuno Support",
-      "email": "support@y.uno"
+      "url": "https://docs.y.uno"
+    },
+    "license": {
+      "name": "Proprietary"
     }
   },
   "servers": [
@@ -21,34 +24,1916 @@
   ],
   "security": [
     {
-      "publicApiKey": [],
-      "privateSecretKey": [],
-      "accountCode": []
+      "PublicApiKey": [],
+      "PrivateSecretKey": []
     }
   ],
-  "paths": {},
+  "tags": [
+    {
+      "name": "Customers",
+      "description": "Create and manage customer records."
+    },
+    {
+      "name": "Checkout Sessions",
+      "description": "Initialize the Yuno SDK on the front-end."
+    },
+    {
+      "name": "Payment Methods",
+      "description": "Enroll and manage vaulted payment methods."
+    },
+    {
+      "name": "Payments",
+      "description": "Create and manage payment transactions."
+    },
+    {
+      "name": "Payment Links",
+      "description": "Hosted payment pages requiring no SDK."
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Recurring billing management."
+    },
+    {
+      "name": "Payouts",
+      "description": "Disburse funds to individuals or entities."
+    },
+    {
+      "name": "Reports",
+      "description": "Generate and download transaction reports."
+    },
+    {
+      "name": "Currency Conversion",
+      "description": "Dynamic currency conversion (DCC)."
+    }
+  ],
+  "paths": {
+    "/v1/checkout/sessions/{checkout_session}/token": {
+      "post": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Create One-time Payment Token (Session-bound)",
+        "description": "Generates a secure, temporary token for a specific checkout session.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "checkout_session",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Checkout session identifier (UUID)."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "payment_method": {
+                    "type": "object",
+                    "required": [
+                      "type"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "CARD"
+                        ]
+                      },
+                      "card": {
+                        "type": "object",
+                        "required": [
+                          "number",
+                          "expiration_month",
+                          "expiration_year",
+                          "security_code",
+                          "holder_name"
+                        ],
+                        "properties": {
+                          "number": {
+                            "type": "string"
+                          },
+                          "expiration_month": {
+                            "type": "integer"
+                          },
+                          "expiration_year": {
+                            "type": "integer"
+                          },
+                          "security_code": {
+                            "type": "string"
+                          },
+                          "holder_name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Create Customer",
+        "operationId": "create-customer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCustomerRequest"
+              },
+              "example": {
+                "merchant_customer_id": "customer-001",
+                "first_name": "John",
+                "last_name": "Doe",
+                "email": "john.doe@example.com",
+                "gender": "M",
+                "date_of_birth": "1990-01-15",
+                "nationality": "US",
+                "country": "US",
+                "document": {
+                  "document_type": "DNI",
+                  "document_number": "123456789"
+                },
+                "phone": {
+                  "country_code": "+1",
+                  "number": "5550000001"
+                },
+                "billing_address": {
+                  "address_line_1": "123 Main St",
+                  "city": "New York",
+                  "state": "NY",
+                  "zip_code": "10001",
+                  "country": "US"
+                },
+                "metadata": [
+                  {
+                    "key": "source",
+                    "value": "web"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/customers/{customer_id}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get Customer",
+        "operationId": "get-customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Update Customer",
+        "operationId": "update-customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCustomerRequest"
+              },
+              "example": {
+                "email": "john.updated@example.com",
+                "phone": {
+                  "country_code": "+1",
+                  "number": "5550000099"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Delete Customer",
+        "operationId": "delete-customer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Customer deleted"
+          }
+        }
+      }
+    },
+    "/v1/customers/external/{merchant_customer_id}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get Customer by External ID",
+        "operationId": "get-customer-by-external-id",
+        "parameters": [
+          {
+            "name": "merchant_customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your internal customer identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/checkout/sessions": {
+      "post": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Create Checkout Session",
+        "operationId": "create-checkout-session",
+        "description": "Creates a checkout session to initialize the Yuno SDK.\nPass the returned `checkout_session` to `Yuno.initialize()` on the front-end.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCheckoutSessionRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "merchant_order_id": "order-001",
+                "payment_description": "Order #001",
+                "country": "US",
+                "customer_id": "CUSTOMER_UUID",
+                "amount": {
+                  "currency": "USD",
+                  "value": 10000
+                },
+                "callback_url": "https://example.com/checkout/callback",
+                "workflow": "SDK_CHECKOUT"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Checkout session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/checkout/sessions/{checkout_session_id}": {
+      "get": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Get Checkout Session",
+        "operationId": "get-checkout-session",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CheckoutSessionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checkout session details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSession"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Update Checkout Session",
+        "operationId": "update-checkout-session",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CheckoutSessionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCheckoutSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/checkout/sessions/{checkout_session_id}/payment-methods": {
+      "get": {
+        "tags": [
+          "Checkout Sessions"
+        ],
+        "summary": "Get Payment Methods for Session",
+        "operationId": "get-payment-methods-for-session",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CheckoutSessionId"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by payment method category"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available payment methods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentMethodOption"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customer-sessions": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Create Customer Session",
+        "operationId": "create-customer-session",
+        "description": "Creates an enrollment session token. Pass to the Yuno SDK to vault a card.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "customer_id",
+                  "country"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "customer_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "country": {
+                    "$ref": "#/components/schemas/Country"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "customer_session": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers/sessions/{customer_session}/payment-methods": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Enroll Payment Method — Checkout Flow",
+        "operationId": "enroll-payment-method-checkout",
+        "parameters": [
+          {
+            "name": "customer_session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollPaymentMethodCheckoutRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "payment_method_type": "CARD",
+                "country": "US",
+                "verify": {
+                  "vault_on_success": true,
+                  "currency": "USD"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment method enrolled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/customers/{customer_id}/payment-methods": {
+      "post": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Enroll Payment Method — Direct API",
+        "operationId": "enroll-payment-method-direct",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CustomerId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollPaymentMethodDirectRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "country": "US",
+                "type": "CARD",
+                "workflow": "DIRECT",
+                "callback_url": "https://example.com/enrollment/callback",
+                "verify": {
+                  "vault_on_success": true,
+                  "currency": "USD"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment method enrolled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/enrolled-payment-methods": {
+      "get": {
+        "tags": [
+          "Payment Methods"
+        ],
+        "summary": "Get Enrolled Payment Methods",
+        "operationId": "get-enrolled-payment-methods",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of enrolled payment methods",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EnrolledPaymentMethod"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Create Payment",
+        "operationId": "create-payment",
+        "description": "Creates a payment.\n\n- `capture: true` — single-step: authorize and charge immediately.\n- `capture: false` — two-step: authorize only, charge later via **Capture Authorization**.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              },
+              "examples": {
+                "single_step": {
+                  "summary": "Single-step (capture now)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "description": "Order #001",
+                    "country": "US",
+                    "merchant_order_id": "order-001",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 10000
+                    },
+                    "customer_payer": {
+                      "id": "CUSTOMER_UUID",
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "john.doe@example.com",
+                      "country": "US"
+                    },
+                    "checkout": {
+                      "session": "CHECKOUT_SESSION_UUID"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "VAULTED_TOKEN_UUID",
+                      "detail": {
+                        "card": {
+                          "capture": true,
+                          "installments": 1
+                        }
+                      }
+                    },
+                    "additional_data": {
+                      "order": {
+                        "items": [
+                          {
+                            "id": "prod-001",
+                            "name": "Product Name",
+                            "quantity": 1,
+                            "unit_amount": 100.0,
+                            "category": "electronics"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "authorize_only": {
+                  "summary": "Authorize only (capture later)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "description": "Pre-authorization",
+                    "country": "US",
+                    "merchant_order_id": "order-auth-001",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 10000
+                    },
+                    "customer_payer": {
+                      "id": "CUSTOMER_UUID"
+                    },
+                    "checkout": {
+                      "session": "CHECKOUT_SESSION_UUID"
+                    },
+                    "payment_method": {
+                      "type": "CARD",
+                      "vaulted_token": "VAULTED_TOKEN_UUID",
+                      "detail": {
+                        "card": {
+                          "capture": false
+                        }
+                      }
+                    },
+                    "additional_data": {
+                      "order": {
+                        "items": [
+                          {
+                            "id": "prod-001",
+                            "name": "Product Name",
+                            "quantity": 1,
+                            "unit_amount": 100.0,
+                            "category": "electronics"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get Payment by Merchant Order ID",
+        "operationId": "get-payment-by-merchant-order-id",
+        "parameters": [
+          {
+            "name": "merchant_order_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Payment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Get Payment",
+        "operationId": "get-payment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "name": "transactions_history",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "raw_response",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/capture": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Capture Authorization",
+        "operationId": "capture-payment",
+        "description": "Captures a previously authorized payment. Charges the customer.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaptureRequest"
+              },
+              "example": {
+                "merchant_reference": "capture-001",
+                "reason": "PRODUCT_CONFIRMED",
+                "amount": {
+                  "currency": "USD",
+                  "value": 10000
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment captured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/cancel": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Cancel Payment",
+        "operationId": "cancel-payment",
+        "description": "Cancels an authorized (not yet captured) payment, releasing the held funds.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              },
+              "example": {
+                "merchant_reference": "cancel-001",
+                "description": "Order cancelled by customer",
+                "reason": "REQUESTED_BY_CUSTOMER"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/refund": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Refund Payment",
+        "operationId": "refund-payment",
+        "description": "Issues a full or partial refund.\n\nOmit `amount` for a full refund. Include `amount` for a partial refund.\n\n> Do not run multiple simultaneous refunds on the same transaction.\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequest"
+              },
+              "examples": {
+                "full_refund": {
+                  "summary": "Full refund",
+                  "value": {
+                    "merchant_reference": "refund-001",
+                    "description": "Customer request",
+                    "reason": "REQUESTED_BY_CUSTOMER"
+                  }
+                },
+                "partial_refund": {
+                  "summary": "Partial refund",
+                  "value": {
+                    "merchant_reference": "partial-refund-001",
+                    "description": "Partial refund",
+                    "reason": "REQUESTED_BY_CUSTOMER",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 5000
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Refund processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/transactions/{transaction_id}/cancel-or-refund": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Cancel or Refund",
+        "operationId": "cancel-or-refund",
+        "description": "Smart endpoint — cancels if authorized-only, refunds if already captured.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          },
+          {
+            "$ref": "#/components/parameters/TransactionId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancelled or refunded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payments/{payment_id}/fulfillment": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Notify Fulfillment",
+        "operationId": "notify-fulfillment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaymentId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fulfilled_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "reference": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fulfillment notified"
+          }
+        }
+      }
+    },
+    "/v1/payment-links": {
+      "post": {
+        "tags": [
+          "Payment Links"
+        ],
+        "summary": "Create Payment Link",
+        "operationId": "create-payment-link",
+        "description": "Creates a hosted payment page. Returns `checkout_url` — share with your customer.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentLinkRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "country": "US",
+                "amount": {
+                  "currency": "USD",
+                  "value": 10000
+                },
+                "payment_method_types": [
+                  "CARD"
+                ],
+                "description": "Payment Link #001",
+                "merchant_order_id": "order-link-001",
+                "capture": true,
+                "one_time_use": true,
+                "callback_url": "https://example.com/payment/success",
+                "availability": {
+                  "start_at": "2026-01-01T00:00:00Z",
+                  "finish_at": "2026-12-31T23:59:59Z"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment link created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLink"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment-links/{payment_link_id}": {
+      "get": {
+        "tags": [
+          "Payment Links"
+        ],
+        "summary": "Get Payment Link",
+        "operationId": "get-payment-link",
+        "parameters": [
+          {
+            "name": "payment_link_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment link details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentLink"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payment-links/{payment_link_id}/cancel": {
+      "post": {
+        "tags": [
+          "Payment Links"
+        ],
+        "summary": "Cancel Payment Link",
+        "operationId": "cancel-payment-link",
+        "parameters": [
+          {
+            "name": "payment_link_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment link cancelled"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Create Subscription",
+        "operationId": "create-subscription",
+        "description": "Creates a recurring billing subscription.\n\n**Prerequisite:** Enroll a card first to obtain `vaulted_token`.\n\n**frequency.type:** `DAY` | `WEEK` | `MONTH`\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubscriptionRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "name": "Monthly Subscription Plan",
+                "description": "Billed monthly",
+                "merchant_reference": "sub-001",
+                "country": "US",
+                "amount": {
+                  "currency": "USD",
+                  "value": 9900
+                },
+                "frequency": {
+                  "type": "MONTH",
+                  "value": 1
+                },
+                "billing_cycles": {
+                  "total": 12
+                },
+                "customer_payer": {
+                  "id": "CUSTOMER_UUID"
+                },
+                "payment_method": {
+                  "type": "CARD",
+                  "vaulted_token": "VAULTED_TOKEN_UUID"
+                },
+                "availability": {
+                  "start_at": "2026-04-01T00:00:00Z",
+                  "finish_at": "2027-03-31T23:59:59Z"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscription created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get Subscription",
+        "operationId": "get-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Update Subscription",
+        "operationId": "update-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionRequest"
+              },
+              "example": {
+                "retries": {
+                  "retry_on_decline": true,
+                  "amount": 3
+                },
+                "frequency": {
+                  "type": "MONTH",
+                  "value": 1,
+                  "monthly_billing_day": 1
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/pause": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Pause Subscription",
+        "operationId": "pause-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription paused"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/resume": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Resume Subscription",
+        "operationId": "resume-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription resumed"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/cancel": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Cancel Subscription",
+        "operationId": "cancel-subscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription cancelled"
+          }
+        }
+      }
+    },
+    "/v1/subscriptions/{subscription_id}/retry": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Retry Subscription",
+        "operationId": "retry-subscription",
+        "description": "Manually retry a failed billing cycle.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription retried"
+          }
+        }
+      }
+    },
+    "/v1/payouts": {
+      "post": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Create Payout",
+        "operationId": "create-payout",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePayoutRequest"
+              },
+              "examples": {
+                "card_payout": {
+                  "summary": "Card payout (US)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "merchant_reference": "payout-001",
+                    "country": "US",
+                    "purpose": "PROVIDER_SERVICES",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 10000
+                    },
+                    "beneficiary": {
+                      "merchant_beneficiary_id": "beneficiary-001",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "Jane",
+                      "last_name": "Smith",
+                      "email": "jane.smith@example.com",
+                      "country": "US",
+                      "document": {
+                        "document_type": "DNI",
+                        "document_number": "987654321"
+                      }
+                    },
+                    "withdrawal_method": {
+                      "type": "CARD",
+                      "provider_id": "UNLIMINT"
+                    }
+                  }
+                },
+                "pix_payout": {
+                  "summary": "PIX payout (Brazil)",
+                  "value": {
+                    "account_id": "YOUR_ACCOUNT_ID",
+                    "merchant_reference": "pix-001",
+                    "country": "BR",
+                    "purpose": "REMITTANCES",
+                    "amount": {
+                      "currency": "BRL",
+                      "value": 10000
+                    },
+                    "beneficiary": {
+                      "merchant_beneficiary_id": "br-beneficiary-001",
+                      "national_entity": "INDIVIDUAL",
+                      "first_name": "Carlos",
+                      "last_name": "Silva",
+                      "email": "carlos.silva@example.com",
+                      "country": "BR",
+                      "document": {
+                        "document_type": "CPF",
+                        "document_number": "12345678901"
+                      }
+                    },
+                    "withdrawal_method": {
+                      "type": "PIX_PAYOUT"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payout created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payout"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payouts/{payout_id}": {
+      "get": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Get Payout",
+        "operationId": "get-payout",
+        "parameters": [
+          {
+            "name": "payout_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payout details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payout"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/payouts/merchant-reference/{merchant_reference}": {
+      "get": {
+        "tags": [
+          "Payouts"
+        ],
+        "summary": "Get Payout by Merchant Reference",
+        "operationId": "get-payout-by-reference",
+        "parameters": [
+          {
+            "name": "merchant_reference",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payout details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Payout"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports": {
+      "post": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Create Report",
+        "operationId": "create-report",
+        "description": "Generates an asynchronous report. Poll **Get Report** until `status: COMPLETED`, then download.\n\n**Dates must be exactly 24 characters:** `2026-03-01T00:00:00.000Z`\n",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportRequest"
+              },
+              "example": {
+                "type": "TRANSACTIONS",
+                "start_date": "2026-03-01T00:00:00.000Z",
+                "end_date": "2026-03-31T23:59:59.000Z",
+                "account_id": "YOUR_ACCOUNT_ID",
+                "transaction_type": "PURCHASE,REFUND,CAPTURE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Report created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "List Reports",
+        "operationId": "list-reports",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Report"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports/{report_id}": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Get Report",
+        "operationId": "get-report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          },
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reports/{report_id}/download": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Download Report",
+        "operationId": "download-report",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrgCode"
+          },
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Report file (CSV or JSON)"
+          }
+        }
+      }
+    },
+    "/v1/currency-conversion": {
+      "post": {
+        "tags": [
+          "Currency Conversion"
+        ],
+        "summary": "Get Conversion Rate",
+        "operationId": "get-conversion-rate",
+        "description": "Returns a real-time FX rate for dynamic currency conversion (DCC).\n\nPass the returned `id` in the payment's `amount.currency_conversion.id` field.\n\n**provider_data.id:** `CIBC` | `MERCADO_PAGO`\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrencyConversionRequest"
+              },
+              "example": {
+                "account_id": "YOUR_ACCOUNT_ID",
+                "amount": {
+                  "value": 10000,
+                  "currency": "USD",
+                  "currency_conversion": {
+                    "cardholder_currency": "BRL"
+                  }
+                },
+                "provider_data": {
+                  "id": "CIBC"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversion rate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyConversionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "components": {
     "securitySchemes": {
       "publicApiKey": {
         "type": "apiKey",
         "in": "header",
         "name": "public-api-key",
-        "description": "Your public API key from the Yuno Dashboard"
+        "x-default": "<Your public-api-key>"
       },
       "privateSecretKey": {
         "type": "apiKey",
         "in": "header",
         "name": "private-secret-key",
-        "description": "Your private secret key (server-side only)"
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "parameters": {
+      "CustomerId": {
+        "name": "customer_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
       },
-      "accountCode": {
-        "type": "apiKey",
+      "CheckoutSessionId": {
+        "name": "checkout_session_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PaymentId": {
+        "name": "payment_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "TransactionId": {
+        "name": "transaction_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "SubscriptionId": {
+        "name": "subscription_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "X-Idempotency-Key",
         "in": "header",
-        "name": "account-code",
-        "description": "Your account identifier. The alias X-Account-Code is also accepted."
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": "Unique UUID per request. Prevents duplicate processing on retries."
+      },
+      "OrgCode": {
+        "name": "X-Organization-Code",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Required for all Reports API endpoints."
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request — schema violation or missing required field",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Invalid or missing API credentials",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
       }
     },
     "schemas": {
+      "Country": {
+        "type": "string",
+        "enum": [
+          "AR",
+          "BO",
+          "BR",
+          "CL",
+          "CO",
+          "CR",
+          "EC",
+          "SV",
+          "GT",
+          "HN",
+          "MX",
+          "NI",
+          "PA",
+          "PY",
+          "PE",
+          "US",
+          "UY"
+        ],
+        "description": "ISO 3166-1 alpha-2 country code"
+      },
+      "Currency": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 3,
+        "description": "ISO 4217 currency code (e.g. USD, BRL, MXN)"
+      },
       "Amount": {
         "type": "object",
         "required": [
@@ -57,206 +1942,319 @@
         ],
         "properties": {
           "currency": {
-            "type": "string",
-            "description": "ISO 4217 currency code",
-            "example": "BRL"
+            "$ref": "#/components/schemas/Currency"
           },
           "value": {
             "type": "number",
-            "description": "Payment amount in major currency units (e.g., 150.00 means 150 BRL, not cents). For zero-decimal currencies like CLP and PYG, use whole numbers (e.g., 15000 means 15,000 CLP).",
-            "example": 100.0
+            "multipleOf": 0.0001,
+            "description": "Amount in cents (e.g. 10000 = $100.00)"
           }
-        },
-        "example": {
-          "currency": "BRL",
-          "value": 100.0
         }
       },
-      "CustomerDocument": {
+      "Document": {
         "type": "object",
-        "required": [
-          "document_type",
-          "document_number"
-        ],
         "properties": {
           "document_type": {
             "type": "string",
             "enum": [
+              "DNI",
+              "CI",
+              "LC",
+              "LE",
+              "CUIT",
+              "CUIL",
+              "PAS",
               "CPF",
+              "RG",
+              "CNH",
               "CNPJ",
+              "RUT",
+              "RUN",
               "CC",
               "CE",
               "NIT",
-              "PP",
+              "DUI",
+              "PIC",
+              "DPI",
+              "IFR",
+              "INE",
+              "CP",
+              "RFC",
               "CURP",
-              "RFC"
-            ],
-            "description": "Type of identification document"
+              "CIP",
+              "CIC",
+              "CUI",
+              "RUC"
+            ]
           },
           "document_number": {
             "type": "string",
-            "description": "Document number (digits only). CPF: 11 digits, CNPJ: 14 digits.",
-            "example": "12345678901"
+            "minLength": 3,
+            "maxLength": 40
           }
-        },
-        "example": {
-          "document_type": "CPF",
-          "document_number": "12345678901"
         }
       },
-      "CheckoutSessionRequest": {
+      "Phone": {
         "type": "object",
-        "required": [
-          "amount",
-          "country",
-          "merchant_order_id",
-          "account_id",
-          "payment_description"
-        ],
         "properties": {
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
+          "country_code": {
+            "type": "string",
+            "example": "+1"
+          },
+          "number": {
+            "type": "string",
+            "example": "5550000001"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "address_line_1": {
+            "type": "string"
+          },
+          "address_line_2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "zip_code": {
+            "type": "string"
           },
           "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "neighborhood": {
+            "type": "string"
+          }
+        }
+      },
+      "Metadata": {
+        "type": "array",
+        "maxItems": 120,
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "maxLength": 48
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 512
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      },
+      "CreateCustomerRequest": {
+        "type": "object",
+        "required": [
+          "merchant_customer_id"
+        ],
+        "properties": {
+          "merchant_customer_id": {
             "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "first_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "last_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "M",
+              "F",
+              "NB",
+              "NA",
+              "NK",
+              "U"
+            ]
+          },
+          "date_of_birth": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "example": "1990-01-15"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "nationality": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "UpdateCustomerRequest": {
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_customer_id": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "billing_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateCheckoutSessionRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "merchant_order_id",
+          "payment_description",
+          "country"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
           },
           "merchant_order_id": {
             "type": "string",
-            "description": "Your unique order identifier",
-            "example": "order-001"
-          },
-          "account_id": {
-            "type": "string",
-            "description": "Your Yuno account identifier. Same value as the account-code header.",
-            "example": "your-account-id"
+            "minLength": 3,
+            "maxLength": 255
           },
           "payment_description": {
             "type": "string",
-            "description": "Description of the payment. Required for checkout session creation.",
-            "example": "Premium subscription - March 2026"
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
           },
           "customer_id": {
             "type": "string",
-            "format": "uuid",
-            "description": "Optional existing customer ID",
-            "example": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
+            "format": "uuid"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
           },
           "workflow": {
             "type": "string",
             "enum": [
               "SDK_CHECKOUT",
-              "SDK_LITE",
-              "SDK_SEAMLESS",
-              "SDK_HEADLESS",
-              "DIRECT"
+              "CHECKOUT",
+              "SDK_SEAMLESS"
             ],
-            "description": "Integration workflow type",
-            "example": "SDK_CHECKOUT"
-          },
-          "callback_url": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL to receive server-side payment notifications",
-            "example": "https://merchant.com/webhooks/yuno"
-          },
-          "return_url": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL to redirect the customer after payment completion (required for 3DS, PIX, and redirect-based methods)",
-            "example": "https://merchant.com/checkout/complete"
+            "default": "SDK_CHECKOUT"
           },
           "metadata": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "Custom key-value pairs for storing additional information. Keys and values must be strings. Maximum 50 keys, each key max 40 characters, each value max 500 characters.",
-            "example": {
-              "order_source": "web",
-              "campaign": "spring-2026"
-            }
-          },
-          "recurring_payment": {
-            "type": "object",
-            "description": "Optional configuration for recurring payments and subscriptions",
-            "properties": {
-              "description": {
-                "type": "string",
-                "description": "Description of the recurring payment"
-              },
-              "management_url": {
-                "type": "string",
-                "description": "URL for the customer to manage the recurring payment"
-              },
-              "billing_agreement": {
-                "type": "string",
-                "description": "Billing agreement for the recurring payment"
-              },
-              "regular_billing": {
-                "type": "object",
-                "required": [
-                  "interval_unit",
-                  "interval_count"
-                ],
-                "properties": {
-                  "interval_unit": {
-                    "type": "string",
-                    "enum": [
-                      "year",
-                      "month",
-                      "day",
-                      "hour",
-                      "minute"
-                    ],
-                    "description": "The frequency unit for recurring charges"
-                  },
-                  "interval_count": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "description": "The number of interval units between charges"
-                  }
-                }
-              },
-              "trial_billing": {
-                "type": "object",
-                "properties": {
-                  "interval_unit": {
-                    "type": "string",
-                    "enum": [
-                      "year",
-                      "month",
-                      "day",
-                      "hour",
-                      "minute"
-                    ]
-                  },
-                  "interval_count": {
-                    "type": "integer",
-                    "minimum": 1
-                  }
-                }
-              }
-            }
+            "$ref": "#/components/schemas/Metadata"
           }
-        },
-        "example": {
+        }
+      },
+      "UpdateCheckoutSessionRequest": {
+        "type": "object",
+        "properties": {
           "amount": {
-            "currency": "BRL",
-            "value": 150.0
+            "$ref": "#/components/schemas/Amount"
           },
-          "country": "BR",
-          "merchant_order_id": "order-20260301-001",
-          "account_id": "your-account-id",
-          "payment_description": "Premium subscription - March 2026",
-          "workflow": "SDK_CHECKOUT",
-          "recurring_payment": {
-            "regular_billing": {
-              "interval_unit": "month",
-              "interval_count": 1
-            }
+          "payment_description": {
+            "type": "string"
           }
         }
       },
@@ -265,238 +2263,491 @@
         "properties": {
           "checkout_session": {
             "type": "string",
-            "format": "uuid",
-            "description": "The checkout session identifier",
-            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            "format": "uuid"
+          },
+          "merchant_order_id": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "payment_description": {
+            "type": "string"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid"
           },
           "amount": {
             "$ref": "#/components/schemas/Amount"
           },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "example": "BR"
-          },
-          "merchant_order_id": {
-            "type": "string",
-            "description": "Your unique order identifier",
-            "example": "order-20260301-001"
-          },
-          "status": {
-            "type": "string",
-            "description": "Session status",
-            "example": "ACTIVE"
+          "workflow": {
+            "type": "string"
           },
           "created_at": {
             "type": "string",
-            "format": "date-time",
-            "description": "Session creation timestamp",
-            "example": "2026-03-01T14:30:00.000Z"
-          },
-          "payment_methods": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "description": "Payment method type"
-                }
-              }
-            },
-            "description": "Available payment methods for this session"
-          },
-          "callback_url": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL to receive server-side payment notifications",
-            "example": "https://merchant.com/webhooks/yuno"
-          },
-          "return_url": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL to redirect the customer after payment completion (required for 3DS, PIX, and redirect-based methods)",
-            "example": "https://merchant.com/checkout/complete"
+            "format": "date-time"
           }
-        },
-        "example": {
-          "checkout_session": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "amount": {
-            "currency": "BRL",
-            "value": 150.0
-          },
-          "country": "BR",
-          "merchant_order_id": "order-20260301-001",
-          "status": "ACTIVE",
-          "created_at": "2026-03-01T14:30:00.000Z",
-          "payment_methods": [
-            {
-              "type": "CARD"
-            },
-            {
-              "type": "PIX"
-            },
-            {
-              "type": "BOLETO"
-            }
-          ]
         }
       },
-      "PaymentRequest": {
+      "PaymentMethodOption": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "vaulted_token": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "format": "uri"
+          },
+          "card_data": {
+            "type": "object",
+            "properties": {
+              "iin": {
+                "type": "string"
+              },
+              "lfd": {
+                "type": "string",
+                "description": "Last 4 digits"
+              },
+              "brand": {
+                "type": "string"
+              },
+              "issuer": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "EnrollPaymentMethodCheckoutRequest": {
         "type": "object",
         "required": [
-          "checkout_session",
-          "payment_method",
-          "amount",
+          "account_id",
+          "payment_method_type",
           "country"
         ],
         "properties": {
-          "checkout_session": {
+          "account_id": {
             "type": "string",
-            "format": "uuid",
-            "description": "The checkout session ID from the create session response",
-            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            "format": "uuid"
           },
-          "payment_method": {
+          "payment_method_type": {
+            "type": "string",
+            "enum": [
+              "CARD",
+              "MERCADO_PAGO_WALLET",
+              "NEQUI",
+              "BANCOLOMBIA_TOKENBOX",
+              "NU_PAY_ENROLLMENT"
+            ]
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "verify": {
             "type": "object",
             "required": [
-              "type"
+              "vault_on_success"
             ],
             "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "CARD",
-                  "PIX",
-                  "BOLETO",
-                  "PSE",
-                  "SPEI",
-                  "OXXO",
-                  "BNPL",
-                  "GOOGLE_PAY",
-                  "APPLE_PAY"
-                ],
-                "description": "Payment method type",
-                "example": "CARD"
+              "vault_on_success": {
+                "type": "boolean"
               },
-              "token": {
-                "type": "string",
-                "description": "Payment method token (for tokenized card payments)",
-                "example": "tok_4a8b9c2d-1e3f-5678-90ab-cdef12345678"
-              },
-              "vaulted_token": {
-                "type": "string",
-                "description": "Vaulted payment method token (for returning customers)"
+              "currency": {
+                "$ref": "#/components/schemas/Currency"
               }
             }
+          }
+        }
+      },
+      "EnrollPaymentMethodDirectRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "country",
+          "type",
+          "workflow"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CARD",
+              "NU_PAY_ENROLLMENT"
+            ]
+          },
+          "workflow": {
+            "type": "string",
+            "enum": [
+              "DIRECT"
+            ]
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "verify": {
+            "type": "object",
+            "properties": {
+              "vault_on_success": {
+                "type": "boolean"
+              },
+              "currency": {
+                "$ref": "#/components/schemas/Currency"
+              }
+            }
+          }
+        }
+      },
+      "EnrolledPaymentMethod": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "VISA ****1111"
+          },
+          "type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "vaulted_token": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ENROLLED",
+              "READY_TO_ENROLL"
+            ]
+          },
+          "card_data": {
+            "type": "object",
+            "properties": {
+              "iin": {
+                "type": "string"
+              },
+              "lfd": {
+                "type": "string"
+              },
+              "brand": {
+                "type": "string"
+              },
+              "issuer": {
+                "type": "string"
+              },
+              "fingerprint": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "CreatePaymentRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "description",
+          "country",
+          "merchant_order_id",
+          "amount",
+          "payment_method",
+          "checkout"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "merchant_order_id": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
           },
           "amount": {
             "$ref": "#/components/schemas/Amount"
           },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
+          "customer_payer": {
+            "$ref": "#/components/schemas/CustomerPayer"
           },
-          "customer": {
+          "checkout": {
             "type": "object",
+            "required": [
+              "session"
+            ],
             "properties": {
-              "document": {
-                "$ref": "#/components/schemas/CustomerDocument"
-              },
-              "email": {
+              "session": {
                 "type": "string",
-                "format": "email",
-                "description": "Customer email address",
-                "example": "maria.silva@example.com"
-              },
-              "first_name": {
-                "type": "string",
-                "example": "Maria"
-              },
-              "last_name": {
-                "type": "string",
-                "example": "Silva"
-              },
-              "phone": {
-                "type": "string",
-                "example": "+5511999990000"
+                "format": "uuid"
               }
             }
           },
-          "description": {
-            "type": "string",
-            "description": "Payment description",
-            "example": "Premium subscription - March 2026"
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethodInput"
           },
-          "installments": {
-            "type": "integer",
-            "description": "Number of installments (for card payments)",
-            "minimum": 1,
-            "example": 1
-          },
-          "three_ds": {
-            "type": "object",
-            "description": "3DS authentication preferences",
-            "properties": {
-              "required": {
-                "type": "boolean",
-                "description": "Force 3DS authentication",
-                "default": false
-              },
-              "exemption": {
-                "type": "string",
-                "enum": [
-                  "LOW_VALUE",
-                  "TRA",
-                  "TRUSTED_BENEFICIARY",
-                  "RECURRING",
-                  "NONE"
-                ],
-                "description": "SCA exemption to request"
-              }
-            }
-          },
-          "merchant_order_id": {
-            "type": "string",
-            "description": "Your unique order reference. If not provided, inherits from the checkout session.",
-            "example": "order-12345"
+          "additional_data": {
+            "$ref": "#/components/schemas/AdditionalData"
           },
           "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "CustomerPayer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          }
+        }
+      },
+      "PaymentMethodInput": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "CARD"
+          },
+          "vaulted_token": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "detail": {
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
-            "description": "Custom key-value pairs for storing additional information. Keys and values must be strings. Maximum 50 keys, each key max 40 characters, each value max 500 characters.",
-            "example": {
-              "order_source": "web",
-              "campaign": "spring-2026"
+            "properties": {
+              "card": {
+                "type": "object",
+                "properties": {
+                  "capture": {
+                    "type": "boolean",
+                    "description": "true = charge now, false = authorize only"
+                  },
+                  "installments": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "verify": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "wallet": {
+                "type": "object",
+                "properties": {
+                  "merchant_id": {
+                    "type": "string"
+                  },
+                  "payment_token": {
+                    "type": "string"
+                  },
+                  "capture": {
+                    "type": "boolean"
+                  },
+                  "verify": {
+                    "type": "boolean"
+                  },
+                  "card_data": {
+                    "type": "object"
+                  }
+                }
+              }
             }
           }
-        },
-        "example": {
-          "checkout_session": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "payment_method": {
-            "type": "CARD",
-            "token": "tok_4a8b9c2d-1e3f-5678-90ab-cdef12345678"
+        }
+      },
+      "AdditionalData": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "quantity",
+                    "unit_amount",
+                    "category"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "quantity": {
+                      "type": "integer"
+                    },
+                    "unit_amount": {
+                      "type": "number"
+                    },
+                    "category": {
+                      "type": "string",
+                      "enum": [
+                        "electronics",
+                        "clothing",
+                        "food",
+                        "services",
+                        "art",
+                        "baby",
+                        "beauty_&_personal_care",
+                        "books",
+                        "coupons",
+                        "entertainment",
+                        "health",
+                        "home",
+                        "sports",
+                        "toys",
+                        "travel"
+                      ]
+                    },
+                    "brand": {
+                      "type": "string"
+                    },
+                    "sku_code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "CaptureRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference",
+          "reason",
+          "amount"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "PRODUCT_CONFIRMED",
+              "REQUESTED_BY_CUSTOMER"
+            ]
           },
           "amount": {
-            "currency": "BRL",
-            "value": 150.0
+            "$ref": "#/components/schemas/Amount"
+          }
+        }
+      },
+      "CancelRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
           },
-          "country": "BR",
-          "customer": {
-            "document": {
-              "document_type": "CPF",
-              "document_number": "12345678901"
-            },
-            "email": "maria.silva@example.com",
-            "first_name": "Maria",
-            "last_name": "Silva"
+          "description": {
+            "type": "string"
           },
-          "description": "Premium subscription - March 2026",
-          "installments": 1
+          "reason": {
+            "type": "string",
+            "enum": [
+              "DUPLICATE",
+              "FRAUDULENT",
+              "REQUESTED_BY_CUSTOMER"
+            ]
+          }
+        }
+      },
+      "RefundRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "DUPLICATE",
+              "FRAUDULENT",
+              "REQUESTED_BY_CUSTOMER",
+              "REVERSE"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount",
+            "description": "Include for partial refund. Omit for full refund."
+          }
         }
       },
       "Payment": {
@@ -504,2266 +2755,52 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
-            "description": "Unique payment identifier",
-            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+            "format": "uuid"
           },
-          "checkout_session": {
+          "account_id": {
             "type": "string",
-            "format": "uuid",
-            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            "format": "uuid"
           },
-          "status": {
-            "type": "string",
-            "enum": [
-              "SUCCEEDED",
-              "PENDING",
-              "DECLINED",
-              "REJECTED",
-              "CANCELLED",
-              "REFUNDED",
-              "PARTIALLY_REFUNDED",
-              "AUTHORIZED"
-            ],
-            "description": "Current payment status",
-            "example": "SUCCEEDED"
+          "merchant_order_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
           },
           "amount": {
             "$ref": "#/components/schemas/Amount"
           },
-          "country": {
-            "type": "string",
-            "example": "BR"
-          },
-          "payment_method": {
+          "payment_status": {
             "type": "object",
             "properties": {
-              "type": {
-                "type": "string",
-                "example": "CARD"
-              }
-            }
-          },
-          "provider": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "Payment provider name",
-                "example": "stripe_connect"
-              },
-              "transaction_id": {
-                "type": "string",
-                "description": "Provider transaction reference",
-                "example": "pi_3abc123def456"
-              }
-            }
-          },
-          "merchant_order_id": {
-            "type": "string",
-            "example": "order-20260301-001"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T14:31:00.000Z"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T14:31:02.000Z"
-          },
-          "transactions": {
-            "type": "array",
-            "description": "Individual processing attempts for this payment",
-            "items": {
-              "$ref": "#/components/schemas/Transaction"
-            }
-          },
-          "refunds": {
-            "type": "array",
-            "description": "Refund records associated with this payment",
-            "items": {
-              "$ref": "#/components/schemas/RefundRecord"
-            }
-          },
-          "three_ds": {
-            "type": "object",
-            "description": "3DS authentication details, present for card payments",
-            "properties": {
-              "required": {
-                "type": "boolean",
-                "description": "Whether 3DS authentication is required"
-              },
-              "version": {
-                "type": "string",
-                "description": "3DS protocol version",
-                "example": "2.2.0"
-              },
               "status": {
                 "type": "string",
                 "enum": [
-                  "AUTHENTICATED",
-                  "CHALLENGED",
-                  "ATTEMPTED",
-                  "FAILED",
-                  "UNAVAILABLE"
+                  "CREATED",
+                  "READY_TO_PAY",
+                  "SUCCEEDED",
+                  "DECLINED",
+                  "CANCELED",
+                  "REFUNDED",
+                  "EXPIRED",
+                  "PENDING"
                 ]
               },
-              "eci": {
-                "type": "string",
-                "description": "Electronic Commerce Indicator",
-                "example": "05"
-              },
-              "redirect_url": {
-                "type": "string",
-                "format": "uri",
-                "description": "URL to redirect the customer for 3DS challenge"
-              }
-            }
-          },
-          "metadata": {
-            "type": "object",
-            "description": "Custom key-value pairs set by the merchant",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "failure_reason": {
-            "type": "object",
-            "description": "Decline details when status is DECLINED or REJECTED",
-            "properties": {
-              "code": {
-                "type": "string",
-                "description": "Machine-readable decline code",
-                "example": "insufficient_funds"
-              },
-              "message": {
-                "type": "string",
-                "description": "Human-readable decline reason"
-              },
-              "provider_code": {
-                "type": "string",
-                "description": "Raw decline code from the payment provider"
-              }
-            }
-          },
-          "customer_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "ID of the associated customer record"
-          },
-          "installments": {
-            "type": "object",
-            "description": "Installment details if payment was split into installments",
-            "properties": {
-              "count": {
-                "type": "integer",
-                "description": "Number of installments",
-                "example": 3
-              },
-              "plan_id": {
-                "type": "string",
-                "description": "Installment plan ID if using merchant installments"
-              }
-            }
-          }
-        },
-        "example": {
-          "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-          "checkout_session": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "status": "SUCCEEDED",
-          "amount": {
-            "currency": "BRL",
-            "value": 150.0
-          },
-          "country": "BR",
-          "payment_method": {
-            "type": "CARD"
-          },
-          "provider": {
-            "name": "stripe_connect",
-            "transaction_id": "pi_3abc123def456"
-          },
-          "merchant_order_id": "order-20260301-001",
-          "customer_id": "cust_9a8b7c6d-5e4f-3210-abcd-ef0987654321",
-          "transactions": [
-            {
-              "id": "txn_1a2b3c4d-5e6f-7890-abcd-ef1234567890",
-              "status": "APPROVED",
-              "provider": "stripe_connect",
-              "provider_transaction_id": "pi_3abc123def456",
-              "response_code": "00",
-              "response_message": "Approved",
-              "created_at": "2026-03-01T14:31:01.000Z"
-            }
-          ],
-          "refunds": [],
-          "three_ds": {
-            "version": "2.2",
-            "eci": "05",
-            "status": "AUTHENTICATED"
-          },
-          "metadata": {
-            "order_source": "web",
-            "campaign": "spring-2026"
-          },
-          "installments": null,
-          "failure_reason": null,
-          "created_at": "2026-03-01T14:31:00.000Z",
-          "updated_at": "2026-03-01T14:31:02.000Z"
-        }
-      },
-      "InstallmentsPlanRequest": {
-        "type": "object",
-        "required": [
-          "account_id",
-          "name",
-          "merchant_reference",
-          "installments_plan",
-          "country_code",
-          "amount"
-        ],
-        "properties": {
-          "account_id": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "description": "Account IDs this plan applies to",
-            "example": [
-              "1a3a576a-01d0-40ff-a68e-494f82145773"
-            ]
-          },
-          "name": {
-            "type": "string",
-            "description": "Name of the installment plan",
-            "example": "Standard Plan"
-          },
-          "merchant_reference": {
-            "type": "string",
-            "description": "Merchant reference for the plan",
-            "example": "001 08 Agosto 2023"
-          },
-          "installments_plan": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "installment",
-                "rate"
-              ],
-              "properties": {
-                "installment": {
-                  "type": "integer",
-                  "description": "Number of installments",
-                  "example": 2
-                },
-                "rate": {
-                  "type": "number",
-                  "description": "Interest rate multiplier",
-                  "example": 1.294
-                }
-              }
-            },
-            "description": "Array of installment options with rates"
-          },
-          "country_code": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
-          },
-          "amount": {
-            "type": "object",
-            "required": [
-              "Currency",
-              "min_value",
-              "max_value"
-            ],
-            "properties": {
-              "Currency": {
-                "type": "string",
-                "description": "ISO 4217 currency code",
-                "example": "BRL"
-              },
-              "min_value": {
-                "type": "number",
-                "description": "Minimum amount for this plan",
-                "example": 0
-              },
-              "max_value": {
-                "type": "number",
-                "description": "Maximum amount for this plan",
-                "example": 10000000000
-              }
-            }
-          },
-          "brand": {
-            "type": "string",
-            "nullable": true,
-            "description": "Card brand filter (optional)"
-          },
-          "iin": {
-            "type": "string",
-            "nullable": true,
-            "description": "IIN/BIN filter (optional)"
-          }
-        },
-        "example": {
-          "account_id": [
-            "1a3a576a-01d0-40ff-a68e-494f82145773"
-          ],
-          "name": "Standard Plan",
-          "merchant_reference": "001 08 Agosto 2023",
-          "installments_plan": [
-            {
-              "installment": 1,
-              "rate": 1
-            },
-            {
-              "installment": 2,
-              "rate": 1.294
-            },
-            {
-              "installment": 6,
-              "rate": 1.42
-            },
-            {
-              "installment": 12,
-              "rate": 1.525
-            }
-          ],
-          "country_code": "BR",
-          "amount": {
-            "Currency": "BRL",
-            "min_value": 0,
-            "max_value": 10000000000
-          },
-          "brand": null,
-          "iin": null
-        }
-      },
-      "InstallmentsPlan": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Unique installment plan identifier",
-            "example": "3e599453-e147-4d1c-8643-73e4d980c2ae"
-          },
-          "name": {
-            "type": "string",
-            "example": "Standard Plan"
-          },
-          "account_id": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "example": [
-              "1a3a576a-01d0-40ff-a68e-494f82145773"
-            ]
-          },
-          "merchant_reference": {
-            "type": "string",
-            "example": "001 08 Agosto 2023"
-          },
-          "installments_plan": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "installment": {
-                  "type": "integer"
-                },
-                "rate": {
-                  "type": "number"
-                }
-              }
-            }
-          },
-          "brand": {
-            "type": "string",
-            "nullable": true
-          },
-          "iin": {
-            "type": "string",
-            "nullable": true
-          },
-          "country_code": {
-            "type": "string",
-            "example": "BR"
-          },
-          "first_installment_deferral": {
-            "type": "integer",
-            "description": "Number of periods before first installment",
-            "example": 1
-          },
-          "amount": {
-            "type": "object",
-            "properties": {
-              "Currency": {
-                "type": "string"
-              },
-              "min_value": {
-                "type": "number"
-              },
-              "max_value": {
-                "type": "number"
-              }
-            }
-          }
-        },
-        "example": {
-          "id": "3e599453-e147-4d1c-8643-73e4d980c2ae",
-          "name": "Standard Plan",
-          "account_id": [
-            "1a3a576a-01d0-40ff-a68e-494f82145773"
-          ],
-          "merchant_reference": "001 08 Agosto 2023",
-          "installments_plan": [
-            {
-              "installment": 1,
-              "rate": 1
-            },
-            {
-              "installment": 2,
-              "rate": 1.294
-            },
-            {
-              "installment": 12,
-              "rate": 1.525
-            }
-          ],
-          "brand": null,
-          "iin": null,
-          "country_code": "BR",
-          "first_installment_deferral": 1,
-          "amount": {
-            "Currency": "BRL",
-            "min_value": 0,
-            "max_value": 10000000000
-          }
-        }
-      },
-      "Issuer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Issuer identifier",
-            "example": "1"
-          },
-          "name": {
-            "type": "string",
-            "description": "Issuer name (bank name)",
-            "example": "Banco de Bogota"
-          }
-        },
-        "example": {
-          "id": "1",
-          "name": "Banco de Bogota"
-        }
-      },
-      "CustomerRequest": {
-        "type": "object",
-        "required": [
-          "email"
-        ],
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "Customer email address",
-            "example": "maria.silva@example.com"
-          },
-          "first_name": {
-            "type": "string",
-            "description": "Customer first name",
-            "example": "Maria"
-          },
-          "last_name": {
-            "type": "string",
-            "description": "Customer last name",
-            "example": "Silva"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Customer phone number",
-            "example": "+5511999990000"
-          },
-          "document": {
-            "$ref": "#/components/schemas/CustomerDocument"
-          },
-          "merchant_customer_id": {
-            "type": "string",
-            "description": "Your internal customer identifier",
-            "example": "cust-internal-001"
-          }
-        },
-        "example": {
-          "email": "maria.silva@example.com",
-          "first_name": "Maria",
-          "last_name": "Silva",
-          "phone": "+5511999990000",
-          "document": {
-            "document_type": "CPF",
-            "document_number": "12345678901"
-          },
-          "merchant_customer_id": "cust-internal-001"
-        }
-      },
-      "Customer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Yuno customer identifier",
-            "example": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "maria.silva@example.com"
-          },
-          "first_name": {
-            "type": "string",
-            "example": "Maria"
-          },
-          "last_name": {
-            "type": "string",
-            "example": "Silva"
-          },
-          "phone": {
-            "type": "string",
-            "example": "+5511999990000"
-          },
-          "document": {
-            "$ref": "#/components/schemas/CustomerDocument"
-          },
-          "merchant_customer_id": {
-            "type": "string",
-            "example": "cust-internal-001"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T10:00:00.000Z"
-          }
-        },
-        "example": {
-          "id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
-          "email": "maria.silva@example.com",
-          "first_name": "Maria",
-          "last_name": "Silva",
-          "phone": "+5511999990000",
-          "document": {
-            "document_type": "CPF",
-            "document_number": "12345678901"
-          },
-          "merchant_customer_id": "cust-internal-001",
-          "created_at": "2026-03-01T10:00:00.000Z"
-        }
-      },
-      "PayoutRequest": {
-        "type": "object",
-        "required": [
-          "amount",
-          "country",
-          "recipient_id"
-        ],
-        "properties": {
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
-          },
-          "recipient_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The recipient to send funds to",
-            "example": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a"
-          },
-          "description": {
-            "type": "string",
-            "description": "Payout description",
-            "example": "Seller payout - Order #1234"
-          },
-          "merchant_reference": {
-            "type": "string",
-            "description": "Your internal payout reference",
-            "example": "payout-ref-001"
-          },
-          "purpose": {
-            "type": "string",
-            "description": "Purpose of the payout (see Purposes reference list)",
-            "example": "SELLER_PAYMENT"
-          }
-        },
-        "example": {
-          "amount": {
-            "currency": "BRL",
-            "value": 500.0
-          },
-          "country": "BR",
-          "recipient_id": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a",
-          "description": "Seller payout - Order #1234",
-          "merchant_reference": "payout-ref-001",
-          "purpose": "SELLER_PAYMENT"
-        }
-      },
-      "Payout": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "SUCCEEDED",
-              "PENDING",
-              "FAILED",
-              "CANCELLED"
-            ],
-            "description": "Current payout status",
-            "example": "PENDING"
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "country": {
-            "type": "string",
-            "example": "BR"
-          },
-          "recipient_id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a"
-          },
-          "merchant_reference": {
-            "type": "string",
-            "example": "payout-ref-001"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T16:00:00.000Z"
-          }
-        },
-        "example": {
-          "id": "e2f3a4b5-c6d7-8e9f-0a1b-2c3d4e5f6a7b",
-          "status": "PENDING",
-          "amount": {
-            "currency": "BRL",
-            "value": 500.0
-          },
-          "country": "BR",
-          "recipient_id": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a",
-          "merchant_reference": "payout-ref-001",
-          "created_at": "2026-03-01T16:00:00.000Z"
-        }
-      },
-      "ReportRequest": {
-        "type": "object",
-        "required": [
-          "date_range"
-        ],
-        "properties": {
-          "date_range": {
-            "type": "object",
-            "required": [
-              "from",
-              "to"
-            ],
-            "properties": {
-              "from": {
-                "type": "string",
-                "format": "date-time",
-                "description": "Start date in ISO 8601 datetime format",
-                "example": "2026-01-01T00:00:00.000Z"
-              },
-              "to": {
-                "type": "string",
-                "format": "date-time",
-                "description": "End date in ISO 8601 datetime format",
-                "example": "2026-01-31T23:59:59.999Z"
-              }
-            },
-            "description": "Date range for the report. Must use datetime format (yyyy-MM-dd'T'HH:mm:ss.SSS'Z'), not date-only format."
-          },
-          "type": {
-            "type": "string",
-            "description": "Type of report to generate",
-            "example": "TRANSACTIONS"
-          }
-        },
-        "example": {
-          "date_range": {
-            "from": "2026-02-01T00:00:00.000Z",
-            "to": "2026-02-28T23:59:59.999Z"
-          },
-          "type": "TRANSACTIONS"
-        }
-      },
-      "Report": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PROCESSING",
-              "COMPLETED",
-              "FAILED"
-            ],
-            "description": "Report generation status",
-            "example": "PROCESSING"
-          },
-          "date_range": {
-            "type": "object",
-            "properties": {
-              "from": {
-                "type": "string",
-                "format": "date-time",
-                "example": "2026-02-01T00:00:00.000Z"
-              },
-              "to": {
-                "type": "string",
-                "format": "date-time",
-                "example": "2026-02-28T23:59:59.999Z"
-              }
-            }
-          },
-          "download_url": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL to download the completed report",
-            "example": "https://reports.y.uno/download/a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T12:00:00.000Z"
-          }
-        },
-        "example": {
-          "id": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
-          "status": "COMPLETED",
-          "date_range": {
-            "from": "2026-02-01T00:00:00.000Z",
-            "to": "2026-02-28T23:59:59.999Z"
-          },
-          "download_url": "https://reports.y.uno/download/a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
-          "created_at": "2026-03-01T12:00:00.000Z"
-        }
-      },
-      "RecipientRequest": {
-        "type": "object",
-        "required": [
-          "merchant_recipient_id",
-          "country"
-        ],
-        "properties": {
-          "merchant_recipient_id": {
-            "type": "string",
-            "description": "Your internal recipient identifier",
-            "example": "seller-001"
-          },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
-          },
-          "name": {
-            "type": "string",
-            "description": "Recipient name",
-            "example": "Carlos Oliveira"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "carlos@example.com"
-          },
-          "document": {
-            "$ref": "#/components/schemas/CustomerDocument"
-          },
-          "bank_account": {
-            "type": "object",
-            "properties": {
-              "bank_code": {
-                "type": "string",
-                "example": "001"
-              },
-              "account_number": {
-                "type": "string",
-                "example": "12345-6"
-              },
-              "account_type": {
-                "type": "string",
-                "enum": [
-                  "CHECKING",
-                  "SAVINGS"
-                ],
-                "example": "CHECKING"
-              }
-            }
-          },
-          "split_configuration": {
-            "type": "object",
-            "description": "Rules for automatic split calculation at the recipient level.",
-            "properties": {
-              "calculation_type": {
-                "type": "string",
-                "description": "The method used to calculate the split amount.",
-                "enum": [
-                  "PERCENTAGE",
-                  "FIXED",
-                  "MIXED"
-                ],
-                "example": "PERCENTAGE"
-              },
-              "percentage": {
-                "type": "number",
-                "description": "Percentage of the total payment amount to be split (0.01-100.00). Required if calculation_type is PERCENTAGE or MIXED.",
-                "minimum": 0.01,
-                "maximum": 100,
-                "example": 10.5
-              },
-              "fixed_amount": {
-                "type": "number",
-                "description": "Fixed amount to be split. Required if calculation_type is FIXED or MIXED.",
-                "minimum": 0.0001,
-                "example": 5.0
-              },
-              "currency": {
-                "type": "string",
-                "description": "ISO 4217 currency code. Required for all calculation types.",
-                "example": "USD"
-              },
-              "rounding_mode": {
-                "type": "string",
-                "description": "The rounding strategy for calculated amounts. Required for PERCENTAGE and MIXED.",
-                "enum": [
-                  "STANDARD",
-                  "ROUND_UP",
-                  "ROUND_DOWN"
-                ],
-                "example": "STANDARD"
-              }
-            }
-          }
-        },
-        "example": {
-          "merchant_recipient_id": "seller-001",
-          "country": "BR",
-          "name": "Carlos Oliveira",
-          "email": "carlos@example.com",
-          "document": {
-            "document_type": "CPF",
-            "document_number": "98765432100"
-          },
-          "bank_account": {
-            "bank_code": "001",
-            "account_number": "12345-6",
-            "account_type": "CHECKING"
-          },
-          "split_configuration": {
-            "calculation_type": "PERCENTAGE",
-            "percentage": 10.5,
-            "rounding_mode": "STANDARD",
-            "currency": "BRL"
-          }
-        }
-      },
-      "Recipient": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a"
-          },
-          "merchant_recipient_id": {
-            "type": "string",
-            "example": "seller-001"
-          },
-          "country": {
-            "type": "string",
-            "example": "BR"
-          },
-          "name": {
-            "type": "string",
-            "example": "Carlos Oliveira"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "carlos@example.com"
-          },
-          "document": {
-            "$ref": "#/components/schemas/CustomerDocument"
-          },
-          "bank_account": {
-            "type": "object",
-            "properties": {
-              "bank_code": {
-                "type": "string",
-                "example": "001"
-              },
-              "account_number": {
-                "type": "string",
-                "example": "12345-6"
-              },
-              "account_type": {
-                "type": "string",
-                "example": "CHECKING"
-              }
-            }
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T09:00:00.000Z"
-          },
-          "split_configuration": {
-            "type": "object",
-            "description": "Rules for automatic split calculation at the recipient level.",
-            "properties": {
-              "calculation_type": {
-                "type": "string",
-                "description": "The method used to calculate the split amount.",
-                "enum": [
-                  "PERCENTAGE",
-                  "FIXED",
-                  "MIXED"
-                ],
-                "example": "PERCENTAGE"
-              },
-              "percentage": {
-                "type": "number",
-                "description": "Percentage of the total payment amount to be split (0.01-100.00). Required if calculation_type is PERCENTAGE or MIXED.",
-                "minimum": 0.01,
-                "maximum": 100,
-                "example": 10.5
-              },
-              "fixed_amount": {
-                "type": "number",
-                "description": "Fixed amount to be split. Required if calculation_type is FIXED or MIXED.",
-                "minimum": 0.0001,
-                "example": 5.0
-              },
-              "currency": {
-                "type": "string",
-                "description": "ISO 4217 currency code. Required for all calculation types.",
-                "example": "USD"
-              },
-              "rounding_mode": {
-                "type": "string",
-                "description": "The rounding strategy for calculated amounts. Required for PERCENTAGE and MIXED.",
-                "enum": [
-                  "STANDARD",
-                  "ROUND_UP",
-                  "ROUND_DOWN"
-                ],
-                "example": "STANDARD"
-              }
-            }
-          }
-        },
-        "example": {
-          "id": "d1e2f3a4-b5c6-7d8e-9f0a-1b2c3d4e5f6a",
-          "merchant_recipient_id": "seller-001",
-          "country": "BR",
-          "name": "Carlos Oliveira",
-          "email": "carlos@example.com",
-          "document": {
-            "document_type": "CPF",
-            "document_number": "98765432100"
-          },
-          "bank_account": {
-            "bank_code": "001",
-            "account_number": "12345-6",
-            "account_type": "CHECKING"
-          },
-          "split_configuration": {
-            "calculation_type": "PERCENTAGE",
-            "percentage": 10.5,
-            "rounding_mode": "STANDARD",
-            "currency": "BRL"
-          },
-          "created_at": "2026-03-01T09:00:00.000Z"
-        }
-      },
-      "Error": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "description": "Machine-readable error code",
-                "example": "INVALID_REQUEST"
-              },
-              "message": {
-                "type": "string",
-                "description": "Human-readable error description",
-                "example": "The request body contains invalid or missing fields"
-              },
-              "type": {
-                "type": "string",
-                "description": "Error category",
-                "enum": [
-                  "VALIDATION_ERROR",
-                  "AUTHENTICATION_ERROR",
-                  "AUTHORIZATION_ERROR",
-                  "NOT_FOUND",
-                  "CONFLICT",
-                  "RATE_LIMIT_ERROR",
-                  "INTERNAL_ERROR",
-                  "GATEWAY_ERROR"
-                ]
-              },
-              "details": {
-                "type": "array",
-                "description": "Field-level validation errors",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "field": {
-                      "type": "string",
-                      "description": "JSON path of the invalid field",
-                      "example": "customer.document.document_number"
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "Validation error message",
-                      "example": "Must be 11 digits for CPF"
-                    },
-                    "code": {
-                      "type": "string",
-                      "description": "Machine-readable field error code",
-                      "example": "INVALID_FORMAT"
-                    }
-                  }
-                }
-              },
-              "provider_error": {
-                "type": "object",
-                "description": "Raw error from the payment provider, when available",
-                "properties": {
-                  "code": {
-                    "type": "string"
-                  },
-                  "message": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "example": {
-          "error": {
-            "code": "INVALID_REQUEST",
-            "message": "The request body contains invalid or missing fields"
-          }
-        }
-      },
-      "WebhookEvent": {
-        "type": "object",
-        "required": [
-          "type",
-          "data",
-          "timestamp",
-          "webhook_id"
-        ],
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "payment.succeeded",
-              "payment.failed",
-              "payment.pending",
-              "refund.succeeded",
-              "refund.failed"
-            ],
-            "description": "The type of webhook event",
-            "example": "payment.succeeded"
-          },
-          "data": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/PaymentWebhookData"
-              }
-            ],
-            "description": "Event-specific data payload"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "description": "ISO 8601 timestamp when the event occurred",
-            "example": "2026-03-01T14:31:05.000Z"
-          },
-          "webhook_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Unique identifier for this webhook delivery (use for deduplication)",
-            "example": "wh_7a8b9c0d-1e2f-3456-7890-abcdef123456"
-          }
-        },
-        "example": {
-          "type": "payment.succeeded",
-          "data": {
-            "payment_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-            "checkout_session": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "status": "SUCCEEDED",
-            "amount": {
-              "currency": "BRL",
-              "value": 150.0
-            },
-            "country": "BR",
-            "payment_method_type": "CARD",
-            "provider_name": "stripe_connect",
-            "provider_transaction_id": "pi_3abc123def456",
-            "merchant_order_id": "order-20260301-001"
-          },
-          "timestamp": "2026-03-01T14:31:05.000Z",
-          "webhook_id": "wh_7a8b9c0d-1e2f-3456-7890-abcdef123456"
-        }
-      },
-      "PaymentWebhookData": {
-        "type": "object",
-        "properties": {
-          "payment_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The payment identifier",
-            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-          },
-          "checkout_session": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The checkout session identifier",
-            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "SUCCEEDED",
-              "PENDING",
-              "DECLINED",
-              "REJECTED",
-              "CANCELLED",
-              "REFUNDED",
-              "PARTIALLY_REFUNDED"
-            ],
-            "description": "The payment status that triggered this event",
-            "example": "SUCCEEDED"
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "example": "BR"
-          },
-          "payment_method_type": {
-            "type": "string",
-            "description": "The payment method used",
-            "example": "CARD"
-          },
-          "provider_name": {
-            "type": "string",
-            "description": "The provider that processed the payment",
-            "example": "stripe_connect"
-          },
-          "provider_transaction_id": {
-            "type": "string",
-            "description": "The provider's transaction reference",
-            "example": "pi_3abc123def456"
-          },
-          "merchant_order_id": {
-            "type": "string",
-            "description": "Your unique order identifier",
-            "example": "order-20260301-001"
-          },
-          "refund_amount": {
-            "$ref": "#/components/schemas/Amount",
-            "description": "Refund amount (only present for refund events)"
-          },
-          "refund_reason": {
-            "type": "string",
-            "description": "Reason for refund (only present for refund events)",
-            "example": "Customer requested partial refund"
-          },
-          "decline_reason": {
-            "type": "string",
-            "description": "Reason for decline (only present for payment.failed events)",
-            "example": "insufficient_funds"
-          }
-        },
-        "example": {
-          "payment_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-          "checkout_session": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "status": "SUCCEEDED",
-          "amount": {
-            "currency": "BRL",
-            "value": 150.0
-          },
-          "country": "BR",
-          "payment_method_type": "CARD",
-          "provider_name": "stripe_connect",
-          "provider_transaction_id": "pi_3abc123def456",
-          "merchant_order_id": "order-20260301-001"
-        }
-      },
-      "FulfillmentNotification": {
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "SHIPPED",
-              "DELIVERED",
-              "RETURNED"
-            ],
-            "description": "Fulfillment status"
-          },
-          "tracking_number": {
-            "type": "string",
-            "description": "Shipment tracking number"
-          },
-          "carrier": {
-            "type": "string",
-            "description": "Shipping carrier name"
-          },
-          "shipped_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Shipment date"
-          }
-        }
-      },
-      "DisputeUpdate": {
-        "type": "object",
-        "properties": {
-          "evidence": {
-            "type": "object",
-            "properties": {
-              "description": {
-                "type": "string",
-                "description": "Evidence description"
-              },
-              "documents": {
+              "transactions": {
                 "type": "array",
                 "items": {
-                  "type": "string",
-                  "format": "uri"
-                },
-                "description": "URLs of supporting documents"
+                  "$ref": "#/components/schemas/Transaction"
+                }
               }
             }
           },
-          "status": {
-            "type": "string",
-            "enum": [
-              "EVIDENCE_SUBMITTED",
-              "ACCEPTED"
-            ],
-            "description": "New dispute status"
-          }
-        }
-      },
-      "Dispute": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "payment_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "OPEN",
-              "EVIDENCE_SUBMITTED",
-              "WON",
-              "LOST",
-              "ACCEPTED"
-            ]
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "reason": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "Subscription": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "PAUSED",
-              "CANCELLED",
-              "PAST_DUE",
-              "EXPIRED"
-            ]
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "interval": {
-            "type": "string",
-            "enum": [
-              "DAILY",
-              "WEEKLY",
-              "MONTHLY",
-              "YEARLY"
-            ]
-          },
-          "next_payment_date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "Onboarding": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "recipient_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "IN_PROGRESS",
-              "BLOCKED",
-              "COMPLETED",
-              "FAILED"
-            ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "OnboardingTransferRequest": {
-        "type": "object",
-        "required": [
-          "amount"
-        ],
-        "properties": {
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "description": {
-            "type": "string",
-            "description": "Transfer description"
-          }
-        }
-      },
-      "OnboardingTransfer": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "onboarding_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "COMPLETED",
-              "REVERSED",
-              "FAILED"
-            ]
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "description": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "RecoverPaymentRequest": {
-        "type": "object",
-        "required": [
-          "payment_id"
-        ],
-        "properties": {
-          "payment_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The declined payment to recover"
-          },
-          "channel": {
-            "type": "string",
-            "enum": [
-              "PHONE",
-              "SMS",
-              "EMAIL",
-              "WHATSAPP"
-            ],
-            "description": "Outreach channel"
-          },
-          "language": {
-            "type": "string",
-            "description": "Language code (e.g., pt-BR, es-MX)",
-            "example": "pt-BR"
-          }
-        }
-      },
-      "RecoverAbandonedRequest": {
-        "type": "object",
-        "required": [
-          "checkout_session"
-        ],
-        "properties": {
-          "checkout_session": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The abandoned checkout session"
-          },
-          "channel": {
-            "type": "string",
-            "enum": [
-              "PHONE",
-              "SMS",
-              "EMAIL",
-              "WHATSAPP"
-            ],
-            "description": "Outreach channel"
-          },
-          "language": {
-            "type": "string",
-            "description": "Language code",
-            "example": "pt-BR"
-          }
-        }
-      },
-      "RecoveryAttempt": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "QUEUED",
-              "IN_PROGRESS",
-              "COMPLETED",
-              "FAILED"
-            ]
-          },
-          "channel": {
-            "type": "string"
-          },
           "created_at": {
             "type": "string",
             "format": "date-time"
           }
-        }
-      },
-      "CampaignRequest": {
-        "type": "object",
-        "required": [
-          "name",
-          "start_date",
-          "end_date",
-          "country"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Campaign name"
-          },
-          "description": {
-            "type": "string",
-            "description": "Campaign description"
-          },
-          "start_date": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Campaign start date"
-          },
-          "end_date": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Campaign end date"
-          },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code"
-          }
-        }
-      },
-      "Campaign": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE",
-              "DRAFT",
-              "EXPIRED"
-            ]
-          },
-          "start_date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "end_date": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "country": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "CampaignRuleRequest": {
-        "type": "object",
-        "required": [
-          "campaign_id",
-          "name",
-          "conditions",
-          "benefit"
-        ],
-        "properties": {
-          "campaign_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Associated campaign ID"
-          },
-          "name": {
-            "type": "string",
-            "description": "Rule name"
-          },
-          "conditions": {
-            "type": "object",
-            "properties": {
-              "payment_method": {
-                "type": "string",
-                "description": "Payment method filter"
-              },
-              "min_amount": {
-                "type": "number",
-                "description": "Minimum transaction amount"
-              },
-              "max_amount": {
-                "type": "number",
-                "description": "Maximum transaction amount"
-              },
-              "bin_range": {
-                "type": "string",
-                "description": "Card BIN range filter"
-              }
-            }
-          },
-          "benefit": {
-            "type": "object",
-            "required": [
-              "type",
-              "value"
-            ],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "DISCOUNT",
-                  "CASHBACK",
-                  "INSTALLMENT_RATE"
-                ],
-                "description": "Benefit type"
-              },
-              "value": {
-                "type": "number",
-                "description": "Benefit value"
-              },
-              "unit": {
-                "type": "string",
-                "enum": [
-                  "PERCENTAGE",
-                  "FIXED"
-                ],
-                "description": "Benefit unit"
-              }
-            }
-          }
-        }
-      },
-      "CampaignRule": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "campaign_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE"
-            ]
-          },
-          "conditions": {
-            "type": "object"
-          },
-          "benefit": {
-            "type": "object"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "CustomerSession": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "cs_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-          },
-          "customer_id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "EXPIRED"
-            ],
-            "example": "ACTIVE"
-          },
-          "sdk_token": {
-            "type": "string",
-            "description": "Token for SDK initialization",
-            "example": "sdk_tok_abc123def456"
-          },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T15:30:00.000Z"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T14:30:00.000Z"
-          }
-        },
-        "example": {
-          "id": "cs_a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "customer_id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
-          "status": "ACTIVE",
-          "sdk_token": "sdk_tok_abc123def456",
-          "expires_at": "2026-03-01T15:30:00.000Z",
-          "created_at": "2026-03-01T14:30:00.000Z"
-        }
-      },
-      "CustomerSessionRequest": {
-        "type": "object",
-        "required": [
-          "customer_id"
-        ],
-        "properties": {
-          "customer_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The customer to create a session for",
-            "example": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
-          },
-          "merchant_customer_id": {
-            "type": "string",
-            "description": "Alternative: your internal customer identifier",
-            "example": "cust-internal-001"
-          }
-        },
-        "example": {
-          "customer_id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
-        }
-      },
-      "PaymentMethod": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "pm_1a2b3c4d-5e6f-7890-abcd-ef1234567890"
-          },
-          "customer_id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "CARD",
-              "PIX",
-              "BOLETO",
-              "PSE",
-              "SPEI",
-              "OXXO"
-            ],
-            "example": "CARD"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "EXPIRED",
-              "REVOKED"
-            ],
-            "example": "ACTIVE"
-          },
-          "card": {
-            "type": "object",
-            "properties": {
-              "last_four": {
-                "type": "string",
-                "example": "4242"
-              },
-              "brand": {
-                "type": "string",
-                "example": "VISA"
-              },
-              "expiry_month": {
-                "type": "integer",
-                "example": 12
-              },
-              "expiry_year": {
-                "type": "integer",
-                "example": 2028
-              }
-            }
-          },
-          "vaulted_token": {
-            "type": "string",
-            "description": "Token for reuse in future payments",
-            "example": "vtok_9f8e7d6c-5b4a-3210-fedc-ba9876543210"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T10:00:00.000Z"
-          }
-        },
-        "example": {
-          "id": "pm_1a2b3c4d-5e6f-7890-abcd-ef1234567890",
-          "customer_id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
-          "type": "CARD",
-          "status": "ACTIVE",
-          "card": {
-            "last_four": "4242",
-            "brand": "VISA",
-            "expiry_month": 12,
-            "expiry_year": 2028
-          },
-          "vaulted_token": "vtok_9f8e7d6c-5b4a-3210-fedc-ba9876543210",
-          "created_at": "2026-03-01T10:00:00.000Z"
-        }
-      },
-      "PaymentMethodEnrollRequest": {
-        "type": "object",
-        "required": [
-          "type",
-          "token"
-        ],
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "CARD",
-              "PIX",
-              "BOLETO",
-              "PSE",
-              "SPEI",
-              "OXXO"
-            ],
-            "description": "Payment method type",
-            "example": "CARD"
-          },
-          "token": {
-            "type": "string",
-            "description": "One-time token from SDK tokenization",
-            "example": "tok_4a8b9c2d-1e3f-5678-90ab-cdef12345678"
-          },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
-          }
-        },
-        "example": {
-          "type": "CARD",
-          "token": "tok_4a8b9c2d-1e3f-5678-90ab-cdef12345678",
-          "country": "BR"
-        }
-      },
-      "PaymentLink": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "pl_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-          },
-          "url": {
-            "type": "string",
-            "format": "uri",
-            "description": "Shareable payment link URL",
-            "example": "https://pay.y.uno/pl_a1b2c3d4"
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "country": {
-            "type": "string",
-            "example": "BR"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "COMPLETED",
-              "CANCELLED",
-              "EXPIRED"
-            ],
-            "example": "ACTIVE"
-          },
-          "description": {
-            "type": "string",
-            "example": "Invoice #INV-2026-001"
-          },
-          "merchant_order_id": {
-            "type": "string",
-            "example": "order-link-001"
-          },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-08T23:59:59.000Z"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T14:00:00.000Z"
-          }
-        },
-        "example": {
-          "id": "pl_a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "url": "https://pay.y.uno/pl_a1b2c3d4",
-          "amount": {
-            "currency": "BRL",
-            "value": 250.0
-          },
-          "country": "BR",
-          "status": "ACTIVE",
-          "description": "Invoice #INV-2026-001",
-          "merchant_order_id": "order-link-001",
-          "expires_at": "2026-03-08T23:59:59.000Z",
-          "created_at": "2026-03-01T14:00:00.000Z"
-        }
-      },
-      "PaymentLinkRequest": {
-        "type": "object",
-        "required": [
-          "amount",
-          "country"
-        ],
-        "properties": {
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
-          },
-          "description": {
-            "type": "string",
-            "description": "Payment description shown to customer",
-            "example": "Invoice #INV-2026-001"
-          },
-          "merchant_order_id": {
-            "type": "string",
-            "description": "Your unique order identifier",
-            "example": "order-link-001"
-          },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Expiration date for the link",
-            "example": "2026-03-08T23:59:59.000Z"
-          }
-        },
-        "example": {
-          "amount": {
-            "currency": "BRL",
-            "value": 250.0
-          },
-          "country": "BR",
-          "description": "Invoice #INV-2026-001",
-          "merchant_order_id": "order-link-001",
-          "expires_at": "2026-03-08T23:59:59.000Z"
-        }
-      },
-      "CurrencyConversion": {
-        "type": "object",
-        "properties": {
-          "from": {
-            "type": "string",
-            "description": "Source currency code",
-            "example": "USD"
-          },
-          "to": {
-            "type": "string",
-            "description": "Target currency code",
-            "example": "BRL"
-          },
-          "rate": {
-            "type": "number",
-            "description": "Exchange rate",
-            "example": 5.12
-          },
-          "amount": {
-            "type": "number",
-            "description": "Original amount",
-            "example": 100.0
-          },
-          "converted_amount": {
-            "type": "number",
-            "description": "Converted amount",
-            "example": 512.0
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T14:00:00.000Z"
-          }
-        },
-        "example": {
-          "from": "USD",
-          "to": "BRL",
-          "rate": 5.12,
-          "amount": 100.0,
-          "converted_amount": 512.0,
-          "timestamp": "2026-03-01T14:00:00.000Z"
-        }
-      },
-      "SubscriptionRequest": {
-        "type": "object",
-        "required": [
-          "customer_id",
-          "amount",
-          "country",
-          "interval"
-        ],
-        "properties": {
-          "customer_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "The customer for this subscription",
-            "example": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f"
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "country": {
-            "type": "string",
-            "description": "ISO 3166-1 alpha-2 country code",
-            "pattern": "^[A-Z]{2}$",
-            "example": "BR"
-          },
-          "interval": {
-            "type": "string",
-            "enum": [
-              "DAILY",
-              "WEEKLY",
-              "MONTHLY",
-              "YEARLY"
-            ],
-            "description": "Billing interval",
-            "example": "MONTHLY"
-          },
-          "payment_method_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Enrolled payment method to charge",
-            "example": "pm_1a2b3c4d-5e6f-7890-abcd-ef1234567890"
-          },
-          "description": {
-            "type": "string",
-            "description": "Subscription description",
-            "example": "Premium Plan - Monthly"
-          },
-          "start_date": {
-            "type": "string",
-            "format": "date-time",
-            "description": "When to start billing",
-            "example": "2026-03-01T00:00:00.000Z"
-          }
-        },
-        "example": {
-          "customer_id": "c9d0e1f2-3a4b-5c6d-7e8f-9a0b1c2d3e4f",
-          "amount": {
-            "currency": "BRL",
-            "value": 49.9
-          },
-          "country": "BR",
-          "interval": "MONTHLY",
-          "payment_method_id": "pm_1a2b3c4d-5e6f-7890-abcd-ef1234567890",
-          "description": "Premium Plan - Monthly",
-          "start_date": "2026-03-01T00:00:00.000Z"
-        }
-      },
-      "DisputeRequest": {
-        "type": "object",
-        "required": [
-          "reason",
-          "amount"
-        ],
-        "properties": {
-          "reason": {
-            "type": "string",
-            "description": "Reason for the dispute",
-            "example": "Customer claims item not received"
-          },
-          "amount": {
-            "$ref": "#/components/schemas/Amount"
-          },
-          "evidence": {
-            "type": "object",
-            "properties": {
-              "description": {
-                "type": "string",
-                "description": "Evidence description"
-              },
-              "documents": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "format": "uri"
-                },
-                "description": "URLs of supporting documents"
-              }
-            }
-          }
-        },
-        "example": {
-          "reason": "Customer claims item not received",
-          "amount": {
-            "currency": "BRL",
-            "value": 150.0
-          }
-        }
-      },
-      "WebhookRegistration": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "example": "wh_a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-          },
-          "url": {
-            "type": "string",
-            "format": "uri",
-            "example": "https://example.com/webhooks/yuno"
-          },
-          "events": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "example": [
-              "payment.succeeded",
-              "payment.failed",
-              "payment.refunded"
-            ]
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE"
-            ],
-            "example": "ACTIVE"
-          },
-          "secret": {
-            "type": "string",
-            "description": "Shared secret for HMAC signature verification",
-            "example": "whsec_abc123def456"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "example": "2026-03-01T10:00:00.000Z"
-          }
-        },
-        "example": {
-          "id": "wh_a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "url": "https://example.com/webhooks/yuno",
-          "events": [
-            "payment.succeeded",
-            "payment.failed",
-            "payment.refunded"
-          ],
-          "status": "ACTIVE",
-          "secret": "whsec_abc123def456",
-          "created_at": "2026-03-01T10:00:00.000Z"
-        }
-      },
-      "WebhookRegistrationRequest": {
-        "type": "object",
-        "required": [
-          "url",
-          "events"
-        ],
-        "properties": {
-          "url": {
-            "type": "string",
-            "format": "uri",
-            "description": "Webhook endpoint URL",
-            "example": "https://example.com/webhooks/yuno"
-          },
-          "events": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Event types to subscribe to",
-            "example": [
-              "payment.succeeded",
-              "payment.failed",
-              "payment.refunded"
-            ]
-          },
-          "secret": {
-            "type": "string",
-            "description": "Shared secret for signature verification",
-            "example": "whsec_abc123def456"
-          }
-        },
-        "example": {
-          "url": "https://example.com/webhooks/yuno",
-          "events": [
-            "payment.succeeded",
-            "payment.failed",
-            "payment.refunded"
-          ],
-          "secret": "whsec_abc123def456"
         }
       },
       "Transaction": {
@@ -2774,26 +2811,20 @@
             "format": "uuid"
           },
           "status": {
+            "type": "string"
+          },
+          "type": {
             "type": "string",
             "enum": [
-              "APPROVED",
-              "DECLINED",
-              "ERROR",
-              "PENDING"
+              "PURCHASE",
+              "CAPTURE",
+              "CANCEL",
+              "REFUND",
+              "VERIFY"
             ]
           },
-          "provider": {
-            "type": "string",
-            "description": "Provider that processed this attempt"
-          },
-          "provider_transaction_id": {
-            "type": "string"
-          },
-          "response_code": {
-            "type": "string"
-          },
-          "response_message": {
-            "type": "string"
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
           },
           "created_at": {
             "type": "string",
@@ -2801,7 +2832,612 @@
           }
         }
       },
-      "RefundRecord": {
+      "CreatePaymentLinkRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "country",
+          "amount",
+          "payment_method_types"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "payment_method_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "merchant_order_id": {
+            "type": "string"
+          },
+          "capture": {
+            "type": "boolean",
+            "default": true
+          },
+          "one_time_use": {
+            "type": "boolean",
+            "default": false
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "start_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finish_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "customer_payer": {
+            "$ref": "#/components/schemas/CustomerPayer"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/Metadata"
+          }
+        }
+      },
+      "PaymentLink": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "checkout_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "USED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "start_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finish_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      },
+      "CreateSubscriptionRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "account_id",
+          "country",
+          "amount",
+          "frequency",
+          "payment_method"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "frequency": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH"
+                ]
+              },
+              "value": {
+                "type": "integer",
+                "default": 1
+              }
+            }
+          },
+          "billing_cycles": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "customer_payer": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "payment_method": {
+            "type": "object",
+            "required": [
+              "type",
+              "vaulted_token"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "CARD"
+                ]
+              },
+              "vaulted_token": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "availability": {
+            "type": "object",
+            "properties": {
+              "start_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finish_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "additional_data": {
+            "$ref": "#/components/schemas/AdditionalData"
+          }
+        }
+      },
+      "UpdateSubscriptionRequest": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "DAY",
+                  "WEEK",
+                  "MONTH"
+                ]
+              },
+              "value": {
+                "type": "integer"
+              },
+              "monthly_billing_day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            }
+          },
+          "retries": {
+            "type": "object",
+            "properties": {
+              "retry_on_decline": {
+                "type": "boolean"
+              },
+              "amount": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 7
+              }
+            }
+          }
+        }
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "PAUSED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "frequency": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "value": {
+                "type": "integer"
+              }
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatePayoutRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "merchant_reference",
+          "country",
+          "purpose",
+          "amount",
+          "beneficiary",
+          "withdrawal_method"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "FAMILY_AND_FRIENDS",
+              "PERSONAL_TRANSFER",
+              "REMITTANCES",
+              "PROVIDER_SERVICES",
+              "EXPENSES",
+              "REFUND",
+              "SALARY",
+              "PENSION",
+              "LOAN",
+              "DIVIDENDS"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "beneficiary": {
+            "$ref": "#/components/schemas/Beneficiary"
+          },
+          "withdrawal_method": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "CARD",
+                  "PIX_PAYOUT",
+                  "PAYPAL_PAYOUT",
+                  "NEQUI_PAYOUT",
+                  "ASTROPAY_PAYOUT",
+                  "STP_PAYOUT",
+                  "TRANSFIYA_PAYOUT",
+                  "UNLIMINT_PAYOUT",
+                  "QI_PAYOUT"
+                ]
+              },
+              "provider_id": {
+                "type": "string",
+                "enum": [
+                  "ASTROPAY",
+                  "NEQUI",
+                  "PAYPAL",
+                  "UNLIMINT"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "Beneficiary": {
+        "type": "object",
+        "required": [
+          "merchant_beneficiary_id",
+          "country"
+        ],
+        "properties": {
+          "merchant_beneficiary_id": {
+            "type": "string"
+          },
+          "national_entity": {
+            "type": "string",
+            "enum": [
+              "INDIVIDUAL",
+              "ENTITY"
+            ]
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "legal_name": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Required when national_entity is ENTITY"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/Phone"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "Payout": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUCCEEDED",
+              "PENDING",
+              "DECLINED",
+              "PROCESSING"
+            ]
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateReportRequest": {
+        "type": "object",
+        "required": [
+          "type",
+          "start_date",
+          "end_date"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PAYMENTS",
+              "TRANSACTIONS",
+              "PAYOUTS",
+              "SETTLEMENTS",
+              "TRANSACTION_RECONCILIATION",
+              "COMMUNICATIONS"
+            ]
+          },
+          "start_date": {
+            "type": "string",
+            "minLength": 24,
+            "maxLength": 24,
+            "example": "2026-03-01T00:00:00.000Z",
+            "description": "Must be exactly 24 characters"
+          },
+          "end_date": {
+            "type": "string",
+            "minLength": 24,
+            "maxLength": 24,
+            "example": "2026-03-31T23:59:59.000Z",
+            "description": "Must be exactly 24 characters"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Comma-separated UUIDs for multiple accounts"
+          },
+          "payment_status": {
+            "type": "string",
+            "description": "Comma-separated: CREATED,SUCCEEDED,DECLINED,CANCELED,REFUNDED"
+          },
+          "transaction_type": {
+            "type": "string",
+            "description": "Comma-separated: PURCHASE,REFUND,CAPTURE,CANCEL,VERIFY"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Comma-separated ISO 4217 codes"
+          },
+          "country": {
+            "type": "string",
+            "description": "Comma-separated ISO 3166-1 codes"
+          }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROCESS",
+              "COMPLETED",
+              "FAILED"
+            ]
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CurrencyConversionRequest": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "amount",
+          "provider_data"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "object",
+            "required": [
+              "value",
+              "currency",
+              "currency_conversion"
+            ],
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "currency": {
+                "$ref": "#/components/schemas/Currency"
+              },
+              "currency_conversion": {
+                "type": "object",
+                "required": [
+                  "cardholder_currency"
+                ],
+                "properties": {
+                  "cardholder_currency": {
+                    "$ref": "#/components/schemas/Currency"
+                  }
+                }
+              }
+            }
+          },
+          "provider_data": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "enum": [
+                  "CIBC",
+                  "MERCADO_PAGO"
+                ]
+              }
+            }
+          },
+          "payment_method": {
+            "type": "object",
+            "properties": {
+              "vaulted_token": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        }
+      },
+      "CurrencyConversionResponse": {
         "type": "object",
         "properties": {
           "id": {
@@ -2809,20 +3445,31 @@
             "format": "uuid"
           },
           "amount": {
-            "$ref": "#/components/schemas/Amount"
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "currency_conversion": {
+                "type": "object",
+                "properties": {
+                  "cardholder_currency": {
+                    "type": "string"
+                  },
+                  "cardholder_amount": {
+                    "type": "number"
+                  },
+                  "rate": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
           },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "SUCCEEDED",
-              "FAILED"
-            ]
-          },
-          "reason": {
-            "type": "string"
-          },
-          "created_at": {
+          "expired_at": {
             "type": "string",
             "format": "date-time"
           }

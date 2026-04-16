@@ -1,8 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "3ds-setup",
-    "version": "1.0.2"
+    "title": "Create One-time Payment Token (Session-bound)",
+    "version": "1.0.2",
+    "description": "Generates a secure, temporary token for a specific checkout session. Use this endpoint for direct integrations."
   },
   "servers": [
     {
@@ -34,9 +35,9 @@
   "paths": {
     "/checkout/sessions/{checkout_session}/token": {
       "post": {
-        "description": "",
+        "description": "Creates a one-time token for a payment method associated with a checkout session.",
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -46,7 +47,10 @@
                       "type": "string",
                       "example": "dab106a6-9067-4418-ae43-6045663531dc"
                     },
-                    "vaulted_token": {},
+                    "vaulted_token": {
+                      "type": "string",
+                      "nullable": true
+                    },
                     "vault_on_success": {
                       "type": "boolean",
                       "example": false,
@@ -97,21 +101,36 @@
                           "type": "string",
                           "example": "CONOTOXIA SP Z O O"
                         },
-                        "issuer_code": {},
-                        "fingerprint": {},
+                        "issuer_code": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "fingerprint": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "country_code": {
                           "type": "string",
                           "example": "PL"
                         }
                       }
                     },
-                    "customer": {},
-                    "installment": {},
+                    "customer": {
+                      "type": "object",
+                      "nullable": true
+                    },
+                    "installment": {
+                      "type": "object",
+                      "nullable": true
+                    },
                     "country": {
                       "type": "string",
                       "example": "BR"
                     },
-                    "customer_session": {}
+                    "customer_session": {
+                      "type": "object",
+                      "nullable": true
+                    }
                   }
                 },
                 "examples": {
@@ -145,7 +164,7 @@
                 }
               }
             },
-            "description": "Created"
+            "description": "Success"
           }
         },
         "parameters": [
@@ -169,7 +188,50 @@
                 "properties": {
                   "payment_method": {
                     "type": "object",
-                    "properties": {}
+                    "required": [
+                      "type"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "CARD"
+                        ],
+                        "description": "Payment method type. Currently only CARD is supported for direct OTT creation."
+                      },
+                      "card": {
+                        "type": "object",
+                        "required": [
+                          "number",
+                          "expiration_month",
+                          "expiration_year",
+                          "security_code",
+                          "holder_name"
+                        ],
+                        "properties": {
+                          "number": {
+                            "type": "string",
+                            "description": "Card number (digits only)"
+                          },
+                          "expiration_month": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 12
+                          },
+                          "expiration_year": {
+                            "type": "integer",
+                            "description": "Last two digits of the year (e.g., 29)"
+                          },
+                          "security_code": {
+                            "type": "string",
+                            "description": "CVV/CVC code"
+                          },
+                          "holder_name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
                   }
                 },
                 "required": [
@@ -178,16 +240,8 @@
               },
               "examples": {
                 "Card Payment": {
-                  "summary": "Card Payment",
+                  "summary": "Card Payment Request",
                   "value": {
-                    "account_id": "{{account_id}}",
-                    "card_data": {
-                      "number": "4111111111111111",
-                      "expiration_month": 12,
-                      "expiration_year": 29,
-                      "security_code": "123",
-                      "holder_name": "John Doe"
-                    },
                     "payment_method": {
                       "type": "CARD",
                       "card": {
@@ -206,7 +260,8 @@
         }
       }
     }
-  },
+  }
+,
   "x-readme": {
     "headers": [
       {
