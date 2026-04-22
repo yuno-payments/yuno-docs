@@ -69,14 +69,12 @@ Before starting following the steps described in this guide, you need to:
 * [Build a route](/docs/routing#configuring-the-dynamic-routing) for the Yuno Testing Gateway to define it as your card payment provider. You find a step-by-step guide on how to do it in the Set up the [Yuno Testing Gateway section](/docs/yuno-testing-gateway#set-up-the-yuno-test-payment-gateway).
 * [Configure the checkout builder](/docs/checkout-builder) to make the Yuno Testing Gateway available.
 
-### Steps summary
-
-The create payment process normally requires finishing the four steps listed below.
+The create payment process normally requires finishing the two steps listed below.
 
 1. [Create a customer](/reference/create-customer)
-2. [Create a checkout session](/reference/create-checkout-session)
-3. [Create a One-Time Token](#3-create-a-one-time-token-ott)
-4. [Create the payment](/reference/create-payment)
+2. [Create the payment](/reference/create-payment)
+
+
 
 ### Create a payment
 
@@ -94,44 +92,26 @@ At the end of the create a customer process, you will receive an `id`, which ide
 
 If you are creating a payment for an existing user who was previously created and already has an `id`, you can skip this step.
 
-#### 2. Create a checkout session
 
-With a customer registered, you can create a checkout session. The checkout is when the customer finalizes their order and proceeds to pay for the products or services they wish to acquire. Therefore, at this stage, you will provide information regarding the payment amount and the location where it is being created.
 
-<Warning>
-**Route Conditions Filtering**
 
-When creating the route, you can define conditions that work as filters. If you have used country as a condition, check if the provided country when creating the checkout session is on the condition list. Otherwise, the card payment may not be processed by the Yuno Testing Gateway.
-</Warning>
-
-Use the [Create Checkout Session](/reference/create-checkout-session) endpoint. Notice that the `customer_id` required to perform the request is the `id` you received when creating the customer in [Step 1](/docs/yuno-testing-gateway#1-create-a-customer).
-
-From the request response to the  [Create Checkout Session](/reference/create-checkout-session) endpoint, you will receive the `checkout_session` information. It will be used to create the one-time token (OTT) and the payment on the next steps.
-
-#### 3. Create a one-time token (OTT)
-
-An OTT is a unique identifier Yuno generates to protect your customer privacy and security. It serves as an identifier for payment details and prevents sensitive data from being stored on your servers. Therefore, you can use OTTs to make it simple for your customers to repeat payments without re-entering their payment information, making the process more secure and convenient.
-
-You will always get the OTT from the Yuno SDK on your production application. However, to make it easier for you to test the payment creation process, Yuno provides the [Create OTT]() endpoint. You will need to provide the  `checkout_session` received in [Step 2](/docs/yuno-testing-gateway#2-create-a-checkout-session) and define the payment type as `CARD` through the `type` parameter.  In the response, you will receive the `one-time-token`, which you will use to create the payment.
-
-#### 4. Create a payment
+#### 2. Create a payment
 
 You will create a payment using the [Create Payment endpoint](/reference/create-payment). Below you find a deeper description of how to create a payment.
 
-#### 4.1 Provide the required attributes
+Provide customer-related information, including the `customer_payer` object that contains the `id` from Step 1.
 
-Provide customer-related information, including the `checkout_session` from Step 2 through `checkout.session` and `customer_payer` object that contains the `id` from Step 1.
 
 Certain objects are not mandatory when creating a payment. However, if you provide this information, the user’s payment experience will be enhanced. Be aware of the mandatory fields if you wish to provide this information.
 
-#### 4.2 Choose the capture type
+#### 2.1 Choose the capture type
 
 Yuno provides two options for payment capture:
 
 * Single-step: Authorization and capture are performed simultaneously. You only need to create the payment. The authorization and capture are performed automatically. For the single-step option, you need to send the `capture` attribute as `true` on the request.
 * Two steps: Authorization and capture are performed at different moments. After creating the payment, you will need to perform an authorization request and a capture request. If you wish to process the payment in Two Steps, send `capture` as `false` and after creating the payment, use the [Authorize Payment](/reference/authorize-payment) and the [Capture Authorization](/reference/capture-authorization) to complete the process.
 
-#### 4.3 Define the payment workflow
+#### 2.2 Define the payment workflow
 
 When creating the payment, you need to inform which integration from Yuno you are using. When creating a payment, you must inform it through the `workflow` attribute, which can be:
 
@@ -139,9 +119,8 @@ When creating the payment, you need to inform which integration from Yuno you ar
 * `DIRECT`: If you are using a back-to-back integration. To use this workflow, you need to be PCI compliant.
 * `REDIRECT`: If you are using a back-to-back integration and provider redirection.
 
-#### 4.4 Provide the payment method information
+Inform the payment method information through the object `payment_method`. Select the payment `type` equal to `CARD` based on the [Payment type list](/reference/payment-type-list). In addition, you need to add the card information on the object `detail.card`.
 
-Inform the payment method information through the object `payment_method`. Here, you will provide the `one-time-token` through the attribute `token` and select the payment `type` equal to `CARD`, the one informed in  [Step 3](/docs/yuno-testing-gateway#3-create-a-one-time-token-ott), based on the [Payment type list](/reference/payment-type-list). In addition, you need to add the card information on the object `detail.card`.
 
 You can use the payment description or specific card data to get the desired result when you test payment with Yuno Test Payment Gateway. The following sections describe in detail each approach.
 
@@ -151,11 +130,11 @@ You can use the payment description or specific card data to get the desired res
 Yuno system follows a sequential process, initially examining card data and subsequently evaluating the provided description. Consequently, if there is a disparity in the status indicated by the card data and the description for a testing payment, Yuno will prioritize and reflect the status associated with the card data.
 </Note>
 
-##### 4.4.1 - Payment Description
+##### 2.2.1 - Payment Description
 
 To get the desired payment result using the payment description, you need to define the expected result as the description of the payment you create. For example, if you are testing a payment and expect a successful result, the payment description should be "SUCCEEDED". You will find all available options in the [Transaction Codes](/reference/transaction#transaction-codes) section.
 
-##### 4.4.2 - Card detail
+##### 2.2.2 - Card detail
 
 Another option to get the expected payment results is to use one of the testing cards provided by Yuno. In the tables below, you find a list of cards and their data details to use when using the Yuno Testing Gateway. The **Transaction Response Code** column defines the returned payment status when you use the corresponding card.
 
@@ -565,7 +544,7 @@ Another option to get the expected payment results is to use one of the testing 
 </Accordion>
 </AccordionGroup>
 
-#### 4.4.3 - 3DS Test Cards
+#### 2.2.3 - 3DS Test Cards
 
 Use these cards and OTP codes to test 3DS flows through our preview environment using a Netcetera Demo Merchant (NDM) Simulator, which is configured to mock a Directory Server and/or ACS with predefined schemes and testing card numbers. It does not reach external test DS/ACS, it only helps complete 3DS flows for testing purposes.
 
