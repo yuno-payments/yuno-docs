@@ -1,0 +1,65 @@
+---
+title: "Register a dry-run provider event"
+description: "Register provider request, response, or webhook payloads for pre-production validation."
+openapi: "/openapi/dry-run/register-dry-run-provider-event.json POST /dry-run/provider-events"
+---
+
+Dry-run is a pre-production validation surface. It receives the API calls your integration sends to a payment provider — request, response, and webhook payloads — and correlates them with the equivalent Yuno public-API call you make **in parallel** with the `Dry-run: true` header set.
+
+Yuno then executes an automated validation pipeline that grades the quality of the public-API request against the provider payload: missing fields, shape mismatches, wrong enum values, unmapped metadata, and any other inconsistency that would cause the real payment to fail or behave differently once you go live.
+
+### How the pair works
+
+1. Your integration makes its normal call to the provider (e.g. Stripe, Adyen, dlocal).
+2. Your integration also calls the relevant Yuno public-API endpoint (e.g. `POST /v1/payments`) with the header **`Dry-run: true`**. Yuno accepts the request, does not route it to any provider, and stores it for comparison.
+3. Your integration calls `POST /v1/dry-run/provider-events` with the raw provider exchange (request, response, webhook) it just performed, correlated to the same `merchant_reference`.
+4. Yuno pairs the two records by `merchant_reference` + `account_id` and runs the validation pipeline. Results are available through the dashboard and via `GET /v1/dry-run/provider-events/{id}` (read API, separate reference).
+
+The outcome tells you whether the public-API request you are building today would produce the same provider behavior once Yuno starts routing it — without touching production money or sending a live transaction to the provider through Yuno.
+
+### When to use it
+
+- **Pre-launch**: certify your public-API integration against the provider behavior you already have working.
+- **Provider migrations**: verify a new provider accepts the fields Yuno forwards before switching traffic.
+- **Regression checks**: re-run dry-runs in CI to catch drift when your integration or the provider's contract changes.
+
+<Note>
+One call can carry up to **10** event entries (REQUEST, RESPONSE, and/or WEBHOOK), all tied to the same payment via `merchant_reference`. See the [correlation rules](#correlation).
+</Note>
+
+<Note>
+This endpoint has a companion: `POST /v1/payments` accepts a `Dry-run: true` request header that tells Yuno to validate instead of routing. Both legs must share the same `merchant_reference` so validation can pair them.
+</Note>
+
+<Note>
+Use `X-Idempotency-Key` for safe retries. Same key + same payload returns the original response; same key + different payload returns `409`.
+</Note>
+
+<Warning>
+**PCI boundary**
+
+`headers` and `body` are sent **base64-encoded**. Yuno base64-decodes on ingest, applies deterministic PAN/CVV/auth-token redaction, and persists only the redacted form. See [Security & redaction](/docs/security-and-compliance/dry-run-redaction).
+</Warning>
+
+---
+
+## Correlation
+
+- `merchant_reference` is always required and uniquely identifies the order on your side. Yuno uses it to resolve the event to a payment asynchronously when `payment_id` is not supplied.
+- `payment_id`, if supplied, is resolved immediately. If the id is unknown for your account the request returns `404 PAYMENT_NOT_FOUND`.
+- `provider_id` + `payment_method_type` together identify which integration surface the dry-run exercises (e.g. `stripe` + `CARD`).
+
+---
+
+## Limits
+
+| Limit | Value |
+|---|---|
+| Events per call | MAX 10 |
+| Decoded `headers` per event | MAX 64 KB |
+| Decoded `body` per event | MAX 1 MB |
+| Combined headers + body per event | MAX 1 MB |
+| Total batch size | MAX 5 MB |
+| Header count per event | MAX 200 |
+| Header value length | MAX 8 KB |
+| `X-Idempotency-Key` | MAX 64 chars, 24-hour replay window |
