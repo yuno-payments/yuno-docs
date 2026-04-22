@@ -1,0 +1,388 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno Dry-Run API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.y.uno/v1"
+    }
+  ],
+  "paths": {
+    "/dry-run/provider-events": {
+      "post": {
+        "operationId": "registerDryRunProviderEvent",
+        "summary": "Register provider request / response / webhook payloads",
+        "description": "Stores the HTTP traffic that the merchant exchanged directly with a payment\nprovider (request, response, and webhook) for correlation to a Yuno payment.\n",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Public API key. One of PUBLIC-API-KEY / PRIVATE-SECRET-KEY required."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Private secret key for server-to-server calls. One of PUBLIC-API-KEY / PRIVATE-SECRET-KEY required."
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "description": "Free-form string (MAX 64). 24-hour replay window."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DryRunRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dry-run registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DryRunResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency replay with a different payload"
+          },
+          "413": {
+            "description": "Payload or batch exceeds size limits"
+          },
+          "415": {
+            "description": "Unsupported Content-Type (must be application/json)"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DryRunRequest": {
+        "type": "object",
+        "required": [
+          "merchant_reference",
+          "provider_id",
+          "payment_method_type",
+          "events"
+        ],
+        "properties": {
+          "merchant_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 255,
+            "description": "Merchant-assigned identifier (MAX 255; MIN 3). Unique per account."
+          },
+          "payment_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Yuno payment UUID. If supplied, resolved immediately."
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Yuno account UUID — same shape as account_id in POST /v1/payments."
+          },
+          "provider_id": {
+            "type": "string",
+            "description": "Provider identifier. Allowed values aligned to the Yuno catalog.",
+            "enum": [
+              "STRIPE",
+              "ADYEN",
+              "CYBERSOURCE",
+              "BRAINTREE",
+              "NMI",
+              "CHECKOUT",
+              "WORLDPAY",
+              "PAYPAL",
+              "EBANX",
+              "GLOBALPAYMENTS",
+              "NUVEI",
+              "CIELO",
+              "MPGS",
+              "PRISMA",
+              "FISERV",
+              "WORLDLINE",
+              "ANTOM",
+              "ORBITAL",
+              "GOCARDLESS",
+              "AUTHORIZE_NET",
+              "SONY",
+              "CITI",
+              "EPX",
+              "HPAY",
+              "PAYSTACK",
+              "PLAID",
+              "SAFERPAY",
+              "SIKA_HEALTH",
+              "VALIDIFI",
+              "WEPAY",
+              "CARD_CONNECT",
+              "GMO_PG",
+              "MONERIS",
+              "BLUESNAP",
+              "QUICK_GATEWAY",
+              "TWENTYFOUR_HOUR_FITNESS",
+              "MERCHANT_ESOLUTIONS",
+              "NETS",
+              "FAT_ZEBRA",
+              "WINDCAVE",
+              "CHASE_MOBILITY",
+              "HELIX",
+              "ANB",
+              "AMAZON_PAY",
+              "OPAYO",
+              "IP_PAYMENTS",
+              "KLARNA",
+              "BILLDESK",
+              "WELLS_FARGO",
+              "SAGEPAY",
+              "PLANET"
+            ]
+          },
+          "payment_method_type": {
+            "type": "string",
+            "description": "Payment method exercised by this dry-run. Same vocabulary as payment_method.type in POST /v1/payments.",
+            "enum": [
+              "",
+              "CARD",
+              "APPLE_PAY",
+              "GOOGLE_PAY",
+              "PIX",
+              "PSE",
+              "OXXO",
+              "BOLETO",
+              "WALLET",
+              "BANK_TRANSFER",
+              "CRYPTO",
+              "CASH"
+            ]
+          },
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "description": "1–10 HTTP exchange entries for this dry-run (MAX 10; MIN 1).",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "required": [
+          "type",
+          "http_method",
+          "headers"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "REQUEST",
+              "RESPONSE",
+              "WEBHOOK"
+            ],
+            "description": "Which leg of the exchange this entry captures."
+          },
+          "http_method": {
+            "type": "string",
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "PATCH",
+              "DELETE"
+            ]
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Required for REQUEST and WEBHOOK. Origin of the provider endpoint — scheme + host + port (e.g. https://api.stripe.com)."
+          },
+          "endpoint": {
+            "type": "string",
+            "description": "Required for REQUEST and WEBHOOK. Path and query portion (e.g. /v1/charges?expand=customer)."
+          },
+          "http_status_code": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 100,
+            "maximum": 599,
+            "description": "Required for RESPONSE and WEBHOOK. Omit for REQUEST."
+          },
+          "headers": {
+            "type": "string",
+            "format": "byte",
+            "maxLength": 87400,
+            "description": "Base64-encoded header payload. Decoded content may be a JSON-serialized\n`{header-name: header-value}` map or the raw HTTP header block. Hard\ncap: 64 KB of decoded bytes per event.\n"
+          },
+          "body": {
+            "type": "string",
+            "format": "byte",
+            "maxLength": 1398000,
+            "description": "Base64-encoded body payload. Omit for empty bodies. Hard cap: 1 MB of\ndecoded bytes per event. For non-UTF-8 bodies (protobuf, gzip),\nbase64-encode the raw bytes directly.\n"
+          }
+        }
+      },
+      "DryRunResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "merchant_reference",
+          "provider_id",
+          "payment_method_type",
+          "events"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Public identifier of the dry-run registration (nano_id, 21 chars)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "REGISTERED"
+            ],
+            "description": "Lifecycle state."
+          },
+          "merchant_reference": {
+            "type": "string"
+          },
+          "payment_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "provider_id": {
+            "type": "string"
+          },
+          "payment_method_type": {
+            "type": "string"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "REQUEST",
+                    "RESPONSE",
+                    "WEBHOOK"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "messages",
+          "httpCode"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Stable error code.",
+            "enum": [
+              "NOT_AUTHENTICATED",
+              "AuthenticationFail",
+              "INVALID_PARAMETERS",
+              "TRAFFIC_LOG_VALIDATION_FAILED",
+              "TRAFFIC_LOG_MERCHANT_REFERENCE_REQUIRED",
+              "TRAFFIC_LOG_BODY_ENCODING_MISMATCH",
+              "TRAFFIC_LOG_IDEMPOTENCY_REPLAY",
+              "TRAFFIC_LOG_PAYLOAD_TOO_LARGE",
+              "TRAFFIC_LOG_UNSUPPORTED_CONTENT_TYPE",
+              "TRAFFIC_LOG_SEMANTIC_INVALID",
+              "PAYMENT_NOT_FOUND",
+              "RATE_LIMITED"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Human-readable error details."
+          },
+          "httpCode": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  }
+}
