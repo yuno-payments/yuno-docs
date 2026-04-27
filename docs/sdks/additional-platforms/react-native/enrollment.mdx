@@ -1,0 +1,65 @@
+---
+title: React Native Enrollment
+sidebarTitle: Enrollment
+description: Save customer payment methods for future use.
+---
+
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+
+<GenericOrientation />
+
+Yuno allows you to save payment methods (enrollment) either during a payment flow or as a standalone step.
+
+## Save during payment
+
+To save a card during a regular payment flow, include the `vault_on_success` flag when creating the payment on your backend.
+
+```typescript
+// When creating payment on backend, include vault_on_success flag
+async function createPayment(token: string, checkoutSession: string) {
+  await fetch('/api/payment/create', {
+    method: 'POST',
+    body: JSON.stringify({
+      one_time_token: token,
+      checkout_session: checkoutSession,
+      vault_on_success: true, // Save after successful payment
+    }),
+  });
+}
+```
+
+## Separate enrollment
+
+Use the enrollment flow to save a payment method without processing a payment.
+
+```typescript
+// 1. Create customer session on backend
+const customerSession = await createCustomerSession('cus_123');
+
+// 2. Set up listener
+const enrollmentSubscription = YunoSdk.onEnrollmentStatus((state) => {
+  if (state.status === 'SUCCEEDED') {
+    console.log('Card saved successfully');
+  }
+});
+
+// 3. Start enrollment flow
+await YunoSdk.enrollmentPayment({
+  customerSession: customerSession.id,
+  countryCode: 'US',
+  showPaymentStatus: true,
+});
+
+// 4. Clean up
+enrollmentSubscription.remove();
+```
+
+## Listeners
+
+Use `onEnrollmentStatus` to track the progress of the enrollment flow.
+
+| Status | Description |
+| ------ | ----------- |
+| `SUCCEEDED` | The payment method was saved successfully. |
+| `FAILED` | The enrollment failed. |
+| `CANCELED` | The user closed the enrollment flow. |
