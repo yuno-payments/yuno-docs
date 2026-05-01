@@ -87,3 +87,70 @@ Also, the merchant can use directly the [currency conversion service of Yuno](/r
 ```
 
 In order to use this, please **contact your technical account manager** to make sure that the information is set properly.
+
+## Request parameters
+
+The following fields are sent inside `amount.currency_conversion` on `POST /v1/payments`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `cardholder_currency` | `string` | Yes | Currency the cardholder is charged in. ISO 4217 alpha-3 code. Must differ from `amount.currency`. |
+| `cardholder_amount` | `decimal` | Yes | Total amount billed to the cardholder in `cardholder_currency`. Range: `0.0001` – `9,999,999,999`. |
+| `cardholder_accepted` | `boolean` | Yes | Cardholder's explicit consent to the DCC offer. `true` = accepted (charge in `cardholder_currency`). `false` = declined (payment proceeds in merchant currency). |
+| `rate` | `decimal` | Yes | Applied FX rate (markup included). Must be `> 0`. |
+| `rate_margin_percentage` | `decimal` | Yes | Markup added over the wholesale rate, expressed as a percentage. Range: `0` – `100`. |
+| `rate_source` | `string` | Conditional | Wholesale benchmark used for the quote. Required when `rate_margin_percentage > 0`. Free text, max 50 chars. Examples: `ECB`, `REUTERS`, `BLOOMBERG`, `PROVIDER_INTERNAL`. |
+| `provider` | `string` (enum) | Yes | DCC provider that issued the quote. See [Provider values](#provider-values). |
+| `description` | `string` | Optional | Verbatim disclosure text shown to the cardholder at the point of sale. Stored unchanged for audit. Max 4096 chars. |
+| `created_at` | `string` (ISO 8601) | Yes | Timestamp when the DCC provider issued the quote. Must be `≤ now()`. |
+| `expires_at` | `string` (ISO 8601) | Optional | Timestamp when the quote expires. Must be `> created_at`. The payment is rejected if `expires_at < now()` at validation time. |
+
+### Provider values
+
+`provider` accepts one of:
+
+| Value | DCC provider | Typical market |
+| --- | --- | --- |
+| `FEXCO` | Fexco Merchant Services | Universal — largest DCC provider; supported natively by MPGS |
+| `GLOBAL_BLUE` | Global Blue | Retail, tax-free shopping, tourism |
+| `PLANET` | Planet Payment | Retail, hospitality, tourism |
+| `EURONET` | Euronet / Pure Commerce | ATM DCC, LatAm, APAC |
+| `CURRENCYFAIR` | Currencyfair | E-commerce, digital |
+| `EUROPEAN_PAYMENT_SERVICES` | European Payment Services (EPS) | EU regional |
+| `OTHER` | Any provider not listed above | Long-tail or emerging-market providers |
+
+### Validation rules
+
+* All required fields must be present.
+* `provider` must match one of the allowed enum values exactly.
+* `cardholder_currency` must be a valid ISO 4217 alpha-3 code and must differ from `amount.currency`.
+* `created_at` and `expires_at` must be valid ISO 8601 timestamps.
+* `expires_at`, when provided, must be strictly greater than `created_at`.
+* `rate_source` is required whenever `rate_margin_percentage > 0`.
+
+### Request example
+
+```json
+POST /v1/payments
+
+{
+  "account_id": "4b8f9c10-5c6a-4b2d-9b7e-2c8d3a1b4f55",
+  "merchant_order_id": "order-2026-04-24-0001",
+  "amount": {
+    "value": 1000.00,
+    "currency": "USD",
+    "currency_conversion": {
+      "cardholder_currency": "QAR",
+      "cardholder_amount": 3640.00,
+      "cardholder_accepted": true,
+      "rate": 3.6400,
+      "rate_margin_percentage": 3.75,
+      "rate_source": "ECB",
+      "provider": "FEXCO",
+      "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+      "created_at": "2026-04-24T14:30:00Z",
+      "expires_at": "2026-04-24T15:30:00Z"
+    }
+  }
+}
+```
