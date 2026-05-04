@@ -81,9 +81,49 @@ For the full list of parameters, see the [Android SDK Common Reference](/docs/sd
 
 Yuno full-checkout for Android provides enrollment with pre-built UI, card enrollment, status handling, and basic error management. See [Requirements](#requirements) above.
 
-### Step 1: Create a customer
+### Step 1: Create a customer session and an enrollment payment method object
 
-Create a customer in Yuno's system using the [Create customer endpoint](/reference/customers/create-customer) before enrolling payment methods. This endpoint returns a `customer_id`. Then create a customer session using the [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session) endpoint; use the returned `customer_session` when calling the enrollment methods.
+Create a [customer session](/reference/customer-sessions-enrollment/create-customer-session) and an [enrollment payment method object](/reference/payment-methods-checkout/enroll-payment-method-checkout) on your **server-side** to keep private API keys secure; define which payment method the customer can enroll when creating the payment method object.
+
+#### Server-side example
+
+Create a customer session and enrollment payment method on your backend. This keeps your private API keys secure.
+
+```javascript
+// 1. Create customer session
+const customerSession = await fetch(
+  "https://api-sandbox.y.uno/v1/customers/sessions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      customer_id: "your-customer-id",
+      country: "US",
+    }),
+  }
+).then((res) => res.json());
+
+// 2. Create enrollment payment method
+const enrollment = await fetch(
+  `https://api-sandbox.y.uno/v1/customers/sessions/${customerSession.id}/payment-methods`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${PRIVATE_SECRET_KEY}`,
+    },
+    body: JSON.stringify({
+      type: "CARD",
+    }),
+  }
+).then((res) => res.json());
+
+// Return customerSession to your client
+return customerSession;
+```
 
 ### Step 2: Include the library in your project
 
