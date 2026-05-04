@@ -108,7 +108,7 @@
                           },
                           "cardholder_currency": {
                             "type": "string",
-                            "description": "The currency to make the conversion (ISO 4217 MAX 3; MIN 3). Must differ from `amount.currency`. This field is required if the 'currency_conversion' object is included in the request."
+                            "description": "Currency the cardholder is charged in. ISO 4217 alpha-3 code. Must differ from `amount.currency`. This field is required if the 'currency_conversion' object is included in the request."
                           },
                           "cardholder_amount": {
                             "type": "number",
@@ -118,6 +118,20 @@
                           "cardholder_accepted": {
                             "type": "boolean",
                             "description": "Cardholder's explicit consent to the DCC offer. `true` = accepted (charge in `cardholder_currency`); `false` = declined (payment proceeds in merchant currency)."
+                          },
+                          "provider_data": {
+                            "type": "object",
+                            "description": "Additional data from the provider",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Identification of the provider",
+                                "enum": [
+                                  "CIBC",
+                                  "MERCADO_PAGO"
+                                ]
+                              }
+                            }
                           },
                           "rate": {
                             "type": "number",
@@ -158,7 +172,7 @@
                           "expires_at": {
                             "type": "string",
                             "format": "date-time",
-                            "description": "Timestamp when the quote expires (ISO 8601). Must be greater than `created_at`. The payment is rejected if `expires_at` is in the past at validation time."
+                            "description": "Timestamp when the quote expires (ISO 8601). Must be > `created_at`. The payment is rejected if `expires_at < now()` at validation time."
                           }
                         }
                       }
@@ -4003,7 +4017,24 @@
                     "amount": {
                       "captured": 0,
                       "currency": "USD",
-                      "currency_conversion": null,
+                      "currency_conversion": {
+                        "code": "ccv_01HVK3Z9M2...",
+                        "cardholder_currency": "QAR",
+                        "cardholder_amount": 3640.00,
+                        "cardholder_accepted": true,
+                        "rate": 3.6400,
+                        "rate_margin_percentage": 3.75,
+                        "rate_source": "ECB",
+                        "provider": "FEXCO",
+                        "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+                        "created_at": "2026-04-24T14:30:00Z",
+                        "expires_at": "2026-04-24T15:30:00Z",
+                        "status": "APPLIED",
+                        "error_reason": null,
+                        "provider_data": {
+                          "acquirer_id": "MPGS_01"
+                        }
+                      },
                       "refunded": 0,
                       "value": 20000
                     },
@@ -10530,7 +10561,110 @@
                               "type": "string",
                               "example": "USD"
                             },
-                            "currency_conversion": {},
+                            "currency_conversion": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "description": "Unique identifier of the currency conversion rate query (UUID, 36 chars)."
+                                },
+                                "code": {
+                                  "type": "string",
+                                  "description": "Yuno's internal identifier for this DCC record. Example: `ccv_01HVK3Z9M2...`."
+                                },
+                                "cardholder_currency": {
+                                  "type": "string",
+                                  "description": "Currency of the cardholder (ISO 4217, 3 chars)."
+                                },
+                                "cardholder_amount": {
+                                  "type": "number",
+                                  "description": "Total amount billed to the cardholder in `cardholder_currency`."
+                                },
+                                "cardholder_accepted": {
+                                  "type": "boolean",
+                                  "description": "Indicates if the cardholder accepted the DCC offer."
+                                },
+                                "rate": {
+                                  "type": "number",
+                                  "description": "Applied FX rate (markup included)."
+                                },
+                                "rate_margin_percentage": {
+                                  "type": "number",
+                                  "description": "Markup added over the wholesale rate, expressed as a percentage."
+                                },
+                                "rate_source": {
+                                  "type": "string",
+                                  "description": "Wholesale benchmark used for the quote."
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "description": "DCC provider that issued the quote."
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "description": "Verbatim disclosure text shown to the cardholder."
+                                },
+                                "created_at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "description": "Timestamp when the DCC provider issued the quote."
+                                },
+                                "expires_at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "description": "Timestamp when the quote expires."
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "description": "Lifecycle state of the conversion.",
+                                  "enum": [
+                                    "QUOTED",
+                                    "APPLIED",
+                                    "EXPIRED",
+                                    "DECLINED",
+                                    "REVERSED",
+                                    "SERVICE_UNAVAILABLE",
+                                    "RATES_UNAVAILABLE",
+                                    "UNSUPPORTED_CARD",
+                                    "UNSUPPORTED_LOCAL_CARD",
+                                    "LESS_THAN_MINIMUM",
+                                    "NO_INFORMATION"
+                                  ]
+                                },
+                                "error_reason": {
+                                  "type": "string",
+                                  "description": "Populated only when DCC could not be applied.",
+                                  "enum": [
+                                    "INVALID_MERCHANT_CONFIGURATION",
+                                    "CURRENCY_NOT_CONFIGURED",
+                                    "PROVIDER_NOT_CONFIGURED",
+                                    "NOT_ELIGIBLE",
+                                    "BIN_UNKNOWN",
+                                    "BIN_NOT_ELIGIBLE",
+                                    "LOCAL_CARD",
+                                    "UNSUPPORTED_BRAND",
+                                    "UNSUPPORTED_FUNDING_TYPE",
+                                    "AMOUNT_BELOW_MINIMUM",
+                                    "AMOUNT_ABOVE_MAXIMUM",
+                                    "SERVICE_UNAVAILABLE",
+                                    "RATES_UNAVAILABLE",
+                                    "NO_INFORMATION_AVAILABLE",
+                                    "INVALID_REQUEST",
+                                    "UNAUTHORISED_REQUEST",
+                                    "MALFORMED_AMOUNT",
+                                    "MALFORMED_CURRENCY",
+                                    "RATE_EXPIRED",
+                                    "PROVIDER_ERROR",
+                                    "TIMEOUT",
+                                    "UNKNOWN"
+                                  ]
+                                },
+                                "provider_data": {
+                                  "type": "object",
+                                  "description": "Acquirer round-trip data returned by the underlying provider adapter."
+                                }
+                              }
+                            }
                             "refunded": {
                               "type": "integer",
                               "example": 0,
@@ -25344,7 +25478,110 @@
                               "type": "string",
                               "example": "USD"
                             },
-                            "currency_conversion": {},
+                            "currency_conversion": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "description": "Unique identifier of the currency conversion rate query (UUID, 36 chars)."
+                                },
+                                "code": {
+                                  "type": "string",
+                                  "description": "Yuno's internal identifier for this DCC record. Example: `ccv_01HVK3Z9M2...`."
+                                },
+                                "cardholder_currency": {
+                                  "type": "string",
+                                  "description": "Currency of the cardholder (ISO 4217, 3 chars)."
+                                },
+                                "cardholder_amount": {
+                                  "type": "number",
+                                  "description": "Total amount billed to the cardholder in `cardholder_currency`."
+                                },
+                                "cardholder_accepted": {
+                                  "type": "boolean",
+                                  "description": "Indicates if the cardholder accepted the DCC offer."
+                                },
+                                "rate": {
+                                  "type": "number",
+                                  "description": "Applied FX rate (markup included)."
+                                },
+                                "rate_margin_percentage": {
+                                  "type": "number",
+                                  "description": "Markup added over the wholesale rate, expressed as a percentage."
+                                },
+                                "rate_source": {
+                                  "type": "string",
+                                  "description": "Wholesale benchmark used for the quote."
+                                },
+                                "provider": {
+                                  "type": "string",
+                                  "description": "DCC provider that issued the quote."
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "description": "Verbatim disclosure text shown to the cardholder."
+                                },
+                                "created_at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "description": "Timestamp when the DCC provider issued the quote."
+                                },
+                                "expires_at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "description": "Timestamp when the quote expires."
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "description": "Lifecycle state of the conversion.",
+                                  "enum": [
+                                    "QUOTED",
+                                    "APPLIED",
+                                    "EXPIRED",
+                                    "DECLINED",
+                                    "REVERSED",
+                                    "SERVICE_UNAVAILABLE",
+                                    "RATES_UNAVAILABLE",
+                                    "UNSUPPORTED_CARD",
+                                    "UNSUPPORTED_LOCAL_CARD",
+                                    "LESS_THAN_MINIMUM",
+                                    "NO_INFORMATION"
+                                  ]
+                                },
+                                "error_reason": {
+                                  "type": "string",
+                                  "description": "Populated only when DCC could not be applied.",
+                                  "enum": [
+                                    "INVALID_MERCHANT_CONFIGURATION",
+                                    "CURRENCY_NOT_CONFIGURED",
+                                    "PROVIDER_NOT_CONFIGURED",
+                                    "NOT_ELIGIBLE",
+                                    "BIN_UNKNOWN",
+                                    "BIN_NOT_ELIGIBLE",
+                                    "LOCAL_CARD",
+                                    "UNSUPPORTED_BRAND",
+                                    "UNSUPPORTED_FUNDING_TYPE",
+                                    "AMOUNT_BELOW_MINIMUM",
+                                    "AMOUNT_ABOVE_MAXIMUM",
+                                    "SERVICE_UNAVAILABLE",
+                                    "RATES_UNAVAILABLE",
+                                    "NO_INFORMATION_AVAILABLE",
+                                    "INVALID_REQUEST",
+                                    "UNAUTHORISED_REQUEST",
+                                    "MALFORMED_AMOUNT",
+                                    "MALFORMED_CURRENCY",
+                                    "RATE_EXPIRED",
+                                    "PROVIDER_ERROR",
+                                    "TIMEOUT",
+                                    "UNKNOWN"
+                                  ]
+                                },
+                                "provider_data": {
+                                  "type": "object",
+                                  "description": "Acquirer round-trip data returned by the underlying provider adapter."
+                                }
+                              }
+                            },
                             "refunded": {
                               "type": "integer",
                               "example": 0,
