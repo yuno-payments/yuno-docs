@@ -36,52 +36,67 @@ In order to be able to use the currency conversion service you have two API impl
 
 #### Provider's rate service
 
-The merchant can use the currency conversion service of an external provider and send the corresponding information directly in the payment in Yuno. In order to use this, please contact your technical account manager to make sure that the information is set properly.
+The merchant can use the currency conversion service of an external provider and send the corresponding information directly in the payment in Yuno. 
 
 Example:
 
 ```json
  "amount": {
-        "currency": "COP",
-        "value": 5000, 
-        "currency_conversion": {
-            "provider_currency_conversion_id": "AAA01SADOIAJSDLAKSJM",
-            "cardholder_currency": "ARS",
-            "cardholder_amount": 1146.55    
-        }
-    }
-```
-
-#### Yuno's rate service
-
-Also, the merchant can use directly the [currency conversion service of Yuno](/reference/currency-conversion) that gets the information from the provider of their choosing and send in the creation of the payment the id of the conversion rate query and the amount data accordingly. In case of using this service, you will also need to send the id obtained in the payment request so we can link the information. Example:
-
-```json Rate service
-{
-  "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
-  "amount": {
+    "currency": "USD",
+    "value": 1000.00,
     "currency_conversion": {
-      "cardholder_currency": "USD",
-      "provider_data": {
-        "id": "CIBC"
-      }
-    },
-    "value": 10000,
-    "currency": "COP"
+      "cardholder_currency": "QAR",
+      "cardholder_amount": 3640.00,
+      "cardholder_accepted": true,
+      "rate": 3.6400,
+      "rate_margin_percentage": 3.75,
+      "rate_source": "ECB",
+      "provider": "FEXCO",
+      "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+      "created_at": "2026-04-24T14:30:00Z",
+      "expires_at": "2026-04-24T15:30:00Z"
+    }
   }
-}
 ```
 
-```json Payment
-    "amount": {
-        "currency": "COP",
-        "value": 5000, 
-        "currency_conversion": {
-            "id": "62fdcd6c-50ea-4640-985b-5656010fe5fD",
-            "cardholder_currency": "ARS",
-            "cardholder_amount": 1146.55    
-        }
-    },
-```
+## Parameter Reference
+
+The following table describes the parameters for the `amount.currency_conversion` object:
+
+### Request Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `cardholder_currency` | `string` | ✅ | Currency the cardholder is charged in. ISO 4217 alpha-3 code. |
+| `cardholder_amount` | `number` | ✅ | Total amount billed to the cardholder in `cardholder_currency`. |
+| `cardholder_accepted` | `boolean` | ✅ | Cardholder's explicit consent to the DCC offer. |
+| `rate` | `number` | ✅ | Applied FX rate (markup included). |
+| `rate_margin_percentage` | `number` | ✅ | Markup added over the wholesale rate, expressed as a percentage. |
+| `rate_source` | `string` | Conditional | Wholesale benchmark used for the quote. Required when `rate_margin_percentage > 0`. |
+| `provider` | `string` | ✅ | DCC provider that issued the quote (e.g., `FEXCO`, `PLANET`). |
+| `description` | `string` | Optional | Verbatim disclosure text shown to the cardholder. |
+| `created_at` | `string` | ✅ | Timestamp when the DCC provider issued the quote (ISO 8601). |
+| `expires_at` | `string` | Optional | Timestamp when the quote expires (ISO 8601). |
+
+### Webhook / Response Additions
+
+| Field | Type | Description |
+|---|---|---|
+| `code` | `string` | Yuno's internal identifier for this DCC record. |
+| `status` | `string` | Lifecycle state of the conversion (e.g., `APPLIED`, `DECLINED`). |
+| `error_reason` | `string` | Populated only when DCC could not be applied. |
+| `provider_data` | `object` | Acquirer round-trip data returned by the underlying provider adapter. |
+
+## Lifecycle Status
+
+| Value | Meaning |
+|---|---|
+| `QUOTED` | Quote received and validated; not yet applied to an authorization. |
+| `APPLIED` | Quote was applied to the authorization successfully. |
+| `EXPIRED` | Quote expired before it could be applied. |
+| `DECLINED` | Cardholder declined the DCC offer. |
+| `REVERSED` | Conversion was reversed as part of a cancellation or refund. |
 
 In order to use this, please **contact your technical account manager** to make sure that the information is set properly.
+
+
