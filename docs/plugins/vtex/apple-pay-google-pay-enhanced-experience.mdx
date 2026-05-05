@@ -1,0 +1,152 @@
+---
+title: "Apple Pay & Google Pay enhanced experience"
+description: "Enable a seamless wallet experience on VTEX checkout and unlock Apple Pay installments."
+---
+
+The Apple Pay & Google Pay enhanced experience is an optional add-on for stores already using the Yuno VTEX plugin. It improves the checkout experience for shoppers by removing an intermediate screen between the VTEX checkout and the device's native wallet sheet, which is known to reduce conversion on wallet payments.
+
+<div className="grid grid-cols-2 gap-4">
+  <Frame caption="Default experience (with intermediate screen)">
+    <img src="/images/plugins/vtex/image-20260422-170119.png" alt="Default wallet experience" />
+  </Frame>
+  <Frame caption="Enhanced experience (direct native sheet)">
+    <img src="/images/plugins/vtex/image-20260422-170132.png" alt="Enhanced wallet experience" />
+  </Frame>
+</div>
+
+## What it is
+
+By default, when a shopper selects Apple Pay or Google Pay, the Yuno Payment App opens an intermediate screen inside the VTEX checkout before the device's native confirmation sheet (Face ID, fingerprint, or PIN) appears. 
+
+The **enhanced experience** removes that intermediate screen: the Apple Pay and Google Pay buttons appear **directly inside the VTEX checkout payment step**, and tapping a button opens the device's native sheet immediately.
+
+This integration also unlocks the optional **Apple Pay installments** feature.
+
+## How it works
+
+When a shopper reaches the checkout, the Yuno SDK quietly prepares a payment session in the background. By the time they reach the payment step, the Apple Pay and Google Pay buttons appear instantly.
+
+*   **Fast confirmation**: Tapping a button opens the native wallet sheet immediately.
+*   **Auto-recalculation**: If the shopper changes their cart (adds an item, applies a coupon, changes shipping), the SDK recalculates the session automatically.
+*   **Error handling**: If a payment fails, the shopper can try again without reloading the page.
+
+---
+
+## Integration guide
+
+Setting up the enhanced experience involves adding a small JavaScript snippet to your VTEX checkout and finding the values to fill into it.
+
+<Steps>
+
+### 1. Add the snippet to your VTEX checkout
+
+The snippet is added to your store's `checkout6-custom.js` file from the VTEX dashboard.
+
+1.  In the **VTEX dashboard**, search for **Checkout** in the top bar.
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-1.png" alt="VTEX Checkout settings" />
+    </Frame>
+2.  Select the website your store uses (usually **Default**).
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-2.png" alt="Select website" />
+    </Frame>
+3.  Open the **Code** tab and select `checkout6-custom.js` from the file list on the right.
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-3.png" alt="Open checkout6-custom.js" />
+    </Frame>
+4.  Add the snippet below at the end of the file, then click **Save**.
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-snippet-4.png" alt="Save snippet" />
+    </Frame>
+
+```javascript
+(function () {
+  window.addEventListener('yuno-sdk-vtex-io-ready', function (event) {
+    var YunoVTEXIO = event.detail.YunoVTEXIO;
+    YunoVTEXIO.initialConfiguration({
+      paymentMethods: ['Google Pay', 'Apple Pay'],
+      affiliationName: 'YOUR_AFFILIATION_NAME'
+    });
+  });
+
+  var script = document.createElement('script');
+  script.src = 'https://sdk-web-vtex-io.y.uno/v1/main.js';
+  document.head.appendChild(script);
+})();
+```
+
+<Note>
+  Replace `YOUR_AFFILIATION_NAME` with the affiliation name from your Yuno provider configuration. In `paymentMethods`, list the wallets you want to enable — `'Apple Pay'`, `'Google Pay'`, or both.
+</Note>
+
+### 2. Find the affiliation name
+
+The `affiliationName` value is the same one you set when configuring Yuno as a payment provider.
+
+1.  In the **VTEX dashboard** search bar, type `providers` and select the **Providers** result.
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-affiliation-1.png" alt="VTEX Providers" />
+    </Frame>
+2.  Find the Yuno provider configured for this store and open it.
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-affiliation-2.png" alt="Select Yuno provider" />
+    </Frame>
+3.  In the provider's detail view, copy the value from the **Affiliation Name** field and use it in the snippet.
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-checkout-affiliation-3.png" alt="Copy affiliation name" />
+    </Frame>
+
+</Steps>
+
+---
+
+## Apple Pay installments
+
+Apple Pay installments is an optional feature within the enhanced experience that lets shoppers split their purchase into installments.
+
+### What shoppers see
+
+Once enabled, an **Installments** selector appears above the Apple Pay button. Tapping it opens a panel listing every installment option.
+
+<div className="grid grid-cols-2 gap-4">
+  <Frame caption="Installment selector">
+    <img src="/images/plugins/vtex/image-20260422-175803.png" alt="Installments selector" />
+  </Frame>
+  <Frame caption="Installment options panel">
+    <img src="/images/plugins/vtex/image-20260422-175811.png" alt="Options panel" />
+  </Frame>
+</div>
+
+If the plan includes interest, a **Payment details** panel appears below showing the breakdown (number of installments, financing cost, etc.).
+
+<Frame width="300">
+  <img src="/images/plugins/vtex/image-20260422-175858.png" alt="Financing details" />
+</Frame>
+
+### Eligibility rules
+
+Each installment plan configured in your Yuno dashboard can include optional limits:
+*   **Amount range**: Minimum and maximum order total.
+*   **Availability window**: Start and end date for the plan.
+
+If the order doesn't meet these rules, the selector is hidden and Apple Pay renders as a plain button.
+
+### How to enable
+
+To turn on Apple Pay installments, add the `appleInstallmentsMerchantReference` field to the snippet's `initialConfiguration` call:
+
+1.  In the **Yuno dashboard**, go to **Installments**.
+2.  Open the detail panel for the installment plan you want to offer.
+3.  Copy the **Merchant reference** value.
+    <Frame>
+      <img src="/images/plugins/vtex/image-20260429-133722.png" alt="Merchant reference" />
+    </Frame>
+4.  Update your snippet in `checkout6-custom.js`:
+
+```javascript
+YunoVTEXIO.initialConfiguration({
+  paymentMethods: ['Google Pay', 'Apple Pay'],
+  affiliationName: 'YOUR_AFFILIATION_NAME',
+  appleInstallmentsMerchantReference: 'YOUR_MERCHANT_REFERENCE' 
+});
+```
