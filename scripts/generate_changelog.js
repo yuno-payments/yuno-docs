@@ -25,6 +25,7 @@ const MONTHS = [
 ];
 
 function formatDate(dateStr) {
+  if (!dateStr) return 'Release date unavailable';
   const [year, month, day] = dateStr.split('-').map(Number);
   return `${MONTHS[month]} ${day}, ${year}`;
 }

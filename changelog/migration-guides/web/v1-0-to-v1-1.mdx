@@ -1,14 +1,70 @@
 ---
-title: "Web SDK: From v1.0 to v1.1"
-description: "Migration guide from Web SDK v1.0 to v1.1"
+title: "Web SDK: Migrating to v1.1"
+description: "How to upgrade from Web SDK v1.0 to v1.1.0"
 ---
 
-# Migrating from v1.0 to v1.1
+# Migrating to Web SDK v1.1
 
-Initial migration steps from v1.0 to v1.1.
+Version 1.1.0 makes `initialize()`, `mountCheckout()`, and `startCheckout()` asynchronous and introduces `continuePayment()` as a required step for dynamic payment flows (3DS, PayPal redirects, and similar).
 
-### 1. Basic Changes
-Update your dependencies to use the v1.1 bundle.
+## What changed
 
-### 2. Config Updates
-New parameters added to `YunoConfig`.
+- `Yuno.initialize()`, `yuno.mountCheckout()`, and `yuno.startCheckout()` now return Promises and must be awaited.
+- `continuePayment()` is now required when `sdk_action_required: true` is returned from the payment API.
+- Separate 3DS setup service calls are no longer needed — 3DS setup is now integrated into payment creation.
+
+## Steps
+
+### 1. Update the script tag
+
+```html
+<script src="https://sdk-web.y.uno/v1.1/main.js"></script>
+```
+
+### 2. Await all SDK method calls
+
+**Before:**
+```js
+const yuno = Yuno.initialize(publicApiKey, config)
+yuno.mountCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' })
+yuno.startCheckout({ checkoutSession, countryCode: 'US' })
+```
+
+**After:**
+```js
+const yuno = await Yuno.initialize(publicApiKey, config)
+await yuno.mountCheckout({ checkoutSession, elementSelector: '#root', countryCode: 'US' })
+await yuno.startCheckout({ checkoutSession, countryCode: 'US' })
+```
+
+### 3. Implement `continuePayment` for dynamic flows
+
+After creating a payment via your backend, check whether the SDK needs to continue the flow (e.g. 3DS challenge, PayPal redirect):
+
+```js
+// After payment creation
+if (paymentResponse.sdk_action_required) {
+  const result = await yuno.continuePayment({
+    checkoutSession,
+    showPaymentStatus: true,
+    yunoPaymentResult,
+    yunoError,
+    countryCode: 'US',
+  })
+  // result may contain a redirect object; handle appropriately
+}
+```
+
+If `sdk_action_required` is not `true`, no call to `continuePayment` is needed.
+
+### 4. Remove separate 3DS setup calls
+
+If your v1.0 integration called a separate 3DS setup service before payment creation, remove that call. In v1.1, 3DS data collection is handled automatically during payment creation.
+
+## Checklist
+
+- [ ] Updated script tag to v1.1
+- [ ] Added `await` to `Yuno.initialize()`, `yuno.mountCheckout()`, and `yuno.startCheckout()`
+- [ ] Implemented `continuePayment()` handling for dynamic flows
+- [ ] Confirmed `yunoPaymentResult()` callback is properly configured
+- [ ] Removed any standalone 3DS setup service calls
