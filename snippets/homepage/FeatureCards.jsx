@@ -344,12 +344,12 @@ export const FeatureCards = () => {
               <CardCta href="/changelog">View recent updates</CardCta>
               <ul className="list-none p-0 m-0">
                 <FeatureItem
-                   href="/docs/sdks/resources/release-notes/ios"
+                   href="/changelog/ios"
                   title="iOS release notes"
                   desc=" - Detailed information about iOS SDK updates and platform changes."
                 />
                 <FeatureItem
-                   href="/docs/sdks/resources/release-notes/android"
+                   href="/changelog/android"
                   title="Android release notes"
                   desc=" - Detailed information about Android SDK updates and platform changes."
                 />
