@@ -349,7 +349,7 @@ export const FeatureCards = () => {
                   desc=" - Detailed information about iOS SDK updates and platform changes."
                 />
                 <FeatureItem
-                   href="/docs/sdks/resources/release-notes/android"
+                   href="/changelog/android"
                   title="Android release notes"
                   desc=" - Detailed information about Android SDK updates and platform changes."
                 />
