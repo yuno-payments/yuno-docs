@@ -1,0 +1,123 @@
+---
+title: "Card verification results (AVS & CVV)"
+description: "Understand how Yuno surfaces issuer-side address (AVS), postal code, cardholder name, and CVV/CVC check results on every card payment."
+---
+
+When a card payment is authorized, the issuer can return the result of several verification checks the network ran against the card data the customer provided — most importantly **AVS** (Address Verification Service) and the **CVV / CVC** match. Yuno relays those results back to you on every card transaction so you can use them in your own risk, reconciliation, or retry logic.
+
+This guide covers:
+
+- What each verification result means
+- Where to find them in the API response and webhooks
+- How to interpret the codes
+- How to use them in your decision flow
+
+---
+
+## What gets checked
+
+| Check | What it verifies | Field |
+|---|---|---|
+| Street address (AVS) | First line of the billing address the customer entered matches what the issuer has on file. | `address_line_1_check` |
+| Postal / ZIP code (AVS) | The billing postal code matches the issuer's record. | `zip_code_check` |
+| Cardholder name | The cardholder name on the request matches the issuer's record. Coverage varies widely by network and country. | `card_holder_name_check` |
+| Card security code (CVV / CVC / CVV2) | The 3- or 4-digit security code on the card matches. | `card_security_code_check` |
+
+All four are issuer-driven: Yuno does not compute them, it forwards exactly what the acquirer / card network returns.
+
+---
+
+## Where to find them in the response
+
+The block lives on the **card detail** of the payment method, and is duplicated on each transaction that ran a verification:
+
+```
+payment.payment_method.payment_method_detail.card.verification_services
+payment.transactions.payment_method.detail.card.verification_services
+payment.transactions_history[].payment_method.detail.card.verification_services
+```
+
+It appears on the response of:
+
+- `POST /v1/payments` — Create payment
+- `GET /v1/payments/{id}` — Retrieve payment
+- `POST /v1/payments/{id}/capture`, `/refund`, `/cancel`, etc.
+
+It is also included in **payment webhook events** (`payment.created`, `payment.updated`, …), inside the same `payment_method.detail.card` path.
+
+### Example response (excerpt)
+
+```json
+{
+  "id": "p_01HZK3TJX5W8R7Q2V4N6Y8M1B3",
+  "status": "SUCCEEDED",
+  "payment_method": {
+    "type": "CARD",
+    "payment_method_detail": {
+      "card": {
+        "authorization_code": "123456",
+        "card_data": {
+          "brand": "VISA",
+          "iin": "411111",
+          "lfd": "1111"
+        },
+        "verification_services": {
+          "address_line_1_check":     "PASS",
+          "zip_code_check":           "PASS",
+          "card_holder_name_check":   "UNAVAILABLE",
+          "card_security_code_check": "PASS"
+        }
+      }
+    }
+  }
+}
+```
+
+If none of the checks were performed, the entire `verification_services` object is omitted from the response.
+
+---
+
+## Result values
+
+Yuno normalizes the result of every check returned by the issuer / acquirer into one of four canonical values. Each of the four fields takes the same enum:
+
+| Value | Meaning |
+|---|---|
+| `PASS` | The check ran and the value matched the issuer's record. |
+| `FAIL` | The check ran and the value did **not** match. |
+| `UNAVAILABLE` | The check could not be completed — the issuer is not certified, did not respond, or does not support the check in this region. |
+| `UNCHECKED` | The check was not performed for this transaction (e.g. the merchant did not send a CVV, or the provider does not run AVS). |
+
+---
+
+## How to use these results
+
+AVS and CVV results are **not** authorization decisions — the transaction can be approved even when the checks fail. They are advisory signals you can fold into your own risk strategy.
+
+A simple decision matrix many merchants use:
+
+| AVS (`address_line_1_check` / `zip_code_check`) | CVV (`card_security_code_check`) | Suggested action |
+|---|---|---|
+| `PASS` | `PASS` | Accept. |
+| `PASS` | `FAIL` | Soft decline / step-up — billing data looks right but the security code is wrong. |
+| `FAIL` | `PASS` | Review — billing-data mismatch is a strong fraud signal even with a correct CVV. |
+| `FAIL` | `FAIL` | Decline. |
+| `UNAVAILABLE` / `UNCHECKED` | any | Treat as unknown — fall back to other risk signals (3DS result, fraud-screening score). |
+
+Because verification coverage varies by issuer and region, any decisioning you build on top should:
+
+1. **Default to the authorization decision.** A `SUCCEEDED` transaction should ship unless your risk policy says otherwise.
+2. **Combine signals.** Pair CVV / AVS with `fraud_screening`, the `three_d_secure` result, and `provider_data.iso8583_response_code`.
+3. **Tolerate `UNAVAILABLE` and `UNCHECKED`.** Many cards in Latin America and EMEA do not run AVS at all.
+
+---
+
+## Sending verification data on the request
+
+You can also pass `verification_services` **into** Yuno on the create-payment request — for example, when relaying upstream auth results from a system of record. The same four fields are accepted under:
+
+```
+payment_method.payment_method_detail.card.verification_services
+```
+
+When provided on the request, Yuno forwards the values to the downstream provider where supported.
