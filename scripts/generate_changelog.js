@@ -53,6 +53,17 @@ function renderEntry(entry) {
     lines.push(`  *See also: ${linkParts.join(' · ')}*`);
   }
 
+  if (entry.example) {
+    lines.push('');
+    lines.push(`<Accordion title="${entry.example.title}">`);
+    lines.push('');
+    lines.push(`\`\`\`${entry.example.language || ''}`);
+    lines.push(entry.example.snippet);
+    lines.push('```');
+    lines.push('');
+    lines.push('</Accordion>');
+  }
+
   return lines;
 }
 
@@ -107,7 +118,7 @@ function renderRelease(release) {
   }
 
   for (const [groupName, groupEntries] of Object.entries(groups)) {
-    lines.push(`### ${groupName}`);
+    lines.push(`**${groupName}**`);
     lines.push('');
     for (const entry of groupEntries) {
       lines.push(...renderEntry(entry));
