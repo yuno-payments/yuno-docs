@@ -7,17 +7,15 @@ Creates a connection in `ACTIVE` status from credentials and configuration you f
 
 ### Request
 
-```
-POST /v1/connections
-```
-
-**Headers**
-
-`X-Idempotency-Key` is required. Re-sending the same key with the same body returns the cached response; same key with a different body returns `409 IDEMPOTENCY_REPLAY`.
-
-**Body**
-
-```json
+<CodeGroup>
+```bash cURL
+curl --request POST \
+     --url https://api.y.uno/v1/connections \
+     --header 'Content-Type: application/json' \
+     --header 'X-Idempotency-Key: <UUID>' \
+     --header 'private-secret-key: <YOUR_SECRET_KEY>' \
+     --header 'public-api-key: <YOUR_PUBLIC_KEY>' \
+     --data '
 {
   "merchant_connection_id": "adyen-us-prod-001",
   "provider_id": "ADYEN",
@@ -25,15 +23,7 @@ POST /v1/connections
   "payment_methods": ["CARD", "GOOGLE_PAY", "IDEAL"],
   "params": [
     { "param_id": "merchantAccount",        "value": "ACME_LIVE" },
-    { "param_id": "x-api-key",              "value": "AQEx…W4w==" },
-    { "param_id": "HMAC_KEY",               "value": "9F86…E2FB" },
-    { "param_id": "url-prefix",             "value": "acme-live" },
-    { "param_id": "transaction-identifier", "value": "MERCHANT_REFERENCE" },
-    { "param_id": "MERCHANT_NAME",          "value": "ACME Inc." },
-    { "param_id": "CAPTURE_DELAY_HOURS",    "value": "24" },
-    { "param_id": "recurring-model",        "value": "CardOnFile" },
-    { "param_id": "3DS_ENABLED",            "value": true },
-    { "param_id": "ORIGIN_URL",             "value": "https://checkout.acme.com" }
+    { "param_id": "x-api-key",              "value": "AQEx…W4w==" }
   ],
   "costs": [
     {
@@ -47,33 +37,86 @@ POST /v1/connections
     }
   ]
 }
+'
 ```
+</CodeGroup>
 
-**Top-level fields**
+#### Headers
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `merchant_connection_id` | string | yes | Your label for this connection. Must be unique within the account. Free-form (e.g., `"adyen-us-prod-001"`, `"stripe-eu-test"`). |
-| `provider_id` | string | yes | Yuno provider identifier (e.g., `"STRIPE"`, `"ADYEN"`). Must exist in the catalog. |
-| `flow_type` | enum | yes | `"PAYIN"`. |
-| `payment_methods[]` | string[] | yes | Subset of the provider's `payment_method_type[]` (from the catalog). |
-| `params[]` | object[] | yes | One `{param_id, value}` pair per parameter you're supplying. **Flat array** — even nested catalog params are submitted at the top level; Yuno resolves the hierarchy from the catalog tree. Required params (where the catalog has `optional: false`) must be present and non-empty. Activating a `boolean` parent (`"value": true`) makes its `optional: false` children required. |
-| `costs[]` | object[] | yes | Per-connection cost configuration. `currency` must be one supported by the provider. |
+<ParamField header="X-Idempotency-Key" type="string" required>
+  UUID, 24-hour scope. Re-sending the same key + body returns the cached response; same key with a different body returns a `409`.
+</ParamField>
 
-**Per `params[]` entry**
+#### Body
 
-| Field | Type | Description |
-|---|---|---|
-| `param_id` | string | The exact `param_id` from the catalog. Casing matters. |
-| `value` | string \| boolean \| number \| array | Match the `field_type` from the catalog. Numerics are submitted as JSON numbers (or strings if the catalog says `field_type: "string"`). For `field_type: "array"`, submit a JSON array. |
+<ParamField body="merchant_connection_id" type="string" required>
+  Your label for this connection. Must be unique within the account. Free-form (e.g., `"adyen-us-prod-001"`, `"stripe-eu-test"`).
+</ParamField>
 
-### Response — `201 Created`
+<ParamField body="provider_id" type="string" required>
+  Yuno provider identifier (e.g., `"STRIPE"`, `"ADYEN"`). Must exist in the catalog.
+</ParamField>
 
-```
-Location: /v1/connections/{connection_id}
-```
+<ParamField body="flow_type" type="enum" required>
+  Must be `"PAYIN"`.
+</ParamField>
 
-```json
+<ParamField body="payment_methods" type="string[]" required>
+  Subset of the provider's `payment_method_type[]` (from the catalog).
+</ParamField>
+
+<ParamField body="params" type="object[]" required>
+  One `{param_id, value}` pair per parameter you're supplying. **Flat array** — even nested catalog params are submitted at the top level; Yuno resolves the hierarchy from the catalog tree. 
+  
+  Required params (where the catalog has `optional: false`) must be present and non-empty. Activating a `boolean` parent (`"value": true`) makes its `optional: false` children required.
+  
+  <Expandable title="item">
+    <ParamField body="param_id" type="string" required>
+      The exact `param_id` from the catalog. Casing matters.
+    </ParamField>
+    <ParamField body="value" type="string | boolean | number | array" required>
+      Match the `field_type` from the catalog. Numerics are submitted as JSON numbers (or strings if the catalog says `field_type: "string"`). For `field_type: "array"`, submit a JSON array.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="costs" type="object[]" required>
+  Per-connection cost configuration. `currency` must be one supported by the provider.
+  <Expandable title="item">
+    <ParamField body="sort_number" type="integer">
+      Order of priority for the cost entry.
+    </ParamField>
+    <ParamField body="cost_name" type="string">
+      Label for the cost entry.
+    </ParamField>
+    <ParamField body="currency" type="string">
+      ISO 4217 currency code.
+    </ParamField>
+    <ParamField body="cost_values" type="object">
+        <Expandable title="successful | unsuccessful">
+            <ParamField body="fixed_fee" type="number">
+                Fixed fee amount.
+            </ParamField>
+            <ParamField body="percentage" type="number">
+                Percentage fee.
+            </ParamField>
+        </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+<ResponseField name="connection_id" type="string">
+  Unique identifier for the connection. **Save this value** to reference it from routing rules.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Current status (always `ACTIVE` on create).
+</ResponseField>
+
+<CodeGroup>
+```json Response Example
 {
   "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
   "merchant_connection_id": "adyen-us-prod-001",
@@ -83,37 +126,17 @@ Location: /v1/connections/{connection_id}
   "payment_methods": ["CARD", "GOOGLE_PAY", "IDEAL"],
   "params": [
     { "param_id": "merchantAccount",        "value": "ACME_LIVE" },
-    { "param_id": "x-api-key",              "value": "***" },
-    { "param_id": "HMAC_KEY",               "value": "***" },
-    { "param_id": "url-prefix",             "value": "acme-live" },
-    { "param_id": "transaction-identifier", "value": "MERCHANT_REFERENCE" },
-    { "param_id": "MERCHANT_NAME",          "value": "ACME Inc." },
-    { "param_id": "CAPTURE_DELAY_HOURS",    "value": "24" },
-    { "param_id": "recurring-model",        "value": "CardOnFile" },
-    { "param_id": "3DS_ENABLED",            "value": true },
-    { "param_id": "ORIGIN_URL",             "value": "https://checkout.acme.com" }
-  ],
-  "costs": [
-    {
-      "sort_number": 1,
-      "cost_name": "Transaction Fee",
-      "currency": "USD",
-      "cost_values": {
-        "successful":   { "fixed_fee": 0.12, "percentage": 1.2 },
-        "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
-      }
-    }
+    { "param_id": "x-api-key",              "value": "***" }
   ],
   "created_at": "2026-05-12T10:24:00Z",
   "updated_at": "2026-05-12T10:24:00Z"
 }
 ```
+</CodeGroup>
 
-**Server-added fields:** `connection_id`, `status` (always `ACTIVE` on create), `created_at`, `updated_at`.
-
-**Secret handling:** any param marked `secret: true` in the catalog (typically API keys, HMAC keys, etc.) is returned as `"value": "***"`. Your submitted secret is stored encrypted and never echoed back.
-
-**Save `connection_id`.** This is the value you'll pass into routing steps. There is no enumeration endpoint, so if you lose it you must look it up another way (dashboard, or any record you kept).
+<Note>
+**Secret handling:** any param marked `secret: true` in the catalog is returned as `"value": "***"`. Your submitted secret is stored encrypted and never echoed back.
+</Note>
 
 ### Errors
 
@@ -125,5 +148,4 @@ Location: /v1/connections/{connection_id}
 | `400` | `UNSUPPORTED_CURRENCY` | A `costs[].currency` isn't in the provider's supported list. |
 | `400` | `INVALID_PROVIDER_CREDENTIALS` | The credentials failed Yuno's pre-flight check against the provider. `details.provider_message` echoes the provider's reason. |
 | `409` | `CONNECTION_MERCHANT_ID_CONFLICT` | `merchant_connection_id` already exists in this account. |
-| `409` | `IDEMPOTENCY_REPLAY` | The idempotency key was replayed with a different body. |
 | `403` | `INSUFFICIENT_SCOPE` | API key missing `connections:write`. |
