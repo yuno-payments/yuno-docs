@@ -1,0 +1,38 @@
+---
+title: "Update a Routing"
+description: "Replaces the routing's full configuration."
+---
+
+Replaces the routing's full configuration. The body has the same shape as `POST /v1/routing` — the new `default_route` and `condition_sets[]` entirely supersede the previous live state. **There is no field-level merge.**
+
+`account_code` and `payment_method` are sticky to the `routing_id` — they're set at creation and cannot be changed by `PATCH`.
+
+### Request
+
+```
+PATCH /v1/routing/{routing_id}
+```
+
+**Headers**
+
+`X-Idempotency-Key` is required.
+
+**Body**
+
+Same shape as [Create a Routing](/reference/organizations/routing/create-routing).
+
+### Response — `200 OK`
+
+Full updated routing (same shape as `POST /v1/routing` response). `updated_at` is refreshed.
+
+### Errors
+
+| HTTP | `code` | When |
+|---|---|---|
+| `404` | `ROUTING_NOT_FOUND` | Unknown `routing_id`, or id belongs to a different account. |
+| `400` | `ROUTING_VALIDATION_FAILED` | Schema or rule violation. |
+| `400` | `ROUTING_PROVIDER_NOT_AVAILABLE` | A step references an inactive/unknown connection. |
+| `400` | `ROUTING_PAYMENT_METHOD_IMMUTABLE` | Body's `payment_method` doesn't match the routing's `payment_method`. |
+| `409` | `ROUTING_VERSION_CONFLICT` | Another concurrent `PATCH` won the publish race. Re-fetch via `GET` and retry. |
+| `409` | `ROUTING_IDEMPOTENCY_REPLAY` | Idempotency key replayed with different body. |
+| `403` | `INSUFFICIENT_SCOPE` | API key missing `routing:write`. |
