@@ -1,0 +1,137 @@
+---
+title: "Get Provider Catalog"
+description: "Returns the schema you need to fill in to create a connection for a given provider."
+openapi: "/openapi/organizations/connections/get-provider-catalog.json GET /connections/catalog/{provider_id}"
+---
+
+Returns the schema you need to fill in to create a connection for a given provider: which payment methods the provider supports, and the recursive list of parameters (credentials, toggles, choices) the provider requires.
+
+This is the discovery endpoint — call it first to find out what a provider expects, then use its response as the input to [Create a Connection](/reference/organizations/connections/create-connection).
+
+<Note>
+This endpoint is provider-scoped, not connection-scoped. It returns a schema, not your existing connections.
+</Note>
+
+### Path Parameters
+
+<ParamField path="provider_id" type="string" required>
+  Yuno provider identifier (`STRIPE`, `ADYEN`, `CYBERSOURCE`, …). Case-sensitive, UPPER_SNAKE_CASE.
+</ParamField>
+
+### Response
+
+<ResponseField name="payment_method_type" type="string[]">
+  The Yuno payment-method enums this provider supports. Pass any of these values into `payment_methods[]` on [Create a Connection](/reference/organizations/connections/create-connection).
+</ResponseField>
+
+<ResponseField name="params" type="object[]">
+  Recursive parameter schema.
+  <Expandable title="item">
+    <ResponseField name="param_id" type="string">
+      Identifier to echo back in `POST /v1/connections.params[].param_id`. Pass casing **verbatim**.
+    </ResponseField>
+    <ResponseField name="field_type" type="enum">
+      One of `string`, `boolean`, `array`, `number`.
+    </ResponseField>
+    <ResponseField name="description" type="string | object">
+      Display label. May be a plain string or a localization object `{ "EN": "...", "ES": "...", "PT": "..." }`.
+    </ResponseField>
+    <ResponseField name="placeholder" type="string | object">
+      Optional placeholder text. Same shape rules as `description`.
+    </ResponseField>
+    <ResponseField name="tooltip" type="string | null">
+      Optional helper text.
+    </ResponseField>
+    <ResponseField name="editable_field" type="boolean">
+      If `false`, value is fixed/read-only.
+    </ResponseField>
+    <ResponseField name="secret" type="boolean">
+      If `true`, the value is sensitive — stored encrypted and surfaced as `"***"` on subsequent reads.
+    </ResponseField>
+    <ResponseField name="allow_custom" type="boolean">
+      Only meaningful when `options[]` is present. If `true`, you may submit a free-form value alongside the catalog options (combobox semantics).
+    </ResponseField>
+    <ResponseField name="optional" type="boolean">
+      If `false`, you must supply a value.
+    </ResponseField>
+    <ResponseField name="is_hidden" type="boolean">
+      If `true`, the param exists but should not be rendered to end users.
+    </ResponseField>
+    <ResponseField name="sdk_required" type="boolean">
+      If `true`, the value is also required when configuring the Yuno SDK on the client side.
+    </ResponseField>
+    <ResponseField name="options" type="string[] | object[]">
+      Present when the field is a constrained enum. With `field_type = "string"` → single-select. With `field_type = "array"` → multi-select. Plain strings or `{value, params}` objects (the latter when an option carries its own nested params).
+    </ResponseField>
+    <ResponseField name="params" type="object[]">
+      Nested children — activated when this node's value is `true` (boolean parent) or matches one of the `options` (string/array parent).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl --request GET \
+     --url https://api.y.uno/v1/connections/catalog/{provider_id} \
+     --header 'private-secret-key: <YOUR_SECRET_KEY>' \
+     --header 'public-api-key: <YOUR_PUBLIC_KEY>'
+```
+
+```json Response Example
+{
+  "payment_method_type": ["CARD", "GOOGLE_PAY", "IDEAL", "PIX", "..."],
+  "params": [
+    {
+      "param_id": "merchantAccount",
+      "field_type": "string",
+      "description": "Account Code",
+      "editable_field": true,
+      "optional": false
+    },
+    {
+      "param_id": "x-api-key",
+      "field_type": "string",
+      "secret": true,
+      "description": "x-api-key",
+      "editable_field": true,
+      "optional": false
+    },
+    {
+      "param_id": "3DS_ENABLED",
+      "field_type": "boolean",
+      "description": "Enable 3DS validation flow",
+      "editable_field": true,
+      "optional": true,
+      "params": [
+        {
+          "param_id": "ORIGIN_URL",
+          "field_type": "string",
+          "description": "Your origin url",
+          "editable_field": true,
+          "optional": true
+        }
+      ]
+    }
+  ]
+}
+```
+</CodeGroup>
+
+### How to read a node
+
+| What you see | What it means |
+|---|---|
+| `field_type: "string"`, no `options[]` | Free-form text input. |
+| `field_type: "string"`, `secret: true` | Password / API key — write-only. Returned as `"***"` on `GET`. |
+| `field_type: "string"`, `options[]` present | Single-choice enum. The value you submit must be one of `options[]`. |
+| `field_type: "string"`, `options[]` present, `allow_custom: true` | Combobox. Submit one of `options[]` **or** a free-form value. |
+| `field_type: "boolean"` | Toggle. Setting it to `true` activates nested `params[]` and makes their `optional: false` children required. |
+| `field_type: "array"`, `options[]` present | Multi-select. Submit a JSON array whose elements are a subset of `options[]`. |
+| `field_type: "array"`, no `options[]` | Free-form list of strings. |
+
+### Errors
+
+| HTTP | `code` | When |
+|---|---|---|
+| `404` | `PROVIDER_NOT_FOUND` | The `provider_id` is not in Yuno's provider catalog. |
+| `403` | `INSUFFICIENT_SCOPE` | Your API key is missing the `connections:read` scope. |
