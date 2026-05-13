@@ -93,6 +93,9 @@ Creates a connection in `ACTIVE` status from credentials and configuration you f
 <ResponseField name="params" type="object[]">
   Echoed parameters. Sensitive values are masked as `***`.
 </ResponseField>
+<ResponseField name="costs" type="object[]">
+  Cost configuration for the connection.
+</ResponseField>
 <ResponseField name="created_at" type="string">
   ISO 8601 timestamp.
 </ResponseField>
@@ -102,21 +105,51 @@ Creates a connection in `ACTIVE` status from credentials and configuration you f
 
 <CodeGroup>
 ```bash cURL
-curl --request POST \
-     --url https://api.y.uno/v1/connections \
-     --header 'Content-Type: application/json' \
-     --header 'X-Idempotency-Key: <UUID>' \
-     --header 'private-secret-key: <YOUR_SECRET_KEY>' \
-     --header 'public-api-key: <YOUR_PUBLIC_KEY>' \
-     --data '
+curl -X POST 'https://api.y.uno/v1/connections' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Idempotency-Key: <UUID>' \
+  -d '{
+    "merchant_connection_id": "stripe-us-prod-001",
+    "provider_id": "STRIPE",
+    "flow_type": "PAYIN",
+    "payment_methods": ["CARD", "GOOGLE_PAY", "APPLE_PAY"],
+    "params": [
+      { "param_id": "API_KEY",           "value": "sk_live_..." },
+      { "param_id": "PUBLISHABLE_KEY",   "value": "pk_live_..." },
+      { "param_id": "INTEGRATION_TYPE",  "value": "PAYMENT_INTENTS" },
+      { "param_id": "3DS_ENABLED",       "value": true },
+      { "param_id": "ORIGIN_URL",        "value": "https://checkout.acme.com" }
+    ],
+    "costs": [
+      {
+        "sort_number": 1,
+        "cost_name": "Transaction Fee",
+        "currency": "USD",
+        "cost_values": {
+          "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
+          "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+        }
+      }
+    ]
+  }'
+```
+
+```json 201 Created — Stripe
 {
-  "merchant_connection_id": "adyen-us-prod-001",
-  "provider_id": "ADYEN",
+  "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+  "merchant_connection_id": "stripe-us-prod-001",
+  "provider_id": "STRIPE",
+  "status": "ACTIVE",
   "flow_type": "PAYIN",
-  "payment_methods": ["CARD", "GOOGLE_PAY", "IDEAL"],
+  "payment_methods": ["CARD", "GOOGLE_PAY", "APPLE_PAY"],
   "params": [
-    { "param_id": "merchantAccount",        "value": "ACME_LIVE" },
-    { "param_id": "x-api-key",              "value": "AQEx…W4w==" }
+    { "param_id": "API_KEY",             "value": "***" },
+    { "param_id": "PUBLISHABLE_KEY",     "value": "pk_live_..." },
+    { "param_id": "INTEGRATION_TYPE",    "value": "PAYMENT_INTENTS" },
+    { "param_id": "3DS_ENABLED",         "value": true },
+    { "param_id": "ORIGIN_URL",          "value": "https://checkout.acme.com" }
   ],
   "costs": [
     {
@@ -124,29 +157,67 @@ curl --request POST \
       "cost_name": "Transaction Fee",
       "currency": "USD",
       "cost_values": {
-        "successful":   { "fixed_fee": 0.12, "percentage": 1.2 },
+        "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
         "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
       }
     }
-  ]
+  ],
+  "created_at": "2026-05-12T10:24:00Z",
+  "updated_at": "2026-05-12T10:24:00Z"
 }
-'
 ```
 
-```json Response
+```json 201 Created — Adyen
 {
-  "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
-  "merchant_connection_id": "adyen-us-prod-001",
+  "connection_id": "b2c4d5e6-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+  "merchant_connection_id": "adyen-eu-prod-001",
   "provider_id": "ADYEN",
   "status": "ACTIVE",
   "flow_type": "PAYIN",
   "payment_methods": ["CARD", "GOOGLE_PAY", "IDEAL"],
   "params": [
     { "param_id": "merchantAccount",        "value": "ACME_LIVE" },
-    { "param_id": "x-api-key",              "value": "***" }
+    { "param_id": "x-api-key",              "value": "***" },
+    { "param_id": "HMAC_KEY",               "value": "***" },
+    { "param_id": "url-prefix",             "value": "acme-live" },
+    { "param_id": "transaction-identifier", "value": "MERCHANT_REFERENCE" },
+    { "param_id": "MERCHANT_NAME",          "value": "ACME Inc." },
+    { "param_id": "CAPTURE_DELAY_HOURS",    "value": "24" },
+    { "param_id": "recurring-model",        "value": "CardOnFile" },
+    { "param_id": "3DS_ENABLED",            "value": true },
+    { "param_id": "ORIGIN_URL",             "value": "https://checkout.acme.com" }
   ],
-  "created_at": "2026-05-12T10:24:00Z",
-  "updated_at": "2026-05-12T10:24:00Z"
+  "costs": [
+    {
+      "sort_number": 1,
+      "cost_name": "Transaction Fee",
+      "currency": "EUR",
+      "cost_values": {
+        "successful":   { "fixed_fee": 0.12, "percentage": 1.2 },
+        "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+      }
+    }
+  ],
+  "created_at": "2026-05-12T10:31:42Z",
+  "updated_at": "2026-05-12T10:31:42Z"
+}
+```
+
+```json 400 — Missing Param
+{
+  "type": "validation_error",
+  "code": "MISSING_REQUIRED_PARAM",
+  "message": "Required param 'API_KEY' is missing for provider 'STRIPE'",
+  "details": { "provider_id": "STRIPE", "param_id": "API_KEY" }
+}
+```
+
+```json 409 — Conflict
+{
+  "type": "conflict",
+  "code": "CONNECTION_MERCHANT_ID_CONFLICT",
+  "message": "A connection with merchant_connection_id 'stripe-us-prod-001' already exists in this account",
+  "details": { "merchant_connection_id": "stripe-us-prod-001" }
 }
 ```
 </CodeGroup>
