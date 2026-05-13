@@ -1,0 +1,201 @@
+---
+title: "Headless mode"
+description: "Migrate Web Headless integrations (yuno.apiClientPayment + yuno.secureFields) to the unified Transaction API."
+---
+
+Headless was a pure-tokenization client: the merchant collected card data in their own UI (typically using PCI-compliant `secureFields` iframes), generated a token, and made their own backend call to create the payment.
+
+In the unified API the same scenario maps to **non-seamless headless** mode: pass the pre-collected data inside `paymentMethod.data` on `start()`, override [`createPayment`](/docs/universal-sdk/controllers/create-payment) to POST to your backend, and let the SDK orchestrate tokenization, 3DS, and status polling automatically.
+
+| Before | After |
+|---|---|
+| `yuno.apiClientPayment({ checkoutSession })` + manual backend call | `yuno.transaction({ …, createPayment }).start({ paymentMethod: { type, data } })` |
+| `yuno.secureFields({ countryCode, checkoutSession }).create(...).generateToken(...)` | Pass card data via `paymentMethod.data` (PaymentMethodData) — SDK tokenizes internally |
+| Manual 3DS handling via separate calls | Automatic — SDK handles 3DS once `createPayment` resolves |
+
+## Side-by-side — Headless API Client
+
+<CodeGroup>
+
+```typescript Before. Headless (apiClientPayment)
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const apiClientPayment = await yuno.apiClientPayment({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+})
+
+// Merchant collects card data in their own UI, then:
+const oneTimeToken = await apiClientPayment.generateToken({
+    cardHolderName: 'John Doe',
+    cardNumber: '4111111111111111',
+    cvv: '123',
+    expirationMonth: 12,
+    expirationYear: 2028,
+})
+
+// Merchant POSTs to their backend
+const paymentId = await myBackend.pay({ oneTimeToken, checkoutSession })
+
+// If 3DS needed, merchant calls SDK again to challenge — bespoke per integration
+```
+
+```typescript After. Unified Transaction (non-seamless headless)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = yuno.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    createPayment: async (token) => {
+        await myBackend.pay({ token: token.token })
+    },
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+await transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        data: {
+            type: 'CARD',
+            holderName: 'John Doe',
+            number: '4111111111111111',
+            securityCode: '123',
+            expirationMonth: 12,
+            expirationYear: 2028,
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+## Side-by-side — Secure Fields
+
+For PCI-compliant collection where the merchant must not touch raw PAN, the legacy `secureFields` flow stays — but tokenization output now feeds the unified `start()` instead of a separate `apiClientPayment` instance.
+
+<CodeGroup>
+
+```typescript Before. Secure Fields headless
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const secureFields = await yuno.secureFields({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    installmentEnable: true,
+})
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).render('#pan')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).render('#cvv')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).render('#exp')
+
+document.getElementById('pay').addEventController('click', async () => {
+    const ott = await secureFields.generateTokenWithInformation({
+        cardHolderName: 'John Doe',
+    })
+    await myBackend.pay({ oneTimeToken: ott.token, checkoutSession })
+    yuno.continuePayment()
+})
+```
+
+```typescript After. Unified Transaction (headless via showView + secure fields)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = yuno.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    showView: (view, controls, step) => {
+        document.querySelector('#card-form')!.appendChild(view)
+        document.getElementById('pay')!.onclick = () => controls.onSubmit()
+    },
+    createPayment: async (token) => {
+        await myBackend.pay({ token: token.token })
+    },
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+await transaction.start({ paymentMethod: { type: 'CARD' } })
+```
+
+</CodeGroup>
+
+The SDK provides the secure iframes inside the view it delivers to `showView`. You embed the view, wire your own submit button to `controls.onSubmit()`, and the SDK handles tokenization + 3DS internally before invoking `createPayment`.
+
+## Field mapping
+
+| Before (Headless) | After (unified) | Notes |
+|---|---|---|
+| `yuno.apiClientPayment({ checkoutSession, countryCode })` | `yuno.transaction({ checkoutSession, countryCode, createPayment })` | The factory consolidates the API-client + Transaction surface. |
+| `apiClientPayment.generateToken(cardData)` | `transaction.start({ paymentMethod: { type: 'CARD', data: CardData } })` | Data goes inline on `start()`. |
+| `apiClientPayment.getThreeDSecureChallenge(...)` (rare) | *(removed — automatic)* | SDK orchestrates 3DS internally once `createPayment` resolves. |
+| `yuno.secureFields({ checkoutSession })` + `.create(...).render(...)` + `.generateTokenWithInformation(...)` | `showView` + SDK-provided secure iframes inside the delivered view | The SDK still uses secure iframes under the hood; you no longer assemble them yourself. |
+| `yuno.continuePayment()` after backend POST | *(automatic)* | Resolve the `createPayment` Promise and the SDK continues. |
+
+### CardData mapping
+
+The legacy generateToken arg shape:
+
+```typescript
+{
+    cardHolderName: string
+    cardNumber: string
+    cvv: string
+    expirationMonth: number
+    expirationYear: number
+}
+```
+
+becomes the unified `PaymentMethodData` shape:
+
+```typescript
+{
+    type: 'CARD'
+    holderName: string
+    number: string
+    securityCode: string
+    expirationMonth: number
+    expirationYear: number
+}
+```
+
+| Before field | After field |
+|---|---|
+| `cardHolderName` | `holderName` |
+| `cardNumber` | `number` |
+| `cvv` | `securityCode` |
+| `expirationMonth` | `expirationMonth` |
+| `expirationYear` | `expirationYear` |
+
+For vaulted cards, pass `vaultedToken` on `paymentMethod` and only `securityCode` on `data`:
+
+```typescript
+await transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        vaultedToken: 'tok_saved_abc',
+        data: { type: 'CARD', securityCode: '123', vaultedToken: 'tok_saved_abc' },
+    },
+})
+```
+
+## Behavior changes
+
+- **3DS is automatic.** Headless used to require bespoke 3DS handling per integration. The unified API does it internally once `createPayment` resolves.
+- **`continuePayment()` is gone.** The Promise contract drives progression.
+- **Secure-fields composition.** Instead of assembling per-field iframes yourself, the SDK delivers a single composed form via `showView`. PCI scope is the same (raw PAN never touches your code).
+- **No separate `apiClientPayment` surface.** One factory: `yuno.transaction(config)`.
+
+## Checklist
+
+- [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
+- [ ] Replace `yuno.apiClientPayment(...)` and `yuno.secureFields(...)` with `yuno.transaction(...)`.
+- [ ] Provide `createPayment` on `TransactionConfig` to POST to your backend.
+- [ ] If you collected card data in your own UI: pass it via `paymentMethod.data` on `start()` (rename the fields per the mapping table above).
+- [ ] If you used `secureFields` for PCI-compliant collection: wire `showView` and embed the SDK-provided view; call `controls.onSubmit()` from your button.
+- [ ] Drop manual 3DS challenge calls; drop `yuno.continuePayment()`.
+- [ ] Re-run your sandbox test suite.
+
+## Related
+
+- [`createPayment`](/docs/universal-sdk/controllers/create-payment). The mode-flip callback.
+- [`PaymentMethodData`](/docs/universal-sdk/reference/transaction-data). Per-method headless data shape.
+- [`OneTimeToken`](/docs/universal-sdk/reference/one-time-token). Token payload sent to your backend.

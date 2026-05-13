@@ -1,0 +1,191 @@
+---
+title: "Headless mode"
+description: "Migrate Android Headless integrations (Yuno.apiClientPayment + generateToken) to the unified Transaction API."
+---
+
+Headless was a pure-tokenization client: the merchant collected card data in their own UI, called `apiClient.generateToken(collectedData, context)`, received a token, and then made their own backend call to create the payment (and optionally triggered 3DS via `apiClient.getThreeDSecureChallenge(…)`).
+
+In the unified API the same scenario maps to **non-seamless headless** mode: pass the pre-collected data inside `transactionData` on the `PaymentMethodSelected`, override [`createPayment`](/docs/universal-sdk/controllers/create-payment) to create the payment from your backend, and let the SDK orchestrate tokenization, 3DS, and status polling automatically. The merchant no longer has to call a separate 3DS endpoint.
+
+| Before | After |
+|---|---|
+| `Yuno.apiClientPayment(checkoutSession, countryCode, context)` → `ApiClientPayment` | `Transaction(config).start(paymentSelected)` |
+| `apiClient.generateToken(collectedData, context)` | Override `createPayment(token)` |
+| `apiClient.getThreeDSecureChallenge(context, checkoutSession)` | *(removed. SDK handles 3DS automatically)* |
+| Free-form callbacks | `TransactionController` |
+
+## Side-by-side
+
+<CodeGroup>
+
+```kotlin Before. Headless mode
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.ApiClientPayment
+import com.yuno.sdk.ApiClientPayment.Companion.generateToken
+import com.yuno.sdk.ApiClientPayment.Companion.getThreeDSecureChallenge
+import com.yuno.sdk.payments.TokenCollectedData
+import com.yuno.sdk.payments.PaymentMethod
+import com.yuno.sdk.payments.CardData
+import com.yuno.sdk.payments.Detail
+
+class CheckoutActivity : ComponentActivity() {
+
+    private lateinit var apiClient: ApiClientPayment
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup
+        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+
+        // 2. Create the headless client
+        apiClient = Yuno.apiClientPayment(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            context = this,
+        )
+    }
+
+    // 3. Tokenize from your own form, then create the payment on your backend yourself
+    suspend fun pay(number: String, cvv: String, expMonth: Int, expYear: Int, holder: String) {
+        val data = TokenCollectedData(
+            checkoutSession = "session-from-backend",
+            paymentMethod = PaymentMethod(
+                type = "CARD",
+                vaultedToken = null,
+                card = CardData(
+                    save = false,
+                    detail = Detail(
+                        number = number,
+                        securityCode = cvv,
+                        expirationMonth = expMonth,
+                        expirationYear = expYear,
+                        holderName = holder,
+                    ),
+                ),
+            ),
+        )
+
+        val result = apiClient.generateToken(data, context = this)
+        val token = result["token"] as? String ?: return
+
+        createPaymentOnBackend(token)   // your code
+    }
+
+    // 4. Optional: separately trigger 3DS if your backend asked for it
+    fun continue3ds() {
+        apiClient.getThreeDSecureChallenge(context = this).observe(this) { challenge ->
+            // present(challenge.url) in your own WebView
+        }
+    }
+}
+```
+
+```kotlin After. Non-seamless headless
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.Transaction
+import com.yuno.sdk.TransactionConfig
+import com.yuno.sdk.TransactionController
+import com.yuno.sdk.PaymentMethodSelected
+import com.yuno.sdk.PaymentStatus
+import com.yuno.sdk.TransactionData
+import com.yuno.sdk.CardTransactionData
+import com.yuno.sdk.OneTimeToken
+
+class CheckoutActivity : ComponentActivity(), TransactionController {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Initialize once at app startup
+        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    // 2. Override createPayment. The SDK will wait for this suspend fun to return before
+    //    querying status. Returning normally signals "payment created, please continue."
+    //    Throwing stops the flow (the SDK will not invoke onStatus).
+    override suspend fun createPayment(token: OneTimeToken) {
+        createPaymentOnBackend(token["token"] as? String ?: "")
+    }
+
+    override fun onStatus(status: PaymentStatus) {
+        // status.value: "SUCCEEDED" / "REJECT" / ...
+    }
+
+    // 3. Build TransactionData from your own form, then start
+    fun pay(number: String, cvv: String, expMonth: Int, expYear: Int, holder: String) {
+        val paymentSelected = PaymentMethodSelected(
+            paymentMethodType = "CARD",
+            transactionData = TransactionData(
+                card = CardTransactionData(
+                    number = number,
+                    securityCode = cvv,
+                    expirationMonth = expMonth,
+                    expirationYear = expYear,
+                    holderName = holder,
+                ),
+            ),
+        )
+
+        val config = TransactionConfig(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            controller = this,
+        )
+
+        Transaction(config = config)
+            .start(paymentSelected = paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+## What changed conceptually
+
+In Headless the merchant did three things explicitly: tokenize, create the payment on their backend, and trigger 3DS. In the unified API only **payment creation** stays on the merchant side. Tokenization and 3DS are handled by the SDK as part of the `Transaction` lifecycle. You signal "payment created, please continue" by returning from `createPayment`; the SDK then queries the payment status and finishes the flow.
+
+If your old integration showed the 3DS challenge inside your own UI (your own WebView around `getThreeDSecureChallenge(…).url`), you no longer need to. The SDK presents the 3DS WebView full-screen automatically. This is fixed — [`showView`](/docs/universal-sdk/controllers/show-view) only fires for non-WebView action views (e.g. a QR code), not for 3DS challenges or redirects.
+
+## Field mapping
+
+| Before (Headless) | After (unified) | Notes |
+|---|---|---|
+| `Yuno.apiClientPayment(checkoutSession, countryCode, context)` | `Transaction(config)` | The transaction object replaces the headless client. |
+| `TokenCollectedData.checkoutSession` | `TransactionConfig.checkoutSession` | Moves to config. |
+| `PaymentMethod.type` | `PaymentMethodSelected.paymentMethodType` | Moves to the parent object. |
+| `PaymentMethod.vaultedToken` | `PaymentMethodSelected.vaultedToken` | Same. |
+| `PaymentMethod.card` (`CardData` with nested `Detail`) | `TransactionData.card` (`CardTransactionData`) | Same fields, namespaced under `transactionData`, flat (no `detail` wrapper). |
+| `PaymentMethod.customer` | `TransactionData.customer` | Moves under `transactionData`. |
+| `apiClient.generateToken(data, context)` (suspend, returns `Map<String, Any?>`) | Override `createPayment(token: OneTimeToken)` | The SDK invokes your handler with the token; you create the payment from your backend and return. |
+| `apiClient.getThreeDSecureChallenge(context, checkoutSession)` | *(removed)* | The SDK runs 3DS internally and presents the WebView full-screen. Not customizable via `showView`. |
+| Result returned from `generateToken` (`Map<String, Any?>`) | `OneTimeToken` (still a `Map<String, Any>`) | Cross-platform parity. See [`OneTimeToken` reference](/docs/universal-sdk/reference/one-time-token). |
+| *(no result controller)* | `onStatus(status: PaymentStatus)` | New. The SDK now drives the full lifecycle and reports the final status here. |
+
+## Behavior changes
+
+<Warning>
+**3DS is now SDK-driven.** Headless required you to call `getThreeDSecureChallenge(…)` and present the WebView yourself. The unified API runs 3DS automatically as part of the transaction and presents the WebView full-screen. This is fixed — overriding [`showView`](/docs/universal-sdk/controllers/show-view) does not change it (showView only fires for non-WebView action views like QR codes).
+</Warning>
+
+- **`createPayment` is a suspend function.** Return when your backend has finished creating the payment. If it throws, the SDK stops the flow and `onStatus` is **not** invoked. Surface the error to your user yourself.
+- **No more `apiClient*` objects.** A single `Transaction` covers the full lifecycle.
+- **No more `Context` argument on each call.** `SDKPayment.initialize` keeps the application context; `Transaction` / `TransactionConfig` do not require one.
+- **`getThreeDSecureChallenge(…).observe(…)` (LiveData) is gone.** The SDK runs 3DS internally; you observe progress through `onShowLoading` / `onStatus` instead.
+
+## Checklist
+
+- [ ] Replace `Yuno.apiClientPayment(checkoutSession, countryCode, context)` with `Transaction(config)`. Move `checkoutSession` and `countryCode` into `TransactionConfig`.
+- [ ] Replace `TokenCollectedData` / `PaymentMethod` / `CardData` / `Detail` with `PaymentMethodSelected` + `TransactionData` + `CardTransactionData`.
+- [ ] Replace your `apiClient.generateToken(data, context)` call with a `TransactionController.createPayment(token)` override. Move your "create payment on backend" code there.
+- [ ] Implement `onStatus(status)`. This is now how you receive the final result.
+- [ ] Remove `apiClient.getThreeDSecureChallenge(…)` and the WebView code. The SDK presents 3DS full-screen automatically.
+- [ ] Replace the explicit tokenize-then-create-payment calls with `Transaction(config).start(paymentSelected = <with transactionData>)`.
+- [ ] Re-run your sandbox test suite, including 3DS scenarios.
+
+## Related
+
+- [`createPayment` / `createPayment`](/docs/universal-sdk/controllers/create-payment). The controller that receives the token.
+- [`TransactionData`](/docs/universal-sdk/reference/transaction-data). The shape of the pre-collected data.
+- [`PaymentMethodSelected`](/docs/universal-sdk/reference/payment-method-selected). Where `transactionData` lives.
+- [Migration / Lite](/docs/universal-sdk/migration/android/payment/lite). For the simpler "SDK shows the form" case.

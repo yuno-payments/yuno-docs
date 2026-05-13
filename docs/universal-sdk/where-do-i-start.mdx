@@ -1,0 +1,153 @@
+---
+title: "Where do I start?"
+description: "Decide which parameters and controllers to use based on what you want to build."
+---
+
+The Yuno SDKs expose a single `Transaction` class. What changes between 
+integrations is **which parameters you pass** and **which controllers you 
+override**. Each decision is independent. Combine them freely.
+
+This page walks through the decisions you'll make and points you to the 
+relevant documentation for each.
+
+## 1. Are you processing a payment or saving a payment method?
+
+This decision affects which session type you create on your backend and 
+pass to the SDK.
+
+- **To process a payment**, create a checkout session and pass it to 
+  `TransactionConfig` as `checkoutSession`. Use this when you want to 
+  charge the customer.
+- **To save a payment method without charging**, create a customer 
+  session and pass it as `customerSession`. Use this when you want to 
+  enroll a card or other method for future use.
+- **To pay and enroll at the same time**, pass `checkoutSession` only:
+  - **Cards.** Enable the "save card on payment" flag in your 
+    Checkout Builder. The SDK charges the customer and stores the 
+    card for future use.
+  - **Other payment methods.** Make sure the enrollable variant of 
+    the method is added in your connections. When it is, the SDK 
+    handles payment and enrollment together based on the checkout 
+    session alone.
+
+You cannot pass `checkoutSession` and `customerSession` at the same 
+time. The constructor will throw if you do.
+
+See [Sessions](/docs/basic-concepts/sessions) and 
+[Enrollment](/docs/universal-sdk/features/enrollment).
+
+## 2. Who creates the payment?
+
+This decision affects whether you override `createPayment`.
+
+- **Default. The SDK creates the payment.** After tokenization, the 
+  SDK calls Yuno to create the payment, handles 3DS if needed, and 
+  emits the final status to `onStatus`. You don't override anything. 
+  Create the checkout session with `workflow: "SDK_SEAMLESS"` so the 
+  SDK can drive payment creation end-to-end. See the 
+  [`workflow` field](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
+- **You create the payment.** Override `createPayment` to receive the 
+  token. Send it to your backend, create the payment by calling 
+  [`POST /v1/payments`](https://docs.y.uno/reference/payments/create-payment), and resolve the 
+  Promise/Task. The SDK then queries the status and continues the flow.
+
+<Note>
+  In an **enrollment** flow (when you pass `customerSession`), 
+  `createPayment` is not invoked with payment data. There is no 
+  payment to create. Overriding this controller has no effect for 
+  enrollment.
+</Note>
+
+See [`createPayment`](/docs/universal-sdk/controllers/create-payment).
+
+## 3. Who collects the payment data?
+
+This decision affects whether you pass `transactionData` in 
+`PaymentMethodSelected`.
+
+- **Default. The SDK shows forms.** The SDK presents the appropriate 
+  form (card form, APM data form, etc.) and collects input from the 
+  user.
+- **You provide the data.** Pass `transactionData` in 
+  `PaymentMethodSelected` with the values already collected (for 
+  example, card details captured by your own UI). The SDK skips the 
+  forms and tokenizes directly.
+
+See [`PaymentMethodSelected`](/docs/universal-sdk/reference/payment-method-selected) 
+and [`TransactionData`](/docs/universal-sdk/reference/transaction-data).
+
+## 4. Who controls the form's UI?
+
+This decision affects whether you override `showView`.
+
+- **Default. The SDK presents the form full-screen.** The SDK shows 
+  the form with its own header and submit button.
+- **You embed the form.** Override `showView` to receive the form 
+  view and a `TransactionProcess` control. Place the view in your own 
+  layout and call `process.onSubmit()` to control submission.
+
+See [`showView`](/docs/universal-sdk/controllers/show-view).
+
+## 5. Who shows the loader?
+
+This decision affects whether you override `showLoading`.
+
+- **Default. The SDK shows a full-screen loader** during tokenization, 
+  payment creation, and status polling.
+- **You show your own loader.** Override `showLoading` to receive 
+  `isLoading: true | false` and render your own UI.
+
+See [`showLoading`](/docs/universal-sdk/controllers/show-loading).
+
+## 6. Should the SDK show a result screen after the transaction?
+
+This decision is controlled by a flag in `TransactionConfig`, not by 
+overriding a controller.
+
+- **Default. The SDK does not show a result screen.** The transaction 
+  finishes silently and you receive the final status through `onStatus`.
+- **The SDK shows a result screen.** Set `showPaymentStatusScreen: true` 
+  in `TransactionConfig` and the SDK will present its built-in 
+  success/failure screen after the transaction finishes.
+
+`onStatus` is always called when the transaction finishes, regardless 
+of this flag. It's the controller you use to know the final result and 
+react accordingly.
+
+See [`TransactionConfig`](/docs/universal-sdk/reference/transaction-config) 
+and [`onStatus`](/docs/universal-sdk/controllers/on-status).
+
+## Always implement `onStatus`
+
+Regardless of which decisions you make above, you should always 
+implement `onStatus`. It's the only way to know whether the transaction 
+succeeded, failed, was rejected, or ended in any other final state. 
+You'll typically use that information to navigate, refresh data, 
+or update your own UI.
+
+`onStatus` is invoked exactly once per transaction, after the SDK has 
+finished all its work (tokenization, payment creation, 3DS, status 
+polling).
+
+See [`onStatus`](/docs/universal-sdk/controllers/on-status) and 
+[`Status`](/docs/universal-sdk/reference/status).
+
+## Quick reference
+
+| Decision | Default | To change it |
+|---|---|---|
+| Session type |  | Pass `checkoutSession` or `customerSession` |
+| Who creates the payment | SDK | Override `createPayment` |
+| Who collects the data | SDK shows forms | Pass `transactionData` |
+| Who renders the form UI | SDK presents full-screen | Override `showView` |
+| Who shows the loader | SDK shows full-screen loader | Override `showLoading` |
+| Show SDK's result screen? | No | Set `showPaymentStatusScreen: true` in `TransactionConfig` |
+
+## Next steps
+
+- [Get Started](/docs/universal-sdk/get-started). Install the SDK and run your 
+  first transaction.
+- [Configuration](/docs/universal-sdk/reference/transaction-config). Full reference for 
+  `TransactionConfig`, `PaymentMethodSelected`, and `TransactionData`.
+- [Controllers](/docs/universal-sdk/controllers/overview). Full reference for each controller 
+  and what changes when you override it.
