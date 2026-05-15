@@ -1,0 +1,109 @@
+---
+title: "Full mode"
+description: "Migrate Web Full integrations (yuno.startCheckout with the embedded payment-method list) to the unified Transaction API."
+---
+
+Full mode rendered the SDK's payment-method drawer inside your layout. The user picked a method, the SDK rendered the corresponding form, tokenized, processed the payment, and reported the result. In the unified API the same flow uses a single `Transaction` plus `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` — the returned `views.paymentMethodList` exposes a `.mount({ elementSelector })` method.
+
+| Before | After |
+|---|---|
+| `yuno.startCheckout(config)` (auto-mounts the payment list) | `sdkPayments.transaction(config)` + `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` + `views.paymentMethodList.mount({ elementSelector })` |
+| `yunoPaymentMethodSelected(arg)` (notification at session level) | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` |
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` |
+
+## Side-by-side
+
+<CodeGroup>
+
+```typescript Before. Full mode
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.startCheckout({
+    checkoutSession: 'session-from-backend',
+    elementSelector: '#root',
+    countryCode: 'CO',
+    language: 'en',
+    renderMode: { type: 'modal' },
+    paymentListConfig: {
+        scrollContainerSelector: '#scroll-container',
+        bottomOffsetPx: 0,
+    },
+    yunoPaymentMethodSelected: ({ type, name }) => {
+        console.log('selected:', type, name)
+    },
+    yunoPaymentResult: (status, subStatus) => {
+        console.log('Final status:', status, subStatus)
+    },
+    yunoError: (error) => {
+        console.log('Error', error)
+    },
+})
+```
+
+```typescript After. Unified Transaction
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    paymentListConfig: {
+        scrollContainerSelector: '#scroll-container',
+        bottomOffsetPx: 0,
+    },
+    onStatus: (result) => {
+        console.log('Final status:', result.status, result.substatus)
+    },
+})
+
+const views = transaction.getPaymentMethodsViews({
+    types: ['paymentMethodList'],
+    onPaymentSelected: (paymentMethod) => {
+        transaction.start({ paymentMethod })
+    },
+})
+
+views.paymentMethodList?.mount({ elementSelector: '#root' })
+```
+
+</CodeGroup>
+
+## Field mapping
+
+| Before (Full) | After (unified) | Notes |
+|---|---|---|
+| `yuno.startCheckout({ elementSelector: '#root' })` | `transaction.getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` → `views.paymentMethodList?.mount({ elementSelector: '#root' })` | Get a view handle, then call `.mount(...)` with the selector + any per-view config. |
+| `paymentListConfig` | `paymentListConfig` (on `TransactionConfig`) | Same shape, same fields. |
+| `yunoPaymentMethodSelected({ type, name })` | `onPaymentSelected(paymentMethod)` inside `getPaymentMethodsViews` | Receives a typed `PaymentMethodSelected` you pass to `start()`. |
+| `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | `PaymentResult` wrapper with `.status` and `.substatus`. |
+| `yunoCreatePayment(ott, info)` | `createPayment(token)` | Promise-based, single argument. |
+| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus` and `StartResult.error`. |
+| `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Boolean signal only. |
+| `onRendered()` | *(removed)* | |
+| `renderMode: { type, elementSelector }` | `showView` controller | If you previously embedded the form via `renderMode: { type: 'element' }`, override [`showView`](/docs/yuno-sdk/controllers/show-view) instead. |
+| `yuno.continuePayment()` | *(automatic)* | SDK orchestrates 3DS / status polling internally. |
+| `yuno.mountStatusPayment(...)` | *(removed)* | SDK's built-in result screen is controlled by `showPaymentStatus` on the config; defaults to `false`. |
+
+## Behavior changes
+
+- **Explicit list mounting.** In Full mode, `startCheckout` auto-mounted the list at `elementSelector`. The unified API hands you a view handle from `getPaymentMethodsViews({ types: ['paymentMethodList'] })` and you call `views.paymentMethodList?.mount({ elementSelector })` explicitly. This makes the intent — "render the drawer here" — visible at the call site.
+- **`onPaymentSelected` is required.** You must wire it inside `getPaymentMethodsViews` and call `transaction.start({ paymentMethod })` from it. The legacy `yunoPaymentMethodSelected` was advisory; the new callback is the driver.
+- **No more `yunoError` / `onRendered` / `onCreateOneTimeToken`.** Drop these.
+- **Controller convention.** Override = no `on` prefix (`createPayment`, `showView`, `showLoading`). Observer = with `on` prefix (`onStatus`, `onPaymentSelected`).
+
+## Checklist
+
+- [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
+- [ ] Replace `yuno.startCheckout(...)` with `sdkPayments.transaction(...)` + `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` + `views.paymentMethodList?.mount({ elementSelector })`.
+- [ ] Inside `onPaymentSelected`, call `transaction.start({ paymentMethod })`.
+- [ ] Replace `yunoPaymentResult` with `onStatus` (read `result.status` / `result.substatus`).
+- [ ] If you implemented `yunoCreatePayment`, switch to `createPayment` (Promise-based).
+- [ ] Drop `yunoError`, `onLoading`, `onRendered`, `onCreateOneTimeToken`, `mountStatusPayment`, `continuePayment`.
+- [ ] If you used `renderMode: { type: 'element' }`, switch to overriding [`showView`](/docs/yuno-sdk/controllers/show-view).
+- [ ] Re-run your sandbox test suite.
+
+## Related
+
+- [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). Full reference for `getPaymentMethodsViews` per platform.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config). Complete field reference.
+- [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected). The object you pass to `start()`.
