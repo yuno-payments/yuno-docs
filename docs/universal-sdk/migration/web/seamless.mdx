@@ -9,7 +9,7 @@ In the unified API the same flow is a normal `Transaction` **without** `createPa
 
 | Before | After |
 |---|---|
-| `yuno.startSeamlessCheckout(config)` + `yuno.mountSeamlessCheckout()` (Full) | `yuno.transaction(config)` + `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` + `views.paymentMethodList?.mount({ elementSelector })` |
+| `yuno.startSeamlessCheckout(config)` + `yuno.mountSeamlessCheckout()` (Full) | `sdkPayments.transaction(config)` + `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` + `views.paymentMethodList?.mount({ elementSelector })` |
 | `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal'], onPaymentSelected })` + per-view `.mount({ elementSelector, ...config })` |
 | `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` |
 | Managed payment creation | Managed payment creation (no `createPayment` on config) |
@@ -40,7 +40,7 @@ document.getElementById('pay').addEventController('click', () => {
 ```typescript After. Unified Transaction (managed)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
-const transaction = yuno.transaction({
+const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     language: 'en',
@@ -81,7 +81,7 @@ yuno.mountSeamlessExternalButtons([
 ```typescript After. Unified Transaction (managed, wallet buttons)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
-const transaction = yuno.transaction({
+const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     onStatus: (result) => console.log('done:', result.status),
@@ -103,7 +103,7 @@ views.paypal?.mount({ elementSelector: '#paypal' })
 
 | Before (Seamless) | After (unified) | Notes |
 |---|---|---|
-| `yuno.startSeamlessCheckout(config)` | `yuno.transaction(config)` | Single factory. Don't wire `createPayment` — that would flip to manual mode (non-Seamless behavior). |
+| `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Single factory. Don't wire `createPayment` — that would flip to manual mode (non-Seamless behavior). |
 | `yuno.mountSeamlessCheckout()` | `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` → `views.paymentMethodList?.mount({ elementSelector })` | Get a view handle, then call `.mount(...)` with the selector. |
 | `yuno.mountSeamlessExternalButtons([{ elementSelector, paymentMethodType }])` | `getPaymentMethodsViews({ types: ['applePay', 'googlePay', 'paypal'], onPaymentSelected })` → `views.applePay?.mount({ elementSelector, ...config })`, etc. | Per-view styling (button color, type, etc.) lives on each `.mount()` call. |
 | `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` | Called from `onPaymentSelected` after the user picks a method. |
@@ -112,14 +112,14 @@ views.paypal?.mount({ elementSelector: '#paypal' })
 
 ## Behavior changes
 
-- **`Seamless` factory is gone.** Use the regular `yuno.transaction(...)` factory. Don't wire `createPayment` — its absence keeps the SDK in managed mode (the same model Seamless had).
+- **`Seamless` factory is gone.** Use the regular `sdkPayments.transaction(...)` factory. Don't wire `createPayment` — its absence keeps the SDK in managed mode (the same model Seamless had).
 - **`yuno.startPayment()` is gone.** The merchant-triggered start is now `transaction.start({ paymentMethod })`, called with the method the user picked.
 - **Per-button unmount removed.** Use `transaction.cancel()` or let the transaction complete.
 
 ## Checklist
 
 - [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
-- [ ] Replace `yuno.startSeamlessCheckout(...)` with `yuno.transaction(...)`. **Do not** wire `createPayment` — Seamless was always managed.
+- [ ] Replace `yuno.startSeamlessCheckout(...)` with `sdkPayments.transaction(...)`. **Do not** wire `createPayment` — Seamless was always managed.
 - [ ] Replace `mountSeamlessCheckout` with `getPaymentMethodsViews({ types: ['paymentMethodList'], onPaymentSelected })` + `views.paymentMethodList?.mount({ elementSelector })`.
 - [ ] Replace `mountSeamlessExternalButtons([{...}])` with `getPaymentMethodsViews({ types: [...], onPaymentSelected })` + per-view `.mount({ elementSelector, ...config })` calls.
 - [ ] Replace `yuno.startPayment()` with `transaction.start({ paymentMethod })`, called from inside `onPaymentSelected`.

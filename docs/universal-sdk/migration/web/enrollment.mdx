@@ -7,8 +7,8 @@ Enrollment had two sub-modes that paralleled the payment modes: a UI-driven flow
 
 | Before | After |
 |---|---|
-| `yuno.mountEnrollmentLite({ customerSession, … })` (UI) | `yuno.transaction({ customerSession, … }).start()` |
-| `yuno.apiClientEnroll({ customerSession })` + manual backend call (Headless) | `yuno.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data } })` |
+| `yuno.mountEnrollmentLite({ customerSession, … })` (UI) | `sdkPayments.transaction({ customerSession, … }).start()` |
+| `yuno.apiClientEnroll({ customerSession })` + manual backend call (Headless) | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data } })` |
 | `yunoEnrollmentStatus({ status, vaultedToken })` controller | `onStatus(result)` — `result` is `EnrollmentResult` for enrollment flows |
 
 ## Side-by-side — Enrollment Lite (UI)
@@ -36,7 +36,7 @@ await yuno.mountEnrollmentLite({
 ```typescript After. Unified Transaction (enrollment)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
-const transaction = yuno.transaction({
+const transaction = sdkPayments.transaction({
     customerSession: 'session-from-backend',
     countryCode: 'CO',
     language: 'en',
@@ -78,7 +78,7 @@ console.log('vault token:', vaultedToken)
 ```typescript After. Unified Transaction (enrollment headless)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
-const transaction = yuno.transaction({
+const transaction = sdkPayments.transaction({
     customerSession: 'session-from-backend',
     countryCode: 'CO',
     onStatus: (result) => {
@@ -109,8 +109,8 @@ await transaction.start({
 
 | Before (Enrollment) | After (unified) | Notes |
 |---|---|---|
-| `yuno.mountEnrollmentLite({ customerSession, … })` | `yuno.transaction({ customerSession, … }).start()` | Single factory. `start()` called with no argument for UI enrollment. |
-| `yuno.apiClientEnroll({ customerSession })` + `.generateVaultedToken(cardData)` | `yuno.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data: CardData } })` | Pre-collected card data goes inline on `start()`. |
+| `yuno.mountEnrollmentLite({ customerSession, … })` | `sdkPayments.transaction({ customerSession, … }).start()` | Single factory. `start()` called with no argument for UI enrollment. |
+| `yuno.apiClientEnroll({ customerSession })` + `.generateVaultedToken(cardData)` | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data: CardData } })` | Pre-collected card data goes inline on `start()`. |
 | `yunoEnrollmentStatus({ status, vaultedToken })` | `onStatus(result)` — `result` is `EnrollmentResult` | `EnrollmentResult` has `status` (literal union), `substatus`, and `vaultedToken` (when `status === 'CREATED'`). |
 | `elementSelector: '#root'` (auto-mount) | *(removed)* | SDK presents the enrollment form modally by default. Override `showView` to embed. |
 | `showPaymentStatus: true` | `showPaymentStatus: true` | Same field on `TransactionConfig`. Defaults to `false`. |
@@ -149,7 +149,7 @@ When `status === 'CREATED'`, `vaultedToken` is set — store it against your cus
 ## Checklist
 
 - [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
-- [ ] Replace `yuno.mountEnrollmentLite(...)` with `yuno.transaction({ customerSession, … }).start()`.
+- [ ] Replace `yuno.mountEnrollmentLite(...)` with `sdkPayments.transaction({ customerSession, … }).start()`.
 - [ ] Replace `yuno.apiClientEnroll(...).generateVaultedToken(cardData)` with `transaction.start({ paymentMethod: { type: 'CARD', data: CardData } })`.
 - [ ] Rename `cardHolderName` → `holderName`, `cardNumber` → `number`, `cvv` → `securityCode` in the data payload.
 - [ ] Replace `yunoEnrollmentStatus({ status, vaultedToken })` with `onStatus(result)`. Cast to `EnrollmentResult` and read `result.status` / `result.vaultedToken`.
@@ -160,4 +160,4 @@ When `status === 'CREATED'`, `vaultedToken` is set — store it against your cus
 
 - [Enrollment](/docs/universal-sdk/features/enrollment). Full enrollment guide.
 - [`TransactionConfig`](/docs/universal-sdk/reference/transaction-config). Complete field reference.
-- [`PaymentStatus`](/docs/universal-sdk/reference/payment-status). Includes `EnrollmentStatus` and `EnrollmentResult` shapes.
+- [`Status`](/docs/universal-sdk/reference/status). Includes `EnrollmentStatus` and `EnrollmentResult` shapes.

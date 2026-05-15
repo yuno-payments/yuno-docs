@@ -9,7 +9,7 @@ In the unified API the same scenario maps to **non-seamless headless** mode: pas
 
 | Before | After |
 |---|---|
-| `yuno.apiClientPayment({ checkoutSession })` + manual backend call | `yuno.transaction({ …, createPayment }).start({ paymentMethod: { type, data } })` |
+| `yuno.apiClientPayment({ checkoutSession })` + manual backend call | `sdkPayments.transaction({ …, createPayment }).start({ paymentMethod: { type, data } })` |
 | `yuno.secureFields({ countryCode, checkoutSession }).create(...).generateToken(...)` | Pass card data via `paymentMethod.data` (PaymentMethodData) — SDK tokenizes internally |
 | Manual 3DS handling via separate calls | Automatic — SDK handles 3DS once `createPayment` resolves |
 
@@ -43,7 +43,7 @@ const paymentId = await myBackend.pay({ oneTimeToken, checkoutSession })
 ```typescript After. Unified Transaction (non-seamless headless)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
-const transaction = yuno.transaction({
+const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     createPayment: async (token) => {
@@ -100,7 +100,7 @@ document.getElementById('pay').addEventController('click', async () => {
 ```typescript After. Unified Transaction (headless via showView + secure fields)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
-const transaction = yuno.transaction({
+const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     showView: (view, controls, step) => {
@@ -124,7 +124,7 @@ The SDK provides the secure iframes inside the view it delivers to `showView`. Y
 
 | Before (Headless) | After (unified) | Notes |
 |---|---|---|
-| `yuno.apiClientPayment({ checkoutSession, countryCode })` | `yuno.transaction({ checkoutSession, countryCode, createPayment })` | The factory consolidates the API-client + Transaction surface. |
+| `yuno.apiClientPayment({ checkoutSession, countryCode })` | `sdkPayments.transaction({ checkoutSession, countryCode, createPayment })` | The factory consolidates the API-client + Transaction surface. |
 | `apiClientPayment.generateToken(cardData)` | `transaction.start({ paymentMethod: { type: 'CARD', data: CardData } })` | Data goes inline on `start()`. |
 | `apiClientPayment.getThreeDSecureChallenge(...)` (rare) | *(removed — automatic)* | SDK orchestrates 3DS internally once `createPayment` resolves. |
 | `yuno.secureFields({ checkoutSession })` + `.create(...).render(...)` + `.generateTokenWithInformation(...)` | `showView` + SDK-provided secure iframes inside the delivered view | The SDK still uses secure iframes under the hood; you no longer assemble them yourself. |
@@ -182,12 +182,12 @@ await transaction.start({
 - **3DS is automatic.** Headless used to require bespoke 3DS handling per integration. The unified API does it internally once `createPayment` resolves.
 - **`continuePayment()` is gone.** The Promise contract drives progression.
 - **Secure-fields composition.** Instead of assembling per-field iframes yourself, the SDK delivers a single composed form via `showView`. PCI scope is the same (raw PAN never touches your code).
-- **No separate `apiClientPayment` surface.** One factory: `yuno.transaction(config)`.
+- **No separate `apiClientPayment` surface.** One factory: `sdkPayments.transaction(config)`.
 
 ## Checklist
 
 - [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
-- [ ] Replace `yuno.apiClientPayment(...)` and `yuno.secureFields(...)` with `yuno.transaction(...)`.
+- [ ] Replace `yuno.apiClientPayment(...)` and `yuno.secureFields(...)` with `sdkPayments.transaction(...)`.
 - [ ] Provide `createPayment` on `TransactionConfig` to POST to your backend.
 - [ ] If you collected card data in your own UI: pass it via `paymentMethod.data` on `start()` (rename the fields per the mapping table above).
 - [ ] If you used `secureFields` for PCI-compliant collection: wire `showView` and embed the SDK-provided view; call `controls.onSubmit()` from your button.
