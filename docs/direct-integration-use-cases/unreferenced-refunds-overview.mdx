@@ -1,0 +1,133 @@
+---
+title: "Refunds"
+description: "Yuno offers a complete suite of refund flows that cover every stage of the customer-money-back journey."
+---
+
+# Refunds
+
+Yuno offers a complete suite of refund flows that cover every stage of the customer-money-back journey. There are three supported flows, each designed for a different operational need:
+
+- **[Referenced refunds](https://docs.y.uno/docs/direct-integration-use-cases/refund-payments)** — reverse a single Yuno-captured payment through the API. The standard customer-service reimbursement flow.
+- **[Batch refunds](https://docs.y.uno/docs/using-yuno/dashboard-overview/payments#batch-refunds)** — process up to 1,000 refunds at once by uploading a CSV in the Yuno Dashboard. Used by operations teams for recall events, fraud sweeps, and bulk reimbursements.
+- **Unreferenced refunds** — push funds directly to a payment method through the API, without referencing an original Yuno payment. Used for refunding customers whose original charge lives outside Yuno (legacy billing system, external subscription engine) or for sending goodwill / promotional credits.
+
+---
+
+## Refund flows Yuno supports
+
+| Flow | Channel | Linked to a Yuno payment? | When to use |
+|---|---|---|---|
+| **Referenced refund** | `POST /v1/payments/{id}/refunds` API | Yes — requires a payment `id` and `transaction_id` | Reverse a charge made through Yuno. Standard customer-service reimbursement flow. |
+| **Batch refund** | Dashboard CSV upload | Yes — each row references a Yuno `payment_id` | Process up to 1,000 refunds at once. Used by operations teams for recall events, fraud sweeps, or bulk reimbursements. |
+| **Unreferenced refund** | `POST /v1/unreferenced-refunds` API | **No** — pushes funds directly to a payment method | Refund customers whose original charge was processed outside Yuno (e.g. legacy billing system, Zuora OPG, subscription correction). Also goodwill / promotional credits. |
+
+### Referenced refund (single, via API)
+
+A referenced refund reimburses a Yuno-captured payment. You call `POST /v1/payments/{id}/refunds` with the payment's `id`, the `transaction_id` to refund, and an optional `amount` object. Leave `amount` empty for a full refund, or specify a `value` and `currency` for a partial refund. The refund is credited back to the **same payment method that was originally charged**.
+
+When a referenced refund succeeds, the parent payment transitions to `status = REFUNDED` / `sub_status = REFUNDED`, and a new transaction is appended with `transaction.type = REFUND` and `transaction.status = SUCCEEDED`. Webhooks fire as usual.
+
+> 💡 **Refund processing time**
+> Refunds are processed instantly in Sandbox. In Production, processing time varies depending on the payment method and provider — card refunds typically settle within 1–5 business days, while ACH and SEPA can take 3–10 business days.
+
+### Batch refund (bulk, via Dashboard)
+
+The batch refund feature in the Yuno Dashboard lets your team process refunds for several transactions simultaneously, saving time and manual effort. Each row in the uploaded CSV references an existing Yuno payment.
+
+**How to use it**
+
+1. Navigate to **All payments → Batch refunds → Upload**.
+2. Download the sample template and populate it. Required columns:
+   - `Payment ID`
+   - `Transaction ID`
+   - `Amount to refund`
+   - `Currency`
+   - `Merchant reference`
+   - `Reason` — one of `DUPLICATE`, `FRAUDULENT`, `REQUESTED_BY_CUSTOMER`
+3. Upload the CSV. Yuno validates each row and queues the refunds.
+4. Monitor progress in **All payments → Batch refunds → Overview**.
+
+**Limits**: up to 1,000 payments per batch. For larger volumes, split into multiple batches or contact your account manager.
+
+### Unreferenced refund (standalone credit, via API)
+
+An unreferenced refund — also called a **Credit** or **standalone refund** — pushes funds back to a payment method **without referencing an original Yuno payment**. This is essential when the charge being reimbursed lives outside Yuno, or when the merchant needs to send a promotional / goodwill credit.
+
+The rest of this page walks through how Unreferenced Refunds work end to end.
+
+---
+
+## Unreferenced Refunds
+
+Yuno **Unreferenced Refunds** is an API solution designed to issue refunds directly to a payment method without referencing an original payment transaction. In gateway terminology, this maps to the `operation_type: "Credit"` operation.
+
+It enables you to send funds to a card, bank account, mandate, or wallet that was not necessarily charged through Yuno — unifying 28+ payment providers behind a single API contract.
+
+### How Unreferenced Refunds work
+
+An unreferenced refund moves through a small state machine that mirrors Yuno's standard payment lifecycle.
+
+1. **`CREATED`** — Yuno persists the refund after validating the request and routing to a compatible provider.
+2. **`PENDING`** — the provider has accepted the refund and is awaiting async settlement (ACH clearing, SEPA settlement, etc paid-out).
+3. **Terminal states**:
+   - **`SUCCEEDED`** — funds confirmed on the destination payment method (either sync-settled, e.g. Stripe; or async-settled via provider webhook).
+   - **`FAILED`** — provider declined the refund, returned the funds, hit OFAC/sanctions, exceeded SLA, or any other unrecoverable error. Detail lives in `provider.response_code` and `provider.response_message`.
+
+Webhook events fire on `status` transitions only:
+
+| Event | Fires when `status` enters |
+|---|---|
+| `unreferenced_refund.created` | `CREATED` |
+| `unreferenced_refund.succeeded` | `SUCCEEDED` |
+| `unreferenced_refund.failed` | `FAILED` |
+
+### Using Yuno Unreferenced Refunds
+
+To issue an unreferenced refund, call the `POST /v1/unreferenced-refunds` endpoint with:
+
+- `account_id`, `merchant_order_id`, `description`, `country`, `amount`
+- A `payment_method` describing the destination (vaulted token, raw card, bank transfer, or wallet)
+- A `customer_payer` block with the recipient's identity (required for ACH / SEPA / PayPal — to satisfy OFAC and AML screening)
+- Optionally `provider_data.id` to pin to a specific gateway
+
+Example — refund a duplicate subscription charge to a vaulted Stripe card:
+
+```json
+{
+  "account_id": "9f6e0a4c-1d2b-4e3f-8a9b-1c2d3e4f5a6b",
+  "merchant_order_id": "REFUND-2026-05-14-001",
+  "description": "Subscription correction — duplicate charge",
+  "country": "US",
+  "amount": { "value": 25.00, "currency": "USD" },
+  "provider_data": { "id": "STRIPE" },
+  "payment_method": {
+    "vaulted_token": "vt_01HX2Y3ZP4Q5R6S7T8U9V0W1X2"
+  },
+  "customer_payer": {
+    "id": "cus_01HX2K9PQR3S4T5U6V7W8X9Y0Z"
+  }
+}
+```
+
+You will receive a `201 Created` response with an `id` prefixed `urf_*`, and a webhook will fire when the refund reaches its terminal state.
+
+#### Supported destinations
+
+| Destination        | Yuno `payment_method_type` | Required fields                                                                                                                                        |
+| ------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Raw card           | `CARD`                     | `payment_method.detail.card.card_data.{number, holder_name, expiration_month, expiration_year, brand}`                                                 |
+| Vaulted card       | `VAULTED_TOKEN`            | `payment_method.vaulted_token`                                                                                                                         |
+| SEPA / IBAN        | `BANK_TRANSFER`            | `payment_method.detail.bank_transfer.{bank_account, account_type: "IBAN", beneficiary_name}`                                                           |
+| ACH                | `BANK_TRANSFER`            | `payment_method.detail.bank_transfer.{bank_account, bank_id, account_type, beneficiary_name, beneficiary_document}` + `customer_payer.billing_address` |
+| PayPal             | `WALLET`                   | `payment_method.detail.wallet.payment_token` + `customer_payer.email`                                                                                  |
+| GoCardless mandate | `BANK_TRANSFER`            | `payment_method.detail.bank_transfer.{provider_token, account_type: "MANDATE", beneficiary_name}`                                                      |
+
+---
+
+## Choosing the right refund flow
+
+| Question | Recommended flow |
+|---|---|
+| Was the original payment captured through Yuno? | **Referenced refund** |
+| Do you need to reverse hundreds or thousands of Yuno payments at once? | **Batch refund** (dashboard CSV) |
+| Was the original charge made outside Yuno, or is there no original charge at all (goodwill credit, promotional credit, subscription correction from an external billing system)? | **Unreferenced refund** |
