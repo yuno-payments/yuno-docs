@@ -1,0 +1,22 @@
+# Unreferenced Refund Status
+
+The `status` field reports the current lifecycle stage. The `sub_status` field provides finer-grained context within each top-level state.
+
+| Status      | Sub_status             | Description                                                                                                                                                                                                                                                                         |
+| ----------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CREATED`   | `CREATED`              | Temporary state. Yuno has persisted the refund after validation and is in the process of routing it to a provider.                                                                                                                                                                  |
+| `PENDING`   | `APPROVED`             | The provider has accepted the refund and is awaiting async network or bank settlement. Typical for ACH, SEPA, GoCardless.                                                                                                                                                           |
+| `SUCCEEDED` | `SUCCEEDED`            | Terminal. The refund has been delivered to the destination — either sync-settled by the provider (Stripe, Nuvei card refunds) or confirmed asynchronously via provider webhook (ACH, SEPA, GoCardless).                                                                            |
+| `FAILED`    | `DECLINED_BY_PROVIDER` | Terminal. The refund did not complete. Encompasses sync declines, async returns (ACH R-codes, SEPA RJCT), OFAC blocks, invalid accounts, insufficient merchant balance, SLA timeouts, and fraud declines. Detail lives in `provider.response_code` and `provider.response_message`. |
+
+## Webhook events
+
+Webhook events fire on top-level `status` transitions only. `sub_status` moves within `PENDING` are not externally observable.
+
+| Event | Fires when `status` enters |
+|---|---|
+| `unreferenced_refund.created` | `CREATED` |
+| `unreferenced_refund.succeeded` | `SUCCEEDED` |
+| `unreferenced_refund.failed` | `FAILED` |
+
+---

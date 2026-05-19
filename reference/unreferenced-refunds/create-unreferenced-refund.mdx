@@ -1,0 +1,420 @@
+# Create Unreferenced Refund
+
+`POST /v1/unreferenced-refunds`
+
+This request allows you to create an unreferenced refund — a credit pushed directly to a payment method without referencing an original payment transaction.
+
+> 📘 **When to use Unreferenced Refunds**
+> Use this endpoint when the original charge was processed outside Yuno (legacy billing system, external subscription engine) or when you need to send a goodwill / promotional credit. For reversing a Yuno-captured payment, use `POST /v1/payments/{id}/refunds` instead.
+
+## Headers
+
+| Header | Required | Description |
+|---|---|---|
+| `public-api-key` | Yes | The unique public API key for your account. You find this on [the Yuno dashboard](https://dashboard.y.uno/). |
+| `private-secret-key` | Yes | The unique private secret key for your account. You find this on [the Yuno dashboard](https://dashboard.y.uno/). |
+| `X-Idempotency-Key` | Yes | Unique UUID v4 identifier used to safely retry the request. Retries with the same key return the originally created refund. |
+
+## Request body
+
+Below is a request example for refunding a duplicate subscription charge to a vaulted card on Stripe:
+
+```json
+{
+  "account_id": "9f6e0a4c-1d2b-4e3f-8a9b-1c2d3e4f5a6b",
+  "merchant_order_id": "REFUND-2026-05-14-001",
+  "merchant_reference": "credit-note-7891",
+  "description": "Subscription correction — duplicate charge",
+  "country": "US",
+  "amount": {
+    "value": 25.00,
+    "currency": "USD"
+  },
+  "provider_data": {
+    "id": "STRIPE"
+  },
+  "payment_method": {
+    "vaulted_token": "vt_01HX2Y3ZP4Q5R6S7T8U9V0W1X2"
+  },
+  "customer_payer": {
+    "id": "cus_01HX2K9PQR3S4T5U6V7W8X9Y0Z",
+    "merchant_customer_id": "cust_4521",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com"
+  },
+  "metadata": [
+    { "key": "billing_cycle_id", "value": "bc_2026_05" },
+    { "key": "support_ticket", "value": "ZD-99214" }
+  ],
+  "callback_url": "https://merchant.example.com/yuno/webhooks/refunds"
+}
+```
+
+### Top-level parameters
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `account_id` | string | Yes | The unique identifier of the account. You find this information on [the Yuno dashboard](https://dashboard.y.uno/) (UUID, 36 chars). |
+| `merchant_order_id` | string | Yes | The unique identifier of your internal credit/refund (MAX 255; MIN 3). |
+| `merchant_reference` | string | No | Optional correlation ID. Defaults to `merchant_order_id` (MAX 255; MIN 3). |
+| `description` | string | Yes | The description of the refund. Appears on dashboards and statements (MAX 255; MIN 3). |
+| `country` | string | Yes | Country where the refund must be processed (MAX 2; MIN 2; [ISO 3166-1](https://docs.y.uno/reference/country-reference)). Drives provider routing. |
+| `amount` | object | Yes | Specifies the refund amount object, with the value and currency. See [Amount](#amount). |
+| `provider_data` | object | No | Pins the refund to a specific gateway, bypassing routing rules. Useful when the destination provider is dictated by where the original payment was processed. See [Provider data](#provider_data). |
+| `payment_method` | object | Yes | Specifies the destination of the refund — vaulted token, raw card, bank transfer, or wallet. See [Payment method](#payment_method). |
+| `customer_payer` | object | Conditional | Specifies the recipient of the refund. Required for ACH, SEPA, and PayPal destinations to satisfy OFAC and AML screening. See [Customer payer](#customer_payer). |
+| `metadata` | array of objects | No | Optional list of key/value pairs for your own reference. Max 50 entries; value max 512 chars. |
+| `callback_url` | string | No | HTTPS URL where Yuno will deliver webhook events for this refund. Falls back to your account-level webhook if omitted. |
+| `fraud_screening` | object | No | When `{ "stand_alone": true }`, Yuno runs an ML fraud check before submitting to the provider. Recommended for raw-card refunds. |
+
+### `amount`
+
+Specifies the refund amount object, with the value and currency.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `value` | number | Yes | The refund amount (multiple of 0.0001). Must be greater than 0. |
+| `currency` | string | Yes | The currency used for the refund (MAX 3; MIN 3; [ISO 4217](https://docs.y.uno/reference/country-reference)). |
+
+```json
+"amount": {
+  "value": 25.00,
+  "currency": "USD"
+}
+```
+
+### `provider_data`
+
+Pins the refund to a specific gateway, bypassing Yuno's routing rules.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | Yes | Provider identifier. Allowed values: `ADYEN`, `STRIPE`, `NUVEI`, `BRAINTREE`, `GOCARDLESS`, `ORBITAL`, `WORLDPAY`, `VANTIV`, `CARDCONNECT`, `FISERV_COMMERCEHUB`, `MONERIS`, `NMI`, `FIRSTDATA`, `WINDCAVE`, `SAFERPAY`, `JPM`, `PAYPAL_EXPRESS_CHECKOUT`, `MASTERCARD`, `CITI`, `WELLSFARGO`, `SAGEPAY`, `FATZEBRA`, `HELIX`, `24HF`, `MERCHANTE_SOLUTIONS`, `ANB`, `AUTHORIZE_NET`, `SPECTRUM`. |
+
+```json
+"provider_data": { "id": "STRIPE" }
+```
+
+### `payment_method`
+
+Specifies where to send the funds. Exactly one of `vaulted_token` or `detail.<card|wallet|bank_transfer>` must be set.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `vaulted_token` | string | Conditional | Yuno-side vault reference for a previously stored payment method. Preferred path — keeps PCI scope minimal. |
+| `detail` | object | Conditional | Inline payment-method details. Use when you do not have a vaulted token. Exactly one sub-object must be populated: `card`, `wallet`, or `bank_transfer`. |
+
+#### `payment_method.detail.card`
+
+Use when you need to push the refund to a raw card (Yuno will encrypt the PAN at the edge).
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `card_data` | object | Yes | Raw card data. See below. |
+| `soft_descriptor` | string | No | The text shown on the cardholder's statement (MAX 255). |
+| `stored_credentials` | object | No | Stored-credential metadata for recurring-credit flows. Reuses the same shape as `/v1/payments`. |
+| `network_token` | object | No | Network-token metadata (Visa Token Service / Mastercard MDES) when refunding to a tokenized network credential. |
+
+**`card_data` fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `number` | string | Yes | The card number (PAN). Encrypted at the edge. |
+| `holder_name` | string | Yes | Name as it appears on the card. |
+| `expiration_month` | integer | Yes | Card expiration month (1–12). |
+| `expiration_year` | integer | Yes | Card expiration year. |
+| `security_code` | string | No | CVV / CVC. Most acquirers do not require it for credits. |
+| `brand` | string | Yes | One of: `VISA`, `MASTERCARD`, `AMEX`, `DINERS`, `DISCOVER`, `JCB`, `UNIONPAY`, `UATP`, `ELO`, `HIPERCARD`, `MAESTRO`. |
+| `type` | string | No | Card type: `CREDIT`, `DEBIT`, `PREPAID`. |
+
+```json
+"payment_method": {
+  "detail": {
+    "card": {
+      "soft_descriptor": "ACME REFUND",
+      "card_data": {
+        "number": "4111111111111111",
+        "holder_name": "John Doe",
+        "expiration_month": 3,
+        "expiration_year": 2030,
+        "brand": "VISA"
+      }
+    }
+  }
+}
+```
+
+#### `payment_method.detail.bank_transfer`
+
+Use for SEPA / IBAN, ACH, and GoCardless mandate refunds.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `provider_token` | string | Conditional | Provider-side reference to a pre-existing bank object. **Required for GoCardless** — carries the `mandate_id` (e.g. `MD000ABCDEF123`). When supplied, `bank_account` and `bank_id` are optional. |
+| `bank_account` | string | Conditional | IBAN (SEPA) or account number (ACH / local). Required when no `provider_token` is supplied. |
+| `bank_id` | string | Conditional | BIC / SWIFT (non-SEPA EU corridors) or ABA-9 routing number (ACH). Required for ACH. |
+| `account_type` | string | Yes | One of: `IBAN`, `CHECKING`, `SAVINGS`, `CLABE`, `CCI`, `LOCAL`, `MANDATE` (new — used for GoCardless). |
+| `beneficiary_name` | string | Yes | Recipient name on the account. |
+| `beneficiary_type` | string | No | `INDIVIDUAL` or `ENTITY`. |
+| `beneficiary_document` | object | Conditional | Recipient's tax / national ID. Required for ACH (SSN / EIN) and for LATAM SEPA-equivalent corridors. Shape: `{ document_type, document_number }`. |
+
+**SEPA / IBAN example:**
+
+```json
+"payment_method": {
+  "detail": {
+    "bank_transfer": {
+      "bank_account": "DE89370400440532013000",
+      "account_type": "IBAN",
+      "beneficiary_name": "Jane Smith",
+      "beneficiary_type": "INDIVIDUAL"
+    }
+  }
+}
+```
+
+**ACH example:**
+
+```json
+"payment_method": {
+  "detail": {
+    "bank_transfer": {
+      "bank_account": "123456789",
+      "bank_id": "021000021",
+      "account_type": "CHECKING",
+      "beneficiary_name": "John Doe",
+      "beneficiary_type": "INDIVIDUAL",
+      "beneficiary_document": {
+        "document_type": "SSN",
+        "document_number": "123-45-6789"
+      }
+    }
+  }
+}
+```
+
+**GoCardless mandate example:**
+
+```json
+"payment_method": {
+  "detail": {
+    "bank_transfer": {
+      "provider_token": "MD000ABCDEF123",
+      "account_type": "MANDATE",
+      "beneficiary_name": "Jane Smith",
+      "beneficiary_type": "INDIVIDUAL"
+    }
+  }
+}
+```
+
+#### `payment_method.detail.wallet`
+
+Use for PayPal Express Checkout refunds.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `payment_token` | string | Yes | PayPal `payerID` of the recipient. |
+
+```json
+"payment_method": {
+  "detail": {
+    "wallet": {
+      "payment_token": "PAYPAL_PAYER_ID_ABC123"
+    }
+  }
+}
+```
+
+### `customer_payer`
+
+Specifies the recipient of the refund. Yuno enforces minimum fields per destination type:
+
+- **Card credit** — `first_name`, `last_name` recommended; `email` recommended for fraud screening.
+- **SEPA / IBAN** — `first_name`, `last_name`, `billing_address`.
+- **ACH** — `first_name`, `last_name`, `document`, `billing_address`.
+- **PayPal** — `email` (must match the PayPal account if no `payer_id` is provided).
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Existing Yuno customer UUID. Alternative to inlining the customer PII. |
+| `merchant_customer_id` | string | Your external customer identifier. |
+| `first_name` | string | Recipient's first name. |
+| `last_name` | string | Recipient's last name. |
+| `email` | string | Recipient's email address. |
+| `phone` | object | `{ country_code, number, extension }`. |
+| `document` | object | National identification document. `{ document_type, document_number }`. |
+| `date_of_birth` | string | YYYY-MM-DD. |
+| `nationality` | string | ISO 3166-1 alpha-2 country code. |
+| `ip_address` | string | Recipient's IP address (when known). |
+| `billing_address` | object | Postal address. See [Address fields](#address). |
+| `shipping_address` | object | Same shape as `billing_address`. |
+| `type` | string | `INDIVIDUAL` or `ENTITY`. |
+| `business_name` | string | Required when `type = ENTITY`. |
+
+#### Address
+
+Used for both `billing_address` and `shipping_address`.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `street` | string | Yes | Street name. |
+| `number` | string | Yes | House / building number. |
+| `city` | string | Yes | City. |
+| `state` | string | Yes | State or subdivision. |
+| `postal_code` | string | Yes | Postal / ZIP code. |
+| `country` | string | Yes | ISO 3166-1 alpha-2. |
+| `neighborhood` | string | No | District (LATAM corridors). |
+| `complement` | string | No | Apartment / unit. |
+
+### `metadata`
+
+Optional list of key/value pairs you can attach to the refund for your own reference. Echoed back in the response and webhook payload.
+
+| Field | Type | Description |
+|---|---|---|
+| `key` | string | Free-form label. |
+| `value` | string | Free-form value. Max 512 characters. |
+
+### `fraud_screening`
+
+When `stand_alone: true`, Yuno runs a fraud ML check before submitting the refund to the provider. If declined, the refund transitions directly to `FAILED / DECLINED_BY_PROVIDER` without ever reaching the provider.
+
+| Field | Type | Description |
+|---|---|---|
+| `stand_alone` | boolean | When `true`, performs a fraud check before provider submission. |
+
+## Responses
+
+### 201 — Refund created
+
+```json
+{
+  "id": "urf_01HX31R6QK7E2F4G5H6J7K8M9N",
+  "account_id": "9f6e0a4c-1d2b-4e3f-8a9b-1c2d3e4f5a6b",
+  "merchant_order_id": "REFUND-2026-05-14-001",
+  "merchant_reference": "credit-note-7891",
+  "country": "US",
+  "description": "Subscription correction — duplicate charge",
+  "amount": {
+    "value": 25.00,
+    "currency": "USD"
+  },
+  "status": "CREATED",
+  "sub_status": "CREATED",
+  "payment_method": {
+    "vaulted_token": "vt_01HX2Y3ZP4Q5R6S7T8U9V0W1X2",
+    "detail": {
+      "card": {
+        "card_data": {
+          "brand": "VISA",
+          "last_four": "1111",
+          "type": "CREDIT"
+        }
+      }
+    }
+  },
+  "customer_payer": {
+    "id": "cus_01HX2K9PQR3S4T5U6V7W8X9Y0Z",
+    "merchant_customer_id": "cust_4521",
+    "first_name": "John",
+    "last_name": "Doe"
+  },
+  "provider": {
+    "name": "STRIPE",
+    "type": "PSP",
+    "connection_id": "conn_01HX0J8FZQK7M3N4P5R6S7T8U9",
+    "reference": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
+    "category": "APPROVED",
+    "raw_response_code": "succeeded"
+  },
+  "metadata": [
+    { "key": "billing_cycle_id", "value": "bc_2026_05" }
+  ],
+  "created_at": "2026-05-14T11:47:13.482Z",
+  "updated_at": "2026-05-14T11:47:13.482Z"
+}
+```
+
+### Response parameters
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | string | Yuno-generated unique ID. Prefix `urf_`. Use this in `GET /v1/unreferenced-refunds/{id}`. |
+| `status` | string | Top-level lifecycle state. One of `CREATED`, `PENDING`, `SUCCEEDED`, `FAILED`. See [Unreferenced Refund Status](#unreferenced-refund-status). |
+| `sub_status` | string | Finer-grained context. One of `CREATED`, `APPROVED`, `SUCCEEDED`, `DECLINED_BY_PROVIDER`. |
+| `amount` | object | Echoed `{ value, currency }`. |
+| `payment_method` | object | Echoed destination. Sensitive fields are masked — e.g. `card.card_data.last_four` instead of full PAN. |
+| `customer_payer` | object | Echoed recipient (may include `id` if Yuno auto-vaulted the customer). |
+| `provider` | object | Resolved provider details and the upstream response. See below. |
+| `metadata` | array | Echoed key/value pairs. |
+| `created_at` | string | ISO-8601 UTC timestamp of creation. |
+| `updated_at` | string | ISO-8601 UTC timestamp of last state change. |
+
+#### `provider` (response)
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Resolved provider — e.g. `STRIPE`, `ADYEN`, `GOCARDLESS`. |
+| `type` | string | `ACQUIRER`, `PSP`, or `WALLET`. |
+| `connection_id` | string | Yuno connection UUID. |
+| `reference` | string | Provider transaction ID — e.g. Adyen `pspReference`, Stripe `re_*`, GoCardless `RE...`. |
+| `category` | string | `APPROVED`, `DECLINED`, or `ERROR`. |
+| `response_code` | string | Yuno-normalized response code. |
+| `response_message` | string | Yuno-normalized human-readable message. |
+| `raw_response_code` | string | Provider native code (pass-through). |
+| `raw_response_message` | string | Provider native message (pass-through). |
+
+### 400 — Validation error
+
+```json
+{
+  "type": "https://docs.y.uno/errors/VALIDATION_ERROR",
+  "code": "VALIDATION_ERROR",
+  "title": "Request validation failed",
+  "status": 400,
+  "detail": "One or more fields did not pass validation",
+  "trace_id": "01HX31R6QK7E2F4G5H6J7K8M9N",
+  "errors": [
+    {
+      "field": "payment_method",
+      "code": "INVALID_PAYMENT_METHOD_SOURCE",
+      "message": "Exactly one of 'vaulted_token' or 'detail.<card|wallet|bank_transfer>' must be set."
+    },
+    {
+      "field": "amount.value",
+      "code": "OUT_OF_RANGE",
+      "message": "Value must be greater than 0."
+    }
+  ]
+}
+```
+
+### 422 — Routing or permission failure
+
+```json
+{
+  "type": "https://docs.y.uno/errors/UNREFERENCED_REFUND_NOT_SUPPORTED",
+  "code": "UNREFERENCED_REFUND_NOT_SUPPORTED",
+  "title": "No provider supports this payment-method for non-referenced refunds",
+  "status": 422,
+  "detail": "Provider 'CHECKOUTCOM' does not define operation_type=Credit for CARD payment-methods in country US.",
+  "trace_id": "01HX31R6QK7E2F4G5H6J7K8M9N"
+}
+```
+
+### Common error codes
+
+| HTTP | Code | Description |
+|---|---|---|
+| 400 | `VALIDATION_ERROR` | One or more fields failed schema validation. Inspect `errors[]`. |
+| 400 | `INVALID_PAYMENT_METHOD_SOURCE` | More than one of `vaulted_token` / `detail.*` was supplied, or none. |
+| 401 | `UNAUTHORIZED` | Missing or invalid API keys. |
+| 409 | `IDEMPOTENCY_CONFLICT` | Same `X-Idempotency-Key` used with a different body. |
+| 422 | `UNREFERENCED_REFUND_NOT_SUPPORTED` | No eligible provider for the requested payment-method / country combination. |
+| 422 | `PROVIDER_PERMISSION_NOT_ENABLED` | The tenant flag required by the provider is not enabled (e.g. Stripe `EnableStripeCreditOperation`). |
+| 422 | `FRAUD_DECLINED` | Pre-screening rejected the refund. |
+| 502 | `PROVIDER_ERROR` | Provider returned an unhandled error. |
+
+---
