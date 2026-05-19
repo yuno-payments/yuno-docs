@@ -1,0 +1,296 @@
+---
+title: "Create Unreferenced Refund"
+description: "Create an unreferenced refund (standalone credit)."
+api: "POST /v1/unreferenced-refunds"
+---
+
+This request allows you to create an unreferenced refund — a credit pushed directly to a payment method without referencing an original payment transaction.
+
+<Info>
+**When to use Unreferenced Refunds**
+
+Use this endpoint when the original charge was processed outside Yuno (legacy billing system, external subscription engine) or when you need to send a goodwill / promotional credit. For reversing a Yuno-captured payment, use [Refund Payment endpoint with transaction](/reference/refund-payment) instead.
+</Info>
+
+<ParamField header="public-api-key" type="string" required>
+The unique public API key for your account. You find this on [the Yuno dashboard](https://dashboard.y.uno/).
+</ParamField>
+
+<ParamField header="private-secret-key" type="string" required>
+The unique private secret key for your account. You find this on [the Yuno dashboard](https://dashboard.y.uno/).
+</ParamField>
+
+<ParamField header="X-Idempotency-Key" type="string" required>
+Unique UUID v4 identifier used to safely retry the request. Retries with the same key return the originally created refund.
+</ParamField>
+
+<ParamField body="account_id" type="string" required>
+The unique identifier of the account. You find this information on [the Yuno dashboard](https://dashboard.y.uno/) (UUID, 36 chars).
+</ParamField>
+
+<ParamField body="merchant_order_id" type="string" required>
+The unique identifier of your internal credit/refund (MAX 255; MIN 3).
+</ParamField>
+
+<ParamField body="merchant_reference" type="string">
+Optional correlation ID. Defaults to `merchant_order_id` (MAX 255; MIN 3).
+</ParamField>
+
+<ParamField body="description" type="string" required>
+The description of the refund. Appears on dashboards and statements (MAX 255; MIN 3).
+</ParamField>
+
+<ParamField body="country" type="string" required>
+Country where the refund must be processed (MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference)). Drives provider routing.
+</ParamField>
+
+<ParamField body="amount" type="object" required>
+Specifies the refund amount object, with the value and currency.
+
+<Expandable title="properties">
+<ParamField body="value" type="number" required>
+The refund amount (multiple of 0.0001). Must be greater than 0.
+</ParamField>
+<ParamField body="currency" type="string" required>
+The currency used for the refund (MAX 3; MIN 3; [ISO 4217](/reference/country-reference)).
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="provider_data" type="object">
+Pins the refund to a specific gateway, bypassing routing rules. Useful when the destination provider is dictated by where the original payment was processed.
+
+<Expandable title="properties">
+<ParamField body="id" type="string" required>
+Provider identifier. Allowed values: `ADYEN`, `STRIPE`, `NUVEI`, `BRAINTREE`, `GOCARDLESS`, `ORBITAL`, `WORLDPAY`, `VANTIV`, `CARDCONNECT`, `FISERV_COMMERCEHUB`, `MONERIS`, `NMI`, `FIRSTDATA`, `WINDCAVE`, `SAFERPAY`, `JPM`, `PAYPAL_EXPRESS_CHECKOUT`, `MASTERCARD`, `CITI`, `WELLSFARGO`, `SAGEPAY`, `FATZEBRA`, `HELIX`, `24HF`, `MERCHANTE_SOLUTIONS`, `ANB`, `AUTHORIZE_NET`, `SPECTRUM`.
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="payment_method" type="object" required>
+Specifies the destination of the refund — vaulted token, raw card, bank transfer, or wallet. Exactly one of `vaulted_token` or `detail.<card|wallet|bank_transfer>` must be set.
+
+<Expandable title="properties">
+<ParamField body="vaulted_token" type="string">
+Yuno-side vault reference for a previously stored payment method. Preferred path — keeps PCI scope minimal.
+</ParamField>
+
+<ParamField body="detail" type="object">
+Inline payment-method details. Use when you do not have a vaulted token. Exactly one sub-object must be populated: `card`, `wallet`, or `bank_transfer`.
+
+<Expandable title="properties">
+
+<ParamField body="card" type="object">
+Use when you need to push the refund to a raw card (Yuno will encrypt the PAN at the edge).
+
+<Expandable title="properties">
+<ParamField body="card_data" type="object" required>
+<Expandable title="properties">
+<ParamField body="number" type="string" required>The card number (PAN). Encrypted at the edge.</ParamField>
+<ParamField body="holder_name" type="string" required>Name as it appears on the card.</ParamField>
+<ParamField body="expiration_month" type="integer" required>Card expiration month (1–12).</ParamField>
+<ParamField body="expiration_year" type="integer" required>Card expiration year.</ParamField>
+<ParamField body="security_code" type="string">CVV / CVC. Most acquirers do not require it for credits.</ParamField>
+<ParamField body="brand" type="string" required>One of: `VISA`, `MASTERCARD`, `AMEX`, `DINERS`, `DISCOVER`, `JCB`, `UNIONPAY`, `UATP`, `ELO`, `HIPERCARD`, `MAESTRO`.</ParamField>
+<ParamField body="type" type="string">Card type: `CREDIT`, `DEBIT`, `PREPAID`.</ParamField>
+</Expandable>
+</ParamField>
+<ParamField body="soft_descriptor" type="string">The text shown on the cardholder's statement (MAX 255).</ParamField>
+<ParamField body="stored_credentials" type="object">Stored-credential metadata for recurring-credit flows. Reuses the same shape as `/v1/payments`.</ParamField>
+<ParamField body="network_token" type="object">Network-token metadata (Visa Token Service / Mastercard MDES) when refunding to a tokenized network credential.</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="bank_transfer" type="object">
+Use for SEPA / IBAN, ACH, and GoCardless mandate refunds.
+
+<Expandable title="properties">
+<ParamField body="provider_token" type="string">Provider-side reference to a pre-existing bank object. **Required for GoCardless** — carries the `mandate_id` (e.g. `MD000ABCDEF123`). When supplied, `bank_account` and `bank_id` are optional.</ParamField>
+<ParamField body="bank_account" type="string">IBAN (SEPA) or account number (ACH / local). Required when no `provider_token` is supplied.</ParamField>
+<ParamField body="bank_id" type="string">BIC / SWIFT (non-SEPA EU corridors) or ABA-9 routing number (ACH). Required for ACH.</ParamField>
+<ParamField body="account_type" type="string" required>One of: `IBAN`, `CHECKING`, `SAVINGS`, `CLABE`, `CCI`, `LOCAL`, `MANDATE` (new — used for GoCardless).</ParamField>
+<ParamField body="beneficiary_name" type="string" required>Recipient name on the account.</ParamField>
+<ParamField body="beneficiary_type" type="string">`INDIVIDUAL` or `ENTITY`.</ParamField>
+<ParamField body="beneficiary_document" type="object">
+Recipient's tax / national ID. Required for ACH (SSN / EIN) and for LATAM SEPA-equivalent corridors.
+<Expandable title="properties">
+<ParamField body="document_type" type="string">e.g., SSN, EIN</ParamField>
+<ParamField body="document_number" type="string">e.g., 123-45-6789</ParamField>
+</Expandable>
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="wallet" type="object">
+Use for PayPal Express Checkout refunds.
+
+<Expandable title="properties">
+<ParamField body="payment_token" type="string" required>PayPal `payerID` of the recipient.</ParamField>
+</Expandable>
+</ParamField>
+
+</Expandable>
+</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="customer_payer" type="object">
+Specifies the recipient of the refund. Required for ACH, SEPA, and PayPal destinations to satisfy OFAC and AML screening.
+<Expandable title="properties">
+<ParamField body="id" type="string">Existing Yuno customer UUID. Alternative to inlining the customer PII.</ParamField>
+<ParamField body="merchant_customer_id" type="string">Your external customer identifier.</ParamField>
+<ParamField body="first_name" type="string">Recipient's first name.</ParamField>
+<ParamField body="last_name" type="string">Recipient's last name.</ParamField>
+<ParamField body="email" type="string">Recipient's email address.</ParamField>
+<ParamField body="phone" type="object">`{ country_code, number, extension }`.</ParamField>
+<ParamField body="document" type="object">National identification document. `{ document_type, document_number }`.</ParamField>
+<ParamField body="date_of_birth" type="string">YYYY-MM-DD.</ParamField>
+<ParamField body="nationality" type="string">ISO 3166-1 alpha-2 country code.</ParamField>
+<ParamField body="ip_address" type="string">Recipient's IP address (when known).</ParamField>
+<ParamField body="billing_address" type="object">Postal address.</ParamField>
+<ParamField body="shipping_address" type="object">Same shape as `billing_address`.</ParamField>
+<ParamField body="type" type="string">`INDIVIDUAL` or `ENTITY`.</ParamField>
+<ParamField body="business_name" type="string">Required when `type = ENTITY`.</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="metadata" type="array of objects">
+Optional list of key/value pairs for your own reference. Echoed back in the response and webhook payload.
+<Expandable title="properties">
+<ParamField body="key" type="string">Free-form label.</ParamField>
+<ParamField body="value" type="string">Free-form value. Max 512 characters.</ParamField>
+</Expandable>
+</ParamField>
+
+<ParamField body="callback_url" type="string">
+HTTPS URL where Yuno will deliver webhook events for this refund. Falls back to your account-level webhook if omitted.
+</ParamField>
+
+<ParamField body="fraud_screening" type="object">
+When `stand_alone: true`, Yuno runs an ML fraud check before submitting to the provider. Recommended for raw-card refunds.
+<Expandable title="properties">
+<ParamField body="stand_alone" type="boolean">When `true`, performs a fraud check before provider submission.</ParamField>
+</Expandable>
+</ParamField>
+
+<RequestExample>
+
+```json Example request
+{
+  "account_id": "9f6e0a4c-1d2b-4e3f-8a9b-1c2d3e4f5a6b",
+  "merchant_order_id": "REFUND-2026-05-14-001",
+  "merchant_reference": "credit-note-7891",
+  "description": "Subscription correction — duplicate charge",
+  "country": "US",
+  "amount": {
+    "value": 25.00,
+    "currency": "USD"
+  },
+  "provider_data": {
+    "id": "STRIPE"
+  },
+  "payment_method": {
+    "vaulted_token": "vt_01HX2Y3ZP4Q5R6S7T8U9V0W1X2"
+  },
+  "customer_payer": {
+    "id": "cus_01HX2K9PQR3S4T5U6V7W8X9Y0Z",
+    "merchant_customer_id": "cust_4521",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com"
+  },
+  "metadata": [
+    { "key": "billing_cycle_id", "value": "bc_2026_05" },
+    { "key": "support_ticket", "value": "ZD-99214" }
+  ],
+  "callback_url": "https://merchant.example.com/yuno/webhooks/refunds"
+}
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json 201 - Refund created
+{
+  "id": "urf_01HX31R6QK7E2F4G5H6J7K8M9N",
+  "account_id": "9f6e0a4c-1d2b-4e3f-8a9b-1c2d3e4f5a6b",
+  "merchant_order_id": "REFUND-2026-05-14-001",
+  "merchant_reference": "credit-note-7891",
+  "country": "US",
+  "description": "Subscription correction — duplicate charge",
+  "amount": {
+    "value": 25.00,
+    "currency": "USD"
+  },
+  "status": "CREATED",
+  "sub_status": "CREATED",
+  "payment_method": {
+    "vaulted_token": "vt_01HX2Y3ZP4Q5R6S7T8U9V0W1X2",
+    "detail": {
+      "card": {
+        "card_data": {
+          "brand": "VISA",
+          "last_four": "1111",
+          "type": "CREDIT"
+        }
+      }
+    }
+  },
+  "customer_payer": {
+    "id": "cus_01HX2K9PQR3S4T5U6V7W8X9Y0Z",
+    "merchant_customer_id": "cust_4521",
+    "first_name": "John",
+    "last_name": "Doe"
+  },
+  "provider": {
+    "name": "STRIPE",
+    "type": "PSP",
+    "connection_id": "conn_01HX0J8FZQK7M3N4P5R6S7T8U9",
+    "reference": "re_3OqQz92eZvKYlo2C0g6XK1Yj",
+    "category": "APPROVED",
+    "raw_response_code": "succeeded"
+  },
+  "metadata": [
+    { "key": "billing_cycle_id", "value": "bc_2026_05" }
+  ],
+  "created_at": "2026-05-14T11:47:13.482Z",
+  "updated_at": "2026-05-14T11:47:13.482Z"
+}
+```
+
+```json 400 - Validation error
+{
+  "type": "https://docs.y.uno/errors/VALIDATION_ERROR",
+  "code": "VALIDATION_ERROR",
+  "title": "Request validation failed",
+  "status": 400,
+  "detail": "One or more fields did not pass validation",
+  "trace_id": "01HX31R6QK7E2F4G5H6J7K8M9N",
+  "errors": [
+    {
+      "field": "payment_method",
+      "code": "INVALID_PAYMENT_METHOD_SOURCE",
+      "message": "Exactly one of 'vaulted_token' or 'detail.<card|wallet|bank_transfer>' must be set."
+    },
+    {
+      "field": "amount.value",
+      "code": "OUT_OF_RANGE",
+      "message": "Value must be greater than 0."
+    }
+  ]
+}
+```
+
+```json 422 - Routing or permission failure
+{
+  "type": "https://docs.y.uno/errors/UNREFERENCED_REFUND_NOT_SUPPORTED",
+  "code": "UNREFERENCED_REFUND_NOT_SUPPORTED",
+  "title": "No provider supports this payment-method for non-referenced refunds",
+  "status": 422,
+  "detail": "Provider 'CHECKOUTCOM' does not define operation_type=Credit for CARD payment-methods in country US.",
+  "trace_id": "01HX31R6QK7E2F4G5H6J7K8M9N"
+}
+```
+
+</ResponseExample>

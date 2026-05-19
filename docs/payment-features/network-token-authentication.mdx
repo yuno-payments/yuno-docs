@@ -1,0 +1,135 @@
+---
+title: "Network Token Authentication"
+---
+
+Network Token Authentication (NTA) is Yuno's unified solution for authenticating card payments through **Network Token Passkeys** — the passkey-backed authentication experiences offered by the card networks on top of their tokenization services. It consolidates every network's passkey integration under a single Yuno product, providing merchants with a consistent flow, configuration point, and shopper experience regardless of the underlying network.
+
+The purpose of NTA is simple: allow merchants to turn card-on-file payments into authenticated, passkey-backed transactions without integrating network-specific SDKs. Yuno handles the cryptography, redirects, and network-specific plumbing, while the merchant controls when a payment follows the passkey flow through routing rules.
+
+## What the product solves
+
+Card-on-file payments traditionally rely on a stored PAN and, at best, a static CVC re-entry. This often leads to:
+
+- **Low approval rates**: Issuers treat unauthenticated card-on-file as higher risk.
+- **High friction**: Fallbacks usually involve a full 3DS challenge.
+
+Network Token Passkeys address both issues. The transaction is submitted as a network token with a cryptogram, and the shopper authenticates once against the network using a device passkey (biometric or one-time passcode). This results in a transaction that is both tokenized and authenticated, shifting liability where applicable.
+
+## Benefits for the merchant
+
+- **Higher authorization approval rates**: Passkey-authenticated transactions carry a strong authentication signal rewarded by issuers.
+- **Liability shift**: Fraud liability moves to the issuer on authenticated transactions, reducing chargeback exposure.
+- **SCA compliance**: Satisfies Strong Customer Authentication (SCA) requirements with a lighter shopper experience than standalone 3DS.
+- **Smoother repeat-purchase experience**: Once a passkey is registered, future purchases on the same device are frictionless and faster.
+- **Reduced friction-driven drop-off**: The passkey step is network-hosted and optimized for mobile, cutting abandonment.
+- **One integration for every network**: Merchants inherit new network integrations automatically as Yuno onboards them.
+- **Merchant-controlled via routing**: Decide exactly when to apply NTA (e.g., per country, amount, payment method, BIN) using standard Yuno routing rules.
+
+## Supported brands
+
+| Brand | Passkey product | Status |
+| --- | --- | --- |
+| Mastercard | Secure Card on File (SCOF) | Supported |
+
+Additional networks will be added as their passkey integrations are productized. The merchant-facing flow remains identical across brands.
+
+## How it works at Yuno
+
+Network Token Authentication is **opt-in per merchant** and driven entirely by routing configuration. There is no change to the payment creation call; the passkey flow is triggered based on the routing rules for that specific transaction.
+
+### Setup steps
+
+Before triggering a passkey flow, complete the following setup:
+
+1. **Onboard in Network Tokens**: Enable your account for [Network Tokens](/docs/security-and-compliance/network-tokens).
+2. **Create a Network Token Authentication connection**: In the Yuno Dashboard, create a dedicated connection of type **Network Token Authentication**.
+3. **Load 3DS information**: Ensure the payment provider connection processing the authorization has its 3DS credentials/configuration loaded.
+4. **Configure routing**: Place the NTA connection as a step that runs **prior** to the payment provider step in your routing configuration.
+
+### Runtime behavior
+
+1. When a payment is created, Yuno evaluates the routing rules **before** sending the transaction to the acquirer.
+2. If the route includes the Network Token Authentication step, Yuno triggers the passkey flow with the corresponding network.
+3. If not, the payment proceeds as a standard card authorization.
+
+Yuno handles routing evaluation, passkey triggering, redirect handling, and returning the authenticated result.
+
+## Integration
+
+When NTA is triggered, Yuno surfaces it as a standard `REDIRECT_URL` continue action. This matches the pattern used by redirect-based APMs, requiring no network-specific frontend code.
+
+### 1. Initialize Yuno
+
+```js
+const yuno = await Yuno.initialize(PUBLIC_API_KEY)
+```
+
+### 2. Start the payment client
+
+```js
+const apiClientPayment = await yuno.apiClientPayment({
+  country_code: "US",
+  checkout_session: "<CHECKOUT_SESSION>",
+})
+```
+
+### 3. Generate the one-time token
+
+```js
+const oneTimeToken = await apiClientPayment.generateToken({
+  checkout_session: "<CHECKOUT_SESSION>",
+  payment_method: {
+    type: "CARD",
+    vaulted_token: "<VAULTED_TOKEN>",
+    card: { detail: { security_code: "123" } },
+  },
+})
+```
+
+### 4. Create the payment
+
+From your backend, call Yuno's [Create Payment](https://docs.y.uno/reference/payments/create-payment) endpoint with `payment_method.token` set to the one-time token. If NTA is triggered, the response contains `sdk_action_required: true`.
+
+### 5. Get the continue action
+
+```js
+const data = await apiClientPayment.getContinuePaymentAction({
+  checkoutSession: "<CHECKOUT_SESSION>",
+})
+```
+
+`data.action` will be `REDIRECT_URL` and `data.redirect` contains the network-hosted authentication URL:
+
+```json
+{
+  "action": "REDIRECT_URL",
+  "redirect": {
+    "init_url": "https://...",
+    "success_url": "https://...",
+    "error_url": "https://..."
+  }
+}
+```
+
+### 6. Redirect the shopper
+
+Use a full-page browser redirect to send the shopper to `redirect.init_url`.
+
+```js
+if (data.action === "REDIRECT_URL") {
+  window.location.href = data.redirect.init_url
+}
+```
+
+After authentication, the network redirects the shopper back to your site. Use [Yuno Webhooks](/docs/webhooks/configure-webhooks) or [Retrieve Payment by ID](https://docs.y.uno/reference/payments/retrieve-payment-by-id) to read the final status.
+
+## When authentication is triggered
+
+NTA runs **only** when:
+1. The merchant is onboarded in Network Tokens.
+2. An NTA connection exists with 3DS info on the payment provider connection.
+3. The NTA connection is correctly placed in the routing before the payment step.
+
+## Handling the final status
+
+The flow is asynchronous. Wait for the outcome via webhook or poll the payment status. Terminal states are standard Yuno statuses (`SUCCEEDED`, `DECLINED`, `CANCELLED`, `EXPIRED`).

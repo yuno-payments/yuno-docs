@@ -1,0 +1,167 @@
+---
+title: Android Reference
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+---
+
+Parameters, customizations, and advanced features for all Android SDK flows. Setup: [Payment flows (Android)](/docs/sdks/full-checkout/android-payments), [Enrollment flows (Android)](/docs/sdks/card-enrollment/android-enrollment), [integration modes](/docs/sdks/overview/choose-integration).
+
+## Key parameters (checkout session creation)
+
+When creating a checkout session on your backend for payment flows, the following parameters are commonly used across Android SDKs:
+
+| Parameter            | Required | Description                                                                                                                                                                                                                                                                                                        |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `amount`             | Yes      | The primary transaction amount object containing `currency` (ISO 4217 code) and `value` (numeric amount in that currency).                                                                                                                                                                                         |
+| `alternative_amount` | No       | An alternative currency representation of the transaction amount with the same structure as `amount` (`currency` and `value`). Useful for multi-currency scenarios, such as displaying prices to customers in their preferred currency (e.g., USD) while processing the payment in the local currency (e.g., COP). |
+
+## Payment parameters (full reference)
+
+Parameters for payment flows. All parameters used in [Payment flows (Android)](/docs/sdks/full-checkout/android-payments) are listed here with full detail.
+
+| Parameter               | Type     | Required | Description                                                                                                                                                                                                                                                                 |
+| ----------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `checkoutSession`       | string   | Yes      | Checkout session ID from your backend (Create checkout session API). Required for all payment flows.                                                                                                                                                                         |
+| `countryCode`           | string   | Yes      | ISO country code where the payment runs (e.g. `US`, `BR`). Determines available payment methods and compliance.                                                                                                                                                            |
+| `callbackPaymentState`| function | No       | Callback invoked when the payment state changes. Receives the current state: e.g. `SUCCEEDED`, `FAIL`, `PROCESSING`, `REJECT`. Use for UI updates, analytics, or navigation.                                                                                                  |
+| `merchantSessionId`     | string   | No       | Optional merchant session identifier. Use to correlate the SDK session with your own session or order ID.                                                                                                                                                                   |
+
+## YunoConfig options (initialize)
+
+Runtime behavior and appearance are configured via the `YunoConfig` data class when calling `Yuno.initialize(context, publicApiKey, config)`. All parameters used across Android payment and enrollment flows are listed below. For visual styling (fonts, colors, buttons), see [SDK customizations (Android)](/docs/sdks/customization/android).
+
+| Parameter          | Type    | Required | Description                                                                                                                                                                                                                                                                 |
+| ------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `saveCardEnabled`  | boolean | No       | When `true`, allows the user to save or enroll the card during payment. Requires backend support for vaulting (e.g. `payment_method.vault_on_success` in checkout session).                                                                                               |
+| `keepLoader`       | boolean | No       | If `true`, the SDK loader persists from OTT generation until `continuePayment()` is called, preventing UI flickering. If payment creation fails, call `hideLoader()` to manually dismiss it. |
+| `language`         | string  | No       | Language code for the SDK UI (e.g. `en`, `es`). Use a code from [Supported languages](/docs/sdks/resources/languages-supported) when available.                                                                                                                     |
+| `styles`           | object  | No       | Custom styles applied to SDK UI elements. Define in your app's styles and reference here, or use theme overrides. See [SDK customizations (Android)](/docs/sdks/customization/android) for font, button, and color options.                                                       |
+
+## Enrollment parameters (full reference)
+
+Parameters for enrollment flows. All parameters used in [Enrollment flows (Android)](/docs/sdks/card-enrollment/android-enrollment) are listed here with full detail.
+
+| Parameter                | Type     | Required | Description                                                                                                                                                                                                                                                                 |
+| ------------------------ | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `customerSession`        | string   | Yes      | Customer session ID from Create customer session API. Required. Associates the enrolled payment method with a specific customer.                                                                                                                                             |
+| `countryCode`            | string   | Yes      | ISO country code (e.g. `US`, `BR`). Required for enrollment.                                                                                                                                                                                                                 |
+| `showEnrollmentStatus`   | boolean  | No       | When `true`, shows the enrollment result screen after the flow. Default `true`. Set to `false` to handle result only via callback.                                                                                                                                          |
+| `callbackEnrollmentState`| function | No       | Callback invoked when enrollment state changes. Requires registering `initEnrollment` in your Activity's `onCreate` (or equivalent) so the SDK can deliver results. Optional when using `onActivityResult` with `requestCode`.                                               |
+| `requestCode`            | int      | No       | Optional request code used when capturing the enrollment result via `onActivityResult`. Use when you prefer activity-result flow over callbacks.                                                                                                                              |
+
+## Public methods
+
+The following methods are available globally via the `Yuno` object or as `Activity` extensions.
+
+### `Activity.hideLoader()`
+
+Dismisses the SDK loader when `keepLoader` is active. Use this method when a backend payment creation fails and you cannot proceed with `continuePayment()`.
+
+```kotlin
+fun Activity.hideLoader()
+```
+
+### `Yuno.continuePayment()`
+
+Resumes the payment flow for asynchronous methods (3ds, PIX, etc.) after a payment has been created on your backend.
+
+```kotlin
+fun continuePayment(
+    showPaymentStatus: Boolean = true,
+    checkoutSession: String? = null,
+    countryCode: String? = null,
+    callbackPaymentState: ((String?) -> Unit)? = null
+)
+```
+
+## Enrolling payment methods
+
+You can enroll payment methods (store cards for future use) during the payment flow or via dedicated enrollment flows. For payment flows, enable save card in `YunoConfig` and set `payment_method.vault_on_success` (or equivalent) when creating the checkout session where supported. For dedicated enrollment, see [Enrollment flows (Android)](/docs/sdks/card-enrollment/android-enrollment).
+
+## `keepLoader` parameter
+
+> **Available since Android SDK v2.13.0**
+
+### How it works
+
+The `keepLoader` parameter allows you to persist the SDK's loading indicator across the entire `startPayment` → `continuePayment` flow, providing a seamless visual experience without the loader flickering between steps.
+
+By default, the SDK hides its loader after generating the One-Time Token (OTT) and shows it again when `continuePayment` is called. With `keepLoader` enabled, the loader stays visible continuously from the moment the user submits the payment form until the payment is fully processed (or explicitly dismissed).
+
+```mermaid
+sequenceDiagram
+    participant Merchant
+    participant SDK as Yuno SDK
+    participant User as Loader Screen
+    
+    Merchant->>SDK: startPayment(keepLoader: true)
+    SDK->>User: Show Loader
+    SDK->>Merchant: callbackOTT(token)
+    Note over User: Loader remains visible
+    Merchant->>SDK: continuePayment()
+    SDK->>User: Dismiss Loader
+```
+
+### Integration
+
+#### 1. Enable in YunoConfig
+
+```kotlin
+Yuno.initialize(
+    applicationContext = this,
+    apiKey = "YOUR_PUBLIC_API_KEY",
+    config = YunoConfig(
+        keepLoader = true,
+    ),
+)
+```
+
+#### 2. Handle OTT and call `continuePayment`
+
+When `keepLoader` is enabled, the OTT callback fires while the loader is still visible. Create your payment on your backend and then call `continuePayment` as usual:
+
+```kotlin
+activity.startCheckout(
+    checkoutSession = checkoutSession,
+    countryCode = countryCode,
+    callbackOTT = { token ->
+        // The loader is still visible at this point.
+        // Create payment on your backend using the token,
+        // then call continuePayment:
+        activity.continuePayment(showPaymentStatus = true)
+    },
+    callbackPaymentState = { state, subState ->
+        // Handle final payment state
+    },
+)
+```
+
+#### 3. Handle errors with `hideLoader`
+
+If your backend call fails and you cannot proceed with `continuePayment`, call `hideLoader()` to dismiss the loader and finish the payment flow:
+
+```kotlin
+callbackOTT = { token ->
+    try {
+        val payment = createPaymentOnBackend(token)
+        activity.continuePayment(showPaymentStatus = true)
+    } catch (e: Exception) {
+        // Dismiss the loader on failure
+        activity.hideLoader()
+    }
+}
+```
+
+<Warning>
+  **Handling Failures**  
+  When `keepLoader` is active and payment creation fails, you **must** call `hideLoader()`. Otherwise, the loader will remain on the screen indefinitely (until the built-in timeout triggers).
+</Warning>
+
+### Compatibility
+
+- Works with both **Full** and **Lite** payment flows (`startPayment` and `startPaymentLite`).
+- Compatible with vaulted tokens.
+- The loader respects the SDK's built-in timeout — if neither `continuePayment` nor `hideLoader` is called, the loader will automatically dismiss after the timeout period.
+- Not applicable to the **Seamless** flow (`startPaymentSeamlessLite`), which does not use the `startPayment` → `continuePayment` two-step pattern.

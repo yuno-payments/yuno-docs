@@ -1,0 +1,272 @@
+---
+title: Headless SDK (Enrollment Android)
+description: >-
+  Step-by-step guide on integrating Yuno's Headless SDK (Enrollment Android) into
+  your mobile application.
+robots: index
+---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+
+<GenericOrientation />
+This page provides a guide to the Yuno Headless SDK for Android enrollment.
+
+The Yuno Headless SDK for Android provides a flexible, UI-free solution for enrolling payment methods and tokenizing cards.
+
+This SDK offers complete control over the payment method enrollment process, making it ideal for merchants who:
+
+* Need full control over the UI and user experience
+* Want to implement custom enrollment flows
+* Require advanced integration capabilities
+
+The Headless SDK includes core features like:
+
+* Card tokenization
+* Secure payment method enrollment
+* Direct API access
+* Custom error handling
+
+For merchants requiring a pre-built UI solution or simpler integration, consider using our other SDK implementations:
+
+* [Full Checkout SDK](/docs/sdks/full-checkout/android-payments)
+* [Lite SDK](/docs/sdks/lite-android/enrollment)
+
+## Requirements
+
+Before starting the Yuno Android SDK integration, ensure your project meets the technical requirements:
+
+* **Minimum SDK Version**: `minSdkVersion` 21 or above
+* **Java**: Java 8 enabled
+* **AndroidX**: Use AndroidX instead of older support libraries
+* **Android Gradle Plugin**: 4.0.0 or above
+* **ProGuard**: 6.2.2 or above
+* **Kotlin Gradle Plugin**: 1.4.0 or above
+* **ELF Page Size Support**: Compliant with Google's 16 KB ELF page alignment requirements (Android 15 / ARMv9 ready)
+
+### ProGuard / R8 Configuration
+
+If your project has `minifyEnabled = true`, add these rules to your `proguard-rules.pro` file to ensure the SDK works correctly, especially with **AGP 8.x+ R8 full mode**.
+
+<Accordion title="Official Yuno ProGuard / R8 rules">
+  ```proguard
+  # Preserve generic type signatures and annotations
+  -keepattributes Signature
+  -keepattributes *Annotation*
+
+  # Yuno SDK
+  -keep class com.yuno.** { *; }
+  -dontwarn com.yuno.**
+
+  # Gson — R8 full mode compatibility
+  -keep class com.google.gson.** { *; }
+  -keep,allowobfuscation,allowshrinking,allowoptimization class * extends com.google.gson.reflect.TypeToken
+  -dontwarn com.google.gson.**
+
+  # Retrofit — R8 full mode compatibility
+  -keep,allowobfuscation,allowshrinking interface retrofit2.Call
+  -keep,allowobfuscation,allowshrinking class retrofit2.Response
+  -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+  -dontwarn retrofit2.**
+
+  # OkHttp + Okio — Suppress warnings
+  -dontwarn okhttp3.**
+  -dontwarn okio.**
+  ```
+
+  ### Why are these rules necessary?
+
+  AGP 8.x+ enables **R8 full mode** by default, which aggressively strips generic type signatures. Without `-keepattributes Signature`, Gson’s `TypeToken<T>` can fail at runtime with `java.lang.Class cannot be cast to java.lang.reflect.ParameterizedType`.
+</Accordion>
+
+<Info>
+**SDK Version Information**
+
+Verify the current SDK version by accessing the Release notes or visiting the [Yuno Android SDK repository](https://github.com/yuno-payments/yuno-sdk-android).
+</Info>
+
+## Step 1: Create a customer
+
+Create a customer using the [Create Customer](/reference/customers/create-customer) endpoint before enrolling payment methods.
+
+## Step 2: Create a customer session
+
+Create a new `customer_session` using the [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session) endpoint:
+
+* Include the customer ID in the request
+* Store the returned `customer_session` ID
+* Generate a new `customer_session` for each payment method enrollment.
+
+## Step 3: Add the SDK to your project
+
+1. Add the repository source:
+
+```kotlin
+maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+```
+
+2. Add the SDK dependency:
+
+```kotlin
+dependencies {
+    implementation 'com.yuno.payments:android-sdk:{last_version}'
+}
+```
+
+<Info>
+**Internet Permission Required**
+
+The Yuno SDK automatically includes the `INTERNET` permission, necessary for network requests. Ensure your AndroidManifest.xml contains:
+
+`<uses-permission android:name="android.permission.INTERNET" />`
+</Info>
+
+## Step 4: Initialize Headless SDK with the public key
+
+Retrieve your public API keys from the [Yuno dashboard](https://dashboard.y.uno/).
+
+If you haven't implemented a custom application, create one. In the `onCreate()` method of your application class, call the initialize function (`Yuno.initialize`):
+
+```kotlin
+class CustomApplication : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    Yuno.initialize(
+      this,
+      PUBLIC_API_KEY,
+      config: YunoConfig,
+    )
+  }
+}
+```
+
+## Step 5: Create an enrollment payment method object
+
+Create an enrollment payment method object using the [Enroll Payment Method](/reference/payment-methods-checkout/enroll-payment-method-checkout) endpoint to set up the Headless SDK integration for enrollment. When creating this object, specify which payment method type your customer can enroll in. Currently, the Headless SDK only supports the CARD payment method type.
+
+<Info>
+**Card Verification**
+
+To verify cards (zero value authorization) before enrollment, include the `verify` object when creating the payment method object for the customer session.
+</Info>
+
+
+## Step 6: Start the enrollment process
+
+Use the `apiClientEnroll` function to start the enrollment process. This function requires configuration parameters that define how the enrollment will be processed. The following table describes the required parameters:
+
+| Parameter | Description |
+| --- | --- |
+| `country_code` | This parameter determines the country for which the payment process is being configured. The complete list of supported countries and their `country_code` is available on the [Country coverage](/docs/sdks/resources/country-coverage) page. |
+| `customer_session` | Refers to the current enrollment's customer session received as a response to the [Create Customer Session](/reference/customer-sessions-enrollment/create-customer-session) endpoint. Example: `438413b7-4921-41e4-b8f3-28a5a0141638` |
+
+The following code block shows an example of the parameter configuration:
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+	val apiClientEnroll = Yuno.apiClientEnroll(
+  	country_code = "CO",
+    customer_session = "eec6578e-ac2f-40a0-8065-25b5957f6dd3",
+    context = this 
+  )
+ }
+```
+
+
+## Step 7: Generate a vaulted token
+
+After collecting all required customer information, create a `vaulted_token` using the `apiClientEnroll.continueEnrollment` function. Since this is an asynchronous function, use a `try/catch` block to handle any errors that may occur. The following example shows how to create a `vaulted_token`:
+
+```kotlin
+apiClientEnroll.continueEnrollment( 
+ collectedData = EnrollmentCollectedData(
+    customerSession = "customer_session",
+    paymentMethod = EnrollmentMethod(
+           type = "CARD",
+           card = CardData(
+               save = true,
+               detail = Detail(
+                   expirationMonth = 11,
+                   expirationYear = 55,
+                   number = "4111111111111111",
+                   securityCode = "123",
+                   holderName = "Firstname Lastname",
+                   type = CardType.DEBIT
+               ),
+           customer = Customer(
+               id = "id",
+               merchantCustomerId = "merchant_customer_id",
+               firstName = "firstName",
+               email = "email@email.com",
+               country = "CO",
+               document = Document(
+                   documentType = "PAS",
+                   documentNumber = "PAS12312"
+               ),
+             phone = Phone(
+                   number = "321123321123",
+                   countryCode = "57"
+               )
+            )
+      )
+   ),
+  context = this
+ )
+
+```
+
+The `apiClientEnroll.continueEnrollment` function returns an Observable type that extends `LiveData`. You can observe the response as a standard `LiveData` with type `SingleLiveEvent<Map<String, Any?>>`. This `LiveData` emits only once and returns a `Map` containing the complete response. Below is an example response from calling `apiClientEnroll.continueEnrollment`:
+
+```json
+{
+  "vaulted_token": "9104911d-5df9-429e-8488-ad41abea1a4b",
+  "status": "SUCCEEDED",
+  "customer": {
+    "session": "eec6578e-ac2f-40a0-8065-25b5957f6dd3"
+  }
+}
+```
+
+The following code block shows an example of observing the response:
+
+```kotlin
+apiClientPayment.continueEnrollment(data, context).observe(context) { response ->
+   val status = response["status"] as String?
+   val vauldtedtoken = response["vaulted_token"] as String?
+}
+```
+
+### Enrollment flow states
+
+The `apiClientEnroll.continueEnrollment` function returns a response that includes a `status` field indicating the current state of the enrollment process. The following are the possible states returned:
+
+```kotlin
+const val ENROLLMENT_STATE_SUCCEEDED = "SUCCEEDED"
+const val ENROLLMENT_STATE_FAIL = "FAIL"
+const val ENROLLMENT_STATE_PROCESSING = "PROCESSING"
+const val ENROLLMENT_STATE_REJECT = "REJECT"
+const val ENROLLMENT_STATE_INTERNAL_ERROR = "INTERNAL_ERROR"
+const val ENROLLMENT_STATE_CANCELED_BY_USER = "CANCELED"
+```
+
+The following table provides additional information about the possible states:
+
+| State | Description | Additional action required |
+| --- | --- | --- |
+| `SUCCEEDED` | The enrollment process was successfully completed without any errors. | No. |
+| `FAIL` | The enrollment attempt failed due to errors such as data validation issues, server connection failures, or technical problems. | Yes. Investigate the cause of failure (validation, network, server) and take corrective measures. |
+| `PROCESSING` | The enrollment is currently in progress, awaiting approval or verification. | No. |
+| `REJECT` | The enrollment was rejected due to reasons such as missing requirements or detected inconsistencies. | Yes. Inform the user of the rejection, provide the reason if possible, and suggest next steps. |
+| `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the enrollment process. | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
+| `CANCELED` | The user voluntarily canceled the enrollment process or exited before completion. | No. |
+
+<Info>
+**Webhook Status Tracking**
+
+Consider using the enrollment status received via [Webhooks](/docs/webhooks/index). Yuno recommends always using this status to base and make business decisions on your platform.
+</Info>
+
+<br />
+
+## Error handling
+
+Handle errors returned by the SDK in your app (e.g. failed payments, validation errors). For HTTP status and response codes, see [Status and response codes](/reference/payments/status-and-response-codes/payment) in the API reference.
+

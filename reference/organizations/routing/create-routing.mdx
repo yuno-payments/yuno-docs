@@ -1,0 +1,197 @@
+---
+title: "Create a Routing"
+description: "Creates a routing for one (account_code, payment_method) pair. Always live on success."
+openapi: "/openapi/organizations/routing/create-routing.json POST /routing"
+---
+
+Creates a routing for one `(account_code, payment_method)` pair. Each routing references **connections** by their `connection_id`. Make sure your connections are created and `ACTIVE` for the requested `payment_method` *before* you call routing.
+
+### Body
+
+<ParamField body="payment_method" type="enum" required>
+  E.g., `CARD`, `PIX`, `WALLET`. Immutable per routing — to route a different method, create a new routing.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Free-form label.
+</ParamField>
+
+<ParamField body="default_route" type="object" required>
+  The route used when no `condition_sets[]` matches.
+  <Expandable title="properties">
+    <ParamField body="steps" type="object[]" required>
+      Each step is one provider attempt. `index` values are contiguous starting at 1.
+      <Expandable title="item">
+        <ParamField body="index" type="integer" required>
+            Step ordinal.
+        </ParamField>
+        <ParamField body="provider_id" type="string" required>
+            Must match the provider of the connection.
+        </ParamField>
+        <ParamField body="connection_id" type="UUID" required>
+            Must be `ACTIVE` and support the `payment_method`.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="condition_sets" type="object[]">
+  Optional. Ordered by `sort_number` — first matching set wins.
+  <Expandable title="item">
+    <ParamField body="sort_number" type="integer" required>
+        Priority of the condition set.
+    </ParamField>
+    <ParamField body="name" type="string" required>
+        Label for the set.
+    </ParamField>
+    <ParamField body="conditions" type="object[]" required>
+        List of [Conditions](/reference/organizations/routing/routing-conditions) that must match.
+    </ParamField>
+    <ParamField body="route" type="object" required>
+        The steps to execute if this set matches.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+<ResponseField name="id" type="string">
+  Unique identifier for the routing.
+</ResponseField>
+<ResponseField name="account_code" type="string">
+  Unique code for the account.
+</ResponseField>
+<ResponseField name="payment_method" type="enum">
+  The payment method this routing applies to (e.g., `CARD`).
+</ResponseField>
+<ResponseField name="name" type="string">
+  Label for the routing.
+</ResponseField>
+<ResponseField name="default_route" type="object">
+  The default routing logic.
+</ResponseField>
+<ResponseField name="condition_sets" type="object[]">
+  Optional conditional logic.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  ISO 8601 timestamp.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST 'https://api.y.uno/v1/routing' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Idempotency-Key: <UUID>' \
+  -d '{
+    "payment_method": "CARD",
+    "name": "Card routing — Stripe primary, Adyen fallback",
+    "default_route": {
+      "steps": [
+        {
+          "index": 1,
+          "provider_id": "STRIPE",
+          "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+          "output": [
+            {
+              "status": "DECLINE_GROUP",
+              "decline_types": ["DECLINED_BY_BANK", "DO_NOT_HONOR"],
+              "next": 2
+            },
+            { "status": "TIMEOUT",        "next": 2 },
+            { "status": "INTERNAL_ERROR", "next": 2 }
+          ]
+        },
+        {
+          "index": 2,
+          "provider_id": "ADYEN",
+          "connection_id": "b2c4d5e6-1a2b-3c4d-5e6f-7a8b9c0d1e2f"
+        }
+      ]
+    },
+    "condition_sets": [
+      {
+        "sort_number": 1,
+        "name": "Brazil — 3 to 6 installments via Adyen",
+        "description": "BR card transactions with 3–6 installments go to Adyen directly",
+        "conditions": [
+          { "condition_type": "COUNTRY",      "conditional": "EQUAL",   "values": ["BR"] },
+          { "condition_type": "INSTALLMENTS", "conditional": "BETWEEN", "values": ["3", "6"] }
+        ],
+        "route": {
+          "steps": [
+            { "index": 1, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-..." }
+          ]
+        }
+      }
+    ]
+  }'
+```
+
+```json 201 Created
+{
+  "id": "r_8f2c1d3e-4b5a-6c7d-8e9f-0a1b2c3d4e5f",
+  "account_code": "acc-uuid",
+  "payment_method": "CARD",
+  "name": "Card routing — Stripe primary, Adyen fallback",
+  "default_route": {
+    "steps": [
+      {
+        "index": 1,
+        "provider_id": "STRIPE",
+        "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+        "output": [
+          { "status": "DECLINE_GROUP", "next": 2 },
+          { "status": "TIMEOUT",        "next": 2 }
+        ]
+      },
+      { "index": 2, "provider_id": "ADYEN", "connection_id": "b2c4d5e6-..." }
+    ]
+  },
+  "condition_sets": [
+    {
+      "sort_number": 1,
+      "name": "Brazil — 3 to 6 installments via Adyen",
+      "conditions": [
+        { "condition_type": "COUNTRY", "conditional": "EQUAL", "values": ["BR"] }
+      ],
+      "route": { "steps": ["..."] }
+    }
+  ],
+  "created_at": "2026-05-12T14:30:00Z",
+  "updated_at": "2026-05-12T14:30:00Z"
+}
+```
+
+```json 400 — Non-contiguous Index
+{
+  "type": "validation_error",
+  "code": "ROUTING_VALIDATION_FAILED",
+  "message": "default_route.steps[].index must be contiguous starting at 1",
+  "details": { "path": "default_route.steps[1].index", "expected": 2, "received": 3 }
+}
+```
+
+```json 409 — Already Exists
+{
+  "type": "conflict",
+  "code": "ROUTING_ALREADY_EXISTS",
+  "message": "A routing already exists for account 'acc-uuid' and payment_method 'CARD'",
+  "details": { "payment_method": "CARD", "existing_routing_id": "r_..." }
+}
+```
+</CodeGroup>
+
+### Errors
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `ROUTING_VALIDATION_FAILED` | Schema or rule violation. `details` names the offending field/path. |
+| `400` | `ROUTING_PROVIDER_NOT_AVAILABLE` | A step references a `(provider_id, connection_id)` not active for the account on this `payment_method`. |
+| `409` | `ROUTING_ALREADY_EXISTS` | A routing already exists for this `(account, payment_method)`. Use `PATCH` to update it. |
+| `403` | `INSUFFICIENT_SCOPE` | API key missing `routing:write`. |

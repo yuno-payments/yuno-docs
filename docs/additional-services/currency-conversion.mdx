@@ -1,0 +1,156 @@
+---
+title: "Currency Conversion"
+---
+
+## Introduction
+
+Yuno's currency conversion service allows you to settle payments in both your currency and your customer's. Currency conversion is the process of converting one currency into another. It involves using exchange rates to determine the equivalent amount in the target currency.
+
+### Benefits
+
+* **Global Reach**: Allows businesses to operate internationally by accepting and making payments in multiple currencies.
+* **Customer Convenience**: Customers can pay in their preferred currency, enhancing their buying experiences.
+* **Cost Efficiency**: Optimizing conversion rates can reduce transaction costs.
+* **Revenue Optimization**: Businesses can leverage favorable exchange rates to maximize profits.
+
+### Some use Cases
+
+* **E-commerce Platforms**: Online stores that sell products internationally use currency conversion to display prices in local currencies and process payments accordingly.
+* **Remittance Services**: Companies that facilitate money transfers across borders rely on currency conversion to ensure recipients receive funds in their local currency.
+* **Travel and Hospitality**: Businesses in this sector use currency conversion to handle payments from international travelers.
+* **Investment Platforms**: Fintech platforms that offer trading in foreign stocks, bonds, or cryptocurrencies use currency conversion to manage investments across different currencies.
+
+## Implementation
+
+In Yuno, we connect different currency conversion providers, so you dont have to worry about the differences between each integration. The implementation of the service is going to depend on the currency conversion provider you choose to work with.
+
+### Key Concepts
+
+* **Exchange Rate**: The rate at which one currency can be exchanged for another. This can be a fixed rate or a floating rate that fluctuates based on market conditions.
+* **Base Currency**: The currency you are converting from.
+* **Cardholder Currency**: The currency you are converting to.
+* **Conversion Spread**: The difference between the buy and sell rates, representing the profit margin for the entity providing the conversion service.
+* **Real-Time Conversion**: Using up-to-date exchange rates to perform conversions at the exact time of the transaction.
+
+### API implementation
+
+In order to be able to use the currency conversion service you have two API implementations available.
+
+#### Provider's rate service
+
+The merchant can use the currency conversion service of an external provider and send the corresponding information directly in the payment in Yuno. In order to use this, please contact your technical account manager to make sure that the information is set properly.
+
+Example:
+
+```json
+ "amount": {
+        "currency": "COP",
+        "value": 5000, 
+        "currency_conversion": {
+            "provider_currency_conversion_id": "AAA01SADOIAJSDLAKSJM",
+            "cardholder_currency": "ARS",
+            "cardholder_amount": 1146.55    
+        }
+    }
+```
+
+#### Yuno's rate service
+
+Also, the merchant can use directly the [currency conversion service of Yuno](/reference/currency-conversion) that gets the information from the provider of their choosing and send in the creation of the payment the id of the conversion rate query and the amount data accordingly. In case of using this service, you will also need to send the id obtained in the payment request so we can link the information. Example:
+
+```json Rate service
+{
+  "account_id": "fe14c7c6-c75e-43b7-bdbe-4c87ad52c482",
+  "amount": {
+    "currency_conversion": {
+      "cardholder_currency": "USD",
+      "provider_data": {
+        "id": "CIBC"
+      }
+    },
+    "value": 10000,
+    "currency": "COP"
+  }
+}
+```
+
+```json Payment
+    "amount": {
+        "currency": "COP",
+        "value": 5000, 
+        "currency_conversion": {
+            "id": "62fdcd6c-50ea-4640-985b-5656010fe5fD",
+            "cardholder_currency": "ARS",
+            "cardholder_amount": 1146.55    
+        }
+    },
+```
+
+In order to use this, please **contact your technical account manager** to make sure that the information is set properly.
+
+## Request parameters
+
+The following fields are sent inside `amount.currency_conversion` on `POST /v1/payments`.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `cardholder_currency` | `string` | Yes | Currency the cardholder is charged in. ISO 4217 alpha-3 code. Must differ from `amount.currency`. |
+| `cardholder_amount` | `decimal` | Yes | Total amount billed to the cardholder in `cardholder_currency`. Range: `0.0001` – `9,999,999,999`. |
+| `cardholder_accepted` | `boolean` | Yes | Cardholder's explicit consent to the DCC offer. `true` = accepted (charge in `cardholder_currency`). `false` = declined (payment proceeds in merchant currency). |
+| `rate` | `decimal` | Yes | Applied FX rate (markup included). Must be `> 0`. |
+| `rate_margin_percentage` | `decimal` | Yes | Markup added over the wholesale rate, expressed as a percentage. Range: `0` – `100`. |
+| `rate_source` | `string` | Conditional | Wholesale benchmark used for the quote. Required when `rate_margin_percentage > 0`. Free text, max 50 chars. Examples: `ECB`, `REUTERS`, `BLOOMBERG`, `PROVIDER_INTERNAL`. |
+| `provider` | `string` (enum) | Yes | DCC provider that issued the quote. See [Provider values](#provider-values). |
+| `description` | `string` | Optional | Verbatim disclosure text shown to the cardholder at the point of sale. Stored unchanged for audit. Max 4096 chars. |
+| `created_at` | `string` (ISO 8601) | Yes | Timestamp when the DCC provider issued the quote. Must be `≤ now()`. |
+| `expires_at` | `string` (ISO 8601) | Optional | Timestamp when the quote expires. Must be `> created_at`. The payment is rejected if `expires_at < now()` at validation time. |
+
+### Provider values
+
+`provider` accepts one of:
+
+| Value | DCC provider | Typical market |
+| --- | --- | --- |
+| `FEXCO` | Fexco Merchant Services | Universal — largest DCC provider; supported natively by MPGS |
+| `GLOBAL_BLUE` | Global Blue | Retail, tax-free shopping, tourism |
+| `PLANET` | Planet Payment | Retail, hospitality, tourism |
+| `EURONET` | Euronet / Pure Commerce | ATM DCC, LatAm, APAC |
+| `CURRENCYFAIR` | Currencyfair | E-commerce, digital |
+| `EUROPEAN_PAYMENT_SERVICES` | European Payment Services (EPS) | EU regional |
+| `OTHER` | Any provider not listed above | Long-tail or emerging-market providers |
+
+### Validation rules
+
+* All required fields must be present.
+* `provider` must match one of the allowed enum values exactly.
+* `cardholder_currency` must be a valid ISO 4217 alpha-3 code and must differ from `amount.currency`.
+* `created_at` and `expires_at` must be valid ISO 8601 timestamps.
+* `expires_at`, when provided, must be strictly greater than `created_at`.
+* `rate_source` is required whenever `rate_margin_percentage > 0`.
+
+### Request example
+
+```json
+POST /v1/payments
+
+{
+  "account_id": "4b8f9c10-5c6a-4b2d-9b7e-2c8d3a1b4f55",
+  "merchant_order_id": "order-2026-04-24-0001",
+  "amount": {
+    "value": 1000.00,
+    "currency": "USD",
+    "currency_conversion": {
+      "cardholder_currency": "QAR",
+      "cardholder_amount": 3640.00,
+      "cardholder_accepted": true,
+      "rate": 3.6400,
+      "rate_margin_percentage": 3.75,
+      "rate_source": "ECB",
+      "provider": "FEXCO",
+      "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+      "created_at": "2026-04-24T14:30:00Z",
+      "expires_at": "2026-04-24T15:30:00Z"
+    }
+  }
+}
+```
