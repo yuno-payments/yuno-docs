@@ -1,0 +1,122 @@
+---
+title: React Native SDK
+sidebarTitle: Overview
+description: Integrate Yuno into your React Native application to accept payments and save payment methods.
+---
+
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+
+<GenericOrientation />
+
+The Yuno React Native SDK provides a set of components and methods to integrate Yuno's payment features into your mobile app. It supports both iOS and Android.
+
+## Install
+
+```bash
+npm install @yuno-payments/yuno-sdk-react-native
+```
+
+**iOS setup**:
+
+```bash
+cd ios && pod install
+```
+
+**Requirements**: 
+- react-native 0.70+
+- Node.js 16+
+- Android Min SDK 21
+- iOS 14.0+
+
+The SDK includes TypeScript definitions out of the box.
+
+## Initialize
+
+Initialize the SDK as early as possible in your application, typically in `App.tsx`.
+
+```typescript
+import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+import { useEffect } from 'react';
+
+export default function App() {
+  useEffect(() => {
+    YunoSdk.initialize({
+      apiKey: 'your-public-api-key',
+      countryCode: 'US', // Default country
+    });
+  }, []);
+  
+  return <YourApp />;
+}
+```
+
+## Basic payment flow (Full Checkout)
+
+The simplest integration uses the `YunoPaymentMethods` component to display available payment methods and `startPayment` to process the transaction.
+
+```typescript
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
+
+export default function PaymentScreen() {
+  const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  
+  useEffect(() => {
+    // 1. Subscribe to payment events
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        // Handle success
+      }
+    });
+    
+    // 2. Fetch checkout session from your backend
+    createCheckoutSession().then(session => {
+      setCheckoutSession(session);
+      setIsReady(true);
+    });
+    
+    return () => subscription.remove();
+  }, []);
+  
+  const handlePayment = async () => {
+    // 3. Start payment flow
+    await YunoSdk.startPayment(true); // true = show payment status screen
+  };
+  
+  return (
+    <View>
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+        />
+      )}
+      <Button title="Pay Now" onPress={handlePayment} disabled={!isReady} />
+    </View>
+  );
+}
+```
+
+## Integration options
+
+Choose the integration level that best fits your needs:
+
+<CardGroup cols={2}>
+  <Card title="Lite SDK" icon="bolt" href="/docs/sdks/additional-platforms/react-native/lite">
+    Control the payment method selection UI while Yuno handles the payment process.
+  </Card>
+  <Card title="Headless SDK" icon="code" href="/docs/sdks/additional-platforms/react-native/headless">
+    Build a completely custom UI and handle the payment flow manually.
+  </Card>
+  <Card title="Enrollment" icon="credit-card" href="/docs/sdks/additional-platforms/react-native/enrollment">
+    Allow customers to save their payment methods for future use.
+  </Card>
+  <Card title="Styling" icon="palette" href="/docs/sdks/additional-platforms/react-native/styling">
+    Customize the appearance of the SDK components to match your brand.
+  </Card>
+</CardGroup>
+
+## Next steps
+
+- Check out the [Code Examples](/docs/sdks/additional-platforms/react-native/code-examples) for common scenarios.
+- Learn about [Advanced Features](/docs/sdks/additional-platforms/react-native/advanced-features) like deep linking and performance.

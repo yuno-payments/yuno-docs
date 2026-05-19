@@ -1,0 +1,52 @@
+---
+title: "Connections & Routing Overview"
+description: "Merchant-facing reference for the new public-API surface that lets you create payment-provider connections and configure how Yuno routes payments across them."
+---
+
+Connections are how you bring your existing payment-provider accounts (Stripe, Adyen, dLocal, PayU, …) into Yuno's orchestration. Once a connection exists, you can reference it from a routing rule to send payments through that provider.
+
+A routing tells Yuno, for one `payment_method` on one account, which connection to use — and lets you branch by buyer attributes (country, currency, amount, card brand, custom metadata, …).
+
+## Common contract
+
+### Base URL
+
+```
+https://api.y.uno
+```
+
+### Authentication & headers
+
+| Header | Required | Notes |
+|---|---|---|
+| `public-api-key` | yes | Your merchant public API key. The account this key belongs to determines which account the request operates on. |
+| `private-secret-key` | yes | Your merchant private secret key. |
+| `X-Idempotency-Key` | on `POST` and `PATCH` | UUID, 24-hour scope. Re-sending the same key + body returns the cached response; same key with a different body returns a `409`. |
+| `Content-Type: application/json` | yes | |
+
+### Conventions
+
+- Field names are `snake_case` everywhere — request, response, errors. The one exception is inside `params[]` on the **provider catalog** response, where individual `param_id` values are passed through with their native casing (`merchantAccount`, `HMAC_KEY`, `apple-merchant-id`, etc.) — you must echo these verbatim when creating a connection.
+- Error envelope is the same across all endpoints:
+
+```json
+{
+  "type": "validation_error",
+  "code": "MISSING_REQUIRED_PARAM",
+  "message": "Required param 'merchantAccount' is missing for provider 'ADYEN'",
+  "details": { "provider_id": "ADYEN", "param_id": "merchantAccount" }
+}
+```
+
+Stable `code` values are listed per endpoint.
+
+### API-key scopes
+
+| Scope | Required for |
+|---|---|
+| `connections:read` | `GET /v1/connections/catalog/{provider_id}`, `GET /v1/connections/{connection_id}` |
+| `connections:write` | `POST /v1/connections` |
+| `routing:read` | `GET /v1/routing/{routing_id}` |
+| `routing:write` | `POST /v1/routing`, `PATCH /v1/routing/{routing_id}` |
+
+Missing scope → `403 INSUFFICIENT_SCOPE`.

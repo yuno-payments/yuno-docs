@@ -1,0 +1,92 @@
+---
+title: "Routing Resource Shape"
+description: "Each routing is a single atomic resource on the public API: one HTTP call creates or replaces the full configuration."
+---
+
+A routing tells Yuno, for one `payment_method` on one account, which connection to use — and lets you branch by buyer attributes (country, currency, amount, card brand, custom metadata, …).
+
+### Resource shape
+
+```json
+{
+  "id": "r_8f2c1d3e-…",
+  "account_code": "acc-uuid",
+  "payment_method": "CARD",
+  "name": "Card routing",
+  "default_route": {
+    "steps": [
+      { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…" }
+    ]
+  },
+  "condition_sets": [
+    {
+      "sort_number": 1,
+      "name": "US & Canada — high value",
+      "description": "Route US/CA credit card transactions over $500",
+      "conditions": [
+        { "condition_type": "COUNTRY", "conditional": "ONE_OF",       "values": ["US", "CA"] },
+        { "condition_type": "AMOUNT",  "conditional": "GREATER_THAN", "values": ["500"], "currency": "USD" }
+      ],
+      "route": {
+        "steps": [
+          { "index": 1, "provider_id": "STRIPE", "connection_id": "f1a3c4d5-…",
+            "output": [{ "status": "DECLINED", "next": 2 }] },
+          { "index": 2, "provider_id": "ADYEN",  "connection_id": "b2c4d5e6-…" }
+        ]
+      }
+    }
+  ],
+  "created_at": "2026-05-12T12:00:00Z",
+  "updated_at": "2026-05-12T12:00:00Z"
+}
+```
+
+**Top-level fields**
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID | Server-assigned. The same value is referenced as `routing_id` in URL paths. |
+| `account_code` | string | Inferred from your API key. Not supplied in request bodies. |
+| `payment_method` | enum | E.g., `CARD`, `PIX`, `WALLET`. Immutable per routing — to route a different method, create a new routing. |
+| `name` | string | Free-form label. |
+| `default_route` | object | The route used when no `condition_sets[]` matches. **Required.** |
+| `condition_sets[]` | object[] | Optional. Ordered by `sort_number` — first matching set wins. Each has one `route`. |
+| `created_at`, `updated_at` | ISO-8601 timestamps | Server-managed. |
+
+**`route.steps[]`**
+
+Each step is one provider attempt. `index` values are contiguous starting at 1.
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `index` | int | yes | Step ordinal within the route. Cycles are forbidden — `output[].next` must point to a higher index. |
+| `provider_id` | string | yes | Must match the `provider_id` of the referenced connection. |
+| `connection_id` | UUID | yes | Must be `ACTIVE`, in the same account, and support the routing's `payment_method`. |
+| `output[]` | object[] | no | Per-outcome handlers. **Omit for terminal steps with no chaining or per-decline customization** — the route will just run the step and terminate with whatever the provider returned. |
+
+**`output[]` entries**
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `status` | enum | yes | What outcome this entry reacts to. See enum below. |
+| `decline_types[]` | string[] | only with `status = DECLINE_GROUP` | Subset of Yuno's normalized decline taxonomy. |
+| `error_rate_threshold` | object | only with `status = ERROR_RATE` | `{ threshold_percent: int, window_seconds: int }`. |
+| `next` | int \| null | yes | Index of the step to jump to, or `null` to terminate. |
+
+**`status` enum**
+
+| Value | Triggers when | Companion field |
+|---|---|---|
+| `APPROVED` | The provider returned success. Implicit by default; list explicitly only for post-approval routing. | — |
+| `DECLINED` | Any decline (catch-all). Place last in the array. | — |
+| `DECLINE_GROUP` | Decline whose normalized code is in `decline_types[]`. | `decline_types[]` |
+| `ERROR_RATE` | The step's rolling error rate exceeds `error_rate_threshold`. | `error_rate_threshold` |
+| `TIMEOUT` | The provider didn't respond within Yuno's per-step timeout. | — |
+| `INTERNAL_ERROR` | The provider returned a 5xx or connection error before reaching the issuer. | — |
+
+**Evaluation rules**
+
+1. The route enters at `index: 1`.
+2. The provider call runs.
+3. Yuno walks `output[]` top-to-bottom; the first entry whose `status` (plus optional `decline_types` / `error_rate_threshold` predicate) matches the outcome wins.
+4. If the matched entry's `next` is an integer, jump to that step. If `null` or no entry matches, the route terminates with the actual provider outcome.
