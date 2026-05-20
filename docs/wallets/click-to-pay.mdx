@@ -93,21 +93,6 @@ Follow the steps below based on your desired configuration:
 4. Request the Yuno backend team to enable **Passkey**, **Dual Payload**, and **Golden Flow** flags.
 5. Create checkout sessions with a `price` for Passkey to work correctly.
 
-## VTEX integration
-
-For VTEX merchants using Click to Pay, the integration provides automatic customer creation and data mapping to streamline the checkout experience.
-
-**Automatic customer creation:**
-
-When customers choose Click to Pay on VTEX stores:
-
-* The VTEX customer is automatically created in Yuno during payment initialization (if not already existing)
-* All customer data from the VTEX profile is automatically mapped to Yuno and included in the checkout session
-* Customer information (CVV, email, address) is pre-filled in the SDK, eliminating redundant data entry
-* The checkout flow matches the streamlined experience available for non-VTEX merchants
-
-This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration. For more details, see [Configure Yuno as Provider](/docs/configure-yuno-as-provider) in the VTEX integration documentation.
-
 ## SDK integration (Click to Pay Passkey)
 
 <Info>
@@ -124,59 +109,4 @@ Standard Click to Pay card flows use the existing SDK callbacks, but Passkey use
 For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 </Info>
 
-The Yuno iOS and Android SDKs currently support Click to Pay via the Passkey flow. In both cases, the one-time token (OTT) is returned through a deeplink URL instead of the standard SDK callbacks, so your app must parse the deeplink parameters before continuing the payment.
-
-### iOS Passkey flow
-
-The Yuno iOS SDK supports Click to Pay with Passkey. The flow differs from standard card payments because the SDK returns the result by deeplink instead of via the usual delegate callbacks.
-
-### Handle the one-time token (OTT) and deeplink
-
-When a shopper completes the Click to Pay Passkey flow, the SDK sends the result through the deeplink URL instead of the `yunoCreatePayment(with token: String)` delegate method.
-
-#### 1. Close the external browser
-
-When your app receives the deeplink callback, immediately call `Yuno.receiveDeeplink` to let the SDK dismiss the external browser that was used for Passkey authentication.
-
-```swift
-func application(_ app: UIApplication,
-                 open url: URL,
-                 options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    Yuno.receiveDeeplink(url: url)
-
-    // Parse the URL to extract parameters
-
-    return true
-}
-```
-
-#### 2. Process the deeplink URL
-
-The deeplink query string includes the information you need to continue:
-
-* `has_error`: Indicates an error occurred during the transaction. Handle this scenario in your app.
-* `one_time_token`: Present when the transaction succeeds. Use it to create the payment.
-
-#### 3. Create the payment
-
-If the deeplink contains a `one_time_token`:
-
-1. Extract the `one_time_token`.
-2. Use it to create the payment with the [Create Payment endpoint](/reference/create-payment).
-3. After creating the payment, call `continuePayment` in the SDK to finalize the flow.
-
-<Info>
-**Important**
-
-The OTT never reaches `yunoCreatePayment(with token: String)` for Click to Pay Passkey. Always read the token from the deeplink URL.
-</Info>
-
-### Android Passkey flow
-
-For Android, include a `callback_url` that matches your app’s deeplink scheme when creating the checkout session, add the corresponding `intent-filter` in `AndroidManifest.xml`, and handle the deeplink in both `onCreate` and `onNewIntent`. When the deeplink arrives:
-
-1. Check `has_error` to manage cancellations or failures.
-2. Extract `one_time_token` (and the optional `checkout_session`) from the URI.
-3. Send the OTT to your backend to call the [Create Payment endpoint](/reference/create-payment), then invoke `continuePayment` in the SDK to resume the flow.
-
-See the full SDK guides for detailed samples: [Android Full Checkout](/docs/sdks/full-checkout/android-payments) and [iOS Full Checkout](/docs/sdks/full-checkout/ios-payments).
+For full implementation details, see [Android Full Checkout](/docs/sdks/full-checkout/android-payments) and [iOS Full Checkout](/docs/sdks/full-checkout/ios-payments).
