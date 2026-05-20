@@ -25,7 +25,7 @@ const MONTHS = [
 ];
 
 function formatDate(dateStr) {
-  if (!dateStr) return 'Release date unavailable';
+  if (!dateStr) return null;
   const [year, month, day] = dateStr.split('-').map(Number);
   return `${MONTHS[month]} ${day}, ${year}`;
 }
@@ -100,7 +100,8 @@ function renderRelease(release) {
   const { version, release_date, entries } = release;
 
   lines.push(`## v${version}`);
-  lines.push(`*${formatDate(release_date)}*`);
+  const formattedDate = formatDate(release_date);
+  if (formattedDate) lines.push(`*${formattedDate}*`);
   lines.push('');
 
   const ungrouped = entries.filter(e => !e.group);
