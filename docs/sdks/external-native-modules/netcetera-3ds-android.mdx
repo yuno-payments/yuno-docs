@@ -1,0 +1,131 @@
+---
+title: "3DS Native SDKs (Android)"
+sidebarTitle: "Netcetera 3DS (Android)"
+description: "Run 3-D Secure challenges natively in your Android app with Netcetera's 3DS SDK."
+robots: index
+---
+
+The Yuno Android SDK supports running 3-D Secure (3DS) challenges natively inside your app using **Netcetera's 3DS SDK**. Native 3DS gives a smoother UX than the WebView-based fallback (no in-app browser jump) and is required by some acquirers for frictionless authentication.
+
+<Warning>
+  **Payment flows only** — Native 3DS via Netcetera is currently supported for **payment** flows only. It does not apply to enrollment flows.
+</Warning>
+
+<Note>
+  Native 3DS is **opt-in**: you only need to install the provider module if your integration runs 3DS challenges in-app. If you are not enabling 3DS, you can skip this guide.
+</Note>
+
+## Requirements
+
+- Android **API level 21** (Lollipop) or higher.
+- **Yuno Payments SDK 2.16.0 or higher** already installed in your app (`com.yuno.payments:android-sdk`).
+- The Netcetera 3DS provider module (`com.yuno.payments:yuno-sdk-3ds-netcetera`), installed via Gradle (see below).
+
+<Warning>
+  The Netcetera provider bundles a full 3DS challenge UI and the vendor's root certificates, which adds to your final app binary. This is why it ships as a separate module — merchants who don't use 3DS don't pay this cost.
+</Warning>
+
+## Compatibility
+
+Each release of this module is built and tested against a minimum version of the Yuno Payments SDK. The module's POM does not pin a specific core version, leaving you in full control of which `com.yuno.payments:android-sdk` version your app runs against — but versions below the minimum may not expose the APIs this module relies on and can fail at runtime with `NoSuchMethodError` / `NoSuchFieldError`.
+
+| Yuno 3DS Netcetera | Requires Yuno Payments SDK |
+|---|---|
+| `1.0.1` | `≥ 2.16.0` |
+
+When upgrading either dependency, bump both sides together so the combination stays within a supported pair.
+
+## Step 1: Declare the Netcetera Maven repository
+
+The Netcetera 3DS SDK is hosted on Netcetera's public Maven server. Because Gradle does not propagate transitive repositories through POM metadata, your app must declare the repo explicitly so it can resolve the Netcetera SDK dependency.
+
+Add the entry to your project's settings file inside `dependencyResolutionManagement.repositories`:
+
+<Tabs>
+  <Tab title="Groovy DSL">
+    In `settings.gradle`:
+
+    ```groovy
+    dependencyResolutionManagement {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }
+            // Required by Yuno 3DS Netcetera module
+            maven { url "https://nexus.extranet.netcetera.biz/nexus/repository/public-repository-maven/" }
+        }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Kotlin DSL">
+    In `settings.gradle.kts`:
+
+    ```kotlin
+    dependencyResolutionManagement {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url = uri("https://yunopayments.jfrog.io/artifactory/snapshots-libs-release") }
+            // Required by Yuno 3DS Netcetera module
+            maven { url = uri("https://nexus.extranet.netcetera.biz/nexus/repository/public-repository-maven/") }
+        }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+  If you are using the legacy `allprojects { repositories { … } }` block in your root `build.gradle`, add the same Netcetera `maven { url "…" }` line there instead.
+</Info>
+
+## Step 2: Add the dependency
+
+Add the Yuno 3DS Netcetera dependency to your app module's build file:
+
+<Tabs>
+  <Tab title="Groovy DSL">
+    In `build.gradle`:
+
+    ```groovy
+    dependencies {
+        implementation "com.yuno.payments:android-sdk:{last_version}"
+        implementation "com.yuno.payments:yuno-sdk-3ds-netcetera:{last_version}"
+    }
+    ```
+  </Tab>
+
+  <Tab title="Kotlin DSL">
+    In `build.gradle.kts`:
+
+    ```kotlin
+    dependencies {
+        implementation("com.yuno.payments:android-sdk:{last_version}")
+        implementation("com.yuno.payments:yuno-sdk-3ds-netcetera:{last_version}")
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The Netcetera 3DS SDK and its required `androidx.startup` dependency are pulled in transitively — you don't need to declare them yourself.
+
+## Activating the 3DS provider
+
+The module **auto-registers** with the Yuno Payments SDK when your app process starts (via [Jetpack App Startup](https://developer.android.com/topic/libraries/app-startup)). **No extra code is required** — just initialize the Yuno SDK as usual:
+
+```kotlin
+import com.yuno.payments.Yuno
+
+Yuno.initialize(
+    application = this,
+    apiKey = "YOUR_API_KEY",
+)
+```
+
+<Tip>
+  Once registered, the Yuno Payments SDK automatically routes any 3DS challenge during checkout through the Netcetera provider. **You don't need to change any of your payment code.**
+</Tip>
+
+### Permissions
+
+`android.permission.INTERNET` is declared by the module's manifest and merged into your app automatically — no action required.
