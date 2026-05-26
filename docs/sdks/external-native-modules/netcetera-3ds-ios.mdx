@@ -1,0 +1,132 @@
+---
+title: "3DS Native SDKs (iOS)"
+sidebarTitle: "Netcetera 3DS (iOS)"
+description: "Run 3-D Secure challenges natively in your iOS app with Netcetera's 3DS SDK."
+robots: index
+---
+
+The Yuno iOS SDK supports running 3-D Secure (3DS) challenges natively inside your app using **Netcetera's 3DS SDK**. Native 3DS gives a smoother UX than web-based challenges (no Safari View Controller jump) and is required by some acquirers for frictionless authentication.
+
+<Warning>
+  **Payment flows only** — Native 3DS via Netcetera is currently supported for **payment** flows only. It does not apply to enrollment flows.
+</Warning>
+
+<Note>
+  Native 3DS is **opt-in**: you only need to install the provider package if your integration runs 3DS challenges in-app. If you are not enabling 3DS, you can skip this guide.
+</Note>
+
+## Requirements
+
+- iOS **15.0** or higher.
+- **YunoSDK 2.17.0 or higher** already installed in your app.
+- The Netcetera 3DS provider package ([`Yuno3DSNetcetera`](https://github.com/yuno-payments/yuno-3DS-netcetera-iOS)), installed via Swift Package Manager or CocoaPods (see below).
+
+<Warning>
+  The Netcetera provider adds approximately **5 MB** to your final app binary (it bundles a full 3DS challenge UI and the vendor's root certificates). This is why it lives in a separate package — merchants who don't use 3DS don't pay this cost.
+</Warning>
+
+## Installation
+
+<Tabs>
+  <Tab title="Swift Package Manager">
+    In Xcode go to **File → Add Package Dependencies…** and add:
+
+    ```
+    https://github.com/yuno-payments/yuno-3DS-netcetera-iOS
+    ```
+
+    Select the `Yuno3DSNetcetera` library and add it to your app target. Make sure both `YunoSDK` and `Yuno3DSNetcetera` resolve to versions `>= 2.17.0`.
+  </Tab>
+
+  <Tab title="CocoaPods">
+    Add to your `Podfile`:
+
+    ```ruby
+    platform :ios, '15.0'
+
+    target 'YourApp' do
+      use_frameworks!
+
+      pod 'YunoSDK',          '~> 2.17'
+      pod 'Yuno3DSNetcetera', '~> 2.17'
+    end
+    ```
+
+    Then run:
+
+    ```bash
+    pod install
+    ```
+  </Tab>
+</Tabs>
+
+## Activating the 3DS provider
+
+<Tabs>
+  <Tab title="Swift Package Manager">
+    The provider **auto-registers** when the framework loads. No extra code is required — just `import Yuno3DSNetcetera` somewhere in your app:
+
+    ```swift
+    import YunoSDK
+    import Yuno3DSNetcetera
+
+    Yuno.initialize(apiKey: "YOUR_API_KEY", config: YunoConfig())
+    ```
+  </Tab>
+
+  <Tab title="CocoaPods">
+    The CocoaPods variant ships as a **static** framework, so the auto-register bootstrap is not included. Call `Yuno3DSNetcetera.register()` **once**, before `Yuno.initialize(...)`:
+
+    ```swift
+    import YunoSDK
+    import Yuno3DSNetcetera
+
+    Yuno3DSNetcetera.register()
+    Yuno.initialize(apiKey: "YOUR_API_KEY", config: YunoConfig())
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Once registered, YunoSDK automatically routes any 3DS challenge during checkout through the Netcetera provider. **You don't need to change any of your payment code.**
+</Tip>
+
+## Sandbox certificate
+
+When testing against the Yuno sandbox environment, the Netcetera SDK requires a Visa test root certificate (`acq-root-certeq-prev-environment.crt`) to be present in your app's main bundle.
+
+<Info>
+  **Contact your Yuno TAM (Technical Account Manager) to obtain the certificate.** It is not distributed publicly.
+</Info>
+
+Once you have the file:
+
+<Steps>
+  <Step title="Add to Xcode">
+    Drag it into Xcode's Project Navigator inside your app target's group.
+  </Step>
+  <Step title="Select target">
+    Check **Add to targets** and tick your app target.
+  </Step>
+  <Step title="Verify bundle resources">
+    Verify it appears under **Target → Build Phases → Copy Bundle Resources**.
+  </Step>
+</Steps>
+
+<Note>
+  In production environments this certificate is not used and can be omitted from Release builds.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Linker error mentioning YunoThreeDSRegistry">
+    Your `YunoSDK` is older than 2.17.0. Bump it to `>= 2.17.0`.
+  </Accordion>
+  <Accordion title="3DS challenge UI never appears (CocoaPods)">
+    You forgot to call `Yuno3DSNetcetera.register()` before `Yuno.initialize(...)`.
+  </Accordion>
+  <Accordion title="Console: acq-root-certeq-prev-environment.crt not found">
+    Only relevant in sandbox. Add the certificate to your app bundle (see [Sandbox certificate](#sandbox-certificate)). Safe to ignore in production.
+  </Accordion>
+</AccordionGroup>
