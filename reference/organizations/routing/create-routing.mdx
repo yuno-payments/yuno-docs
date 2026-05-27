@@ -8,6 +8,10 @@ Creates a routing for one `(account_code, payment_method)` pair. Each routing re
 
 ### Body
 
+<ParamField body="account_id" type="string (UUID)" required>
+  The merchant account ID this routing rule applies to.
+</ParamField>
+
 <ParamField body="payment_method" type="enum" required>
   E.g., `CARD`, `PIX`, `WALLET`. Immutable per routing — to route a different method, create a new routing.
 </ParamField>
@@ -30,6 +34,20 @@ Creates a routing for one `(account_code, payment_method)` pair. Each routing re
         </ParamField>
         <ParamField body="connection_id" type="UUID" required>
             Must be `ACTIVE` and support the `payment_method`.
+        </ParamField>
+        <ParamField body="output" type="object[]">
+          Defines how to handle each possible outcome of this step.
+          <Expandable title="item">
+            <ParamField body="status" type="string" required>
+              The outcome status that triggers this rule (e.g., `APPROVED`, `DECLINED`, `DECLINE_GROUP`, `TIMEOUT`, `INTERNAL_ERROR`).
+            </ParamField>
+            <ParamField body="decline_types" type="string[]">
+              Required when `status` is `DECLINE_GROUP`. Specifies which decline subtypes trigger this rule (e.g., `INSUFFICIENT_FUNDS`, `DECLINED_BY_BANK`).
+            </ParamField>
+            <ParamField body="next" type="integer">
+              The `index` of the next step to execute. Omit if no fallback is needed.
+            </ParamField>
+          </Expandable>
         </ParamField>
       </Expandable>
     </ParamField>
@@ -89,6 +107,7 @@ curl -X POST 'https://api.y.uno/v1/routing' \
   -H 'Content-Type: application/json' \
   -H 'X-Idempotency-Key: <UUID>' \
   -d '{
+    "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
     "payment_method": "CARD",
     "name": "Card routing — Stripe primary, Adyen fallback",
     "default_route": {
