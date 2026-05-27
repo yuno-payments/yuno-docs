@@ -1,0 +1,49 @@
+---
+title: "Checkout Builder"
+description: "Programmatically configure your Yuno checkout — payment methods, conditions, required fields, and styling — via the same API the Checkout Builder UI uses."
+hidden: true
+---
+
+The Checkout Builder Management API lets you read and update a merchant's checkout configuration programmatically. It is the same API the Checkout Builder UI in the Yuno dashboard uses internally — if a configuration is possible in the dashboard, it is possible via this API.
+
+## What you can configure
+
+- **Payment methods** — which methods are shown and in what display order
+- **Conditions** — per-method rules (currency, country, amount, metadata) that gate when a method appears
+- **Required fields** — per-method form field configuration (CVV, installments, billing address, etc.) for both the enrolled (saved-card) and non-enrolled (first-time) flows
+- **General settings** — accepted document types per country
+- **Styling & SDK settings** — colors, fonts, button shapes, dark mode, render mode, payment-method list layout, and Payment Link branding
+
+## Base URL
+
+| Environment | Base URL |
+| --- | --- |
+| Production | `https://prod.y.uno/dashboard-bff/api` |
+| Staging | `https://staging.y.uno/dashboard-bff/api` |
+
+## Authentication
+
+Every request requires a short-lived JWT from Yuno's auth provider and the following headers:
+
+| Header | Required | Description |
+| --- | --- | --- |
+| `Authorization` | Yes | `Bearer <JWT>` — issued by Yuno's auth provider. |
+| `x-account-code` | Yes | Account UUID — the merchant account scope for the request. |
+| `x-environment` | Yes | `live` or `sandbox`. Determines which environment is being configured. |
+| `x-organization-code` | Optional | Organization UUID. May be sent empty for single-org accounts. |
+| `Content-Type` | Yes (PATCH only) | `application/json` |
+| `Accept` | Recommended | `application/json` |
+
+<Warning>
+Tokens are short-lived. Your client must refresh them before expiry; the API will reject expired tokens with `401`.
+</Warning>
+
+## Key behaviors
+
+<Note>
+**`PATCH /checkouts/publish` is a full replace.** Always send the complete `paymentMethods` list. Omitting a method may remove it from the checkout configuration.
+</Note>
+
+- **Order is driven by `order_to_show`**, not by array position. Change the integer values to re-order; the API sorts ascending when rendering.
+- **`x-environment` controls live vs sandbox.** There is no separate URL per environment — be deliberate about which value you send.
+- **Changes take effect immediately.** Validate your payload with `x-environment: sandbox` before applying to live.
