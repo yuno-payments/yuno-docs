@@ -6,68 +6,94 @@
   },
   "servers": [
     {
-      "url": "https://prod.y.uno/dashboard-bff/api"
+      "url": "https://api.y.uno"
     }
   ],
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "JWT issued by Yuno's auth provider. Tokens are short-lived — refresh before expiry."
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Merchant public API key. Found in Yuno dashboard \u2192 Settings \u2192 API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Merchant private secret key, paired with the public key. Never embed in client-side code."
       },
       "accountCode": {
         "type": "apiKey",
         "in": "header",
-        "name": "x-account-code",
-        "x-default": "<Your account UUID>"
-      },
-      "environment": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-environment",
-        "x-default": "live"
-      },
-      "orgCode": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "x-organization-code",
-        "x-default": ""
+        "name": "X-Account-Code",
+        "description": "UUID of the merchant account scope for the request."
       }
     }
   },
   "security": [
     {
-      "bearerAuth": [],
-      "accountCode": [],
-      "environment": [],
-      "orgCode": []
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
     }
   ],
   "paths": {
-    "/checkouts/publish": {
+    "/v1/checkouts/{checkout_code}/publish": {
       "patch": {
         "summary": "Publish Checkout Configuration",
-        "description": "Replaces the checkout's full payment method configuration. This is a full replace — always send every method you want present. Changes take effect immediately on the live checkout.",
+        "description": "Sparse-upsert the checkout's payment method configuration. Payment methods omitted from the array retain their previous state \u2014 they are not removed. To disable a method, include it with is_active: false. Changes take effect immediately on the merchant's live checkout.",
         "operationId": "patch-checkout-publish",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["checkoutCode", "paymentMethods"],
+                "required": [
+                  "payment_methods"
+                ],
                 "properties": {
-                  "checkoutCode": {
-                    "type": "string",
-                    "description": "The UUID of the checkout to update.",
-                    "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474"
+                  "general_settings": {
+                    "type": "object",
+                    "description": "General checkout settings.",
+                    "properties": {
+                      "country_documents": {
+                        "type": "array",
+                        "description": "Accepted document types per country. Use GET /checkouts/country-data to fetch valid values.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "country_code": {
+                              "type": "string",
+                              "description": "ISO 3166-1 alpha-2 country code.",
+                              "example": "AR"
+                            },
+                            "documents": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "example": [
+                                "DNI",
+                                "CUIT"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
                   },
-                  "paymentMethods": {
+                  "payment_methods": {
                     "type": "array",
-                    "description": "Full list of payment methods for this checkout. This is a full replace — omitting a method may remove it.",
+                    "description": "Payment methods to upsert. Only included methods are updated \u2014 omitted methods retain their previous state.",
                     "items": {
                       "type": "object",
-                      "required": ["is_active", "payment_method_type", "order_to_show", "type"],
+                      "required": [
+                        "is_active",
+                        "payment_method_type",
+                        "order_to_show",
+                        "type"
+                      ],
                       "properties": {
                         "is_active": {
                           "type": "boolean",
@@ -87,13 +113,21 @@
                         "type": {
                           "type": "string",
                           "description": "PAYMENT_METHOD (standard) or ENROLLMENT (tokenization/saved-credentials flow).",
-                          "enum": ["PAYMENT_METHOD", "ENROLLMENT"],
+                          "enum": [
+                            "PAYMENT_METHOD",
+                            "ENROLLMENT"
+                          ],
                           "example": "PAYMENT_METHOD"
                         },
                         "active_enrollment_type": {
                           "type": "string",
                           "description": "For PAYMENT_METHOD entries that support enrollment (e.g. CARD): BOTH, NONE, ENROLLMENT, or NO_ENROLLMENT. Omit for ENROLLMENT-type entries.",
-                          "enum": ["BOTH", "NONE", "ENROLLMENT", "NO_ENROLLMENT"],
+                          "enum": [
+                            "BOTH",
+                            "NONE",
+                            "ENROLLMENT",
+                            "NO_ENROLLMENT"
+                          ],
                           "example": "BOTH"
                         },
                         "conditions_to_override": {
@@ -121,9 +155,18 @@
                                 "type": "object",
                                 "description": "Optional display overrides for this condition. Set all fields to null if unused.",
                                 "properties": {
-                                  "logo": { "type": "string", "nullable": true },
-                                  "name": { "type": "string", "nullable": true },
-                                  "description": { "type": "string", "nullable": true }
+                                  "logo": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "name": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "description": {
+                                    "type": "string",
+                                    "nullable": true
+                                  }
                                 }
                               },
                               "conditions": {
@@ -131,25 +174,51 @@
                                 "description": "Array of individual conditions (all must match for the set to apply).",
                                 "items": {
                                   "type": "object",
-                                  "required": ["condition_type", "conditional", "values"],
+                                  "required": [
+                                    "condition_type",
+                                    "conditional",
+                                    "values"
+                                  ],
                                   "properties": {
                                     "condition_type": {
                                       "type": "string",
                                       "description": "Type of condition to evaluate.",
-                                      "enum": ["CURRENCY", "CURRENCY_AND_AMOUNT", "COUNTRY", "METADATA", "ADDITIONAL_FIELD", "CARD_BIN", "CARD_ISSUER", "TIME_PERIOD"],
+                                      "enum": [
+                                        "CURRENCY",
+                                        "CURRENCY_AND_AMOUNT",
+                                        "COUNTRY",
+                                        "METADATA",
+                                        "ADDITIONAL_FIELD",
+                                        "CARD_BIN",
+                                        "CARD_ISSUER",
+                                        "TIME_PERIOD"
+                                      ],
                                       "example": "COUNTRY"
                                     },
                                     "conditional": {
                                       "type": "string",
                                       "description": "Comparison operator.",
-                                      "enum": ["ONE_OF", "NOT_ONE_OF", "EQUAL", "NOT_EQUAL", "BETWEEN", "GREATER_THAN", "LESS_THAN"],
+                                      "enum": [
+                                        "ONE_OF",
+                                        "NOT_ONE_OF",
+                                        "EQUAL",
+                                        "NOT_EQUAL",
+                                        "BETWEEN",
+                                        "GREATER_THAN",
+                                        "LESS_THAN"
+                                      ],
                                       "example": "ONE_OF"
                                     },
                                     "values": {
                                       "type": "array",
                                       "description": "Array of string values to compare against. For BETWEEN, exactly [min, max].",
-                                      "items": { "type": "string" },
-                                      "example": ["AR", "BR"]
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "example": [
+                                        "AR",
+                                        "BR"
+                                      ]
                                     },
                                     "metadata_key": {
                                       "type": "string",
@@ -164,7 +233,10 @@
                                     "complex_name": {
                                       "type": "string",
                                       "description": "Required when condition_type is CURRENCY_AND_AMOUNT. CURRENCY or AMOUNT.",
-                                      "enum": ["CURRENCY", "AMOUNT"],
+                                      "enum": [
+                                        "CURRENCY",
+                                        "AMOUNT"
+                                      ],
                                       "example": "CURRENCY"
                                     },
                                     "complex_index": {
@@ -217,7 +289,9 @@
                                   "conditions_to_override": {
                                     "type": "array",
                                     "description": "Per-field condition sets. Note: conditions here use condition_value (not values) on each condition object.",
-                                    "items": { "type": "object" }
+                                    "items": {
+                                      "type": "object"
+                                    }
                                   }
                                 }
                               }
@@ -246,35 +320,12 @@
                                   "conditions_to_override": {
                                     "type": "array",
                                     "description": "Per-field condition sets. Each condition uses condition_value (not values).",
-                                    "items": { "type": "object" }
+                                    "items": {
+                                      "type": "object"
+                                    }
                                   }
                                 }
                               }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "general_settings": {
-                    "type": "object",
-                    "description": "General checkout settings.",
-                    "properties": {
-                      "country_documents": {
-                        "type": "array",
-                        "description": "Accepted document types per country. Use GET /checkouts/country-data to fetch valid values.",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "country_code": {
-                              "type": "string",
-                              "description": "ISO 3166-1 alpha-2 country code.",
-                              "example": "AR"
-                            },
-                            "documents": {
-                              "type": "array",
-                              "items": { "type": "string" },
-                              "example": ["DNI", "CUIT"]
                             }
                           }
                         }
@@ -287,21 +338,45 @@
                 "Disable CARD": {
                   "summary": "Disable a payment method",
                   "value": {
-                    "checkoutCode": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
-                    "paymentMethods": [
-                      { "is_active": false, "payment_method_type": "NU_PAY_ENROLLMENT", "order_to_show": 1, "type": "ENROLLMENT" },
-                      { "is_active": true,  "payment_method_type": "PAYPAL_ENROLLMENT",  "order_to_show": 2, "type": "ENROLLMENT" },
-                      { "is_active": false, "payment_method_type": "CARD",               "order_to_show": 3, "type": "PAYMENT_METHOD", "active_enrollment_type": "NONE" },
-                      { "is_active": true,  "payment_method_type": "GOOGLE_PAY",         "order_to_show": 4, "type": "PAYMENT_METHOD" },
-                      { "is_active": true,  "payment_method_type": "APPLE_PAY",          "order_to_show": 5, "type": "PAYMENT_METHOD" }
+                    "payment_methods": [
+                      {
+                        "is_active": false,
+                        "payment_method_type": "NU_PAY_ENROLLMENT",
+                        "order_to_show": 1,
+                        "type": "ENROLLMENT"
+                      },
+                      {
+                        "is_active": true,
+                        "payment_method_type": "PAYPAL_ENROLLMENT",
+                        "order_to_show": 2,
+                        "type": "ENROLLMENT"
+                      },
+                      {
+                        "is_active": false,
+                        "payment_method_type": "CARD",
+                        "order_to_show": 3,
+                        "type": "PAYMENT_METHOD",
+                        "active_enrollment_type": "NONE"
+                      },
+                      {
+                        "is_active": true,
+                        "payment_method_type": "GOOGLE_PAY",
+                        "order_to_show": 4,
+                        "type": "PAYMENT_METHOD"
+                      },
+                      {
+                        "is_active": true,
+                        "payment_method_type": "APPLE_PAY",
+                        "order_to_show": 5,
+                        "type": "PAYMENT_METHOD"
+                      }
                     ]
                   }
                 },
                 "Enable CARD with conditions": {
                   "summary": "Enable CARD with condition sets",
                   "value": {
-                    "checkoutCode": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
-                    "paymentMethods": [
+                    "payment_methods": [
                       {
                         "is_active": true,
                         "payment_method_type": "CARD",
@@ -313,11 +388,38 @@
                             "name": "AR small amounts",
                             "order": 0,
                             "is_active": true,
-                            "payment_method_data": { "logo": null, "name": null, "description": null },
+                            "payment_method_data": {
+                              "logo": null,
+                              "name": null,
+                              "description": null
+                            },
                             "conditions": [
-                              { "condition_type": "CURRENCY_AND_AMOUNT", "conditional": "ONE_OF",  "values": ["ARS"], "complex_name": "CURRENCY", "complex_index": 0 },
-                              { "condition_type": "CURRENCY_AND_AMOUNT", "conditional": "BETWEEN", "values": ["4.00","6.00"], "complex_name": "AMOUNT", "complex_index": 0 },
-                              { "condition_type": "COUNTRY", "conditional": "ONE_OF", "values": ["AR"] }
+                              {
+                                "condition_type": "CURRENCY_AND_AMOUNT",
+                                "conditional": "ONE_OF",
+                                "values": [
+                                  "ARS"
+                                ],
+                                "complex_name": "CURRENCY",
+                                "complex_index": 0
+                              },
+                              {
+                                "condition_type": "CURRENCY_AND_AMOUNT",
+                                "conditional": "BETWEEN",
+                                "values": [
+                                  "4.00",
+                                  "6.00"
+                                ],
+                                "complex_name": "AMOUNT",
+                                "complex_index": 0
+                              },
+                              {
+                                "condition_type": "COUNTRY",
+                                "conditional": "ONE_OF",
+                                "values": [
+                                  "AR"
+                                ]
+                              }
                             ]
                           }
                         ]
@@ -345,8 +447,16 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": { "type": "string", "description": "Checkout UUID.", "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474" },
-                    "updated_at": { "type": "string", "description": "Timestamp of the update.", "example": "2026-05-18T14:00:00Z" }
+                    "code": {
+                      "type": "string",
+                      "description": "Checkout UUID.",
+                      "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "description": "Timestamp of the update.",
+                      "example": "2026-05-18T14:00:00Z"
+                    }
                   }
                 }
               }
@@ -358,14 +468,27 @@
               "application/json": {
                 "examples": {
                   "Bad Request": {
-                    "value": { "code": "INVALID_REQUEST", "messages": ["Invalid request"] }
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request"
+                      ]
+                    }
                   }
                 },
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": { "type": "string", "example": "INVALID_REQUEST" },
-                    "messages": { "type": "array", "items": { "type": "string" } }
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
                   }
                 }
               }
@@ -377,14 +500,27 @@
               "application/json": {
                 "examples": {
                   "Unauthorized": {
-                    "value": { "code": "INVALID_CREDENTIALS", "messages": ["Invalid credentials"] }
+                    "value": {
+                      "code": "INVALID_CREDENTIALS",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
                   }
                 },
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": { "type": "string", "example": "INVALID_CREDENTIALS" },
-                    "messages": { "type": "array", "items": { "type": "string" } }
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_CREDENTIALS"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
                   }
                 }
               }
@@ -396,21 +532,54 @@
               "application/json": {
                 "examples": {
                   "Forbidden": {
-                    "value": { "code": "AUTHORIZATION_REQUIRED", "messages": ["The merchant has no authorization to use this API."] }
+                    "value": {
+                      "code": "AUTHORIZATION_REQUIRED",
+                      "messages": [
+                        "The merchant has no authorization to use this API."
+                      ]
+                    }
                   }
                 },
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": { "type": "string", "example": "AUTHORIZATION_REQUIRED" },
-                    "messages": { "type": "array", "items": { "type": "string" } }
+                    "code": {
+                      "type": "string",
+                      "example": "AUTHORIZATION_REQUIRED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
                   }
                 }
               }
             }
           }
         },
-        "deprecated": false
+        "deprecated": false,
+        "parameters": [
+          {
+            "name": "checkout_code",
+            "in": "path",
+            "description": "The UUID of the checkout to update.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Client-generated UUID. Re-sending the same request with the same key is safe and will not double-publish.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     }
   }
