@@ -1,12 +1,14 @@
 ---
 title: "Checkout Builder"
-description: "Programmatically configure your Yuno checkout — payment methods, conditions, required fields, and styling — via the same API the Checkout Builder UI uses."
+description: "Programmatically configure your Yuno checkout — payment methods, conditions, required fields, and styling — via Yuno's public B2B API."
 hidden: true
 ---
 
-The Checkout Builder Management API lets you read and update a merchant's checkout configuration programmatically. It is the same API the Checkout Builder UI in the Yuno dashboard uses internally — if a configuration is possible in the dashboard, it is possible via this API.
+<Warning>
+**BETA.** Endpoints are stable in shape but subject to additive changes during the BETA window. Access is limited to allowlisted merchants. Contact your Yuno TAM to enable this product for your account.
+</Warning>
 
-## What you can configure
+The Checkout Builder Management API lets you read and update a merchant's checkout configuration:
 
 - **Payment methods** — which methods are shown and in what display order
 - **Conditions** — per-method rules (currency, country, amount, metadata) that gate when a method appears
@@ -18,32 +20,50 @@ The Checkout Builder Management API lets you read and update a merchant's checko
 
 | Environment | Base URL |
 | --- | --- |
-| Production | `https://prod.y.uno/dashboard-bff/api` |
-| Staging | `https://staging.y.uno/dashboard-bff/api` |
+| Production | `https://api.y.uno` |
+| Sandbox | `https://api-sandbox.y.uno` |
+
+All examples in this reference use the production base URL. The sandbox host accepts the same endpoints and payload shapes.
 
 ## Authentication
 
-Every request requires a short-lived JWT from Yuno's auth provider and the following headers:
+Every request must include:
 
 | Header | Required | Description |
 | --- | --- | --- |
-| `Authorization` | Yes | `Bearer <JWT>` — issued by Yuno's auth provider. |
-| `x-account-code` | Yes | Account UUID — the merchant account scope for the request. |
-| `x-environment` | Yes | `live` or `sandbox`. Determines which environment is being configured. |
-| `x-organization-code` | Optional | Organization UUID. May be sent empty for single-org accounts. |
-| `Content-Type` | Yes (PATCH only) | `application/json` |
+| `PUBLIC-API-KEY` | Yes | Merchant public API key. Found in your Yuno dashboard under **Settings → API Keys**. |
+| `PRIVATE-SECRET-KEY` | Yes | Merchant private secret key, paired with the public key. Never embed in client-side code. |
+| `X-Account-Code` | Yes | UUID of the merchant account scope for the request. |
+| `X-Idempotency-Key` | Recommended (PATCH) | Client-generated UUID. Re-sending the same request with the same key is safe and will not double-publish. |
+| `Content-Type` | Yes (PATCH) | `application/json` |
 | `Accept` | Recommended | `application/json` |
 
-<Warning>
-Tokens are short-lived. Your client must refresh them before expiry; the API will reject expired tokens with `401`.
-</Warning>
+<Note>
+Credentials must have the `v1/checkouts` product permission enabled — `READ` for GET endpoints, `WRITE` for PATCH endpoints. Permissions are granted per-credential in the dashboard's **API Keys** page.
+</Note>
+
+## Endpoints
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/v1/checkouts/{checkout_code}` | Fetch the full checkout configuration. |
+| `PATCH` | `/v1/checkouts/{checkout_code}/publish` | Publish a new configuration (payment methods, conditions, required fields, general settings). |
+| `GET` | `/v1/checkouts/payment-methods/{payment_method_type}/required-fields` | List configurable required fields for a payment method. |
+| `GET` | `/v1/checkouts/country-data` | Fetch supported countries and their document-type options. |
+| `GET` | `/v1/checkouts/builder/settings` | Fetch styling & SDK settings. |
+| `PATCH` | `/v1/checkouts/builder/settings` | Update styling & SDK settings. |
 
 ## Key behaviors
 
 <Note>
-**`PATCH /checkouts/publish` is a full replace.** Always send the complete `paymentMethods` list. Omitting a method may remove it from the checkout configuration.
+**`PATCH /v1/checkouts/{checkout_code}/publish` is a sparse upsert, not a full replace.** Payment methods omitted from the `payment_methods` array retain their previous state — they are not removed or disabled. To disable a method, include it with `is_active: false`.
 </Note>
 
-- **Order is driven by `order_to_show`**, not by array position. Change the integer values to re-order; the API sorts ascending when rendering.
-- **`x-environment` controls live vs sandbox.** There is no separate URL per environment — be deliberate about which value you send.
-- **Changes take effect immediately.** Validate your payload with `x-environment: sandbox` before applying to live.
+- **Order is driven by `order_to_show`**, not by array position. Change the integer values to re-order; lower values are shown first.
+- **Including `conditions_to_override` replaces** that method's condition sets in full. Omitting it leaves existing conditions intact. The same rule applies to `required_fields_to_override` and `general_settings`.
+- **Changes take effect immediately.** Validate payloads against the sandbox base URL before applying to production.
+- **New payment-method rows cannot be created** via the publish endpoint. Methods must already exist on the checkout. Contact your Yuno TAM to add additional methods.
+- **Enrolled and non-enrolled flows are independent.** When configuring required fields for CARD, send both `fields` (non-enrolled) and `enrollment_fields` (enrolled). To leave one flow untouched, pass an empty array for that side.
+- **`active_enrollment_type` only applies to `type: "PAYMENT_METHOD"` entries** that support enrollment (e.g. CARD). For `type: "ENROLLMENT"` entries (e.g. `PAYPAL_ENROLLMENT`, `NU_PAY_ENROLLMENT`), omit `active_enrollment_type` and toggle `is_active` instead.
+- **Required-field conditions: only the first set is persisted.** Within `required_fields_to_override.fields[].conditions_to_override` (and the enrolled equivalent), only the first element of the array is stored. Send a single condition set per field — additional sets are silently dropped.
+- **`conditions_to_override` at the required-field level uses `condition_value`** (not `values`) on each condition object. Same concept as payment-method conditions — different field name preserved for backward compatibility. Don't mix them up.
