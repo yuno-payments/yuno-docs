@@ -9,7 +9,7 @@ metadata:
 White-label support lets a partner serve the Yuno Web SDK from their own origin without the string `Yuno` leaking into the merchant page — neither in the DOM, globals, dispatched events, nor outgoing network traffic.
 
 <Tip>
-  Shipped in `sdk-web` 1.9.0 and `sdk-web-core` 7.0.0. The legacy `window.Yuno` global and `yuno-sdk-ready` event remain as backwards-compatibility aliases, so existing integrations continue to work unchanged.
+  Shipped in Web SDK 1.9.1. The legacy `window.Yuno` global and `yuno-sdk-ready` event remain as backwards-compatibility aliases, so existing integrations continue to work unchanged.
 </Tip>
 
 ## What the SDK exposes
@@ -35,8 +35,10 @@ SdkPayments.initialize(publicApiKey, applicationSession, {
   // their internal calls land on the partner origin too.
   apiUrl: 'https://payments.example.com',
 
-  // Overrides the host that serves SDK static assets
-  // (3DS pages, card-form bundle, fonts, images).
+  // Overrides the host that serves SDK static assets — 3DS pages,
+  // card-form bundle, fonts, and (in recent SDK builds) the icons,
+  // brand logos, and country flags that the SDK otherwise loads straight
+  // from icons.prod.y.uno / sdk.prod.y.uno.
   assetUrl: 'https://payments.example.com',
 })
 ```
@@ -46,10 +48,12 @@ What each override affects end-to-end:
 | Option | Affects |
 | :--- | :--- |
 | `apiUrl` | SDK REST calls, WebSocket upgrades, monitoring/Datadog forwarder, secure-fields mediator, card-form iframe API base. |
-| `assetUrl` | 3DS challenge / redirect / session-id pages, card-form micro-app URL, font CSS, runtime `__webpack_public_path__` for code-split chunks. |
+| `assetUrl` | 3DS challenge / redirect / session-id pages, card-form micro-app URL, font CSS, runtime `__webpack_public_path__` for code-split chunks, and the hard-coded icon / brand-logo / country-flag assets on `icons.prod.y.uno` / `sdk.prod.y.uno` (host-swapped, path preserved; recent SDK builds). |
 
 <Note>
   For a typical white-label deployment, pass the same value to both options. The SDK uses the value verbatim — it no longer appends a `/v<x.y>` segment when `assetUrl` already ends with one, and it does not prepend a regional prefix to overrides.
+
+  The static-CDN host-swap (icons, brand logos, flags) routes onto `assetUrl` when set, otherwise falls back to `apiUrl` — so passing both the same value sends every request through a single origin. Only `*.y.uno` asset URLs are rewritten; merchant-supplied icons on external CDNs are left untouched.
 </Note>
 
 ## Neutral merchant callbacks
@@ -93,7 +97,7 @@ After loading the SDK from a non-Yuno origin, none of the following should appea
 
 - Elements with `class="yuno-*"` or `id="yuno-*"`.
 - A resolved font family of `Yuno-Inter`.
-- Network requests to `*.y.uno` hosts.
+- Network requests to `*.y.uno` hosts — including the static CDNs `icons.prod.y.uno` and `sdk.prod.y.uno` for icons, brand logos, and flags. These are host-swapped onto your origin only on recent SDK builds; older builds still fetch them straight from the CDN.
 
 And these should be present:
 
