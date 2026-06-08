@@ -1,0 +1,334 @@
+---
+title: White Label Proxy Server
+description: A local Express harness that loads the Yuno Web SDK from a non-Yuno origin so the white-label code paths can be verified end-to-end.
+hidden: false
+metadata:
+  robots: noindex
+---
+
+A small Express server that lets the Yuno Web SDK be loaded from a **non-Yuno origin**, so the white-label code paths — renamed globals, events, and DOM tokens — can be exercised end-to-end before shipping a partner-hosted integration.
+
+<Tip>
+  This is a companion to the [White Label](/docs/sdks/customization/web/white-label) page. Read it first for the SDK-side overrides this harness is built to verify.
+</Tip>
+
+## Why this server exists
+
+The Yuno Web SDK historically ships with a `yuno-` prefixed surface: `window.Yuno`, the `yuno-sdk-ready` event, and `yuno-*` CSS classes and data attributes. The white-label release introduces a parallel surface:
+
+| Legacy | White-label |
+| :--- | :--- |
+| `window.Yuno` | `window.SdkPayments` |
+| `yuno-sdk-ready` event | `sdk-payments-ready` event |
+| `yuno-*` DOM tokens | `sdk-payments-*` DOM tokens |
+
+To verify the rename actually shipped, the SDK must be loaded from a host that is **not** `*.y.uno`. If it loads from a Yuno origin, branded leaks would slip through unnoticed. This server is the harness: it serves the SDK from `localhost:9090` (or any non-Yuno hostname you point it at) and forwards every request to the real Yuno upstreams transparently.
+
+## How it works
+
+```
+┌──────────────────┐     ┌────────────────────────────┐     ┌─────────────────────┐
+│  Partner page    │───▶ │   white-label-proxy        │───▶ │ Yuno upstreams      │
+│  (browser)       │     │   (Express :9090)          │     │  - sdk-web.*.y.uno  │
+│                  │ ◀───│                            │ ◀───│  - sdk-3ds.*.y.uno  │
+│ <script src=     │     │   Routes by path:          │     │  - sdk-web-card.*   │
+│  localhost:9090/ │     │    /v1/*         → BACKEND  │     │  - sdk.prod.y.uno   │
+│  v1.7/main.js>   │     │    /v<n>/pages    → CARD    │     │  - icons.prod.y.uno │
+│                  │     │    /challenge     → 3DS     │     │  - api[-env].y.uno  │
+│                  │     │    /icons,/css    → STATIC  │     │                     │
+│                  │     │    /flags,/*.png  → ICONS   │     │                     │
+│                  │     │    else           → SDK     │     │                     │
+└──────────────────┘     └────────────────────────────┘     └─────────────────────┘
+```
+
+Three invariants make the harness useful:
+
+1. **The browser only ever talks to the proxy origin.** No `*.y.uno` request originates from the page itself — otherwise the SDK is not really being tested against a foreign host.
+2. **All upstream domains are reachable from the proxy.** SDK assets, the card-form micro-app, the 3DS micro-app, the REST API, and the WebSocket service are all separate hostnames that must each be configurable.
+3. **CORS is owned by the proxy, not the upstream.** Upstream CORS would respond with `api.y.uno` origins; the proxy strips those and writes its own, echoing the caller.
+
+## Architecture
+
+A single Node.js process built on three libraries:
+
+- `express` — routing and middleware for HTTP.
+- `node-fetch` — outbound HTTP to upstreams, for streaming bodies and header control.
+- `http-proxy` — WebSocket upgrades, because Express middleware never sees `Upgrade` requests.
+
+### Request lifecycle
+
+1. **CORS middleware** runs first. It echoes the caller's `Origin`, handles `OPTIONS` preflight, and sets `Access-Control-Allow-Credentials: true`. The proxy is the CORS authority.
+2. **Local routes** match before anything else: `/`, `/static/*`, `/whitelabel-info`. These never touch an upstream.
+3. **Backend pass-through** matches `/v1/*` and `/v2/*` (the Yuno REST surface used by the SDK) and forwards via `node-fetch` to `BACKEND_URL`. Hop-by-hop headers are stripped; `access-control-*` headers from the upstream are dropped so they cannot override the proxy's own CORS. The browser `Cookie` header is also dropped on these forwards — the partner page's localhost cookies (session, analytics, URL-valued ones, …) don't belong on a cross-origin call to `api.y.uno` and can trip the upstream WAF with a `403`; the API authenticates via the public API key.
+4. **SDK asset catch-all** matches every remaining `GET`/`HEAD`. A small dispatcher (`pickSdkUpstream`) picks the right upstream based on path, checked top to bottom so the 3DS/card rules win first:
+   - 3DS micro-app paths (`/challenge.html`, `/redirect.html`, `/session-id.html`, and `/assets/(challenge|redirect|session-id|validate-url)*`) → `SDK_3DS_UPSTREAM`.
+   - Card micro-app paths (`/v<semver>/pages/*`, `/v<semver>/assets/*`) → `SDK_CARD_UPSTREAM`.
+   - Static-asset paths (`/icons/*`, `/css/*`, `/brands/*`, `/c2p/*`) → `SDK_STATIC_UPSTREAM` (`sdk.prod.y.uno`).
+   - Icon-asset paths (`/sdk-web/*`, `/flags/*`, and bare root brand images like `/Visa.png`, `/boleto_logosimbolo.png`) → `SDK_ICONS_UPSTREAM` (`icons.prod.y.uno`).
+   - Everything else → `SDK_UPSTREAM`.
+
+   The static / icons branches exist because the SDK used to load these straight from `icons.prod.y.uno` / `sdk.prod.y.uno`, bypassing the white-label host. Recent SDK builds host-swap them onto the proxy origin (path preserved), so the proxy must forward them back out to the two CDNs by path prefix. These upstreams are always `*.prod.y.uno` regardless of the target environment.
+5. **WebSocket upgrades** are handled on the underlying `http.Server`, not Express. `/checkout-websocket-notification-ms/ws/*` → `BACKEND_WS_URL`; everything else follows the same SDK / card / 3DS split as HTTP.
+
+### Version normalization
+
+The main SDK bundle is versioned (`/v1.7.4/main.js`). Two complications:
+
+- Partner pages may hardcode a version that the upstream no longer publishes.
+- The "current" version drifts over time.
+
+The proxy resolves the canonical version once at boot and rewrites every incoming `/v<x>/*` SDK request to that version before sending it upstream. Card-app and 3DS paths are **not** rewritten — they have their own publish cadences.
+
+## `SDK_MAIN_JS` — pinning the SDK version
+
+`SDK_MAIN_JS` decides which build of the SDK every browser loads. It does two related things:
+
+1. **Template injection.** The proxy serves `pages/index.html` with the literal `__SDK_MAIN_JS__` placeholder replaced by this path. A partner page can write `<script src="__SDK_MAIN_JS__">` and get e.g. `/v1.9.1/main.js`.
+2. **Version normalization target.** The proxy parses the `/v<x>/` segment out of `SDK_MAIN_JS` and rewrites any incoming `/v<other>/main.js` (and adjacent `/v<other>/*.js`, `/v<other>/*.css`) request to that same version. So if `SDK_MAIN_JS=/v1.9.1/main.js`, a request for `/v1.5.0/main.js` is silently fetched as `/v1.9.1/main.js` from `SDK_UPSTREAM`.
+
+### Resolution order at boot
+
+```
+1. process.env.SDK_MAIN_JS                          (if set, used as-is, no upstream call)
+2. <SDK_UPSTREAM>/versions.json → latest.version    (auto-detect, 5s timeout)
+3. /v1.7/main.js                                    (hard-coded fallback)
+```
+
+If steps 1 and 2 both fail, you get the fallback and a warning is logged. Setting `SDK_MAIN_JS` explicitly is the only way to skip the upstream fetch entirely — useful when `versions.json` is unreachable, you want a deterministic startup, or the upstream's `latest` is not what you want to test against.
+
+### Format
+
+```
+SDK_MAIN_JS=/v<semver>/main.js
+```
+
+`<semver>` matches `[\d.]+(?:-[\w.]+)?` — dot-separated numbers with an optional pre-release suffix.
+
+| Value | When to use it |
+| :--- | :--- |
+| `/v1.9/main.js` | Pin to a minor line (whatever the upstream publishes there) |
+| `/v1.9.1/main.js` | Pin to an exact patch — most common |
+
+The path **must** start with `/v` and contain `/main.js` for normalization to work. If the regex does not match, the path is used for template injection but version rewriting is disabled.
+
+### Common use cases
+
+**Test a specific SDK release end-to-end:**
+
+```shell
+SDK_MAIN_JS=/v1.9.1/main.js npm start
+```
+
+Every page now loads `v1.9.1`, and any hardcoded `/v<other>/*.js` in partner pages is silently rewritten to `v1.9.1` against `SDK_UPSTREAM`.
+
+**Quiet startup (no upstream `versions.json` call):**
+
+```shell
+SDK_MAIN_JS=/v1.9.1/main.js npm start
+```
+
+Useful in air-gapped environments or when `SDK_UPSTREAM` is a local file server that does not expose `versions.json`.
+
+**Reproduce a customer bug on an older version:**
+
+```shell
+SDK_MAIN_JS=/v1.7.4/main.js npm start
+```
+
+As long as `v1.7.4` is still published on `SDK_UPSTREAM`, every browser that hits the proxy loads it — no rebuild required.
+
+### Gotchas
+
+- **Card and 3DS upstreams are not affected.** `SDK_MAIN_JS` only pins the main SDK bundle's version. The card micro-app (`/v<x>/pages/*`) and the 3DS micro-app keep their own version segments.
+- **Setting it disables auto-detection.** If a newer SDK version is published upstream, you keep loading the pinned version until you change the env var and restart.
+- **Restart required.** The value is read once at boot. No hot reload.
+- **Mismatch with upstream is silent.** Pinning to a version the upstream does not publish results in a `404` for `/v<your-pin>/main.js`. Check the network tab to spot it.
+- **No query strings or hash.** Path only.
+
+## Building a server like this
+
+### 1. Bootstrap the project
+
+```shell
+mkdir my-proxy && cd my-proxy
+npm init -y
+npm install express http-proxy node-fetch@2 dotenv
+```
+
+<Note>
+  Use `node-fetch@2` (CommonJS) unless you have a build step — v3 is ESM-only.
+</Note>
+
+### 2. Define your upstream map
+
+| Upstream var | Owns these paths |
+| :--- | :--- |
+| `SDK_UPSTREAM` | `/v<x>/main.js` and everything not matched below |
+| `SDK_CARD_UPSTREAM` | `/v<x>/pages/*`, `/v<x>/assets/*` |
+| `SDK_3DS_UPSTREAM` | `/challenge.html`, `/redirect.html`, `/session-id.html`, `/assets/(challenge\|redirect\|session-id\|validate-url)*` |
+| `SDK_STATIC_UPSTREAM` | `/icons/*`, `/css/*`, `/brands/*`, `/c2p/*` (host-swapped CDN assets) |
+| `SDK_ICONS_UPSTREAM` | `/sdk-web/*`, `/flags/*`, bare root brand images (`/Visa.png`, …) |
+| `BACKEND_URL` | `/v1/*`, `/v2/*` (REST API) |
+| `BACKEND_WS_URL` | `/checkout-websocket-notification-ms/ws/{payment,enrollment}` (WebSocket only) |
+
+`SDK_CARD_UPSTREAM` and `SDK_3DS_UPSTREAM` default to `SDK_UPSTREAM` when unset, and `BACKEND_WS_URL` defaults to `BACKEND_URL` — keep this fallback behaviour, it makes single-env testing easier. `SDK_STATIC_UPSTREAM` / `SDK_ICONS_UPSTREAM` are the exception: they default to the fixed `sdk.prod.y.uno` / `icons.prod.y.uno` CDNs (the SDK host-swaps these from `*.prod.y.uno` regardless of environment), **not** to `SDK_UPSTREAM`.
+
+### 3. Set up CORS as the proxy's responsibility
+
+```javascript
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  if (origin) {
+    res.set('access-control-allow-origin', origin)
+    res.set('access-control-allow-credentials', 'true')
+    res.set('vary', 'origin')
+  } else {
+    res.set('access-control-allow-origin', '*')
+  }
+  res.set('access-control-allow-methods', req.headers['access-control-request-method'] || 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS')
+  res.set('access-control-allow-headers', req.headers['access-control-request-headers'] || '*')
+  res.set('access-control-expose-headers', '*')
+  res.set('access-control-max-age', '86400')
+  if (req.method === 'OPTIONS') return res.status(204).end()
+  next()
+})
+```
+
+Echo the caller's origin (not `*`) so credentialed requests work, and short-circuit preflights. When you later forward upstream responses, strip every `access-control-*` header from the upstream or it will override yours.
+
+### 4. Filter hop-by-hop headers in both directions
+
+Per [RFC 7230 §6.1](https://datatracker.ietf.org/doc/html/rfc7230#section-6.1):
+
+```javascript
+const HOP_BY_HOP = new Set([
+  'host', 'connection', 'keep-alive',
+  'proxy-authenticate', 'proxy-authorization',
+  'te', 'trailer', 'transfer-encoding', 'upgrade',
+  'content-length', // node-fetch sets this itself
+])
+```
+
+Filter these out of both inbound (request to upstream) and outbound (upstream to client) headers. Forgetting `content-length` is the classic bug — node-fetch sets it, but if you also copy the original value the response truncates.
+
+### 5. Forward the API surface
+
+```javascript
+app.all('/v1/*', forwardToBackend)
+app.all('/v2/*', forwardToBackend)
+
+async function forwardToBackend(req, res) {
+  const targetUrl = `${BACKEND_URL}${req.originalUrl}`
+  const headers = pickRequestHeaders(req) // filters HOP_BY_HOP
+  delete headers.cookie                   // partner cookies don't belong on api.y.uno
+  const init = { method: req.method, headers }
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    // express.json() consumed the original body; re-serialize it.
+    init.body = req.body && Object.keys(req.body).length ? JSON.stringify(req.body) : undefined
+    if (init.body && !headers['content-type']) headers['content-type'] = 'application/json'
+  }
+  const upstream = await fetch(targetUrl, init)
+  res.status(upstream.status)
+  for (const [k, v] of upstream.headers.entries()) {
+    const lk = k.toLowerCase()
+    if (HOP_BY_HOP.has(lk)) continue
+    if (lk.startsWith('access-control-')) continue   // proxy owns CORS
+    res.set(k, v)
+  }
+  res.send(await upstream.text())
+}
+```
+
+`express.json()` has already consumed the request body, so for non-GET methods you re-serialize `req.body`. Don't try to `req.pipe(upstream)` after the body is consumed.
+
+<Note>
+  Drop the `Cookie` header before forwarding. The partner page's browser cookies belong to the proxy origin (session, analytics, URL-valued ones like `spage`) and a genuine cross-origin call to `api.y.uno` would never carry them — forwarding them only risks the upstream WAF rejecting the request with a `403`. The API authenticates via the public API key, not cookies. (WebSocket upgrades are the exception — see step 7.)
+</Note>
+
+### 6. Catch-all proxy for SDK assets
+
+```javascript
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next()
+  proxyToUpstream(req, res, next)
+})
+
+async function proxyToUpstream(req, res, next) {
+  const upstreamBase = pickSdkUpstream(req.path)   // 3DS / card / static / icons / SDK
+  const targetUrl = `${upstreamBase}${normalizePath(req.originalUrl)}`
+  const upstream = await fetch(targetUrl, { redirect: 'follow', headers: { /* accept, user-agent */ } })
+  if (upstream.status === 404) return next()
+  res.status(upstream.status)
+  for (const h of ['content-type', 'cache-control', 'etag', 'last-modified']) {
+    const v = upstream.headers.get(h)
+    if (v) res.set(h, v)
+  }
+  upstream.body.pipe(res)   // stream — don't buffer, assets can be big
+}
+```
+
+<Warning>
+  Register the catch-all last. It matches everything, so any middleware added after it is unreachable unless you guard it explicitly.
+</Warning>
+
+### 7. Handle WebSocket upgrades on the http.Server
+
+Express middleware does not see `Upgrade` requests. Hook into the http server directly:
+
+```javascript
+const wsProxy = httpProxy.createProxyServer({ changeOrigin: true, ws: true })
+const server = app.listen(PORT)
+server.on('upgrade', (req, socket, head) => {
+  const target = pickWsTarget(req.url)   // BACKEND_WS_URL or SDK_UPSTREAM
+  wsProxy.ws(req, socket, head, { target })
+})
+```
+
+`http-proxy` negotiates `ws://` vs `wss://` from the target URL scheme.
+
+### 8. Wire up environment variables
+
+Use `dotenv`. Document **per-environment** values, not just defaults. For Yuno:
+
+- SDK services follow `<service>[.<env>].y.uno` — `sdk-web.y.uno`, `sdk-web.staging.y.uno`, `sdk-web.dev.y.uno`.
+- API surface uses `api[-<env>].y.uno` — `api.y.uno`, `api-staging.y.uno`, `api-dev.y.uno`. **Note the hyphen, not a dot.**
+- The WebSocket service has **no** `api-` prefix — `<env>.y.uno` directly (`y.uno`, `staging.y.uno`, `dev.y.uno`).
+
+These naming inconsistencies cause more 404s than any other class of bug. Encode them in your `.env.example` so users don't guess.
+
+### 9. Ship a minimal landing page
+
+Serve `index.html` at `/` and a `/whitelabel-info` JSON endpoint that returns the resolved upstream config. The landing page calls the JSON endpoint and renders it — anyone debugging the proxy sees exactly what's routed where without grepping logs.
+
+## Pitfalls and edge cases
+
+- **Route order matters.** The SDK catch-all is registered last. Anything you `app.use` after it never runs.
+- **CORS authority must be the proxy.** Letting upstream `access-control-*` headers through means credentialed cross-origin requests randomly fail when the upstream's allow-list does not include `localhost`.
+- **Hop-by-hop headers are bidirectional.** Strip them on both legs. `content-length` is the one that bites.
+- **Body consumption is a one-shot.** Once `express.json()` parses a request, the underlying stream is drained. Re-serialize from `req.body` if you need to forward a `POST`.
+- **Streaming, not buffering, for assets.** `upstream.body.pipe(res)` keeps memory flat even for multi-MB bundles.
+- **Version normalization is `SDK_UPSTREAM`-only.** Card and 3DS micro-apps have their own version segments — rewriting them breaks the upstream URL. The static / icons CDNs aren't versioned, so they aren't normalized either.
+- **Static CDN assets are host-swapped too.** Recent SDK builds rewrite their hard-coded `icons.prod.y.uno` / `sdk.prod.y.uno` asset URLs onto the white-label host, so the proxy must forward `/icons`, `/css`, `/brands`, `/c2p` → `sdk.prod.y.uno` and `/sdk-web`, `/flags`, bare `/*.png` → `icons.prod.y.uno`. Older SDK builds load these straight from the CDN and never reach the proxy. Exercising this end-to-end needs a recent SDK build **and** a partner page that inits with `{ apiUrl: '<proxy origin>' }` (or `assetUrl`).
+- **Don't forward the partner page's cookies to the API.** Strip `Cookie` on `/v1`/`/v2` forwards — the browser's localhost cookies (session, analytics, URL-valued ones like `spage`) don't belong on a cross-origin call to `api.y.uno` and can trip the upstream WAF with a `403`. The API authenticates via the public API key.
+- **WebSocket auth is whatever headers `http-proxy` sees.** Do **not** strip `cookie` or `authorization` from WS upgrades — the cookie strip applies only to the HTTP `/v1`/`/v2` backend forwards.
+- `.env` is gitignored. Always keep `.env.example` in sync — it is the spec for anyone cloning the repo.
+
+## Verification checklist
+
+Once your proxy is running, verify in browser DevTools:
+
+1. **Network tab** — no requests to any `*.y.uno` host originate from the merchant page. All traffic is to the proxy origin.
+2. `window.SdkPayments` is defined; `window.Yuno` is either undefined or a legacy alias.
+3. `sdk-payments-ready` event fires on `document` after the SDK boots.
+4. No `yuno-*` DOM tokens in the rendered output, except for the trust-mark allow-list (`yuno-badge`, `secure-by-yuno`, `yuno-typography-provider`, `yuno-c2p`, `yuno-redirect`, `yuno-debug`, `data-yuno-session-id`).
+
+## Reference implementation
+
+The full source lives in the [`yuno-sdk-web/white-label-proxy-server`](https://github.com/yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server) repository. About 320 lines in `server.js` — the whole thing fits in one file because there is no business logic, just routing and header hygiene.
+
+## See also
+
+- [White Label (Web SDK)](/docs/sdks/customization/web/white-label) — the SDK-side overrides this harness verifies.
+- [yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server](https://github.com/yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server) — full source.
+- [RFC 7230 §6.1 — Connection-specific headers](https://datatracker.ietf.org/doc/html/rfc7230#section-6.1)
+- [http-proxy WebSocket docs](https://github.com/http-party/node-http-proxy#proxying-websockets)
