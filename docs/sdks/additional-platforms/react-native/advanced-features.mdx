@@ -1,0 +1,185 @@
+---
+title: Advanced Features
+sidebarTitle: Advanced Features
+description: Performance optimization, deep linking, and platform-specific configurations for React Native.
+---
+
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+
+<GenericOrientation />
+
+Explore advanced configurations and custom integrations for the React Native SDK.
+
+## Deep linking / external browser return
+
+Handle users returning to your app after external payment flows like 3DS authentication challenges, bank transfer redirects, PIX payments, and alternative payment methods that redirect to external browsers.
+
+### 1. Set callback_url in checkout session
+
+Include `callback_url` when creating the checkout session on your backend:
+
+```json
+{
+  "callback_url": "myapp://return"
+}
+```
+
+### 2. Configure deep links
+
+**iOS - Info.plist:**
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLName</key>
+        <string>com.yourapp</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+    </dict>
+</array>
+```
+
+**Android - AndroidManifest.xml:**
+
+```xml
+<activity android:name=".MainActivity">
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="myapp"
+            android:host="return" />
+    </intent-filter>
+</activity>
+```
+
+### 3. Handle deep links in react-native
+
+```typescript
+import { YunoSdk } from '@yuno-payments/yuno-sdk-react-native';
+import { Linking } from 'react-native';
+import { useEffect } from 'react';
+
+function App() {
+  useEffect(() => {
+    // Handle initial URL (app opened from closed state)
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleDeepLink(url);
+      }
+    });
+    
+    // Handle URL changes (app is running)
+    const subscription = Linking.addEventListener('url', (event) => {
+      handleDeepLink(event.url);
+    });
+    
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  
+  const handleDeepLink = async (url: string) => {
+    // Check if it's a payment return URL
+    if (url.startsWith('myapp://return')) {
+      try {
+        await YunoSdk.receiveDeeplink(url);
+      } catch (error) {
+        console.error('Error processing deep link:', error);
+      }
+    }
+  };
+}
+```
+
+### 4. Continue payment after return
+
+After handling the deep link, continue the payment flow:
+
+```typescript
+const handleDeepLink = async (url: string) => {
+  if (url.startsWith('myapp://return')) {
+    try {
+      await YunoSdk.receiveDeeplink(url);
+      
+      // Continue payment flow
+      await YunoSdk.continuePayment(
+        checkoutSessionId,
+        'US',
+        true // show payment status
+      );
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+};
+```
+
+## Performance
+
+### Lazy loading
+
+Initialize the SDK only when the user enters the payment flow to save resources.
+
+```typescript
+const PaymentScreen = () => {
+  const [yunoLoaded, setYunoLoaded] = useState(false);
+  
+  useEffect(() => {
+    if (!yunoLoaded) {
+      YunoSdk.initialize({
+        apiKey: 'pk_test_key',
+        countryCode: 'US',
+      });
+      setYunoLoaded(true);
+    }
+  }, []);
+};
+```
+
+## Error handling
+
+Listen to the `onPaymentStatus` event to handle failures gracefully.
+
+```typescript
+const subscription = YunoSdk.onPaymentStatus((state) => {
+  if (state.status === 'FAILED') {
+    Alert.alert('Error', 'Payment failed. Please try again.');
+  }
+});
+```
+
+## Platform-specific configuration
+
+Handle differences between iOS and Android in your React Native app.
+
+### Conditional configuration
+
+```typescript
+import { Platform } from 'react-native';
+
+await YunoSdk.initialize({
+  apiKey: 'your-api-key',
+  countryCode: 'US',
+  ...(Platform.OS === 'ios' && {
+    iosConfig: { /* iOS settings */ },
+  }),
+  ...(Platform.OS === 'android' && {
+    androidConfig: { /* Android settings */ },
+  }),
+});
+```
+
+### Platform differences
+
+| Feature       | iOS                 | Android             |
+| ------------- | ------------------- | ------------------- |
+| Card scanning | Not available       | Available           |
+| Deep links    | Universal Links     | Intent Filters      |
+| Minimum OS    | iOS 14.0+           | API 21 (5.0)+       |

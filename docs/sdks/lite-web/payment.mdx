@@ -3,7 +3,7 @@ title: Lite SDK (Payment Web)
 description: "Implement Lite Web SDK payments with finer control over how payment methods display."
 excerpt: ''
 deprecated: false
-hidden: true
+hidden: false
 metadata:
   title: Lite SDK (Payment Web)
   description: >-
@@ -11,7 +11,9 @@ metadata:
     your web application, offering more control over payment method display.
   robots: index
 ---
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
 
+<GenericOrientation />
 Follow this step-by-step guide to implement and enable Yuno's Lite Web SDK payment functionality in your application.
 
 ## Step 1: Include the library in your project
@@ -67,7 +69,7 @@ To control authorization and capture with cards, include `payment_method.detail.
 <Note>
 **`onPaymentMethodSelect` Event**
 
-For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `startCheckout` before `mountCheckout`.
+For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelected` is triggered as soon as the customer chooses the payment method (before the payment flow begins). Define `onPaymentMethodSelected` in `await yuno.startCheckout()` before `await yuno.mountCheckoutLite()`.
 </Note>
 
 ## Step 4: Start the checkout process
@@ -75,7 +77,7 @@ For all APMs, including Google Pay, Apple Pay, and PayPal, `onPaymentMethodSelec
 Use the configuration below to provide a lite and user-friendly payment experience for your customers:
 
 ```javascript
-yuno.startCheckout({
+await yuno.startCheckout({
   checkoutSession: "438413b7-4921-41e4-b8f3-28a5a0141638",
   elementSelector: "#root",
   countryCode: "US",
@@ -96,7 +98,6 @@ yuno.startCheckout({
     styles: "",
     cardSaveEnable: false,
     texts: {},
-    cardNumberPlaceholder: "Enter card number", // Optional: Custom placeholder text
     hideCardholderName: false, // Optional: Set to true to hide cardholder name field
   },
   texts: {},
@@ -106,18 +107,18 @@ yuno.startCheckout({
       checkoutSession,
       vault_on_success: true 
     });
-    yuno.continuePayment({ showPaymentStatus: true });
+    await yuno.continuePayment({ showPaymentStatus: true });
   },
-  yunoPaymentMethodSelected(data) {
+  onPaymentMethodSelected(data) {
     console.log("Payment method selected:", data);
   },
   yunoPaymentResult(data) {
     console.log("Payment result:", data);
-    yuno.hideLoader();
+    await yuno.hideLoader();
   },
   yunoError(error, data) {
     console.error("An error occurred:", error);
-    yuno.hideLoader();
+    await yuno.hideLoader();
   },
 });
 ```
@@ -142,11 +143,11 @@ Configure the lite checkout with the following options:
 | `renderMode`                | Specify how and where the forms will be rendered. The options available are:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |                             | ▪️ `type: modal` (default)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |                             | ▪️ `type: element` - If you select `element`, you must inform the `elementSelector` to specify where the form should be rendered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `card`                      | Defines the configuration for the card form. It contains settings like render mode, custom styles, save card option, optional `cardNumberPlaceholder` for customizing the card number field placeholder text, and optional `hideCardholderName` to hide the cardholder name field.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `card`                      | Defines the configuration for the card form. It contains settings like custom styles, save card option, and optional `hideCardholderName` to hide the cardholder name field.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `texts`                     | Allows you to set custom button texts for card and non-card payment forms.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `yunoCreatePayment`         | Callback function for creating a payment. Send the one-time token to your backend to create the payment via the API; then call `yuno.continuePayment()` to resume the flow.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `yunoPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `yunoPaymentResult`         | Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `yunoCreatePayment`         | Callback function for creating a payment. Send the one-time token to your backend to create the payment via the API; then call `await yuno.continuePayment()` to resume the flow.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `onPaymentMethodSelected` | Callback invoked when a payment method is selected, along with the method's type and name.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `yunoPaymentResult`         | Callback called after the payment is completed, with the payment status (e.g., `SUCCEEDED`, `ERROR`, `CANCELED_BY_USER`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `yunoError`                 | Callback invoked when there is an error in the payment process. Receives error type and optional additional data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 <Note>
@@ -157,10 +158,10 @@ Payments can be initiated by the customer (CIT) or by the merchant (MIT). You fi
 
 ## Step 5: Mount the SDK
 
-To present the checkout process based on the selected payment method, use the `yuno.mountCheckout()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
+To present the checkout process based on the selected payment method, use the `await yuno.mountCheckoutLite()` function. This step ensures the SDK is properly mounted on your chosen HTML element.
 
 ```javascript
-yuno.mountCheckout({
+await yuno.mountCheckoutLite({
   paymentMethodType: PAYMENT_METHOD_TYPE,
   vaultedToken: VAULTED_TOKEN,
 });
@@ -170,27 +171,27 @@ See the [Payment type](/reference/payment-type-list) page to view the complete l
 
 The `vaultedToken` is optional. It represents a previously enrolled payment method. If you provide the `vaultedToken`, the user will not be required to provide the payment information again since it was provided in a previous transaction.
 
-After mounting, you must start the checkout flow by calling `yuno.startPayment()`. If you skip this call, the payment form will not open.
+After mounting, you must start the checkout flow by calling `yuno.startPayment()`. If you skip this call, the payment form will not open. Note that `yuno.startPayment()` also returns a promise and should be awaited.
 
 ## Step 6: Start the payment flow (Required)
 
-Call `yuno.startPayment()` immediately after `yuno.mountCheckout()` to open the selected payment method UI:
+Call `await yuno.startPayment()` immediately after `await yuno.mountCheckoutLite()` to open the selected payment method UI:
 
 ```javascript
-yuno.mountCheckout({
+await yuno.mountCheckoutLite({
   paymentMethodType: PAYMENT_METHOD_TYPE,
   vaultedToken: VAULTED_TOKEN,
 });
 
-yuno.startPayment();
+await yuno.startPayment();
 ```
 
 Alternatively, you can trigger the start from a user action such as a button click:
 
 ```javascript
 const payButton = document.querySelector('#button-pay');
-payButton.addEventListener('click', () => {
-  yuno.startPayment();
+payButton.addEventListener('click', async () => {
+  await yuno.startPayment();
 });
 ```
 
@@ -229,13 +230,39 @@ await yuno.mountExternalButtons([
 You can unmount a single external button by payment method type:
 
 ```javascript
-yuno.unmountExternalButton('APPLE_PAY');
+await yuno.unmountExternalButton('APPLE_PAY');
 ```
 
 Or unmount all external buttons at once:
 
 ```javascript
-yuno.unmountAllExternalButtons();
+await yuno.unmountAllExternalButtons();
+```
+
+### Unmounting the SDK
+
+For explicit cleanup of the Yuno SDK (e.g., when a user cancels the flow or you need to remove the SDK from the DOM), use the `unmountSdk()` method:
+
+```javascript
+await yuno.unmountSdk();
+```
+
+## PayPal REDIRECT Workflow
+
+The Yuno SDK supports a `REDIRECT` workflow for PayPal. This workflow is useful when PayPal was not initialized at the start of the SDK or when using a pre-existing PayPal `orderId`.
+
+- **PaypalButtonModal**: If PayPal is not initialized, the SDK can render the PayPal button inside a modal.
+- **Workflow**: The `REDIRECT` workflow skips fraud detection and OTT creation, utilizing the provided `orderId`.
+
+```javascript
+// Example PayPal configuration
+await yuno.startCheckout({
+  // ... other config
+  paypal: {
+    workflow: 'REDIRECT',
+    orderId: 'PAYPAL_ORDER_ID',
+  }
+});
 ```
 
 ## Enrolling payment methods in lite flow
@@ -274,4 +301,4 @@ Handle errors returned by the SDK in your app (e.g. failed payments, validation 
 
 ## Stay updated
 
-Visit the [changelog](/changelog/web-sdk-v1.6-changelog) for the latest SDK updates and version history.
+Visit the [changelog](/changelog/web#v1-6-0) for the latest SDK updates and version history.

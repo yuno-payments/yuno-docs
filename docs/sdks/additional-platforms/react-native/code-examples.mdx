@@ -1,0 +1,205 @@
+---
+title: Code Examples
+sidebarTitle: Code Examples
+description: Ready-to-use React Native code examples for common scenarios.
+---
+
+import GenericOrientation from '/snippets/GenericOrientation.mdx'
+
+<GenericOrientation />
+
+Explore these examples to quickly implement Yuno in your React Native application.
+
+## Basic payment flow
+
+The simplest way to integrate Yuno using the pre-built payment method selection component.
+
+```typescript
+import React, { useState, useEffect } from 'react';
+import { View, Button, Text, StyleSheet, ScrollView } from 'react-native';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
+
+export default function PaymentScreen() {
+  const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
+  
+  useEffect(() => {
+    initCheckout();
+    
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        Alert.alert('Success', 'Payment successful!');
+      }
+    });
+    
+    return () => subscription.remove();
+  }, []);
+  
+  const initCheckout = async () => {
+    const session = await fetch('https://api.example.com/checkout', {
+      method: 'POST',
+      body: JSON.stringify({ amount: { currency: 'USD', value: 2500 } }),
+    }).then(r => r.json());
+    
+    setCheckoutSession(session.checkoutSession);
+  };
+  
+  const processPayment = async () => {
+    await YunoSdk.startPayment(true);
+  };
+  
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.amount}>$25.00</Text>
+      
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
+          }}
+        />
+      )}
+      
+      <Button 
+        title="Pay Now" 
+        onPress={processPayment}
+        disabled={!paymentMethodSelected}
+      />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20 },
+  amount: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 24 },
+});
+```
+
+## React Navigation integration
+
+```typescript
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { YunoSdk, YunoPaymentMethods } from '@yuno-payments/yuno-sdk-react-native';
+
+const Stack = createStackNavigator();
+
+function CheckoutScreen({ navigation }) {
+  const [checkoutSession, setCheckoutSession] = useState<string | null>(null);
+  const [paymentMethodSelected, setPaymentMethodSelected] = useState(false);
+  
+  useEffect(() => {
+    initCheckout();
+    
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      if (state.status === 'SUCCEEDED') {
+        navigation.navigate('Success');
+      }
+    });
+    
+    return () => subscription.remove();
+  }, []);
+  
+  const handlePayment = async () => {
+    await YunoSdk.startPayment(true);
+  };
+  
+  return (
+    <ScrollView style={{ padding: 20 }}>
+      {checkoutSession && (
+        <YunoPaymentMethods
+          checkoutSession={checkoutSession}
+          countryCode="US"
+          onPaymentMethodSelected={(event) => {
+            setPaymentMethodSelected(event.isSelected);
+          }}
+        />
+      )}
+      <Button 
+        title="Continue to Payment" 
+        onPress={handlePayment}
+        disabled={!paymentMethodSelected}
+      />
+    </ScrollView>
+  );
+}
+
+export default function App() {
+  useEffect(() => {
+    YunoSdk.initialize({ apiKey: 'pk_test_key', countryCode: 'US' });
+  }, []);
+  
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Checkout" component={CheckoutScreen} />
+        <Stack.Screen name="Success" component={SuccessScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+```
+
+## One-click payment (Vaulted Tokens)
+
+```typescript
+const payWithCard = async (card) => {
+  const session = await createCheckoutSession();
+  
+  await YunoSdk.startPaymentLite({
+    checkoutSession: session.id,
+    methodSelected: {
+      vaultedToken: card.vaultedToken,
+      paymentMethodType: 'CARD',
+    },
+    showPaymentStatus: true,
+  }, 'US');
+};
+```
+
+## Subscription enrollment
+
+```typescript
+const enrollCard = async () => {
+  const customerSession = await createCustomerSession('cus_123');
+  
+  await YunoSdk.enrollmentPayment({
+    customerSession: customerSession.id,
+    countryCode: 'US',
+    showPaymentStatus: true,
+  });
+};
+```
+
+## Context API integration
+
+```typescript
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const PaymentContext = createContext(null);
+
+export function PaymentProvider({ children }) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  useEffect(() => {
+    const subscription = YunoSdk.onPaymentStatus((state) => {
+      setIsProcessing(false);
+      if (state.status === 'SUCCEEDED') { /* ... */ }
+    });
+    return () => subscription.remove();
+  }, []);
+  
+  const processPayment = async () => {
+    setIsProcessing(true);
+    await YunoSdk.startPayment(true);
+  };
+  
+  return (
+    <PaymentContext.Provider value={{ isProcessing, processPayment }}>
+      {children}
+    </PaymentContext.Provider>
+  );
+}
+```

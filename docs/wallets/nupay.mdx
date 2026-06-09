@@ -3,9 +3,10 @@ title: "NuPay"
 description: "Enroll NuPay, charge installments, and set up subscriptions using the Direct workflow."
 ---
 
-This guide explores Yuno's NuPay integration using the Direct workflow. You'll learn how to:
+This guide explores how to integrate NuPay, the digital payment method from NuBank, into your checkout. Yuno supports both the **Yuno SDK** (recommended) and **Direct API** workflows. You'll learn how to:
 
 * Enroll NuPay as a customer payment method
+* Make payments without enrollment (2FA mode)
 * Make payments with installments (payment conditions)
 * Set up subscriptions
 
@@ -14,7 +15,7 @@ This guide explores Yuno's NuPay integration using the Direct workflow. You'll l
 Before starting, you need:
 
 * A Yuno account with Dashboard access
-* API keys and an `account_id` (found in dashboard)
+* API keys and an `account_id` (found in the dashboard)
 * A customer created in Yuno (or create one in Step 1)
 
 ## Create and manage customers
@@ -27,124 +28,380 @@ Create the customer once using your external `merchant_customer_id`, then retrie
 
 ## Enroll NuPay payment method
 
-Follow these steps to enroll `NU_PAY_ENROLLMENT` to a customer using the Direct workflow.
+Follow the steps below to enroll the `NU_PAY_ENROLLMENT` payment method to a customer.
 
-### Step 1: Create a customer
+<Tabs>
+  <Tab title="Yuno SDK">
+    With the SDK integration, Yuno handles displaying the NuPay payment method, redirecting the customer to NuBank for authentication, and managing the return flow.
+    
+    ### Step 1: Create a customer
+    Create a customer and obtain their Yuno customer `id` using the [Create Customer](/reference/create-customer) endpoint.
+    
+    ### Step 2: Create a customer session
+    Use the customer `id` and the [Create Customer Session](/reference/create-customer-session) endpoint to receive a `customer_session`.
+    
+    ### Step 3: Initialize the SDK and enroll
+    Initialize Yuno's SDK (Web, Android, or iOS) with the `customer_session`. 
+    
+    If using the SDK checkout or headless integration, call [Enroll Payment Method (Checkout)](/reference/enroll-payment-method-checkout) (`POST /customers/sessions/{customer_session}/payment-methods`) with `payment_method_type`: `NU_PAY_ENROLLMENT`.
+    
+    The SDK automatically displays the NuPay payment method, manages the customer redirection to NuBank, and handles the authentication flow.
+    
+    ### Step 4: Confirm enrollment
+    Listen to [webhooks](/docs/webhooks) or retrieve enrolled payment methods to verify the status is `ENROLLED`.
+  </Tab>
+  
+  <Tab title="Direct API">
+    Follow these steps to enroll `NU_PAY_ENROLLMENT` to a customer using the Direct workflow.
+    
+    ### Step 1: Create a customer
+    If you don't have a customer yet, create one as shown above. You'll use the returned customer `id`.
+    
+    ### Step 2: Enroll the payment method
+    Use [Enroll Payment Method](/reference/enroll-payment-method-api) with the following request parameters:
+    
+    * **type**: `NU_PAY_ENROLLMENT`
+    * **account\_id**: UUID of your account (from the Yuno Dashboard)
+    * **workflow**: `DIRECT`
+    
+    Expected response fields:
+    
+    * **vaulted\_token**: UUID for the enrolled payment method
+    * **status**: `READY_TO_ENROLL`
+    * **sub\_status**: `WAITING_ADDITIONAL_STEP`
+    * **action**: `REDIRECT_URL`
+    * **redirect\_url**: URL to redirect the customer to Nu for authentication
+    
+    ### Step 3: Redirect the customer
+    Redirect the customer to the `redirect_url`. The customer completes the Nu flow. Nu notifies Yuno of the final state.
+    
+    ### Step 4: Confirm enrollment
+    Use [Retrieve Enrolled Payment Method by id](/reference/retrieve-enrolled-payment-method-by-id-api) with the `vaulted_token`. A successful enrollment returns:
+    
+    * **status**: `ENROLLED`
+    * **sub\_status**: `ENROLLED`
+    
+    <Warning>
+      The enrollment is only complete after Yuno receives Nu’s confirmation.
+    </Warning>
+  </Tab>
+</Tabs>
 
-If you don't have a customer yet, create one as shown above. You'll use the returned customer `id`.
+## Payments without enrollment (2FA mode)
 
-### Step 2: Enroll the payment method
+You can accept one-time payments with NuPay without requiring the customer to enroll their payment method. This is often referred to as **2FA mode**, as the customer authenticates each transaction individually.
 
-Use [Enroll Payment Method](/reference/enroll-payment-method-api) with the following request parameters:
-
-* **type**: `NU_PAY_ENROLLMENT`
-* **account\_id**: UUID of your account (from the Yuno Dashboard)
-* **workflow**: `DIRECT`
-
-Expected response fields:
-
-* **vaulted\_token**: UUID for the enrolled payment method
-* **status**: `READY_TO_ENROLL`
-* **sub\_status**: `WAITING_ADDITIONAL_STEP`
-* **action**: `REDIRECT_URL`
-* **redirect\_url**: URL to redirect the customer to Nu for authentication
-
-### Step 3: Redirect the customer
-
-Redirect the customer to the `redirect_url`. The customer completes the Nu flow. Nu notifies Yuno of the final state.
-
-### Step 4: Confirm enrollment
-
-Use [Retrieve Enrolled Payment Method by id](/reference/retrieve-enrolled-payment-method-by-id-api) with the `vaulted_token`. A successful enrollment returns:
-
-* **status**: `ENROLLED`
-* **sub\_status**: `ENROLLED`
-
-<Warning>
-  The enrollment is only complete after Yuno receives Nu’s confirmation.
-</Warning>
+<Tabs>
+  <Tab title="Yuno SDK">
+    Accept payments without enrollment using Yuno's SDK. The SDK handles displaying NuPay and redirecting the customer to complete the authentication.
+    
+    ### Step 1: Create a checkout session
+    Start by creating a checkout session using the [Create Checkout Session](/reference/create-checkout-session) endpoint.
+    
+    ```json
+    {
+      "country": "BR",
+      "customer_id": "{{customer_id}}",
+      "merchant_order_id": "order-0000024",
+      "amount": {
+        "currency": "BRL",
+        "value": 15000
+      }
+    }
+    ```
+    
+    The response returns a `checkout_session` ID.
+    
+    ### Step 2: Initialize the SDK
+    Initialize Yuno's SDK (Web, Android, or iOS) with the `checkout_session` ID. NuPay will automatically render as an available payment option in the SDK interface.
+    
+    ### Step 3: Customer completes payment
+    When the customer selects NuPay:
+    1. The SDK prompts the customer for authentication.
+    2. The customer is redirected to Nu for 2FA authentication.
+    3. The SDK receives the result and processes the payment through Yuno.
+    
+    ### Step 4: Handle SDK workflow payments (Optional)
+    If you are calling the Yuno payments API directly while using the SDK checkout, set the `workflow` to `SDK_CHECKOUT` and pass the `checkout.session` token:
+    
+    ```json
+    {
+      "description": "One-time NuPay Payment via SDK",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000024",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 150
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "SDK_CHECKOUT",
+      "checkout": {
+        "session": "{{checkout_session_id}}"
+      },
+      "payment_method": {
+        "type": "NU_PAY"
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Direct API">
+    ### Step 1: Create a payment
+    Use [Create payment](/reference/create-payment) with the Direct workflow and the `NU_PAY` payment method type. In this mode, you don't need a `vaulted_token`.
+    
+    ```json
+    {
+      "description": "One-time NuPay Payment",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000024",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 150
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "DIRECT",
+      "callback_url": "https://your-callback.com",
+      "payment_method": {
+        "type": "NU_PAY"
+      }
+    }
+    ```
+    
+    ### Step 2: Handle the response
+    Since this mode requires customer authentication, the response will return an action to redirect the user.
+    
+    *   **status**: `READY_TO_PAY`
+    *   **sub_status**: `WAITING_ADDITIONAL_STEP`
+    *   **action**: `REDIRECT_URL`
+    *   **redirect_url**: URL to redirect the customer to Nu for 2FA authentication.
+    
+    ### Step 3: Confirm payment
+    After the customer completes the authentication, use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm the final status.
+  </Tab>
+</Tabs>
 
 ## Payments with payment conditions (installments)
 
-After enrollment, you can accept payments with NuPay using payment conditions.
+NuPay supports installments for both enrolled payment methods and one-time payments (2FA mode).
 
-### Step 1: Ensure prerequisites
-
-Have a Yuno customer `id` and an enrolled NuPay `vaulted_token`.
-
-### Step 2: Get payment conditions
-
-Request available installment options for NuPay using the APM installments endpoint.
-
-```bash
-curl --location 'https://api-sandbox.y.uno/v1/apm-installments' \
---header 'public-api-key: {{your_public_api_key}}' \
---header 'private-secret-key: {{your_secret_api_key}}' \
---header 'X-account-code: {{your_account_code}}' \
---header 'Content-Type: application/json' \
---data '{
-  "country": "BR",
-  "amount": {
-    "currency": "BRL",
-    "value": "250"
-  },
-  "customer": {
-    "id": "{{customer_id}}"
-  },
-  "payment_method": "NU_PAY_ENROLLMENT",
-  "vaulted_token": "{{vaulted_token}}"
-}'
-```
-
-The response returns an array of installment plans, including `id`, available `installments`, and amounts. Select a plan `id` and an allowed installments number.
-
-### Step 3: Create payment
-
-Use [Create payment](/reference/create-payment) with the Direct workflow and NuPay type. Include the selected plan id and installments in the wallet `card_data`.
-
-```json
-{
-  "description": "test",
-  "account_id": "{{account_id}}",
-  "merchant_order_id": "0000023",
-  "country": "BR",
-  "merchant_reference": "ref-merchant-AA01",
-  "amount": {
-    "currency": "BRL",
-    "value": 250
-  },
-  "customer_payer": {
-    "id": "{{customer_id}}"
-  },
-  "workflow": "DIRECT",
-  "callback_url": "https://your-callback.com",
-  "payment_method": {
-    "type": "NU_PAY_ENROLLMENT",
-    "vaulted_token": "{{vaulted_token}}",
-    "detail": {
-      "wallet": {
-        "card_data": {
-          "installments_plan_id": "{{plan_id}}",
-          "installments": 2
+<Tabs>
+  <Tab title="Yuno SDK">
+    NuPay supports installments for enrolled payment methods and one-time payments (2FA mode) within the SDK.
+    
+    ### Step 1: Get payment conditions
+    Request available installment options using the [APM installments](/reference/installments/apm-installments) endpoint, depending on the flow:
+    
+    <Tabs>
+      <Tab title="Enrollment Flow">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_code}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "id": "{{customer_id}}"
+          },
+          "payment_method": "NU_PAY_ENROLLMENT",
+          "vaulted_token": "{{vaulted_token}}"
+        }'
+        ```
+      </Tab>
+      <Tab title="2FA Mode">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_code}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "payment_method": "NU_PAY",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "document": {
+              "document_type": "CPF",
+              "document_number": "12345678900"
+            },
+            "email": "customer@email.com"
+          }
+        }'
+        ```
+      </Tab>
+    </Tabs>
+    
+    Select the plan `id` and installments number from the response.
+    
+    ### Step 2: Create payment using SDK workflow
+    Create the payment using the SDK workflow by setting `workflow: "SDK_CHECKOUT"` and passing the `checkout.session` along with the plan details:
+    
+    ```json
+    {
+      "description": "NuPay Installment Payment via SDK",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000023",
+      "country": "BR",
+      "amount": {
+        "currency": "BRL",
+        "value": 250
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "SDK_CHECKOUT",
+      "checkout": {
+        "session": "{{checkout_session_id}}"
+      },
+      "payment_method": {
+        "type": "NU_PAY_ENROLLMENT",
+        "vaulted_token": "{{vaulted_token}}",
+        "detail": {
+          "wallet": {
+            "card_data": {
+              "installments_plan_id": "{{plan_id}}",
+              "installments": 2
+            }
+          }
         }
       }
     }
-  }
-}
-```
-
-### Step 4: Retrieve payment
-
-Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm final status.
+    ```
+  </Tab>
+  
+  <Tab title="Direct API">
+    ### Step 1: Ensure prerequisites
+    Depending on the flow, you'll need:
+    *   **Enrollment Flow**: A Yuno customer `id` and an enrolled NuPay `vaulted_token`.
+    *   **2FA Mode**: Customer details, specifically their tax ID (CPF) and email.
+    
+    ### Step 2: Get payment conditions
+    Request available installment options for NuPay using the [APM installments](/reference/installments/apm-installments) endpoint. The request parameters vary based on the integration flow.
+    
+    <Tabs>
+      <Tab title="Enrollment Flow">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_code}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "id": "{{customer_id}}"
+          },
+          "payment_method": "NU_PAY_ENROLLMENT",
+          "vaulted_token": "{{vaulted_token}}"
+        }'
+        ```
+      </Tab>
+      <Tab title="2FA Mode">
+        ```bash
+        curl -X POST --location 'https://api-sandbox.y.uno/v1/apm-installments' \
+        --header 'public-api-key: {{your_public_api_key}}' \
+        --header 'private-secret-key: {{your_secret_api_key}}' \
+        --header 'X-account-code: {{your_account_code}}' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "country": "BR",
+          "payment_method": "NU_PAY",
+          "amount": {
+            "currency": "BRL",
+            "value": "250"
+          },
+          "customer": {
+            "document": {
+              "document_type": "CPF",
+              "document_number": "12345678900"
+            },
+            "email": "customer@email.com"
+          }
+        }'
+        ```
+      </Tab>
+    </Tabs>
+    
+    The response returns an array of installment plans, including `id`, available `installments`, and amounts. Select a plan `id` and an allowed installments number.
+    
+    ### Step 3: Create payment
+    Use [Create payment](/reference/create-payment) with the Direct workflow and NuPay type. Include the selected plan id and installments in the wallet `card_data`.
+    
+    ```json
+    {
+      "description": "test",
+      "account_id": "{{account_id}}",
+      "merchant_order_id": "0000023",
+      "country": "BR",
+      "merchant_reference": "ref-merchant-AA01",
+      "amount": {
+        "currency": "BRL",
+        "value": 250
+      },
+      "customer_payer": {
+        "id": "{{customer_id}}"
+      },
+      "workflow": "DIRECT",
+      "callback_url": "https://your-callback.com",
+      "payment_method": {
+        "type": "NU_PAY_ENROLLMENT",
+        "vaulted_token": "{{vaulted_token}}",
+        "detail": {
+          "wallet": {
+            "card_data": {
+              "installments_plan_id": "{{plan_id}}",
+              "installments": 2
+            }
+          }
+        }
+      }
+    }
+    ```
+    
+    ### Step 4: Retrieve payment
+    Use [Retrieve payment by id](/reference/retrieve-payment-by-id) to confirm final status.
+  </Tab>
+</Tabs>
 
 ## Subscription flow
 
 You can use NuPay for recurring charges.
 
-1. Create a customer
-2. Enroll NuPay as a payment method (see above)
-3. Create a subscription with the enrolled `vaulted_token` using [Create subscription](/reference/create-subscription)
-4. Retrieve the subscription using [Retrieve subscription](/reference/retrieve-subscription)
+<Tabs>
+  <Tab title="Yuno SDK">
+    Recurring payments/subscriptions with NuPay can be easily set up using the SDK enrollment token:
+    
+    1. Create a customer.
+    2. Enroll NuPay via Yuno SDK (Checkout workflow) to obtain a `vaulted_token`.
+    3. Create a subscription with the enrolled `vaulted_token` using the [Create subscription](/reference/create-subscription) endpoint.
+    4. Retrieve and manage subscription state as needed.
+  </Tab>
+  
+  <Tab title="Direct API">
+    1. Create a customer
+    2. Enroll NuPay as a payment method (see above)
+    3. Create a subscription with the enrolled `vaulted_token` using [Create subscription](/reference/create-subscription)
+    4. Retrieve the subscription using [Retrieve subscription](/reference/retrieve-subscription)
+  </Tab>
+</Tabs>
 
 <Info>
 **Limitations**
@@ -159,8 +416,10 @@ You can use NuPay for recurring charges.
 * [Retrieve customer](/reference/retrieve-customer)
 * [Retrieve customer by external id](/reference/retrieve-customer-by-external-id)
 * [Enroll payment method (Direct)](/reference/enroll-payment-method-api)
+* [Enroll payment method (Checkout)](/reference/enroll-payment-method-checkout)
 * [Retrieve enrolled payment method by id](/reference/retrieve-enrolled-payment-method-by-id-api)
 * [Create payment](/reference/create-payment)
 * [Retrieve payment by id](/reference/retrieve-payment-by-id)
+* [APM installments](/reference/installments/apm-installments)
 * [Create subscription](/reference/create-subscription)
 * [Retrieve subscription](/reference/retrieve-subscription)

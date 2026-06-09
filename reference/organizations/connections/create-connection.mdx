@@ -1,0 +1,244 @@
+---
+title: "Create a Connection"
+description: "Creates a connection in ACTIVE status from credentials and configuration you fill in based on the provider's catalog."
+openapi: "/openapi/organizations/connections/create-connection.json POST /connections"
+---
+
+Creates a connection in `ACTIVE` status from credentials and configuration you fill in based on the provider's catalog. The response includes the `connection_id` you'll use to reference this connection from routing rules.
+
+### Headers
+
+<ParamField header="X-Idempotency-Key" type="string" required>
+  UUID, 24-hour scope. Re-sending the same key + body returns the cached response; same key with a different body returns a `409`.
+</ParamField>
+
+### Body
+
+<ParamField body="account_id" type="string" required>
+  UUID of the account under which this connection will be created.
+</ParamField>
+
+<ParamField body="merchant_connection_id" type="string" required>
+  Your label for this connection. Must be unique within the account. Free-form (e.g., `"adyen-us-prod-001"`, `"stripe-eu-test"`).
+</ParamField>
+
+<ParamField body="provider_id" type="string" required>
+  Yuno provider identifier (e.g., `"STRIPE"`, `"ADYEN"`). Must exist in the catalog.
+</ParamField>
+
+<ParamField body="flow_type" type="enum" required>
+  Must be `"PAYIN"`.
+</ParamField>
+
+<ParamField body="payment_methods" type="string[]" required>
+  Subset of the provider's `payment_method_type[]` (from the catalog).
+</ParamField>
+
+<ParamField body="params" type="object[]" required>
+  One `{param_id, value}` pair per parameter you're supplying. **Flat array** — even nested catalog params are submitted at the top level; Yuno resolves the hierarchy from the catalog tree. 
+  
+  Required params (where the catalog has `optional: false`) must be present and non-empty. Activating a `boolean` parent (`"value": true`) makes its `optional: false` children required.
+  
+  <Expandable title="item">
+    <ParamField body="param_id" type="string" required>
+      The exact `param_id` from the catalog. Casing matters.
+    </ParamField>
+    <ParamField body="value" type="string | boolean | number | array" required>
+      Match the `field_type` from the catalog. Numerics are submitted as JSON numbers (or strings if the catalog says `field_type: "string"`). For `field_type: "array"`, submit a JSON array.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="costs" type="object[]" required>
+  Per-connection cost configuration. `currency` must be one supported by the provider.
+  <Expandable title="item">
+    <ParamField body="sort_number" type="integer">
+      Order of priority for the cost entry.
+    </ParamField>
+    <ParamField body="cost_name" type="string">
+      Label for the cost entry.
+    </ParamField>
+    <ParamField body="currency" type="string">
+      ISO 4217 currency code.
+    </ParamField>
+    <ParamField body="cost_values" type="object">
+        <Expandable title="successful | unsuccessful">
+            <ParamField body="fixed_fee" type="number">
+                Fixed fee amount.
+            </ParamField>
+            <ParamField body="percentage" type="number">
+                Percentage fee.
+            </ParamField>
+        </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+<ResponseField name="connection_id" type="string">
+  Unique identifier for the connection. **Save this value** to reference it from routing rules.
+</ResponseField>
+<ResponseField name="merchant_connection_id" type="string">
+  Your internal label for this connection.
+</ResponseField>
+<ResponseField name="provider_id" type="string">
+  The provider this connection belongs to (e.g., `ADYEN`).
+</ResponseField>
+<ResponseField name="status" type="string">
+  Current status (always `ACTIVE` on create).
+</ResponseField>
+<ResponseField name="flow_type" type="string">
+  Always `PAYIN`.
+</ResponseField>
+<ResponseField name="payment_methods" type="string[]">
+  List of supported payment methods.
+</ResponseField>
+<ResponseField name="params" type="object[]">
+  Echoed parameters. Sensitive values are masked as `***`.
+</ResponseField>
+<ResponseField name="costs" type="object[]">
+  Cost configuration for the connection.
+</ResponseField>
+<ResponseField name="created_at" type="string">
+  ISO 8601 timestamp.
+</ResponseField>
+<ResponseField name="updated_at" type="string">
+  ISO 8601 timestamp.
+</ResponseField>
+
+<CodeGroup>
+```bash cURL
+curl -X POST 'https://api.y.uno/v1/connections' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Idempotency-Key: <UUID>' \
+  -d '{
+    "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "merchant_connection_id": "stripe-us-prod-001",
+    "provider_id": "STRIPE",
+    "flow_type": "PAYIN",
+    "payment_methods": ["CARD", "GOOGLE_PAY", "APPLE_PAY"],
+    "params": [
+      { "param_id": "API_KEY",           "value": "sk_live_..." },
+      { "param_id": "PUBLISHABLE_KEY",   "value": "pk_live_..." },
+      { "param_id": "INTEGRATION_TYPE",  "value": "PAYMENT_INTENTS" },
+      { "param_id": "3DS_ENABLED",       "value": true },
+      { "param_id": "ORIGIN_URL",        "value": "https://checkout.acme.com" }
+    ],
+    "costs": [
+      {
+        "sort_number": 1,
+        "cost_name": "Transaction Fee",
+        "currency": "USD",
+        "cost_values": {
+          "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
+          "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+        }
+      }
+    ]
+  }'
+```
+
+```json 201 Created — Stripe
+{
+  "connection_id": "f1a3c4d5-7b8e-4a2c-9d1e-3f4a5b6c7d8e",
+  "merchant_connection_id": "stripe-us-prod-001",
+  "provider_id": "STRIPE",
+  "status": "ACTIVE",
+  "flow_type": "PAYIN",
+  "payment_methods": ["CARD", "GOOGLE_PAY", "APPLE_PAY"],
+  "params": [
+    { "param_id": "API_KEY",             "value": "***" },
+    { "param_id": "PUBLISHABLE_KEY",     "value": "pk_live_..." },
+    { "param_id": "INTEGRATION_TYPE",    "value": "PAYMENT_INTENTS" },
+    { "param_id": "3DS_ENABLED",         "value": true },
+    { "param_id": "ORIGIN_URL",          "value": "https://checkout.acme.com" }
+  ],
+  "costs": [
+    {
+      "sort_number": 1,
+      "cost_name": "Transaction Fee",
+      "currency": "USD",
+      "cost_values": {
+        "successful":   { "fixed_fee": 0.30, "percentage": 2.9 },
+        "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+      }
+    }
+  ],
+  "created_at": "2026-05-12T10:24:00Z",
+  "updated_at": "2026-05-12T10:24:00Z"
+}
+```
+
+```json 201 Created — Adyen
+{
+  "connection_id": "b2c4d5e6-1a2b-3c4d-5e6f-7a8b9c0d1e2f",
+  "merchant_connection_id": "adyen-eu-prod-001",
+  "provider_id": "ADYEN",
+  "status": "ACTIVE",
+  "flow_type": "PAYIN",
+  "payment_methods": ["CARD", "GOOGLE_PAY", "IDEAL"],
+  "params": [
+    { "param_id": "merchantAccount",        "value": "ACME_LIVE" },
+    { "param_id": "x-api-key",              "value": "***" },
+    { "param_id": "HMAC_KEY",               "value": "***" },
+    { "param_id": "url-prefix",             "value": "acme-live" },
+    { "param_id": "transaction-identifier", "value": "MERCHANT_REFERENCE" },
+    { "param_id": "MERCHANT_NAME",          "value": "ACME Inc." },
+    { "param_id": "CAPTURE_DELAY_HOURS",    "value": "24" },
+    { "param_id": "recurring-model",        "value": "CardOnFile" },
+    { "param_id": "3DS_ENABLED",            "value": true },
+    { "param_id": "ORIGIN_URL",             "value": "https://checkout.acme.com" }
+  ],
+  "costs": [
+    {
+      "sort_number": 1,
+      "cost_name": "Transaction Fee",
+      "currency": "EUR",
+      "cost_values": {
+        "successful":   { "fixed_fee": 0.12, "percentage": 1.2 },
+        "unsuccessful": { "fixed_fee": 0.0,  "percentage": 0.0 }
+      }
+    }
+  ],
+  "created_at": "2026-05-12T10:31:42Z",
+  "updated_at": "2026-05-12T10:31:42Z"
+}
+```
+
+```json 400 — Missing Param
+{
+  "type": "validation_error",
+  "code": "MISSING_REQUIRED_PARAM",
+  "message": "Required param 'API_KEY' is missing for provider 'STRIPE'",
+  "details": { "provider_id": "STRIPE", "param_id": "API_KEY" }
+}
+```
+
+```json 409 — Conflict
+{
+  "type": "conflict",
+  "code": "CONNECTION_MERCHANT_ID_CONFLICT",
+  "message": "A connection with merchant_connection_id 'stripe-us-prod-001' already exists in this account",
+  "details": { "merchant_connection_id": "stripe-us-prod-001" }
+}
+```
+</CodeGroup>
+
+<Note>
+**Secret handling:** any param marked `secret: true` in the catalog is returned as `"value": "***"`. Your submitted secret is stored encrypted and never echoed back.
+</Note>
+
+### Errors
+
+| HTTP | `code` | When |
+|---|---|---|
+| `400` | `PROVIDER_NOT_FOUND` | Unknown `provider_id`. |
+| `400` | `MISSING_REQUIRED_PARAM` | A required param is missing. `details.param_id` names which one. |
+| `400` | `UNSUPPORTED_PAYMENT_METHOD` | `payment_methods` contains a method the provider doesn't support. |
+| `400` | `UNSUPPORTED_CURRENCY` | A `costs[].currency` isn't in the provider's supported list. |
+| `400` | `INVALID_PROVIDER_CREDENTIALS` | The credentials failed Yuno's pre-flight check against the provider. `details.provider_message` echoes the provider's reason. |
+| `409` | `CONNECTION_MERCHANT_ID_CONFLICT` | `merchant_connection_id` already exists in this account. |
+| `403` | `INSUFFICIENT_SCOPE` | API key missing `connections:write`. |
