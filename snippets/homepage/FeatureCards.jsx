@@ -344,29 +344,14 @@ export const FeatureCards = () => {
               <CardCta href="/changelog">View recent updates</CardCta>
               <ul className="list-none p-0 m-0">
                 <FeatureItem
-                  href="/changelog/api"
-                  title="API"
-                  desc=" - Latest updates to Yuno's REST API endpoints and behavior."
+                   href="/docs/sdks/resources/release-notes/ios"
+                  title="iOS release notes"
+                  desc=" - Detailed information about iOS SDK updates and platform changes."
                 />
                 <FeatureItem
-                  href="/changelog/web"
-                  title="Web SDK"
-                  desc=" - Release notes for the Web SDK and Secure Fields."
-                />
-                <FeatureItem
-                  href="/changelog/ios"
-                  title="iOS SDK"
-                  desc=" - Release notes and migration guides for the iOS SDK."
-                />
-                <FeatureItem
-                  href="/changelog/android"
-                  title="Android SDK"
-                  desc=" - Release notes and migration guides for the Android SDK."
-                />
-                <FeatureItem
-                  href="/changelog/flutter"
-                  title="Flutter SDK"
-                  desc=" - Release notes and migration guides for the Flutter SDK."
+                   href="/docs/sdks/resources/release-notes/android"
+                  title="Android release notes"
+                  desc=" - Detailed information about Android SDK updates and platform changes."
                 />
               </ul>
             </Card>

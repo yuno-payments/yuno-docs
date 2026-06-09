@@ -4,7 +4,7 @@ Official documentation for [Yuno](https://y.uno) — the payment orchestration p
 
 **Live site:** [yuno-3979e326.mintlify.app](https://yuno-3979e326.mintlify.app/)
 
-## What's Inside 
+## What's Inside
 
 | Section | Pages | Description |
 |---------|-------|-------------|

@@ -19,12 +19,6 @@ Click to Pay is an online payment solution designed to streamline and secure onl
 
 This feature enhances the customer experience and aligns with modern digital payment trends, potentially increasing conversion rates and customer loyalty. By incorporating "Click to Pay," you can offer a seamless checkout experience, reducing friction and addressing security concerns in online transactions.
 
-<Info>
-**Network Tokens Requirement**
-
-Network tokens support is required for Click to Pay in all flows (Golden Flow and APM, both with and without passkeys). Merchants must configure network tokens in their **Routing** rules to ensure successful processing.
-</Info>
-
 ## Integration
 
 To integrate and start offering Click to Pay to your customers, follow these 4 simple steps:
@@ -40,59 +34,20 @@ To integrate and start offering Click to Pay to your customers, follow these 4 s
    <Frame><img src="/images/reference/click-to-pay/image4.png" /></Frame>
 4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **'Card' payment method**.
 
-## Checkout Flows
+## VTEX integration
 
-Merchants can choose how Click to Pay appears at checkout. Both experiences support passkeys across web and mobile platforms.
+For VTEX merchants using Click to Pay, the integration provides automatic customer creation and data mapping to streamline the checkout experience.
 
-### 1. Standalone Payment Method (APM Flow)
-Click to Pay appears as a separate payment button alongside cards and other methods.
-* **Mandatory Enrollment**: Account creation is mandatory for all users.
-* **Payload Requirement**: Requires a C2P-specific payload.
-* **Visibility**: Best for merchants who want Click to Pay prominently featured.
+**Automatic customer creation:**
 
-### 2. Embedded in Card (Golden Flow)
-Click to Pay is embedded within the card payment method and is invisible until the user selects "Card."
-* **Optional Enrollment**: Enrollment is via a checkbox. If declined, the user proceeds with manual card entry (the transaction still shows `CLICK_TO_PAY` in the one-time token (OTT)).
-* **Visibility**: Best for low-friction UX where enrollment feels optional.
+When customers choose Click to Pay on VTEX stores:
 
-<Info>
-**Certification Note**
-The golden flow with passkeys in Mobile is currently in certification.
-</Info>
+* The VTEX customer is automatically created in Yuno during payment initialization (if not already existing)
+* All customer data from the VTEX profile is automatically mapped to Yuno and included in the checkout session
+* Customer information (CVV, email, address) is pre-filled in the SDK, eliminating redundant data entry
+* The checkout flow matches the streamlined experience available for non-VTEX merchants
 
-<Frame><img src="/images/reference/click-to-pay/image5.png" /></Frame>
-
-## Activation Guide
-
-Follow the steps below based on your desired configuration:
-
-### Option 1: Click to Pay Only (APM)
-1. Request the **DPA ID** from the card network (e.g., Mastercard).
-2. Add the **Click to Pay connection** in the Yuno dashboard using the DPA ID.
-3. Add the **card connection** that will process these cards.
-4. Define the payment method route in **Routing** and enable Click to Pay in the **Checkout Builder**.
-
-### Option 2: Click to Pay + Passkey
-*Supported on web browsers only (not supported in WebView).*
-1. Request the **DPA ID**.
-2. Add the **Click to Pay connection** using the DPA ID.
-3. Add the **card connection** and configure the **Acquirer BIN**.
-4. Request the Yuno backend team to enable the **Passkey** and **Dual Payload** flags.
-5. Create checkout sessions with a `price` for Passkey to work correctly.
-
-### Option 3: Click to Pay + Golden Flow
-1. Request the **DPA ID**.
-2. Add the **Click to Pay connection** using the DPA ID.
-3. Add the **card connection** that will process these cards.
-4. Request the Yuno backend team to enable the **Golden Flow** flag.
-
-### Option 4: Click to Pay + Golden Flow + Passkey
-*Supported on web browsers only (not supported in WebView).*
-1. Request the **DPA ID**.
-2. Add the **Click to Pay connection**.
-3. Add the **card connection** and configure the **Acquirer BIN**.
-4. Request the Yuno backend team to enable **Passkey**, **Dual Payload**, and **Golden Flow** flags.
-5. Create checkout sessions with a `price` for Passkey to work correctly.
+This feature requires the **Create customer** field to be set to **Yes** in the VTEX provider configuration. For more details, see [Configure Yuno as Provider](/docs/configure-yuno-as-provider) in the VTEX integration documentation.
 
 ## SDK integration (Click to Pay Passkey)
 
@@ -110,4 +65,59 @@ Standard Click to Pay card flows use the existing SDK callbacks, but Passkey use
 For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 </Info>
 
-For full implementation details, see [Android Full Checkout](/docs/sdks/full-checkout/android-payments) and [iOS Full Checkout](/docs/sdks/full-checkout/ios-payments).
+The Yuno iOS and Android SDKs currently support Click to Pay via the Passkey flow. In both cases, the one-time token (OTT) is returned through a deeplink URL instead of the standard SDK callbacks, so your app must parse the deeplink parameters before continuing the payment.
+
+### iOS Passkey flow
+
+The Yuno iOS SDK supports Click to Pay with Passkey. The flow differs from standard card payments because the SDK returns the result by deeplink instead of via the usual delegate callbacks.
+
+### Handle the one-time token (OTT) and deeplink
+
+When a shopper completes the Click to Pay Passkey flow, the SDK sends the result through the deeplink URL instead of the `yunoCreatePayment(with token: String)` delegate method.
+
+#### 1. Close the external browser
+
+When your app receives the deeplink callback, immediately call `Yuno.receiveDeeplink` to let the SDK dismiss the external browser that was used for Passkey authentication.
+
+```swift
+func application(_ app: UIApplication,
+                 open url: URL,
+                 options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    Yuno.receiveDeeplink(url: url)
+
+    // Parse the URL to extract parameters
+
+    return true
+}
+```
+
+#### 2. Process the deeplink URL
+
+The deeplink query string includes the information you need to continue:
+
+* `has_error`: Indicates an error occurred during the transaction. Handle this scenario in your app.
+* `one_time_token`: Present when the transaction succeeds. Use it to create the payment.
+
+#### 3. Create the payment
+
+If the deeplink contains a `one_time_token`:
+
+1. Extract the `one_time_token`.
+2. Use it to create the payment with the [Create Payment endpoint](/reference/create-payment).
+3. After creating the payment, call `continuePayment` in the SDK to finalize the flow.
+
+<Info>
+**Important**
+
+The OTT never reaches `yunoCreatePayment(with token: String)` for Click to Pay Passkey. Always read the token from the deeplink URL.
+</Info>
+
+### Android Passkey flow
+
+For Android, include a `callback_url` that matches your app’s deeplink scheme when creating the checkout session, add the corresponding `intent-filter` in `AndroidManifest.xml`, and handle the deeplink in both `onCreate` and `onNewIntent`. When the deeplink arrives:
+
+1. Check `has_error` to manage cancellations or failures.
+2. Extract `one_time_token` (and the optional `checkout_session`) from the URI.
+3. Send the OTT to your backend to call the [Create Payment endpoint](/reference/create-payment), then invoke `continuePayment` in the SDK to resume the flow.
+
+See the full SDK guides for detailed samples: [Android Full Checkout](/docs/sdks/full-checkout/android-payments) and [iOS Full Checkout](/docs/sdks/full-checkout/ios-payments).
