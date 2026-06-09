@@ -1,19 +1,14 @@
 ---
 title: "SDK Integration"
+description: "Integrate Apple Pay for one-time and recurring payments using the Yuno SDK."
 ---
 
 This guide provides a comprehensive process to integrate Apple Pay with Yuno SDK for both one-time and recurring payments. The SDK simplifies Apple Pay integration by handling payment token management and providing built-in security.
 
 <Note>
-  **Setup Required**
+**Setup Required**
 
-  Before implementing Apple Pay payments, ensure you have completed the [prerequisites](/docs/prerequisites-apple-pay).
-</Note>
-
-<Note>
-  **Testing Environment**
-
-  Apple Pay is not supported in the iOS Simulator. To test Apple Pay functionality, you must use a physical iOS device.
+Before implementing Apple Pay payments, ensure you have completed the [prerequisites](/docs/prerequisites-apple-pay).
 </Note>
 
 ## Apple Pay overview
@@ -31,7 +26,7 @@ To add Apple Pay capability to your iOS app:
 1. In Xcode, select your project in the navigator
 2. Select your app target
 3. Go to the **Signing & Capabilities** tab
-4. Click **\+ Capability** and search for "Apple Pay"
+4. Click **+ Capability** and search for "Apple Pay"
 5. Add the **Apple Pay** capability
 6. Configure your Merchant IDs in the Apple Pay section
 
@@ -64,68 +59,15 @@ Use the [create checkout session](/reference/create-checkout-session) endpoint t
 
 The SDK handles the Apple Pay flow automatically. When the customer completes the Apple Pay authorization, the payment is processed immediately.
 
-### Requesting Contact Information
-
-When the `CARD_HOLDER_AND_ADDRESS_REQUIRED` parameter is enabled in your configuration, the Apple Pay payment sheet will automatically request the customer's **email**, **phone**, and **name**.
-
-The collected `email` and `phone` are forwarded from the `shippingContact` to the backend via `card_data` in the `paymentComplete` event.
-
 ## Recurring payments with SDK
 
-The SDK streamlines recurring payments by managing both Customer‑Initiated (CIT) and Merchant‑Initiated (MIT) transactions while securely handling payment tokens. The overall flow is:
-
-1. Create a checkout session with the `recurring_payment` object.
-2. Perform a CIT to authorize and vault the customer's payment method.
-3. Then use the returned `vaulted_token` for subsequent MIT charges.
-
-### Create checkout session for recurring payments
-
-Before creating the transaction, you need to create the checkout session with the `recurring_payment` object populated in your checkout session request:
-
-```json
-{
-  "account_id": "123444",
-  "merchant_order_id": "12333",
-  "country": "US",
-  "callback_url": "https://your-callback-url.com",
-  "customer_id": "12333",
-  "amount": {
-    "currency": "EUR",
-    "value": 2000
-  },
-  "checkout_session": {
-    "payment_description": "Basic Plan — 3-day free trial",
-    "workflow": "SDK_CHECKOUT"
-  },
-  "recurring_payment": {
-    "description": "Basic Plan",
-    "management_url": "https://yourURL.com/subscriptions",
-    "billing_agreement": "After your 3-day free trial ends, you will be charged EUR 11.99/month until you cancel. Cancel anytime via account settings or by contacting support@test.com.",
-    "regular_billing": {
-      "label": "Monthly Plan",
-      "amount": 11.99,
-      "interval_unit": "month",
-      "interval_count": 1
-    },
-    "trial_billing": {
-      "label": "3-Day Free Trial",
-      "amount": 0,
-      "interval_unit": "day",
-      "interval_count": 3
-    },
-    "availability": {
-      "start_at": "2026-09-13T20:00:00Z",
-      "finish_at": "2026-09-30T16:10:00Z"
-    }
-  }
-}
-```
+The SDK streamlines recurring payments by managing both Customer‑Initiated (CIT) and Merchant‑Initiated (MIT) transactions while securely handling payment tokens.
 
 ### Customer Initiated Transaction (CIT)
 
 The CIT is the initial transaction where the customer authorizes recurring payments, such as when they subscribe to a monthly service. This transaction requires customer interaction and generates a token for future MIT transactions.
 
-The following example shows a complete CIT request:
+#### Example CIT request
 
 ```json
 {
@@ -139,17 +81,16 @@ The following example shows a complete CIT request:
   },
   "payment_method": {
     "vault_on_success": true,
-    "type": "APPLE_PAY",
-    "token": "684f1f66-5322-4c84-a0b63d",
     "detail": {
       "wallet": {
+        "payment_token": "{\n  \"paymentMethod\": {\n    \"type\": \"credit\",\n    \"displayName\": \"Visa 3748\",\n    \"network\": \"Visa\"\n  },\n  \"paymentData\": {\n    \"data\": \"B5NSQI0TdXuLwqadBCL0yOwtik/rJx7v41xxE8rNSlFBTHR2W88iRck7a6bH9Kx/bBFsk2ZyinIEl2aXusHp22a0pSmuCUoPgbkFc1/D3PRAoWITfZkalBeuzMhHJGhhCe2wqOgMmjS2w97nN9vifb1cMrS3kOqpPPMihHVvhLYbwtNhh8lfeTOyL+RBXbdFScVTFCB1eFQ4znUFV79SHVK/SRjLxLawO1HGIO0VIUTj8uVgG4MmBrfQhDBD/P9a4lWypiNoyURHm7ubgcOEelbVDGlKSNDmYFD10i554b+7z8GXBtWdQc1zhWKcGOn8RsOYtxxdqzHEtJzcFsf92/rEhfpEThXjsLLMTmovGyQS30qM/qO2YgqduEID7IS+xOH/FXpplT5Yqur7/+FgEwcv2lGsa0K6kNMEUn1xSWc=\",\n    \"signature\": \"MIAGCSqGSIb3DQEHAqCAMIACAQExDTALBglghkgBZQMEAgEwgAYJKoZIhvcNAQcBAACggDCCA+MwggOIoAMCAQICCBZjTIsOMFcXMAoGCCqGSM49BAMCMHoxLjAsBgNVBAMMJUFwcGxlIEFwcGxpY2F0aW9uIEludGVncmF0aW9uIENBIC0gRzMxJjAkBgNVBAsMHUFwcGxlIENlcnRpZmljYXRlIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMwHhcNMjQwNDI5MTc0NzI3WhcNMjkwNDI4MTc0NzI2WjBfMSUwIwYDVQQDDBxlY2Mtc21wLWJyb2tlci1zaWduX1VDNC1QUk9EMRQwEgYDVQQLDAlpT1MgU3lzdGVtczETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATCFXft69bHsiGPaN1wkKEhjcewvW8sKD2EYJXZSvSlQRuDQg7YEfNAfoMzHxxUw/frMiDWutXU7/SSiYk+fA8To4ICE TCCA gwwggJ1oAMCAQICCEltL786mNqXMAoGCCqGSM49BAMCMGcxGzAZBgNVBAMMEkFwcGxlIFJvb3QgQ0EgLSBHMzEmMCQGA1UECwwdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxEzARBgNVBAoMCkFwcGxlIEluYy4xCzAJBgNVBAYTAlVTMB4XDTE0MDUwNjIzNDYzMFoXDTI5MDUwNjIzNDYzMFowejEuMCwGA1UEAwwlQXBwbGUgQXBwbGljYXRpb24gSW50ZWdyYXRpb24gQ0EgLSBHMzEmMCQGA1UECwwdQXBwbGUgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxEzARBgNVBAoMCkFwcGxlIEluYy4xCzAJBgNVBAYTAlVTMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BcRhBnXZIXVGl4lgQd26ICi7957rk3gjfxLk+EzVtVmWzWuItCXdg0iTnu6CP12F86Iy3a7ZnC+yOgphP9URaOB9zCB9DBGBggrBgEFBQcBAQQ6MDgwNgYIKwYBBQUHMAGGKmh0dHA6Ly9vY3NwLmFwcGxlLmNvbS9vY3NwMDQtYXBwbGVyb290Y2FnMzAdBgNVHQ4EFgQUI/JJxE+T5O8n5sT2KGw/orv9LkswDwYDVR0TAQH/BAUwAwEB/zAfBgNVHSMEGDAWgBS7sN6hWDOImqSKmd6+veuv2sskqzA3BgNVHR8EMDAuMCygKqAohiZodHRwOi8vY3JsLmFwcGxlLmNvbS9hcHBsZXJvb3RjYWczLmNybDAOBgNVHQ8BAf8EBAMCAQYwEAYKKoZIhvdjZAYCDgQCBQAwCgYIKoZIzj0EAwIDZwAwZAIwOs9yg1EWmbGG+zXDVspiv/QX7dkPdU2ijr7xnIFeQreJ+Jj3m1mfmNVBDY+d6cL+AjAyLdVEIbCjBXdsXfM4O5Bn/Rd8LCFtlk/GcmmCEm9U+Hp9G5nLmwmJIWEGmQ8Jkh0AADGCAYgwggGEAgEBMIGGMHoxLjAsBgNVBAMMJUFwcGxlIEFwcGxpY2F0aW9uIEludGVncmF0aW9uIENBIC0gRzMxJjAkBgNVBAsMHUFwcGxlIENlcnRpZmljYXRlIEF1dGhvcml0eTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMw\",\n    \"header\": {\n      \"publicKeyHash\": \"YK8kdoBXLGqBQKBtCZOl0DQTUHOWidRCxgOgf/1gBMM=\",\n      \"ephemeralPublicKey\": \"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEVv32VVJYlg+E0zMsthvBaldJcH45NUWhVckme/CQYFtHf60FEdFtzwabOEMY3u1De+6e+IuBv53OxmWx+1w2w==\",\n      \"transactionId\": \"87a03c4cc1b242a25d74257d4bc990a6473b9866392850e584a9f680dcdf3d0f\"\n    },\n    \"version\": \"EC_v1\"\n  }\n}",
         "stored_credentials": {
           "reason": "SUBSCRIPTION",
           "usage": "FIRST"
-        },
-        "verify": true
+        }
       }
-    }
+    },
+    "type": "APPLE_PAY"
   },
   "customer_payer": {
     "id": "070a34cb-4649-4a4e-b231-065a53060379",
@@ -169,28 +110,31 @@ The following example shows a complete CIT request:
       "platform": "WEB"
     }
   },
+  "subscription": {
+    "id": "d67a4295-7bb3-4183-99ce-9f5d26d92709",
+    "billing_date": {
+      "type": "fixed_day",
+      "day": 18
+    }
+  },
   "merchant_order_id": "merchant-order-123",
-  "country": "US",
+  "country": "CO",
   "description": "Apple Pay recurring setup",
   "workflow": "SDK_CHECKOUT"
 }
 ```
 
-The key parameters for a CIT are:
+#### Key parameters for CIT
 
-- **`vault_on_success: true`**: This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
-- **`stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
-- **`verify`**: When `true`, enables a card verification flow through the wallet (e.g., a zero-dollar authorization) instead of a regular payment charge.
-
-<Note>
-  Set `verify: true` for free trial flows where `amount` is `0`. Omit the field for standard paid CITs.
-</Note>
+* **`vault_on_success: true`**: This parameter indicates this is a recurring payment setup and generates the token for future MIT transactions
+* **`stored_credentials.usage: "FIRST"`**: Indicates this is the initial transaction in a recurring series
+* **`subscription`**: Required object containing subscription details for Apple Pay recurrence
 
 ### Merchant Initiated Transaction (MIT)
 
 MIT transactions are processed automatically for subsequent billing cycles using the token generated during the CIT.
 
-The following example shows a complete MIT request:
+#### Example MIT request
 
 ```json
 {
@@ -221,11 +165,11 @@ The following example shows a complete MIT request:
 }
 ```
 
-The key parameters for an MIT are:
+#### Key parameters for MIT
 
-- **`vaulted_token`**: The token returned in the CIT response; used to charge the customer in subsequent billing cycles without requiring re-authorization
-- **`stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
-- **No `payment_token` required**: Uses the stored token instead
+* **`token`**: The payment token generated during the CIT
+* **`stored_credentials.usage: "USED"`**: Indicates this is a subsequent transaction in a recurring series
+* **No `payment_token` required**: Uses the stored token instead
 
 Monitor payment status through [webhooks](/docs/webhooks) to handle edge cases and provide customer notifications.
 
@@ -264,26 +208,13 @@ The following example shows the SDK response containing the `card_data` object w
 }
 ```
 
-## Apple Pay Cancel Flow
-
-When a user cancels the Apple Pay flow, the SDK reports the status `CANCELED_BY_USER`.
-
-### Metadata and paymentCreated
-
-The `oldClosePaymentFlow` method (and related cancel events) now includes an optional `metadata` parameter with the `paymentCreated` field. This allows merchants to know if a payment was already created on the backend before the user canceled the flow.
-
-- **`paymentCreated: true`**: A payment was created (e.g., during OTT creation phase). Merchants should check the payment status and potentially trigger an `abandonPayment` call.
-- **`paymentCreated: false`**: No payment was created before cancellation.
-
-The SDK automatically sets `paymentCreated = true` during the `onvalidatemerchant` phase to ensure correct tracking and abandonment of pending payments.
-
 ### Subscription management URL
 
 For SDK recurring payments, you must provide a subscription management URL where customers can manage and cancel their subscription. Include it in your customer communications.
 
 ## Related documentation
 
-- [Prerequisites for Apple Pay](/docs/prerequisites-apple-pay)
-- [Apple Pay Direct integration](/docs/apple-pay-direct-integration)
-- [Subscription management](/docs/subscriptions)
-- [Webhooks](/docs/webhooks)
+* [Prerequisites for Apple Pay](/docs/prerequisites-apple-pay)
+* [Apple Pay Direct integration](/docs/apple-pay-direct-integration)
+* [Subscription management](/docs/subscriptions)
+* [Webhooks](/docs/webhooks)
