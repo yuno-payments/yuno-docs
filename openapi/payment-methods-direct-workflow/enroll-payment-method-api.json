@@ -193,6 +193,24 @@
                       "organization_customer_external_id": {
                         "type": "string",
                         "description": "Customer identifier in the merchant’s own system, scoped to the organization. MIN 3 / MAX 255."
+                      },
+                      "email": {
+                        "type": "string",
+                        "description": "Email address of the customer."
+                      },
+                      "ip_address": {
+                        "type": "string",
+                        "description": "IP address of the customer at the time of enrollment. Required by the provider for the online ACH mandate."
+                      },
+                      "browser_info": {
+                        "type": "object",
+                        "description": "Browser metadata. Required by the provider for the online ACH mandate.",
+                        "properties": {
+                          "user_agent": {
+                            "type": "string",
+                            "description": "Full user-agent string of the customer’s browser."
+                          }
+                        }
                       }
                     }
                   },
@@ -214,6 +232,7 @@
                         "properties": {
                           "bank_transfer": {
                             "type": "object",
+                            "required": ["beneficiary_name", "routing_number"],
                             "properties": {
                               "account_type": {
                                 "type": "string",
@@ -225,7 +244,7 @@
                               },
                               "account_holder_type": {
                                 "type": "string",
-                                "description": "Type of account holder.",
+                                "description": "Type of account holder (e.g. `INDIVIDUAL`, `ENTITY`). Accepted and stored, but not forwarded to the provider for ACH — does not control individual vs. company treatment for ACH enrollment.",
                                 "enum": [
                                   "INDIVIDUAL",
                                   "ENTITY"
@@ -286,7 +305,7 @@
                       },
                       "token_source": {
                         "type": "string",
-                        "description": "Origin of the provided token.",
+                        "description": "Origin of the provided token. Note: `PROVIDER_TOKEN` is only supported when the top-level `type` is `CARD`. Using it with `ACH_ENROLLMENT` returns an error.",
                         "enum": [
                           "PROVIDER_API",
                           "MIGRATION_FILE",
@@ -393,40 +412,26 @@
                 "ACH Enrollment": {
                   "value": {
                     "account_id": "dbf0c133-86bc-4be0-94a5-ca2ff6778451",
-                    "country": "BR",
+                    "country": "US",
                     "type": "ACH_ENROLLMENT",
                     "workflow": "DIRECT",
                     "customer_payer": {
-                      "code": "cust-123"
+                      "code": "<customer_code>",
+                      "email": "john@example.com",
+                      "ip_address": "203.0.113.5",
+                      "browser_info": {
+                        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+                      }
                     },
                     "payment_method": {
-                      "type": "ACH_ENROLLMENT",
                       "vault_on_success": true,
                       "detail": {
                         "bank_transfer": {
-                          "account_type": "CHECKINGS",
-                          "account_holder_type": "INDIVIDUAL",
-                          "bank_id": "001",
-                          "bank_name": "Banco do Brasil",
-                          "bank_account": "00012345-6",
+                          "bank_account": "000123456789",
+                          "routing_number": "110000000",
                           "beneficiary_name": "John Doe",
-                          "branch": "1234",
-                          "branch_digit": "5",
-                          "routing_number": "001",
-                          "code": "001",
-                          "reference": "REF-001"
+                          "account_type": "CHECKINGS"
                         }
-                      }
-                    },
-                    "recurring_payment": {
-                      "regular_billing": {
-                        "label": "Monthly Plan",
-                        "amount": {
-                          "currency": "BRL",
-                          "value": 49.9
-                        },
-                        "interval_unit": "MONTH",
-                        "interval_count": 1
                       }
                     }
                   }
@@ -495,6 +500,14 @@
             "content": {
               "application/json": {
                 "examples": {
+                  "ACH Enrollment": {
+                    "value": {
+                      "type": "ACH_ENROLLMENT",
+                      "status": "READY_TO_ENROLL",
+                      "action": "REDIRECT_URL",
+                      "redirect_url": "https://payments.stripe.com/microdeposit/pacreq_test_placeholder"
+                    }
+                  },
                   "Result": {
                     "value": {
                       "idempotency_key": "2ca58c6d-8794-4c8f-a2f6-bba4b7498b74",
