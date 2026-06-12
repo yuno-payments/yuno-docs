@@ -379,83 +379,66 @@ The endpoint response includes the `sdk_action_required` parameter that indicate
 * For synchronous payment methods, the payment completes instantly. In this case, `sdk_action_required` will be `false` in the API response and the payment process ends
 * For payment flows requiring additional SDK interaction, `sdk_action_required` will be `true`. When this happens, proceed to Step 8 for next steps
 
-## Step 8: Get the 3DS challenge URL (if required)
+## Step 8: Continue the payment (if required)
 
-When a payment requires 3DS authentication, an additional challenge may be needed to verify the customer's identity. For more details about this process, see the [3D Secure](/docs/security-and-compliance/3d-secure) page. If a 3DS verification challenge is required, the Create Payment endpoint response will include the following:
+When a payment requires an additional step to be completed — for example, a 3DS challenge to verify the customer's identity (see the [3D Secure](/docs/security-and-compliance/3d-secure) page) — the Create Payment endpoint response will include the following:
 
-* A `THREE_D_SECURE `transaction type
 * Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
 * `sdk_action_required = true`
 
-Call the `getThreeDSecureChallenge` function and provide the `checkoutSession` used to create the payment to get the 3DS challenge URL. After obtaining the URL, redirect your customer to complete the challenge. The following code block shows how to use the `getThreeDSecureChallenge` function:
+Call the `continueCardPayment` function to let the SDK resume the payment. The SDK executes the pending action internally — including rendering the 3DS challenge — waits for the result, and delivers the final payment state to your callback. You do not need to render or handle the challenge yourself. The following code block shows the `continueCardPayment` function signature:
 
 ```kotlin
-fun ApiClientPayment.getThreeDSecureChallenge(
-   context: Context,
-   checkoutSession: String? = null,
-): SingleLiveEvent<ThreeDSecureChallengeResponse>
-
-```
-
-The `getThreeDSecureChallenge` function returns the `ThreeDSecureChallengeResponse` data class, described in the following code block:
-
-```kotlin
-data class ThreeDSecureChallengeResponse(
-   val type: String,
-   val data: String,
+fun ApiClientPayment.continueCardPayment(
+   activity: ComponentActivity,
+   showPaymentStatus: Boolean = true,
+   callbackPaymentState: ((String?, String?) -> Unit)? = null,
 )
 ```
 
-The `type` can return `ERROR` or `URL`, defining if the function returned a valid URL for the challenge:
+| Parameter              | Description                                                                                                                                              |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `activity`             | The `ComponentActivity` the SDK uses to present the pending action (for example, the 3DS challenge).                                                      |
+| `showPaymentStatus`    | If `true` (default), the SDK shows its payment status screen when the flow finishes. Set it to `false` to keep your own UI and rely only on the callback. |
+| `callbackPaymentState` | Called on the main thread with the final payment state and sub status once the flow completes.                                                            |
 
-* If `type = URL`, `data` will contain the URL your customer needs to access to complete the 3DS challenge.
-* If `type = ERROR`, `data` will contain the error message, informing the source of the problem.
-
-The following code block shows an example of how you can observe the response from `ThreeDSecureChallengeResponse`:
+The following code block shows an example of how to continue a payment and handle the result:
 
 ```kotlin
-apiClientPayment.getThreeDSecureChallenge(this)?.observe(this) {
-   if (it.type == "URL") {
-   } else 
+Yuno.apiClientPayment(
+   checkoutSession = checkoutSession,
+   countryCode = countryCode,
+   context = this,
+).continueCardPayment(
+   activity = this,
+   showPaymentStatus = false,
+) { paymentState, paymentSubState ->
+   when (paymentState) {
+       "SUCCEEDED" -> { /* Payment completed successfully */ }
+       "REJECT", "FAIL" -> { /* Payment was declined or failed */ }
+       "PROCESSING" -> { /* Payment is still being processed */ }
+       "CANCELED_BY_USER" -> { /* Customer abandoned the additional step */ }
+       else -> { /* Handle other states */ }
+   }
 }
-
 ```
 
-When the response type is "URL", you can load the 3DS challenge URL in your preferred view (WebView, Custom Tab, or browser). If the response type is not "URL", it indicates an error occurred and you should handle it appropriately by displaying an error message to the user.
+<Info>
+**Supported payment methods**
 
-To complete the 3DS challenge, redirect customers to the URL returned by `getThreeDSecureChallenge(context)`. After successful completion, customers are automatically redirected to the `callback_url` that you specified when creating the `checkout_session` using the [Create Checkout Session](/reference/checkout-sessions/create-checkout-session) endpoint. The following example shows how to load the 3DS challenge URL in a WebView:
-
-```kotlin
-val webView = WebView(this)
-webViewContainer.addView(
-   webView,
-   ConstraintLayout.LayoutParams(
-       ConstraintLayout.LayoutParams.MATCH_PARENT,
-       ConstraintLayout.LayoutParams.MATCH_PARENT
-   )
-)
-webView.settings.javaScriptEnabled = true
-webView.addJavascriptInterface(
-   object {
-       @JavascriptInterface
-       fun messageFromWeb(data: String?) {
-       }
-   },
-   "Android"
-)
-webView.loadUrl(url)
-
-```
-
-The JavaScript interface must use the name `messageFromWeb(data : String?)` and be added with the name `Android`. This allows you to capture challenge events and determine when they complete.
+`continueCardPayment` supports `CARD` payments only. Other payment types and Passkey (SCOF) flows are not yet supported in the Headless Android SDK.
+</Info>
 
 To complete the Headless SDK payment flow:
 
-1. Use [Yuno Webhooks](/docs/webhooks/index) to receive notifications about:
-   * The outcome of the 3DS challenge
-   * The final payment status
-
+1. Use [Yuno Webhooks](/docs/webhooks/index) to receive notifications about the final payment status
 2. Optionally, retrieve payment details using the [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) endpoint.
+
+<Warning>
+**Migrating from `getThreeDSecureChallenge`**
+
+Starting with Android SDK version 2.17.0, the `getThreeDSecureChallenge` function and the `ThreeDSecureChallengeResponse` data class are no longer available. Instead of receiving the raw 3DS challenge URL and rendering it in your own WebView, call `continueCardPayment`: the SDK completes the challenge internally and reports the resulting payment state through the callback.
+</Warning>
 
 ## Complementary features
 
@@ -474,16 +457,6 @@ You can change the SDK appearance to match your brand. For more information, see
 
 In addition to the code examples provided, you can see the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-android/tree/master) to complete Yuno Android SDKs implementation.
 </Info>
-
-## Step 9: Continue payment (Not supported)
-
-<Warning>
-**Missing Mobile Support**
-
-The `getContinuePaymentAction` method and the "Continue Payment" settings (required for features like Passkey SCOF) are currently **not supported** in the Headless Android SDK. 
-
-If your integration requires these features, consider using the [Full Checkout SDK](/docs/sdks/full-checkout/android-payments) or the [Web Headless SDK](/docs/sdks/headless-web/payment) as an alternative.
-</Warning>
 
 ## Error handling
 
