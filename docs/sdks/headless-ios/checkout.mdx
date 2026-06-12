@@ -228,151 +228,68 @@ For synchronous payment methods, the payment completes instantly. In this case, 
 
 ## Step 6: Process asynchronous payments (Optional)
 
-A payment with 3DS may require an additional challenge to check the customer's identity, as described on the [3DS Card Verification](/docs/security-and-compliance/3d-secure) page. If an 3DS verification challenge is necessary, the [Create Payment](/reference/payments/create-payment) endpoint response will contain:
+A payment with 3DS may require an additional challenge to check the customer's identity, as described on the [3DS Card Verification](/docs/security-and-compliance/3d-secure) page. If a 3DS verification challenge is necessary, the [Create Payment](/reference/payments/create-payment) endpoint response will contain:
 
-* Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
-* `sdk_action_required = true`
-* A `redirect_url` defined in `payment.payment_method.payment_method_detail.card`
+- Status equal to `PENDING` and sub status equal to `WAITING_ADDITIONAL_STEP`
+- `sdk_action_required = true`
 
-To perform the challenge and finish the payment, you have two integration options:
+To perform the challenge and finish the payment, use the following integration option:
 
-* [Get the 3DS challenge URL](#get-the-3ds-challenge-url)
+---
 
-### Get the 3DS challenge URL
+### Complete the 3DS challenge
 
-To get the 3DS challenge URL, you need to call the `getThreeDSecureChallenge` function, providing the `checkoutSession`. The `checkoutSession` is only required if you aren't using the one used to create the payment. Below, you will find an example of using the `getThreeDSecureChallenge` function. As  `getThreeDSecureChallenge` is an asynchronous function, you can use `do/catch ` to ensure you will correctly handle triggered errors.
+To complete the 3DS challenge of a card payment you created from your server, call the `continueCardPayment` function on your Headless client. The SDK will retrieve the payment state, present the 3DS challenge to your customer, and report every payment status update back to you — you no longer need to fetch the challenge URL or build your own web view.
 
-```swift
-func getThreeDSecureChallenge(checkoutSession: String?) async throws -> ThreeDSecureChallengeResponse
-```
-
-The `getThreeDSecureChallenge` function will return the `ThreeDSecureChallengeResponse`, presented in the next code block:
+<Note>
+`continueCardPayment` only supports `CARD` payments.
+</Note>
 
 ```swift
-public struct ThreeDSecureChallengeResponse {
-    public let url: String
-}
+func continueCardPayment(onResult: @escaping (Yuno.Result) -> Void)
 ```
 
-The `url` will contain a valid URL you need to redirect your customer to complete the challenge.
-
-You are responsible for redirecting your customers to the URL provided by the `getThreeDSecureChallenge()`  function to complete the challenge. Once the customer successfully completes the 3DS challenge, they will be automatically redirected to the `callback_url`, which you provided when creating the `checkout_session` with the [Create Checkout Session](/reference/checkout-sessions/create-checkout-session) endpoint.
-
-To confirm the challenge was completed, you can open a web view to load the provided URL and listen for the `messageFromWeb` event. Below is an example code demonstrating how to listen for this event.
+The function is available on the same `YunoPaymentHeadless` instance you used to generate the one-time token. Below is a complete example:
 
 ```swift
-class HeadlessWebView: UIViewController, WKScriptMessageHandler, WKNavigationDelegate {
+import YunoSDK
 
-    private var webView: WKWebView!
-    private var url: String = ""
-    private let configuration = WKWebViewConfiguration()
-
-    init(url: String) {
-        self.url = url
-        super.init(nibName: nil, bundle: nil)
+apiClientPayment.continueCardPayment { result in
+    switch result.status {
+    case .processing:
+        // The challenge was presented; the payment is being processed.
+        break
+    case .succeeded:
+        // The customer completed the challenge and the payment was approved.
+        break
+    case .reject, .fail:
+        // The payment was rejected or failed.
+        break
+    case .userCancelled:
+        // The customer closed the challenge without completing it.
+        break
+    case .internalError:
+        // Something went wrong while continuing the payment.
+        break
+    @unknown default:
+        break
     }
-
-    required init?(coder: NSCoder) {
-        nil
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .white
-        webViewConfig()
-    }
-
-    func webViewConfig() {
-   
-        configuration.preferences.javaScriptEnabled = true
-        configuration.userContentController.add(self, name: "messageFromWeb")
-        webView = WKWebView(frame: view.bounds, configuration: configuration)
-        webView.navigationDelegate = self
-
-        guard let url = URL(string: url) else {
-            return
-        }
-        let request = URLRequest(url: url)
-        webView.load(request)
-
-    }
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if message.name == "messageFromWeb", let messageBody = message.body as? String {
-            self.dismiss(animated: true)
-
-        }
-    }
-
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        self.configuration.userContentController.removeScriptMessageHandler(forName: "messageFromWeb")
-    }
-
 }
 ```
 
-The response will inform the challenge status, which can be `COMPLETED` or `ERROR`. The next code block presents examples for each possible option.
+When you call `continueCardPayment`, the SDK will:
 
-```swift COMPLETED
-{
-   "origin":"CHALLENGE",
-   "status":"COMPLETED",
-   "data":"callback_url"
-}
-```
-```swift ERROR
-{
-   "origin":"CHALLENGE",
-   "status":"ERROR",
-   "data":"Invalid 3DS provider"
-}
+1. Retrieve the current state of the payment associated with the `checkoutSession`.
+2. Present the 3DS challenge in a secure web view, on top of your application's current screen.
+3. Dismiss the challenge automatically once the customer completes it.
+4. Listen for the transaction result in real time and deliver each status update through the `onResult` closure, which is invoked on the main thread.
 
-```
-
-To complete the Headless SDK payment flow, you need to use [Yuno Webhooks](/docs/webhooks/index), which will promptly notify you about the outcome of the 3DS challenge and the final payment status. Using webhooks ensures that you receive real-time updates on the progress of the payment transaction. In addition to the webhooks, you can retrieve the payment information using the [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) endpoint.
-
-## Step 7: Handle payment status (Optional)
+The `onResult` closure can be called more than once: you will receive the intermediate `processing` status while the transaction is confirmed, followed by a terminal status (`succeeded`, `reject`, `fail`, `userCancelled`, or `internalError`).
 
 <Warning>
-**Deep Links and Mercado Pago Checkout Pro**
+**Deprecated: `getThreeDSecureChallenge`**
 
-This step is only required if you're using a payment method that relies on deep links or Mercado Pago Checkout Pro. If your payment methods don't use deep links, you can skip this step.
-</Warning>
-
-Some payment methods take users out of your app to complete the transaction. Once the payment is finished, the user is redirected back to your app using a deep link. The SDK uses this deep link to check what happened, checking if the payment was successful, failed, or canceled, and can show a status screen to the user.
-
-To handle this, you need to update your `AppDelegate` to pass the incoming URL back to the Yuno SDK. This lets the SDK read the result and optionally display the payment status. The following code snippet shows how you can add it to your app:
-
-```swift
-func application(_ app: UIApplication,
-                 open url: URL,
-                 options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-
-  guard url.scheme == "yunoexample" else { return false }
-
-  return Yuno.receiveDeeplink(url, showStatusView: true)
-}
-```
-
-This code listens for deep links that open your app. When a URL is received, it checks if the scheme matches the one you used in the `callback_url` during checkout session setup. If it matches, the URL is passed to the Yuno SDK using `Yuno.receiveDeeplink(...)`. The SDK then reads the payment result and, if `showStatusView` is set to `true`, shows the appropriate status screen to the user.
-
-Make sure the `url.scheme` in this code matches the `callback_url` you provided when creating the `checkout_session`.
-
-<Info>
-**Demo App**
-
-In addition to the code examples provided, you can access the [Yuno repository](https://github.com/yuno-payments/yuno-sdk-ios) for a complete implementation of Yuno iOS SDKs.
-</Info>
-
-## Step 8: Continue payment (Not supported)
-
-<Warning>
-**Missing Mobile Support**
-
-The `getContinuePaymentAction` method and the "Continue Payment" settings (required for features like Passkey SCOF) are currently **not supported** in the Headless iOS SDK. 
-
-If your integration requires these features, consider using the [Full Checkout SDK](/docs/sdks/full-checkout/ios-payments) or the [Web Headless SDK](/docs/sdks/headless-web/payment) as an alternative.
+The `getThreeDSecureChallenge` method has been deprecated as of version 2.18.0. Use `continueCardPayment` instead.
 </Warning>
 
 ## Error handling
