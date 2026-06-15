@@ -57,7 +57,8 @@ A single Node.js process built on three libraries:
 
 ### Request lifecycle
 
-1. **CORS middleware** runs first. It echoes the caller's `Origin`, handles `OPTIONS` preflight, and sets `Access-Control-Allow-Credentials: true`. The proxy is the CORS authority.
+0. **Base-path strip** runs before everything else, and only when `BASE_PATH` is set. It rewrites `req.url` / `req.originalUrl` to drop the configured sub-path so all downstream matching and forwarding sees root-relative paths. A no-op (not even registered) for a root mount. See [`BASE_PATH` — sub-path mounting](#base_path--sub-path-mounting).
+1. **CORS middleware** runs next. It echoes the caller's `Origin`, handles `OPTIONS` preflight, and sets `Access-Control-Allow-Credentials: true`. The proxy is the CORS authority.
 2. **Local routes** match before anything else: `/`, `/static/*`, `/whitelabel-info`. These never touch an upstream.
 3. **Backend pass-through** matches `/v1/*` and `/v2/*` (the Yuno REST surface used by the SDK) and forwards via `node-fetch` to `BACKEND_URL`. Hop-by-hop headers are stripped; `access-control-*` headers from the upstream are dropped so they cannot override the proxy's own CORS. The browser `Cookie` header is also dropped on these forwards — the partner page's localhost cookies (session, analytics, URL-valued ones, …) don't belong on a cross-origin call to `api.y.uno` and can trip the upstream WAF with a `403`; the API authenticates via the public API key.
 4. **SDK asset catch-all** matches every remaining `GET`/`HEAD`. A small dispatcher (`pickSdkUpstream`) picks the right upstream based on path, checked top to bottom so the 3DS/card rules win first:
@@ -83,8 +84,8 @@ The proxy resolves the canonical version once at boot and rewrites every incomin
 
 `SDK_MAIN_JS` decides which build of the SDK every browser loads. It does two related things:
 
-1. **Template injection.** The proxy serves `pages/index.html` with the literal `__SDK_MAIN_JS__` placeholder replaced by this path. A partner page can write `<script src="__SDK_MAIN_JS__">` and get e.g. `/v1.9.1/main.js`.
-2. **Version normalization target.** The proxy parses the `/v<x>/` segment out of `SDK_MAIN_JS` and rewrites any incoming `/v<other>/main.js` (and adjacent `/v<other>/*.js`, `/v<other>/*.css`) request to that same version. So if `SDK_MAIN_JS=/v1.9.1/main.js`, a request for `/v1.5.0/main.js` is silently fetched as `/v1.9.1/main.js` from `SDK_UPSTREAM`.
+1. **Template injection.** The proxy serves `pages/index.html` with the literal `__SDK_MAIN_JS__` placeholder replaced by this path. A partner page can write `<script src="__SDK_MAIN_JS__">` and get e.g. `/v1.9.4/main.js`.
+2. **Version normalization target.** The proxy parses the `/v<x>/` segment out of `SDK_MAIN_JS` and rewrites any incoming `/v<other>/main.js` (and adjacent `/v<other>/*.js`, `/v<other>/*.css`) request to that same version. So if `SDK_MAIN_JS=/v1.9.4/main.js`, a request for `/v1.5.0/main.js` is silently fetched as `/v1.9.4/main.js` from `SDK_UPSTREAM`.
 
 ### Resolution order at boot
 
@@ -107,7 +108,7 @@ SDK_MAIN_JS=/v<semver>/main.js
 | Value | When to use it |
 | :--- | :--- |
 | `/v1.9/main.js` | Pin to a minor line (whatever the upstream publishes there) |
-| `/v1.9.1/main.js` | Pin to an exact patch — most common |
+| `/v1.9.4/main.js` | Pin to an exact patch — most common |
 
 The path **must** start with `/v` and contain `/main.js` for normalization to work. If the regex does not match, the path is used for template injection but version rewriting is disabled.
 
@@ -116,15 +117,15 @@ The path **must** start with `/v` and contain `/main.js` for normalization to wo
 **Test a specific SDK release end-to-end:**
 
 ```shell
-SDK_MAIN_JS=/v1.9.1/main.js npm start
+SDK_MAIN_JS=/v1.9.4/main.js npm start
 ```
 
-Every page now loads `v1.9.1`, and any hardcoded `/v<other>/*.js` in partner pages is silently rewritten to `v1.9.1` against `SDK_UPSTREAM`.
+Every page now loads `v1.9.4`, and any hardcoded `/v<other>/*.js` in partner pages is silently rewritten to `v1.9.4` against `SDK_UPSTREAM`.
 
 **Quiet startup (no upstream `versions.json` call):**
 
 ```shell
-SDK_MAIN_JS=/v1.9.1/main.js npm start
+SDK_MAIN_JS=/v1.9.4/main.js npm start
 ```
 
 Useful in air-gapped environments or when `SDK_UPSTREAM` is a local file server that does not expose `versions.json`.
@@ -144,6 +145,50 @@ As long as `v1.7.4` is still published on `SDK_UPSTREAM`, every browser that hit
 - **Restart required.** The value is read once at boot. No hot reload.
 - **Mismatch with upstream is silent.** Pinning to a version the upstream does not publish results in a `404` for `/v<your-pin>/main.js`. Check the network tab to spot it.
 - **No query strings or hash.** Path only.
+
+## `BASE_PATH` — sub-path mounting
+
+A partner gateway is often **mounted under a sub-path** rather than at the origin root. Zuora, for example, serves the SDK from `https://host/hosted-payment-methods/hosted-payment-form/orchestrator` instead of `https://host/`. Recent SDK builds preserve that prefix on **every** asset, API, and WebSocket request — the configured `apiUrl` / `assetUrl` carry it — so a request for an icon arrives as `…/orchestrator/sdk-web/foo.svg`, not `/sdk-web/foo.svg`.
+
+Without help, those prefixed paths would never match the proxy's root-level routing. `BASE_PATH` closes the gap: set it to the sub-path the proxy is "mounted" under, and the proxy strips the prefix from every incoming request — local routes, the `/v1`–`/v2` backend forward, the asset catch-all, and WebSocket upgrades — **before** routing. The existing root-level rules then match unchanged.
+
+Leave it empty for a root mount (the default — behaviour is identical to not having the feature).
+
+### What it changes
+
+1. **Prefix strip.** A top middleware rewrites `req.url` / `req.originalUrl` to drop `BASE_PATH` so everything downstream operates on root-relative paths. WebSocket upgrades get the same strip on the underlying `http.Server`.
+2. **Template injection.** The `__SDK_MAIN_JS__` placeholder is emitted **with** the prefix, so the served landing page points at `<BASE_PATH>/v<x>/main.js`.
+3. **`/whitelabel-info`** reports the resolved `basePath` (or `null` at root) alongside the upstream config.
+
+### Format
+
+```
+BASE_PATH=/hosted-payment-methods/hosted-payment-form/orchestrator
+```
+
+Leading slash, no trailing slash (trailing slashes are stripped). Empty or unset = root mount.
+
+### Partner page setup
+
+When `BASE_PATH` is set, the partner page must carry the same prefix in two places:
+
+- **Load the bundle** from `http://localhost:9090<BASE_PATH>/v<ver>/main.js`.
+- **Initialize** with `apiUrl` / `assetUrl` = `http://localhost:9090<BASE_PATH>`.
+
+```
+icon → http://localhost:9090/hosted-payment-methods/.../orchestrator/sdk-web/foo.svg
+     → strip BASE_PATH → /sdk-web/foo.svg → SDK_ICONS_UPSTREAM
+```
+
+<Note>
+  **Versioned `assetUrl`.** You can pin a bundle version on `assetUrl` (`…/orchestrator/v1.0`). The SDK uses that path for JS chunks but **strips the trailing `/v<semver>`** when resolving host-swapped CDN assets (icons and fonts aren't versioned), so both `assetUrl = …/orchestrator` and `assetUrl = …/orchestrator/v1.0` route icons correctly.
+</Note>
+
+### Gotchas
+
+- **The prefix lives in the URL, not a header.** Both the bundle `<script src>` and the `apiUrl` / `assetUrl` must include `BASE_PATH`, or requests land at the root and the strip is never exercised.
+- **Strip is exact-prefix.** Only `BASE_PATH`, `BASE_PATH/…`, and `BASE_PATH?…` are rewritten. A path that merely resembles the prefix is left alone.
+- **WebSocket upgrades are stripped too** — on the `http.Server` `upgrade` handler, since Express middleware never sees them.
 
 ## Building a server like this
 
@@ -170,8 +215,13 @@ npm install express http-proxy node-fetch@2 dotenv
 | `SDK_ICONS_UPSTREAM` | `/sdk-web/*`, `/flags/*`, bare root brand images (`/Visa.png`, …) |
 | `BACKEND_URL` | `/v1/*`, `/v2/*` (REST API) |
 | `BACKEND_WS_URL` | `/checkout-websocket-notification-ms/ws/{payment,enrollment}` (WebSocket only) |
+| `BASE_PATH` | _(optional)_ sub-path the proxy is mounted under, stripped before routing; empty = root |
 
 `SDK_CARD_UPSTREAM` and `SDK_3DS_UPSTREAM` default to `SDK_UPSTREAM` when unset, and `BACKEND_WS_URL` defaults to `BACKEND_URL` — keep this fallback behaviour, it makes single-env testing easier. `SDK_STATIC_UPSTREAM` / `SDK_ICONS_UPSTREAM` are the exception: they default to the fixed `sdk.prod.y.uno` / `icons.prod.y.uno` CDNs (the SDK host-swaps these from `*.prod.y.uno` regardless of environment), **not** to `SDK_UPSTREAM`.
+
+<Note>
+  If you need to emulate a partner gateway mounted under a sub-path, register a strip middleware **before** all routes that rewrites `req.url` / `req.originalUrl` to drop `BASE_PATH` (and apply the same strip on the `http.Server` `upgrade` handler). Every route below then sees root-relative paths. Skip it entirely when `BASE_PATH` is empty. See [`BASE_PATH` — sub-path mounting](#base_path--sub-path-mounting).
+</Note>
 
 ### 3. Set up CORS as the proxy's responsibility
 
@@ -324,7 +374,7 @@ Once your proxy is running, verify in browser DevTools:
 
 ## Reference implementation
 
-The full source lives in the [`yuno-sdk-web/white-label-proxy-server`](https://github.com/yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server) repository. About 320 lines in `server.js` — the whole thing fits in one file because there is no business logic, just routing and header hygiene.
+The full source lives in the [`yuno-sdk-web/white-label-proxy-server`](https://github.com/yuno-payments/yuno-sdk-web/tree/main/white-label-proxy-server) repository. About 350 lines in `server.js` — the whole thing fits in one file because there is no business logic, just routing and header hygiene.
 
 ## See also
 
