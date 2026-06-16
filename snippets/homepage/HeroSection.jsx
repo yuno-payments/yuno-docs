@@ -77,7 +77,7 @@ export const HeroSection = () => (
 
         <a
           href="/docs/how-yuno-works/what-is-yuno"
-          className="yuno-cta inline-flex items-center gap-2 bg-white !text-[#3d4fdf] px-8 py-4 mt-2 font-semibold text-base no-underline shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] hover:!text-[#3d4fdf] hover:no-underline dark:bg-[#ededf0] dark:!text-[#3d4fdf] dark:hover:!text-[#3d4fdf]"
+          className="yuno-cta inline-flex items-center gap-2 bg-white !text-[#3d4fdf] px-8 py-4 mt-2 font-semibold text-base no-underline rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] hover:!text-[#3d4fdf] hover:no-underline dark:bg-[#ededf0] dark:!text-[#3d4fdf] dark:hover:!text-[#3d4fdf]"
         >
           Get started →
         </a>
