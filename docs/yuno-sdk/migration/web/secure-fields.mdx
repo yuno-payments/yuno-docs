@@ -1,0 +1,103 @@
+---
+title: "Secure Fields"
+description: "Migrate Web Secure Fields (yuno.secureFields) integrations to the unified Transaction API."
+---
+
+Secure Fields collected card data in PCI-compliant iframes — your code never touched the raw PAN. You created each field (`pan`, `cvv`, `expiration`), placed it in your layout, generated a token, and called your own backend to create the payment.
+
+In the unified API secure fields stay **per-field**: you still create and place each field yourself, now as a view from [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list). The finish changes — `generateToken` and `continuePayment` are gone. `start()` tokenizes the mounted fields, creates the payment, and handles 3DS automatically.
+
+| Before | After |
+|---|---|
+| `yuno.secureFields({ checkoutSession, countryCode })` | `sdkPayments.transaction({ checkoutSession, countryCode })` |
+| `.create({ name }).render('#sel')` | `getPaymentMethodsViews({ types: ['secureFields'] })` → `.create({ name }).mount('#sel')` |
+| `.generateTokenWithInformation(...)` + backend POST + `yuno.continuePayment()` | `transaction.start(...)` — tokenize, create, and 3DS in one call |
+
+## Side-by-side
+
+<CodeGroup>
+
+```typescript Before. Secure Fields
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const secureFields = await yuno.secureFields({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    installmentEnable: true,
+})
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).render('#pan')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).render('#cvv')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).render('#exp')
+
+document.getElementById('pay').addEventListener('click', async () => {
+    const ott = await secureFields.generateTokenWithInformation({
+        cardHolderName: 'John Doe',
+    })
+    await myBackend.pay({ oneTimeToken: ott.token, checkoutSession })
+    yuno.continuePayment()
+})
+```
+
+```typescript After. Unified Transaction
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    createPayment: async (token) => {
+        await myBackend.pay({ token: token.token })
+    },
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+const { secureFields } = transaction.getPaymentMethodsViews({ types: ['secureFields'] })
+secureFields.create({ name: 'cardNumber', options: { label: 'Card number' } }).mount('#pan')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).mount('#cvv')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).mount('#exp')
+
+document.getElementById('pay')!.onclick = () =>
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { type: 'CARD', holderName: 'John Doe' } },
+    })
+```
+
+</CodeGroup>
+
+Your layout doesn't change — you still create and place each field. Omit `createPayment` to let the SDK create the payment for you (managed); provide it to POST the token from your backend (manual).
+
+## Field mapping
+
+| Before | After | Notes |
+|---|---|---|
+| `yuno.secureFields({ checkoutSession, countryCode, installmentEnable })` | `sdkPayments.transaction({ checkoutSession, countryCode })` + `getPaymentMethodsViews({ types: ['secureFields'] })` | The session moves to the `Transaction`; request the `secureFields` view. |
+| `field.render('#sel')` | `field.mount('#sel')` | Renamed; same behavior. |
+| `field.name: 'pan'` | `field.name: 'cardNumber'` | Field name normalized. `cvv` / `expiration` are unchanged. |
+| `secureFields.generateTokenWithInformation({ cardHolderName })` | *(removed)* — `start({ paymentMethod: { type: 'CARD', data: { holderName } } })` | Tokenization runs inside `start()`. The holder name and other non-PCI details travel on `start()`. |
+| `yuno.continuePayment()` after backend POST | *(automatic)* | Resolve `createPayment` and the SDK continues, including 3DS. |
+
+Field names: `cardNumber`, `expiration`, `cvv`, `cardLoadPreview`, `cardPin`. See [Secure Fields](/docs/yuno-sdk/features/secure-fields) for the full reference.
+
+## Behavior changes
+
+- **Per-field placement is preserved.** Unlike a single SDK-composed form, you still `create` and `mount` each field independently. PCI scope is unchanged — raw PAN never touches your code.
+- **Tokenization moved into `start()`.** No `generateToken` / `generateTokenWithInformation` on the view.
+- **`continuePayment()` is gone.** `start()` handles 3DS automatically once the payment is created.
+- **3DS is automatic.** Bespoke per-integration 3DS handling is no longer required.
+
+## Checklist
+
+- [ ] Replace `window.Yuno.initialize(...)` with `SdkPayments.initialize(...)`.
+- [ ] Replace `yuno.secureFields({ ... })` with `sdkPayments.transaction({ ... })` + `getPaymentMethodsViews({ types: ['secureFields'] })`.
+- [ ] Swap each field's `.render('#sel')` for `.mount('#sel')`.
+- [ ] Rename the `pan` field to `cardNumber`.
+- [ ] Remove `generateToken*` and `continuePayment()`; finish with `transaction.start(...)`.
+- [ ] Provide `createPayment` if you create the payment on your backend (manual); omit it to let the SDK create it (managed).
+- [ ] Re-run your sandbox test suite.
+
+## Related
+
+- [Secure Fields](/docs/yuno-sdk/features/secure-fields). The full feature reference — fields, options, methods.
+- [`showView`](/docs/yuno-sdk/controllers/show-view). Embed one SDK-composed form instead of placing fields yourself.
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Take over payment creation (manual mode).
+- [`OneTimeToken`](/docs/yuno-sdk/reference/one-time-token). Token payload sent to your backend.

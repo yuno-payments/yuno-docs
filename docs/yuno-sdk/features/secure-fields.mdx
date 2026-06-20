@@ -1,0 +1,124 @@
+---
+title: "Secure Fields"
+description: "Collect card data in PCI-compliant fields you place and style individually, then pay with start()."
+---
+
+Secure fields are PCI-compliant card inputs — card number, expiry, CVV — that the SDK renders inside isolated iframes. Unlike the SDK's built-in form, you **create and place each field independently** in your own layout, with your own labels and styling. Raw card data never touches your page.
+
+<Note>
+This page covers the **Web** granular, per-field API. If you'd rather embed a single SDK-composed card form, override [`showView`](/docs/yuno-sdk/controllers/show-view) instead — same PCI guarantees, less layout work.
+</Note>
+
+Secure fields work for **both** payment (`checkoutSession`) and enrollment (`customerSession`).
+
+## Before you start
+
+Your backend must have created a `checkoutSession` (payment) or `customerSession` (enrollment), and the `Transaction` must be constructed with that session. See [Get Started](/docs/yuno-sdk/get-started).
+
+## Implementation
+
+Secure fields come from `getPaymentMethodsViews`, the same entry point as the wallet buttons. Request the `secureFields` view, `create` each field you need, and `mount` it into your layout. When the user pays, call `start()` — the SDK tokenizes the fields, creates the payment, and handles 3DS.
+
+```typescript
+const { secureFields } = transaction.getPaymentMethodsViews({
+    types: ['secureFields'],
+})
+
+secureFields.create({ name: 'cardNumber', options: { label: 'Card number' } }).mount('#card-number')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).mount('#expiration')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).mount('#cvv')
+
+// Your own Pay button:
+payButton.onclick = () =>
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { type: 'CARD', holderName: 'Ada Lovelace' } },
+    })
+```
+
+The secure fields supply the card number, expiry, and CVV — those never leave the iframes. Non-PCI details — `holderName`, and optionally the customer document or `vaultOnSuccess` — travel on `start()` via `paymentMethod.data`.
+
+<Note>
+You don't pass `onPaymentSelected` for `secureFields` — there's no method to select. You build the card form and call `start()` yourself.
+</Note>
+
+### Managed vs manual
+
+By default the SDK creates the payment. Provide [`createPayment`](/docs/yuno-sdk/controllers/create-payment) on the config to POST the token from your own backend instead. Either way the SDK handles 3DS and reports the result through [`onStatus`](/docs/yuno-sdk/controllers/on-status).
+
+## Enrollment
+
+With a `customerSession`, secure fields vault a card instead of charging. The flow is identical — `create`, `mount`, `start()`.
+
+```typescript
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+})
+
+const { secureFields } = transaction.getPaymentMethodsViews({ types: ['secureFields'] })
+secureFields.create({ name: 'cardNumber' }).mount('#card-number')
+secureFields.create({ name: 'expiration' }).mount('#expiration')
+secureFields.create({ name: 'cvv' }).mount('#cvv')
+
+enrollButton.onclick = () =>
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { type: 'CARD', holderName: 'Ada Lovelace' } },
+    })
+```
+
+<Note>
+On an enrollment (`customerSession`) transaction, `getPaymentMethodsViews` exposes **only** `secureFields`. Wallet types (Apple Pay, Google Pay) are payment-only and are not available.
+</Note>
+
+## Fields
+
+Create each field by name, then mount it into any element in your layout.
+
+| Name | What |
+|---|---|
+| `cardNumber` | Card number (PAN). Emits brand, IIN, and installment data through `onChange`. |
+| `expiration` | Expiration date. |
+| `cvv` | Security code. |
+| `cardLoadPreview` | Optional animated card preview. |
+| `cardPin` | PIN entry, for markets that require it. |
+
+## Field options
+
+Pass `options` to `create` to label, style, and observe a field.
+
+| Option | Type | Purpose |
+|---|---|---|
+| `label` | string | Accessible label. |
+| `placeholder` | string | Placeholder text. |
+| `showError` | boolean | Render validation errors under the field. |
+| `validationType` | string | When to validate (e.g. `on_blur_full`). |
+| `onChange` | function | `({ error, data, isDirty })`. For `cardNumber`, `data` carries brand, IIN, and installments. |
+| `onBlur` / `onFocus` | function | Focus lifecycle — e.g. to flip a card preview. |
+
+## Field methods
+
+Each field returned by `create` (or fetched with `getElement({ name })`) exposes:
+
+| Method | Purpose |
+|---|---|
+| `mount('#sel')` | Render the field into an element. |
+| `focus()` | Focus the field. |
+| `validate()` | Validate on demand; resolves to a boolean. |
+| `clearValue()` | Clear the input. |
+| `setCardType(type)` | Force credit or debit on dual-brand cards. |
+| `setCardHolderName(name)` | Set the holder name on the card preview. |
+| `toggleFrontCardVisibility(visible)` | Flip the card preview. |
+| `resetFields()` | Reset the field's error state. |
+
+## Notes
+
+- **Tokenization and 3DS live in `start()`.** There's no `generateToken` or `continuePayment` on the view — one completion path, no double-charge risk.
+- **PCI scope is unchanged.** Raw card data stays inside the SDK's iframes; your code never reads it.
+- `getPaymentMethodsViews` is synchronous; the secure-field iframes finish loading as you `mount` them.
+
+## Related
+
+- [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). The same `getPaymentMethodsViews` entry point, for wallets and the methods list.
+- [`showView`](/docs/yuno-sdk/controllers/show-view). Embed a single SDK-composed form instead of placing fields yourself.
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Take over payment creation (manual mode).
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). Receive the final result.
