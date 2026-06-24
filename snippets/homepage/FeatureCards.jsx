@@ -25,7 +25,7 @@ export const FeatureCards = () => {
 
   const Card = ({ children, ai = false, className = "" }) => (
     <div
-      className={`relative p-8 transition-all duration-300 ${
+      className={`relative p-8 rounded-xl transition-all duration-300 ${
         ai
           ? "bg-[#3d4fdf] hover:shadow-[0_10px_40px_rgba(0,0,0,0.2),0_0_0_1px_white]"
           : "bg-white border border-gray-200 hover:-translate-y-1 hover:shadow-[0_10px_40px_rgba(0,0,0,0.1),0_0_0_1px_#3d4fdf] hover:border-[#3d4fdf] dark:bg-[#282a30] dark:border-[#3a3c44] dark:hover:border-[#7a8aef] dark:hover:shadow-[0_10px_40px_rgba(0,0,0,0.4),0_0_0_1px_#7a8aef]"
@@ -40,8 +40,8 @@ export const FeatureCards = () => {
       href={href}
       className={`yuno-cta block px-6 py-3 mb-6 text-sm font-medium text-center no-underline w-full transition-all duration-300 ${
         ai
-          ? "yuno-cta-ai bg-white/20 !text-white border border-white/30 hover:bg-white"
-          : "yuno-cta-default bg-gray-100 !text-[#111827] hover:bg-[#3d4fdf] dark:bg-[#32353c] dark:!text-[#d4d5da] dark:hover:bg-[#3d4fdf]"
+          ? "yuno-cta-ai bg-white/20 !text-white border border-white/30 hover:bg-white rounded-lg"
+          : "yuno-cta-default bg-gray-100 !text-[#111827] hover:bg-[#3d4fdf] dark:bg-[#32353c] dark:!text-[#d4d5da] dark:hover:bg-[#3d4fdf] rounded-lg"
       }`}
     >
       {children}

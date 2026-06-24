@@ -40,7 +40,7 @@
       id: "kt3kQQ36OPdxGR171DX9/Rn7KueLwOWNLimA1gKYM",
       options: {
         customCSS:
-          ".docsbot-chat-inner-container { border-radius: 0; } .floating-button { border-radius: 0; bottom: 0 !important; }",
+          ".docsbot-chat-inner-container { border-radius: 0; } .floating-button { border-radius: 8px 8px 0 0; bottom: 0 !important; }",
       },
     });
   }
