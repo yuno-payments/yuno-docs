@@ -1,0 +1,165 @@
+---
+title: "Render mode"
+description: "Migrate Android Render integrations (Activity.startPaymentRender + YunoPaymentRenderController) to the unified Transaction API."
+---
+
+Render mode let you embed the SDK's payment form inside your own layout: you called `startPaymentRender(…)` and received a `YunoPaymentFragmentController` plus a `YunoPaymentRenderController.showView(fragment)` callback that delivered the SDK's `Fragment`. You placed it in your layout and called `controller.submitForm()` (or `controller.continuePayment()` for the 3DS step) from your own button.
+
+In the unified API the same pattern is expressed by overriding [`showView`](/docs/yuno-sdk/controllers/show-view). The SDK still hands you a `Fragment`; you receive it together with a `TransactionProcess` control object that exposes `onSubmit()` and `onClose()`. Continuation (3DS / redirect) is no longer a separate call — the SDK emits a second `showView` with `step = ACTION` when it needs to.
+
+| Before | After |
+|---|---|
+| `Activity.startPaymentRender(…)` → `YunoPaymentFragmentController` | `Transaction(config).start(paymentSelected)` + override `showView` |
+| `YunoPaymentRenderController.showView(fragment)` | View delivered through `showView(view, process, step)` |
+| `controller.submitForm()` | `process.onSubmit()` |
+| `controller.continuePayment()` | *(no longer required. SDK emits a second `showView(step = ACTION)`)* |
+| `YunoPaymentRenderController.loadingController(isLoading)` | `TransactionController.showLoading(isLoading)` |
+| `YunoPaymentRenderController.returnStatus(resultCode, status, subStatus)` | `TransactionController.onStatus(status)` |
+
+## Side-by-side
+
+<CodeGroup>
+
+```kotlin Before. Render mode
+import androidx.fragment.app.Fragment
+import com.yuno.sdk.payments.render.startPaymentRender
+import com.yuno.sdk.payments.render.YunoPaymentFragmentController
+import com.yuno.sdk.payments.render.YunoPaymentRenderController
+import com.yuno.payments.features.payment.models.OneTimeTokenModel
+import com.yuno.presentation.core.components.PaymentSelected
+
+class CheckoutActivity : ComponentActivity(), YunoPaymentRenderController {
+
+    private var controller: YunoPaymentFragmentController? = null
+
+    fun pay(paymentSelected: PaymentSelected) {
+        controller = startPaymentRender(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            submitButton = false,
+            showPaymentStatus = false,
+            coroutineScope = lifecycleScope,
+            paymentSelected = paymentSelected,
+            controller = this,
+        )
+    }
+
+    override fun showView(fragment: Fragment) {
+        // Embed in your layout
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.yuno_form_container, fragment)
+            .commit()
+    }
+
+    override fun loadingController(isLoading: Boolean) { /* show your own loader */ }
+
+    override fun returnStatus(resultCode: Int, paymentStatus: String, paymentSubStatus: String?) {
+        // resultCode + paymentStatus
+    }
+
+    override fun returnOneTimeToken(oneTimeToken: String, additionalData: OneTimeTokenModel?) {
+        // (only fires in the headless-render variant)
+    }
+
+    fun onPayButton() {
+        controller?.submitForm()
+    }
+
+    // Called after the merchant's backend returns from 3DS / redirect
+    fun onContinuePayment() {
+        controller?.continuePayment()
+    }
+}
+```
+
+```kotlin After. showView override
+import androidx.fragment.app.Fragment
+import com.yuno.sdk.Transaction
+import com.yuno.sdk.TransactionConfig
+import com.yuno.sdk.TransactionController
+import com.yuno.sdk.TransactionProcess
+import com.yuno.sdk.TransactionViewStep
+import com.yuno.sdk.PaymentMethodSelected
+import com.yuno.sdk.PaymentStatus
+
+class CheckoutActivity : ComponentActivity(), TransactionController {
+
+    private var process: TransactionProcess? = null
+
+    fun pay(paymentSelected: PaymentMethodSelected) {
+        val config = TransactionConfig(
+            checkoutSession = "session-from-backend",
+            countryCode = "CO",
+            controller = this,
+        )
+
+        Transaction(config = config)
+            .start(paymentSelected = paymentSelected)
+    }
+
+    // 1. Embed the delivered fragment (called once per step: FORM, then ACTION for 3DS if applicable)
+    override fun showView(view: Fragment, process: TransactionProcess, step: TransactionViewStep) {
+        this.process = process
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.yuno_form_container, view)
+            .commit()
+    }
+
+    // 2. Override showLoading if you want to render your own loader
+    override fun showLoading(isLoading: Boolean) { /* show your own loader */ }
+
+    // 3. Final status arrives through onStatus
+    override fun onStatus(status: PaymentStatus) {
+        // status.value: "SUCCEEDED" / "REJECT" / ...
+    }
+
+    fun onPayButton() {
+        process?.onSubmit()
+    }
+}
+```
+
+</CodeGroup>
+
+## Field mapping
+
+| Before (Render) | After (unified) | Notes |
+|---|---|---|
+| `Activity.startPaymentRender(checkoutSession, countryCode, …, paymentSelected, controller)` | `Transaction(config).start(paymentSelected)` | The `Transaction` is the single entry point. `checkoutSession` / `countryCode` move into `TransactionConfig`. |
+| `submitButton: Boolean` | *(removed)* | The submit button is fully owned by the merchant in the unified API. The SDK never renders one when `showView` is overridden. |
+| `coroutineScope` parameter | *(removed)* | The SDK manages its own scope. |
+| `YunoPaymentRenderController.showView(fragment)` | `TransactionController.showView(view, process, step)` | Push, not pull. The SDK delivers the view to your handler when ready. `process` replaces the controller. `step` tells you which step you received (`FORM`, `ACTION`). |
+| `controller.submitForm()` | `process.onSubmit()` | Same role; called on the `TransactionProcess` you receive in `showView`. |
+| `controller.continuePayment()` | *(removed)* | The SDK now triggers a second `showView(step = ACTION)` itself when a 3DS challenge or redirect is required. You don't need to call anything. |
+| `YunoPaymentRenderController.loadingController(isLoading)` | `TransactionController.showLoading(isLoading)` | Same semantics, renamed. **Render is the legacy mode where the loader callback was actually invoked**, so existing Render integrations almost certainly need to migrate this. |
+| `YunoPaymentRenderController.returnStatus(resultCode, status, subStatus)` | `TransactionController.onStatus(status)` | `resultCode` (`PAYMENT_RESULT_*` ints) is dropped; the status string is now wrapped in `PaymentStatus(value, substatus)`. See [Result mapping in Lite](/docs/yuno-sdk/migration/android/payment/lite#result-mapping). |
+| `YunoPaymentRenderController.returnOneTimeToken(token, additionalData)` | Override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) | Only relevant for the non-seamless headless path. See [Headless migration](/docs/yuno-sdk/migration/android/payment/headless). |
+| `PaymentSelected` | `PaymentMethodSelected` | Class renamed. |
+
+## Behavior changes
+
+- **Push, not pull.** You no longer call anything to fetch the fragment. The SDK pushes it to `showView(view, process, step)` when ready.
+- **Two view steps.** `showView` can be called more than once per transaction. `step = FORM` for the data-capture form, `step = ACTION` for a 3DS challenge or external redirect. Decide how to embed each in your layout. (In Render this used to require a separate `controller.continuePayment()` call.)
+- **3DS handled by the SDK.** If you previously triggered 3DS yourself via `controller.continuePayment()`, the SDK now does it as another `showView(view, process, step = ACTION)`. You can keep embedding it inside your layout.
+- **No `submitButton` flag.** The submit button is always merchant-owned in the unified API. Render it in your layout and call `process.onSubmit()` when tapped.
+- **`resultCode` ints are gone.** Branch on `PaymentStatus.value` instead.
+
+## Checklist
+
+- [ ] Replace conformance to `YunoPaymentRenderController` with `TransactionController`.
+- [ ] Move `checkoutSession` and `countryCode` from `startPaymentRender(…)` into `TransactionConfig`.
+- [ ] Remove the `startPaymentRender(…)` call. Use `Transaction(config).start(paymentSelected)` instead.
+- [ ] Remove the `controller` variable. Store the `TransactionProcess` delivered in `showView` and call `process.onSubmit()` from your button.
+- [ ] Remove the `controller.continuePayment()` call. The SDK now triggers a second `showView` with `step = ACTION` if a 3DS challenge is required.
+- [ ] Rename `loadingController(isLoading)` to `showLoading(isLoading)`.
+- [ ] Rename `returnStatus(resultCode, status, subStatus)` to `onStatus(status: PaymentStatus)` and switch `"CANCELED_BY_USER"` → `"USER_CANCELLED"`. Drop the `resultCode` int.
+- [ ] Drop the `submitButton`, `coroutineScope`, and `showPaymentStatus` parameters from your call site. Set `showPaymentStatusScreen` on `TransactionConfig` if needed.
+- [ ] Rename `PaymentSelected` → `PaymentMethodSelected`.
+- [ ] Re-run your sandbox test suite, including 3DS scenarios.
+
+## Related
+
+- [`showView`](/docs/yuno-sdk/controllers/show-view). Full reference for the controller and `TransactionProcess`.
+- [`showLoading`](/docs/yuno-sdk/controllers/show-loading). Loading-state controller.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config). Complete field reference.
+- [Migration / Lite](/docs/yuno-sdk/migration/android/payment/lite). When you don't need to embed the form yourself.
