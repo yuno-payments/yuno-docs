@@ -2,6 +2,92 @@
   "sdk": "android",
   "releases": [
     {
+      "version": "3.0.0",
+      "release_date": "2026-06-01",
+      "upgrade": {
+        "snippet": "implementation 'com.yuno.payments:android-sdk:3.0.0'",
+        "language": "groovy"
+      },
+      "entries": [
+        {
+          "type": "CHANGED",
+          "title": "[BREAKING] Unified Transaction API replaces the eight v2 integration modes",
+          "description": "v3.0.0 is the Universal SDK major. Every payment and enrollment flow now goes through a single Transaction object configured with a TransactionConfig, instead of the previous ~8 separate modes (Full, Lite, Seamless, Render, Headless, Enrollment). The integration mode is deduced, not declared: seamless vs. non-seamless from whether PaymentMethodSelected.transactionData is supplied, and full vs. headless from whether the merchant implements HeadlessTransactionController. Yuno.initialize(apiKey) now takes only the API key — appearance, session, listeners and the selected method all live on the Transaction / TransactionConfig.",
+          "group": "Universal SDK",
+          "migration_guide": "Replace the per-mode entry points with a single Transaction. Example (seamless UI): `Transaction(TransactionConfig(checkoutSession = \"...\", countryCode = \"CO\", controller = object : TransactionController { override fun onStatus(status: TransactionStatus) { showResult(status) } })).start(paymentSelected)`. Per-mode before/after is in the v2 → v3 migration guide under yuno-sdk-docs/migration/android/ (full, lite, seamless, render, headless, enrollment).",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16245"
+          ]
+        },
+        {
+          "type": "REMOVED",
+          "title": "[BREAKING] Legacy v2 public API surface removed",
+          "description": "The entire v2 public surface is removed: the Activity/Context extension functions (startCheckout, startPayment / startPaymentLite / startPaymentSeamless, startEnrollment, continuePayment, initEnrollment, enrollmentStatus, setupEnrollmentInfo, updateCheckoutSession, updateCustomerSession), the render listeners (YunoPaymentRenderListener, YunoEnrollmentRenderListener), the fragment controllers (YunoPaymentFragmentController, YunoEnrollmentFragmentController), the result constants (PAYMENT_RESULT_*), the legacy state enums (PaymentStates, PaymentSubStates, EnrollmentState, EnrollmentSubStates), the collected-data models (PaymentSelected, TokenCollectedData, EnrollmentCollectedData), the API clients (ApiClientPayment, ApiClientEnroll), SingleLiveEvent, and ThreeDSecureChallengeResponse. Switching from one mode to another in v3 is now overriding one more listener, not rewriting the integration.",
+          "group": "Universal SDK",
+          "migration_guide": "Each removed symbol maps to the unified Transaction API; see the v2 → v3 migration guide under yuno-sdk-docs/migration/android/ for a 1:1 before/after of every old mode.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16258"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "PaymentMethodSelected, TransactionData, TransactionStatus and OneTimeToken public models",
+          "description": "New strongly-typed public models: PaymentMethodSelected (paymentMethodType String + optional vaultedToken / transactionData / metadata), TransactionData (a flat union of card, installment, customer, wallet, bankTransfer, ticket and 3DS data — adding a new payment method does not require an SDK release), and TransactionStatus (value, substatus, errorCode, paymentId). The One-Time Token is delivered to headless merchants as a flat map mirroring the /v1/payments token shape.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Smart-default listeners: TransactionController, HeadlessTransactionController, EmbeddedTransactionController",
+          "description": "A single TransactionController callback surface (onStatus, showView, showLoading, createPayment) drives behavior by what the merchant overrides. Headless mode (merchant creates the payment) is opted into by implementing HeadlessTransactionController; embedded-view mode (merchant hosts the SDK view) by implementing EmbeddedTransactionController — both marker interfaces, because Kotlin's JVM default-method modes make reflective override detection unreliable. With no overrides the SDK runs the full seamless flow (renders UI, tokenizes, pays, handles 3DS, shows status).",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16248"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "[BREAKING] Full Semantic Versioning across iOS, Android and Web",
+          "description": "Starting with the Universal SDK, Android adopts full MAJOR.MINOR.PATCH semver aligned with iOS and Web, and equivalent features release under the same version on all three platforms. MAJOR means the merchant has to change code; MINOR and PATCH are safe to adopt without touching the integration. v3.0.0 is the first release under this scheme.",
+          "group": "Versioning",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16245"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Support policy: no backports",
+          "description": "Old versions are no longer patched — any fix, feature or improvement ships only in the next version, and a merchant who hits a bug upgrades to the latest version to get the fix. The single exception is a critical security vulnerability, evaluated case by case with the Security team. This keeps a single active development line per platform.",
+          "group": "Versioning",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "SECURITY",
+          "title": "Logs never contain PAN, CVV, OTT token or API key",
+          "description": "A SafeLogger redaction pass masks card numbers (last 4 only), CVV, OTT/token values and the API key before anything reaches a log sink, and OkHttp body logging is disabled (HEADERS-only, with the api-key and Authorization headers redacted) so request/response bodies — including 3DS payloads — are never logged, in any environment.",
+          "group": "Security",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16256"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "[BREAKING] TransactionStatus forwards raw backend status/substatus + adds a structured message",
+          "description": "TransactionStatus is now the canonical merchant payload: `value` is the backend status forwarded verbatim (DECLINED, REJECTED, EXPIRED, CANCELED are no longer collapsed into one value) and `substatus` is the raw backend substatus (AUTHORIZED is no longer dropped), `null` when the backend sent none. A status the SDK doesn't recognize surfaces as `INTERNAL_ERROR` with an `unsupported status` message instead of being silently mapped. The flat `errorCode` field is replaced by a structured `message: StatusMessage?` populated only on error — `source: \"backend\"` (code/reason/raw) for backend error responses, `source: \"sdk\"` (code/reason/context) for SDK/transport failures, `null` on success and user cancellation. Headless and enrollment emit the same payload (no `status` overwriting; single user-cancel spelling).",
+          "group": "Universal SDK",
+          "migration_guide": "Replace `status.errorCode` with `status.message?.code` (and use `status.message?.source` to tell a backend rejection from an SDK failure). Read `status.value` as the raw backend status rather than a collapsed SDK value.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-17275"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.17.2",
       "release_date": "2026-06-26",
       "upgrade": {
