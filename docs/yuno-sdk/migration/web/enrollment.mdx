@@ -1,0 +1,163 @@
+---
+title: "Enrollment"
+description: "Migrate Web enrollment integrations (yuno.mountEnrollmentLite + yuno.apiClientEnroll) to the unified Transaction API."
+---
+
+Enrollment had two sub-modes that paralleled the payment modes: a UI-driven flow (`mountEnrollmentLite`) and a headless flow (`apiClientEnroll`). Both collapse into the same `Transaction` class in the unified API. What changes is the **session you pass** (`customerSession` instead of `checkoutSession`) and **whether you provide pre-collected data** in `paymentMethod.data`.
+
+| Before | After |
+|---|---|
+| `yuno.mountEnrollmentLite({ customerSession, … })` (UI) | `sdkPayments.transaction({ customerSession, … }).start()` |
+| `yuno.apiClientEnroll({ customerSession })` + manual backend call (Headless) | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data } })` |
+| `yunoEnrollmentStatus({ status, vaultedToken })` controller | `onStatus(result)` — `result` is `EnrollmentResult` for enrollment flows |
+
+## Side-by-side — Enrollment Lite (UI)
+
+<CodeGroup>
+
+```typescript Before. Enrollment Lite
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+await yuno.mountEnrollmentLite({
+    customerSession: 'session-from-backend',
+    elementSelector: '#root',
+    countryCode: 'CO',
+    language: 'en',
+    showPaymentStatus: true,
+    yunoEnrollmentStatus: ({ status, vaultedToken }) => {
+        if (status === 'CREATED' && vaultedToken) {
+            // Store against customer
+            console.log('vault token:', vaultedToken)
+        }
+    },
+})
+```
+
+```typescript After. Unified Transaction (enrollment)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    onStatus: (result) => {
+        // result is EnrollmentResult here because customerSession was used
+        if (result.status === 'CREATED' && result.vaultedToken) {
+            console.log('vault token:', result.vaultedToken)
+        }
+    },
+})
+
+await transaction.start()
+```
+
+</CodeGroup>
+
+## Side-by-side — Enrollment Headless
+
+<CodeGroup>
+
+```typescript Before. Enrollment headless
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const apiClientEnroll = await yuno.apiClientEnroll({
+    customerSession: 'session-from-backend',
+})
+
+const vaultedToken = await apiClientEnroll.generateVaultedToken({
+    cardHolderName: 'John Doe',
+    cardNumber: '4111111111111111',
+    cvv: '123',
+    expirationMonth: 12,
+    expirationYear: 2028,
+})
+
+console.log('vault token:', vaultedToken)
+```
+
+```typescript After. Unified Transaction (enrollment headless)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => {
+        if (result.status === 'CREATED' && result.vaultedToken) {
+            console.log('vault token:', result.vaultedToken)
+        }
+    },
+})
+
+await transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        data: {
+            type: 'CARD',
+            holderName: 'John Doe',
+            number: '4111111111111111',
+            securityCode: '123',
+            expirationMonth: 12,
+            expirationYear: 2028,
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+## Field mapping
+
+| Before (Enrollment) | After (unified) | Notes |
+|---|---|---|
+| `yuno.mountEnrollmentLite({ customerSession, … })` | `sdkPayments.transaction({ customerSession, … }).start()` | Single factory. `start()` called with no argument for UI enrollment. |
+| `yuno.apiClientEnroll({ customerSession })` + `.generateVaultedToken(cardData)` | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data: CardData } })` | Pre-collected card data goes inline on `start()`. |
+| `yunoEnrollmentStatus({ status, vaultedToken })` | `onStatus(result)` — `result` is `EnrollmentResult` | `EnrollmentResult` has `status` (literal union), `substatus`, and `vaultedToken` (when `status === 'CREATED'`). |
+| `elementSelector: '#root'` (auto-mount) | *(removed)* | SDK presents the enrollment form modally by default. Override `showView` to embed. |
+| `showPaymentStatus: true` | `showPaymentStatus: true` | Same field on `TransactionConfig`. Defaults to `false`. |
+| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus` (`EnrollmentResult.status === 'ERROR'`) and `StartResult.error`. |
+
+### Result mapping
+
+`EnrollmentResult.status` uses the same 11-value literal union as v1's `EnrollmentStatus`:
+
+```typescript
+type EnrollmentStatus =
+    | 'CREATED'
+    | 'EXPIRED'
+    | 'REJECTED'
+    | 'READY_TO_ENROLL'
+    | 'ENROLL_IN_PROCESS'
+    | 'UNENROLL_IN_PROCESS'
+    | 'ENROLLED'
+    | 'DECLINED'
+    | 'CANCELED'
+    | 'ERROR'
+    | 'UNENROLLED'
+```
+
+When `status === 'CREATED'`, `vaultedToken` is set — store it against your customer.
+
+## Behavior changes
+
+- **Single factory.** Whether you're processing a payment or enrolling a method depends on which session you pass:
+  - `checkoutSession` → payment, `result` is `PaymentResult`
+  - `customerSession` → enrollment, `result` is `EnrollmentResult`
+- **`start()` with no argument == enrollment UI.** The SDK presents the enrollment form for the customer to pick a method and fill in card data.
+- **`start({ paymentMethod: { type, data } })` == enrollment headless.** Same shape as headless payment, but with `customerSession`.
+- **No `createPayment` for enrollment.** Even if you wire it on the config, it's ignored — there's no `/v1/payments` equivalent for enrollment.
+
+## Checklist
+
+- [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
+- [ ] Replace `yuno.mountEnrollmentLite(...)` with `sdkPayments.transaction({ customerSession, … }).start()`.
+- [ ] Replace `yuno.apiClientEnroll(...).generateVaultedToken(cardData)` with `transaction.start({ paymentMethod: { type: 'CARD', data: CardData } })`.
+- [ ] Rename `cardHolderName` → `holderName`, `cardNumber` → `number`, `cvv` → `securityCode` in the data payload.
+- [ ] Replace `yunoEnrollmentStatus({ status, vaultedToken })` with `onStatus(result)`. Cast to `EnrollmentResult` and read `result.status` / `result.vaultedToken`.
+- [ ] Drop `elementSelector`, `yunoError`.
+- [ ] Re-run your sandbox test suite.
+
+## Related
+
+- [Enrollment](/docs/yuno-sdk/features/enrollment). Full enrollment guide.
+- [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config). Complete field reference.
+- [`Status`](/docs/yuno-sdk/reference/status). Includes `EnrollmentStatus` and `EnrollmentResult` shapes.

@@ -1,0 +1,138 @@
+---
+title: "Fraud"
+description: "Migrate Web fraud integrations (yuno.mountFraud + yuno.executeFraudCheck) to the unified SDK."
+---
+
+Fraud screening had two legacy entry points on Web:
+
+- `yuno.mountFraud(...)` — UI mode. Rendered a fraud widget AND created the payment via its own `yunoCreatePayment`.
+- `yuno.executeFraudCheck(...)` — Headless. Returned device-fingerprint identifiers; no UI.
+
+In the unified API, fraud screening runs **automatically inside `Transaction`** during tokenization (you don't wire anything). The standalone headless check moves to a top-level method on `SdkPayments` (not on `Transaction`, because it's a query, not a transaction). The UI variant is dropped — its responsibilities are absorbed by `Transaction`.
+
+| Before | After |
+|---|---|
+| `yuno.mountFraud({...})` (UI) | **Removed.** Fraud runs automatically inside `Transaction`. |
+| `yuno.executeFraudCheck({...})` (headless) | `sdkPayments.runFraud({...})` |
+| `deviceFingerprints?: ExternalProviderId[]` passed alongside payment data | `deviceFingerprints?: ExternalProviderId[]` on `TransactionConfig` |
+
+## Side-by-side — Headless fraud check
+
+<CodeGroup>
+
+```typescript Before. executeFraudCheck
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const result = await yuno.executeFraudCheck({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    paymentType: 'CARD',
+    deviceFingerprints: [],
+})
+
+if (result.status === 'success') {
+    console.log('fingerprints:', result.deviceFingerprints)
+} else {
+    console.error('fraud check failed:', result.error)
+}
+```
+
+```typescript After. sdkPayments.runFraud
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const result = await sdkPayments.runFraud({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    paymentType: 'CARD',
+})
+
+if (result.status === 'success') {
+    for (const fp of result.deviceFingerprints) {
+        console.log('fingerprint:', fp.providerId, fp.sessionId)
+    }
+} else {
+    console.error('fraud check failed:', result.error)
+}
+```
+
+</CodeGroup>
+
+## Side-by-side — Fraud UI
+
+There is no direct replacement for `mountFraud`. The widget's responsibilities are now part of `Transaction`:
+
+- Fraud signals are collected automatically during tokenization
+- Payment creation is `createPayment` (or managed by the SDK) — not bundled with fraud anymore
+- If you need a visible "checking your purchase" state, use [`showLoading`](/docs/yuno-sdk/controllers/show-loading) for the loader and [`showView`](/docs/yuno-sdk/controllers/show-view) if you want to embed UI
+
+<CodeGroup>
+
+```typescript Before. mountFraud (UI)
+await yuno.mountFraud({
+    checkoutSession: 'session-from-backend',
+    language: 'en',
+    deviceFingerprints: [],
+    type: 'CARD',
+    yunoCreatePayment: async (oneTimeToken, info) => {
+        await myBackend.pay(oneTimeToken)
+        yuno.continuePayment()
+    },
+    yunoError: (msg) => console.error(msg),
+})
+```
+
+```typescript After. Normal Transaction — fraud is automatic
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    deviceFingerprints: [],            // optional: inject your own
+    createPayment: async (token) => {
+        await myBackend.pay(token.token)
+    },
+    showLoading: (isLoading) => mySpinner.toggle(isLoading),
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+await transaction.start({ paymentMethod: { type: 'CARD' } })
+```
+
+</CodeGroup>
+
+## Field mapping
+
+| Before | After | Notes |
+|---|---|---|
+| `yuno.mountFraud({...})` | *(removed)* | Fraud runs inside `Transaction` automatically. Use `showLoading` + `showView` if you need custom UI feedback. |
+| `yuno.executeFraudCheck({...})` | `sdkPayments.runFraud({...})` | Top-level method on `SdkPayments`, not on `Transaction`. |
+| `executeFraudCheck.paymentType` (defaulted to `CARD` internally) | `runFraud.paymentType?` | Same default. |
+| `executeFraudCheck.deviceFingerprints?` | `runFraud.deviceFingerprints?` | Same shape (`ExternalProviderId[]`). |
+| `ExecuteFraudCheckReturn` (`status`, `deviceFingerprints`, `error`) | `FraudResult` discriminated union | `status: 'success'` → `deviceFingerprints` present. `status: 'error'` → `error` present. |
+
+### Result shape
+
+The result is now a discriminated union — Promise never rejects.
+
+```typescript
+type FraudResult =
+    | { status: 'success'; deviceFingerprints: { providerId: string; sessionId: string }[] }
+    | { status: 'error'; error: Error }
+```
+
+Compared to v1 where `error` was always optional alongside `deviceFingerprints`, the new shape forces you to check `status` before reading either field — TS narrows.
+
+## Behavior changes
+
+- **`mountFraud` is gone.** The unified `Transaction` handles fraud screening internally during normal flows. If you need pre-screening before creating a checkout session, use `sdkPayments.runFraud(...)`.
+- **`runFraud` lives on `SdkPayments`, not on `Transaction`.** It's a standalone query, not part of a transaction lifecycle.
+- **Discriminated-union result.** TS narrows on `status` — no more optional fields.
+
+## Checklist
+
+- [ ] Replace `yuno.executeFraudCheck(...)` with `sdkPayments.runFraud(...)`.
+- [ ] Update your result handling to narrow on `result.status === 'success'` / `'error'`.
+- [ ] If you used `yuno.mountFraud(...)` for UI: drop it. Use a normal `Transaction` instead; fraud screening happens automatically. Use `showLoading` for spinner UI.
+- [ ] Re-run your sandbox test suite.
+
+## Related
+
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). For manual payment creation in normal `Transaction` flows.
