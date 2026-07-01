@@ -1,0 +1,87 @@
+---
+title: "Statement descriptor on recurring payments"
+description: "Control the soft (statement) descriptor that appears on the cardholder's bank statement for subscription and merchant-initiated recurring charges."
+---
+
+The soft descriptor (also called the statement descriptor) is the text a cardholder sees on their bank statement next to a charge. A clear descriptor reduces confusion and the disputes that follow from it, which matters most on recurring charges where the customer is billed without re-entering the checkout.
+
+Where you set the descriptor depends on which recurring mechanism you use. The two paths are independent, so pick the one that matches how the charge is generated.
+
+<Note>
+**Which path applies to you**
+
+* **Yuno subscription engine**: Yuno generates each rebill from a subscription object. Set the descriptor on the subscription.
+* **Merchant-initiated (MIT)**: You generate each rebill yourself with a Create Payment call using stored credentials. Set the descriptor on each payment.
+
+The same merchant can use both for different products. Wallet rebills (Apple Pay / Google Pay) ride the card / network-token rail in both cases, so the rules below apply to them too.
+</Note>
+
+## Subscription-engine rebills
+
+When Yuno's [subscription engine](/docs/payment-features/subscriptions) charges the customer on each cycle, set the descriptor once with the `soft_descriptor` field on the subscription. Yuno persists it on the subscription and applies it to every rebill the engine generates.
+
+* Set it on [Create Subscription](/reference/subscriptions/create-subscription) (`soft_descriptor`, string, max 255).
+* Change it later on [Update Subscription](/reference/subscriptions/update-subscription); the new value applies to subsequent rebills.
+
+```json Create Subscription (excerpt)
+{
+  "name": "Streaming plan",
+  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+  "country": "US",
+  "soft_descriptor": "ACME STREAMING",
+  "amount": { "currency": "USD", "value": 15000 },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "{{vaulted_token}}"
+  }
+}
+```
+
+## Merchant-initiated (MIT) rebills
+
+When you drive recurrence yourself — sending each charge as a merchant-initiated payment with `stored_credentials.usage = USED` and `reason = SUBSCRIPTION` — there is no subscription object to carry the descriptor. Set it per payment instead.
+
+On [Create Payment](/reference/payments/create-payment), the descriptor lives on the payment method detail:
+
+* `payment_method.detail.card.soft_descriptor`
+* `payment_method.detail.wallet.soft_descriptor`
+* `payment_method.detail.bank_transfer.soft_descriptor`
+
+For Apple Pay and Google Pay rebills, the saved method is a card-type network token, so use `payment_method.detail.card.soft_descriptor`.
+
+```json Create Payment (excerpt)
+{
+  "amount": { "currency": "USD", "value": 15000 },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "{{vaulted_token}}",
+    "detail": {
+      "card": {
+        "soft_descriptor": "ACME STREAMING",
+        "stored_credentials": {
+          "reason": "SUBSCRIPTION",
+          "usage": "USED"
+        }
+      }
+    }
+  }
+}
+```
+
+See [Stored Credentials](/docs/payment-features/stored-credentials) for the full CIT/MIT flow.
+
+## Provider behavior
+
+Yuno forwards `soft_descriptor` to each provider's equivalent field (for example, Stripe `statement_descriptor` / `statement_descriptor_suffix`, Unlimit `dynamic_descriptor`, Airwallex `descriptor`, Inovio `PMT_DESCRIPTOR`, Nuvei `dynamicDescriptor.merchantName`). Behavior differs by provider:
+
+| Provider | Behavior |
+| :------- | :------- |
+| Stripe | Sends only the suffix (`statement_descriptor_suffix`) by default. The full descriptor is sent only for organizations enabled for full statement descriptors — contact your technical account manager. |
+| Unlimit | Truncates to 22 characters. |
+| Airwallex | Truncates to 30 characters. |
+| Inovio | Strips non-alphanumeric characters. |
+| Worldpay | Does not read `soft_descriptor`. The statement narrative comes from the generic `payment_description` field instead. |
+
+<Warning>
+Length and allowed characters vary by provider. Keep descriptors short and alphanumeric so they survive truncation and sanitization, and test with your provider before relying on a specific format.
+</Warning>
