@@ -304,19 +304,20 @@ When the status is anything other than `DECLINED`/`ERROR` **and** `checkout.sdk_
 </Warning>
 
 <Warning>
-**Secure Fields:** set the `checkoutSession` on the `secureFields({ ... })` object, **not** only on the `generateTokenWithInformation({ ... })` call. Retry is armed when the SDK initializes the secure fields with a `checkoutSession`; passing it only to `generateTokenWithInformation` leaves retry disabled.
+**Secure Fields:** set the `checkoutSession` on the `secureFields({ ... })` object, and **do not** pass it to `generateTokenWithInformation({ ... })`.
+
+Retry is armed when the SDK initializes the secure fields with a `checkoutSession`, and on each retry the SDK swaps in a freshly cloned session internally. If you also pass `checkoutSession` to `generateTokenWithInformation`, that fixed value overrides the cloned one and breaks the retry attempt.
 
 ```javascript
-// ✅ Correct — checkoutSession set on secureFields, so retry is armed
+// ✅ Correct — checkoutSession only on secureFields
 const secureFields = await yuno.secureFields({
   checkoutSession,
   // ...other options
 });
 
-const token = await secureFields.generateTokenWithInformation({ /* ... */ });
+const token = await secureFields.generateTokenWithInformation({ /* no checkoutSession */ });
 
-// ❌ Incorrect — checkoutSession only on generateTokenWithInformation; retry NOT armed
-const secureFields = await yuno.secureFields({ /* no checkoutSession */ });
+// ❌ Incorrect — checkoutSession passed to generateTokenWithInformation overrides the cloned session on retry
 const token = await secureFields.generateTokenWithInformation({ checkoutSession });
 ```
 </Warning>
