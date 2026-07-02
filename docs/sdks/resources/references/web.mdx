@@ -271,7 +271,11 @@ Payment retry is supported across all four Web integrations: **Seamless**, **Ful
 
 ### Triggering retry in Full Checkout, Lite, and Secure Fields
 
-For these three flows, after your backend creates the payment you must inspect the payment response and, when the payment method is a card and the payment did not go through, resume the SDK so it runs the retry:
+For these three flows, after your backend creates the payment you must inspect the payment response and drive the SDK accordingly:
+
+- **Card payment that failed** (`payment_method.type === 'CARD'` and `status` is `DECLINED` or `ERROR`): call `continuePayment` to run the retry — the card form stays open with the decline shown.
+- **Additional action required** (`checkout.sdk_action_required === true`): call `continuePayment` so the SDK can show the required screens (e.g. 3DS or a redirect).
+- **Nothing left for the SDK to do** (status is not `DECLINED`/`ERROR` **and** `checkout.sdk_action_required === false`): the SDK will not tear itself down, so you must unmount it manually with `unmountSdk`.
 
 ```javascript
 // In your yunoCreatePayment callback, after creating the payment on your backend:
@@ -279,18 +283,24 @@ const payment = await createPaymentOnYourBackend(oneTimeToken);
 
 const isCard = payment.payment_method?.type === 'CARD';
 const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+const actionRequired = payment.checkout?.sdk_action_required === true;
 
 if (isCard && failed) {
-  // Runs the retry flow: re-opens/keeps the card form with the decline shown.
+  // Runs the retry flow: keeps the card form open with the decline shown.
   await yuno.continuePayment();
-} else {
-  // Normal completion (e.g. show the result screen).
+} else if (actionRequired) {
+  // Additional action needed (e.g. 3DS or redirect).
   await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No retry and no action required: clean up the SDK yourself.
+  await yuno.unmountSdk();
 }
 ```
 
 <Warning>
 If the payment method is `CARD` and the status is `DECLINED` or `ERROR`, you **must** call `continuePayment`. If you don't, the card form will **not** close automatically — the shopper is left on the open form with no next step.
+
+When the status is anything other than `DECLINED`/`ERROR` **and** `checkout.sdk_action_required` is `false`, call `unmountSdk` to remove the SDK from the DOM — it does not unmount on its own in these flows.
 </Warning>
 
 ## Enrollment parameters (full reference)
