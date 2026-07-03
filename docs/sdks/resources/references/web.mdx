@@ -252,6 +252,76 @@ await yuno.startCheckout({
 })
 ```
 
+## Payment retry
+
+Payment retry lets a shopper fix and re-submit a **card** payment after it comes back `DECLINED` or `ERROR`, without restarting the checkout. Instead of tearing down the card form, the SDK keeps it open, surfaces the decline (field-level errors and a top error banner), and clones the checkout session so the next attempt reuses the same flow.
+
+Retry is enabled by the Checkout Builder / Dashboard setting [`settings.card.enable_payment_retry`](/reference/checkout-builder/update-styling-settings) (default enabled). It is a server-controlled setting, not a `startCheckout()` argument. It applies to non-enrolled card payments only — enrolled/vaulted cards are excluded.
+
+Payment retry is supported across all four Web integrations: **Seamless**, **Full Checkout**, **Lite**, and **Secure Fields**.
+
+### Behavior by integration
+
+| Integration | What you need to do |
+| ----------- | ------------------- |
+| **Seamless** | Automatic. The SDK keeps the card form open and drives the retry itself — no extra integration required. |
+| **Full Checkout** | Manual. After creating the payment on your backend, check the response and call `continuePayment` (see below). |
+| **Lite** | Manual. Same as Full Checkout. |
+| **Secure Fields** | Manual. Same as Full Checkout. |
+
+### Triggering retry in Full Checkout, Lite, and Secure Fields
+
+For these three flows, after your backend creates the payment you must inspect the payment response and drive the SDK accordingly:
+
+- **Card payment that failed** (`payment_method.type === 'CARD'` and `status` is `DECLINED` or `ERROR`): call `continuePayment` to run the retry — the card form stays open with the decline shown.
+- **Additional action required** (`checkout.sdk_action_required === true`): call `continuePayment` so the SDK can show the required screens (e.g. 3DS or a redirect).
+- **Nothing left for the SDK to do** (status is not `DECLINED`/`ERROR` **and** `checkout.sdk_action_required === false`): the SDK will not tear itself down, so you must unmount it manually with `unmountSdk`.
+
+```javascript
+// In your yunoCreatePayment callback, after creating the payment on your backend:
+const payment = await createPaymentOnYourBackend(oneTimeToken);
+
+const isCard = payment.payment_method?.type === 'CARD';
+const failed = payment.status === 'DECLINED' || payment.status === 'ERROR';
+const actionRequired = payment.checkout?.sdk_action_required === true;
+
+if (isCard && failed) {
+  // Runs the retry flow: keeps the card form open with the decline shown.
+  await yuno.continuePayment();
+} else if (actionRequired) {
+  // Additional action needed (e.g. 3DS or redirect).
+  await yuno.continuePayment({ showPaymentStatus: true });
+} else {
+  // No retry and no action required: clean up the SDK yourself.
+  await yuno.unmountSdk();
+}
+```
+
+<Warning>
+If the payment method is `CARD` and the status is `DECLINED` or `ERROR`, you **must** call `continuePayment`. If you don't, the card form will **not** close automatically — the shopper is left on the open form with no next step.
+
+When the status is anything other than `DECLINED`/`ERROR` **and** `checkout.sdk_action_required` is `false`, call `unmountSdk` to remove the SDK from the DOM — it does not unmount on its own in these flows.
+</Warning>
+
+<Warning>
+**Secure Fields:** set the `checkoutSession` on the `secureFields({ ... })` object, and **do not** pass it to `generateTokenWithInformation({ ... })`.
+
+Retry is armed when the SDK initializes the secure fields with a `checkoutSession`, and on each retry the SDK swaps in a freshly cloned session internally. If you also pass `checkoutSession` to `generateTokenWithInformation`, that fixed value overrides the cloned one and breaks the retry attempt.
+
+```javascript
+// ✅ Correct — checkoutSession only on secureFields
+const secureFields = await yuno.secureFields({
+  checkoutSession,
+  // ...other options
+});
+
+const token = await secureFields.generateTokenWithInformation({ /* no checkoutSession */ });
+
+// ❌ Incorrect — checkoutSession passed to generateTokenWithInformation overrides the cloned session on retry
+const token = await secureFields.generateTokenWithInformation({ checkoutSession });
+```
+</Warning>
+
 ## Enrollment parameters (full reference)
 
 Parameters for `await yuno.mountEnrollment()`. All parameters used in [Enrollment flows (Web)](/docs/sdks/card-enrollment/web-enrollment) are listed here with full detail.
