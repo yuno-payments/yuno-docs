@@ -267,6 +267,108 @@ For explicit cleanup of the Yuno SDK (e.g., when a user cancels the flow or you 
 await yuno.unmountSdk();
 ```
 
+## Revolut Pay
+
+There are two ways to render the Revolut Pay button:
+
+1. **Full checkout** — the button shows up inside the payment method list rendered by the SDK.
+2. **External buttons** (`mountExternalButtons`) — the merchant decides which container on their page the button mounts into.
+
+In both cases, the button configuration goes in `externalButtons.revolutPay` inside `startCheckout`. Unlike other buttons, the widget is rendered by Revolut's own SDK — the configuration maps directly to Revolut's button options.
+
+### External buttons integration
+
+The merchant defines a container in their HTML and mounts the button there:
+
+```html
+<div id="revolut-pay-element"></div>
+```
+
+```javascript
+const yuno = await window.Yuno.initialize(PUBLIC_API_KEY);
+
+await yuno.startCheckout({
+  checkoutSession,
+  elementSelector: '#root',
+  countryCode,
+  language,
+
+  // Receives the one-time token when the buyer confirms in the Revolut widget.
+  // IMPORTANT: create the payment in your backend RIGHT AWAY and call
+  // continuePayment() — the Revolut widget stays open waiting for the order
+  // to be completed with the created payment.
+  async yunoCreatePayment(oneTimeToken, tokenWithInformation) {
+    await createPaymentInYourBackend({ oneTimeToken, checkoutSession });
+    yuno.continuePayment();
+  },
+
+  yunoPaymentResult(data) { /* final payment status */ },
+  yunoError: (error) => { /* flow errors (including widget cancellation) */ },
+
+  // Receives { isLoading, type } — Revolut Pay emits type: 'OTT' while the
+  // token is generated and type: 'CREATE_PAYMENT' in the SDK-driven flow.
+  onLoading: (data) => { /* show/hide your loader */ },
+
+  // Button configuration (see Configuration section below)
+  externalButtons: {
+    revolutPay: {
+      variant: 'dark',
+      size: 'large',
+      radius: 'round',
+      action: 'pay',
+      locale: 'es',
+    },
+  },
+});
+
+await yuno.mountExternalButtons([
+  {
+    paymentMethodType: 'REVOLUT_PAY',
+    elementSelector: '#revolut-pay-element',
+  },
+]);
+```
+
+To unmount the Revolut Pay button, use the same methods described in [Unmounting buttons](#unmounting-buttons):
+
+```javascript
+yuno.unmountExternalButton('REVOLUT_PAY'); // this button only
+yuno.unmountAllExternalButtons(); // all external buttons
+```
+
+### Checkout session requirements
+
+For Revolut Pay to work, the checkout session the merchant creates (backend to backend) must include these fields — the SDK reads them from the session, nothing is configured on the frontend:
+
+- `amount.value` and `amount.currency` — required; used to create the Revolut order shown in the widget.
+- `callback_url` — required; used as the mobile redirect URL to return to the merchant page (see [Mobile redirects](#mobile-redirects-callback_url) below).
+
+### Configuration (`externalButtons.revolutPay`)
+
+All configuration is optional. The button is rendered by Revolut, so the options map to Revolut's official button styles:
+
+| Option    | Values                                              | Default                    | What it does                                                                 |
+| :-------- | :--------------------------------------------------- | :-------------------------- | :---------------------------------------------------------------------------- |
+| `variant` | `'dark'` \| `'light'` \| `'light-outlined'`          | Revolut decides             | Button color scheme                                                          |
+| `size`    | `'large'` \| `'small'`                               | `'large'` (full-width)      | Button size (`small` renders inline)                                         |
+| `radius`  | `'none'` \| `'small'` \| `'large'` \| `'round'`      | Revolut decides             | Corner radius (`none` 0px / `small` 4px / `large` 16px / `round` pill)        |
+| `action`  | `'pay'` \| `'buy'` \| `'donate'` \| `'subscribe'`    | `'pay'`                     | Button label                                                                 |
+| `locale`  | ISO locale (e.g. `'en'`, `'es'`, `'pt-BR'`) or `'auto'` | `'auto'`                  | Button language. Invalid values fall back to `'auto'`                        |
+
+### Mobile redirects (`callback_url`)
+
+On mobile, the Revolut flow can jump to the Revolut app (or an in-app browser) instead of staying in the popup. To come back to the merchant's page, the SDK needs redirect URLs — it resolves them automatically from the `callback_url` the merchant already sends when creating the checkout session (backend to backend):
+
+- The session's `callback_url` is used for the three outcomes: `success`, `failure`, and `cancel`.
+- Nothing extra is needed in the SDK configuration — if the session has a `callback_url`, mobile redirects work; if it doesn't, the flow stays web-only.
+- When the buyer returns from the Revolut app, the URL includes a `_rp_fr` query parameter appended by Revolut — harmless, but merchants parsing the return URL strictly should be aware of it.
+
+<Note>
+**Desktop vs. mobile redirects**
+
+Only *mobile* redirect URLs are configured by the SDK. Desktop flows always resolve inside the widget/popup — no redirect happens.
+</Note>
+
 ## PayPal REDIRECT Workflow
 
 The Yuno SDK supports a `REDIRECT` workflow for PayPal. This workflow is useful when PayPal was not initialized at the start of the SDK or when using a pre-existing PayPal `orderId`.
