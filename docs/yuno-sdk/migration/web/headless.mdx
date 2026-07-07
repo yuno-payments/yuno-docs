@@ -97,16 +97,12 @@ document.getElementById('pay').addEventController('click', async () => {
 })
 ```
 
-```typescript After. Unified Transaction (headless via showView + secure fields)
+```typescript After. Unified Transaction (secure fields)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
 const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
-    showView: (view, controls, step) => {
-        document.querySelector('#card-form')!.appendChild(view)
-        document.getElementById('pay')!.onclick = () => controls.onSubmit()
-    },
     createPayment: async (token) => {
         await myBackend.pay({ token: token.token })
     },
@@ -118,7 +114,7 @@ await transaction.start({ paymentMethod: { type: 'CARD' } })
 
 </CodeGroup>
 
-The SDK provides the secure iframes inside the view it delivers to `showView`. You embed the view, wire your own submit button to `controls.onSubmit()`, and the SDK handles tokenization + 3DS internally before invoking `createPayment`.
+The SDK renders the form internally, tokenizes the input, handles 3DS, and delivers the result to `onStatus`.
 
 ## Field mapping
 
@@ -127,7 +123,7 @@ The SDK provides the secure iframes inside the view it delivers to `showView`. Y
 | `yuno.apiClientPayment({ checkoutSession, countryCode })` | `sdkPayments.transaction({ checkoutSession, countryCode, createPayment })` | The factory consolidates the API-client + Transaction surface. |
 | `apiClientPayment.generateToken(cardData)` | `transaction.start({ paymentMethod: { type: 'CARD', data: CardData } })` | Data goes inline on `start()`. |
 | `apiClientPayment.getThreeDSecureChallenge(...)` (rare) | *(removed — automatic)* | SDK orchestrates 3DS internally once `createPayment` resolves. |
-| `yuno.secureFields({ checkoutSession })` + `.create(...).render(...)` + `.generateTokenWithInformation(...)` | `showView` + SDK-provided secure iframes inside the delivered view | The SDK still uses secure iframes under the hood; you no longer assemble them yourself. |
+| `yuno.secureFields({ checkoutSession })` + `.create(...).render(...)` + `.generateTokenWithInformation(...)` | `transaction.start({ paymentMethod: { type: 'CARD' } })` | The SDK renders the form internally. |
 | `yuno.continuePayment()` after backend POST | *(automatic)* | Resolve the `createPayment` Promise and the SDK continues. |
 
 ### CardData mapping
@@ -181,7 +177,6 @@ await transaction.start({
 
 - **3DS is automatic.** Headless used to require bespoke 3DS handling per integration. The unified API does it internally once `createPayment` resolves.
 - **`continuePayment()` is gone.** The Promise contract drives progression.
-- **Secure-fields composition.** Instead of assembling per-field iframes yourself, the SDK delivers a single composed form via `showView`. PCI scope is the same (raw PAN never touches your code).
 - **No separate `apiClientPayment` surface.** One factory: `sdkPayments.transaction(config)`.
 
 ## Checklist
@@ -190,7 +185,6 @@ await transaction.start({
 - [ ] Replace `yuno.apiClientPayment(...)` and `yuno.secureFields(...)` with `sdkPayments.transaction(...)`.
 - [ ] Provide `createPayment` on `TransactionConfig` to POST to your backend.
 - [ ] If you collected card data in your own UI: pass it via `paymentMethod.data` on `start()` (rename the fields per the mapping table above).
-- [ ] If you used `secureFields` for PCI-compliant collection: wire `showView` and embed the SDK-provided view; call `controls.onSubmit()` from your button.
 - [ ] Drop manual 3DS challenge calls; drop `yuno.continuePayment()`.
 - [ ] Re-run your sandbox test suite.
 
