@@ -5,12 +5,7 @@ description: "Migrate Web Headless integrations (yuno.apiClientPayment) to the u
 
 Headless was a pure-tokenization client: the merchant collected card data in their own UI, generated a token, and made their own backend call to create the payment.
 
-In the unified API the same scenario maps to **non-seamless headless** mode: pass the pre-collected data inside `data` within the [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected) object, override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) to POST to your backend, and let the SDK orchestrate tokenization, 3DS, and status polling automatically. If you don't want the SDK to continue the flow after creating the payment, set `autoContinuePayment` to `false` on the [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config) object.
-
-| Before | After |
-|---|---|
-| `yuno.apiClientPayment({ checkoutSession })` + manual backend call | `sdkPayments.transaction({ …, createPayment }).start({ paymentMethod: { type, data } })` |
-| Manual 3DS handling via separate calls | Automatic — SDK handles 3DS once `createPayment` resolves |
+In the unified API the same scenario maps to **headless** mode: pass the pre-collected data inside `data` within the [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected) object, override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) to POST to your backend, and let the SDK orchestrate tokenization, 3DS, and status polling automatically. If you don't want the SDK to continue the flow after creating the payment, set `autoContinuePayment` to `false` on the [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config) object.
 
 ## Side-by-side — Headless API Client
 
@@ -39,7 +34,7 @@ const paymentId = await myBackend.pay({ oneTimeToken, checkoutSession })
 // If 3DS needed, merchant calls SDK again to challenge — bespoke per integration
 ```
 
-```typescript After. Unified Transaction (non-seamless headless)
+```typescript After. Unified Transaction (headless)
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
 const transaction = sdkPayments.transaction({
@@ -73,7 +68,7 @@ await transaction.start({
 Previously, `generateToken` returned the token directly to your code. Now, that same token is delivered as the argument of your `createPayment` override — there's no separate call to fetch it.
 </Note>
 
-## Field mapping
+## Migration mapping
 
 | Before (Headless) | After (unified) | Notes |
 |---|---|---|
@@ -96,19 +91,7 @@ The legacy generateToken arg shape:
 }
 ```
 
-becomes the unified [`TransactionData`](/docs/yuno-sdk/reference/transaction-data) shape, with card fields nested under `card`:
-
-```typescript
-{
-    card: {
-        holderName: string
-        number: string
-        securityCode: string
-        expirationMonth: number
-        expirationYear: number
-    }
-}
-```
+becomes the unified `TransactionData` shape, which supports more fields to cover not only cards but also alternative payment methods (APMs) — bank transfers, tickets, wallets, and more. See the full shape in the [`TransactionData` reference](/docs/yuno-sdk/reference/transaction-data).
 
 | Before field | After field |
 |---|---|
