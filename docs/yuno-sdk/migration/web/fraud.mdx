@@ -13,7 +13,7 @@ In the unified API, fraud screening runs **automatically inside `Transaction`** 
 | Before | After |
 |---|---|
 | `yuno.mountFraud({...})` (UI) | **Removed.** Fraud runs automatically inside `Transaction`. |
-| `yuno.executeFraudCheck({...})` (headless) | `sdkPayments.runFraud({...})` |
+| `yuno.executeFraudCheck({...})` (headless) | `sdkPayments.antifraud({...})` |
 | `deviceFingerprints?: ExternalProviderId[]` passed alongside payment data | `deviceFingerprints?: ExternalProviderId[]` on `TransactionConfig` |
 
 ## Side-by-side — Headless fraud check
@@ -37,10 +37,10 @@ if (result.status === 'success') {
 }
 ```
 
-```typescript After. sdkPayments.runFraud
+```typescript After. sdkPayments.antifraud
 const sdkPayments = await SdkPayments.initialize('your-public-api-key')
 
-const result = await sdkPayments.runFraud({
+const result = await sdkPayments.antifraud({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     paymentType: 'CARD',
@@ -63,7 +63,6 @@ There is no direct replacement for `mountFraud`. The widget's responsibilities a
 
 - Fraud signals are collected automatically during tokenization
 - Payment creation is `createPayment` (or managed by the SDK) — not bundled with fraud anymore
-- If you need a visible "checking your purchase" state, use [`showLoading`](/docs/yuno-sdk/controllers/show-loading) for the loader and [`showView`](/docs/yuno-sdk/controllers/show-view) if you want to embed UI
 
 <CodeGroup>
 
@@ -102,10 +101,10 @@ await transaction.start({ paymentMethod: { type: 'CARD' } })
 
 | Before | After | Notes |
 |---|---|---|
-| `yuno.mountFraud({...})` | *(removed)* | Fraud runs inside `Transaction` automatically. Use `showLoading` + `showView` if you need custom UI feedback. |
-| `yuno.executeFraudCheck({...})` | `sdkPayments.runFraud({...})` | Top-level method on `SdkPayments`, not on `Transaction`. |
-| `executeFraudCheck.paymentType` (defaulted to `CARD` internally) | `runFraud.paymentType?` | Same default. |
-| `executeFraudCheck.deviceFingerprints?` | `runFraud.deviceFingerprints?` | Same shape (`ExternalProviderId[]`). |
+| `yuno.mountFraud({...})` | *(removed)* | Fraud runs inside `Transaction` automatically. Use `showLoading` if you need custom UI feedback. |
+| `yuno.executeFraudCheck({...})` | `sdkPayments.antifraud({...})` | Top-level method on `SdkPayments`, not on `Transaction`. |
+| `executeFraudCheck.paymentType` (defaulted to `CARD` internally) | `antifraud.paymentType?` | Same default. |
+| `executeFraudCheck.deviceFingerprints?` | `antifraud.deviceFingerprints?` | Same shape (`ExternalProviderId[]`). |
 | `ExecuteFraudCheckReturn` (`status`, `deviceFingerprints`, `error`) | `FraudResult` discriminated union | `status: 'success'` → `deviceFingerprints` present. `status: 'error'` → `error` present. |
 
 ### Result shape
@@ -122,13 +121,13 @@ Compared to v1 where `error` was always optional alongside `deviceFingerprints`,
 
 ## Behavior changes
 
-- **`mountFraud` is gone.** The unified `Transaction` handles fraud screening internally during normal flows. If you need pre-screening before creating a checkout session, use `sdkPayments.runFraud(...)`.
-- **`runFraud` lives on `SdkPayments`, not on `Transaction`.** It's a standalone query, not part of a transaction lifecycle.
+- **`mountFraud` is gone.** The unified `Transaction` handles fraud screening internally during normal flows. If you need pre-screening before creating a checkout session, use `sdkPayments.antifraud(...)`.
+- **`antifraud` lives on `SdkPayments`, not on `Transaction`.** It's a standalone query, not part of a transaction lifecycle.
 - **Discriminated-union result.** TS narrows on `status` — no more optional fields.
 
 ## Checklist
 
-- [ ] Replace `yuno.executeFraudCheck(...)` with `sdkPayments.runFraud(...)`.
+- [ ] Replace `yuno.executeFraudCheck(...)` with `sdkPayments.antifraud(...)`.
 - [ ] Update your result handling to narrow on `result.status === 'success'` / `'error'`.
 - [ ] If you used `yuno.mountFraud(...)` for UI: drop it. Use a normal `Transaction` instead; fraud screening happens automatically. Use `showLoading` for spinner UI.
 - [ ] Re-run your sandbox test suite.
