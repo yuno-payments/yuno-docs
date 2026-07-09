@@ -17,8 +17,8 @@ The PCI Proxy works with cards you have already stored with Yuno. Cards are stor
 ## How it works
 
 1. Your server sends an HTTPS request to `https://api.y.uno/v1/pci-proxy`, authenticated with your standard Yuno API credentials.
-2. You indicate the destination with the `yuno-proxy-url` header and reference card data in the request body or headers using expressions such as `{{vaulted_token.<TOKEN>.number}}`.
-3. Inside Yuno's PCI environment, the proxy resolves each expression to the real card data, then forwards your request — same method, path suffix, query string, headers, and body — to the destination over TLS.
+2. You put the full destination URL (including its path and query) in the `yuno-proxy-url` header, and reference card data in the request body or headers using expressions such as `{{vaulted_token.<TOKEN>.number}}`.
+3. Inside Yuno's PCI environment, the proxy resolves each expression to the real card data, then forwards your request — same method, headers, and body — to the destination over TLS.
 4. The destination's response is returned to you unchanged, along with diagnostic headers that tell you what the proxy did.
 
 The proxy is a pass-through: Yuno does not store your request or the destination's response, and request and response bodies are never written to logs.
@@ -28,16 +28,17 @@ The proxy is a pass-through: Yuno does not store your request or the destination
 | Expression | Resolves to |
 |---|---|
 | `{{vaulted_token.<TOKEN>.number}}` | The card number (PAN) |
-| `{{vaulted_token.<TOKEN>.security_code}}` | The card verification code (CVV/CVC), when available |
 | `{{vaulted_token.<TOKEN>.expiration_month}}` | Two-digit expiration month (`MM`) |
 | `{{vaulted_token.<TOKEN>.expiration_year}}` | Four-digit expiration year (`YYYY`) |
 | `{{vaulted_token.<TOKEN>.holder_name}}` | The cardholder name |
 
-<Warning>
-**Security code availability**
+The `<TOKEN>` must be a `vaulted_token` that belongs to your account. A token that does not exist or belongs to another account is rejected with `EXPRESSION_RESOLUTION_FAILED`, before any card data is read.
 
-Card networks do not allow the security code to be stored after authorization. A `security_code` expression only resolves during the short window after the customer entered it (for example, immediately after enrollment or checkout). Outside that window the proxy rejects the request with `EXPRESSION_RESOLUTION_FAILED`.
-</Warning>
+<Note>
+**Security code (CVV) is not supported**
+
+Card networks do not allow the security code to be stored after a payment is authorized, so a stored payment method has no CVV to inject. The proxy does not support a `security_code` field.
+</Note>
 
 ## Your PCI scope
 

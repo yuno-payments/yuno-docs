@@ -19,14 +19,14 @@
     "/pci-proxy": {
       "post": {
         "summary": "Invoke Forward Proxy",
-        "description": "Forwards your request to the destination indicated in the `yuno-proxy-url` header, replacing `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values with real card data inside Yuno's PCI DSS Level 1 environment. The destination's status code, headers, and body are returned unchanged. `GET`, `PUT`, `PATCH`, and `DELETE` are also supported and forwarded verbatim. Path segments and query strings appended after `/pci-proxy` are appended to the destination URL. Every proxy response carries a `yuno-proxy-request-id` header; a `401` returned before the request reaches the proxy is the only exception.",
+        "description": "Forwards your request to the destination indicated in the `yuno-proxy-url` header, replacing `{{vaulted_token.<TOKEN>.<field>}}` expressions in the body and header values with real card data inside Yuno's PCI DSS Level 1 environment. The destination's status code, headers, and body are returned unchanged. `GET`, `PUT`, `PATCH`, and `DELETE` are also supported and forwarded verbatim. The full destination (including its path and query string) is specified in `yuno-proxy-url`; a query string on the `/pci-proxy` request itself is rejected. Every proxy response carries a `yuno-proxy-request-id` header; a `401` returned before the request reaches the proxy is the only exception.",
         "operationId": "invokeForwardProxy",
         "parameters": [
           {
             "name": "yuno-proxy-url",
             "in": "header",
             "required": true,
-            "description": "The full destination URL, including any path (for example `https://api.example-processor.com/charges`). Must be a public HTTPS hostname on port 443; IP addresses and internal networks are rejected. Any path you append after `/pci-proxy` is appended to this URL's path, and your request's query string is forwarded. For example, calling `/pci-proxy/refunds` with `yuno-proxy-url: https://api.example-processor.com/charges` forwards to `https://api.example-processor.com/charges/refunds`.",
+            "description": "The complete destination URL, including its path and any query string (for example `https://api.example-processor.com/charges/ch_123/capture?expand=true`). Must be a public HTTPS hostname on port 443; IP addresses and internal networks are rejected. It must not contain `{{vaulted_token...}}` expressions (card data must never appear in a URL).",
             "schema": {
               "type": "string",
               "example": "https://api.example-processor.com/charges"
@@ -46,7 +46,7 @@
           }
         ],
         "requestBody": {
-          "description": "The body the destination API expects, with vaulted token expressions where card data belongs. The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions anywhere in the raw body, so any content type is supported (JSON, form-encoded, XML). The JSON object below is illustrative. Supported fields: `number`, `security_code`, `expiration_month`, `expiration_year`, `holder_name`. At most 20 distinct tokens per request; maximum body size 1 MB. Expressions are also resolved in header values. All non-expression content is forwarded untouched.",
+          "description": "The body the destination API expects, with vaulted token expressions where card data belongs. The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions anywhere in the raw body, so any content type is supported (JSON, form-encoded, XML). The JSON object below is illustrative. Supported fields: `number`, `expiration_month`, `expiration_year`, `holder_name` (the security code is not stored and cannot be injected). At most 20 distinct tokens per request; maximum body size 1 MB. Expressions are also resolved in header values. All non-expression content is forwarded untouched.",
           "content": {
             "application/json": {
               "schema": {
@@ -201,7 +201,7 @@
             }
           },
           "429": {
-            "description": "Rate limit exceeded for the account.",
+            "description": "Rate limit exceeded for the account (enforced at the Yuno edge).",
             "content": {
               "application/json": {
                 "schema": {
