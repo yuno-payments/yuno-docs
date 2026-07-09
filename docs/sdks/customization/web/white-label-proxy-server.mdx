@@ -6,7 +6,10 @@ metadata:
   robots: noindex
 ---
 
-A small Express server that lets the Yuno Web SDK be loaded from a **non-Yuno origin**, so the white-label code paths — renamed globals, events, and DOM tokens — can be exercised end-to-end before shipping a partner-hosted integration.
+A small Express server that emulates a merchant's own origin (or sub-path) in front of the Yuno stack, so both white-label surfaces can be exercised end-to-end from a **non-Yuno origin** before shipping a partner-hosted integration:
+
+- **SDK white-label** — the Yuno Web SDK loaded from a foreign host, verifying the renamed globals, events, and DOM tokens.
+- **Hosted checkout white-label (Payment Link)** — the `sdk-checkout` app (normally `checkout.<env>.y.uno`) fronted by the merchant origin/sub-path, so `checkout.y.uno/payment?session=…` can be mapped onto `their.host/<base-path>/payment?session=…`.
 
 <Tip>
   This is a companion to the [White Label](/docs/sdks/customization/web/white-label) page. Read it first for the SDK-side overrides this harness is built to verify.
@@ -24,17 +27,21 @@ The Yuno Web SDK historically ships with a `yuno-` prefixed surface: `window.Yun
 
 To verify the rename actually shipped, the SDK must be loaded from a host that is **not** `*.y.uno`. If it loads from a Yuno origin, branded leaks would slip through unnoticed. This server is the harness: it serves the SDK from `localhost:9090` (or any non-Yuno hostname you point it at) and forwards every request to the real Yuno upstreams transparently.
 
+The same harness also fronts the **hosted Payment Link checkout**: it serves the `sdk-checkout` SPA routes from the proxy origin, rewrites the app's asset origin back onto itself, and forwards the checkout BFF and status WebSocket upstream — so the hosted checkout can be white-labeled onto a merchant origin/sub-path without any `*.y.uno` request leaking from the page. See [Hosted checkout white-label (Payment Link)](#hosted-checkout-white-label-payment-link).
+
 ## How it works
 
 ```
 ┌──────────────────┐     ┌────────────────────────────┐     ┌─────────────────────┐
 │  Partner page    │───▶ │   white-label-proxy        │───▶ │ Yuno upstreams      │
-│  (browser)       │     │   (Express :9090)          │     │  - sdk-web.*.y.uno  │
-│                  │ ◀───│                            │ ◀───│  - sdk-3ds.*.y.uno  │
-│ <script src=     │     │   Routes by path:          │     │  - sdk-web-card.*   │
-│  localhost:9090/ │     │    /v1/*         → BACKEND  │     │  - sdk.prod.y.uno   │
-│  v1.7/main.js>   │     │    /v<n>/pages    → CARD    │     │  - icons.prod.y.uno │
-│                  │     │    /challenge     → 3DS     │     │  - api[-env].y.uno  │
+│  (browser)       │     │   (Express :9090)          │     │  - checkout.*.y.uno │
+│                  │ ◀───│                            │ ◀───│  - sdk-web.*.y.uno  │
+│ <script src=     │     │   Routes by path:          │     │  - sdk-3ds.*.y.uno  │
+│  localhost:9090/ │     │  /payment,/enroll → CHECKOUT│     │  - sdk-web-card.*   │
+│  v1.7/main.js>   │     │  /checkout-bff/*  → BFF     │     │  - sdk.prod.y.uno   │
+│   ─ or ─         │     │    /v1/*         → BACKEND  │     │  - icons.prod.y.uno │
+│  /payment?       │     │    /v<n>/pages    → CARD    │     │  - <env>.y.uno (BFF)│
+│  session=…       │     │    /challenge     → 3DS     │     │  - api[-env].y.uno  │
 │                  │     │    /icons,/css    → STATIC  │     │                     │
 │                  │     │    /flags,/*.png  → ICONS   │     │                     │
 │                  │     │    else           → SDK     │     │                     │
@@ -61,7 +68,10 @@ A single Node.js process built on three libraries:
 1. **CORS middleware** runs next. It echoes the caller's `Origin`, handles `OPTIONS` preflight, and sets `Access-Control-Allow-Credentials: true`. The proxy is the CORS authority.
 2. **Local routes** match before anything else: `/`, `/static/*`, `/whitelabel-info`. These never touch an upstream.
 3. **Backend pass-through** matches `/v1/*` and `/v2/*` (the Yuno REST surface used by the SDK) and forwards via `node-fetch` to `BACKEND_URL`. Hop-by-hop headers are stripped; `access-control-*` headers from the upstream are dropped so they cannot override the proxy's own CORS. The browser `Cookie` header is also dropped on these forwards — the partner page's localhost cookies (session, analytics, URL-valued ones, …) don't belong on a cross-origin call to `api.y.uno` and can trip the upstream WAF with a `403`; the API authenticates via the public API key.
-4. **SDK asset catch-all** matches every remaining `GET`/`HEAD`. A small dispatcher (`pickSdkUpstream`) picks the right upstream based on path, checked top to bottom so the 3DS/card rules win first:
+4. **Checkout BFF pass-through** matches `/checkout-bff/*` and forwards to `CHECKOUT_BFF_UPSTREAM`, sharing the same forwarder as the backend (body re-serialized, hop-by-hop and `access-control-*` and `Cookie` stripped). The `sdk-checkout` app calls its BFF through the white-labeled `apiUrl` (`host/<base-path>/checkout-bff/v1`), so after the base-path strip the proxy sees `/checkout-bff/*` (`GET /checkout-bff/v1/checkout-info/{session}`, `POST /checkout-bff/v1/checkout/payment`). See [Hosted checkout white-label (Payment Link)](#hosted-checkout-white-label-payment-link).
+5. **Checkout SPA routes** match `/payment`, `/payment/status`, and `/enroll` (`GET`), registered before the SDK catch-all. Each fetches `CHECKOUT_UPSTREAM/index.html` and rewrites the app's absolute asset origin (`PUBLIC_URL`, e.g. `checkout.<env>.y.uno`) to `BASE_PATH`, so the CRA bundle, favicon, and manifest load back through the proxy instead of leaking to the Yuno host. react-router resolves the actual route client-side from `window.location`.
+6. **SDK/asset catch-all** matches every remaining `GET`/`HEAD`. A small dispatcher (`pickSdkUpstream`) picks the right upstream based on path, checked top to bottom so the checkout/3DS/card rules win first:
+   - Checkout app assets — the CRA bundle (`/static/(js|css|media)/*`) and root public files (`/favicon.ico`, `/manifest.json`, `/robots.txt`, `/asset-manifest.json`) → `CHECKOUT_UPSTREAM`. Checked **first** so they don't fall through to the SDK icon upstream.
    - 3DS micro-app paths (`/challenge.html`, `/redirect.html`, `/session-id.html`, and `/assets/(challenge|redirect|session-id|validate-url)*`) → `SDK_3DS_UPSTREAM`.
    - Card micro-app paths (`/v<semver>/pages/*`, `/v<semver>/assets/*`) → `SDK_CARD_UPSTREAM`.
    - Static-asset paths (`/icons/*`, `/css/*`, `/brands/*`, `/c2p/*`) → `SDK_STATIC_UPSTREAM` (`sdk.prod.y.uno`).
@@ -69,7 +79,7 @@ A single Node.js process built on three libraries:
    - Everything else → `SDK_UPSTREAM`.
 
    The static / icons branches exist because the SDK used to load these straight from `icons.prod.y.uno` / `sdk.prod.y.uno`, bypassing the white-label host. Recent SDK builds host-swap them onto the proxy origin (path preserved), so the proxy must forward them back out to the two CDNs by path prefix. These upstreams are always `*.prod.y.uno` regardless of the target environment.
-5. **WebSocket upgrades** are handled on the underlying `http.Server`, not Express. `/checkout-websocket-notification-ms/ws/*` → `BACKEND_WS_URL`; everything else follows the same SDK / card / 3DS split as HTTP.
+7. **WebSocket upgrades** are handled on the underlying `http.Server`, not Express. `/checkout-websocket-notification-ms/ws/{payment,enrollment}` → `BACKEND_WS_URL` (the hosted-checkout status stream); everything else follows the same SDK / card / 3DS split as HTTP.
 
 ### Version normalization
 
@@ -79,6 +89,24 @@ The main SDK bundle is versioned (`/v1.7.4/main.js`). Two complications:
 - The "current" version drifts over time.
 
 The proxy resolves the canonical version once at boot and rewrites every incoming `/v<x>/*` SDK request to that version before sending it upstream. Card-app and 3DS paths are **not** rewritten — they have their own publish cadences.
+
+## Hosted checkout white-label (Payment Link)
+
+A merchant white-labels Yuno's hosted checkout by mapping `checkout.<env>.y.uno/payment?session=…` onto their own `host/<BASE_PATH>/payment?session=…`. The harness emulates this locally with two upstreams — `CHECKOUT_UPSTREAM` (the `sdk-checkout` app shell) and `CHECKOUT_BFF_UPSTREAM` (the BFF it calls):
+
+- **SPA routes** — `/payment`, `/payment/status`, and `/enroll` each fetch `CHECKOUT_UPSTREAM/index.html`. The served HTML's asset links are absolute (`PUBLIC_URL` = `checkout.<env>.y.uno`), so the proxy rewrites that origin to `BASE_PATH`, keeping the CRA bundle, favicon, and manifest on the proxy origin instead of leaking back to the Yuno host. react-router resolves the actual route client-side from `window.location`.
+- **BFF calls** — the checkout app's axios `baseURL` is the white-labeled `apiUrl` (`host/<BASE_PATH>/checkout-bff/v1`). After the base-path strip the proxy sees `/checkout-bff/*` and forwards it to `CHECKOUT_BFF_UPSTREAM` (`GET /checkout-bff/v1/checkout-info/{session}`, `POST /checkout-bff/v1/checkout/payment`).
+- **Status WebSocket** — `/checkout-websocket-notification-ms/ws/{payment,enrollment}` is forwarded to `BACKEND_WS_URL`.
+
+<Note>
+  The BFF host is `<env>.y.uno` directly — **no** `api-` prefix (`sandbox.y.uno`, `prod.y.uno`), unlike the SDK's REST surface on `api[-env].y.uno`. Set `CHECKOUT_UPSTREAM` and `CHECKOUT_BFF_UPSTREAM` to the same environment as your checkout session.
+</Note>
+
+<Warning>
+  The `sdk-checkout` app gates the white-labeled `apiUrl` / `assetUrl` against an allowlist (`REACT_APP_WHITE_LABEL_ALLOWED_HOSTS`). To exercise this through the proxy, `localhost` must be on that allowlist in the target environment — otherwise the app ignores the override and calls Yuno directly.
+</Warning>
+
+To try it, open `http://localhost:9090<BASE_PATH>/payment?session=<checkout-session>` with a matching `CHECKOUT_UPSTREAM` / `CHECKOUT_BFF_UPSTREAM` for the session's environment. The checkout renders under the non-Yuno origin and calls the BFF back through the proxy.
 
 ## `SDK_MAIN_JS` — pinning the SDK version
 
@@ -208,6 +236,8 @@ npm install express http-proxy node-fetch@2 dotenv
 
 | Upstream var | Owns these paths |
 | :--- | :--- |
+| `CHECKOUT_UPSTREAM` | `/payment`, `/payment/status`, `/enroll` (SPA `index.html`), the CRA bundle `/static/(js\|css\|media)/*`, and root public files (`/favicon.ico`, `/manifest.json`, `/robots.txt`, `/asset-manifest.json`) |
+| `CHECKOUT_BFF_UPSTREAM` | `/checkout-bff/*` (checkout BFF; host is `<env>.y.uno`, **no** `api-` prefix) |
 | `SDK_UPSTREAM` | `/v<x>/main.js` and everything not matched below |
 | `SDK_CARD_UPSTREAM` | `/v<x>/pages/*`, `/v<x>/assets/*` |
 | `SDK_3DS_UPSTREAM` | `/challenge.html`, `/redirect.html`, `/session-id.html`, `/assets/(challenge\|redirect\|session-id\|validate-url)*` |
@@ -217,7 +247,7 @@ npm install express http-proxy node-fetch@2 dotenv
 | `BACKEND_WS_URL` | `/checkout-websocket-notification-ms/ws/{payment,enrollment}` (WebSocket only) |
 | `BASE_PATH` | _(optional)_ sub-path the proxy is mounted under, stripped before routing; empty = root |
 
-`SDK_CARD_UPSTREAM` and `SDK_3DS_UPSTREAM` default to `SDK_UPSTREAM` when unset, and `BACKEND_WS_URL` defaults to `BACKEND_URL` — keep this fallback behaviour, it makes single-env testing easier. `SDK_STATIC_UPSTREAM` / `SDK_ICONS_UPSTREAM` are the exception: they default to the fixed `sdk.prod.y.uno` / `icons.prod.y.uno` CDNs (the SDK host-swaps these from `*.prod.y.uno` regardless of environment), **not** to `SDK_UPSTREAM`.
+`SDK_CARD_UPSTREAM` and `SDK_3DS_UPSTREAM` default to `SDK_UPSTREAM` when unset, and `BACKEND_WS_URL` defaults to `BACKEND_URL` — keep this fallback behaviour, it makes single-env testing easier. `SDK_STATIC_UPSTREAM` / `SDK_ICONS_UPSTREAM` are the exception: they default to the fixed `sdk.prod.y.uno` / `icons.prod.y.uno` CDNs (the SDK host-swaps these from `*.prod.y.uno` regardless of environment), **not** to `SDK_UPSTREAM`. `CHECKOUT_UPSTREAM` / `CHECKOUT_BFF_UPSTREAM` default to sandbox (`checkout.sandbox.y.uno` / `sandbox.y.uno`); the checkout-asset rule is checked **before** the SDK icon rules so the CRA bundle and root files (`/favicon.ico`, …) don't fall through to `icons.prod.y.uno`.
 
 <Note>
   If you need to emulate a partner gateway mounted under a sub-path, register a strip middleware **before** all routes that rewrites `req.url` / `req.originalUrl` to drop `BASE_PATH` (and apply the same strip on the `http.Server` `upgrade` handler). Every route below then sees root-relative paths. Skip it entirely when `BASE_PATH` is empty. See [`BASE_PATH` — sub-path mounting](#base_path--sub-path-mounting).
