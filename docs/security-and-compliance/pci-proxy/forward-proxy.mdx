@@ -36,6 +36,8 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     ```
 
     Expressions work in the request body and in header values. Everything that is not an expression is forwarded untouched.
+
+    The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves expressions anywhere in the raw body, so JSON, form-encoded, and XML payloads all work. The example above is JSON, but the destination receives exactly the format you send.
   </Step>
 
   <Step title="Send it through the proxy">
@@ -87,13 +89,17 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
 
     | HTTP status | Code | Meaning |
     |---|---|---|
-    | `400` | `INVALID_REQUEST` | Missing or invalid `yuno-proxy-url`, malformed expression, or more than 20 tokens in one request |
+    | `401` | `NOT_AUTHENTICATED` / `AuthenticationFail` | Missing or invalid API credentials |
+    | `400` | `INVALID_REQUEST` | Missing or invalid `yuno-proxy-url`, an invalid `yuno-proxy-timeout`, or more than 20 distinct tokens in one request |
     | `400` | `EXPRESSION_RESOLUTION_FAILED` | A `vaulted_token` does not exist, does not belong to your account, or its `security_code` is no longer available |
     | `403` | `DESTINATION_NOT_ALLOWED` | The destination is not a public HTTPS hostname (IP addresses, non-443 ports, and internal networks are rejected) |
     | `413` | `REQUEST_TOO_LARGE` | Request body over 1 MB |
     | `429` | `TOO_MANY_REQUESTS` | Rate limit exceeded |
     | `502` | `DESTINATION_UNREACHABLE` | The destination could not be reached or closed the connection |
     | `504` | `DESTINATION_TIMEOUT` | The destination did not respond within the timeout |
+    | `500` | `PROXY_ERROR` | An unexpected error inside the proxy |
+
+    A `401` is returned before your request reaches the proxy, so it does not carry the `yuno-proxy-request-id` header; every other response does.
 
     Any `4xx`/`5xx` accompanied by `yuno-proxy-destination-status` is the destination's own error, passed through for you to handle as if you had called it directly.
   </Step>
