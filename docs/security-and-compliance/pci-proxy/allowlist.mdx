@@ -1,0 +1,70 @@
+---
+title: "Destination Allowlist"
+description: "Register the third-party hosts your PCI Proxy is allowed to call. Every destination must be on your allowlist before the proxy will send card data to it."
+keywords: ["pci proxy", "allowlist", "destination", "security"]
+---
+
+The PCI Proxy only sends card data to hosts you have explicitly registered. This is a
+deliberate safety control: even if your API credentials were stolen, an attacker could not
+forward your stored cards to a server you never approved. There is no "any host" mode.
+
+Managing your allowlist is self-serve — a hostname you add is usable within minutes, no
+support ticket required.
+
+<Warning>
+**A destination not on your allowlist is rejected**
+
+A proxy request to an unregistered host returns `403 DESTINATION_NOT_ALLOWED`. Register the
+host first with the endpoints below.
+</Warning>
+
+## How matching works
+
+Allowlist entries are matched on the **exact hostname**, case-insensitive. Subdomains are not
+implied: allowing `api.example.com` does not allow `sandbox.example.com`. Wildcards are not
+supported. Register each hostname you call.
+
+## Register a destination
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hostname": "api.example-processor.com",
+    "purpose": "Direct acquiring — Processor X"
+  }'
+```
+
+Returns `201` with the created entry. A hostname that is already registered returns `409`; a
+value that is not a bare public hostname (a URL, a host with a port or path, an IP address,
+or a wildcard) returns `422 INVALID_HOSTNAME`.
+
+## List your destinations
+
+```sh
+curl "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Returns `{"destinations": [ ... ]}` — only the destinations registered for your account.
+
+## Remove a destination
+
+```sh
+curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Returns `204`. Removing a destination takes effect immediately — the next proxy request to
+that host is rejected.
+
+<Note>
+**Treat new-destination alerts seriously**
+
+Adding a destination is a sensitive action: it widens where your cards can be sent. Yuno
+recommends restricting who can manage the allowlist and reviewing any unexpected additions.
+</Note>
