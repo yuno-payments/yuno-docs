@@ -38,6 +38,12 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     Expressions work in the request body and in header values. Everything that is not an expression is forwarded untouched.
 
     The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves expressions anywhere in the raw body, so JSON, form-encoded, and XML payloads all work. The example above is JSON, but the destination receives exactly the format you send.
+
+    <Warning>
+    **No CVV**
+
+    There is no placeholder for the security code (CVV/CVC). Card networks do not allow it to be stored after a payment is authorized, so a stored payment method has none to inject — the available fields are `number`, `expiration_month`, `expiration_year`, and `holder_name`. If your destination requires the CVV, your customer must supply it and you include it in the body yourself; note that transmitting a raw security code keeps that request in your PCI scope.
+    </Warning>
   </Step>
 
   <Step title="Send it through the proxy">
@@ -75,6 +81,7 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     | `yuno-proxy-request-id` | Unique identifier of this proxy invocation. Include it in support requests. |
     | `yuno-proxy-destination-status` | The HTTP status returned by the destination. **Present only when the destination was reached** — if it is missing, the failure happened inside Yuno. |
     | `yuno-proxy-replacements` | How many expressions were replaced. `0` on a request you expected to be detokenized means your expressions did not match. |
+    | `yuno-proxy-response-redactions` | How many card numbers were redacted from the destination's response. A non-zero value means the destination returned card data. |
   </Step>
 
   <Step title="Handle errors">
@@ -92,10 +99,11 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     | `401` | `NOT_AUTHENTICATED` / `AuthenticationFail` | Missing or invalid API credentials |
     | `400` | `INVALID_REQUEST` | Missing or invalid `yuno-proxy-url`, an expression or query string in the URL, an invalid `yuno-proxy-timeout`, or more than 20 distinct tokens in one request |
     | `400` | `EXPRESSION_RESOLUTION_FAILED` | A `vaulted_token` does not exist, does not belong to your account, or a referenced field is unavailable |
-    | `403` | `DESTINATION_NOT_ALLOWED` | The destination is not a public HTTPS hostname (IP addresses, non-443 ports, and internal networks are rejected) |
+    | `403` | `DESTINATION_NOT_ALLOWED` | The destination is not a public HTTPS hostname (IP addresses, non-443 ports, and internal networks are rejected), or the host is not on your [destination allowlist](/docs/security-and-compliance/pci-proxy/allowlist) |
     | `413` | `REQUEST_TOO_LARGE` | Request body over 1 MB |
     | `429` | `TOO_MANY_REQUESTS` | Rate limit exceeded |
     | `502` | `DESTINATION_UNREACHABLE` | The destination could not be reached or closed the connection |
+    | `502` | `RESPONSE_BLOCKED` | The destination's response contained card data and your account is configured to reject (rather than redact) such responses |
     | `504` | `DESTINATION_TIMEOUT` | The destination did not respond within the timeout |
     | `500` | `PROXY_ERROR` | An unexpected error inside the proxy |
 
@@ -104,6 +112,26 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     Any `4xx`/`5xx` accompanied by `yuno-proxy-destination-status` is the destination's own error, passed through for you to handle as if you had called it directly.
   </Step>
 </Steps>
+
+## Authenticating to the destination
+
+A proxy request carries two independent sets of credentials:
+
+* **Your Yuno credentials** (`public-api-key` / `private-secret-key`) authenticate you to the proxy. They are consumed by Yuno and never forwarded.
+* **The destination's own credentials** are whatever that third-party API expects. Put them on the request and they are forwarded untouched — Yuno only strips its own headers (the credentials above, `yuno-*` headers, and hop-by-hop headers).
+
+Most authentication schemes work as-is:
+
+* **Bearer tokens** — `Authorization: Bearer <token>` (shown above).
+* **API-key headers** — for example `X-API-Key: <key>`.
+* **Basic auth** — `Authorization: Basic <base64>`.
+* **A key in the body** — include it as a normal field; the body is forwarded byte-for-byte.
+
+<Note>
+**Signed requests and mutual TLS are not yet supported**
+
+Because the proxy substitutes the real card number only inside its secure environment, you cannot pre-compute a request signature (HMAC) over a body that contains a `{{vaulted_token…}}` placeholder, and client-certificate (mTLS) authentication to the destination is not yet available. Destinations that require request signing or mTLS will be supported by managed proxy routes in a later release.
+</Note>
 
 ## Timeouts
 

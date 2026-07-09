@@ -14,14 +14,28 @@ The Yuno PCI Proxy lets your servers make HTTPS requests to any third-party API 
 The PCI Proxy works with cards you have already stored with Yuno. Cards are stored when a customer saves a payment method during checkout, or when you enroll one through the [Enroll Payment Method](/reference/payment-methods-direct-workflow/enroll-payment-method-api) endpoint.
 </Note>
 
+<Warning>
+**Destinations must be allowlisted**
+
+The proxy only calls hosts you have registered on your destination allowlist. A request to an
+unregistered host is rejected with `DESTINATION_NOT_ALLOWED`. Registration is self-serve and
+takes effect in minutes — see [Destination Allowlist](/docs/security-and-compliance/pci-proxy/allowlist).
+</Warning>
+
 ## How it works
 
 1. Your server sends an HTTPS request to `https://api.y.uno/v1/pci-proxy`, authenticated with your standard Yuno API credentials.
 2. You put the full destination URL (including its path and query) in the `yuno-proxy-url` header, and reference card data in the request body or headers using expressions such as `{{vaulted_token.<TOKEN>.number}}`.
 3. Inside Yuno's PCI environment, the proxy resolves each expression to the real card data, then forwards your request — same method, headers, and body — to the destination over TLS.
-4. The destination's response is returned to you unchanged, along with diagnostic headers that tell you what the proxy did.
+4. The destination's response is returned to you, along with diagnostic headers that tell you what the proxy did.
 
 The proxy is a pass-through: Yuno does not store your request or the destination's response, and request and response bodies are never written to logs.
+
+## Card data in responses
+
+If a destination echoes a full card number back in its response, returning it to you would put your systems back in PCI scope. To prevent that, the proxy scans each response for card numbers — the one it just injected, plus any other valid card number.
+
+By default the proxy **redacts** them, leaving only the last four digits, and reports how many in the `yuno-proxy-response-redactions` response header; a non-zero value is a sign your destination is returning card data you should not receive. Depending on your account's configuration, the proxy may instead **reject** any response that contains card data with `502 RESPONSE_BLOCKED` rather than redacting it.
 
 ## Card data you can reference
 

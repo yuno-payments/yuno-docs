@@ -1,0 +1,373 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "pci-proxy-manage-destinations",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/pci-proxy/destinations": {
+      "get": {
+        "summary": "List Destinations",
+        "description": "Returns the destinations registered on your account's allowlist. Only hosts on this list can be reached by the [forward proxy](/reference/pci-proxy/invoke-forward-proxy); a request to any other host is rejected with `403 DESTINATION_NOT_ALLOWED`.",
+        "operationId": "listPciProxyDestinations",
+        "responses": {
+          "200": {
+            "description": "The destinations registered for your account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "destinations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Destination"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "destinations": [
+                    {
+                      "id": 4218,
+                      "account_code": null,
+                      "hostname": "api.example-processor.com",
+                      "status": "ENABLED",
+                      "purpose": "Direct acquiring — Processor X",
+                      "created_by": "ops@merchant.com",
+                      "created_at": "2026-07-09T13:05:36Z",
+                      "updated_at": "2026-07-09T13:05:36Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Register Destination",
+        "description": "Adds a host to your account's allowlist so the forward proxy can send card data to it. Matching is on the exact hostname, case-insensitive; subdomains and wildcards are not implied. A newly registered host is usable within minutes.",
+        "operationId": "registerPciProxyDestination",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DestinationInput"
+              },
+              "example": {
+                "hostname": "api.example-processor.com",
+                "purpose": "Direct acquiring — Processor X"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The destination was registered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                },
+                "example": {
+                  "id": 4218,
+                  "account_code": null,
+                  "hostname": "api.example-processor.com",
+                  "status": "ENABLED",
+                  "purpose": "Direct acquiring — Processor X",
+                  "created_by": "ops@merchant.com",
+                  "created_at": "2026-07-09T13:05:36Z",
+                  "updated_at": "2026-07-09T13:05:36Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body could not be parsed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "invalid body"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "The hostname is already registered on your allowlist (for this account scope).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Destination exists": {
+                    "value": {
+                      "code": "DESTINATION_EXISTS",
+                      "messages": [
+                        "destination already registered"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The value is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid hostname": {
+                    "value": {
+                      "code": "INVALID_HOSTNAME",
+                      "messages": [
+                        "hostname must be a bare public FQDN with no scheme, port, path, or wildcard"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pci-proxy/destinations/{id}": {
+      "delete": {
+        "summary": "Remove Destination",
+        "description": "Removes a host from your account's allowlist. This takes effect immediately: the next proxy request to that host is rejected with `403 DESTINATION_NOT_ALLOWED`.",
+        "operationId": "removePciProxyDestination",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The numeric `id` of the destination to remove, as returned by [List Destinations](/reference/pci-proxy/list-destinations).",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 4218
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The destination was removed. No response body."
+          },
+          "400": {
+            "description": "The `id` path parameter is not a valid integer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid id": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "invalid id"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "No destination with that `id` is registered for your account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Not found": {
+                    "value": {
+                      "code": "NOT_FOUND",
+                      "messages": [
+                        "destination not found"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentication failed. Missing or invalid API credentials.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DestinationError"
+            },
+            "examples": {
+              "Not authenticated": {
+                "value": {
+                  "code": "NOT_AUTHENTICATED",
+                  "messages": [
+                    "not authenticated"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "DestinationInput": {
+        "type": "object",
+        "required": [
+          "hostname"
+        ],
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "description": "The bare public hostname to allow, without scheme, port, or path (for example `api.example-processor.com`). Matched exactly, case-insensitive.",
+            "example": "api.example-processor.com"
+          },
+          "purpose": {
+            "type": "string",
+            "description": "An optional human-readable label describing why this host is allowed. Shown when you list destinations.",
+            "example": "Direct acquiring — Processor X"
+          },
+          "account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional. Restrict this destination to a single account. Omit (or send `null`) to allow the host for the whole organization.",
+            "example": null
+          }
+        }
+      },
+      "Destination": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique identifier of the destination. Use it to remove the destination.",
+            "example": 4218
+          },
+          "account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "The account this destination is scoped to, or `null` when it applies to the whole organization.",
+            "example": null
+          },
+          "hostname": {
+            "type": "string",
+            "description": "The registered hostname.",
+            "example": "api.example-processor.com"
+          },
+          "status": {
+            "type": "string",
+            "description": "Whether the destination is active.",
+            "example": "ENABLED"
+          },
+          "purpose": {
+            "type": "string",
+            "description": "The label you provided when registering the destination.",
+            "example": "Direct acquiring — Processor X"
+          },
+          "created_by": {
+            "type": "string",
+            "description": "The user who registered the destination.",
+            "example": "ops@merchant.com"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the destination was registered.",
+            "example": "2026-07-09T13:05:36Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the destination was last changed.",
+            "example": "2026-07-09T13:05:36Z"
+          }
+        }
+      },
+      "DestinationError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "NOT_AUTHENTICATED",
+              "AuthenticationFail",
+              "INVALID_REQUEST",
+              "INVALID_HOSTNAME",
+              "DESTINATION_EXISTS",
+              "NOT_FOUND",
+              "INTERNAL_ERROR"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
