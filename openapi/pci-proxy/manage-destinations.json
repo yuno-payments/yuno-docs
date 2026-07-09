@@ -40,10 +40,14 @@
                 "example": {
                   "destinations": [
                     {
-                      "id": "dst_5f8c2a1b9e4d",
+                      "id": 4218,
+                      "account_code": null,
                       "hostname": "api.example-processor.com",
+                      "status": "ENABLED",
                       "purpose": "Direct acquiring — Processor X",
-                      "created_at": "2026-07-09T13:05:36Z"
+                      "created_by": "ops@merchant.com",
+                      "created_at": "2026-07-09T13:05:36Z",
+                      "updated_at": "2026-07-09T13:05:36Z"
                     }
                   ]
                 }
@@ -82,10 +86,34 @@
                   "$ref": "#/components/schemas/Destination"
                 },
                 "example": {
-                  "id": "dst_5f8c2a1b9e4d",
+                  "id": 4218,
+                  "account_code": null,
                   "hostname": "api.example-processor.com",
+                  "status": "ENABLED",
                   "purpose": "Direct acquiring — Processor X",
-                  "created_at": "2026-07-09T13:05:36Z"
+                  "created_by": "ops@merchant.com",
+                  "created_at": "2026-07-09T13:05:36Z",
+                  "updated_at": "2026-07-09T13:05:36Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request body could not be parsed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "invalid body"
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -94,18 +122,18 @@
             "$ref": "#/components/responses/Unauthorized"
           },
           "409": {
-            "description": "The hostname is already registered on your allowlist.",
+            "description": "The hostname is already registered on your allowlist (for this account scope).",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DestinationError"
                 },
                 "examples": {
-                  "Already registered": {
+                  "Destination exists": {
                     "value": {
-                      "code": "DESTINATION_ALREADY_REGISTERED",
+                      "code": "DESTINATION_EXISTS",
                       "messages": [
-                        "hostname is already registered on your allowlist"
+                        "destination already registered"
                       ]
                     }
                   }
@@ -114,7 +142,7 @@
             }
           },
           "422": {
-            "description": "The value is not a bare public hostname (a URL, a host with a port or path, an IP address, or a wildcard).",
+            "description": "The value is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard).",
             "content": {
               "application/json": {
                 "schema": {
@@ -125,7 +153,7 @@
                     "value": {
                       "code": "INVALID_HOSTNAME",
                       "messages": [
-                        "hostname must be a bare public hostname without scheme, port, or path"
+                        "hostname must be a bare public FQDN with no scheme, port, path, or wildcard"
                       ]
                     }
                   }
@@ -146,16 +174,37 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "The `id` of the destination to remove, as returned by [List Destinations](/reference/pci-proxy/list-destinations).",
+            "description": "The numeric `id` of the destination to remove, as returned by [List Destinations](/reference/pci-proxy/list-destinations).",
             "schema": {
-              "type": "string",
-              "example": "dst_5f8c2a1b9e4d"
+              "type": "integer",
+              "format": "int64",
+              "example": 4218
             }
           }
         ],
         "responses": {
           "204": {
             "description": "The destination was removed. No response body."
+          },
+          "400": {
+            "description": "The `id` path parameter is not a valid integer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationError"
+                },
+                "examples": {
+                  "Invalid id": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "invalid id"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -170,9 +219,9 @@
                 "examples": {
                   "Not found": {
                     "value": {
-                      "code": "DESTINATION_NOT_FOUND",
+                      "code": "NOT_FOUND",
                       "messages": [
-                        "no destination with that id is registered for your account"
+                        "destination not found"
                       ]
                     }
                   }
@@ -237,6 +286,12 @@
             "type": "string",
             "description": "An optional human-readable label describing why this host is allowed. Shown when you list destinations.",
             "example": "Direct acquiring — Processor X"
+          },
+          "account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional. Restrict this destination to a single account. Omit (or send `null`) to allow the host for the whole organization.",
+            "example": null
           }
         }
       },
@@ -244,24 +299,47 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": "integer",
+            "format": "int64",
             "description": "Unique identifier of the destination. Use it to remove the destination.",
-            "example": "dst_5f8c2a1b9e4d"
+            "example": 4218
+          },
+          "account_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "The account this destination is scoped to, or `null` when it applies to the whole organization.",
+            "example": null
           },
           "hostname": {
             "type": "string",
             "description": "The registered hostname.",
             "example": "api.example-processor.com"
           },
+          "status": {
+            "type": "string",
+            "description": "Whether the destination is active.",
+            "example": "ENABLED"
+          },
           "purpose": {
             "type": "string",
             "description": "The label you provided when registering the destination.",
             "example": "Direct acquiring — Processor X"
           },
+          "created_by": {
+            "type": "string",
+            "description": "The user who registered the destination.",
+            "example": "ops@merchant.com"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
             "description": "When the destination was registered.",
+            "example": "2026-07-09T13:05:36Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the destination was last changed.",
             "example": "2026-07-09T13:05:36Z"
           }
         }
@@ -275,9 +353,11 @@
             "enum": [
               "NOT_AUTHENTICATED",
               "AuthenticationFail",
+              "INVALID_REQUEST",
               "INVALID_HOSTNAME",
-              "DESTINATION_ALREADY_REGISTERED",
-              "DESTINATION_NOT_FOUND"
+              "DESTINATION_EXISTS",
+              "NOT_FOUND",
+              "INTERNAL_ERROR"
             ]
           },
           "messages": {
