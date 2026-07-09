@@ -1,0 +1,130 @@
+---
+title: "Forward Proxy"
+description: "Step-by-step guide to calling third-party APIs with real card data through the Yuno PCI Proxy using vaulted token expressions."
+keywords: ["forward proxy", "yuno-proxy-url", "detokenization", "vaulted_token", "expressions"]
+---
+
+This guide shows how to call a third-party API with real card data through the Yuno PCI Proxy. If you have not read it yet, start with the [PCI Proxy Overview](/docs/security-and-compliance/pci-proxy/overview).
+
+## Requirements
+
+* Your `public-api-key` and `private-secret-key` from the Yuno Dashboard.
+* A card stored with Yuno and its `vaulted_token`. See [Enroll Payment Method](/reference/payment-methods-direct-workflow/enroll-payment-method-api).
+* The destination API you want to call, reachable over HTTPS on port 443.
+
+<Warning>
+**Server-side only**
+
+Proxy requests detokenize card data and must only be made from your backend. Never expose your `private-secret-key` in client-side code.
+</Warning>
+
+<Steps>
+  <Step title="Build the destination request">
+    Write the request exactly as the destination API expects it — same body shape, same headers — but put vaulted token expressions where the card data belongs:
+
+    ```json
+    {
+      "amount": 2500,
+      "currency": "USD",
+      "card": {
+        "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+        "exp_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+        "exp_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+        "name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}"
+      }
+    }
+    ```
+
+    Expressions work in the request body and in header values. Everything that is not an expression is forwarded untouched.
+
+    The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves expressions anywhere in the raw body, so JSON, form-encoded, and XML payloads all work. The example above is JSON, but the destination receives exactly the format you send.
+  </Step>
+
+  <Step title="Send it through the proxy">
+    Send the request to `https://api.y.uno/v1/pci-proxy` with the destination in the `yuno-proxy-url` header:
+
+    ```sh
+    curl -X POST "https://api.y.uno/v1/pci-proxy" \
+      -H "public-api-key: $PUBLIC_API_KEY" \
+      -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+      -H "yuno-proxy-url: https://api.example-processor.com/charges" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $PROCESSOR_API_KEY" \
+      -d '{
+        "amount": 2500,
+        "currency": "USD",
+        "card": {
+          "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+          "exp_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+          "exp_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+          "name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}"
+        }
+      }'
+    ```
+
+    The HTTP method you use is the method the destination receives. Headers you set for the destination (like `Authorization` above) pass through; Yuno's own credential headers and all `yuno-*` headers are stripped before forwarding.
+
+    To call a sub-path of the destination, append it to the proxy path: a request to `/v1/pci-proxy/charges/ch_123/capture?expand=true` with `yuno-proxy-url: https://api.example-processor.com` is forwarded to `https://api.example-processor.com/charges/ch_123/capture?expand=true`.
+  </Step>
+
+  <Step title="Read the response">
+    The destination's status code, headers, and body are returned to you unchanged. The proxy adds diagnostic headers:
+
+    | Header | Meaning |
+    |---|---|
+    | `yuno-proxy-request-id` | Unique identifier of this proxy invocation. Include it in support requests. |
+    | `yuno-proxy-destination-status` | The HTTP status returned by the destination. **Present only when the destination was reached** — if it is missing, the failure happened inside Yuno. |
+    | `yuno-proxy-replacements` | How many expressions were replaced. `0` on a request you expected to be detokenized means your expressions did not match. |
+  </Step>
+
+  <Step title="Handle errors">
+    Errors produced by the proxy itself use the standard Yuno error format and never include the `yuno-proxy-destination-status` header:
+
+    ```json
+    {
+      "code": "EXPRESSION_RESOLUTION_FAILED",
+      "messages": ["vaulted_token 1a2b3c4d-... could not be resolved"]
+    }
+    ```
+
+    | HTTP status | Code | Meaning |
+    |---|---|---|
+    | `401` | `NOT_AUTHENTICATED` / `AuthenticationFail` | Missing or invalid API credentials |
+    | `400` | `INVALID_REQUEST` | Missing or invalid `yuno-proxy-url`, an invalid `yuno-proxy-timeout`, or more than 20 distinct tokens in one request |
+    | `400` | `EXPRESSION_RESOLUTION_FAILED` | A `vaulted_token` does not exist, does not belong to your account, or its `security_code` is no longer available |
+    | `403` | `DESTINATION_NOT_ALLOWED` | The destination is not a public HTTPS hostname (IP addresses, non-443 ports, and internal networks are rejected) |
+    | `413` | `REQUEST_TOO_LARGE` | Request body over 1 MB |
+    | `429` | `TOO_MANY_REQUESTS` | Rate limit exceeded |
+    | `502` | `DESTINATION_UNREACHABLE` | The destination could not be reached or closed the connection |
+    | `504` | `DESTINATION_TIMEOUT` | The destination did not respond within the timeout |
+    | `500` | `PROXY_ERROR` | An unexpected error inside the proxy |
+
+    A `401` is returned before your request reaches the proxy, so it does not carry the `yuno-proxy-request-id` header; every other response does.
+
+    Any `4xx`/`5xx` accompanied by `yuno-proxy-destination-status` is the destination's own error, passed through for you to handle as if you had called it directly.
+  </Step>
+</Steps>
+
+## Timeouts
+
+The proxy waits up to 30 seconds for the destination by default. Override it with the `yuno-proxy-timeout` header (seconds, maximum 120):
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "yuno-proxy-url: https://api.slow-supplier.com/bookings" \
+  -H "yuno-proxy-timeout: 90" \
+  -H "Content-Type: application/json" \
+  -d '{ "card_number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}" }'
+```
+
+## Testing in sandbox
+
+Use `https://api-sandbox.y.uno/v1/pci-proxy` with your sandbox credentials and sandbox `vaulted_token` values. Sandbox tokens resolve to test card numbers, so you can point the proxy at your destination's own sandbox safely.
+
+<Note>
+**Verify your integration**
+
+Check `yuno-proxy-replacements` in the response while integrating: it confirms the proxy found and replaced your expressions before forwarding.
+</Note>
