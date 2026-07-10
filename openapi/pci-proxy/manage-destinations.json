@@ -53,11 +53,10 @@
                   "destinations": [
                     {
                       "id": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4",
-                      "account_code": null,
+                      "account_id": null,
                       "hostname": "api.example-processor.com",
                       "status": "ENABLED",
                       "purpose": "Direct acquiring — Processor X",
-                      "created_by": "ops@merchant.com",
                       "created_at": "2026-07-09T13:05:36Z",
                       "updated_at": "2026-07-09T13:05:36Z"
                     }
@@ -80,7 +79,7 @@
             "name": "yuno-account-id",
             "in": "header",
             "required": false,
-            "description": "Optional account scope. When set, the new destination is scoped to that account and a differing `account_code` in the body is rejected. Omit it to register at the organization level (honoring the body `account_code`).",
+            "description": "Optional account scope. When set, the new destination is scoped to that account and a differing `account_id` in the body is rejected. Omit it to register at the organization level (honoring the body `account_id`).",
             "schema": {
               "type": "string",
               "example": "acc_123"
@@ -111,11 +110,10 @@
                 },
                 "example": {
                   "id": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4",
-                  "account_code": null,
+                  "account_id": null,
                   "hostname": "api.example-processor.com",
                   "status": "ENABLED",
                   "purpose": "Direct acquiring — Processor X",
-                  "created_by": "ops@merchant.com",
                   "created_at": "2026-07-09T13:05:36Z",
                   "updated_at": "2026-07-09T13:05:36Z"
                 }
@@ -166,7 +164,7 @@
             }
           },
           "422": {
-            "description": "The hostname is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard), or the `account_code` is not a UUID or does not match the `yuno-account-id` you are scoped to.",
+            "description": "The hostname is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard), or the `account_id` is not a UUID or does not match the `yuno-account-id` you are scoped to.",
             "content": {
               "application/json": {
                 "schema": {
@@ -185,7 +183,7 @@
                     "value": {
                       "code": "INVALID_ACCOUNT_CODE",
                       "messages": [
-                        "account_code must match your yuno-account-id"
+                        "account_id must match your yuno-account-id"
                       ]
                     }
                   }
@@ -273,6 +271,108 @@
           }
         }
       }
+    },
+    "/pci-proxy/destinations/{id}/enable": {
+      "post": {
+        "summary": "Enable Destination",
+        "description": "Re-enables a disabled destination. Only `ENABLED` destinations are used by the forward path.",
+        "operationId": "enablePciProxyDestination",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The `id` (UUID) of the destination to enable.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          },
+          {
+            "name": "yuno-account-id",
+            "in": "header",
+            "required": false,
+            "description": "Optional account scope. When set, only that account's own destinations can be changed.",
+            "schema": {
+              "type": "string",
+              "example": "acc_123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The destination was enabled; the updated object is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/DestinationNotFound"
+          }
+        }
+      }
+    },
+    "/pci-proxy/destinations/{id}/disable": {
+      "post": {
+        "summary": "Disable Destination",
+        "description": "Turns a destination off without removing it — the record and its audit history are kept, but the forward path rejects it with `403 DESTINATION_NOT_ALLOWED` until it is enabled again.",
+        "operationId": "disablePciProxyDestination",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The `id` (UUID) of the destination to disable.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          },
+          {
+            "name": "yuno-account-id",
+            "in": "header",
+            "required": false,
+            "description": "Optional account scope. When set, only that account's own destinations can be changed.",
+            "schema": {
+              "type": "string",
+              "example": "acc_123"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The destination was disabled; the updated object is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/DestinationNotFound"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -310,6 +410,46 @@
             }
           }
         }
+      },
+      "InvalidId": {
+        "description": "The `id` path parameter is not a valid UUID.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DestinationError"
+            },
+            "examples": {
+              "Invalid id": {
+                "value": {
+                  "code": "INVALID_REQUEST",
+                  "messages": [
+                    "invalid id"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "DestinationNotFound": {
+        "description": "No destination with that `id` is registered for your scope.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DestinationError"
+            },
+            "examples": {
+              "Not found": {
+                "value": {
+                  "code": "NOT_FOUND",
+                  "messages": [
+                    "destination not found"
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "schemas": {
@@ -329,7 +469,7 @@
             "description": "An optional human-readable label describing why this host is allowed. Shown when you list destinations.",
             "example": "Direct acquiring — Processor X"
           },
-          "account_code": {
+          "account_id": {
             "type": "string",
             "format": "uuid",
             "nullable": true,
@@ -347,7 +487,7 @@
             "description": "Unique identifier of the destination. Use it to remove the destination.",
             "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
           },
-          "account_code": {
+          "account_id": {
             "type": "string",
             "nullable": true,
             "description": "The account this destination is scoped to, or `null` when it applies to the whole organization.",
@@ -360,18 +500,17 @@
           },
           "status": {
             "type": "string",
-            "description": "Whether the destination is active.",
+            "enum": [
+              "ENABLED",
+              "DISABLED"
+            ],
+            "description": "Whether the destination is active. Only ENABLED destinations are used by the forward path.",
             "example": "ENABLED"
           },
           "purpose": {
             "type": "string",
             "description": "The label you provided when registering the destination.",
             "example": "Direct acquiring — Processor X"
-          },
-          "created_by": {
-            "type": "string",
-            "description": "The user who registered the destination.",
-            "example": "ops@merchant.com"
           },
           "created_at": {
             "type": "string",
