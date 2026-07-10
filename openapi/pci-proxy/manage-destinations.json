@@ -21,6 +21,18 @@
         "summary": "List Destinations",
         "description": "Returns the destinations registered on your account's allowlist. Only hosts on this list can be reached by the [forward proxy](/reference/pci-proxy/invoke-forward-proxy); a request to any other host is rejected with `403 DESTINATION_NOT_ALLOWED`.",
         "operationId": "listPciProxyDestinations",
+        "parameters": [
+          {
+            "name": "yuno-account-id",
+            "in": "header",
+            "required": false,
+            "description": "Optional account scope. When set, the response contains only that account's destinations plus the organization-wide ones. Omit it to list all of the organization's destinations.",
+            "schema": {
+              "type": "string",
+              "example": "acc_123"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "The destinations registered for your account.",
@@ -40,7 +52,7 @@
                 "example": {
                   "destinations": [
                     {
-                      "id": 4218,
+                      "id": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4",
                       "account_code": null,
                       "hostname": "api.example-processor.com",
                       "status": "ENABLED",
@@ -63,6 +75,18 @@
         "summary": "Register Destination",
         "description": "Adds a host to your account's allowlist so the forward proxy can send card data to it. Matching is on the exact hostname, case-insensitive; subdomains and wildcards are not implied. A newly registered host is usable within minutes.",
         "operationId": "registerPciProxyDestination",
+        "parameters": [
+          {
+            "name": "yuno-account-id",
+            "in": "header",
+            "required": false,
+            "description": "Optional account scope. When set, the new destination is scoped to that account and a differing `account_code` in the body is rejected. Omit it to register at the organization level (honoring the body `account_code`).",
+            "schema": {
+              "type": "string",
+              "example": "acc_123"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -86,7 +110,7 @@
                   "$ref": "#/components/schemas/Destination"
                 },
                 "example": {
-                  "id": 4218,
+                  "id": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4",
                   "account_code": null,
                   "hostname": "api.example-processor.com",
                   "status": "ENABLED",
@@ -142,7 +166,7 @@
             }
           },
           "422": {
-            "description": "The value is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard).",
+            "description": "The hostname is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard), or the `account_code` is not a UUID or does not match the `yuno-account-id` you are scoped to.",
             "content": {
               "application/json": {
                 "schema": {
@@ -154,6 +178,14 @@
                       "code": "INVALID_HOSTNAME",
                       "messages": [
                         "hostname must be a bare public FQDN with no scheme, port, path, or wildcard"
+                      ]
+                    }
+                  },
+                  "Invalid account code": {
+                    "value": {
+                      "code": "INVALID_ACCOUNT_CODE",
+                      "messages": [
+                        "account_code must match your yuno-account-id"
                       ]
                     }
                   }
@@ -174,11 +206,21 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "The numeric `id` of the destination to remove, as returned by [List Destinations](/reference/pci-proxy/list-destinations).",
+            "description": "The `id` (UUID) of the destination to remove, as returned by [List Destinations](/reference/pci-proxy/list-destinations).",
             "schema": {
-              "type": "integer",
-              "format": "int64",
-              "example": 4218
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          },
+          {
+            "name": "yuno-account-id",
+            "in": "header",
+            "required": false,
+            "description": "Optional account scope. When set, only that account's own destinations can be removed (organization-wide entries and other accounts' entries are not visible).",
+            "schema": {
+              "type": "string",
+              "example": "acc_123"
             }
           }
         ],
@@ -187,7 +229,7 @@
             "description": "The destination was removed. No response body."
           },
           "400": {
-            "description": "The `id` path parameter is not a valid integer.",
+            "description": "The `id` path parameter is not a valid UUID.",
             "content": {
               "application/json": {
                 "schema": {
@@ -289,8 +331,9 @@
           },
           "account_code": {
             "type": "string",
+            "format": "uuid",
             "nullable": true,
-            "description": "Optional. Restrict this destination to a single account. Omit (or send `null`) to allow the host for the whole organization.",
+            "description": "Optional. Restrict this destination to a single account (a UUID). Omit (or send `null`) to allow the host for the whole organization. If you send a `yuno-account-id` header, this must match it or be omitted.",
             "example": null
           }
         }
@@ -299,10 +342,10 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int64",
+            "type": "string",
+            "format": "uuid",
             "description": "Unique identifier of the destination. Use it to remove the destination.",
-            "example": 4218
+            "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
           },
           "account_code": {
             "type": "string",
@@ -355,6 +398,7 @@
               "AuthenticationFail",
               "INVALID_REQUEST",
               "INVALID_HOSTNAME",
+              "INVALID_ACCOUNT_CODE",
               "DESTINATION_EXISTS",
               "NOT_FOUND",
               "INTERNAL_ERROR"

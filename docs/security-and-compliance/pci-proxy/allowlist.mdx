@@ -20,9 +20,14 @@ host first with the endpoints below.
 
 ## How matching works
 
-Allowlist entries are matched on the **exact hostname**, case-insensitive. Subdomains are not
-implied: allowing `api.example.com` does not allow `sandbox.example.com`. Wildcards are not
-supported. Register each hostname you call.
+The proxy only forwards to hosts on your allowlist. Matching is exact on the hostname:
+
+* **Case-insensitive:** `API.Stripe.com` and `api.stripe.com` are the same host.
+* **No wildcards:** `api.example.com` does not authorize `sandbox.example.com`.
+* **Subdomains are registered separately.**
+
+A request to a host that is not on the allowlist is rejected with `403 DESTINATION_NOT_ALLOWED`
+before any card data is read.
 
 ## Register a destination
 
@@ -46,6 +51,15 @@ or a wildcard) returns `422 INVALID_HOSTNAME`.
 account** in your organization. Set it to a specific account id to scope the destination to
 that account only — the host is then usable solely on proxy requests made under that account.
 
+<Note>
+**Account-scoped API keys**
+
+If you call the allowlist endpoints with a `yuno-account-id` header (an account-scoped key), the
+new destination is automatically scoped to that account, and `List` and `Remove` only see and
+affect that account's entries plus the organization-wide ones. Org-level keys omit the header and
+manage all of the organization's destinations.
+</Note>
+
 ## List your destinations
 
 ```sh
@@ -67,9 +81,18 @@ curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}" \
 Returns `204`. Removing a destination takes effect immediately — the next proxy request to
 that host is rejected.
 
-<Note>
-**Treat new-destination alerts seriously**
+## Audit trail
 
-Adding a destination is a sensitive action: it widens where your cards can be sent. Yuno
-recommends restricting who can manage the allowlist and reviewing any unexpected additions.
+Every allowlist change — each **add and each remove** — is written to an append-only audit log
+recording who made the change, when, and which hostname. The audit record persists even after
+a destination is removed, so a deletion is never invisible: you can always see who removed a
+host and when. There is no way to alter or erase these audit records through the API.
+
+<Note>
+**Treat new-destination and deletion alerts seriously**
+
+Adding or removing a destination is a sensitive action: it changes where your cards can be sent.
+Yuno recommends restricting who can manage the allowlist, enabling notifications on allowlist
+changes, and reviewing any unexpected additions or deletions — they are the tripwire for a
+compromised dashboard account.
 </Note>
