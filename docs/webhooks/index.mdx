@@ -26,31 +26,31 @@ Because Yuno retries delivery when it doesn't receive a confirmation, your endpo
 
 ### The identifier
 
-Every event payload includes `data.idempotency_key`, a unique identifier for that event. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
+Every event payload includes an `idempotency_key` field nested under `data` (e.g. `data.payment.idempotency_key`), a unique identifier for that event. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
 
 ### Coverage
 
-`data.idempotency_key` is currently included in:
+`idempotency_key` is currently included in:
 
-- `payment` events
-- `refund` events
-- `chargeback` events
+- `payment` events (`data.payment.idempotency_key`)
+- `refund` events (`data.payment.idempotency_key`)
+- `chargeback` events (`data.payment.idempotency_key`)
 
 <Note>
-Support for `enrollment` events is landing on July 11, 2026. Until then, enrollment payloads do not include `data.idempotency_key`.
+Support for `enrollment` events (`data.payment_method.idempotency_key`) is landing on July 11, 2026. Until then, enrollment payloads do not include an `idempotency_key`.
 </Note>
 
 ### Why you might see the same event twice
 
-Each payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event — same `data.idempotency_key`, incremented `retry` — following the schedule described in [Webhooks delivery and response requirements](#webhooks-delivery-and-response-requirements) above. Treat any event carrying an idempotency key you've already processed as a duplicate, regardless of its `retry` value.
+Each payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event — same `idempotency_key`, incremented `retry` — following the schedule described in [Webhooks delivery and response requirements](#webhooks-delivery-and-response-requirements) above. Treat any event carrying an idempotency key you've already processed as a duplicate, regardless of its `retry` value.
 
 ### Recommended handling
 
-Store every `data.idempotency_key` you've successfully processed, and check incoming events against that store before acting on them:
+Store every `idempotency_key` you've successfully processed, and check incoming events against that store before acting on them:
 
 ```js
 async function handleWebhookEvent(event) {
-  const key = event.data.idempotency_key;
+  const key = event.data.payment?.idempotency_key ?? event.data.payment_method?.idempotency_key;
 
   if (await store.has(key)) {
     // Already processed — acknowledge and skip.
@@ -62,7 +62,7 @@ async function handleWebhookEvent(event) {
 }
 ```
 
-Keep in mind that not every event type carries `data.idempotency_key` yet (see Coverage above) — for event types without it, fall back to your own de-duplication key, such as the combination of resource ID and event type.
+Keep in mind that not every event type carries an `idempotency_key` yet (see Coverage above) — for event types without it, fall back to your own de-duplication key, such as the combination of resource ID and event type.
 
 ## Common Webhook Events
 
