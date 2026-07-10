@@ -20,14 +20,15 @@ host first with the endpoints below.
 
 ## How matching works
 
-The proxy only forwards to hosts on your allowlist. Matching is exact on the hostname:
+The proxy only forwards to hosts that are registered **and enabled** on your allowlist.
+Matching is exact on the hostname:
 
 * **Case-insensitive:** `API.Stripe.com` and `api.stripe.com` are the same host.
 * **No wildcards:** `api.example.com` does not authorize `sandbox.example.com`.
 * **Subdomains are registered separately.**
 
-A request to a host that is not on the allowlist is rejected with `403 DESTINATION_NOT_ALLOWED`
-before any card data is read.
+A request to a host that is not registered, or is registered but `DISABLED`, is rejected with
+`403 DESTINATION_NOT_ALLOWED` before any card data is read.
 
 ## Register a destination
 
@@ -39,17 +40,21 @@ curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" \
   -d '{
     "hostname": "api.example-processor.com",
     "purpose": "Direct acquiring — Processor X",
-    "account_code": null
+    "account_id": null
   }'
 ```
 
-Returns `201` with the created entry. A hostname that is already registered returns `409`; a
-value that is not a bare public hostname (a URL, a host with a port or path, an IP address,
-or a wildcard) returns `422 INVALID_HOSTNAME`.
+Returns `201` with the created entry, which starts in the `ENABLED` state. A hostname that is
+already registered returns `409`; a value that is not a bare public hostname (a URL, a host with
+a port or path, an IP address, or a wildcard) returns `422 INVALID_HOSTNAME`.
 
-`account_code` is optional. Left `null` (the default), the destination is allowed for **every
+`account_id` is optional. Left `null` (the default), the destination is allowed for **every
 account** in your organization. Set it to a specific account id to scope the destination to
 that account only — the host is then usable solely on proxy requests made under that account.
+
+The destination object returns `id`, `hostname`, `purpose`, `account_id`, `status`
+(`ENABLED` / `DISABLED`), `created_at`, and `updated_at`. When you call via the API the actor
+is your API key, so the object does not carry a user email.
 
 <Note>
 **Account-scoped API keys**
@@ -81,12 +86,51 @@ curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}" \
 Returns `204`. Removing a destination takes effect immediately — the next proxy request to
 that host is rejected.
 
+## Enable or disable a destination
+
+Instead of removing a host, you can **disable** it — the record (and its audit history) is kept,
+but the forward path stops using it. Re-**enable** it to turn it back on. This is useful for
+temporarily suspending a destination without losing its configuration.
+
+```sh
+# Turn a destination off (keeps the record)
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations/{id}/disable" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+
+# Re-enable a disabled destination
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations/{id}/enable" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+Each returns `200` with the updated destination object (its `status` set to `DISABLED` or
+`ENABLED`). Only `ENABLED` destinations are used by the forward path; a request to a `DISABLED`
+host returns `403 DESTINATION_NOT_ALLOWED`.
+
+A destination moves through three states:
+
+```
+      create
+        │
+        ▼
+   ┌───────────┐   disable    ┌────────────┐
+   │  ENABLED  │ ───────────► │  DISABLED  │
+   │ (usable)  │ ◄─────────── │ (blocked)  │
+   └───────────┘    enable    └────────────┘
+        │                           │
+        └──────────── delete ───────┘
+                       │
+                       ▼
+                   (removed)
+```
+
 ## Audit trail
 
-Every allowlist change — each **add and each remove** — is written to an append-only audit log
-recording who made the change, when, and which hostname. The audit record persists even after
-a destination is removed, so a deletion is never invisible: you can always see who removed a
-host and when. There is no way to alter or erase these audit records through the API.
+Every allowlist change — **add, remove, enable, and disable** — is written to an append-only
+audit log recording who made the change, when, and which hostname. The audit record persists
+even after a destination is removed, so a deletion is never invisible: you can always see who
+removed a host and when. There is no way to alter or erase these audit records through the API.
 
 <Note>
 **Treat new-destination and deletion alerts seriously**
