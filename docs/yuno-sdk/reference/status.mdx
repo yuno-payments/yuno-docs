@@ -26,6 +26,40 @@ Two statuses are not relayed from the backend, the SDK emits them locally:
 - `INTERNAL_ERROR`: raised when a backend service call failed, or when something failed inside the SDK (load, view rendering, network, unexpected exception).
 - `USER_CANCEL`: raised when the user closes a form or view without completing the flow.
 
+### Backend failure or SDK failure? Read `message.source`
+
+`INTERNAL_ERROR` covers both cases — the `status` alone does not tell you where the failure came from. A backend rejection (for example, an invalid or expired checkout session) arrives as:
+
+```json
+{
+  "status": "INTERNAL_ERROR",
+  "substatus": null,
+  "message": {
+    "source": "backend",
+    "code": "INVALID_CHECKOUT_SESSION",
+    "reason": "checkout session expired or already used",
+    "raw": "<raw backend error payload>"
+  }
+}
+```
+
+An SDK-side failure (network, rendering, unexpected exception) arrives as:
+
+```json
+{
+  "status": "INTERNAL_ERROR",
+  "substatus": null,
+  "message": {
+    "source": "sdk",
+    "code": "NETWORK_ERROR",
+    "reason": "request timed out",
+    "context": "Transaction.runPayment"
+  }
+}
+```
+
+When `message.source` is `"backend"`, Yuno's API rejected a call: `code` and `raw` carry the backend's own error, so start debugging there (session validity, workflow, credentials). When it's `"sdk"`, the failure originated inside the SDK and `context` names the module or call site that produced it.
+
 ## Backend status values
 
 The set of possible `status` and `substatus` values is defined by the backend. See the workflow reference for each flow:
