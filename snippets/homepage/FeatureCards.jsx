@@ -28,7 +28,7 @@ export const FeatureCards = () => {
       className={`relative p-8 rounded-xl transition-all duration-300 ${
         ai
           ? "bg-[#3d4fdf] hover:shadow-[0_10px_40px_rgba(0,0,0,0.2),0_0_0_1px_white]"
-          : "bg-white border border-gray-200 hover:-translate-y-1 hover:shadow-[0_10px_40px_rgba(0,0,0,0.1),0_0_0_1px_#3d4fdf] hover:border-[#3d4fdf] dark:bg-[#282a30] dark:border-[#3a3c44] dark:hover:border-[#7a8aef] dark:hover:shadow-[0_10px_40px_rgba(0,0,0,0.4),0_0_0_1px_#7a8aef]"
+          : "bg-white border border-gray-200 hover:-translate-y-1 hover:shadow-[0_10px_40px_rgba(0,0,0,0.1),0_0_0_1px_#3d4fdf] hover:border-[#3d4fdf] dark:bg-[#1E293B] dark:border-[#334155] dark:hover:border-[#7a8aef] dark:hover:shadow-[0_10px_40px_rgba(0,0,0,0.4),0_0_0_1px_#7a8aef]"
       } ${className}`}
     >
       {children}
@@ -41,7 +41,7 @@ export const FeatureCards = () => {
       className={`yuno-cta block px-6 py-3 mb-6 text-sm font-medium text-center no-underline w-full transition-all duration-300 ${
         ai
           ? "yuno-cta-ai bg-white/20 !text-white border border-white/30 hover:bg-white rounded-lg"
-          : "yuno-cta-default bg-gray-100 !text-[#111827] hover:bg-[#3d4fdf] dark:bg-[#32353c] dark:!text-[#d4d5da] dark:hover:bg-[#3d4fdf] rounded-lg"
+          : "yuno-cta-default bg-gray-100 !text-[#111827] hover:bg-[#3d4fdf] dark:bg-[#334155] dark:!text-[#d4d5da] dark:hover:bg-[#3d4fdf] rounded-lg"
       }`}
     >
       {children}
@@ -53,7 +53,7 @@ export const FeatureCards = () => {
       a.yuno-cta-ai:hover    { color: #3d4fdf !important; text-decoration: none !important; }
       a.yuno-cta-default:hover { color: white !important; text-decoration: none !important; }
     `}</style>
-      <div className="bg-[#f8f9fa] dark:bg-[#1a1b20] py-20 px-5">
+      <div className="bg-[#f8f9fa] dark:bg-[#0F172A] py-20 px-5">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid gap-8 mb-16" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
             {/* ── Get Started ── */}
