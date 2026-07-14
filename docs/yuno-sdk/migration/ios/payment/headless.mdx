@@ -9,10 +9,10 @@ In the unified API the same scenario maps to **non-seamless headless** mode: pas
 
 | Before | After |
 |---|---|
-| `Yuno.apiClientPayment(countryCode:checkoutSession:)` → `YunoPaymentHeadless` | `SDKPayment.Transaction(config:).start(paymentSelected:)` |
+| `Yuno.apiClientPayment(countryCode:checkoutSession:)` → `YunoPaymentHeadless` | `SdkPayments.Transaction(config:).start(paymentSelected:)` |
 | `paymentHeadless.generateToken(data:)` | Override `createPayment(token:)` |
 | `paymentHeadless.getThreeDSecureChallenge()` | *(removed. SDK handles 3DS automatically)* |
-| No delegate | `SDKPayment.TransactionController` |
+| No delegate | `SdkPayments.TransactionController` |
 
 ## Side-by-side
 
@@ -22,7 +22,7 @@ In the unified API the same scenario maps to **non-seamless headless** mode: pas
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(apiKey: "your-public-api-key")
+Yuno.initialize(apiKey: "your-public-api-key")
 
 // 2. Create the headless client
 let paymentHeadless = try Yuno.apiClientPayment(
@@ -56,12 +56,12 @@ present(HeadlessWebView(url: challenge.url))
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(apiKey: "your-public-api-key")
+SdkPayments.initialize(apiKey: "your-public-api-key")
 
 // 2. Implement the controller. Only createPayment + onStatus needed
-final class Checkout: SDKPayment.TransactionController {
+final class Checkout: SdkPayments.TransactionController {
 
-    func createPayment(token: SDKPayment.OneTimeToken) async throws {
+    func createPayment(token: SdkPayments.OneTimeToken) async throws {
         // Create the payment on your backend with the token.
         // Return when done; the SDK then polls status and runs 3DS if needed.
         try await createPaymentOnBackend(token: token["token"] as? String ?? "")
@@ -78,10 +78,10 @@ final class Checkout: SDKPayment.TransactionController {
 
     // 3. Build TransactionData from your own form, then start
     func pay(cardNumber: String, cvv: String, expMonth: Int, expYear: Int, holder: String) {
-        let paymentSelected = SDKPayment.PaymentMethodSelected(
+        let paymentSelected = SdkPayments.PaymentMethodSelected(
             paymentMethodType: "CARD",
-            transactionData: SDKPayment.TransactionData(
-                card: SDKPayment.CardTransactionData(
+            transactionData: SdkPayments.TransactionData(
+                card: SdkPayments.CardTransactionData(
                     number: cardNumber,
                     securityCode: cvv,
                     expirationMonth: expMonth,
@@ -91,13 +91,13 @@ final class Checkout: SDKPayment.TransactionController {
             )
         )
 
-        let config = SDKPayment.TransactionConfig(
+        let config = SdkPayments.TransactionConfig(
             checkoutSession: "session-from-backend",
             countryCode: "CO",
             controller: self
         )
 
-        SDKPayment.Transaction(config: config)
+        SdkPayments.Transaction(config: config)
             .start(paymentSelected: paymentSelected)
     }
 }
@@ -115,15 +115,15 @@ If your old integration showed the 3DS challenge inside your own UI (as the exam
 
 | Before (Headless) | After (unified) | Notes |
 |---|---|---|
-| `Yuno.apiClientPayment(countryCode:checkoutSession:)` | `SDKPayment.Transaction(config:)` | The transaction object replaces the headless client. |
-| `TokenCollectedData.checkoutSession` | `SDKPayment.TransactionConfig.checkoutSession` | Moves to config. |
-| `CollectedData.type` | `SDKPayment.PaymentMethodSelected.paymentMethodType` | Moves to the parent object. |
-| `CollectedData.vaultedToken` | `SDKPayment.PaymentMethodSelected.vaultedToken` | Same. |
-| `CollectedData.card` (`CardData`) | `SDKPayment.TransactionData.card` (`SDKPayment.CardTransactionData`) | Same fields, namespaced under `transactionData`. |
-| `CollectedData.customer` | `SDKPayment.TransactionData.customer` | Moves to `transactionData`. |
+| `Yuno.apiClientPayment(countryCode:checkoutSession:)` | `SdkPayments.Transaction(config:)` | The transaction object replaces the headless client. |
+| `TokenCollectedData.checkoutSession` | `SdkPayments.TransactionConfig.checkoutSession` | Moves to config. |
+| `CollectedData.type` | `SdkPayments.PaymentMethodSelected.paymentMethodType` | Moves to the parent object. |
+| `CollectedData.vaultedToken` | `SdkPayments.PaymentMethodSelected.vaultedToken` | Same. |
+| `CollectedData.card` (`CardData`) | `SdkPayments.TransactionData.card` (`SdkPayments.CardTransactionData`) | Same fields, namespaced under `transactionData`. |
+| `CollectedData.customer` | `SdkPayments.TransactionData.customer` | Moves to `transactionData`. |
 | `paymentHeadless.generateToken(data:)` | Override `createPayment(token:)` | The SDK invokes your handler with the token; you create the payment from your backend and return. |
 | `paymentHeadless.getThreeDSecureChallenge()` | *(removed)* | The SDK runs 3DS internally and presents the WebView full-screen. Not customizable via `showView`. |
-| Result returned from `generateToken` (`[String: Any]`) | `SDKPayment.OneTimeToken` (still a dictionary `[String: Any]`) | Cross-platform parity. See [`OneTimeToken` reference](/docs/yuno-sdk/reference/one-time-token). |
+| Result returned from `generateToken` (`[String: Any]`) | `SdkPayments.OneTimeToken` (still a dictionary `[String: Any]`) | Cross-platform parity. See [`OneTimeToken` reference](/docs/yuno-sdk/reference/one-time-token). |
 | *(no result controller)* | `onStatus(status:)` | New. The SDK now drives the full lifecycle and reports the final status here. |
 
 ## Behavior changes
@@ -133,17 +133,17 @@ If your old integration showed the 3DS challenge inside your own UI (as the exam
 </Warning>
 
 - **`createPayment` is async.** Your handler is `async throws`. Return when your backend has finished creating the payment. If it throws, the SDK stops the flow and `onStatus` is **not** invoked. Surface the error to your user yourself.
-- **No more `apiClient*` objects.** A single `SDKPayment.Transaction` covers the full lifecycle.
+- **No more `apiClient*` objects.** A single `SdkPayments.Transaction` covers the full lifecycle.
 - **Controller retention.** Keep the instance you pass as `controller` alive for the duration of the transaction.
 
 ## Checklist
 
-- [ ] Replace `try Yuno.apiClientPayment(countryCode:checkoutSession:)` with `SDKPayment.Transaction(config:)`. Move `checkoutSession` and `countryCode` into `SDKPayment.TransactionConfig`.
-- [ ] Replace `TokenCollectedData` / `CollectedData` / `CardData` with `SDKPayment.PaymentMethodSelected` + `SDKPayment.TransactionData` + `SDKPayment.CardTransactionData`.
-- [ ] Replace your `paymentHeadless.generateToken(data:)` call with a `SDKPayment.TransactionController.createPayment(token:)` override. Move your "create payment on backend" code there.
+- [ ] Replace `try Yuno.apiClientPayment(countryCode:checkoutSession:)` with `SdkPayments.Transaction(config:)`. Move `checkoutSession` and `countryCode` into `SdkPayments.TransactionConfig`.
+- [ ] Replace `TokenCollectedData` / `CollectedData` / `CardData` with `SdkPayments.PaymentMethodSelected` + `SdkPayments.TransactionData` + `SdkPayments.CardTransactionData`.
+- [ ] Replace your `paymentHeadless.generateToken(data:)` call with a `SdkPayments.TransactionController.createPayment(token:)` override. Move your "create payment on backend" code there.
 - [ ] Implement `onStatus(status:)`. This is now how you receive the final result.
 - [ ] Remove `paymentHeadless.getThreeDSecureChallenge()` and the WebView code. The SDK presents 3DS full-screen automatically.
-- [ ] Replace the explicit calls with `SDKPayment.Transaction(config:).start(paymentSelected:)`.
+- [ ] Replace the explicit calls with `SdkPayments.Transaction(config:).start(paymentSelected:)`.
 - [ ] Re-run your sandbox test suite, including 3DS scenarios.
 
 ## Related

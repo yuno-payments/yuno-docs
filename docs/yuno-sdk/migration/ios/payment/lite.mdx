@@ -7,9 +7,9 @@ Lite mode pre-selected the payment method on the merchant side, then handed off 
 
 | Before | After |
 |---|---|
-| `Yuno.startPaymentLite(with:paymentSelected:showPaymentStatus:)` | `SDKPayment.Transaction(config:).start(paymentSelected:)` |
-| `YunoPaymentDelegate` | `SDKPayment.TransactionController` |
-| `SDKPayment.initialize(apiKey:config:)` | `SDKPayment.initialize(apiKey:)` (no config) |
+| `Yuno.startPaymentLite(with:paymentSelected:showPaymentStatus:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` |
+| `YunoPaymentDelegate` | `SdkPayments.TransactionController` |
+| `Yuno.initialize(apiKey:config:)` | `SdkPayments.initialize(apiKey:)` (no config) |
 
 ## Side-by-side
 
@@ -19,7 +19,7 @@ Lite mode pre-selected the payment method on the merchant side, then handed off 
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(
+Yuno.initialize(
     apiKey: "your-public-api-key",
     config: YunoConfig(
         appearance: customAppearance,
@@ -62,10 +62,10 @@ final class Checkout: YunoPaymentDelegate {
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(apiKey: "your-public-api-key")
+SdkPayments.initialize(apiKey: "your-public-api-key")
 
 // 2. Implement the controller
-final class Checkout: SDKPayment.TransactionController {
+final class Checkout: SdkPayments.TransactionController {
 
     func onStatus(status: SdkPayments.TransactionStatus) {
         switch status.status {
@@ -77,8 +77,8 @@ final class Checkout: SDKPayment.TransactionController {
     }
 
     // 3. Start the payment
-    func pay(paymentSelected: SDKPayment.PaymentMethodSelected) {
-        let config = SDKPayment.TransactionConfig(
+    func pay(paymentSelected: SdkPayments.PaymentMethodSelected) {
+        let config = SdkPayments.TransactionConfig(
             checkoutSession: "session-from-backend",
             countryCode: "CO",
             language: "en",
@@ -87,7 +87,7 @@ final class Checkout: SDKPayment.TransactionController {
             showPaymentStatusScreen: true    // see "Behavior changes" below
         )
 
-        SDKPayment.Transaction(config: config)
+        SdkPayments.Transaction(config: config)
             .start(paymentSelected: paymentSelected)
     }
 }
@@ -99,34 +99,34 @@ final class Checkout: SDKPayment.TransactionController {
 
 | Before (Lite) | After (unified) | Notes |
 |---|---|---|
-| `SDKPayment.initialize(apiKey:config:)` | `SDKPayment.initialize(apiKey:)` | `YunoConfig` is removed. See per-field rows below. |
-| `YunoConfig.appearance` | `SDKPayment.TransactionConfig.appearance` | Moves from app-wide to per-transaction. |
+| `Yuno.initialize(apiKey:config:)` | `SdkPayments.initialize(apiKey:)` | `YunoConfig` is removed. See per-field rows below. |
+| `YunoConfig.appearance` | `SdkPayments.TransactionConfig.appearance` | Moves from app-wide to per-transaction. |
 | `YunoConfig.saveCardEnabled` | *(removed)* | Now controlled server-side via the settings service. The client no longer passes this flag. |
 | `YunoConfig.keepLoader` | *(removed)* | The SDK keeps its loader by default. New: in the unified API you can override [`showLoading`](/docs/yuno-sdk/controllers/show-loading) to render your own. This controller was not invoked in Lite. |
-| `YunoPaymentDelegate.checkoutSession` | `SDKPayment.TransactionConfig.checkoutSession` | Now part of the config object, not the delegate. |
-| `YunoPaymentDelegate.countryCode` | `SDKPayment.TransactionConfig.countryCode` | Same as above. |
-| `YunoPaymentDelegate.language` | `SDKPayment.TransactionConfig.language` | Same as above. |
-| `YunoPaymentDelegate.viewController` | `SDKPayment.TransactionConfig.viewController` | Still iOS-only. Optional in SwiftUI; required if you need a specific UIKit presenter. |
-| `YunoPaymentDelegate.yunoPaymentResult(_:)` | `SDKPayment.TransactionController.onStatus(status:)` | `status` and `substatus` are passed through from the backend; the SDK only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/status). |
-| `Yuno.startPaymentLite(with:paymentSelected:showPaymentStatus:)` | `SDKPayment.Transaction(config:).start(paymentSelected:)` | Builder-style. The `showPaymentStatus` argument moved into `SDKPayment.TransactionConfig.showPaymentStatusScreen`. |
+| `YunoPaymentDelegate.checkoutSession` | `SdkPayments.TransactionConfig.checkoutSession` | Now part of the config object, not the delegate. |
+| `YunoPaymentDelegate.countryCode` | `SdkPayments.TransactionConfig.countryCode` | Same as above. |
+| `YunoPaymentDelegate.language` | `SdkPayments.TransactionConfig.language` | Same as above. |
+| `YunoPaymentDelegate.viewController` | `SdkPayments.TransactionConfig.viewController` | Still iOS-only. Optional in SwiftUI; required if you need a specific UIKit presenter. |
+| `YunoPaymentDelegate.yunoPaymentResult(_:)` | `SdkPayments.TransactionController.onStatus(status:)` | `status` and `substatus` are passed through from the backend; the SDK only emits `INTERNAL_ERROR` and `USER_CANCEL`. See [`Status`](/docs/yuno-sdk/reference/status). |
+| `Yuno.startPaymentLite(with:paymentSelected:showPaymentStatus:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Builder-style. The `showPaymentStatus` argument moved into `SdkPayments.TransactionConfig.showPaymentStatusScreen`. |
 
 ## Behavior changes
 
 <Warning>
-**`showPaymentStatusScreen` default flipped.** In Lite, `showPaymentStatus` defaulted to `true`. The SDK presented its built-in result screen. In the unified API, `showPaymentStatusScreen` defaults to **`false`**. If your integration relied on the SDK showing the result screen, set `showPaymentStatusScreen: true` in `SDKPayment.TransactionConfig` explicitly.
+**`showPaymentStatusScreen` default flipped.** In Lite, `showPaymentStatus` defaulted to `true`. The SDK presented its built-in result screen. In the unified API, `showPaymentStatusScreen` defaults to **`false`**. If your integration relied on the SDK showing the result screen, set `showPaymentStatusScreen: true` in `SdkPayments.TransactionConfig` explicitly.
 </Warning>
 
 - **`onStatus` is always invoked.** In Lite it was the only way to know the outcome; that hasn't changed. But now it fires regardless of whether the SDK shows its own result screen, so you can drive your own UI on top.
-- **Controller retention.** The `controller` field on `SDKPayment.TransactionConfig` follows the same rule the old delegate did: the SDK does not retain it strongly. Keep the instance you pass as `controller` alive for the duration of the transaction.
+- **Controller retention.** The `controller` field on `SdkPayments.TransactionConfig` follows the same rule the old delegate did: the SDK does not retain it strongly. Keep the instance you pass as `controller` alive for the duration of the transaction.
 
 ## Checklist
 
-- [ ] Replace `SDKPayment.initialize(apiKey:config:)` with `SDKPayment.initialize(apiKey:)`.
-- [ ] Move `appearance` into `SDKPayment.TransactionConfig`. Drop `saveCardEnabled` and `keepLoader`.
-- [ ] Replace conformance to `YunoPaymentDelegate` with conformance to `SDKPayment.TransactionController`.
-- [ ] Move `checkoutSession`, `countryCode`, `language`, `viewController` from delegate properties into `SDKPayment.TransactionConfig`.
+- [ ] Replace `Yuno.initialize(apiKey:config:)` with `SdkPayments.initialize(apiKey:)`.
+- [ ] Move `appearance` into `SdkPayments.TransactionConfig`. Drop `saveCardEnabled` and `keepLoader`.
+- [ ] Replace conformance to `YunoPaymentDelegate` with conformance to `SdkPayments.TransactionController`.
+- [ ] Move `checkoutSession`, `countryCode`, `language`, `viewController` from delegate properties into `SdkPayments.TransactionConfig`.
 - [ ] Rename `yunoPaymentResult(_:)` to `onStatus(status:)` and switch the enum cases.
-- [ ] Replace the `Yuno.startPaymentLite(...)` call with `SDKPayment.Transaction(config:).start(paymentSelected:)`.
+- [ ] Replace the `Yuno.startPaymentLite(...)` call with `SdkPayments.Transaction(config:).start(paymentSelected:)`.
 - [ ] Set `showPaymentStatusScreen: true` if you relied on the SDK showing the result screen.
 - [ ] Re-run your sandbox test suite.
 

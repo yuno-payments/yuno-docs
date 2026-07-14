@@ -9,10 +9,10 @@ In the unified API the same flow is the **default behavior** of `Transaction.sta
 
 | Before | After |
 |---|---|
-| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)` async → `Yuno.Result` | `SDKPayment.Transaction(config:).start(paymentSelected:)` + `onStatus` controller |
-| `SeamlessParams` | `SDKPayment.TransactionConfig` |
+| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)` async → `Yuno.Result` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + `onStatus` controller |
+| `SeamlessParams` | `SdkPayments.TransactionConfig` |
 | Result returned from `await` | Delivered through `onStatus(status:)` |
-| No delegate | `SDKPayment.TransactionController` (just for `onStatus`) |
+| No delegate | `SdkPayments.TransactionController` (just for `onStatus`) |
 
 ## Side-by-side
 
@@ -22,7 +22,7 @@ In the unified API the same flow is the **default behavior** of `Transaction.sta
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(apiKey: "your-public-api-key")
+Yuno.initialize(apiKey: "your-public-api-key")
 
 // 2. Trigger the payment from a single async call
 func pay(paymentSelected: PaymentMethodSelected) async {
@@ -55,10 +55,10 @@ func pay(paymentSelected: PaymentMethodSelected) async {
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(apiKey: "your-public-api-key")
+SdkPayments.initialize(apiKey: "your-public-api-key")
 
 // 2. Implement a minimal controller
-final class Checkout: SDKPayment.TransactionController {
+final class Checkout: SdkPayments.TransactionController {
 
     func onStatus(status: SdkPayments.TransactionStatus) {
         switch status.status {
@@ -70,8 +70,8 @@ final class Checkout: SDKPayment.TransactionController {
     }
 
     // 3. Trigger the payment
-    func pay(paymentSelected: SDKPayment.PaymentMethodSelected) {
-        let config = SDKPayment.TransactionConfig(
+    func pay(paymentSelected: SdkPayments.PaymentMethodSelected) {
+        let config = SdkPayments.TransactionConfig(
             checkoutSession: "session-from-backend",
             countryCode: "CO",
             language: "en",
@@ -80,7 +80,7 @@ final class Checkout: SDKPayment.TransactionController {
             showPaymentStatusScreen: true
         )
 
-        SDKPayment.Transaction(config: config)
+        SdkPayments.Transaction(config: config)
             .start(paymentSelected: paymentSelected)
     }
 }
@@ -92,11 +92,11 @@ final class Checkout: SDKPayment.TransactionController {
 
 | Before (Seamless) | After (unified) | Notes |
 |---|---|---|
-| `SeamlessParams.checkoutSession` | `SDKPayment.TransactionConfig.checkoutSession` | Same. |
-| `SeamlessParams.countryCode` | `SDKPayment.TransactionConfig.countryCode` | Same. |
-| `SeamlessParams.language` | `SDKPayment.TransactionConfig.language` | Same. |
-| `SeamlessParams.viewController` | `SDKPayment.TransactionConfig.viewController` | Still iOS-only. |
-| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)` async | `SDKPayment.Transaction(config:).start(paymentSelected:)` | Builder-style. The `showPaymentStatus` argument moved into `SDKPayment.TransactionConfig.showPaymentStatusScreen`. |
+| `SeamlessParams.checkoutSession` | `SdkPayments.TransactionConfig.checkoutSession` | Same. |
+| `SeamlessParams.countryCode` | `SdkPayments.TransactionConfig.countryCode` | Same. |
+| `SeamlessParams.language` | `SdkPayments.TransactionConfig.language` | Same. |
+| `SeamlessParams.viewController` | `SdkPayments.TransactionConfig.viewController` | Still iOS-only. |
+| `Yuno.startPaymentSeamlessLite(with:paymentSelected:showPaymentStatus:)` async | `SdkPayments.Transaction(config:).start(paymentSelected:)` | Builder-style. The `showPaymentStatus` argument moved into `SdkPayments.TransactionConfig.showPaymentStatusScreen`. |
 | Returned `Yuno.Result` | `SdkPayments.TransactionStatus` delivered through `onStatus` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/status). |
 
 ## Behavior changes
@@ -106,16 +106,16 @@ final class Checkout: SDKPayment.TransactionController {
 </Warning>
 
 <Warning>
-**`showPaymentStatusScreen` default flipped.** In Seamless, `showPaymentStatus` defaulted to `true`. In the unified API, `showPaymentStatusScreen` defaults to **`false`**. Set it to `true` in `SDKPayment.TransactionConfig` if you relied on the SDK's built-in result screen.
+**`showPaymentStatusScreen` default flipped.** In Seamless, `showPaymentStatus` defaulted to `true`. In the unified API, `showPaymentStatusScreen` defaults to **`false`**. Set it to `true` in `SdkPayments.TransactionConfig` if you relied on the SDK's built-in result screen.
 </Warning>
 
-- **You now need a controller instance.** Even for the simplest case you implement a `SDKPayment.TransactionController` (just `onStatus`). The SDK does not retain it strongly. Keep it alive for the duration of the transaction.
+- **You now need a controller instance.** Even for the simplest case you implement a `SdkPayments.TransactionController` (just `onStatus`). The SDK does not retain it strongly. Keep it alive for the duration of the transaction.
 
 ## Checklist
 
-- [ ] Implement `SDKPayment.TransactionController` on a class you can keep alive (e.g. your view model).
-- [ ] Move `SeamlessParams` fields (`checkoutSession`, `countryCode`, `language`, `viewController`) into `SDKPayment.TransactionConfig`.
-- [ ] Replace the `await Yuno.startPaymentSeamlessLite(...)` call with `SDKPayment.Transaction(config:).start(paymentSelected:)`.
+- [ ] Implement `SdkPayments.TransactionController` on a class you can keep alive (e.g. your view model).
+- [ ] Move `SeamlessParams` fields (`checkoutSession`, `countryCode`, `language`, `viewController`) into `SdkPayments.TransactionConfig`.
+- [ ] Replace the `await Yuno.startPaymentSeamlessLite(...)` call with `SdkPayments.Transaction(config:).start(paymentSelected:)`.
 - [ ] Move the result-handling logic from after the `await` into `onStatus(status:)`. Switch the enum cases to UPPER_CASE.
 - [ ] Set `showPaymentStatusScreen: true` if you relied on the SDK showing the result screen.
 - [ ] Re-run your sandbox test suite.

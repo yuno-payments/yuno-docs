@@ -9,8 +9,8 @@ In the unified API the same pattern is expressed by overriding [`showView`](/doc
 
 | Before | After |
 |---|---|
-| `Yuno.startEnrollmentRender(with:)` | `SDKPayment.Transaction(config:).start(paymentSelected:)` + override `showView` |
-| `YunoEnrollmentDelegate` | `SDKPayment.TransactionController` |
+| `Yuno.startEnrollmentRender(with:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + override `showView` |
+| `YunoEnrollmentDelegate` | `SdkPayments.TransactionController` |
 | `paymentFlow.formView(...)` | View delivered through `showView(view:process:step:)` |
 | `paymentFlow.submitForm()` | `process.onSubmit()` |
 
@@ -58,13 +58,13 @@ struct EnrollmentView: View {
 import SwiftUI
 import YunoSDK
 
-final class EnrollmentModel: SDKPayment.TransactionController, ObservableObject {
+final class EnrollmentModel: SdkPayments.TransactionController, ObservableObject {
 
-    @Published var formView: some View?
-    @Published var process: SDKPayment.TransactionProcess?
+    @Published var formView: AnyView?
+    @Published var process: SdkPayments.TransactionProcess?
     @Published var isLoading: Bool = false
 
-    func showView(view: some View?, process: SDKPayment.TransactionProcess, step: SDKPayment.TransactionViewStep) {
+    func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
         self.formView = view
         self.process = process
     }
@@ -86,17 +86,17 @@ struct EnrollmentView: View {
             }
         }
         .task {
-            let config = SDKPayment.TransactionConfig(
+            let config = SdkPayments.TransactionConfig(
                 customerSession: "session-from-backend",
                 countryCode: "CO",
                 controller: model
             )
 
-            let paymentSelected = SDKPayment.PaymentMethodSelected(
+            let paymentSelected = SdkPayments.PaymentMethodSelected(
                 paymentMethodType: "CARD"
             )
 
-            SDKPayment.Transaction(config: config)
+            SdkPayments.Transaction(config: config)
                 .start(paymentSelected: paymentSelected)
         }
     }
@@ -113,10 +113,10 @@ The `needSubmit` property has no equivalent in the unified API. The merchant ren
 
 | Before | After | Notes |
 |---|---|---|
-| `Yuno.startEnrollmentRender(with:)` → `YunoEnrollmentRenderFlowProtocol` | `SDKPayment.Transaction(config:).start(paymentSelected:)` + override `showView` | Push, not pull. The SDK delivers the view to your handler when ready. |
+| `Yuno.startEnrollmentRender(with:)` → `YunoEnrollmentRenderFlowProtocol` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + override `showView` | Push, not pull. The SDK delivers the view to your handler when ready. |
 | `paymentFlow.formView(with:) async -> some View?` | `showView(view:process:step:)` | View arrives through the controller. |
 | `paymentFlow.submitForm()` | `process.onSubmit()` | Same role; called on the `TransactionProcess` you receive in `showView`. |
-| `YunoLoaderDelegate.onLoading(isLoading:)` | `SDKPayment.TransactionController.showLoading(isLoading:)` | Renamed. Fires only when overridden. |
+| `YunoLoaderDelegate.onLoading(isLoading:)` | `SdkPayments.TransactionController.showLoading(isLoading:)` | Renamed. Fires only when overridden. |
 
 ## Behavior changes
 
@@ -125,8 +125,8 @@ The `needSubmit` property has no equivalent in the unified API. The merchant ren
 
 ## Checklist
 
-- [ ] Replace conformance to `YunoEnrollmentDelegate` with `SDKPayment.TransactionController`.
-- [ ] Move `customerSession`, `countryCode`, `language`, `viewController` from delegate properties into `SDKPayment.TransactionConfig`.
+- [ ] Replace conformance to `YunoEnrollmentDelegate` with `SdkPayments.TransactionController`.
+- [ ] Move `customerSession`, `countryCode`, `language`, `viewController` from delegate properties into `SdkPayments.TransactionConfig`.
 - [ ] Rename `yunoEnrollmentResult(_:)` to `onStatus(status:)`.
 - [ ] Replace `Yuno.startEnrollmentRender(...)` + `formView` / `submitForm` with `showView` override + `process.onSubmit()`.
 - [ ] Rename `onLoading(isLoading:)` to `showLoading(isLoading:)`.

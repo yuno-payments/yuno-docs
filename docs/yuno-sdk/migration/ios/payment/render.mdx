@@ -9,11 +9,11 @@ In the unified API the same pattern is expressed by overriding [`showView`](/doc
 
 | Before | After |
 |---|---|
-| `Yuno.startPaymentRenderFlow(...)` → `YunoPaymentRenderFlowProtocol` | `SDKPayment.Transaction(config:).start(paymentSelected:)` + override `showView` |
+| `Yuno.startPaymentRenderFlow(...)` → `YunoPaymentRenderFlowProtocol` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + override `showView` |
 | `paymentFlow.formView(paymentMethodSelected:with:)` | View delivered through `showView(view:process:step:)` |
 | `paymentFlow.submitForm()` | `process.onSubmit()` |
 | `paymentFlow.continuePayment()` | *(no longer required. SDK handles continuation)* |
-| `YunoPaymentDelegate` | `SDKPayment.TransactionController` |
+| `YunoPaymentDelegate` | `SdkPayments.TransactionController` |
 
 ## Side-by-side
 
@@ -24,7 +24,7 @@ import SwiftUI
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(apiKey: "your-public-api-key")
+Yuno.initialize(apiKey: "your-public-api-key")
 
 // 2. Implement the delegate
 final class CheckoutModel: YunoPaymentDelegate, ObservableObject {
@@ -73,16 +73,16 @@ import SwiftUI
 import YunoSDK
 
 // 1. Initialize once at app startup
-SDKPayment.initialize(apiKey: "your-public-api-key")
+SdkPayments.initialize(apiKey: "your-public-api-key")
 
 // 2. Implement the controller. Override showView + showLoading
-final class CheckoutModel: SDKPayment.TransactionController, ObservableObject {
+final class CheckoutModel: SdkPayments.TransactionController, ObservableObject {
 
-    @Published var formView: some View?
-    @Published var process: SDKPayment.TransactionProcess?
+    @Published var formView: AnyView?
+    @Published var process: SdkPayments.TransactionProcess?
     @Published var isLoading: Bool = false
 
-    func showView(view: some View?, process: SDKPayment.TransactionProcess, step: SDKPayment.TransactionViewStep) {
+    func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
         // step == .FORM for the data-capture form, .ACTION for 3DS / redirect
         self.formView = view
         self.process = process
@@ -98,7 +98,7 @@ final class CheckoutModel: SDKPayment.TransactionController, ObservableObject {
 // 3. Embed the delivered view, submit via process.onSubmit()
 struct CheckoutView: View {
     @StateObject var model = CheckoutModel()
-    let selectedMethod: SDKPayment.PaymentMethodSelected
+    let selectedMethod: SdkPayments.PaymentMethodSelected
 
     var body: some View {
         VStack {
@@ -111,12 +111,12 @@ struct CheckoutView: View {
             }
         }
         .task {
-            let config = SDKPayment.TransactionConfig(
+            let config = SdkPayments.TransactionConfig(
                 checkoutSession: "session-from-backend",
                 countryCode: "CO",
                 controller: model
             )
-            SDKPayment.Transaction(config: config)
+            SdkPayments.Transaction(config: config)
                 .start(paymentSelected: selectedMethod)
         }
     }
@@ -129,13 +129,13 @@ struct CheckoutView: View {
 
 | Before (Render) | After (unified) | Notes |
 |---|---|---|
-| `Yuno.startPaymentRenderFlow(paymentMethodSelected:with:)` | `SDKPayment.Transaction(config:).start(paymentSelected:)` | The Transaction is the single entry point; selection is passed to `start(...)`. |
+| `Yuno.startPaymentRenderFlow(paymentMethodSelected:with:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` | The Transaction is the single entry point; selection is passed to `start(...)`. |
 | `paymentFlow.formView(paymentMethodSelected:with:) async -> some View?` | `showView(view:process:step:)` | Push, not pull. The SDK delivers the view to your handler when ready. |
 | `paymentFlow.submitForm()` | `process.onSubmit()` | Same role; called on the `TransactionProcess` you receive in `showView`. |
 | `paymentFlow.continuePayment() async -> some View?` | *(removed)* | The SDK now handles continuation internally and may emit a second `showView` call with `step == .ACTION` if a 3DS challenge is required. |
-| `YunoPaymentDelegate.yunoPaymentResult(_:)` | `SDKPayment.TransactionController.onStatus(status:)` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/status). |
-| `YunoLoaderDelegate.onLoading(isLoading:)` | `SDKPayment.TransactionController.showLoading(isLoading:)` | Same semantics, renamed. **Render is the only legacy mode where the loader callback was actually invoked**, so existing Render integrations almost certainly need to migrate this. |
-| `YunoPaymentDelegate.checkoutSession` / `countryCode` / `language` / `viewController` | `SDKPayment.TransactionConfig.checkoutSession` / `countryCode` / `language` / `viewController` | All move from the delegate to the config. |
+| `YunoPaymentDelegate.yunoPaymentResult(_:)` | `SdkPayments.TransactionController.onStatus(status:)` | `status` and `substatus` are passed through from the backend. See [`Status`](/docs/yuno-sdk/reference/status). |
+| `YunoLoaderDelegate.onLoading(isLoading:)` | `SdkPayments.TransactionController.showLoading(isLoading:)` | Same semantics, renamed. **Render is the only legacy mode where the loader callback was actually invoked**, so existing Render integrations almost certainly need to migrate this. |
+| `YunoPaymentDelegate.checkoutSession` / `countryCode` / `language` / `viewController` | `SdkPayments.TransactionConfig.checkoutSession` / `countryCode` / `language` / `viewController` | All move from the delegate to the config. |
 
 ## Behavior changes
 
@@ -146,9 +146,9 @@ struct CheckoutView: View {
 
 ## Checklist
 
-- [ ] Replace conformance to `YunoPaymentDelegate` with `SDKPayment.TransactionController`.
-- [ ] Move `checkoutSession`, `countryCode`, `language`, `viewController` from the delegate into `SDKPayment.TransactionConfig`.
-- [ ] Remove the `Yuno.startPaymentRenderFlow(...)` call. Use `SDKPayment.Transaction(config:).start(paymentSelected:)` instead.
+- [ ] Replace conformance to `YunoPaymentDelegate` with `SdkPayments.TransactionController`.
+- [ ] Move `checkoutSession`, `countryCode`, `language`, `viewController` from the delegate into `SdkPayments.TransactionConfig`.
+- [ ] Remove the `Yuno.startPaymentRenderFlow(...)` call. Use `SdkPayments.Transaction(config:).start(paymentSelected:)` instead.
 - [ ] Remove the explicit `paymentFlow.formView(...)` fetch. Override `showView` and store the delivered view in your model.
 - [ ] Replace `paymentFlow.submitForm()` with `process.onSubmit()` (the `process` you received in `showView`).
 - [ ] Remove `paymentFlow.continuePayment()`. The SDK now triggers a second `showView` with `step == .ACTION` if a 3DS challenge is required.
