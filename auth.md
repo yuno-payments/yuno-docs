@@ -40,4 +40,4 @@ Both methods use the same API key credentials as the REST API, no separate OAuth
 
 ## Machine-readable docs
 
-Every Yuno Docs page is available as plain-text Markdown by appending `.md` to its URL, for both guides and API reference pages. See [llms.txt](/llms.txt) for the full page index.
+Every Yuno Docs page is available as plain-text Markdown by appending `.md` to its URL, for both guides and API reference pages. See [llms.txt](https://docs.y.uno/llms.txt) for the full page index.
