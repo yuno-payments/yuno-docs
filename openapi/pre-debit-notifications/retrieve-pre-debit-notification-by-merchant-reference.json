@@ -1,0 +1,165 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "pre-debit-notifications",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/predebit-notify": {
+      "get": {
+        "summary": "Retrieve Pre-Debit Notification by Merchant Reference",
+        "description": "Retrieves a pre-debit notification by the merchant reference used to create it.",
+        "operationId": "retrieve-pre-debit-notification-by-merchant-reference",
+        "parameters": [
+          {
+            "name": "merchant_reference",
+            "in": "query",
+            "required": true,
+            "description": "The merchant_reference used on creation.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The pre-debit notification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Unique identifier of the pre-debit notification. Reference it on the recurring debit as payment_method.detail.bank_transfer.pre_debit_notification_id."
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Your Yuno account ID."
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "SENT",
+                        "REJECTED",
+                        "ERROR"
+                      ],
+                      "description": "SENT: the provider accepted and delivered the notification. REJECTED: the provider refused it. ERROR: the notification could not be relayed."
+                    },
+                    "merchant_reference": {
+                      "type": "string",
+                      "description": "Your unique reference for this notification (idempotent per account)."
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Text shown to the customer in the notification."
+                    },
+                    "amount": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "value"
+                      ],
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "description": "ISO 4217 currency code of the upcoming debit (for UPI Autopay, INR).",
+                          "example": "INR"
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "Amount of the upcoming debit.",
+                          "example": "499.00"
+                        }
+                      }
+                    },
+                    "billing_date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Date of the upcoming debit (YYYY-MM-DD)."
+                    },
+                    "origin_payment_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "The mandate-creation payment used to derive provider and connection, when provided."
+                    },
+                    "provider_data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Provider that handled the notification (for example, EBANX)."
+                        },
+                        "connection_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Connection used to send the notification."
+                        },
+                        "provider_transaction_id": {
+                          "type": "string",
+                          "description": "Provider transaction reference, when available."
+                        },
+                        "provider_notification_id": {
+                          "type": "string",
+                          "description": "Provider reference of the delivered notification. Yuno resolves and forwards it to the provider automatically when the recurring debit references this notification."
+                        },
+                        "raw_request": {
+                          "type": "object",
+                          "description": "Obfuscated provider request. Only returned for allowlisted organizations."
+                        },
+                        "raw_response": {
+                          "type": "object",
+                          "description": "Obfuscated provider response. Only returned for allowlisted organizations."
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No notification with this merchant reference exists for your account."
+          }
+        }
+      }
+    }
+  }
+}
