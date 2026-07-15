@@ -1,0 +1,1503 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "webhooks-manage-webhooks",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/webhooks": {
+      "get": {
+        "summary": "List Webhooks",
+        "description": "Returns the webhooks configured on an account, with their secrets masked. Filter by `state` to list only the active or the inactive ones.",
+        "operationId": "list-webhooks",
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "description": "The unique identifier of the account the webhooks belong to.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "493e9374-510a-4201-9e09-de669d75f256",
+              "x-default": "493e9374-510a-4201-9e09-de669d75f256"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "Return only the webhooks in this state. Omit it to return all of them.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "INACTIVE"
+              ],
+              "example": "ACTIVE"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The webhooks configured on the account, or an empty array if it has none.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Webhook"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "12345",
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "name": "Production payments listener",
+                    "state": "ACTIVE",
+                    "url": "https://api.acme.com/yuno/webhooks",
+                    "api_key": "***",
+                    "secret": "***",
+                    "hmac_client_secret": "***",
+                    "oauth2_authentication_url": null,
+                    "oauth2_client_secret": null,
+                    "oauth2_client_id": null,
+                    "oauth2_grant_type": null,
+                    "oauth2_scope": null,
+                    "oauth2_authorization_name": null,
+                    "oauth2_include_client_id": false,
+                    "enrollment_triggers": [],
+                    "payment_triggers": [
+                      "AUTHORIZE",
+                      "CAPTURE",
+                      "REFUND"
+                    ],
+                    "report_triggers": [],
+                    "subscription_triggers": null,
+                    "onboarding_triggers": null,
+                    "renewal_days": null,
+                    "created_at": "2026-07-09T13:05:36.482913Z",
+                    "updated_at": "2026-07-09T13:05:36.482913Z"
+                  },
+                  {
+                    "id": "12346",
+                    "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                    "name": "Subscription renewals",
+                    "state": "INACTIVE",
+                    "url": "https://api.acme.com/yuno/subscriptions",
+                    "api_key": "***",
+                    "secret": "***",
+                    "hmac_client_secret": null,
+                    "oauth2_authentication_url": null,
+                    "oauth2_client_secret": null,
+                    "oauth2_client_id": null,
+                    "oauth2_grant_type": null,
+                    "oauth2_scope": null,
+                    "oauth2_authorization_name": null,
+                    "oauth2_include_client_id": false,
+                    "enrollment_triggers": [],
+                    "payment_triggers": [],
+                    "report_triggers": [],
+                    "subscription_triggers": [
+                      "CREATE",
+                      "CLOSE_TO_RENEWAL"
+                    ],
+                    "onboarding_triggers": null,
+                    "renewal_days": 5,
+                    "created_at": "2026-07-10T09:41:12.204518Z",
+                    "updated_at": "2026-07-11T16:20:44.918330Z"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidListRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a Webhook",
+        "description": "Creates a webhook in active state, subscribed to the events you select. It requires at least one trigger, and starts receiving notifications immediately.",
+        "operationId": "create-webhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreateInput"
+              },
+              "example": {
+                "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                "name": "Production payments listener",
+                "url": "https://api.acme.com/yuno/webhooks",
+                "api_key": "my-webhook-key",
+                "secret": "my-webhook-secret",
+                "hmac_client_secret": "my-hmac-secret",
+                "enrollment_triggers": [
+                  "ENROLL",
+                  "UNENROLL"
+                ],
+                "payment_triggers": [
+                  "AUTHORIZE",
+                  "CAPTURE",
+                  "REFUND"
+                ],
+                "subscription_triggers": [
+                  "CREATE",
+                  "CLOSE_TO_RENEWAL"
+                ],
+                "renewal_days": 5
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The webhook you created. The secrets you configured come back masked, and the ones you left out come back as null.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                },
+                "example": {
+                  "id": "12345",
+                  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                  "name": "Production payments listener",
+                  "state": "ACTIVE",
+                  "url": "https://api.acme.com/yuno/webhooks",
+                  "api_key": "***",
+                  "secret": "***",
+                  "hmac_client_secret": "***",
+                  "oauth2_authentication_url": null,
+                  "oauth2_client_secret": null,
+                  "oauth2_client_id": null,
+                  "oauth2_grant_type": null,
+                  "oauth2_scope": null,
+                  "oauth2_authorization_name": null,
+                  "oauth2_include_client_id": false,
+                  "enrollment_triggers": [
+                    "ENROLL",
+                    "UNENROLL"
+                  ],
+                  "payment_triggers": [
+                    "AUTHORIZE",
+                    "CAPTURE",
+                    "REFUND"
+                  ],
+                  "report_triggers": [],
+                  "subscription_triggers": [
+                    "CREATE",
+                    "CLOSE_TO_RENEWAL"
+                  ],
+                  "onboarding_triggers": null,
+                  "renewal_days": 5,
+                  "created_at": "2026-07-09T13:05:36.482913Z",
+                  "updated_at": "2026-07-09T13:05:36.482913Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidCreateRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/WebhookConflict"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    },
+    "/webhooks/{webhook_id}": {
+      "get": {
+        "summary": "Retrieve a Webhook",
+        "description": "Returns a webhook by its unique identifier, with its secrets masked.",
+        "operationId": "retrieve-webhook",
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the webhook, as returned by [Create a Webhook](/reference/webhooks/create-webhook).",
+            "schema": {
+              "type": "string",
+              "example": "12345"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "description": "The unique identifier of the account the webhook belongs to.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "493e9374-510a-4201-9e09-de669d75f256",
+              "x-default": "493e9374-510a-4201-9e09-de669d75f256"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                },
+                "example": {
+                  "id": "12345",
+                  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                  "name": "Production payments listener",
+                  "state": "ACTIVE",
+                  "url": "https://api.acme.com/yuno/webhooks",
+                  "api_key": "***",
+                  "secret": "***",
+                  "hmac_client_secret": "***",
+                  "oauth2_authentication_url": "https://api.acme.com/oauth/token",
+                  "oauth2_client_secret": "***",
+                  "oauth2_client_id": "acme_client_id",
+                  "oauth2_grant_type": "client_credentials",
+                  "oauth2_scope": "webhooks:write",
+                  "oauth2_authorization_name": "Authorization",
+                  "oauth2_include_client_id": true,
+                  "enrollment_triggers": [
+                    "ENROLL",
+                    "UNENROLL"
+                  ],
+                  "payment_triggers": [
+                    "AUTHORIZE",
+                    "CAPTURE",
+                    "REFUND"
+                  ],
+                  "report_triggers": [],
+                  "subscription_triggers": [
+                    "CREATE",
+                    "CLOSE_TO_RENEWAL"
+                  ],
+                  "onboarding_triggers": null,
+                  "renewal_days": 5,
+                  "created_at": "2026-07-09T13:05:36.482913Z",
+                  "updated_at": "2026-07-11T16:20:44.918330Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidAccountRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/WebhookNotFound"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a Webhook",
+        "description": "Updates a webhook. Send only the fields you want to change, including the state and any rotated secret.",
+        "operationId": "update-webhook",
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the webhook, as returned by [Create a Webhook](/reference/webhooks/create-webhook).",
+            "schema": {
+              "type": "string",
+              "example": "12345"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookUpdateInput"
+              },
+              "example": {
+                "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                "state": "INACTIVE",
+                "secret": "my-rotated-secret"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated webhook.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                },
+                "example": {
+                  "id": "12345",
+                  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                  "name": "Production payments listener",
+                  "state": "INACTIVE",
+                  "url": "https://api.acme.com/yuno/webhooks",
+                  "api_key": "***",
+                  "secret": "***",
+                  "hmac_client_secret": "***",
+                  "oauth2_authentication_url": null,
+                  "oauth2_client_secret": null,
+                  "oauth2_client_id": null,
+                  "oauth2_grant_type": null,
+                  "oauth2_scope": null,
+                  "oauth2_authorization_name": null,
+                  "oauth2_include_client_id": false,
+                  "enrollment_triggers": [
+                    "ENROLL",
+                    "UNENROLL"
+                  ],
+                  "payment_triggers": [
+                    "AUTHORIZE",
+                    "CAPTURE",
+                    "REFUND"
+                  ],
+                  "report_triggers": [],
+                  "subscription_triggers": [
+                    "CREATE",
+                    "CLOSE_TO_RENEWAL"
+                  ],
+                  "onboarding_triggers": null,
+                  "renewal_days": 5,
+                  "created_at": "2026-07-09T13:05:36.482913Z",
+                  "updated_at": "2026-07-11T16:20:44.918330Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidUpdateRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/WebhookNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/WebhookConflict"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a Webhook",
+        "description": "Deletes a webhook. Yuno stops sending notifications to its URL, and returns the webhook it deleted.",
+        "operationId": "delete-webhook",
+        "parameters": [
+          {
+            "name": "webhook_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the webhook, as returned by [List Webhooks](/reference/webhooks/list-webhooks).",
+            "schema": {
+              "type": "string",
+              "example": "12345"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "description": "The unique identifier of the account the webhook belongs to.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "493e9374-510a-4201-9e09-de669d75f256",
+              "x-default": "493e9374-510a-4201-9e09-de669d75f256"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The webhook you deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Webhook"
+                },
+                "example": {
+                  "id": "12345",
+                  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
+                  "name": "Production payments listener",
+                  "state": "ACTIVE",
+                  "url": "https://api.acme.com/yuno/webhooks",
+                  "api_key": "***",
+                  "secret": "***",
+                  "hmac_client_secret": "***",
+                  "oauth2_authentication_url": null,
+                  "oauth2_client_secret": null,
+                  "oauth2_client_id": null,
+                  "oauth2_grant_type": null,
+                  "oauth2_scope": null,
+                  "oauth2_authorization_name": null,
+                  "oauth2_include_client_id": false,
+                  "enrollment_triggers": [
+                    "ENROLL",
+                    "UNENROLL"
+                  ],
+                  "payment_triggers": [
+                    "AUTHORIZE",
+                    "CAPTURE",
+                    "REFUND"
+                  ],
+                  "report_triggers": [],
+                  "subscription_triggers": [
+                    "CREATE",
+                    "CLOSE_TO_RENEWAL"
+                  ],
+                  "onboarding_triggers": null,
+                  "renewal_days": 5,
+                  "created_at": "2026-07-09T13:05:36.482913Z",
+                  "updated_at": "2026-07-09T13:05:36.482913Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidAccountRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/WebhookNotFound"
+          },
+          "502": {
+            "$ref": "#/components/responses/UpstreamError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Your API credentials are missing or invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookAuthError"
+            },
+            "examples": {
+              "Not authenticated": {
+                "value": {
+                  "code": "NOT_AUTHENTICATED",
+                  "messages": [
+                    "Not authenticated"
+                  ]
+                }
+              },
+              "Invalid credentials": {
+                "value": {
+                  "code": "INVALID_CREDENTIALS",
+                  "messages": [
+                    "Invalid Credentials"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidAccountRequest": {
+        "description": "The `account_id` is missing or invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookRequestError"
+            },
+            "examples": {
+              "Missing account_id": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "account_id is required."
+                  ]
+                }
+              },
+              "Invalid account_id": {
+                "value": {
+                  "code": "INVALID_ACCOUNT_ID",
+                  "messages": [
+                    "Account id is invalid"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidListRequest": {
+        "description": "The `account_id` is missing or invalid, or `state` is not `ACTIVE` or `INACTIVE`.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookRequestError"
+            },
+            "examples": {
+              "Missing account_id": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "account_id is required."
+                  ]
+                }
+              },
+              "Invalid state": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "state must be ACTIVE or INACTIVE."
+                  ]
+                }
+              },
+              "Invalid account_id": {
+                "value": {
+                  "code": "INVALID_ACCOUNT_ID",
+                  "messages": [
+                    "Account id is invalid"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidCreateRequest": {
+        "description": "The request is invalid. The `code` tells you which rule it broke.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookWriteRequestError"
+            },
+            "examples": {
+              "Missing required field": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "account_id, name and url are required."
+                  ]
+                }
+              },
+              "No triggers": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "at least one trigger is required."
+                  ]
+                }
+              },
+              "Invalid trigger": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_TRIGGER",
+                  "messages": [
+                    "One or more webhook triggers are invalid."
+                  ]
+                }
+              },
+              "Incomplete OAuth2": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_OAUTH2",
+                  "messages": [
+                    "OAuth2 configuration is incomplete or inconsistent."
+                  ]
+                }
+              },
+              "Invalid renewal_days": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_RENEWAL_DAYS",
+                  "messages": [
+                    "renewal_days is only valid when subscription_triggers contains CLOSE_TO_RENEWAL"
+                  ]
+                }
+              },
+              "Invalid account_id": {
+                "value": {
+                  "code": "INVALID_ACCOUNT_ID",
+                  "messages": [
+                    "Account id is invalid"
+                  ]
+                }
+              },
+              "Unsafe url": {
+                "value": {
+                  "code": "WEBHOOK_URL_UNSAFE",
+                  "messages": [
+                    "The webhook url is not allowed; it must resolve to a public, routable address."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "InvalidUpdateRequest": {
+        "description": "The request is invalid. The `code` tells you which rule it broke.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookWriteRequestError"
+            },
+            "examples": {
+              "Missing account_id": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "account_id is required."
+                  ]
+                }
+              },
+              "Invalid state": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "state must be ACTIVE or INACTIVE."
+                  ]
+                }
+              },
+              "Conflicting renewal fields": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_REQUEST",
+                  "messages": [
+                    "renewal_days and clear_renewal_days cannot be set together."
+                  ]
+                }
+              },
+              "Invalid trigger": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_TRIGGER",
+                  "messages": [
+                    "One or more webhook triggers are invalid."
+                  ]
+                }
+              },
+              "Incomplete OAuth2": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_OAUTH2",
+                  "messages": [
+                    "OAuth2 configuration is incomplete or inconsistent."
+                  ]
+                }
+              },
+              "Invalid renewal_days": {
+                "value": {
+                  "code": "WEBHOOK_INVALID_RENEWAL_DAYS",
+                  "messages": [
+                    "renewal_days is only valid when subscription_triggers contains CLOSE_TO_RENEWAL"
+                  ]
+                }
+              },
+              "Invalid account_id": {
+                "value": {
+                  "code": "INVALID_ACCOUNT_ID",
+                  "messages": [
+                    "Account id is invalid"
+                  ]
+                }
+              },
+              "Unsafe url": {
+                "value": {
+                  "code": "WEBHOOK_URL_UNSAFE",
+                  "messages": [
+                    "The webhook url is not allowed; it must resolve to a public, routable address."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "WebhookNotFound": {
+        "description": "There is no webhook with that identifier on the account.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookNotFoundError"
+            },
+            "examples": {
+              "Not found": {
+                "value": {
+                  "code": "WEBHOOK_NOT_FOUND",
+                  "messages": [
+                    "The webhook does not exist for this account."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "WebhookConflict": {
+        "description": "The account already has a webhook with that name, or one with the same URL that listens to one of the same events.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookConflictError"
+            },
+            "examples": {
+              "Already exists": {
+                "value": {
+                  "code": "WEBHOOK_ALREADY_EXISTS",
+                  "messages": [
+                    "A webhook with the same name, or url and trigger(s), already exists for this account."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "UpstreamError": {
+        "description": "The webhook service is temporarily unavailable.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/WebhookUpstreamError"
+            },
+            "examples": {
+              "Service unavailable": {
+                "value": {
+                  "code": "WEBHOOK_UPSTREAM_ERROR",
+                  "messages": [
+                    "The webhook service is temporarily unavailable."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "WebhookCreateInput": {
+        "type": "object",
+        "required": [
+          "account_id",
+          "name",
+          "url"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the account the webhook belongs to.",
+            "example": "493e9374-510a-4201-9e09-de669d75f256"
+          },
+          "name": {
+            "type": "string",
+            "description": "Your name for the webhook. It must be unique within the account.",
+            "example": "Production payments listener"
+          },
+          "url": {
+            "type": "string",
+            "description": "The endpoint Yuno sends the notifications to. It must be an `http` or `https` URL that resolves to a public, routable address.",
+            "example": "https://api.acme.com/yuno/webhooks"
+          },
+          "api_key": {
+            "type": "string",
+            "description": "Sent to your endpoint as the `x-api-key` header on every delivery.",
+            "example": "my-webhook-key"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Sent to your endpoint as the `x-secret` header on every delivery.",
+            "example": "my-webhook-secret"
+          },
+          "hmac_client_secret": {
+            "type": "string",
+            "description": "The key Yuno signs the payload with. The signature travels in the `x-hmac-signature` header.",
+            "example": "my-hmac-secret"
+          },
+          "oauth2_authentication_url": {
+            "type": "string",
+            "description": "Your token endpoint. It must use HTTPS. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "https://api.acme.com/oauth/token"
+          },
+          "oauth2_client_id": {
+            "type": "string",
+            "description": "The client identifier Yuno authenticates with. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "acme_client_id"
+          },
+          "oauth2_client_secret": {
+            "type": "string",
+            "description": "The client secret Yuno authenticates with. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "acme_client_secret"
+          },
+          "oauth2_grant_type": {
+            "type": "string",
+            "description": "The grant type Yuno requests the token with. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "client_credentials"
+          },
+          "oauth2_authorization_name": {
+            "type": "string",
+            "description": "The header Yuno sends the token in. Defaults to `Authorization`.",
+            "example": "Authorization"
+          },
+          "oauth2_include_client_id": {
+            "type": "boolean",
+            "description": "Send the client identifier as a header on the token request as well.",
+            "example": false
+          },
+          "enrollment_triggers": {
+            "type": "array",
+            "description": "The enrollment events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ENROLL",
+                "UNENROLL"
+              ]
+            },
+            "example": [
+              "ENROLL",
+              "UNENROLL"
+            ]
+          },
+          "payment_triggers": {
+            "type": "array",
+            "description": "The payment events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AUTHORIZE",
+                "CANCEL",
+                "CAPTURE",
+                "CHARGEBACK",
+                "PRECHARGEBACK",
+                "PURCHASE",
+                "REFUND",
+                "VERIFY"
+              ]
+            },
+            "example": [
+              "AUTHORIZE",
+              "CAPTURE",
+              "REFUND"
+            ]
+          },
+          "report_triggers": {
+            "type": "array",
+            "description": "The report events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CREATE",
+                "UPDATE"
+              ]
+            },
+            "example": [
+              "UPDATE"
+            ]
+          },
+          "subscription_triggers": {
+            "type": "array",
+            "description": "The subscription events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "CANCEL",
+                "CLOSE_TO_RENEWAL",
+                "COMPLETE",
+                "CREATE",
+                "PAUSE",
+                "RESUME"
+              ]
+            },
+            "example": [
+              "CREATE",
+              "CLOSE_TO_RENEWAL"
+            ]
+          },
+          "onboarding_triggers": {
+            "type": "array",
+            "description": "The onboarding events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "BLOCKED",
+                "CANCELLED",
+                "CREATED",
+                "DECLINED",
+                "ERROR",
+                "EXPIRED",
+                "INACTIVE",
+                "PENDING",
+                "SUCCEEDED",
+                "TRANSFERRED",
+                "UNBLOCKED"
+              ]
+            },
+            "example": [
+              "CREATED",
+              "SUCCEEDED"
+            ]
+          },
+          "renewal_days": {
+            "type": "integer",
+            "description": "How many days before a renewal Yuno sends the `CLOSE_TO_RENEWAL` notification. It must be 1 or more, and it is valid only when `subscription_triggers` contains `CLOSE_TO_RENEWAL`.",
+            "example": 5
+          }
+        }
+      },
+      "WebhookUpdateInput": {
+        "type": "object",
+        "required": [
+          "account_id"
+        ],
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the account the webhook belongs to.",
+            "example": "493e9374-510a-4201-9e09-de669d75f256"
+          },
+          "name": {
+            "type": "string",
+            "description": "Your name for the webhook. It must be unique within the account.",
+            "example": "Production payments listener"
+          },
+          "state": {
+            "type": "string",
+            "description": "Set it to `INACTIVE` to stop the deliveries while keeping the configuration, and back to `ACTIVE` to resume them.",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ],
+            "example": "INACTIVE"
+          },
+          "url": {
+            "type": "string",
+            "description": "The endpoint Yuno sends the notifications to. It must be an `http` or `https` URL that resolves to a public, routable address.",
+            "example": "https://api.acme.com/yuno/webhooks"
+          },
+          "api_key": {
+            "type": "string",
+            "description": "Replaces the `x-api-key` Yuno sends on every delivery.",
+            "example": "my-webhook-key-v2"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Replaces the `x-secret` Yuno sends on every delivery.",
+            "example": "my-rotated-secret"
+          },
+          "hmac_client_secret": {
+            "type": "string",
+            "description": "Replaces the key Yuno signs the payload with.",
+            "example": "my-rotated-hmac-secret"
+          },
+          "oauth2_authentication_url": {
+            "type": "string",
+            "description": "Your token endpoint. It must use HTTPS. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "https://api.acme.com/oauth/token"
+          },
+          "oauth2_client_id": {
+            "type": "string",
+            "description": "The client identifier Yuno authenticates with. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "acme_client_id"
+          },
+          "oauth2_client_secret": {
+            "type": "string",
+            "description": "The client secret Yuno authenticates with. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "acme_client_secret"
+          },
+          "oauth2_grant_type": {
+            "type": "string",
+            "description": "The grant type Yuno requests the token with. Send `oauth2_authentication_url`, `oauth2_client_id`, `oauth2_client_secret` and `oauth2_grant_type` together.",
+            "example": "client_credentials"
+          },
+          "oauth2_scope": {
+            "type": "string",
+            "description": "The scope Yuno requests the token with.",
+            "example": "webhooks:write"
+          },
+          "oauth2_authorization_name": {
+            "type": "string",
+            "description": "The header Yuno sends the token in. Defaults to `Authorization`.",
+            "example": "Authorization"
+          },
+          "oauth2_include_client_id": {
+            "type": "boolean",
+            "description": "Send the client identifier as a header on the token request as well.",
+            "example": true
+          },
+          "enrollment_triggers": {
+            "type": "array",
+            "description": "Replaces the enrollment events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ENROLL",
+                "UNENROLL"
+              ]
+            },
+            "example": [
+              "ENROLL"
+            ]
+          },
+          "payment_triggers": {
+            "type": "array",
+            "description": "Replaces the payment events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "AUTHORIZE",
+                "CANCEL",
+                "CAPTURE",
+                "CHARGEBACK",
+                "PRECHARGEBACK",
+                "PURCHASE",
+                "REFUND",
+                "VERIFY"
+              ]
+            },
+            "example": [
+              "AUTHORIZE",
+              "CAPTURE",
+              "REFUND"
+            ]
+          },
+          "report_triggers": {
+            "type": "array",
+            "description": "Replaces the report events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "CREATE",
+                "UPDATE"
+              ]
+            },
+            "example": [
+              "UPDATE"
+            ]
+          },
+          "subscription_triggers": {
+            "type": "array",
+            "description": "Replaces the subscription events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "CANCEL",
+                "CLOSE_TO_RENEWAL",
+                "COMPLETE",
+                "CREATE",
+                "PAUSE",
+                "RESUME"
+              ]
+            },
+            "example": [
+              "CREATE",
+              "CANCEL"
+            ]
+          },
+          "onboarding_triggers": {
+            "type": "array",
+            "description": "Replaces the onboarding events the webhook subscribes to.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "BLOCKED",
+                "CANCELLED",
+                "CREATED",
+                "DECLINED",
+                "ERROR",
+                "EXPIRED",
+                "INACTIVE",
+                "PENDING",
+                "SUCCEEDED",
+                "TRANSFERRED",
+                "UNBLOCKED"
+              ]
+            },
+            "example": [
+              "CREATED",
+              "SUCCEEDED"
+            ]
+          },
+          "renewal_days": {
+            "type": "integer",
+            "description": "How many days before a renewal Yuno sends the `CLOSE_TO_RENEWAL` notification. It must be 1 or more. Send it on its own, not together with `clear_renewal_days`.",
+            "example": 5
+          },
+          "clear_renewal_days": {
+            "type": "boolean",
+            "description": "Set it to `true` to remove `renewal_days`. Send it on its own, not together with `renewal_days`.",
+            "example": true
+          }
+        }
+      },
+      "Webhook": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The unique identifier of the webhook.",
+            "example": "12345"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The unique identifier of the account the webhook belongs to.",
+            "example": "493e9374-510a-4201-9e09-de669d75f256"
+          },
+          "name": {
+            "type": "string",
+            "description": "Your name for the webhook.",
+            "example": "Production payments listener"
+          },
+          "state": {
+            "type": "string",
+            "description": "`ACTIVE` webhooks receive notifications, `INACTIVE` ones do not. A webhook starts out `ACTIVE`.",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE"
+            ],
+            "example": "ACTIVE"
+          },
+          "url": {
+            "type": "string",
+            "description": "The endpoint Yuno sends the notifications to.",
+            "example": "https://api.acme.com/yuno/webhooks"
+          },
+          "api_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Masked as `***`, or `null` when you have not configured it.",
+            "example": "***"
+          },
+          "secret": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Masked as `***`, or `null` when you have not configured it.",
+            "example": "***"
+          },
+          "hmac_client_secret": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Masked as `***`, or `null` when you have not configured it.",
+            "example": "***"
+          },
+          "oauth2_authentication_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Your token endpoint.",
+            "example": "https://api.acme.com/oauth/token"
+          },
+          "oauth2_client_secret": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Masked as `***`, or `null` when you have not configured it.",
+            "example": "***"
+          },
+          "oauth2_client_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The client identifier Yuno authenticates with.",
+            "example": "acme_client_id"
+          },
+          "oauth2_grant_type": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The grant type Yuno requests the token with.",
+            "example": "client_credentials"
+          },
+          "oauth2_scope": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The scope Yuno requests the token with.",
+            "example": "webhooks:write"
+          },
+          "oauth2_authorization_name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The header Yuno sends the token in.",
+            "example": "Authorization"
+          },
+          "oauth2_include_client_id": {
+            "type": "boolean",
+            "description": "Whether Yuno also sends the client identifier as a header on the token request.",
+            "example": true
+          },
+          "enrollment_triggers": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "The enrollment events the webhook subscribes to.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "ENROLL",
+              "UNENROLL"
+            ]
+          },
+          "payment_triggers": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "The payment events the webhook subscribes to.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "AUTHORIZE",
+              "CAPTURE",
+              "REFUND"
+            ]
+          },
+          "report_triggers": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "The report events the webhook subscribes to.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "UPDATE"
+            ]
+          },
+          "subscription_triggers": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "The subscription events the webhook subscribes to.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "CREATE",
+              "CLOSE_TO_RENEWAL"
+            ]
+          },
+          "onboarding_triggers": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "description": "The onboarding events the webhook subscribes to.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "CREATED",
+              "SUCCEEDED"
+            ]
+          },
+          "renewal_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "How many days before a renewal Yuno sends the `CLOSE_TO_RENEWAL` notification.",
+            "example": 5
+          },
+          "created_at": {
+            "type": "string",
+            "description": "The date and time the webhook was created, in ISO 8601.",
+            "example": "2026-07-09T13:05:36.482913Z",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "The date and time the webhook was last updated, in ISO 8601. It matches `created_at` until you update the webhook for the first time.",
+            "example": "2026-07-11T16:20:44.918330Z",
+            "format": "date-time"
+          }
+        }
+      },
+      "WebhookAuthError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "NOT_AUTHENTICATED",
+              "INVALID_CREDENTIALS"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "description": "Human-readable description of the error.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "WebhookRequestError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "WEBHOOK_INVALID_REQUEST",
+              "INVALID_ACCOUNT_ID"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "description": "Human-readable description of the error.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "WebhookWriteRequestError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "WEBHOOK_INVALID_REQUEST",
+              "INVALID_ACCOUNT_ID",
+              "WEBHOOK_INVALID_TRIGGER",
+              "WEBHOOK_INVALID_OAUTH2",
+              "WEBHOOK_INVALID_RENEWAL_DAYS",
+              "WEBHOOK_URL_UNSAFE"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "description": "Human-readable description of the error.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "WebhookNotFoundError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "WEBHOOK_NOT_FOUND"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "description": "Human-readable description of the error.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "WebhookConflictError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "WEBHOOK_ALREADY_EXISTS"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "description": "Human-readable description of the error.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "WebhookUpstreamError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "enum": [
+              "WEBHOOK_UPSTREAM_ERROR"
+            ]
+          },
+          "messages": {
+            "type": "array",
+            "description": "Human-readable description of the error.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
