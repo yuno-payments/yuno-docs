@@ -16,6 +16,7 @@ Autopay integrates with Yuno's existing payment flows through the `stored_creden
 * **First charge**: The initial payment is a customer-initiated transaction (CIT) processed directly with the payment provider to create the mandate and authorize future debits.
 * **Pre-debit notifications**: For each recurring debit, trigger a PDN through [Create pre-debit notification](/reference/pre-debit-notifications/create-pre-debit-notification). The provider delivers it to the customer by SMS or email, then you reference the notification on the debit.
 * **Messaging**: PDNs include the merchant name, amount, and scheduled date. Messages are localized (for example, English, Hindi, Tamil, Telugu, Bengali, Marathi). Email templates are white-labeled with merchant branding.
+* **Customer cancellation**: There is no cancellation link or Yuno-mediated opt-out. To stop the mandate, the customer must revoke it directly with their bank or UPI app. Yuno only learns about the revocation when the next debit attempt is declined by the provider.
 * **Retries**: Yuno does not automatically retry a failed UPI Autopay debit. If a debit fails, retrying is your responsibility. Create a new pre-debit notification and a new payment, within NPCI's cap of one attempt plus up to three retries.
 * **Provider support**: Autopay with PDN is initially launching through Adyen and Billdesk.
 
@@ -32,7 +33,7 @@ flowchart LR
 
 Every UPI Autopay recurring debit requires its own pre-debit notification. Trigger it yourself and reference it on the debit:
 
-1. **Send the notification** with [Create pre-debit notification](/reference/pre-debit-notifications/create-pre-debit-notification), passing the mandate's `vaulted_token`, the upcoming `amount`, and the `billing_date`. Keep the returned `id` and confirm the status is `SENT`.
+1. **Send the notification** with [Create pre-debit notification](/reference/pre-debit-notifications/create-pre-debit-notification), passing the mandate's `vaulted_token`, the upcoming `amount`, and the `billing_date`. Keep the returned `id` and confirm the status is `SENT`. This status is final. It never changes after creation, and Yuno sends no webhook for it, so there's no need to poll for updates.
 
 ```json
 {
@@ -74,7 +75,7 @@ Yuno validates the referenced notification (it must exist, belong to your accoun
 NPCI sets an amount threshold that determines whether a recurring debit can run as a merchant-initiated transaction (MIT) or must be a customer-initiated payment (CIT) instead. You are responsible for applying this threshold in your own billing logic, since Yuno does not automate it.
 
 * **Below threshold (≤ INR 50,000)**: You can debit the mandate as an MIT using the [pre-debit notification flow](#pre-debit-notifications) described above.
-* **Above threshold (> INR 50,000)**: NPCI requires a customer-initiated payment. You must collect direct action from the customer instead of debiting the mandate.
+* **Above threshold (> INR 50,000)**: NPCI requires a customer-initiated payment. Yuno sends no reminder or notification for this case. Building your own CIT collection flow and collecting direct action from the customer is entirely your responsibility.
 
 ## `stored_credentials` fields
 
