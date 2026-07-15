@@ -1,130 +1,47 @@
 ---
 title: "Webhooks Overview"
-description: "Summarizes webhook delivery, retry schedule, and event types across payments, subscriptions, payouts, and banking connectivity"
+description: "Explains what a Yuno webhook is, how delivery and retries work, and where to configure one"
 ---
 
-## What is a webhook
+A webhook is how Yuno tells your system about events, like a payment authorized, a subscription renewed, or a payout completed, without you having to poll for them. You configure a destination `url`, the events you want (triggers), and how Yuno authenticates to your endpoint. Yuno then delivers each event as an HTTP `POST` as soon as it happens.
 
-Webhooks enable apps to provide real-time information whenever an event happens without needing constant requests. They are a passive method to receive data between two systems through an HTTP POST. After configuring the Yuno webhooks, you will receive event notifications every time an activity or a function is generated within the Yuno flow.
+To receive webhooks, your endpoint must be a public HTTPS URL that accepts an unauthenticated `POST` request. This is safe because the URL you configure is only ever called by Yuno, and you can verify every delivery is genuine with one of the [authentication methods](/reference/webhooks#delivery-authentication) below.
 
-## Why do we recommend you use webhooks?
+## Delivery and retries
 
-Webhooks are the best way to ensure your system is up-to-date with payment progress and status. Since the event notifications trigger automatically, your system won't need to perform recurrent requests to Yuno. You will process the payment information on demand.
+Yuno expects an **HTTP 200 OK** response to confirm a notification was received. No response body is required. If it doesn't get one in time, Yuno retries up to seven times on the schedule below, so a brief outage on your end doesn't lose an event.
 
-## What do you need to know before start using webhooks?
+| Attempt | Deadline after the first try |
+| :------ | :---------------------------- |
+| First try | N/A |
+| Second try | 5 minutes |
+| Third try | 50 minutes |
+| Fourth try | 6 hours |
+| Fifth try | 24 hours |
+| Sixth try | 48 hours |
+| Seventh try | 96 hours |
 
-To start using Yuno’s webhooks, you need to build a public REST API to receive event notifications (POST request). That means the REST API you will build should not require any authentication or access restriction through a header. Despite using a public API, the communication system is very safe since Yuno event notifications will not be available to the public and will use a unique URL to communicate only to your REST API.
+## Configure a webhook
 
-## Webhooks delivery and response requirements
+Webhooks are configured the same way whether you use the dashboard or the API. Both set the same `url`, triggers, and delivery authentication.
 
-Yuno webhooks expects to receive an **HTTP 200 OK** status as a response to confirm the webhook was successfully received. The merchant system does not need to include any information in the response's body. Only the HTTP 200 status is required.
+<Card title="Configure a Webhook" icon="gear" href="/docs/webhooks/configure-webhooks">
+  Set up a webhook's endpoint, triggers, and delivery authentication, from the dashboard or the API.
+</Card>
 
-If no response is received within the specified time, Yuno will retry sending the event notification up to seven times to ensure no information is lost. Refer to the [Receipt Confirmation Process](/docs/webhooks/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.
+## What's next
 
-## Common Webhook Events
-
-Yuno sends event notifications for various activities within the payment ecosystem. Below are the available event categories and their corresponding events.
-
-### Payment events
-
-| Event                | Description                                                                 |
-| -------------------- | --------------------------------------------------------------------------- |
-| `payment.purchase`   | Occurs when a payment is created or its status changes during a purchase flow. |
-| `payment.chargeback` | Occurs when a chargeback or inquiry is received for a payment.              |
-
-### Refund events
-
-| Event            | Description                                   |
-| ---------------- | --------------------------------------------- |
-| `payment.refund` | Occurs when a refund is processed for a payment. |
-
-### Subscription events
-
-| Event                           | Description                                                                                                            |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `subscription.create`           | Sent when a subscription is first created.                                                                            |
-| `subscription.active`           | Sent once, when the subscription first becomes active (at `billing_cycles.current` = 2). Not re-sent on subsequent renewal cycles. |
-| `subscription.pause`            | Sent when a subscription is paused.                                                                                  |
-| `subscription.resume`           | Sent when a paused subscription is resumed.                                                                          |
-| `subscription.cancel`           | Sent when a subscription is canceled. Once canceled it is terminated and cannot be reactivated.                      |
-| `subscription.complete`         | Sent when a subscription reaches its end date or total billing cycles and transitions to `COMPLETED`.               |
-| `subscription.close_to_renewal` | Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification_days`.                             |
-
-<Note>
-Each renewal charge is delivered as a `payment.purchase` webhook tied to the subscription, with the outcome (success or decline) carried in the `status`/`sub_status` fields. `$0`/trial cycles emit no payment webhook, and there is currently no `subscription.error` event.
-</Note>
-
-### Enrollment events
-
-| Event               | Description                                                                 |
-| ------------------- | --------------------------------------------------------------------------- |
-| `enrollment.enroll` | Sent when a payment method is successfully enrolled.                        |
-| `enrollment.update` | Sent when enrolled card details are updated (e.g., via Card Account Updater). |
-
-### Payout events
-
-| Event           | Description                          |
-| --------------- | ------------------------------------ |
-| `payout.payout` | Sent when a payout event occurs.      |
-
-### Marketplace Split Transfer events
-
-| Event                            | Description                                   |
-| -------------------------------- | --------------------------------------------- |
-| `succeeded` (Type: `split_transfer`) | Split transfer completed successfully         |
-| `succeeded` (Type: `split_transfer_reverse`) | Split transfer reversal completed successfully |
-
-## Banking Connectivity webhook events
-
-Banking Connectivity (Banking as a Service) webhook notifications follow the same delivery and retry behavior described above. Yuno sends these events to your configured webhook endpoint when the status of a Banking Connectivity resource changes.
-
-For incoming transfer payload structure, see [Webhook Notifications (Banking Connectivity)](/reference/banking-connectivity/webhooks/webhook-notifications-banking). Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/banking/transfers`.
-
-### Entity events
-
-| Event                    | Description    |
-| ------------------------ | -------------- |
-| `banking.entity.created` | Entity created |
-| `banking.entity.updated` | Entity updated |
-| `banking.entity.deleted` | Entity deleted |
-
-### Onboarding events
-
-| Event                                                 | Description                |
-| ----------------------------------------------------- | -------------------------- |
-| `banking.onboarding.created`                          | Onboarding created         |
-| `banking.onboarding.pending`                          | Submitted, awaiting review |
-| `banking.onboarding.pending_additional_documentation` | More documents required    |
-| `banking.onboarding.succeeded`                        | Onboarding approved        |
-| `banking.onboarding.failed`                           | Onboarding failed          |
-| `banking.onboarding.declined`                         | Provider declined          |
-| `banking.onboarding.cancelled`                        | Merchant cancelled         |
-| `banking.onboarding.expired`                          | Onboarding expired         |
-
-### Account events
-
-| Event                       | Description       |
-| --------------------------- | ----------------- |
-| `banking.account.created`   | Account created   |
-| `banking.account.updated`   | Account updated   |
-| `banking.account.activated` | Account activated |
-| `banking.account.closed`    | Account closed    |
-
-### Transfer events (outgoing)
-
-| Event                         | Description         |
-| ----------------------------- | ------------------- |
-| `banking.transfer.pending`    | Transfer pending    |
-| `banking.transfer.processing` | Transfer processing |
-| `banking.transfer.completed`  | Transfer completed  |
-| `banking.transfer.failed`     | Transfer failed     |
-| `banking.transfer.cancelled`  | Transfer cancelled  |
-| `banking.transfer.reversed`   | Transfer reversed   |
-
-### Transfer events (incoming)
-
-| Event                                 | Description                          |
-| ------------------------------------- | ------------------------------------ |
-| `banking.transfer.incoming.pending`   | Incoming transfer pending settlement |
-| `banking.transfer.incoming.completed` | Incoming transfer settled            |
-
+<CardGroup cols={2}>
+  <Card title="Events and Triggers" icon="bolt" href="/docs/webhooks/events">
+    The full catalog of events you can subscribe to, by domain.
+  </Card>
+  <Card title="Payloads and Examples" icon="brackets-curly" href="/docs/webhooks/object-and-examples">
+    Example JSON payloads for each event.
+  </Card>
+  <Card title="Verify Webhook Signatures (HMAC)" icon="shield-check" href="/docs/webhooks/verify-webhook-signatures-hmac">
+    Confirm a notification genuinely came from Yuno and wasn't tampered with.
+  </Card>
+  <Card title="Webhooks API Reference" icon="code" href="/reference/webhooks">
+    Every field, endpoint, and error response for managing webhooks programmatically.
+  </Card>
+</CardGroup>
