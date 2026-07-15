@@ -60,7 +60,7 @@ Autopay uses amount thresholds to determine whether a charge can run as MIT or m
 
 ## `stored_credentials` fields
 
-Implement Autopay through the `stored_credentials` field available in endpoints like [Create payment](/reference/payments/create-payment). The full path for create payments is `payment_method.detail.detail.bank_transfer.stored_credentials`.
+Implement Autopay through the `stored_credentials` field available in endpoints like [Create payment](/reference/payments/create-payment). The full path for create payments is `payment_method.detail.bank_transfer.stored_credentials`.
 
 Use `stored_credentials.usage` to declare the intent:
 
@@ -68,6 +68,47 @@ Use `stored_credentials.usage` to declare the intent:
 | ------- | ------- | ------------------------------------------------------------------------------ |
 | `usage` | `FIRST` | Run the direct charge (CIT) and store the mandate reference for future debits. |
 | `usage` | `USED`  | Send the PDN, wait the 24-hour notice period, then run the MIT debit.          |
+
+## API-driven pre-debit notifications
+
+If you manage your own billing schedule, trigger the pre-debit notification yourself and reference it on the debit. This is the flow available today through the API:
+
+1. **Send the notification** with [Create pre-debit notification](/reference/pre-debit-notifications/create-pre-debit-notification), passing the mandate's `vaulted_token`, the upcoming `amount`, and the `billing_date`. Keep the returned `id` and confirm the status is `SENT`.
+
+```json
+{
+  "account_id": "<ACCOUNT_ID>",
+  "merchant_reference": "subscription-2026-08-INV-00187",
+  "description": "Your subscription renews soon",
+  "amount": { "currency": "INR", "value": "499.00" },
+  "billing_date": "2026-08-01",
+  "customer_payer": { "id": "<CUSTOMER_ID>" },
+  "payment_method": { "type": "UPI_AUTOPAY", "vaulted_token": "<VAULTED_TOKEN>" },
+  "origin_payment_id": "<MANDATE_PAYMENT_ID>"
+}
+```
+
+2. **Wait the NPCI notice period** (at least 24 hours before the debit).
+
+3. **Create the recurring debit** with [Create payment](/reference/payments/create-payment), referencing the notification:
+
+```json
+{
+  "amount": { "currency": "INR", "value": "499.00" },
+  "customer_payer": { "id": "<CUSTOMER_ID>" },
+  "payment_method": {
+    "type": "UPI_AUTOPAY",
+    "vaulted_token": "<VAULTED_TOKEN>",
+    "detail": {
+      "bank_transfer": {
+        "pre_debit_notification_id": "<ID_FROM_STEP_1>"
+      }
+    }
+  }
+}
+```
+
+Yuno validates the referenced notification (it must exist, belong to your account, and be in `SENT` status) and forwards the provider's notification reference with the debit. If the validation fails, the payment is rejected with `PRE_DEBIT_NOTIFICATION_NOT_FOUND` or `PRE_DEBIT_NOTIFICATION_NOT_SENT` (HTTP 422) and no charge is attempted.
 
 ## Dunning and retries
 
