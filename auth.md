@@ -15,10 +15,10 @@ Do not share `private-secret-key` in public places like GitHub or Bitbucket.
 
 ## Base URLs
 
-| Environment | Base URL |
-| --- | --- |
-| Sandbox | `https://api-sandbox.y.uno` |
-| Production | `https://api.y.uno` |
+| Environment | Base URL                    |
+| ----------- | --------------------------- |
+| Sandbox     | `https://api-sandbox.y.uno` |
+| Production  | `https://api.y.uno`         |
 
 Sandbox data is simulated and does not affect live accounting or metrics. See [API environments](/reference/getting-started/api-environments) for full details.
 
@@ -40,4 +40,4 @@ Both methods use the same API key credentials as the REST API, no separate OAuth
 
 ## Machine-readable docs
 
-Every Yuno Docs page is available as plain-text Markdown by appending `.md` to its URL, for both guides and API reference pages. See [llms.txt](/llms.txt) for the full page index.
+Every Yuno Docs page is available as plain-text Markdown by appending `.md` to its URL, for both guides and API reference pages. See [llms.txt](https://docs.y.uno/llms.txt) for the full page index.
