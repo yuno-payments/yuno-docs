@@ -6,7 +6,10 @@
   },
   "servers": [
     {
-      "url": "https://api.y.uno"
+      "url": "https://api.y.uno/v1"
+    },
+    {
+      "url": "https://api-sandbox.y.uno/v1"
     }
   ],
   "components": {
@@ -15,7 +18,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "PUBLIC-API-KEY",
-        "description": "Merchant public API key. Found in Yuno dashboard \u2192 Settings \u2192 API Keys."
+        "description": "Merchant public API key. Found in Yuno dashboard → Settings → API Keys."
       },
       "privateSecretKey": {
         "type": "apiKey",
@@ -27,7 +30,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-Account-Code",
-        "description": "UUID of the merchant account scope for the request."
+        "description": "UUID of the merchant account scope for the request. The tenant is resolved only from this header."
       }
     }
   },
@@ -39,65 +42,58 @@
     }
   ],
   "paths": {
-    "/v1/checkouts/{checkout_code}": {
+    "/checkouts/{checkout_code}": {
       "get": {
         "summary": "Fetch Checkout Configuration",
-        "description": "Returns the full checkout configuration for the given checkout code, including all payment methods, their active state, display order, conditions, and required-field overrides.",
+        "description": "Returns the full custom checkout for the given code — configuration and styling composed in a single response. The checkout identifier is exposed as the top-level `id`.",
         "operationId": "get-checkout-configuration",
         "parameters": [
           {
             "name": "checkout_code",
             "in": "path",
-            "description": "The unique identifier of the checkout to retrieve (UUID, 36 chars).",
-            "schema": {
-              "type": "string"
-            },
+            "description": "The unique identifier of the checkout to retrieve (UUID, 36 chars). Non-UUID values are rejected with 400 before processing.",
+            "schema": { "type": "string" },
             "required": true
           }
         ],
         "responses": {
           "200": {
-            "description": "200",
+            "description": "The custom checkout, with configuration and styling composed.",
             "content": {
               "application/json": {
                 "examples": {
                   "Success": {
                     "value": {
-                      "account_code": "b91b3970-dbf7-4d6a-b34d-96adbf3a0988",
-                      "code": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
-                      "name": "Default Checkout",
+                      "id": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
+                      "name": "Main Checkout",
                       "description": "",
-                      "is_active": true,
-                      "is_archive": false,
-                      "organization_code": "org-uuid",
-                      "root": true,
+                      "status": "PUBLISHED",
+                      "is_default": true,
                       "created_at": "2026-01-01T00:00:00Z",
                       "updated_at": "2026-05-18T13:06:08Z",
-                      "payment_methods": [
-                        {
-                          "is_active": true,
-                          "payment_method_type": "CARD",
-                          "order_to_show": 1,
-                          "type": "PAYMENT_METHOD",
-                          "active_enrollment_type": "BOTH",
-                          "conditions_to_override": [],
-                          "required_fields_to_override": null
-                        }
-                      ],
-                      "general_settings": {
-                        "country_documents": [
+                      "config": {
+                        "payment_methods": [
                           {
-                            "country_code": "AR",
-                            "documents": [
-                              "DNI",
-                              "CUIT"
-                            ]
+                            "payment_method_type": "CARD",
+                            "order_to_show": 1,
+                            "is_active": true,
+                            "active_enrollment_type": "BOTH",
+                            "conditions_to_override": [],
+                            "required_fields_to_override": null
                           }
-                        ]
+                        ],
+                        "general_settings": {
+                          "country_documents": [
+                            { "country_code": "AR", "documents": ["DNI", "CUIT"] }
+                          ]
+                        }
                       },
-                      "feature_flags": {
-                        "custom_required_fields": true,
-                        "custom_logo_icon": false
+                      "styling": {
+                        "styles": {
+                          "global": { "accent_color": "#282A30", "font_family": "Inter" }
+                        },
+                        "settings": {},
+                        "flags": { "force_default_styles": false }
                       }
                     }
                   }
@@ -105,222 +101,79 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "account_code": {
-                      "type": "string",
-                      "description": "Account UUID.",
-                      "example": "b91b3970-dbf7-4d6a-b34d-96adbf3a0988"
-                    },
-                    "code": {
-                      "type": "string",
-                      "description": "Checkout UUID.",
-                      "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474"
-                    },
-                    "name": {
-                      "type": "string",
-                      "description": "Checkout name.",
-                      "example": "Default Checkout"
-                    },
-                    "description": {
-                      "type": "string",
-                      "description": "Checkout description.",
-                      "example": ""
-                    },
-                    "is_active": {
-                      "type": "boolean",
-                      "description": "Whether the checkout is active.",
-                      "example": true
-                    },
-                    "is_archive": {
-                      "type": "boolean",
-                      "description": "Whether the checkout is archived.",
-                      "example": false
-                    },
-                    "organization_code": {
-                      "type": "string",
-                      "description": "Organization UUID.",
-                      "example": "org-uuid"
-                    },
-                    "root": {
-                      "type": "boolean",
-                      "description": "Whether this is the root (default) checkout for the account.",
-                      "example": true
-                    },
-                    "created_at": {
-                      "type": "string",
-                      "description": "Creation timestamp (ISO 8601).",
-                      "example": "2026-01-01T00:00:00Z"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "description": "Last updated timestamp (ISO 8601).",
-                      "example": "2026-05-18T13:06:08Z"
-                    },
-                    "payment_methods": {
-                      "type": "array",
-                      "description": "List of payment methods configured for this checkout.",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "is_active": {
-                            "type": "boolean",
-                            "description": "Whether the method is offered in the checkout.",
-                            "example": true
-                          },
-                          "payment_method_type": {
-                            "type": "string",
-                            "description": "Payment method type (e.g. CARD, GOOGLE_PAY, APPLE_PAY, PAYPAL).",
-                            "example": "CARD"
-                          },
-                          "order_to_show": {
-                            "type": "integer",
-                            "description": "Display order. Lower = shown first. This field drives order, not the array position.",
-                            "example": 1
-                          },
-                          "type": {
-                            "type": "string",
-                            "description": "PAYMENT_METHOD (standard) or ENROLLMENT (tokenization/saved-credentials flow).",
-                            "enum": [
-                              "PAYMENT_METHOD",
-                              "ENROLLMENT"
-                            ],
-                            "example": "PAYMENT_METHOD"
-                          },
-                          "active_enrollment_type": {
-                            "type": "string",
-                            "description": "For methods that support both flows (e.g. CARD): BOTH, NONE, ENROLLMENT, or NO_ENROLLMENT. Only applicable when type is PAYMENT_METHOD.",
-                            "enum": [
-                              "BOTH",
-                              "NONE",
-                              "ENROLLMENT",
-                              "NO_ENROLLMENT"
-                            ],
-                            "example": "BOTH",
-                            "nullable": true
-                          },
-                          "conditions_to_override": {
-                            "type": "array",
-                            "description": "Condition sets that gate when the method appears. The method is shown if any set matches (sets are OR'd; conditions within a set are AND'd).",
-                            "items": {
-                              "type": "object"
-                            }
-                          },
-                          "required_fields_to_override": {
-                            "type": "object",
-                            "description": "Per-field configuration for enrolled and non-enrolled flows.",
-                            "nullable": true
-                          }
-                        }
-                      }
-                    },
-                    "general_settings": {
+                    "id": { "type": "string", "description": "Checkout UUID (the checkout_code).", "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474" },
+                    "name": { "type": "string", "description": "Checkout name.", "example": "Main Checkout" },
+                    "description": { "type": "string", "description": "Checkout description." },
+                    "status": { "type": "string", "description": "Checkout status.", "example": "PUBLISHED" },
+                    "is_default": { "type": "boolean", "description": "Whether this is the account's default checkout.", "example": true },
+                    "created_at": { "type": "string", "description": "Creation timestamp (ISO 8601)." },
+                    "updated_at": { "type": "string", "description": "Last updated timestamp (ISO 8601)." },
+                    "config": {
                       "type": "object",
-                      "description": "General checkout settings.",
+                      "description": "Checkout configuration.",
                       "properties": {
-                        "country_documents": {
+                        "payment_methods": {
                           "type": "array",
-                          "description": "Accepted document types per country.",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "country_code": {
-                                "type": "string",
-                                "description": "ISO 3166-1 alpha-2 country code.",
-                                "example": "AR"
-                              },
-                              "documents": {
-                                "type": "array",
-                                "description": "List of accepted document types for this country.",
-                                "items": {
-                                  "type": "string"
-                                },
-                                "example": [
-                                  "DNI",
-                                  "CUIT"
-                                ]
-                              }
-                            }
-                          }
+                          "description": "Payment methods configured for this checkout. Order is driven by `order_to_show` (lower = first).",
+                          "items": { "type": "object" }
+                        },
+                        "general_settings": {
+                          "type": "object",
+                          "description": "General checkout settings, including accepted document types per country (`country_documents`)."
                         }
                       }
                     },
-                    "feature_flags": {
+                    "styling": {
                       "type": "object",
-                      "description": "Feature flags enabled for this checkout.",
-                      "properties": {
-                        "custom_required_fields": {
-                          "type": "boolean",
-                          "example": true
-                        },
-                        "custom_logo_icon": {
-                          "type": "boolean",
-                          "example": false
-                        }
-                      }
+                      "description": "Checkout styling and SDK settings: `styles`, `settings`, `flags`, `external_fonts`, `payment_link_styles`."
                     }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`checkout_code` is not a valid UUID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "INVALID_PARAMETERS" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
             }
           },
           "401": {
-            "description": "401",
+            "description": "Not authenticated, or the account is not in the beta allowlist.",
             "content": {
               "application/json": {
                 "examples": {
                   "Unauthorized": {
-                    "value": {
-                      "code": "INVALID_CREDENTIALS",
-                      "messages": [
-                        "Invalid credentials"
-                      ]
-                    }
+                    "value": { "code": "NOT_AUTHENTICATED", "messages": ["Not authenticated"] }
                   }
                 },
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "INVALID_CREDENTIALS"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
+                    "code": { "type": "string", "example": "NOT_AUTHENTICATED" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
             }
           },
-          "403": {
-            "description": "403",
+          "404": {
+            "description": "The checkout was not found for this account.",
             "content": {
               "application/json": {
-                "examples": {
-                  "Forbidden": {
-                    "value": {
-                      "code": "AUTHORIZATION_REQUIRED",
-                      "messages": [
-                        "The merchant has no authorization to use this API."
-                      ]
-                    }
-                  }
-                },
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "AUTHORIZATION_REQUIRED"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
