@@ -40,39 +40,24 @@
       "PaymentMethod": {
         "type": "object",
         "properties": {
-          "id": {
+          "idempotency_key": {
             "type": "string",
-            "description": "The unique identifier of the payment method (its `vaulted_token`).",
-            "example": "2fd6bf11-2129-4061-9c2a-34e196f89753"
-          },
-          "account_id": {
-            "type": "string",
-            "description": "The unique identifier of the account that owns the payment method.",
-            "example": "493e9374-510a-4201-9e09-de669d75f256"
-          },
-          "customer_id": {
-            "type": "string",
-            "description": "The unique identifier of the customer the payment method now belongs to. Returned by the reassignment response so you can confirm the new owner.",
-            "example": "b3f2c1a0-1234-4a5b-9c8d-000000000001"
+            "example": "a0000000-0000-4000-8000-000000000010"
           },
           "name": {
             "type": "string",
-            "description": "The display name of the payment method.",
             "example": "VISA ****1111"
           },
           "description": {
             "type": "string",
-            "description": "The description of the payment method.",
             "example": "VISA ****1111"
           },
           "type": {
             "type": "string",
-            "description": "The type of the payment method.",
             "example": "CARD"
           },
           "category": {
             "type": "string",
-            "description": "The category of the payment method.",
             "example": "CARD"
           },
           "country": {
@@ -80,11 +65,23 @@
             "description": "The country of the payment method, in ISO 3166-1 alpha-2 format.",
             "example": "US"
           },
+          "parent_type": {},
           "status": {
             "type": "string",
-            "description": "The status of the payment method.",
             "example": "ENROLLED"
           },
+          "sub_status": {
+            "type": "string",
+            "example": "ENROLLED"
+          },
+          "vaulted_token": {
+            "type": "string",
+            "description": "The unique identifier of the payment method (the same value passed as `payment_method_id`).",
+            "example": "b0000000-0000-4000-8000-000000000002"
+          },
+          "callback_url": {},
+          "action": {},
+          "redirect_url": {},
           "created_at": {
             "type": "string",
             "description": "The date and time when the payment method was created, in ISO 8601 format.",
@@ -95,40 +92,78 @@
             "description": "The date and time when the payment method was last updated, in ISO 8601 format.",
             "example": "2024-06-04T12:47:46.992603Z"
           },
-          "enrollment": {
+          "card_data": {
             "type": "object",
             "properties": {
-              "session": {
+              "iin": {
                 "type": "string",
-                "description": "The enrollment session identifier.",
-                "example": ""
+                "example": "41111111"
               },
-              "sdk_required_action": {
-                "type": "boolean",
-                "description": "Whether the SDK requires an additional action to complete enrollment.",
-                "example": false
-              }
-            }
-          },
-          "provider": {
-            "type": "object",
-            "properties": {
-              "id": {
+              "lfd": {
                 "type": "string",
-                "description": "The identifier of the provider that holds the payment method.",
-                "example": "YUNO"
+                "example": "1111"
+              },
+              "holder_name": {
+                "type": "string",
+                "description": "Cardholder's full name as returned by the payment provider.",
+                "example": "JOHN DOE"
+              },
+              "expiration_month": {
+                "type": "integer",
+                "example": 3,
+                "default": 0
+              },
+              "expiration_year": {
+                "type": "integer",
+                "example": 26,
+                "default": 0
+              },
+              "number_length": {
+                "type": "integer",
+                "example": 16,
+                "default": 0
+              },
+              "security_code_length": {
+                "type": "integer",
+                "example": 3,
+                "default": 0
+              },
+              "brand": {
+                "type": "string",
+                "example": "VISA"
+              },
+              "issuer": {
+                "type": "string",
+                "example": "JPMORGAN CHASE BANK N A"
+              },
+              "issuer_code": {},
+              "country_code": {
+                "type": "string",
+                "description": "ISO 3166-1 alpha-2 country code of the card's issuing country.",
+                "example": "US"
+              },
+              "category": {
+                "type": "string",
+                "example": "CREDIT"
               },
               "type": {
                 "type": "string",
-                "description": "The type of the provider.",
-                "example": "YUNO"
+                "example": "CREDIT"
               },
-              "token": {
+              "fingerprint": {
                 "type": "string",
-                "description": "The provider token for the payment method.",
-                "example": "a0000000-0000-4000-8000-000000000002"
+                "example": "55a7fe38-cdc3-45dc-8c5f-820751799c76"
               }
             }
+          },
+          "last_successfully_used": {},
+          "last_successfully_used_at": {},
+          "preferred": {},
+          "verify": {},
+          "customer_id": {
+            "type": "string",
+            "description": "The unique identifier of the customer the payment method now belongs to. Returned by the reassignment response so you can confirm the new owner.",
+            "example": "b3f2c1a0-1234-4a5b-9c8d-000000000001"
           }
         }
       },
@@ -139,7 +174,8 @@
             "type": "string",
             "description": "Machine-readable error code.",
             "enum": [
-              "BAD_REQUEST"
+              "BAD_REQUEST",
+              "PAYMENT_METHOD_NOT_REASSIGNABLE"
             ]
           },
           "messages": {
@@ -201,7 +237,7 @@
     "/payment-methods/{payment_method_id}": {
       "patch": {
         "summary": "Reassign a Payment Method to Another Customer",
-        "description": "Reassigns an enrolled payment method to a different customer of the same account. The target customer must exist and belong to the same organization. The reassignment fails when the payment method is already assigned to a customer that has data. Returns the updated payment method, with the new owner in the `customer_id` field.",
+        "description": "Reassigns an enrolled payment method to a different customer of the same account. Only card payment methods can be reassigned. The target customer must exist and belong to the same organization. The reassignment fails when the payment method is already assigned to a customer that has data. Returns the payment method in the same shape as the Enroll Payment Method response, with the new owner in the `customer_id` field.",
         "operationId": "reassign-payment-method-api",
         "parameters": [
           {
@@ -256,26 +292,42 @@
                   "$ref": "#/components/schemas/PaymentMethod"
                 },
                 "example": {
-                  "id": "2fd6bf11-2129-4061-9c2a-34e196f89753",
-                  "account_id": "493e9374-510a-4201-9e09-de669d75f256",
-                  "customer_id": "b3f2c1a0-1234-4a5b-9c8d-000000000001",
+                  "idempotency_key": "a0000000-0000-4000-8000-000000000010",
                   "name": "VISA ****1111",
                   "description": "VISA ****1111",
                   "type": "CARD",
                   "category": "CARD",
                   "country": "US",
+                  "parent_type": null,
                   "status": "ENROLLED",
+                  "sub_status": "ENROLLED",
+                  "vaulted_token": "b0000000-0000-4000-8000-000000000002",
+                  "callback_url": null,
+                  "action": null,
+                  "redirect_url": null,
                   "created_at": "2024-06-04T12:47:46.992602Z",
                   "updated_at": "2024-06-04T12:47:46.992603Z",
-                  "enrollment": {
-                    "session": "",
-                    "sdk_required_action": false
+                  "card_data": {
+                    "iin": "41111111",
+                    "lfd": "1111",
+                    "holder_name": "JOHN DOE",
+                    "expiration_month": 3,
+                    "expiration_year": 26,
+                    "number_length": 16,
+                    "security_code_length": 3,
+                    "brand": "VISA",
+                    "issuer": "JPMORGAN CHASE BANK N A",
+                    "issuer_code": null,
+                    "country_code": "US",
+                    "category": "CREDIT",
+                    "type": "CREDIT",
+                    "fingerprint": "55a7fe38-cdc3-45dc-8c5f-820751799c76"
                   },
-                  "provider": {
-                    "id": "YUNO",
-                    "type": "YUNO",
-                    "token": "a0000000-0000-4000-8000-000000000002"
-                  }
+                  "last_successfully_used": null,
+                  "last_successfully_used_at": null,
+                  "preferred": null,
+                  "verify": null,
+                  "customer_id": "b3f2c1a0-1234-4a5b-9c8d-000000000001"
                 }
               }
             }
@@ -293,6 +345,14 @@
                       "code": "BAD_REQUEST",
                       "messages": [
                         "target customer does not exist"
+                      ]
+                    }
+                  },
+                  "Payment method is not a card": {
+                    "value": {
+                      "code": "PAYMENT_METHOD_NOT_REASSIGNABLE",
+                      "messages": [
+                        "Only card payment methods can be reassigned."
                       ]
                     }
                   }
