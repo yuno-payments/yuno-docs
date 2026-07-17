@@ -11,7 +11,7 @@ In the unified API the same flow is the **default behavior** of `Transaction.sta
 | Before | After |
 |---|---|
 | `Activity.startCheckout(…)` + `Activity.startPaymentSeamlessLite(paymentSelected, showPaymentStatus, callbackPaymentState)` | `Transaction(config).start(paymentSelected)` + `onStatus` controller |
-| Free-form lambda `(state, subState) -> Unit` | `TransactionController.onStatus(status: PaymentStatus)` |
+| Free-form lambda `(state, subState) -> Unit` | `TransactionController.onStatus(status: TransactionStatus)` |
 | `PaymentSelected` | `PaymentMethodSelected` |
 
 ## Side-by-side
@@ -30,7 +30,7 @@ class CheckoutActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // 1. Initialize once at app startup
-        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+        Yuno.initialize(applicationContext, apiKey = "your-public-api-key")
 
         // 2. Wire up the checkout launcher
         startCheckout(
@@ -60,12 +60,12 @@ class CheckoutActivity : ComponentActivity() {
 ```
 
 ```kotlin After. Unified Transaction
-import com.yuno.sdk.Yuno
-import com.yuno.sdk.Transaction
-import com.yuno.sdk.TransactionConfig
-import com.yuno.sdk.TransactionController
-import com.yuno.sdk.PaymentMethodSelected
-import com.yuno.sdk.PaymentStatus
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
 
 class CheckoutActivity : ComponentActivity(), TransactionController {
 
@@ -73,11 +73,11 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
         super.onCreate(savedInstanceState)
 
         // 1. Initialize once at app startup
-        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
     }
 
     // 2. Implement a minimal controller
-    override fun onStatus(status: PaymentStatus) {
+    override fun onStatus(status: TransactionStatus) {
         when (status.value) {
             "SUCCEEDED"      -> println("Success")
             "REJECT"         -> println("Rejected")
@@ -95,7 +95,7 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
             countryCode = "CO",
             language = "en",
             controller = this,
-            showPaymentStatusScreen = true,
+            showStatusScreen = true,
         )
 
         Transaction(config = config)
@@ -112,14 +112,14 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 |---|---|---|
 | `startCheckout.checkoutSession` | `TransactionConfig.checkoutSession` | Same. |
 | `startCheckout.countryCode` | `TransactionConfig.countryCode` | Same. |
-| `startPaymentSeamlessLite(paymentSelected, showPaymentStatus, callbackPaymentState)` | `Transaction(config).start(paymentSelected)` | Single entry point. The `showPaymentStatus` argument moved into `TransactionConfig.showPaymentStatusScreen`. |
-| `callbackPaymentState: (state, subState) -> Unit` | `TransactionController.onStatus(status: PaymentStatus)` | See [Result mapping in Lite](/docs/yuno-sdk/migration/android/payment/lite#result-mapping) for the per-value rename. |
+| `startPaymentSeamlessLite(paymentSelected, showPaymentStatus, callbackPaymentState)` | `Transaction(config).start(paymentSelected)` | Single entry point. The `showPaymentStatus` argument moved into `TransactionConfig.showStatusScreen`. |
+| `callbackPaymentState: (state, subState) -> Unit` | `TransactionController.onStatus(status: TransactionStatus)` | See [Result mapping in Lite](/docs/yuno-sdk/migration/android/payment/lite#result-mapping) for the per-value rename. |
 | `PaymentSelected` | `PaymentMethodSelected` | Class renamed. |
 
 ## Behavior changes
 
 <Warning>
-**`showPaymentStatusScreen` default flipped.** In Seamless, `showPaymentStatus` defaulted to `true` and the SDK presented its built-in result screen. In the unified API, `showPaymentStatusScreen` defaults to **`false`**. Set it to `true` in `TransactionConfig` if you relied on the SDK's built-in result screen.
+**`showStatusScreen` default flipped.** In Seamless, `showPaymentStatus` defaulted to `true` and the SDK presented its built-in result screen. In the unified API, `showStatusScreen` defaults to **`false`**. Set it to `true` in `TransactionConfig` if you relied on the SDK's built-in result screen.
 </Warning>
 
 - **You now need a controller instance.** Even for the simplest case you implement `TransactionController` (just `onStatus`). Pass it through `TransactionConfig.controller`.
@@ -132,7 +132,7 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 - [ ] Move `checkoutSession` and `countryCode` from `startCheckout(…)` arguments into `TransactionConfig`.
 - [ ] Replace the `startPaymentSeamlessLite(…)` call with `Transaction(config).start(paymentSelected)`.
 - [ ] Move the result-handling logic from the `callbackPaymentState` lambda into `onStatus(status)`. Switch `"CANCELED_BY_USER"` → `"USER_CANCEL"`.
-- [ ] Set `showPaymentStatusScreen = true` if you relied on the SDK showing the result screen.
+- [ ] Set `showStatusScreen = true` if you relied on the SDK showing the result screen.
 - [ ] Rename `PaymentSelected` → `PaymentMethodSelected`.
 - [ ] Re-run your sandbox test suite.
 

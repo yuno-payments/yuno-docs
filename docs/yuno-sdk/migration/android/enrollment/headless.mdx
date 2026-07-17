@@ -11,7 +11,7 @@ In the unified API, headless enrollment is no longer a separate client. It's the
 | Before | After |
 |---|---|
 | `Yuno.apiClientEnroll(...).continueEnrollment(data, context)` | `Transaction(config).start(paymentSelected = <with transactionData>)` |
-| `EnrollmentCollectedData` / `EnrollmentMethod` / `CardData` / `Detail` | `PaymentMethodSelected` + `TransactionData` + `CardTransactionData` |
+| `EnrollmentCollectedData` / `EnrollmentMethod` / `CardData` / `Detail` | `PaymentMethodSelected` + `TransactionData` + `CardData` |
 | Result map with `vaultedToken` | `onStatus(status)` (token retrieved from your backend) |
 
 ## Side-by-side
@@ -31,7 +31,7 @@ class EnrollmentActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+        Yuno.initialize(applicationContext, apiKey = "your-public-api-key")
     }
 
     suspend fun enroll() {
@@ -65,28 +65,28 @@ class EnrollmentActivity : ComponentActivity() {
 ```
 
 ```kotlin After. Unified Transaction
-import com.yuno.sdk.Yuno
-import com.yuno.sdk.Transaction
-import com.yuno.sdk.TransactionConfig
-import com.yuno.sdk.TransactionController
-import com.yuno.sdk.PaymentMethodSelected
-import com.yuno.sdk.PaymentStatus
-import com.yuno.sdk.TransactionData
-import com.yuno.sdk.CardTransactionData
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
+import com.yuno.payments.sdk.api.models.TransactionData
+import com.yuno.payments.sdk.api.models.CardData
 
 class EnrollmentActivity : ComponentActivity(), TransactionController {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
     }
 
-    override fun onStatus(status: PaymentStatus) {
+    override fun onStatus(status: TransactionStatus) {
         // On a successful status, retrieve the vaulted token from your
         // backend's "list customer payment methods" endpoint.
     }
 
-    fun enroll(card: CardTransactionData) {
+    fun enroll(card: CardData) {
         val paymentSelected = PaymentMethodSelected(
             paymentMethodType = "CARD",
             transactionData = TransactionData(card = card),
@@ -117,21 +117,21 @@ class EnrollmentActivity : ComponentActivity(), TransactionController {
 | `Yuno.apiClientEnroll(customerSession, countryCode, context)` | `Transaction(config)` | The transaction object replaces the headless client. |
 | `EnrollmentCollectedData.customerSession` | `TransactionConfig.customerSession` | Moves to config. |
 | `EnrollmentMethod.type` | `PaymentMethodSelected.paymentMethodType` | Moves to the parent object. |
-| `EnrollmentMethod.card` (`CardData.detail`) | `TransactionData.card` (`CardTransactionData`) | Flat (no `detail` wrapper), namespaced under `transactionData`. |
+| `EnrollmentMethod.card` (`CardData.detail`) | `TransactionData.card` (`CardData`) | Flat (no `detail` wrapper), namespaced under `transactionData`. |
 | `continueEnrollment(data, context)` returning `Map<String, Any?>` | `start(paymentSelected)` + `onStatus(status)` | The SDK reports completion through `onStatus`. |
 
 ## Behavior changes
 
 - **No `vaultedToken` on the client.** Fetch it from your backend after success.
-- **`onOneTimeToken` is not invoked** during enrollment.
+- **`createPayment` is not invoked** during enrollment.
 - **`vaultedToken` on `PaymentMethodSelected` is ignored.** Enrollment exists to produce a vaulted token; there's nothing linked yet to reference.
-- **No `Context` argument on each call.** `SDKPayment.initialize` keeps the application context.
+- **No `Context` argument on each call.** `SdkPayments.initialize` keeps the application context.
 
 ## Checklist
 
 - [ ] Replace `Yuno.apiClientEnroll(...)` with `Transaction(config)`.
 - [ ] Move `customerSession` and `countryCode` into `TransactionConfig`.
-- [ ] Replace `EnrollmentCollectedData` / `EnrollmentMethod` / `CardData` / `Detail` with `PaymentMethodSelected` + `TransactionData` + `CardTransactionData`.
+- [ ] Replace `EnrollmentCollectedData` / `EnrollmentMethod` / `CardData` / `Detail` with `PaymentMethodSelected` + `TransactionData` + `CardData`.
 - [ ] Replace `continueEnrollment(data, context)` with `start(paymentSelected)` passing the data via `transactionData`.
 - [ ] Implement `onStatus(status)` to react to the final outcome.
 - [ ] Move the `vaultedToken` retrieval to your backend.

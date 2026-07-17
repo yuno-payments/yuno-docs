@@ -9,7 +9,7 @@ description: "Migrate Android Lite enrollment (Activity.startEnrollment) to the 
 | Before | After |
 |---|---|
 | `Activity.initEnrollment(callback)` + `Activity.startEnrollment(...)` | `Transaction(config).start(paymentSelected = PaymentMethodSelected(...))` |
-| Lambda `callbackEnrollmentState: (String?) -> Unit` | `TransactionController.onStatus(status: PaymentStatus)` |
+| Lambda `callbackEnrollmentState: (String?) -> Unit` | `TransactionController.onStatus(status: TransactionStatus)` |
 
 ## Side-by-side
 
@@ -25,7 +25,7 @@ class EnrollmentActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+        Yuno.initialize(applicationContext, apiKey = "your-public-api-key")
 
         initEnrollment { state ->
             // state: "SUCCEEDED" / "REJECT" / "FAIL" / "PROCESSING" / "INTERNAL_ERROR" / "CANCELED"
@@ -43,21 +43,21 @@ class EnrollmentActivity : ComponentActivity() {
 ```
 
 ```kotlin After. Unified Transaction
-import com.yuno.sdk.Yuno
-import com.yuno.sdk.Transaction
-import com.yuno.sdk.TransactionConfig
-import com.yuno.sdk.TransactionController
-import com.yuno.sdk.PaymentMethodSelected
-import com.yuno.sdk.PaymentStatus
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
 
 class EnrollmentActivity : ComponentActivity(), TransactionController {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
     }
 
-    override fun onStatus(status: PaymentStatus) {
+    override fun onStatus(status: TransactionStatus) {
         // status.value comes from the backend. See /reference/status.
     }
 
@@ -67,7 +67,7 @@ class EnrollmentActivity : ComponentActivity(), TransactionController {
             countryCode = "CO",
             language = "en",
             controller = this,
-            showPaymentStatusScreen = true,
+            showStatusScreen = true,
         )
 
         Transaction(config = config)
@@ -91,15 +91,15 @@ class EnrollmentActivity : ComponentActivity(), TransactionController {
 
 - **You pick the method.** As in the legacy SDK, the merchant decides which method to enroll and passes it to `start(paymentSelected)` via `paymentMethodType`. The SDK does not render a list of enrollable methods.
 - **`paymentSelected` is always non-null.** Pass a `PaymentMethodSelected` with the `paymentMethodType`.
-- **`onOneTimeToken` is not invoked** during enrollment.
-- **No `Context` argument on each call.** `SDKPayment.initialize` keeps the application context.
+- **`createPayment` is not invoked** during enrollment.
+- **No `Context` argument on each call.** `SdkPayments.initialize` keeps the application context.
 
 ## Checklist
 
 - [ ] Remove `initEnrollment { ... }` and the `callbackEnrollmentState` lambda. Implement `TransactionController` instead.
 - [ ] Move `customerSession`, `countryCode`, `language` into `TransactionConfig`.
 - [ ] Replace `startEnrollment(...)` with `Transaction(config).start(paymentSelected = PaymentMethodSelected(...))`.
-- [ ] Set `showPaymentStatusScreen = true` in `TransactionConfig` if you relied on the SDK showing the result screen.
+- [ ] Set `showStatusScreen = true` in `TransactionConfig` if you relied on the SDK showing the result screen.
 - [ ] Re-run your sandbox enrollment test suite, including 3DS scenarios.
 
 ## Related
