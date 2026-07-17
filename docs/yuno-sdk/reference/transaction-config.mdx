@@ -1,0 +1,162 @@
+---
+title: "TransactionConfig"
+description: "All fields available in TransactionConfig and what they do."
+---
+
+`TransactionConfig` is the configuration object passed to the `Transaction` constructor. It defines the session, locale, controllers, and behavior flags for a single transaction.
+
+<Note>
+On web, `TransactionConfig` is a plain object passed directly to `sdkPayments.transaction(config)`.
+</Note>
+
+## Fields
+
+<Tabs>
+<Tab title="Web">
+
+| Field | Type | Required | Default |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | String | One of two |  |
+| [`customerSession`](#customersession) | String | One of two |  |
+| [`countryCode`](#countrycode) | String | Yes |  |
+| [`language`](#language) | String? | No | Browser language |
+| [`showStatusScreen`](#showstatusscreen) | Bool | No | `false` |
+| [`autoContinuePayment`](#autocontinuepayment) | Bool | No | `true` |
+| [`elementSelector`](#elementselector-web-only) | String? | No |  |
+
+On Web there is no `controller` field — wire events (`onStatus`, `showLoading`, `createPayment`) directly as fields on the config. See [`controller`](#controller-ios-android).
+
+</Tab>
+<Tab title="iOS">
+
+| Field | Type | Required | Default |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | String | One of two |  |
+| [`customerSession`](#customersession) | String | One of two |  |
+| [`countryCode`](#countrycode) | String | Yes |  |
+| [`language`](#language) | String? | No | Device language |
+| [`controller`](#controller-ios-android) | TransactionController | Yes |  |
+| [`showStatusScreen`](#showstatusscreen) | Bool | No | `false` |
+| [`autoContinuePayment`](#autocontinuepayment) | Bool | No | `true` |
+| [`appearance`](#appearance-ios-android) | Appearance? | No | `null` |
+| [`viewController`](#viewcontroller-ios-only) | UIViewController? | No | `null` |
+
+</Tab>
+<Tab title="Android">
+
+| Field | Type | Required | Default |
+|---|---|---|---|
+| [`checkoutSession`](#checkoutsession) | String | One of two |  |
+| [`customerSession`](#customersession) | String | One of two |  |
+| [`countryCode`](#countrycode) | String | Yes |  |
+| [`language`](#language) | String? | No | Device language |
+| [`controller`](#controller-ios-android) | TransactionController? | No | `null` |
+| [`showStatusScreen`](#showstatusscreen) | Bool | No | `false` |
+| [`autoContinuePayment`](#autocontinuepayment) | Bool | No | `true` |
+| [`appearance`](#appearance-ios-android) | Appearance? | No | `null` |
+
+</Tab>
+</Tabs>
+
+You must pass either `checkoutSession` or `customerSession`, but not both. See [Validation](#validation).
+
+---
+
+## `checkoutSession`
+
+Session ID for a payment flow. Pass the value returned by your backend after calling [`POST /v1/checkout/sessions`](https://docs.y.uno/reference/checkout-sessions/create-checkout-session).
+
+Mutually exclusive with `customerSession`.
+
+See [Sessions](/docs/basic-concepts/sessions) for more.
+
+## `customerSession`
+
+Session ID for an enrollment flow. Pass the value returned by your backend after calling [`POST /v1/customers/sessions`](https://docs.y.uno/reference/customer-sessions-enrollment/create-customer-session).
+
+Mutually exclusive with `checkoutSession`.
+
+See [Sessions](/docs/basic-concepts/sessions) for more.
+
+## `countryCode`
+
+ISO country code for the payment (for example, `US`, `CO`).
+
+Accepts any string. The SDK does not validate the value. See [Country coverage](https://docs.y.uno/resources/country-coverage) for the list of supported countries.
+
+## `language`
+
+ISO-639 language code. Falls back to the device or browser language if omitted.
+
+See [Supported languages](https://docs.y.uno/resources/languages-supported).
+
+## `controller` (iOS, Android)
+
+Object that implements the `TransactionController` interface. Used to receive transaction events (`onStatus`, `showLoading`, `createPayment`).
+
+On iOS, `controller` is **required**: `onStatus` is the only mechanism for receiving the transaction outcome, so a config without a controller would silently swallow every result. The SDK holds the reference weakly — keep the instance alive for the duration of the transaction.
+
+On Web, controllers are wired directly as fields on the config (`onStatus`, `showLoading`, `createPayment`). On iOS and Android, you pass a single controller object through the `controller` field.
+
+See [Controllers](/docs/yuno-sdk/controllers/overview).
+
+## `showStatusScreen`
+
+Flag that controls whether the SDK presents its built-in result screen after the transaction finishes.
+
+- `false` (default). The SDK does not show a result screen. You receive the final status through `onStatus` and render your own UI.
+- `true`. The SDK presents its result screen.
+
+`onStatus` is always invoked, regardless of this flag.
+
+## `autoContinuePayment`
+
+Controls whether the SDK automatically continues the payment flow after creating it. When `true` (default), the SDK handles 3DS and status polling internally. Set to `false` if you want to control the post-creation flow manually.
+
+With `false`, the SDK stops once the payment is created: it does not poll status, does not run 3DS, and `onStatus` is not invoked for the transaction.
+
+## `elementSelector` (web only)
+
+Optional CSS selector of the DOM element where the SDK renders its views (payment forms, action views). The SDK no longer has a modal mode on web — when provided, views render inside this element.
+
+This field exists only on web. On iOS and Android, view presentation is handled through [`showView`](/docs/yuno-sdk/controllers/show-view) or the SDK's default full-screen presentation.
+
+## `appearance` (iOS, Android)
+
+Visual customization object for the SDK's built-in views (colors, fonts, corner radius, etc.). Not available on Web.
+
+See [Styling](/docs/yuno-sdk/features/styling) for the full set of options.
+
+## `viewController` (iOS only)
+
+Optional reference to the `UIViewController` that the SDK should use to present its UI.
+
+Optional when your app is fully built with SwiftUI. Required if you want the SDK to present from a specific UIKit view controller.
+
+This field exists only on iOS.
+
+---
+
+## Validation
+
+The constructor throws if:
+
+- Both `checkoutSession` and `customerSession` are provided.
+- Neither `checkoutSession` nor `customerSession` is provided.
+
+How the error is raised depends on the platform:
+
+| Platform | Error type |
+|---|---|
+| iOS | `init` throws |
+| Android | `IllegalArgumentException` |
+| Web | `TypeError` |
+
+The SDK does not validate `countryCode`, `language`, or any other field. Invalid values may surface later as backend errors or unexpected behavior.
+
+## Related
+
+- [Get Started](/docs/yuno-sdk/get-started). Full integration walkthrough.
+- [Sessions](/docs/basic-concepts/sessions). Checkout vs customer sessions.
+- [Controllers](/docs/yuno-sdk/controllers/overview). Full reference for each controller.
+- [Styling](/docs/yuno-sdk/features/styling). Customization options.

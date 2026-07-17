@@ -1,0 +1,73 @@
+---
+title: "Status"
+description: "Final status delivered to onStatus when the transaction ends."
+---
+
+The status object reports how the transaction ended. The SDK delivers it through [`onStatus`](/docs/yuno-sdk/controllers/on-status).
+
+## What you receive
+
+The payload carries three pieces:
+
+- `status`: passed through exactly as the backend returns it.
+- `substatus`: passed through exactly as the backend returns it.
+- `message`: extra context. Its shape depends on the source:
+
+| Source | `message` shape |
+|---|---|
+| Backend returned an `ERROR` / failed response | `{ "source": "backend", "code": <backend error code>, "reason": <backend reason>, "raw": <raw backend payload> }` |
+| SDK failed (failed to render, internal SDK error, network, unexpected exception) | `{ "source": "sdk", "code": <sdk code>, "reason": <human-readable reason>, "context": <render step / module / call site> }` |
+| User cancellation | `null` (not an error) |
+
+## Statuses emitted by the SDK itself
+
+Two statuses are not relayed from the backend, the SDK emits them locally:
+
+- `INTERNAL_ERROR`: raised when a backend service call failed, or when something failed inside the SDK (load, view rendering, network, unexpected exception).
+- `USER_CANCEL`: raised when the user closes a form or view without completing the flow.
+
+### Backend failure or SDK failure? Read `message.source`
+
+`INTERNAL_ERROR` covers both cases — the `status` alone does not tell you where the failure came from. A backend rejection (for example, an invalid or expired checkout session) arrives as:
+
+```json
+{
+  "status": "INTERNAL_ERROR",
+  "substatus": null,
+  "message": {
+    "source": "backend",
+    "code": "INVALID_CHECKOUT_SESSION",
+    "reason": "checkout session expired or already used",
+    "raw": "<raw backend error payload>"
+  }
+}
+```
+
+An SDK-side failure (network, rendering, unexpected exception) arrives as:
+
+```json
+{
+  "status": "INTERNAL_ERROR",
+  "substatus": null,
+  "message": {
+    "source": "sdk",
+    "code": "NETWORK_ERROR",
+    "reason": "request timed out",
+    "context": "Transaction.runPayment"
+  }
+}
+```
+
+When `message.source` is `"backend"`, Yuno's API rejected a call: `code` and `raw` carry the backend's own error, so start debugging there (session validity, workflow, credentials). When it's `"sdk"`, the failure originated inside the SDK and `context` names the module or call site that produced it.
+
+## Backend status values
+
+The set of possible `status` and `substatus` values is defined by the backend. See the workflow reference for each flow:
+
+- [Payment status and response codes](https://docs.y.uno/reference/payments/status-and-response-codes/payment)
+- [Enrollment workflow status](https://docs.y.uno/reference/customer-sessions-enrollment/enrollment-workflow#enrollment-status)
+- [Payout workflow status](https://docs.y.uno/reference/payouts/payout-workflow#payout-status)
+
+## Related
+
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). The controller that delivers this object.
