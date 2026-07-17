@@ -6,7 +6,10 @@
   },
   "servers": [
     {
-      "url": "https://api.y.uno"
+      "url": "https://api.y.uno/v1"
+    },
+    {
+      "url": "https://api-sandbox.y.uno/v1"
     }
   ],
   "components": {
@@ -15,7 +18,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "PUBLIC-API-KEY",
-        "description": "Merchant public API key. Found in Yuno dashboard \u2192 Settings \u2192 API Keys."
+        "description": "Merchant public API key. Found in Yuno dashboard → Settings → API Keys."
       },
       "privateSecretKey": {
         "type": "apiKey",
@@ -27,7 +30,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-Account-Code",
-        "description": "UUID of the merchant account scope for the request."
+        "description": "UUID of the merchant account scope for the request. The tenant is resolved only from this header."
       }
     }
   },
@@ -39,624 +42,163 @@
     }
   ],
   "paths": {
-    "/v1/checkouts/{checkout_code}/publish": {
-      "patch": {
+    "/checkouts/{checkout_code}": {
+      "put": {
         "summary": "Publish Checkout Configuration",
-        "description": "Sparse-upsert the checkout's payment method configuration. Payment methods omitted from the array retain their previous state \u2014 they are not removed. To disable a method, include it with is_active: false. Changes take effect immediately on the merchant's live checkout.",
-        "operationId": "patch-checkout-publish",
+        "description": "Writes configuration and/or styling for the checkout in a single call. The body may contain a `config` object, a `styling` object, or both — at least one is required. Each part is validated independently before being applied; if any rule fails, the request is rejected with a single aggregated 400 and nothing is applied. Configuration is a sparse upsert (omitted payment methods keep their previous state; new methods cannot be created). Styling is a partial merge (omitted or null fields are preserved).",
+        "operationId": "publish-checkout-configuration",
+        "parameters": [
+          {
+            "name": "checkout_code",
+            "in": "path",
+            "description": "The unique identifier of the checkout to update (UUID, 36 chars). Non-UUID values are rejected with 400 before processing.",
+            "schema": { "type": "string" },
+            "required": true
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Client-generated UUID. Re-sending the same request with the same key is safe and will not double-publish.",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
+              "examples": {
+                "Configuration and styling": {
+                  "value": {
+                    "config": {
+                      "payment_methods": [
+                        {
+                          "payment_method_type": "CARD",
+                          "order_to_show": 0,
+                          "is_active": true,
+                          "active_enrollment_type": "BOTH",
+                          "conditions_to_override": [],
+                          "required_fields_to_override": {
+                            "is_active": true,
+                            "fields": [
+                              {
+                                "field_name": "security_code",
+                                "is_active": true,
+                                "current_value": "ALWAYS",
+                                "conditions_to_override": [
+                                  {
+                                    "name": "BR only",
+                                    "is_active": true,
+                                    "priority": 1,
+                                    "conditions": [
+                                      { "condition_type": "COUNTRY", "conditional": "ONE_OF", "values": ["BR"] }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "enrollment_fields": [],
+                            "is_enrollment_active": true
+                          }
+                        }
+                      ],
+                      "general_settings": {
+                        "country_documents": [
+                          { "country_code": "BR", "documents": ["CPF", "CNPJ"] }
+                        ]
+                      }
+                    },
+                    "styling": {
+                      "styles": {
+                        "global": { "accent_color": "#1A73E8", "primary_background_color": "#FFFFFF", "font_family": "Inter" },
+                        "header": { "logo": "https://cdn.example.com/logo.png", "font_weight": 600 },
+                        "button": { "corner_radius": 8, "font_weight": 500 }
+                      },
+                      "flags": { "force_default_styles": false }
+                    }
+                  }
+                }
+              },
               "schema": {
                 "type": "object",
-                "required": [
-                  "payment_methods"
-                ],
+                "description": "At least one of `config` or `styling` is required.",
                 "properties": {
-                  "general_settings": {
+                  "config": {
                     "type": "object",
-                    "description": "General checkout settings.",
+                    "description": "Checkout configuration: payment methods and general settings. Sparse upsert — omitted payment methods keep their previous state.",
                     "properties": {
-                      "country_documents": {
+                      "payment_methods": {
                         "type": "array",
-                        "description": "Accepted document types per country. Use GET /checkouts/country-data to fetch valid values.",
+                        "description": "Payment methods to update. Order is driven by `order_to_show` (lower = first).",
                         "items": {
                           "type": "object",
                           "properties": {
-                            "country_code": {
-                              "type": "string",
-                              "description": "ISO 3166-1 alpha-2 country code.",
-                              "example": "AR"
-                            },
-                            "documents": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              },
-                              "example": [
-                                "DNI",
-                                "CUIT"
-                              ]
+                            "payment_method_type": { "type": "string", "description": "Payment method type, e.g. CARD, PAYPAL, NU_PAY, GOOGLE_PAY.", "example": "CARD" },
+                            "order_to_show": { "type": "integer", "description": "Display order (>= 0). Lower is shown first.", "example": 0 },
+                            "is_active": { "type": "boolean", "description": "Whether the method is offered.", "example": true },
+                            "active_enrollment_type": { "type": "string", "enum": ["ENROLLMENT", "NO_ENROLLMENT", "BOTH", "NONE"], "description": "Enrollment posture for the method." },
+                            "conditions_to_override": { "type": "array", "description": "Payment-method-level condition sets that gate when the method appears. A client-supplied set `code` (UUID) is preserved.", "items": { "type": "object" } },
+                            "required_fields_to_override": {
+                              "type": "object",
+                              "description": "Per-field configuration. `fields` = non-enrolled flow; `enrollment_fields` = enrolled (saved-card) flow. At most one condition set per field (a second is rejected with 400).",
+                              "properties": {
+                                "is_active": { "type": "boolean" },
+                                "fields": { "type": "array", "items": { "type": "object" } },
+                                "enrollment_fields": { "type": "array", "items": { "type": "object" } },
+                                "is_enrollment_active": { "type": "boolean" }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "general_settings": {
+                        "type": "object",
+                        "properties": {
+                          "country_documents": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "country_code": { "type": "string", "description": "ISO 3166-1 alpha-2 country code.", "example": "BR" },
+                                "documents": { "type": "array", "items": { "type": "string" }, "example": ["CPF", "CNPJ"] }
+                              }
                             }
                           }
                         }
                       }
                     }
                   },
-                  "payment_methods": {
-                    "type": "array",
-                    "description": "Payment methods to upsert. Only included methods are updated \u2014 omitted methods retain their previous state.",
-                    "items": {
-                      "type": "object",
-                      "required": [
-                        "is_active",
-                        "payment_method_type",
-                        "order_to_show",
-                        "type"
-                      ],
-                      "properties": {
-                        "is_active": {
-                          "type": "boolean",
-                          "description": "Whether the method is offered in the checkout.",
-                          "example": true
-                        },
-                        "payment_method_type": {
-                          "type": "string",
-                          "description": "Payment method type. Common values: CARD, GOOGLE_PAY, APPLE_PAY, PAYPAL, PAYPAL_ENROLLMENT, NU_PAY, NU_PAY_ENROLLMENT, WALLET, MODO, DLOCAL_CHECKOUT, PUNTO_PAGO. The complete list lives in Yuno's payment-method catalog and grows over time \u2014 treat unknown values gracefully rather than failing validation.",
-                          "example": "CARD"
-                        },
-                        "order_to_show": {
-                          "type": "integer",
-                          "description": "Display order in the checkout. Lower = shown first. This field drives order, not array position.",
-                          "example": 1
-                        },
-                        "type": {
-                          "type": "string",
-                          "description": "PAYMENT_METHOD (standard) or ENROLLMENT (tokenization/saved-credentials flow).",
-                          "enum": [
-                            "PAYMENT_METHOD",
-                            "ENROLLMENT"
-                          ],
-                          "example": "PAYMENT_METHOD"
-                        },
-                        "active_enrollment_type": {
-                          "type": "string",
-                          "description": "For PAYMENT_METHOD entries that support enrollment (e.g. CARD): BOTH, NONE, ENROLLMENT, or NO_ENROLLMENT. Omit for ENROLLMENT-type entries.",
-                          "enum": [
-                            "BOTH",
-                            "NONE",
-                            "ENROLLMENT",
-                            "NO_ENROLLMENT"
-                          ],
-                          "example": "BOTH"
-                        },
-                        "conditions_to_override": {
-                          "type": "array",
-                          "description": "Condition sets that gate when the method appears. The method is shown if any set matches (sets are OR'd; conditions within a set are AND'd).",
-                          "items": {
+                  "styling": {
+                    "type": "object",
+                    "description": "Checkout styling and SDK settings. Partial merge — omitted or null fields are preserved; use `flags.force_default_styles` to reset. `settings.urls`, `settings.click_to_pay`, `settings.form` and `settings.google_pay` are beta-locked and rejected if sent with a non-empty value.",
+                    "properties": {
+                      "styles": { "type": "object", "description": "global, header and button styles. All `*_color` fields must be a 6- or 8-digit hex color (#RRGGBB / #RRGGBBAA); `font_weight` must be one of 100..900 (step 100); `font_family` must be in the supported catalog or declared in `external_fonts`. Logos must be an HTTPS URL to a public host or a relative path (no data:/SVG/javascript:)." },
+                      "settings": {
+                        "type": "object",
+                        "description": "SDK settings, forwarded to the checkout SDK. `settings.urls`, `settings.click_to_pay`, `settings.form` and `settings.google_pay` are beta-locked and rejected if sent with a non-empty value.",
+                        "properties": {
+                          "card": {
                             "type": "object",
+                            "description": "Card SDK settings.",
                             "properties": {
-                              "name": {
-                                "type": "string",
-                                "description": "Display name for the condition set.",
-                                "example": "Argentina small amounts"
-                              },
-                              "order": {
-                                "type": "integer",
-                                "description": "Sort order among sets.",
-                                "example": 0
-                              },
-                              "is_active": {
-                                "type": "boolean",
-                                "description": "Whether this set is enforced. Inactive sets are saved but not evaluated.",
-                                "example": true
-                              },
-                              "payment_method_data": {
-                                "type": "object",
-                                "description": "Optional display overrides for this condition. Set all fields to null if unused.",
-                                "properties": {
-                                  "logo": {
-                                    "type": "string",
-                                    "nullable": true
-                                  },
-                                  "name": {
-                                    "type": "string",
-                                    "nullable": true
-                                  },
-                                  "description": {
-                                    "type": "string",
-                                    "nullable": true
-                                  }
-                                }
-                              },
-                              "conditions": {
-                                "type": "array",
-                                "description": "Array of individual conditions (all must match for the set to apply).",
-                                "items": {
-                                  "type": "object",
-                                  "required": [
-                                    "condition_type",
-                                    "conditional",
-                                    "values"
-                                  ],
-                                  "properties": {
-                                    "condition_type": {
-                                      "type": "string",
-                                      "description": "Type of condition to evaluate.",
-                                      "enum": [
-                                        "CURRENCY",
-                                        "CURRENCY_AND_AMOUNT",
-                                        "COUNTRY",
-                                        "METADATA",
-                                        "ADDITIONAL_FIELD",
-                                        "CARD_BIN",
-                                        "CARD_ISSUER",
-                                        "TIME_PERIOD"
-                                      ],
-                                      "example": "COUNTRY"
-                                    },
-                                    "conditional": {
-                                      "type": "string",
-                                      "description": "Comparison operator.",
-                                      "enum": [
-                                        "ONE_OF",
-                                        "NOT_ONE_OF",
-                                        "EQUAL",
-                                        "NOT_EQUAL",
-                                        "BETWEEN",
-                                        "GREATER_THAN",
-                                        "LESS_THAN"
-                                      ],
-                                      "example": "ONE_OF"
-                                    },
-                                    "values": {
-                                      "type": "array",
-                                      "description": "Array of string values to compare against. For BETWEEN, exactly [min, max].",
-                                      "items": {
-                                        "type": "string"
-                                      },
-                                      "example": [
-                                        "AR",
-                                        "BR"
-                                      ]
-                                    },
-                                    "metadata_key": {
-                                      "type": "string",
-                                      "description": "Required when condition_type is METADATA. The key in the payment metadata to compare.",
-                                      "example": "hideCVVfield"
-                                    },
-                                    "additional_field_name": {
-                                      "type": "string",
-                                      "description": "Required when condition_type is METADATA. Data type of the metadata field.",
-                                      "example": "TEXT"
-                                    },
-                                    "complex_name": {
-                                      "type": "string",
-                                      "description": "Required when condition_type is CURRENCY_AND_AMOUNT. CURRENCY or AMOUNT.",
-                                      "enum": [
-                                        "CURRENCY",
-                                        "AMOUNT"
-                                      ],
-                                      "example": "CURRENCY"
-                                    },
-                                    "complex_index": {
-                                      "type": "integer",
-                                      "description": "Required when condition_type is CURRENCY_AND_AMOUNT. Both rows of the same currency+amount tuple share the same index.",
-                                      "example": 0
-                                    }
-                                  }
-                                }
-                              }
+                              "save_on_success": { "type": "boolean", "description": "Offer to save the card for future payments." },
+                              "visualization_mode": { "type": "string", "description": "Card form visualization mode." },
+                              "enable_ocr": { "type": "boolean", "description": "Enable card scanning (OCR)." },
+                              "credit_card_only_processing": { "type": "boolean", "description": "Process credit cards only." },
+                              "enable_payment_retry": { "type": "boolean", "description": "Allow retrying a declined card payment." },
+                              "default_network": { "type": "string", "description": "Default card network: DOM or INT." }
                             }
-                          }
-                        },
-                        "required_fields_to_override": {
-                          "type": "object",
-                          "description": "Per-field configuration for the enrolled and non-enrolled flows. Use GET /checkouts/payment-methods/{type}/required-fields to discover valid field names.",
-                          "properties": {
-                            "is_active": {
-                              "type": "boolean",
-                              "description": "Whether required-field overrides are active for the non-enrolled flow.",
-                              "example": true
-                            },
-                            "is_enrollment_active": {
-                              "type": "boolean",
-                              "description": "Whether required-field overrides are active for the enrolled flow.",
-                              "example": true
-                            },
-                            "fields": {
-                              "type": "array",
-                              "description": "Field configs for the non-enrolled (first-time payer) flow. Pass an empty array to leave this flow unchanged.",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "field_name": {
-                                    "type": "string",
-                                    "description": "The field to configure. Common values: security_code, installment, first_name, last_name, document, email, phone, billing_address, shipping_address, zip_code.",
-                                    "example": "security_code"
-                                  },
-                                  "is_active": {
-                                    "type": "boolean",
-                                    "description": "Whether this field is shown.",
-                                    "example": true
-                                  },
-                                  "current_value": {
-                                    "type": "string",
-                                    "description": "Special value override. For security_code, use FIRST_TIME to only require CVV on first use.",
-                                    "nullable": true,
-                                    "example": "FIRST_TIME"
-                                  },
-                                  "conditions_to_override": {
-                                    "type": "array",
-                                    "description": "Per-field condition sets. Note: conditions here use condition_value (not values) on each condition object.",
-                                    "items": {
-                                      "type": "object"
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            "enrollment_fields": {
-                              "type": "array",
-                              "description": "Field configs for the enrolled (returning payer / saved-card) flow. Pass an empty array to leave this flow unchanged.",
-                              "items": {
-                                "type": "object",
-                                "properties": {
-                                  "field_name": {
-                                    "type": "string",
-                                    "description": "The field to configure.",
-                                    "example": "installment"
-                                  },
-                                  "is_active": {
-                                    "type": "boolean",
-                                    "description": "Whether this field is shown.",
-                                    "example": true
-                                  },
-                                  "current_value": {
-                                    "type": "string",
-                                    "nullable": true,
-                                    "example": null
-                                  },
-                                  "conditions_to_override": {
-                                    "type": "array",
-                                    "description": "Per-field condition sets. Each condition uses condition_value (not values).",
-                                    "items": {
-                                      "type": "object"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
+                          },
+                          "sdk_type": { "type": "object" },
+                          "web_sdk": { "type": "object" },
+                          "payment_method_list": { "type": "object" },
+                          "ui": { "type": "object" }
                         }
-                      }
+                      },
+                      "flags": { "type": "object", "properties": { "force_default_styles": { "type": "boolean" } } },
+                      "external_fonts": { "type": "array", "description": "Custom fonts. `files[].url` must be an HTTPS URL to a public host.", "items": { "type": "object" } },
+                      "payment_link_styles": { "type": "object" }
                     }
-                  }
-                }
-              },
-              "examples": {
-                "Disable CARD": {
-                  "summary": "Disable a payment method",
-                  "value": {
-                    "payment_methods": [
-                      {
-                        "is_active": false,
-                        "payment_method_type": "NU_PAY_ENROLLMENT",
-                        "order_to_show": 1,
-                        "type": "ENROLLMENT"
-                      },
-                      {
-                        "is_active": true,
-                        "payment_method_type": "PAYPAL_ENROLLMENT",
-                        "order_to_show": 2,
-                        "type": "ENROLLMENT"
-                      },
-                      {
-                        "is_active": false,
-                        "payment_method_type": "CARD",
-                        "order_to_show": 3,
-                        "type": "PAYMENT_METHOD",
-                        "active_enrollment_type": "NONE"
-                      },
-                      {
-                        "is_active": true,
-                        "payment_method_type": "GOOGLE_PAY",
-                        "order_to_show": 4,
-                        "type": "PAYMENT_METHOD"
-                      },
-                      {
-                        "is_active": true,
-                        "payment_method_type": "APPLE_PAY",
-                        "order_to_show": 5,
-                        "type": "PAYMENT_METHOD"
-                      }
-                    ]
-                  }
-                },
-                "Enable CARD with conditions": {
-                  "summary": "Enable CARD with condition sets",
-                  "value": {
-                    "payment_methods": [
-                      {
-                        "is_active": true,
-                        "payment_method_type": "CARD",
-                        "order_to_show": 1,
-                        "type": "PAYMENT_METHOD",
-                        "active_enrollment_type": "BOTH",
-                        "conditions_to_override": [
-                          {
-                            "name": "AR small amounts",
-                            "order": 0,
-                            "is_active": true,
-                            "payment_method_data": {
-                              "logo": null,
-                              "name": null,
-                              "description": null
-                            },
-                            "conditions": [
-                              {
-                                "condition_type": "CURRENCY_AND_AMOUNT",
-                                "conditional": "ONE_OF",
-                                "values": [
-                                  "ARS"
-                                ],
-                                "complex_name": "CURRENCY",
-                                "complex_index": 0
-                              },
-                              {
-                                "condition_type": "CURRENCY_AND_AMOUNT",
-                                "conditional": "BETWEEN",
-                                "values": [
-                                  "4.00",
-                                  "6.00"
-                                ],
-                                "complex_name": "AMOUNT",
-                                "complex_index": 0
-                              },
-                              {
-                                "condition_type": "COUNTRY",
-                                "conditional": "ONE_OF",
-                                "values": [
-                                  "AR"
-                                ]
-                              }
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                },
-                "Required-field conditions \u2014 enrolled flow": {
-                  "summary": "Customize required fields for the enrolled (saved-card) CARD flow",
-                  "value": {
-                    "payment_methods": [
-                      {
-                        "is_active": true,
-                        "payment_method_type": "CARD",
-                        "order_to_show": 3,
-                        "type": "PAYMENT_METHOD",
-                        "active_enrollment_type": "BOTH",
-                        "required_fields_to_override": {
-                          "is_active": true,
-                          "is_enrollment_active": true,
-                          "fields": [],
-                          "enrollment_fields": [
-                            {
-                              "current_value": "FIRST_TIME",
-                              "field_name": "security_code",
-                              "is_active": true,
-                              "conditions_to_override": [
-                                {
-                                  "name": "skip-cvv-meta",
-                                  "is_active": true,
-                                  "conditions": [
-                                    {
-                                      "condition_type": "METADATA",
-                                      "conditional": "ONE_OF",
-                                      "condition_value": [
-                                        "true"
-                                      ],
-                                      "metadata_key": "skip_cvv",
-                                      "additional_field_name": "TEXT"
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "installment",
-                              "is_active": true,
-                              "conditions_to_override": [
-                                {
-                                  "name": "ar-no-aud",
-                                  "is_active": true,
-                                  "conditions": [
-                                    {
-                                      "condition_type": "CURRENCY",
-                                      "conditional": "NOT_ONE_OF",
-                                      "condition_value": [
-                                        "AUD"
-                                      ]
-                                    },
-                                    {
-                                      "condition_type": "METADATA",
-                                      "conditional": "ONE_OF",
-                                      "condition_value": [
-                                        "true"
-                                      ],
-                                      "metadata_key": "skip_cvv",
-                                      "additional_field_name": "TEXT"
-                                    },
-                                    {
-                                      "condition_type": "COUNTRY",
-                                      "conditional": "ONE_OF",
-                                      "condition_value": [
-                                        "AR"
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "first_name",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "last_name",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "document",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "email",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "phone",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "billing_address",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "shipping_address",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "zip_code",
-                              "is_active": false
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                },
-                "Required-field conditions \u2014 non-enrolled flow": {
-                  "summary": "Customize required fields for the non-enrolled (first-time payer) CARD flow",
-                  "value": {
-                    "payment_methods": [
-                      {
-                        "is_active": true,
-                        "payment_method_type": "CARD",
-                        "order_to_show": 3,
-                        "type": "PAYMENT_METHOD",
-                        "active_enrollment_type": "BOTH",
-                        "required_fields_to_override": {
-                          "is_active": true,
-                          "is_enrollment_active": true,
-                          "fields": [
-                            {
-                              "current_value": null,
-                              "field_name": "installment",
-                              "is_active": true,
-                              "conditions_to_override": [
-                                {
-                                  "name": "ar-no-aud",
-                                  "is_active": true,
-                                  "conditions": [
-                                    {
-                                      "condition_type": "CURRENCY",
-                                      "conditional": "NOT_ONE_OF",
-                                      "condition_value": [
-                                        "AUD"
-                                      ]
-                                    },
-                                    {
-                                      "condition_type": "METADATA",
-                                      "conditional": "ONE_OF",
-                                      "condition_value": [
-                                        "true"
-                                      ],
-                                      "metadata_key": "skip_cvv",
-                                      "additional_field_name": "TEXT"
-                                    },
-                                    {
-                                      "condition_type": "COUNTRY",
-                                      "conditional": "ONE_OF",
-                                      "condition_value": [
-                                        "AR"
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "first_name",
-                              "is_active": true,
-                              "conditions_to_override": [
-                                {
-                                  "name": "not-ar-br",
-                                  "is_active": true,
-                                  "conditions": [
-                                    {
-                                      "condition_type": "COUNTRY",
-                                      "conditional": "NOT_ONE_OF",
-                                      "condition_value": [
-                                        "AR",
-                                        "BR"
-                                      ]
-                                    }
-                                  ]
-                                }
-                              ]
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "last_name",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "document",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "email",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "phone",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "billing_address",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "shipping_address",
-                              "is_active": true
-                            },
-                            {
-                              "current_value": null,
-                              "field_name": "zip_code",
-                              "is_active": true
-                            }
-                          ],
-                          "enrollment_fields": []
-                        }
-                      }
-                    ]
                   }
                 }
               }
@@ -665,45 +207,36 @@
         },
         "responses": {
           "200": {
-            "description": "200",
+            "description": "The updated checkout (configuration + styling composed). Its identifier is exposed as the top-level `id`.",
             "content": {
               "application/json": {
                 "examples": {
                   "Success": {
                     "value": {
-                      "code": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
-                      "updated_at": "2026-05-18T14:00:00Z"
+                      "id": "8005ca91-dcfb-4428-b9f6-49c6e3446474",
+                      "name": "Main Checkout",
+                      "status": "PUBLISHED",
+                      "is_default": true,
+                      "config": { "payment_methods": [], "general_settings": {} },
+                      "styling": { "styles": {}, "settings": {}, "flags": {} }
                     }
                   }
                 },
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "description": "Checkout UUID.",
-                      "example": "8005ca91-dcfb-4428-b9f6-49c6e3446474"
-                    },
-                    "updated_at": {
-                      "type": "string",
-                      "description": "Timestamp of the update.",
-                      "example": "2026-05-18T14:00:00Z"
-                    }
-                  }
-                }
+                "schema": { "type": "object" }
               }
             }
           },
           "400": {
-            "description": "400",
+            "description": "Validation failed. All violations are aggregated into a single response. A malformed JSON body also returns 400.",
             "content": {
               "application/json": {
                 "examples": {
-                  "Bad Request": {
+                  "Invalid parameters": {
                     "value": {
-                      "code": "INVALID_REQUEST",
+                      "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "Invalid request"
+                        "payment_methods[0].order_to_show must be >= 0",
+                        "styles.global.accent_color must be a 6- or 8-digit hex color (#RRGGBB or #RRGGBBAA)"
                       ]
                     }
                   }
@@ -711,107 +244,48 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "INVALID_REQUEST"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
+                    "code": { "type": "string", "example": "INVALID_PARAMETERS" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
             }
           },
           "401": {
-            "description": "401",
+            "description": "Not authenticated, or the account is not in the beta allowlist.",
             "content": {
               "application/json": {
                 "examples": {
                   "Unauthorized": {
-                    "value": {
-                      "code": "INVALID_CREDENTIALS",
-                      "messages": [
-                        "Invalid credentials"
-                      ]
-                    }
+                    "value": { "code": "NOT_AUTHENTICATED", "messages": ["Not authenticated"] }
                   }
                 },
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "INVALID_CREDENTIALS"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
+                    "code": { "type": "string", "example": "NOT_AUTHENTICATED" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
             }
           },
-          "403": {
-            "description": "403",
+          "404": {
+            "description": "The checkout was not found for this account.",
             "content": {
               "application/json": {
-                "examples": {
-                  "Forbidden": {
-                    "value": {
-                      "code": "AUTHORIZATION_REQUIRED",
-                      "messages": [
-                        "The merchant has no authorization to use this API."
-                      ]
-                    }
-                  }
-                },
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": {
-                      "type": "string",
-                      "example": "AUTHORIZATION_REQUIRED"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
                   }
                 }
               }
             }
           }
         },
-        "deprecated": false,
-        "parameters": [
-          {
-            "name": "checkout_code",
-            "in": "path",
-            "description": "The UUID of the checkout to update.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "X-Idempotency-Key",
-            "in": "header",
-            "description": "Client-generated UUID. Re-sending the same request with the same key is safe and will not double-publish.",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ]
+        "deprecated": false
       }
     }
   }

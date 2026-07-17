@@ -1,21 +1,21 @@
 ---
 title: "Overview"
 sidebarTitle: "Overview"
-description: "Programmatically configure your Yuno checkout — payment methods, conditions, required fields, and styling — via Yuno's public B2B API."
+description: "Programmatically configure a merchant's Yuno checkout — payment methods, conditions, required fields, and styling — via Yuno's public B2B API."
 badge: "Beta"
 ---
 
 <Warning>
-**BETA.** Endpoints are stable in shape but subject to additive changes during the BETA window.
+**BETA — access is granted per account.** This API is in closed beta and is enabled per account. Your account must be explicitly allowlisted; requests from a non-allowlisted account are rejected with `401`. Endpoints are stable in shape but subject to additive changes during the BETA window.
 </Warning>
 
-The Checkout Builder Management API lets you read and update a merchant's checkout configuration:
+Configure a merchant's Yuno checkout **server-to-server** — the same configuration surface that powers the Yuno Dashboard's Checkout Builder — so a partner can manage its merchants' checkouts programmatically, without using the Yuno UI:
 
 - **Payment methods** — which methods are shown and in what display order
 - **Conditions** — per-method rules (currency, country, amount, metadata) that gate when a method appears
 - **Required fields** — per-method form field configuration (CVV, installments, billing address, etc.) for both the enrolled (saved-card) and non-enrolled (first-time) flows
 - **General settings** — accepted document types per country
-- **Styling & SDK settings** — colors, fonts, button shapes, dark mode, render mode, payment-method list layout, and Payment Link branding
+- **Styling & SDK settings** — colors, fonts, button shapes, logos, and Payment Link branding
 
 ## Base URL
 
@@ -28,47 +28,69 @@ All examples in this reference use the production base URL. The sandbox host acc
 
 ## Authentication
 
-Every request must include:
+Every request is authenticated with your merchant API credentials and scoped to a single account.
 
 <div className="code-nowrap-table dense-table">
 
 | Header | Required | Description |
 | --- | --- | --- |
 | `PUBLIC-API-KEY` | Yes | Merchant public API key. Found in your Yuno dashboard under **Settings → API Keys**. |
-| `PRIVATE-SECRET-KEY` | Yes | Merchant private secret key, paired with the public key. Never embed in client-side code. |
-| `X-Account-Code` | Yes | UUID of the merchant account scope for the request. |
-| `X-Idempotency-Key` | Recommended (PATCH) | Client-generated UUID. Re-sending the same request with the same key is safe and will not double-publish. |
-| `Content-Type` | Yes (PATCH) | `application/json` |
-| `Accept` | Recommended | `application/json` |
+| `PRIVATE-SECRET-KEY` | Yes | Merchant private secret key, paired with the public key. Server-side only — never embed it in client-side code. |
+| `X-Account-Code` | Yes | UUID of the merchant account. The account is resolved **only** from this header (never from the request body or path) and must be in the beta allowlist. |
+| `X-Idempotency-Key` | No | Optional client key, up to 64 characters. Best-effort — see [Idempotency](#idempotency). |
+| `Content-Type` | Yes (PUT) | `application/json` |
 
 </div>
 
 <Note>
-Credentials must have the `v1/checkouts` product permission enabled — `READ` for GET endpoints, `WRITE` for PATCH endpoints. Permissions are granted per-credential in the dashboard's **API Keys** page.
+The organization is resolved by Yuno from your credentials — **do not send** an organization header. Missing/invalid credentials, or a non-allowlisted account, return `401`.
 </Note>
 
 ## Endpoints
 
+A **custom checkout** is identified by a `checkout_code` (a UUID). Its configuration and styling are read and written through the same resource — two operations:
+
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/v1/checkouts/{checkout_code}` | Fetch the full checkout configuration. |
-| `PATCH` | `/v1/checkouts/{checkout_code}/publish` | Publish a new configuration (payment methods, conditions, required fields, general settings). |
-| `GET` | `/v1/checkouts/payment-methods/{payment_method_type}/required-fields` | List configurable required fields for a payment method. |
-| `GET` | `/v1/checkouts/country-data` | Fetch supported countries and their document-type options. |
-| `GET` | `/v1/checkouts/builder/settings` | Fetch styling & SDK settings. |
-| `PATCH` | `/v1/checkouts/builder/settings` | Update styling & SDK settings. |
+| `GET` | `/v1/checkouts/{checkout_code}` | Fetch the full custom checkout — configuration **and** styling, together. |
+| `PUT` | `/v1/checkouts/{checkout_code}` | Publish configuration and/or styling. |
+
+`{checkout_code}` must be a valid UUID; other values are rejected with `400` before any processing.
+
+<Note>
+You obtain a `checkout_code` when the custom checkout is created in the Yuno dashboard / embedded Checkout Builder; Yuno delivers the generated UUID to your integration. Creating and listing checkouts via the public API is planned for a later phase — today the API reads and writes an **existing** checkout.
+</Note>
 
 ## Key behaviors
 
 <Note>
-**`PATCH /v1/checkouts/{checkout_code}/publish` is a sparse upsert, not a full replace.** Payment methods omitted from the `payment_methods` array retain their previous state — they are not removed or disabled. To disable a method, include it with `is_active: false`.
+**`PUT` is a sparse upsert for configuration, not a full replace.** Payment methods omitted from the `payment_methods` array retain their previous state — they are not removed or disabled. To disable a method, include it with `is_active: false`.
 </Note>
 
-- **Order is driven by `order_to_show`**, not by array position. Change the integer values to re-order; lower values are shown first.
-- **Including `conditions_to_override` replaces** that method's condition sets in full. Omitting it leaves existing conditions intact. The same rule applies to `required_fields_to_override` and `general_settings`.
+- **Configuration — sparse update.** Only the payment methods you include are updated; omitted methods keep their previous state. Publishing updates existing methods only — **new payment methods cannot be created** via the API (contact your Yuno TAM to add methods).
+- **Styling — partial merge.** Fields you omit (or send as `null`) are preserved; only the fields you include change. Partial styling updates are safe — you do not need to resend the entire `styles` object. To reset styling to defaults, use `flags.force_default_styles`.
+- **Order is driven by `order_to_show`**, not by array position. Lower values are shown first.
+- **At most one condition set per required field.** Sending more than one condition set on a field is rejected with `400` (`conditions_to_override must contain at most one condition set`).
+- **Enrolled and non-enrolled flows are independent.** For CARD, configure the non-enrolled flow via `fields` and the enrolled (saved-card) flow via `enrollment_fields`. To leave one flow untouched, pass an empty array for that side.
 - **Changes take effect immediately.** Validate payloads against the sandbox base URL before applying to production.
-- **New payment-method rows cannot be created** via the publish endpoint. Methods must already exist on the checkout. Contact your Yuno TAM to add additional methods.
-- **Enrolled and non-enrolled flows are independent.** When configuring required fields for CARD, send both `fields` (non-enrolled) and `enrollment_fields` (enrolled). To leave one flow untouched, pass an empty array for that side.
-- **`active_enrollment_type` only applies to `type: "PAYMENT_METHOD"` entries** that support enrollment (e.g. CARD). For `type: "ENROLLMENT"` entries (e.g. `PAYPAL_ENROLLMENT`, `NU_PAY_ENROLLMENT`), omit `active_enrollment_type` and toggle `is_active` instead.
-- **Required-field conditions: only the first set is persisted.** Within `required_fields_to_override.fields[].conditions_to_override` (and the enrolled equivalent), only the first element of the array is stored. Send a single condition set per field — additional sets are silently dropped.
-- **`conditions_to_override` at the required-field level uses `condition_value`** (not `values`) on each condition object. Same concept as payment-method conditions — different field name preserved for backward compatibility. Don't mix them up.
+- Each request body is validated independently; on any rule failure the whole request is rejected with a single aggregated `400` and nothing is applied. See the [Publish](/reference/checkout-builder/publish-checkout-configuration) endpoint for the full request shape, allowed values, and error catalog.
+
+## Errors
+
+Validation failures return HTTP `400` with a single aggregated body listing every problem found:
+
+```json
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": [
+    "payment_methods[0].order_to_show must be >= 0",
+    "styles.global.accent_color must be a 6- or 8-digit hex color (#RRGGBB or #RRGGBBAA)"
+  ]
+}
+```
+
+Other statuses: `401` (authentication / account not allowlisted), `404` (checkout not found for the account). The full per-rule error catalog is on the [Publish](/reference/checkout-builder/publish-checkout-configuration) page.
+
+## Idempotency
+
+`X-Idempotency-Key` is **best-effort**: the header is accepted and validated (up to 64 characters), but replays of the same key are not guaranteed to be de-duplicated. Design your integration for at-least-once delivery.
