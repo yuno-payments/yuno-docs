@@ -49,6 +49,21 @@ fun onStatus(status: PaymentStatus)
 
 See [`Status`](/docs/yuno-sdk/reference/status) for the shape of the payload, the `message` field, and the SDK-emitted values (`INTERNAL_ERROR`, `USER_CANCEL`).
 
+## Confirm on your server
+
+<Warning>
+`onStatus` is a client-side signal. Use it to drive your UI — never as the source of truth for fulfillment.
+</Warning>
+
+`onStatus` runs on the user's device, so it can be missed (the app is killed, the network drops, the user closes the page mid-flow) or manipulated (anything running on the client can be tampered with). A `SUCCEEDED` delivered to your handler is not proof that money moved.
+
+Before shipping goods, granting access, or marking an order as paid, confirm the outcome on your backend:
+
+- **Webhooks (recommended).** Configure [webhooks](/docs/webhooks) so Yuno notifies your backend of every payment status change, independently of what happens on the client. Verify the notification signature before trusting it.
+- **Query the API.** Have your backend call [Retrieve Payment by ID](/reference/payments/retrieve-payment-by-id) (or [by `merchant_order_id`](/reference/payments/retrieve-payment-by-merchant-order-id)) and read the status from the response.
+
+Treat `onStatus` as the trigger to update the screen, and the server-side confirmation as the trigger to fulfill.
+
 ## Threading
 
 On iOS and Android, `onStatus` is invoked on the main thread. You can update UI directly from inside this handler.
