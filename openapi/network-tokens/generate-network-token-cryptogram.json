@@ -1,0 +1,243 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "network-token-cryptogram",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/network-tokens/cryptograms": {
+      "post": {
+        "summary": "Generate Network Token Cryptogram",
+        "description": "Generates a fresh, single-use network token cryptogram for a vaulted card, so it can be authorized on an external PSP. Available only to PCI-certified merchants with the product enabled.",
+        "operationId": "generate-network-token-cryptogram",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["vaulted_token", "country"],
+                "properties": {
+                  "vaulted_token": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The vaulted token of the card, the same identifier used as `payment_method.vaulted_token` in [Create Payment](https://docs.y.uno/reference/create-payment). The card must be an enrolled card of your organization with an active network token.",
+                    "examples": ["9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70"]
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "ISO 3166-1 alpha-2 country code where the token will be used. Resolves the network token onboarding (organization + brand + country), with the same semantics as `country` in Create Payment.",
+                    "examples": ["US"]
+                  },
+                  "amount": {
+                    "type": "object",
+                    "description": "Optional. Forwarded to the scheme; recommended, as some scheme flows bind the amount.",
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "ISO 4217 currency code.",
+                        "examples": ["USD"]
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "Amount value in the given currency.",
+                        "examples": [49.99]
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "default": {
+                  "value": {
+                    "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                    "country": "US",
+                    "amount": { "currency": "USD", "value": 49.99 }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cryptogram generated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "vaulted_token": {
+                      "type": "string",
+                      "description": "Echo of the request's vaulted token."
+                    },
+                    "network_token": {
+                      "type": "object",
+                      "description": "The card's current network token. Same shape returned by the PCI network-token retrieval.",
+                      "properties": {
+                        "network": { "type": "string", "description": "Card network.", "examples": ["VISA"] },
+                        "number": {
+                          "type": "string",
+                          "description": "The current DPAN (device/network PAN). **Always submit this value with the returned `cryptogram`** — never a previously stored DPAN.",
+                          "examples": ["4111111111111111"]
+                        },
+                        "status": { "type": ["string", "null"], "description": "Network token status.", "examples": ["ACTIVE"] },
+                        "par": { "type": ["string", "null"], "description": "Payment Account Reference." },
+                        "network_token_id": { "type": ["string", "null"], "description": "Network token identifier." },
+                        "token_data": {
+                          "type": "object",
+                          "properties": {
+                            "iin": { "type": "string" },
+                            "lfd": { "type": "string", "description": "Last four digits of the DPAN." },
+                            "expiration_month": { "type": "integer", "examples": [7] },
+                            "expiration_year": { "type": "integer", "examples": [2029] }
+                          }
+                        }
+                      }
+                    },
+                    "cryptogram": {
+                      "type": "string",
+                      "description": "A fresh, single-use cryptogram from the scheme, generated on every call. Submit it together with `network_token.number` (DPAN) and `eci` to your PSP.",
+                      "examples": ["AgAAAAAABk4DWZ4C28yUQAAAAAA="]
+                    },
+                    "eci": {
+                      "type": ["string", "null"],
+                      "description": "Electronic Commerce Indicator. May be `null` for some Mastercard DSRP formats.",
+                      "examples": ["05"]
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Issuance timestamp (UTC)."
+                    }
+                  }
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                      "network_token": {
+                        "network": "VISA",
+                        "number": "4111111111111111",
+                        "status": "ACTIVE",
+                        "par": "V0010013022280191",
+                        "network_token_id": "DNITHE302344816910968",
+                        "token_data": { "iin": "411111", "lfd": "1111", "expiration_month": 7, "expiration_year": 2029 }
+                      },
+                      "cryptogram": "AgAAAAAABk4DWZ4C28yUQAAAAAA=",
+                      "eci": "05",
+                      "created_at": "2026-07-16T14:32:10Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — `INVALID_REQUEST`, `INSTRUMENT_NOT_TOKENIZABLE`, `PAYMENT_METHOD_NOT_ENROLLED`, `NETWORK_TOKEN_NOT_FOUND`, `TOKEN_NOT_ACTIVE`, `NETWORK_NOT_SUPPORTED`, or `COUNTRY_NOT_SUPPORTED`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "network_token_not_found": {
+                    "value": { "code": "NETWORK_TOKEN_NOT_FOUND", "messages": ["Payment method has no network token."] }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — `PCI_MERCHANT_REQUIRED` (organization is not a PCI-certified merchant) or `PRODUCT_NOT_ENABLED` (product flag is off for the organization).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "pci_merchant_required": {
+                    "value": { "code": "PCI_MERCHANT_REQUIRED", "messages": ["This endpoint is only available to PCI-certified merchants."] }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found — `PAYMENT_METHOD_NOT_FOUND`. The `vaulted_token` does not exist or does not belong to your organization (identical response, no existence leak).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "payment_method_not_found": {
+                    "value": { "code": "PAYMENT_METHOD_NOT_FOUND", "messages": ["Payment method not found."] }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Provider error — `PROVIDER_ERROR`. The card scheme (Visa VTS / Mastercard MDES) could not be reached or returned an error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "provider_error": {
+                    "value": { "code": "PROVIDER_ERROR", "messages": ["The network token cryptogram service is temporarily unavailable, please retry."] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
