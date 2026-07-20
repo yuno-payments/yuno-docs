@@ -1,0 +1,75 @@
+---
+title: "Save a Bank Transfer During a Payment"
+description: "Let customers pay by bank transfer and save their bank account for future payments in a single redirect"
+---
+
+Save-during-payment lets your customer pay with a bank transfer and opt in to saving their bank account in the same flow — one redirect, one bank login. After the payment succeeds and the customer opts in, Yuno enrolls the bank account and delivers a `vaulted_token` you can use for future payments.
+
+This flow is available for the `BANK_TRANSFER` payment method through Fintoc in Chile (`CLP`).
+
+<Note>
+**One redirect instead of two**
+
+Without this feature, collecting a payment and enrolling a bank account requires two separate customer-facing flows: a one-time payment plus a standalone enrollment (`BANK_TRANSFER_ENROLLMENT`) — two redirects and two bank logins. Save-during-payment combines them.
+</Note>
+
+## Requirements
+
+* An active Fintoc connection with the `BANK_TRANSFER` payment method [connected and routed](/docs/connections) for Chile.
+* An existing Yuno customer: create one with the [Create Customer](/reference/create-customer) endpoint before the payment. The payment must reference the customer through `customer_payer.id`.
+* [Webhooks configured](/docs/webhooks) to receive `enrollment.enroll` notifications.
+
+## Request the save inside Create Payment
+
+Set `payment_method.vault_on_success` to `true` and reference the customer in the [Create Payment](/reference/create-payment) request:
+
+```json
+{
+  "amount": { "value": 5000, "currency": "CLP" },
+  "customer_payer": { "id": "<yuno_customer_id>" },
+  "payment_method": {
+    "type": "BANK_TRANSFER",
+    "vault_on_success": true
+  }
+}
+```
+
+The synchronous payment response echoes `payment_method.vault_on_success: true` and returns the redirect for the customer to complete the payment, as in a regular one-time bank transfer payment. During the Fintoc-hosted flow, the customer chooses whether to save their bank account.
+
+<Warning>
+**The `vaulted_token` is delivered asynchronously**
+
+Unlike cards, the bank account cannot exist at payment-creation time — it is saved only after the customer completes the redirect and opts in. The `vaulted_token` is **not** returned in the synchronous payment response. You receive it through the `enrollment.enroll` webhook once the payment method reaches `ENROLLED`, and you can also fetch it with [Retrieve Enrolled Payment Methods](/reference/retrieve-enrolled-payment-methods-api).
+</Warning>
+
+## Outcomes
+
+| Scenario | Payment | Enrollment |
+| --- | --- | --- |
+| Customer pays and opts in to save | Processed normally | `enrollment.enroll` webhook delivers the `vaulted_token` |
+| Customer pays without opting in | Processed normally | No enrollment is created |
+| `vault_on_success: true` without `customer_payer.id` | Processed normally as a one-time payment | No enrollment is created — same degrade behavior as cards |
+| `vault_on_success` absent or `false` | Processed normally as a one-time payment | No enrollment is created |
+
+<Note>
+**Customer required**
+
+As with cards, sending customer details inline inside the payment request does not create the customer on Yuno's side. Without `customer_payer.id` referencing an existing Yuno customer, no vaulting occurs.
+</Note>
+
+## Pay with the saved bank account
+
+Use the `vaulted_token` from the enrollment webhook in future [Create Payment](/reference/create-payment) requests:
+
+```json
+{
+  "amount": { "value": 5000, "currency": "CLP" },
+  "customer_payer": { "id": "<yuno_customer_id>" },
+  "payment_method": {
+    "type": "BANK_TRANSFER",
+    "vaulted_token": "<vaulted_token>"
+  }
+}
+```
+
+The customer is redirected directly to their bank's approval step, without logging in with their bank credentials again.
