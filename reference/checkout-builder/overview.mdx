@@ -38,7 +38,7 @@ Every request is authenticated with your merchant API credentials and scoped to 
 | `PRIVATE-SECRET-KEY` | Yes | Merchant private secret key, paired with the public key. Server-side only — never embed it in client-side code. |
 | `X-Account-Code` | Yes | UUID of the merchant account. The account is resolved **only** from this header (never from the request body or path) and must be in the beta allowlist. |
 | `X-Idempotency-Key` | No | Optional client key, up to 64 characters. Best-effort — see [Idempotency](#idempotency). |
-| `Content-Type` | Yes (PUT) | `application/json` |
+| `Content-Type` | Yes (POST/PUT/PATCH) | `application/json` |
 
 </div>
 
@@ -48,17 +48,19 @@ The organization is resolved by Yuno from your credentials — **do not send** a
 
 ## Endpoints
 
-A **custom checkout** is identified by a `checkout_code` (a UUID). Its configuration and styling are read and written through the same resource — two operations:
+A **custom checkout** is identified by a `checkout_code` (a UUID). It is created, read, written, and lifecycle-managed through the same resource — four operations:
 
 | Method | Path | Purpose |
 | --- | --- | --- |
+| `POST` | `/v1/checkouts` | Create a new custom checkout as a published clone of the account's default. |
 | `GET` | `/v1/checkouts/{checkout_code}` | Fetch the full custom checkout — configuration **and** styling, together. |
 | `PUT` | `/v1/checkouts/{checkout_code}` | Publish configuration and/or styling. |
+| `PATCH` | `/v1/checkouts/{checkout_code}` | Manage the lifecycle — rename, publish, unpublish, archive, restore, or promote to default. |
 
 `{checkout_code}` must be a valid UUID; other values are rejected with `400` before any processing.
 
 <Note>
-You obtain a `checkout_code` when the custom checkout is created in the Yuno dashboard / embedded Checkout Builder; Yuno delivers the generated UUID to your integration. Creating and listing checkouts via the public API is planned for a later phase — today the API reads and writes an **existing** checkout.
+You obtain a `checkout_code` by calling [Create Checkout](/reference/checkout-builder/create-checkout) (the response's top-level `id`), or when the custom checkout is created in the Yuno dashboard / embedded Checkout Builder. Listing checkouts via the public API is planned for a later phase.
 </Note>
 
 ## Key behaviors
@@ -72,6 +74,7 @@ You obtain a `checkout_code` when the custom checkout is created in the Yuno das
 - **Order is driven by `order_to_show`**, not by array position. Lower values are shown first.
 - **At most one condition set per required field.** Sending more than one condition set on a field is rejected with `400` (`conditions_to_override must contain at most one condition set`).
 - **Enrolled and non-enrolled flows are independent.** For CARD, configure the non-enrolled flow via `fields` and the enrolled (saved-card) flow via `enrollment_fields`. To leave one flow untouched, pass an empty array for that side.
+- **Lifecycle transitions follow a state machine.** Publish is only valid from `NOT_PUBLISHED`; an `ARCHIVED` checkout is restored in two steps (`NOT_PUBLISHED` first, then `PUBLISHED`); the default checkout cannot be archived or unpublished. See [Manage Checkout Lifecycle](/reference/checkout-builder/manage-checkout-lifecycle) for the full rules.
 - **Changes take effect immediately.** Validate payloads against the sandbox base URL before applying to production.
 - Each request body is validated independently; on any rule failure the whole request is rejected with a single aggregated `400` and nothing is applied. See the [Publish](/reference/checkout-builder/publish-checkout-configuration) endpoint for the full request shape, allowed values, and error catalog.
 
@@ -89,7 +92,7 @@ Validation failures return HTTP `400` with a single aggregated body listing ever
 }
 ```
 
-Other statuses: `401` (authentication / account not allowlisted), `404` (checkout not found for the account). The full per-rule error catalog is on the [Publish](/reference/checkout-builder/publish-checkout-configuration) page.
+Other statuses: `401` (authentication / account not allowlisted), `404` (checkout not found for the account, or no default checkout to clone on create), `409` (duplicate checkout name, or archiving/unpublishing the default checkout). The full per-rule error catalog is on the [Publish](/reference/checkout-builder/publish-checkout-configuration) page.
 
 ## Idempotency
 

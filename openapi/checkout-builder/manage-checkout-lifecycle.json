@@ -1,0 +1,294 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-builder",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.y.uno/v1"
+    },
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Merchant public API key. Found in Yuno dashboard → Settings → API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Merchant private secret key, paired with the public key. Never embed in client-side code."
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code",
+        "description": "UUID of the merchant account scope for the request. The tenant is resolved only from this header."
+      }
+    },
+    "schemas": {
+      "CheckoutMutationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Checkout identifier (UUID)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Checkout name."
+          },
+          "description": {
+            "type": "string",
+            "description": "Checkout description."
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether this checkout is the account's default."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the checkout is active (serving traffic)."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp (ISO-8601)."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/checkouts/{checkout_code}": {
+      "patch": {
+        "summary": "Manage Checkout Lifecycle",
+        "description": "Renames, publishes, unpublishes, archives, restores, or promotes the checkout. The body carries any combination of `name`, `description`, `status`, and `is_default` — at least one field is required (an empty body is rejected with 400). Status transitions follow the lifecycle state machine: publish (`PUBLISHED`) is only valid from `NOT_PUBLISHED`; an ARCHIVED checkout is restored in two steps (`status: NOT_PUBLISHED` first, then `status: PUBLISHED`); patching to the current status is rejected. Metadata (`name`/`description`) remains editable while ARCHIVED. `is_default` accepts only `true`: it promotes the checkout to account default, force-publishing it from any state, and atomically demotes the previous default; when `is_default: true` is sent together with `status`, the promotion wins and `status` is ignored. The default checkout cannot be archived or unpublished.",
+        "operationId": "manage-checkout-lifecycle",
+        "parameters": [
+          {
+            "name": "checkout_code",
+            "in": "path",
+            "description": "The unique identifier of the checkout to update (UUID, 36 chars). Non-UUID values are rejected with 400 before processing.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "description": "Optional client key, up to 64 characters. Best-effort — re-sending the same key is not guaranteed to be de-duplicated.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "New checkout name. Unique per account (a duplicate name is rejected with 409). Editable in any status, including ARCHIVED."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "New checkout description. Editable in any status, including ARCHIVED."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["PUBLISHED", "NOT_PUBLISHED", "ARCHIVED"],
+                    "description": "Target lifecycle status. PUBLISHED is only reachable from NOT_PUBLISHED; NOT_PUBLISHED is reachable from PUBLISHED (unpublish) or ARCHIVED (restore); ARCHIVED is reachable from PUBLISHED or NOT_PUBLISHED. Any other transition — including patching to the current status — is rejected with 400. Unknown values are rejected with 400."
+                  },
+                  "is_default": {
+                    "type": "boolean",
+                    "description": "Only `true` is accepted: promotes this checkout to account default, force-publishing it from any state and atomically demoting the previous default. `false` is rejected with 400 — demote by promoting another checkout instead."
+                  }
+                }
+              },
+              "examples": {
+                "Rename": {
+                  "value": {
+                    "name": "Promo Checkout (renamed)"
+                  }
+                },
+                "Publish": {
+                  "value": {
+                    "status": "PUBLISHED"
+                  }
+                },
+                "Unpublish": {
+                  "value": {
+                    "status": "NOT_PUBLISHED"
+                  }
+                },
+                "Archive": {
+                  "value": {
+                    "status": "ARCHIVED"
+                  }
+                },
+                "Restore an archived checkout (step 1 of 2)": {
+                  "value": {
+                    "status": "NOT_PUBLISHED"
+                  }
+                },
+                "Promote to default": {
+                  "value": {
+                    "is_default": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated checkout summary. The identifier is exposed as the top-level `id`. Read the resulting `status` with the Fetch endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutMutationResponse"
+                },
+                "examples": {
+                  "Updated": {
+                    "value": {
+                      "id": "0b28ff66-15f1-44c1-8d1e-bd1fefbc0a19",
+                      "name": "Promo Checkout (renamed)",
+                      "description": "Seasonal promo storefront",
+                      "is_default": false,
+                      "is_active": true,
+                      "created_at": "2026-07-17T10:02:33.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Empty body, invalid or same-status transition, unknown `status` value, `is_default: false`, a non-UUID `checkout_code`, or a malformed JSON body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Invalid transition (e.g. direct ARCHIVED → PUBLISHED)": {
+                    "value": {
+                      "code": "INVALID_STATUS_TRANSITION",
+                      "messages": ["Cannot transition from 'ARCHIVED' via this operation"]
+                    }
+                  },
+                  "Empty body": {
+                    "value": {
+                      "code": "INVALID_PATCH_BODY",
+                      "messages": ["body is empty"]
+                    }
+                  },
+                  "is_default false": {
+                    "value": {
+                      "code": "INVALID_OPERATION",
+                      "messages": ["isDefault: false direct demotion is not allowed; promote another checkout instead"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated, or the account is not in the beta allowlist.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Unauthorized": {
+                    "value": {
+                      "code": "NOT_AUTHENTICATED",
+                      "messages": ["Not authenticated"]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The checkout was not found for this account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicate name, or the checkout is the account's default and cannot be archived or unpublished.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Duplicate name": {
+                    "value": {
+                      "code": "DUPLICATE_CHECKOUT_NAME",
+                      "messages": ["A Custom Checkout with name 'Promo Checkout' already exists for this account"]
+                    }
+                  },
+                  "Archive the default": {
+                    "value": {
+                      "code": "CANNOT_ARCHIVE_DEFAULT_CHECKOUT",
+                      "messages": ["Cannot archive the default Custom Checkout. Promote another checkout as default first."]
+                    }
+                  },
+                  "Unpublish the default": {
+                    "value": {
+                      "code": "CANNOT_UNPUBLISH_DEFAULT_CHECKOUT",
+                      "messages": ["Cannot unpublish the default Custom Checkout. Promote another checkout as default first."]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
