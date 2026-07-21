@@ -10,7 +10,7 @@ Lite mode pre-selected the payment method on the merchant side, then handed off 
 |---|---|
 | `Activity.startCheckout(checkoutSession, countryCode, callbackOTT, callbackPaymentState)` + `Activity.startPaymentLite(paymentSelected, …, showPaymentStatus)` | `Transaction(config).start(paymentSelected)` |
 | Lambda callbacks (`callbackPaymentState`) | `TransactionController.onStatus(status)` |
-| `SDKPayment.initialize(context, apiKey, YunoConfig(…))` | `SDKPayment.initialize(context, apiKey)` (no `YunoConfig`) |
+| `Yuno.initialize(context, apiKey, YunoConfig(…))` | `SdkPayments.initialize(context, apiKey)` (no `YunoConfig`) |
 
 ## Side-by-side
 
@@ -29,7 +29,7 @@ class CheckoutActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // 1. Initialize once at app startup (usually in Application.onCreate)
-        SDKPayment.initialize(
+        Yuno.initialize(
             applicationContext,
             apiKey = "your-public-api-key",
             config = YunoConfig(
@@ -67,12 +67,12 @@ class CheckoutActivity : ComponentActivity() {
 ```
 
 ```kotlin After. Unified Transaction
-import com.yuno.sdk.Yuno
-import com.yuno.sdk.Transaction
-import com.yuno.sdk.TransactionConfig
-import com.yuno.sdk.TransactionController
-import com.yuno.sdk.PaymentMethodSelected
-import com.yuno.sdk.PaymentStatus
+import com.yuno.payments.sdk.api.SdkPayments
+import com.yuno.payments.sdk.api.Transaction
+import com.yuno.payments.sdk.api.TransactionConfig
+import com.yuno.payments.sdk.api.TransactionController
+import com.yuno.payments.sdk.api.models.PaymentMethodSelected
+import com.yuno.payments.sdk.api.models.TransactionStatus
 
 class CheckoutActivity : ComponentActivity(), TransactionController {
 
@@ -80,11 +80,11 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
         super.onCreate(savedInstanceState)
 
         // 1. Initialize once at app startup (usually in Application.onCreate)
-        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+        SdkPayments.initialize(applicationContext, apiKey = "your-public-api-key")
     }
 
     // 2. Implement the controller
-    override fun onStatus(status: PaymentStatus) {
+    override fun onStatus(status: TransactionStatus) {
         when (status.value) {
             "SUCCEEDED"      -> println("Success")
             "REJECT"         -> println("Rejected")
@@ -103,7 +103,7 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
             language = "en",
             appearance = customAppearance,      // optional
             controller = this,
-            showPaymentStatusScreen = true,     // see "Behavior changes" below
+            showStatusScreen = true,     // see "Behavior changes" below
         )
 
         Transaction(config = config)
@@ -118,23 +118,23 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 
 | Before (Lite) | After (unified) | Notes |
 |---|---|---|
-| `SDKPayment.initialize(context, apiKey, YunoConfig)` | `SDKPayment.initialize(context, apiKey)` | `YunoConfig` is removed. See per-field rows below. |
+| `Yuno.initialize(context, apiKey, YunoConfig)` | `SdkPayments.initialize(context, apiKey)` | `YunoConfig` is removed. See per-field rows below. |
 | `YunoConfig.styles` / `YunoConfig.language` | `TransactionConfig.appearance` / `TransactionConfig.language` | Move from app-wide to per-transaction. |
 | `YunoConfig.saveCardEnabled` | *(removed)* | Now controlled server-side via the settings service. The client no longer passes this flag. |
 | `YunoConfig.keepLoader` | *(removed)* | The SDK keeps its loader by default. New: in the unified API you can override [`showLoading`](/docs/yuno-sdk/controllers/show-loading) to render your own. This controller was not invoked in Lite. |
 | `YunoConfig.isDynamicViewEnabled` | *(removed)* | The dynamic view flow is the only flow in the unified API. |
 | `startCheckout(checkoutSession, countryCode, …)` | `TransactionConfig.checkoutSession` / `TransactionConfig.countryCode` | Sessions move into the config object. |
 | `callbackOTT: (String?) -> Unit` | Override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) on `TransactionController` (Non-seamless only) | In Lite, this lambda only fired in the headless variant. For the SDK-managed Lite flow, you don't need it. See [Headless migration](/docs/yuno-sdk/migration/android/payment/headless). |
-| `callbackPaymentState: (state, subState) -> Unit` | `TransactionController.onStatus(status: PaymentStatus)` | See [Result mapping](#result-mapping) below. |
-| `startPaymentLite(paymentSelected, …, showPaymentStatus)` | `Transaction(config).start(paymentSelected)` | The `showPaymentStatus` argument moved into `TransactionConfig.showPaymentStatusScreen`. |
+| `callbackPaymentState: (state, subState) -> Unit` | `TransactionController.onStatus(status: TransactionStatus)` | See [Result mapping](#result-mapping) below. |
+| `startPaymentLite(paymentSelected, …, showPaymentStatus)` | `Transaction(config).start(paymentSelected)` | The `showPaymentStatus` argument moved into `TransactionConfig.showStatusScreen`. |
 | `PaymentSelected` | `PaymentMethodSelected` | Class renamed. Same role. |
 | `merchantSessionId` parameter | Reserved | Anti-fraud session ID is now configured server-side and is no longer passed from the client. |
 
 ### Result mapping
 
-The result type was promoted from a raw `String` pair (state, subState) to a proper `PaymentStatus` object. The string values themselves are mostly the same; one value was renamed for cross-platform parity.
+The result type was promoted from a raw `String` pair (state, subState) to a proper `TransactionStatus` object. The string values themselves are mostly the same; one value was renamed for cross-platform parity.
 
-| Before (`state: String` from `callbackPaymentState`) | After `PaymentStatus.value` |
+| Before (`state: String` from `callbackPaymentState`) | After `TransactionStatus.value` |
 |---|---|
 | `"SUCCEEDED"` | `"SUCCEEDED"` |
 | `"REJECT"` | `"REJECT"` |
@@ -143,12 +143,12 @@ The result type was promoted from a raw `String` pair (state, subState) to a pro
 | `"INTERNAL_ERROR"` | `"INTERNAL_ERROR"` |
 | `"CANCELED_BY_USER"` | `"USER_CANCEL"` |
 
-The `subState` string maps 1-to-1 to `PaymentStatus.substatus`.
+The `subState` string maps 1-to-1 to `TransactionStatus.substatus`.
 
 ## Behavior changes
 
 <Warning>
-**`showPaymentStatusScreen` default flipped.** In Lite, `showPaymentStatus` defaulted to `true` and the SDK presented its built-in result screen. In the unified API, `showPaymentStatusScreen` defaults to **`false`**. If your integration relied on the SDK showing the result screen, set `showPaymentStatusScreen = true` in `TransactionConfig` explicitly.
+**`showStatusScreen` default flipped.** In Lite, `showPaymentStatus` defaulted to `true` and the SDK presented its built-in result screen. In the unified API, `showStatusScreen` defaults to **`false`**. If your integration relied on the SDK showing the result screen, set `showStatusScreen = true` in `TransactionConfig` explicitly.
 </Warning>
 
 - **`onStatus` is always invoked.** In Lite, the lambda fired only on terminal outcomes. `onStatus` is invoked for every terminal status regardless of whether the SDK shows its own result screen, so you can drive your own UI on top.
@@ -158,14 +158,14 @@ The `subState` string maps 1-to-1 to `PaymentStatus.substatus`.
 
 ## Checklist
 
-- [ ] Replace `SDKPayment.initialize(context, apiKey, YunoConfig(…))` with `SDKPayment.initialize(context, apiKey)`.
+- [ ] Replace `Yuno.initialize(context, apiKey, YunoConfig(…))` with `SdkPayments.initialize(context, apiKey)`.
 - [ ] Move `styles` and `language` from `YunoConfig` into `TransactionConfig.appearance` / `TransactionConfig.language`. Drop `saveCardEnabled`, `keepLoader`, `isDynamicViewEnabled`.
 - [ ] Implement `TransactionController` on a class you can keep alive (Activity, ViewModel, etc.).
 - [ ] Move `checkoutSession` and `countryCode` from `startCheckout(…)` arguments into `TransactionConfig`.
 - [ ] Replace the `callbackPaymentState` lambda with `TransactionController.onStatus(status)`. Switch `"CANCELED_BY_USER"` → `"USER_CANCEL"`.
 - [ ] Replace the `startPaymentLite(…)` call with `Transaction(config).start(paymentSelected)`.
 - [ ] Rename `PaymentSelected` to `PaymentMethodSelected`.
-- [ ] Set `showPaymentStatusScreen = true` if you relied on the SDK showing the result screen.
+- [ ] Set `showStatusScreen = true` if you relied on the SDK showing the result screen.
 - [ ] Drop `merchantSessionId` from the client; anti-fraud session ID is now server-side.
 - [ ] Re-run your sandbox test suite.
 
