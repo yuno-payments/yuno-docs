@@ -5,75 +5,37 @@ description: "Configures UPI recurring debits with pre-debit notifications, mand
 
 This guide covers Yuno's support for UPI Autopay recurring payments with Pre-Debit Notification (PDN).
 
-UPI Autopay uses a customer-approved mandate, which is the customer's standing authorization for recurring debits. Once the mandate is in place, Yuno can initiate scheduled debits without requiring the customer to take action each time. Before every recurring debit, Yuno sends a Pre-Debit Notification (PDN) to the customer in advance. This notice period gives the customer time to review the upcoming charge and cancel if needed, and the debit is only executed if the customer does not opt out.
+UPI Autopay uses a customer-approved mandate, which is the customer's standing authorization for recurring debits. Once the mandate is in place, you initiate each recurring debit yourself through the API. Before every recurring debit, NPCI requires notifying the customer in advance. You trigger this Pre-Debit Notification (PDN) through the API, then reference it on the debit.
 
 For background on customer-initiated transactions (**CIT**), merchant-initiated transactions (**MIT**), and usage values, see [Stored credentials](/docs/stored-credentials).
 
-Autopay integrates seamlessly with Yuno's existing payment flows through the `stored_credentials` field.
+Autopay integrates with Yuno's existing payment flows through the `stored_credentials` field.
 
 ## How it works
 
+UPI Autopay covers the full lifecycle of a recurring debit, from the initial mandate-creating charge to notifications, cancellations, retries, and provider support.
+
 * **First charge**: The initial payment is a customer-initiated transaction (CIT) processed directly with the payment provider to create the mandate and authorize future debits.
-* **PDNs**: For recurring debits, Yuno sends a pre-debit notification (PDN) that the customer receives by SMS or email, waits the required notice period, and then executes the debit automatically unless the customer cancels.
-* **Messaging and opt-out**: PDNs include the merchant name, amount, and scheduled date, plus a cancellation link. Messages are localized (for example, English, Hindi, Tamil, Telugu, Bengali, Marathi). Email templates are white-labeled with merchant branding.
-* **Webhook cancellation**: If the customer clicks the cancellation link, Yuno validates the transaction, cancels the scheduled debit, updates the payment status, and notifies the merchant.
-* **Scheduling and retries**: Debits are scheduled to run after the notice period in approved IST windows. If a debit fails, Yuno schedules retries based on the configured schedule and retry limits.
-* **Async status and webhooks**: Payment state updates run asynchronously and emit merchant events for PDN sent, cancellations, successes, retry scheduled, and final failure.
+* **Pre-debit notifications**: For each recurring debit, trigger a PDN through [Create pre-debit notification](/reference/pre-debit-notifications/create-pre-debit-notification). The provider delivers it to the customer by SMS or email, then you reference the notification on the debit.
+* **Messaging**: PDNs include the merchant name, amount, and scheduled date. Messages are localized (for example, English, Hindi, Tamil, Telugu, Bengali, Marathi). Email templates are white-labeled with merchant branding.
+* **Customer cancellation**: There is no cancellation link or Yuno-mediated opt-out. To stop the mandate, the customer must revoke it directly with their bank or UPI app. Yuno only learns about the revocation when the next debit attempt is declined by the provider.
+* **Retries**: Yuno does not automatically retry a failed UPI Autopay debit. If a debit fails, retrying is your responsibility. Create a new pre-debit notification and a new payment, within NPCI's cap of one attempt plus up to three retries.
 * **Provider support**: Autopay with PDN is initially launching through Adyen and Billdesk.
 
 ```mermaid
-flowchart TB
-  A[Merchant creates payment]
-  B[Yuno payments API]
-  C[Provider]
-
-  A --> B --> C
-
-  C --> D[usage:FIRST]
-  C --> E[usage:USED]
-  C --> F[Scheduler]
-
-  D --> R[Payment results]
-
-  E --> M[Messaging]
-  E --> S[Scheduler 36-48h]
-  F --> S
-
-  M --> CA[Customer action]
-  S --> CA
-
-  CA -->|Yes| CL[Cancel payment link]
-  CA -->|No| PD[Provider debit triggered]
-
-  CL --> R
-  PD --> R
-
-  R --> FS[Final status]
+flowchart LR
+  A[Create pre-debit notification] --> B{Status}
+  B -->|SENT| C[Wait NPCI notice period<br/>merchant-managed, min 24h]
+  C --> D[Create payment<br/>with pre_debit_notification_id]
+  D --> E[Debit executed]
+  B -->|REJECTED or ERROR| F[Do not debit]
 ```
 
-## Payment flows
+## Pre-debit notifications
 
-Autopay uses amount thresholds to determine whether a charge can run as MIT or must be handled as a customer-initiated payment (CIT). This keeps recurring debits compliant and sets expectations for customer action.
+Every UPI Autopay recurring debit requires its own pre-debit notification. Trigger it yourself and reference it on the debit:
 
-* **Below threshold (≤ INR 50,000)**: Yuno sends the PDN to the customer, waits the 36-48 hour notice period, and then executes the MIT debit in an IST window. If the customer cancels during the notice period, the debit is not executed.
-* **Above threshold (> INR 50,000)**: Yuno sends a CIT notification 72-48 hours in advance with a way for the customer to complete the payment. The customer must actively pay; if they do not, no MIT debit is executed.
-
-## `stored_credentials` fields
-
-Implement Autopay through the `stored_credentials` field available in endpoints like [Create payment](/reference/payments/create-payment). The full path for create payments is `payment_method.detail.bank_transfer.stored_credentials`.
-
-Use `stored_credentials.usage` to declare the intent:
-
-| Field   | Value   | Behavior                                                                       |
-| ------- | ------- | ------------------------------------------------------------------------------ |
-| `usage` | `FIRST` | Run the direct charge (CIT) and store the mandate reference for future debits. |
-| `usage` | `USED`  | Send the PDN, wait the 24-hour notice period, then run the MIT debit.          |
-
-## API-driven pre-debit notifications
-
-If you manage your own billing schedule, trigger the pre-debit notification yourself and reference it on the debit. This is the flow available today through the API:
-
-1. **Send the notification** with [Create pre-debit notification](/reference/pre-debit-notifications/create-pre-debit-notification), passing the mandate's `vaulted_token`, the upcoming `amount`, and the `billing_date`. Keep the returned `id` and confirm the status is `SENT`.
+1. **Send the notification** with [Create pre-debit notification](/reference/pre-debit-notifications/create-pre-debit-notification), passing the mandate's `vaulted_token`, the upcoming `amount`, and the `billing_date`. Keep the returned `id` and confirm the status is `SENT`. This status is final. It never changes after creation, and Yuno sends no webhook for it, so there's no need to poll for updates.
 
 ```json
 {
@@ -88,7 +50,7 @@ If you manage your own billing schedule, trigger the pre-debit notification your
 }
 ```
 
-2. **Wait the NPCI notice period** (at least 24 hours before the debit).
+2. **Wait at least 24 hours before the debit.** This is NPCI's minimum notice period. Yuno does not track or enforce elapsed time, so meeting this requirement is your responsibility.
 
 3. **Create the recurring debit** with [Create payment](/reference/payments/create-payment), referencing the notification:
 
@@ -110,25 +72,35 @@ If you manage your own billing schedule, trigger the pre-debit notification your
 
 Yuno validates the referenced notification (it must exist, belong to your account, and be in `SENT` status) and forwards the provider's notification reference with the debit. If the validation fails, the payment is rejected with `PRE_DEBIT_NOTIFICATION_NOT_FOUND` or `PRE_DEBIT_NOTIFICATION_NOT_SENT` (HTTP 422) and no charge is attempted.
 
-## Dunning and retries
+## Payment flows
 
-If an MIT debit fails, Yuno retries instead of marking the payment as final failure immediately. The retry schedule is configurable per account.
+NPCI sets an amount threshold that determines whether a recurring debit can run as a merchant-initiated transaction (MIT) or must be a customer-initiated payment (CIT) instead. You are responsible for applying this threshold in your own billing logic, since Yuno does not automate it.
 
-| Attempt    | Message                                                                     |
-| ---------- | --------------------------------------------------------------------------- |
-| 1st fail   | "Payment failed. We'll retry tomorrow. No action needed."                   |
-| 2nd fail   | "Payment still pending. Retry in 2 days (`link to update payment method`)." |
-| 3rd fail   | "Final retry scheduled for `date`. Please ensure funds are available."      |
-| Final fail | "Payment could not be processed. Contact `merchant` to resolve."            |
+* **Below threshold (≤ INR 50,000)**: You can debit the mandate as an MIT using the [pre-debit notification flow](#pre-debit-notifications) described above.
+* **Above threshold (> INR 50,000)**: NPCI requires a customer-initiated payment. Yuno sends no reminder or notification for this case. Building your own CIT collection flow and collecting direct action from the customer is entirely your responsibility.
+
+## `stored_credentials` fields
+
+Implement Autopay through the `stored_credentials` field available in endpoints like [Create payment](/reference/payments/create-payment). The full path for create payments is `payment_method.detail.bank_transfer.stored_credentials`.
+
+Use `stored_credentials.usage` to mark whether this is the mandate-creating charge or a later debit against it, the same generic CIT/MIT marker used across other stored-credential payment methods:
+
+| Field   | Value   | Behavior                                                                                          |
+| ------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `usage` | `FIRST` | Run the direct charge (CIT) that creates the mandate and stores the reference for future debits.  |
+| `usage` | `USED`  | Marks this as a subsequent debit (MIT) against the mandate. Does not, by itself, send a pre-debit notification. |
+
+<Warning>
+Setting `usage` does not trigger a pre-debit notification. Every UPI Autopay recurring debit needs its own pre-debit notification, created and referenced separately, as described above.
+</Warning>
 
 ## Regulatory compliance
 
-Yuno follows the National Payments Corporation of India (NPCI) requirements for UPI Autopay.
+Yuno's UPI Autopay integration operates under National Payments Corporation of India (NPCI) requirements. Since the pre-debit notification flow is fully merchant-managed today, meeting each of these is your responsibility. Yuno validates only that a referenced notification exists and is in `SENT` status.
 
-* **Advance notice window**: PDNs must be sent 36-48 hours before the debit. NPCI allows a minimum of 24 hours.
-* **Customer opt-out**: The PDN includes a webhook link delivered via SMS or email. If the customer cancels before the scheduled debit, Yuno stops the charge.
-* **Execution windows (IST)**: Debits are executed only in approved time windows: before 10:00 AM, 1:00-5:00 PM, or after 9:30 PM.
+* **Advance notice window**: NPCI requires a minimum of 24 hours' notice before the debit.
+* **Execution windows (IST)**: Debits must run only in approved time windows: before 10:00 AM, 1:00-5:00 PM, or after 9:30 PM.
 * **MIT amount threshold**: MIT autopay is allowed up to INR 50,000. Any amount above that requires a customer-initiated payment (CIT).
-* **Retry limits**: NPCI allows 1 execution attempt plus up to 3 retries.
+* **Retry limits**: NPCI allows 1 execution attempt plus up to 3 retries. Yuno does not automate retries. If a debit fails, create a new pre-debit notification and a new payment for the retry attempt.
 
 <br />
