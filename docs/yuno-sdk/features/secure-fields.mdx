@@ -1,0 +1,215 @@
+---
+title: "Secure Fields"
+description: "Collect card data in PCI-compliant fields you place and style individually, then pay or enroll with start()."
+---
+
+Secure fields are PCI-compliant card inputs — card number, expiry, CVV — that the SDK renders inside isolated iframes. Unlike the SDK's built-in form, you **create and place each field independently** in your own layout, with your own labels and styling. Raw card data never touches your page.
+
+<Note>
+This is the **Web-only** granular, per-field API. If you'd rather embed a single SDK-composed card form, use [`showView`](/docs/yuno-sdk/controllers/show-view) instead — same PCI guarantees, less layout work.
+</Note>
+
+Secure fields work for **both** payment (`checkoutSession`) and enrollment (`customerSession`). The fields inherit everything — session, country, language, callbacks — from the `Transaction` that creates them. There is no second configuration surface.
+
+## Quick start
+
+```typescript
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => showResult(result),
+})
+
+const secureFields = await transaction.secureFields()
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).render('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).render('#expiration')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).render('#cvv')
+
+payButton.addEventListener('click', () => {
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
+    })
+})
+```
+
+`start()` tokenizes the mounted fields, creates the payment, handles 3DS, and reports the result through [`onStatus`](/docs/yuno-sdk/controllers/on-status). The fields supply the card number, expiry, and CVV — those never leave the iframes. Non-PCI details — `holderName`, and optionally `installment`, `customer`, or `vaultOnSuccess` — travel on `start()` via `paymentMethod.data`.
+
+<Note>
+Passing `number`, `expirationMonth`, `expirationYear`, or `securityCode` in `paymentMethod.data.card` while secure fields are mounted throws — the iframes own the PCI data.
+</Note>
+
+## Managed vs manual
+
+By default the SDK creates the payment. Provide [`createPayment`](/docs/yuno-sdk/controllers/create-payment) on the config to POST the token from your own backend instead:
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    createPayment: async (token) => {
+        await myBackend.pay({
+            oneTimeToken: token.token,
+            checkoutSession: token.checkout_session,
+        })
+    },
+    onStatus: (result) => showResult(result),
+})
+```
+
+<Warning>
+Always read `token.checkout_session` from the token instead of reusing the session you created the transaction with. After a declined payment the SDK rotates the session automatically — the token always carries the one it actually tokenized against.
+</Warning>
+
+Either way the SDK handles 3DS and reports through `onStatus`.
+
+## Declined payments and retry
+
+When a card payment is **DECLINED** or fails with **ERROR**, the SDK prepares the retry for you:
+
+1. The checkout session is cloned server-side and rotated into the mounted fields automatically.
+2. Field-level errors (invalid card number, invalid CVV, insufficient funds) are painted inside the matching iframes.
+3. `onStatus` receives the `DECLINED` / `ERROR` result.
+
+The fields stay mounted with what the user typed. To retry, just call `start()` again — it is **repeatable** while secure fields are mounted, and the new attempt tokenizes against the rotated session. You do no session bookkeeping.
+
+```typescript
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => {
+        if (result.status === 'DECLINED' || result.status === 'ERROR') {
+            payButton.disabled = false
+            return
+        }
+        showResult(result)
+    },
+})
+
+payButton.addEventListener('click', () => {
+    payButton.disabled = true
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
+    })
+})
+```
+
+<Note>
+Disable your Pay button while a `start()` is in flight. Calling `start()` again before the previous attempt finishes throws — two tokenizations would mean two payments.
+</Note>
+
+## Enrollment
+
+With a `customerSession`, secure fields vault a card instead of charging it. The flow is identical — `create`, `render`, `start()`.
+
+```typescript
+const transaction = sdkPayments.transaction({
+    customerSession: 'session-from-backend',
+    countryCode: 'CO',
+    onStatus: (result) => showResult(result),
+})
+
+const secureFields = await transaction.secureFields()
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).render('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).render('#expiration')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).render('#cvv')
+
+saveButton.addEventListener('click', () => {
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { card: { holderName: nameInput.value } } },
+    })
+})
+```
+
+## Installments
+
+Enable installments when creating the fields:
+
+```typescript
+const secureFields = await transaction.secureFields({ installmentEnable: true })
+```
+
+Available plans arrive on the `pan` field's `onChange` as the user types — `data.installments`, `data.fullInstallmentsInfo`, and `data.isInstallmentLoading`. Render your own selector from that data and pass the chosen plan on `start()`:
+
+```typescript
+transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        data: {
+            card: { holderName: nameInput.value },
+            installment: { id: selected.id, value: selected.value },
+        },
+    },
+})
+```
+
+## Fields
+
+Create each field by name, then render it into any element in your layout.
+
+| Name | What |
+|---|---|
+| `pan` | Card number. Emits brand, IIN, and installment data through `onChange`. |
+| `expiration` | Expiration date. |
+| `cvv` | Security code. |
+| `cardLoadPreview` | Optional animated card preview. |
+| `cardPin` | PIN entry, for markets that require it. |
+
+## Field options
+
+Pass `options` to `create` to label, style, and observe a field.
+
+| Option | Type | Purpose |
+|---|---|---|
+| `label` | string | Accessible label. |
+| `placeholder` | string | Placeholder text. |
+| `showError` | boolean | Render validation errors under the field. |
+| `validationType` | string | When to validate (e.g. `on_blur_full`). |
+| `onChange` | function | `({ error, data, isDirty })`. For `pan`, `data` carries brand, IIN, and installments. |
+| `onBlur` / `onFocus` | function | Focus lifecycle — e.g. to flip a card preview. |
+
+## Field methods
+
+Each field returned by `create` (or fetched later with `getElement({ name })`) exposes:
+
+| Method | Purpose |
+|---|---|
+| `render('#sel')` | Render the field into an element. |
+| `focus()` | Focus the field. |
+| `validate()` | Validate on demand; resolves to a boolean. |
+| `clearValue()` | Clear the input. |
+| `setError(message)` / `clearError()` | Show or clear a custom error under the field. |
+| `hide()` / `show()` | Toggle visibility without unmounting. |
+| `updateProps(props)` | Update label, placeholder, or styles in place. |
+| `setCardType(type)` | Force credit or debit on dual-brand cards. |
+| `setCardHolderName(name)` | Set the holder name on the card preview. |
+| `toggleFrontCardVisibility(visible)` | Flip the card preview. |
+| `unmountSync()` | Remove the field's iframe. |
+
+## Instance members
+
+| Member | Purpose |
+|---|---|
+| `create({ name, options })` | Create a field. |
+| `getElement({ name })` | Fetch a previously created field. |
+| `unmountSync()` | Remove all field iframes. `transaction.unmount()` calls this for you. |
+
+<Note>
+To point the transaction at a new checkout session, call `transaction.updateCheckoutSession()` — the mounted fields pick it up automatically.
+</Note>
+
+## Notes
+
+- **One completion path.** Tokenization, payment creation, 3DS, and status all live inside `start()` — there is no `generateToken` or `continuePayment()` to sequence yourself. To create the payment from your own backend, use manual mode ([`createPayment`](/docs/yuno-sdk/controllers/create-payment)) — the SDK still owns 3DS and the result.
+- **PCI scope is unchanged.** Raw card data stays inside the SDK's iframes; your code never reads it.
+- **One card surface per page.** Create secure fields on one transaction at a time. Wallet buttons and the payment methods list from [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list) can share the page and the transaction — a `CARD` `start()` routes to your fields, wallet buttons drive themselves.
+
+## Related
+
+- [Migration — Secure Fields](/docs/yuno-sdk/migration/web/secure-fields). Coming from v1 `yuno.secureFields`.
+- [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list). Prebuilt widgets — wallets and the methods list.
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Take over payment creation (manual mode).
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). Receive the final result.
