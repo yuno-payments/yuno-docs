@@ -8,7 +8,7 @@ Enrollment had two sub-modes that paralleled the payment modes: a UI-driven flow
 
 | Before | After |
 |---|---|
-| `yuno.mountEnrollmentLite({ customerSession, … })` (UI) | `sdkPayments.transaction({ customerSession, … }).start()` |
+| `yuno.mountEnrollmentLite({ customerSession, elementSelector, … })` (UI) | `sdkPayments.transaction({ customerSession, … }).start({ elementSelector })` |
 | `yuno.apiClientEnroll({ customerSession })` + manual backend call (Headless) | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data } })` |
 | `yunoEnrollmentStatus({ status, vaultedToken })` controller | `onStatus(result)` — same payload shape as payment flows |
 
@@ -50,7 +50,7 @@ const transaction = sdkPayments.transaction({
     },
 })
 
-await transaction.start()
+await transaction.start({ elementSelector: '#root' })
 ```
 
 </CodeGroup>
@@ -112,16 +112,16 @@ await transaction.start({
 
 | Before (Enrollment) | After (unified) | Notes |
 |---|---|---|
-| `yuno.mountEnrollmentLite({ customerSession, … })` | `sdkPayments.transaction({ customerSession, … }).start()` | Single factory. `start()` called with no argument for UI enrollment. |
+| `yuno.mountEnrollmentLite({ customerSession, … })` | `sdkPayments.transaction({ customerSession, … }).start({ elementSelector })` | Single factory. Pass `elementSelector` to `start()` for the form-based UI enrollment. |
 | `yuno.apiClientEnroll({ customerSession })` + `.generateVaultedToken(cardData)` | `sdkPayments.transaction({ customerSession }).start({ paymentMethod: { type: 'CARD', data: CardData } })` | Pre-collected card data goes inline on `start()`. |
 | `yunoEnrollmentStatus({ status, vaultedToken })` | `onStatus(result)` | `result` carries `status` (literal union), `substatus`, and `message` — same shape as payment flows. `vaultedToken` is no longer delivered to the client; fetch it from your backend. |
-| `elementSelector: '#root'` (auto-mount) | `elementSelector` (on `TransactionConfig`) | Pass it at the root of the transaction config; the enrollment form renders inside that element. Modal mode no longer exists. |
-| `showPaymentStatus: true` | `showStatusScreen: true` | Same field on `TransactionConfig`. Defaults to `false`. |
-| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus` (`result.status === 'ERROR'`) and `StartResult.error`. |
+| `elementSelector: '#root'` (auto-mount) | `elementSelector` (on `start()`) | No longer a config field. Pass it to `start({ elementSelector })`; the enrollment form renders inside that element. Modal mode no longer exists. |
+| `showPaymentStatus: true` | `showStatusScreen: true` | Same field on `TransactionConfig`. Defaults to `true` for enrollment. |
+| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus` (a `TransactionStatus` with `message` set), or a rejected `start()` Promise. |
 
 ### Result mapping
 
-`result.status` uses the same 11-value literal union as v1's `EnrollmentStatus`:
+`result.status` uses the same 12-value literal union as the `Enrollment.Status` enum:
 
 ```typescript
 type EnrollmentStatus =
@@ -136,6 +136,7 @@ type EnrollmentStatus =
     | 'CANCELED'
     | 'ERROR'
     | 'UNENROLLED'
+    | 'PENDING'
 ```
 
 When `status === 'CREATED'`, the enrollment succeeded. The vaulted token is not delivered to the client — retrieve it from your backend's list-customer-payment-methods endpoint and store it against your customer.
@@ -147,18 +148,20 @@ When `status === 'CREATED'`, the enrollment succeeded. The vaulted token is not 
   - `customerSession` → enrollment
 
   The `onStatus` payload has the same shape in both cases.
-- **`start()` with no argument == enrollment UI.** The SDK presents the enrollment form for the customer to pick a method and fill in card data.
-- **`start({ paymentMethod: { type, data } })` == enrollment headless.** Same shape as headless payment, but with `customerSession`.
-- **No `createPayment` for enrollment.** Even if you wire it on the config, it's ignored — there's no `/v1/payments` equivalent for enrollment.
+- **`elementSelector` moved to `start()`.** It's no longer a config field — pass it to `start({ elementSelector })` for the form-based UI enrollment.
+- **`start({ elementSelector })` == enrollment UI.** The SDK presents the enrollment form inside that element for the customer to pick a method and fill in card data.
+- **`start({ paymentMethod: { type, data } })` == enrollment headless.** Same shape as headless payment, but with `customerSession` and no `elementSelector`.
+- **No payment-only fields for enrollment.** `createPayment`, `showPayButton`, and the other payment-only config fields aren't part of the enrollment config — there's no `/v1/payments` equivalent for enrollment.
 
 ## Checklist
 
 - [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
-- [ ] Replace `yuno.mountEnrollmentLite(...)` with `sdkPayments.transaction({ customerSession, … }).start()`.
+- [ ] Replace `yuno.mountEnrollmentLite(...)` with `sdkPayments.transaction({ customerSession, … }).start({ elementSelector })`.
 - [ ] Replace `yuno.apiClientEnroll(...).generateVaultedToken(cardData)` with `transaction.start({ paymentMethod: { type: 'CARD', data: CardData } })`.
 - [ ] Rename `cardHolderName` → `holderName`, `cardNumber` → `number`, `cvv` → `securityCode` in the data payload.
 - [ ] Replace `yunoEnrollmentStatus({ status, vaultedToken })` with `onStatus(result)` and read `result.status`. Retrieve the vaulted token from your backend instead of the callback.
-- [ ] Drop `elementSelector`, `yunoError`.
+- [ ] Pass `elementSelector` to `start()` (not the config) for the form-based UI enrollment.
+- [ ] Drop `yunoError`.
 - [ ] Re-run your sandbox test suite.
 
 ## Related

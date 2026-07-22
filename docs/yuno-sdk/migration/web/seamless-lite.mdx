@@ -10,7 +10,7 @@ In the unified API it collapses to a single `transaction.start({ paymentMethod }
 
 | Before | After |
 |---|---|
-| `yuno.startSeamlessCheckout(config)` + `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `sdkPayments.transaction(config).start({ paymentMethod: { type, vaultedToken } })` |
+| `yuno.startSeamlessCheckout(config)` + `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `sdkPayments.transaction(config).start({ paymentMethod: { type, vaultedToken }, elementSelector })` |
 | `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` (single call) |
 | Managed payment creation | Managed payment creation (no `createPayment` on config) |
 
@@ -52,7 +52,10 @@ const transaction = sdkPayments.transaction({
 })
 
 document.getElementById('pay').addEventController('click', async () => {
-    await transaction.start({ paymentMethod: { type: 'PIX' } })
+    await transaction.start({
+        paymentMethod: { type: 'PIX' },
+        elementSelector: '#root',
+    })
 })
 ```
 
@@ -63,10 +66,11 @@ document.getElementById('pay').addEventController('click', async () => {
 | Before (Seamless Lite) | After (unified) | Notes |
 |---|---|---|
 | `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Single factory. Don't wire `createPayment` — Seamless was always managed. |
-| `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `transaction.start({ paymentMethod: { type, vaultedToken } })` | Pre-selection becomes the `paymentMethod` argument of `start()`. |
+| `elementSelector` (on `startSeamlessCheckout` config) | `elementSelector` (on `start()`) | No longer a config field. Pass it to `start({ paymentMethod, elementSelector })`; the form renders inside that element. Required for form-based payments. |
+| `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `transaction.start({ paymentMethod: { type, vaultedToken }, elementSelector })` | Pre-selection becomes the `paymentMethod` argument of `start()`; `elementSelector` is where the form renders. |
 | `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` | The trigger and the pre-selection collapse into a single `start()` call. |
 | `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | `PaymentResult` wrapper with `.status` and `.substatus`. |
-| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus` and `StartResult.error`. |
+| `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus`, or a rejected `start()` Promise. |
 | `onLoading({ isLoading, type })` | `showLoading(isLoading)` | Boolean signal only. |
 
 ## Behavior changes
@@ -78,9 +82,10 @@ document.getElementById('pay').addEventController('click', async () => {
 ## Checklist
 
 - [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
-- [ ] Replace `yuno.startSeamlessCheckout(...)` + `yuno.mountSeamlessCheckoutLite(...)` + `yuno.startPayment()` with a single `transaction.start({ paymentMethod })` call.
+- [ ] Replace `yuno.startSeamlessCheckout(...)` + `yuno.mountSeamlessCheckoutLite(...)` + `yuno.startPayment()` with a single `transaction.start({ paymentMethod, elementSelector })` call.
 - [ ] **Do not** wire `createPayment` on the config — that would flip to manual mode.
 - [ ] Move `checkoutSession`, `countryCode`, `language`, `card`, etc. into `TransactionConfig`.
+- [ ] Pass `elementSelector` to `start()` (not the config) for form-based payments.
 - [ ] Replace `yunoPaymentResult` with `onStatus` (read `result.status` / `result.substatus`).
 - [ ] Drop `yunoError`, `onLoading` (use `showLoading` if you need a custom loader).
 - [ ] Re-run your sandbox test suite.
