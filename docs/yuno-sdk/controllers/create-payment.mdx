@@ -1,0 +1,76 @@
+---
+title: "createPayment"
+description: "Override to create the payment on your own backend."
+---
+
+`createPayment` is the controller you override when you want to create the payment on your own backend instead of letting the SDK do it. The SDK delivers the One-Time Token to your handler and waits for you to signal that the payment has been created.
+
+## Behavior
+
+If you do not override this controller, the SDK creates the payment automatically after tokenization, handles 3DS if needed, and delivers the final status to `onStatus`.
+
+When you override it, the SDK delivers the token to your handler and waits for the returned Promise/Task to resolve before continuing. Resolve the Promise/Task once your backend has created the payment by calling [`POST /v1/payments`](https://docs.y.uno/reference/payments/create-payment); the SDK then queries the payment status, handles 3DS if needed, and invokes `onStatus`.
+
+If the Promise/Task is rejected, the SDK stops the flow. `onStatus` is not invoked. `showLoading` emits `isLoading: false` and the view is closed at that point. You are responsible for showing the error to your user.
+
+In an enrollment flow, this controller is not invoked with payment data and overriding it has no effect.
+
+<Warning>
+Match the checkout session's `workflow` to this decision. Sessions created with the default workflow (`SDK_CHECKOUT`) require this override — the backend rejects payment creation coming from the SDK. If you don't override `createPayment`, create the session with `workflow: "SDK_SEAMLESS"`. The field lives on the [`POST /v1/checkout/sessions` body](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow), not on `TransactionConfig`.
+</Warning>
+
+## Signature
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+sdkPayments.transaction({
+  ...,
+  createPayment: async (token) => {
+    await myBackend.pay(token.token)
+  },
+})
+```
+
+  </Tab>
+
+  <Tab title="iOS">
+
+```swift
+func createPayment(token: [String: Any]) async throws
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+suspend fun createPayment(token: Map<String, Any>)
+```
+
+  </Tab>
+</Tabs>
+
+## OneTimeToken
+
+`OneTimeToken` is a dictionary/map containing the token value plus associated metadata.
+
+| Platform | Type |
+|---|---|
+| Web | `Record<string, any>` |
+| iOS | `[String: Any]` |
+| Android | `Map<String, Any>` |
+
+See [`OneTimeToken`](/docs/yuno-sdk/reference/one-time-token) for the full reference.
+
+## Threading
+
+On iOS and Android, `createPayment` is invoked on the main thread. You can update UI directly from inside this handler. But keep in mind that any backend call you make should happen off the main thread.
+
+## Related
+
+- [Transactions](/docs/basic-concepts/transactions). How a payment flows through Yuno.
+- [Payment status values](https://docs.y.uno/reference/payments/status-and-response-codes/payment). Status and substatus reference.
+- [`OneTimeToken`](/docs/yuno-sdk/reference/one-time-token). The token object reference.
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). Invoked after the SDK queries the payment status.
