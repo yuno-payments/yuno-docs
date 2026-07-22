@@ -1,0 +1,326 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "plans",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/plans": {
+      "post": {
+        "summary": "Create Plan",
+        "description": "Creates a reusable pricing plan. Plans are immutable once created — a price change means creating a new plan; existing subscriptions on the old plan are unaffected.",
+        "operationId": "create-plan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "base_amount", "frequency"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The plan name (MAX 255; MIN 3)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "The plan description. No length limit is currently enforced."
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "Your own identifier for the plan. No length limit is currently enforced."
+                  },
+                  "base_amount": {
+                    "type": "object",
+                    "description": "The default price used for any country without an explicit entry in `country_prices`.",
+                    "required": ["currency", "value"],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
+                      },
+                      "value": {
+                        "type": "number",
+                        "description": "Multiple of 0.0001.",
+                        "format": "float"
+                      }
+                    }
+                  },
+                  "frequency": {
+                    "type": "object",
+                    "description": "The billing frequency for the plan. Subscriptions created from this plan inherit it.",
+                    "required": ["type", "value"],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["DAY", "WEEK", "MONTH", "YEAR"]
+                      },
+                      "value": {
+                        "type": "integer",
+                        "format": "int32"
+                      }
+                    }
+                  },
+                  "country_prices": {
+                    "type": "array",
+                    "description": "Optional explicit per-country prices. A country not listed falls back to `base_amount`.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "country": {
+                          "type": "string",
+                          "description": "[ISO 3166-1](/reference/country-reference)."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "properties": {
+                            "currency": { "type": "string" },
+                            "value": { "type": "number", "format": "float" }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "allowed_payment_methods": {
+                    "type": "array",
+                    "description": "Payment method types accepted for subscriptions on this plan.",
+                    "items": { "type": "string" }
+                  },
+                  "metadata": {
+                    "type": "array",
+                    "description": "Key-value pairs attached to the plan. Independent of any metadata set on a subscription created from it.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "key": { "type": "string", "description": "MAX 48." },
+                        "value": { "type": "string", "description": "MAX 512." }
+                      }
+                    }
+                  },
+                  "phases": {
+                    "type": "array",
+                    "description": "Optional leading ladder (for example, a trial) before the plan's regular price. Omit for a flat plan. The last entry must be the terminal REGULAR phase with no `duration`.",
+                    "items": {
+                      "type": "object",
+                      "required": ["order", "type", "name"],
+                      "properties": {
+                        "order": { "type": "integer", "format": "int32" },
+                        "name": {
+                          "type": "string",
+                          "description": "Required, non-empty — each phase must have a name."
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": ["TRIAL", "REGULAR"]
+                        },
+                        "duration": {
+                          "type": "object",
+                          "description": "Required on every non-terminal phase, omitted on the terminal REGULAR phase.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["DAY", "WEEK", "MONTH", "YEAR"]
+                            },
+                            "value": { "type": "integer", "format": "int32" }
+                          }
+                        },
+                        "frequency": {
+                          "type": "object",
+                          "description": "Optional. If omitted, the phase bills as a single lump-sum charge covering the whole `duration`. If set, the phase bills every `frequency` interval instead, and the server computes `total_payments = duration / frequency` (both in the same unit) — e.g. a 3-month duration with a 1-month frequency produces 3 charges. Not applicable to the terminal phase.",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": ["DAY", "WEEK", "MONTH", "YEAR"]
+                            },
+                            "value": { "type": "integer", "format": "int32" }
+                          }
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "Flat price for the phase. 0 is allowed (a free trial). On a **non-terminal** phase, this or `country_prices` is required (one of the two). On the **terminal** REGULAR phase, omit this entirely — sending it is rejected with `400 BAD_REQUEST` (\"The terminal phase price comes from the plan base_amount/country_prices - remove the phase amount\"); the terminal price always comes from the plan's own `base_amount`/`country_prices`.",
+                          "properties": {
+                            "currency": { "type": "string" },
+                            "value": { "type": "number", "format": "float" }
+                          }
+                        },
+                        "country_prices": {
+                          "type": "array",
+                          "description": "Per-country prices for this phase. On a non-terminal phase, this or `amount` is required. Not applicable to the terminal phase — its pricing always comes from the plan's own `country_prices`.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "country": { "type": "string" },
+                              "amount": {
+                                "type": "object",
+                                "properties": {
+                                  "currency": { "type": "string" },
+                                  "value": { "type": "number", "format": "float" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "Plan": {
+                  "value": {
+                    "name": "Streaming Pro",
+                    "description": "Access to Pro features, billed monthly",
+                    "merchant_reference": "streaming-pro-monthly",
+                    "base_amount": { "currency": "USD", "value": 20.0 },
+                    "frequency": { "type": "MONTH", "value": 1 },
+                    "country_prices": [
+                      { "country": "US", "amount": { "currency": "USD", "value": 20.0 } },
+                      { "country": "BR", "amount": { "currency": "BRL", "value": 99.9 } }
+                    ],
+                    "allowed_payment_methods": ["CARD", "PIX"],
+                    "metadata": [{ "key": "campaign", "value": "app_store" }],
+                    "phases": [
+                      {
+                        "order": 1,
+                        "name": "Intro",
+                        "type": "TRIAL",
+                        "duration": { "type": "MONTH", "value": 3 },
+                        "frequency": { "type": "MONTH", "value": 1 },
+                        "amount": { "currency": "USD", "value": 9.99 }
+                      },
+                      { "order": 2, "name": "Regular", "type": "REGULAR" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "id": "00000000-0000-4000-8000-000000000001",
+                      "account_id": "00000000-0000-4000-8000-000000000002",
+                      "name": "Streaming Pro",
+                      "description": "Access to Pro features, billed monthly",
+                      "merchant_reference": "streaming-pro-monthly",
+                      "status": "ACTIVE",
+                      "base_amount": { "currency": "USD", "value": 20.0 },
+                      "frequency": { "type": "MONTH", "value": 1 },
+                      "country_prices": [
+                        { "country": "US", "amount": { "currency": "USD", "value": 20.0 } },
+                        { "country": "BR", "amount": { "currency": "BRL", "value": 99.9 } }
+                      ],
+                      "allowed_payment_methods": ["CARD", "PIX"],
+                      "metadata": [{ "key": "campaign", "value": "app_store" }],
+                      "phases": [],
+                      "created_at": "2024-01-15T10:30:00.000000Z",
+                      "updated_at": "2024-01-15T10:30:00.000000Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "account_id": { "type": "string" },
+                    "name": { "type": "string" },
+                    "description": { "type": "string" },
+                    "merchant_reference": { "type": "string" },
+                    "status": { "type": "string", "example": "ACTIVE" },
+                    "base_amount": {
+                      "type": "object",
+                      "properties": {
+                        "currency": { "type": "string" },
+                        "value": { "type": "number" }
+                      }
+                    },
+                    "frequency": {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string" },
+                        "value": { "type": "integer" }
+                      }
+                    },
+                    "country_prices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "country": { "type": "string" },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "currency": { "type": "string" },
+                              "value": { "type": "number" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "allowed_payment_methods": { "type": "array", "items": { "type": "string" } },
+                    "metadata": { "type": "array", "items": { "type": "object" } },
+                    "phases": { "type": "array", "items": { "type": "object" } },
+                    "created_at": { "type": "string" },
+                    "updated_at": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": "{\n Refer to the HTTP Response Codes section for more details: 'https://docs.y.uno/reference/response-codes'\n}",
+                    "summary": "Result"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [{ "value": "utf-8", "key": "charset" }],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}
