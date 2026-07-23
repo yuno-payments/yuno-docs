@@ -1,0 +1,183 @@
+---
+title: Installments
+deprecated: false
+hidden: false
+metadata:
+  robots: index
+description: "Get notified when the shopper selects an installment option in the card form on Web, iOS, and Android"
+---
+
+Register the optional `onInstallmentSelected` callback to keep your cart total in sync with the installment plan the shopper picks in the card form. The SDK notifies you when a default installment is pre-selected, every time the shopper changes the selection, and when the plan is recalculated (for example, after a BIN change).
+
+The callback is optional on all platforms: if you don't register it, the SDK behavior is unchanged. Exceptions thrown inside your callback are caught by the SDK and never interrupt the payment flow.
+
+| Platform | Available from | Where to register |
+| -------- | -------------- | ----------------- |
+| Web      | SDK `1.6.7`    | `card.onInstallmentSelected` in `startCheckout` |
+| iOS      | SDK `2.21.0`   | `onInstallmentSelected(_:)` on `YunoPaymentDelegate` |
+| Android  | SDK `2.20.0`   | `onInstallmentSelected` parameter of `startCheckout` |
+
+## Implementation
+
+<Tabs>
+<Tab title="Web">
+
+Pass the callback inside the `card` options of `startCheckout`:
+
+```javascript
+await yuno.startCheckout({
+  checkoutSession: session.checkout_session,
+  elementSelector: '#payment-form',
+  countryCode: 'BR',
+  card: {
+    onInstallmentSelected: ({ installment, label, amount, isMerchantInstallment }) => {
+      // Update your cart total, e.g. with amount?.total_value
+      console.log('Installment selected:', { installment, label, amount, isMerchantInstallment })
+    },
+  },
+  // ...
+})
+```
+
+The callback receives a single object argument:
+
+```typescript
+type OnInstallmentSelected = (args: {
+  installment: number
+  label: string
+  amount?: {
+    currency: string
+    value: string
+    total_value: string
+  }
+  additionalData?: Record<string, unknown>
+  isMerchantInstallment: boolean
+}) => void
+```
+
+| Field                   | Type      | Description                                                                                                                                    |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `installment`           | `number`  | Number of installments selected (e.g. `3`).                                                                                                    |
+| `label`                 | `string`  | The exact installment label rendered in the form, localized (e.g. `3x de R$875.00 - Total R$2,625.00`).                                        |
+| `amount`                | `object`  | Optional. `currency`, `value`, and `total_value` as raw strings, exactly as reported by the installments plan.                                 |
+| `additionalData`        | `object`  | Reserved for future use. Currently always `undefined`.                                                                                         |
+| `isMerchantInstallment` | `boolean` | `true` when the selected option was supplied by your own `onGetInstallments` callback (merchant installments); `false` for Yuno-provided plans. |
+
+Firing semantics:
+
+* Fires with the current selection as soon as the plan renders and a default installment is pre-selected, so your total is correct from first paint.
+* Fires on every selection the shopper makes.
+* Re-fires the current selection when the available options change (for example, a BIN change recalculates the plan).
+* Does not fire when installments stop being available — there is no clear notification on Web.
+* Works across all card flows, including secure fields and Click to Pay.
+
+</Tab>
+
+<Tab title="iOS">
+
+Implement the optional `onInstallmentSelected(_:)` method of `YunoPaymentDelegate`:
+
+```swift
+class ViewController: UIViewController, YunoPaymentDelegate {
+
+    // ... required YunoPaymentDelegate implementation ...
+
+    func onInstallmentSelected(_ installmentSelected: YunoInstallmentSelected?) {
+        guard let installmentSelected else {
+            // Installments are no longer available — restore your base total
+            return
+        }
+        // Update your cart total, e.g. with installmentSelected.amount?.totalValue
+    }
+}
+```
+
+The method receives a `YunoInstallmentSelected?` payload:
+
+```swift
+@objc public final class YunoInstallmentSelected: NSObject {
+    @objc public let installment: Int
+    @objc public let label: String
+    @objc public let amount: YunoInstallmentAmount?
+    @objc public let additionalData: [String: Any]?
+    public let isMerchantInstallment: Bool?
+}
+
+@objc public final class YunoInstallmentAmount: NSObject {
+    @objc public let currency: String
+    @objc public let value: String
+    @objc public let totalValue: String
+}
+```
+
+| Field                   | Type                     | Description                                                                                               |
+| ----------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                    | Number of installments selected (e.g. `3`).                                                               |
+| `label`                 | `String`                 | The exact installment label rendered in the form, localized (e.g. `3x of R$ 500,31 - Total R$ 1.500,93`). |
+| `amount`                | `YunoInstallmentAmount?` | `currency`, `value`, and `totalValue` as raw strings, exactly as reported by the installments plan.       |
+| `additionalData`        | `[String: Any]?`         | The `additional_data` object of the selected option, when the installments service provides it.           |
+| `isMerchantInstallment` | `Bool?`                  | Reserved for the merchant-installments feature. Currently always `nil` on iOS. Not visible from Objective-C. |
+
+Firing semantics:
+
+* Fires once when a default installment is pre-selected as the plan loads, so your total is correct from first paint.
+* Fires on every selection the shopper makes, and with the recalculated default after the plan changes (for example, a BIN change).
+* Fires once with `nil` when a previously reported selection no longer applies (for example, the shopper switches to a card without installments) — restore your base total. It is never called with `nil` before the first selection is reported.
+* Delivered on the main thread. The method is optional — omitting it keeps the SDK behavior unchanged.
+
+</Tab>
+
+<Tab title="Android">
+
+Pass the callback when calling `startCheckout`:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState -> /* ... */ },
+  onInstallmentSelected = { selection ->
+    if (selection != null) {
+      // Update your cart total, e.g. with selection.amount?.totalValue
+    } else {
+      // Installments are no longer available — restore your base total
+    }
+  },
+)
+```
+
+The callback receives an `InstallmentSelected?` payload:
+
+```kotlin
+data class InstallmentSelected(
+    val installment: Int,
+    val label: String,
+    val amount: InstallmentAmount? = null,
+    val additionalData: Map<String, Any?>? = null,
+    val isMerchantInstallment: Boolean? = null,
+)
+
+data class InstallmentAmount(
+    val currency: String,
+    val value: String,
+    val totalValue: String,
+)
+```
+
+| Field                   | Type                 | Description                                                                                             |
+| ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                | Number of installments selected (e.g. `3`).                                                             |
+| `label`                 | `String`             | The exact installment label rendered in the form, localized (e.g. `3x de R$875.00 - Total R$2,625.00`). |
+| `amount`                | `InstallmentAmount?` | `currency`, `value`, and `totalValue` as raw strings, exactly as reported by the installments plan.     |
+| `additionalData`        | `Map<String, Any?>?` | Reserved for future use. Currently always `null`.                                                       |
+| `isMerchantInstallment` | `Boolean?`           | Reserved for the merchant-installments feature. Currently always `null` on Android.                     |
+
+Firing semantics:
+
+* Fires once when a default installment is pre-selected as the plan renders, so your total is correct from first paint.
+* Fires on every selection the shopper makes, and with the recalculated default after the plan changes (for example, a BIN change).
+* Fires once with `null` when installments stop being available after a selection was already reported (for example, the shopper switches to a card without installments) — restore your base total.
+* Does not fire when the card form renders without installments. The callback runs on the main thread, and registering no callback keeps the SDK behavior unchanged.
+
+</Tab>
+</Tabs>
