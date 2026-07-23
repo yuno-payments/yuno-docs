@@ -1,0 +1,307 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "checkout-builder",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.y.uno/v1"
+    },
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "publicApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PUBLIC-API-KEY",
+        "description": "Merchant public API key. Found in Yuno dashboard → Settings → API Keys."
+      },
+      "privateSecretKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PRIVATE-SECRET-KEY",
+        "description": "Merchant private secret key, paired with the public key. Never embed in client-side code."
+      },
+      "accountCode": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Account-Code",
+        "description": "UUID of the merchant account scope for the request. The tenant is resolved only from this header."
+      }
+    },
+    "schemas": {
+      "CheckoutSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Checkout identifier (UUID). Use it as the checkout_id in the fetch and publish endpoints."
+          },
+          "name": {
+            "type": "string",
+            "description": "Checkout name."
+          },
+          "description": {
+            "type": "string",
+            "description": "Checkout description."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "NOT_PUBLISHED",
+              "ARCHIVED"
+            ],
+            "description": "Checkout status."
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Whether this checkout is the account's default."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp (ISO-8601)."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp (ISO-8601)."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "publicApiKey": [],
+      "privateSecretKey": [],
+      "accountCode": []
+    }
+  ],
+  "paths": {
+    "/checkouts": {
+      "get": {
+        "summary": "List Checkouts",
+        "description": "Lists the account's custom checkouts as summaries (no configuration or styling), sorted default-first and then most recently updated. Includes ARCHIVED checkouts. All filters are optional and combinable (ANDed). Without page or size the response is a bare array with every matching checkout; sending either switches to a paginated envelope.",
+        "operationId": "list-checkouts",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Case-insensitive contains filter on the checkout name. LIKE metacharacters (% and _) match literally.",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Case-insensitive contains filter on the checkout identifier.",
+            "schema": {
+              "type": "string"
+            },
+            "required": false
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status. Accepts one or several values (ORed): repeat the parameter or send a comma-separated list (status=PUBLISHED,ARCHIVED). Invalid values are rejected with 400. Absent: all statuses.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PUBLISHED",
+                "NOT_PUBLISHED",
+                "ARCHIVED"
+              ]
+            },
+            "required": false
+          },
+          {
+            "name": "created_after",
+            "in": "query",
+            "description": "Inclusive lower bound on created_at (ISO-8601 instant, e.g. 2026-05-01T00:00:00Z).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": false
+          },
+          {
+            "name": "created_before",
+            "in": "query",
+            "description": "Inclusive upper bound on created_at (ISO-8601 instant).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": false
+          },
+          {
+            "name": "updated_after",
+            "in": "query",
+            "description": "Inclusive lower bound on updated_at (ISO-8601 instant).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": false
+          },
+          {
+            "name": "updated_before",
+            "in": "query",
+            "description": "Inclusive upper bound on updated_at (ISO-8601 instant).",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": false
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (1-based). Opt-in pagination: sending page or size switches the response to the paginated envelope. Default 1. Non-numeric values are rejected with 400.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size. Opt-in pagination: sending page or size switches the response to the paginated envelope. Default 25, capped at 100. Non-numeric values are rejected with 400.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            },
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The account's checkouts. A bare array when page and size are absent; a paginated envelope (data + pagination) when either is present. Items carry the same 7 fields in both shapes. pagination.total is the full filtered count, not the page's row count.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CheckoutSummary"
+                      },
+                      "description": "Bare array of every matching checkout (page and size absent).",
+                      "title": "Without pagination"
+                    },
+                    {
+                      "type": "object",
+                      "description": "Paginated envelope (page or size present).",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CheckoutSummary"
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer",
+                              "description": "Current page (1-based)."
+                            },
+                            "size": {
+                              "type": "integer",
+                              "description": "Page size."
+                            },
+                            "total": {
+                              "type": "integer",
+                              "description": "Full filtered count, not the page's row count."
+                            }
+                          }
+                        }
+                      },
+                      "title": "With pagination"
+                    }
+                  ]
+                },
+                "examples": {
+                  "Without pagination": {
+                    "value": [
+                      {
+                        "id": "2a8d6472-3117-4e85-8b28-d51ba3abab77",
+                        "name": "Default",
+                        "description": "Default",
+                        "status": "PUBLISHED",
+                        "is_default": true,
+                        "created_at": "2026-05-02T18:11:04.120Z",
+                        "updated_at": "2026-07-01T09:30:12.001Z"
+                      },
+                      {
+                        "id": "0b28ff66-15f1-44c1-8d1e-bd1fefbc0a19",
+                        "name": "Promo Checkout",
+                        "description": "Seasonal promo",
+                        "status": "ARCHIVED",
+                        "is_default": false,
+                        "created_at": "2026-04-11T10:02:33.000Z",
+                        "updated_at": "2026-06-20T15:45:00.000Z"
+                      }
+                    ]
+                  },
+                  "With pagination": {
+                    "value": {
+                      "data": [
+                        {
+                          "id": "2a8d6472-3117-4e85-8b28-d51ba3abab77",
+                          "name": "Default",
+                          "description": "Default",
+                          "status": "PUBLISHED",
+                          "is_default": true,
+                          "created_at": "2026-05-02T18:11:04.120Z",
+                          "updated_at": "2026-07-01T09:30:12.001Z"
+                        }
+                      ],
+                      "pagination": {
+                        "page": 1,
+                        "size": 25,
+                        "total": 3
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid page/size values or an invalid status value.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Invalid pagination": {
+                    "value": {
+                      "code": "ILLEGAL_ARGUMENT",
+                      "messages": [
+                        "page must be a positive integer"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid credentials, or the account is not in the beta allowlist."
+          }
+        }
+      }
+    }
+  }
+}
