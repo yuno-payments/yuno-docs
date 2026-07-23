@@ -10,7 +10,7 @@ In the unified API it collapses to a single `transaction.start({ paymentMethod }
 
 | Before | After |
 |---|---|
-| `yuno.startSeamlessCheckout(config)` + `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `sdkPayments.transaction(config).start({ paymentMethod: { type, vaultedToken }, elementSelector })` |
+| `yuno.startSeamlessCheckout(config)` + `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `sdkPayments.transaction({ ...config, elementSelector }).start({ paymentMethod: { type, vaultedToken } })` |
 | `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` (single call) |
 | Managed payment creation | Managed payment creation (no `createPayment` on config) |
 
@@ -47,6 +47,7 @@ const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     language: 'en',
+    elementSelector: '#root',
     // managed mode — no createPayment wired
     onStatus: (result) => console.log('done:', result.status),
 })
@@ -54,7 +55,6 @@ const transaction = sdkPayments.transaction({
 document.getElementById('pay').addEventController('click', async () => {
     await transaction.start({
         paymentMethod: { type: 'PIX' },
-        elementSelector: '#root',
     })
 })
 ```
@@ -66,8 +66,8 @@ document.getElementById('pay').addEventController('click', async () => {
 | Before (Seamless Lite) | After (unified) | Notes |
 |---|---|---|
 | `yuno.startSeamlessCheckout(config)` | `sdkPayments.transaction(config)` | Single factory. Don't wire `createPayment` — Seamless was always managed. |
-| `elementSelector` (on `startSeamlessCheckout` config) | `elementSelector` (on `start()`) | No longer a config field. Pass it to `start({ paymentMethod, elementSelector })`; the form renders inside that element. Required for form-based payments. |
-| `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `transaction.start({ paymentMethod: { type, vaultedToken }, elementSelector })` | Pre-selection becomes the `paymentMethod` argument of `start()`; `elementSelector` is where the form renders. |
+| `elementSelector` (on `startSeamlessCheckout` config) | `elementSelector` (on `sdkPayments.transaction(config)`) | Optional field on the transaction config; the form renders inside that element. Used only by form-based flows — headless and other flows ignore it. Not required. |
+| `yuno.mountSeamlessCheckoutLite({ paymentMethodType, vaultedToken })` | `transaction.start({ paymentMethod: { type, vaultedToken } })` | Pre-selection becomes the `paymentMethod` argument of `start()`; the form renders inside the `elementSelector` set on the transaction config. |
 | `yuno.startPayment()` (merchant trigger) | `transaction.start({ paymentMethod })` | The trigger and the pre-selection collapse into a single `start()` call. |
 | `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | `PaymentResult` wrapper with `.status` and `.substatus`. |
 | `yunoError(message, data?)` | *(removed)* | Errors flow through `onStatus`, or a rejected `start()` Promise. |
@@ -82,10 +82,10 @@ document.getElementById('pay').addEventController('click', async () => {
 ## Checklist
 
 - [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
-- [ ] Replace `yuno.startSeamlessCheckout(...)` + `yuno.mountSeamlessCheckoutLite(...)` + `yuno.startPayment()` with a single `transaction.start({ paymentMethod, elementSelector })` call.
+- [ ] Replace `yuno.startSeamlessCheckout(...)` + `yuno.mountSeamlessCheckoutLite(...)` + `yuno.startPayment()` with a single `transaction.start({ paymentMethod })` call.
 - [ ] **Do not** wire `createPayment` on the config — that would flip to manual mode.
 - [ ] Move `checkoutSession`, `countryCode`, `language`, `card`, etc. into `TransactionConfig`.
-- [ ] Pass `elementSelector` to `start()` (not the config) for form-based payments.
+- [ ] Set `elementSelector` on the transaction config (`sdkPayments.transaction({ ..., elementSelector })`) for form-based payments — it's optional and ignored by non-form flows.
 - [ ] Replace `yunoPaymentResult` with `onStatus` (read `result.status` / `result.substatus`).
 - [ ] Drop `yunoError`, `onLoading` (use `showLoading` if you need a custom loader).
 - [ ] Re-run your sandbox test suite.
