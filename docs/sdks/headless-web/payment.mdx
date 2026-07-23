@@ -78,6 +78,31 @@ const apiClientPayment = await yuno.apiClientPayment({
 });
 ```
 
+### Preloading fraud fingerprints
+
+If your account uses [fraud screening](/docs/basic-concepts/fraud) with a provider whose fingerprinting script can take longer than the fraud timeout (`max_fraud_timeout_ms`, default `3000`), call `executeFraudCheck` when the payment form renders, not at the moment your customer clicks "Pay". Some providers' fingerprinting scripts take longer than the timeout to load in certain regions. Calling `apiClientPayment` and `generateToken` back to back at click time can generate the one-time token before the fingerprint finishes loading, so the token is created without a device fingerprint.
+
+```javascript
+// Wrong: calling everything at "Pay" click time
+payButton.onclick = async () => {
+  const apiClientPayment = await yuno.apiClientPayment({ country_code, checkout_session });
+  const oneTimeToken = await apiClientPayment.generateToken({ checkout_session, payment_method });
+};
+// The fraud provider's beacon may not have loaded in time, so the fingerprint can be missing from the token
+```
+
+```javascript
+// Correct: preload the fraud fingerprint when the form renders
+await yuno.executeFraudCheck({ checkout_session, country_code });
+
+// Later, when the customer clicks "Pay":
+payButton.onclick = async () => {
+  const apiClientPayment = await yuno.apiClientPayment({ country_code, checkout_session });
+  const oneTimeToken = await apiClientPayment.generateToken({ checkout_session, payment_method });
+  // The fingerprint is already cached, no race condition
+};
+```
+
 ## Step 4: Generate token
 
 After collecting all user information, you can start the payment. First, you need to create a one-time token (OTT) using the function `apiClientpayment.generateToken`. As it is an asynchronous function, you can use `try/catch` to ensure you will correctly handle triggered errors. The following examples show different scenarios to create the one-time token:
