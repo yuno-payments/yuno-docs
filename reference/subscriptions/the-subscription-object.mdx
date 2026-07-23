@@ -53,10 +53,64 @@ This object represents a subscription that can be associated with a customer.
   Status of the subscription.
 
   Possible values:
+  - `CREATED` = Transitory status while the initial payment hasn't been processed yet. Only occurs when the subscription is created with `initial_payment_validation: true`; it transitions to `ACTIVE` once the first payment succeeds (or to `CANCELED` if it fails and retries are exhausted).
   - `ACTIVE` = The subscription has been created with an associated customer and is already active.
+  - `TRIALING` = The subscription is inside a plan's leading trial phase (see `plan_id`/`current_phase`). Transitions to `ACTIVE` automatically once the trial ends — this is webhooked like any other status change.
   - `PAUSED` = The subscription has been paused and can be reactivated.
   - `COMPLETED` = The subscription is completed because it reached the end date and time.
   - `CANCELED` = Subscription canceled.
+</ParamField>
+
+<ParamField body="plan_id" type="string">
+  The unique identifier of the [plan](/reference/plans/the-plan-object) this subscription was created from, if any (MAX 64; MIN 36). Only present when the subscription is linked to a plan — absent (not `null`) for subscriptions created with a raw `amount`/`frequency` instead of a `plan_id`.
+
+  Example: 00000000-0000-4000-8000-000000000001
+</ParamField>
+
+<ParamField body="plan_assigned_at" type="Timestamp">
+  When the subscription is linked to a plan, the moment the plan was attached — at creation from a plan, migration onto a plan, or a plan change. Only present on plan-linked subscriptions.
+</ParamField>
+
+<ParamField body="previous_subscription_id" type="string">
+  When this subscription was created by a [plan change](/docs/payment-features/subscriptions/plans) (switching an existing subscription to a different plan), this is the `id` of the subscription it replaced. Only present in that case.
+</ParamField>
+
+<ParamField body="current_phase" type="enum">
+  Which phase of the linked plan's trial ladder the subscription is currently in. Only present on plan-linked subscriptions.
+
+  Possible values: `TRIAL`, `REGULAR`.
+</ParamField>
+
+<ParamField body="billing_phases" type="array of objects">
+  The plan's leading TRIAL phases, snapshotted for this subscriber's country at creation time. Only present on plan-linked subscriptions whose plan has phases.
+
+  <Warning>**The terminal REGULAR phase is never included here.** Its price isn't pinned at creation — it resolves from the plan at every billing, so plan price edits reach running subscriptions. When `current_phase` is `REGULAR`, the ladder is exhausted and the subscription bills the plan's regular price; there's no corresponding row in this array for that.</Warning>
+
+  <Expandable title="properties">
+    <ParamField body="order" type="int" />
+    <ParamField body="type" type="enum">
+      Always `TRIAL` — see the note above.
+    </ParamField>
+    <ParamField body="name" type="string">
+      Mirrors the phase's own required `name`.
+    </ParamField>
+    <ParamField body="amount" type="object">
+      <Expandable title="properties">
+        <ParamField body="currency" type="string" />
+        <ParamField body="value" type="number" />
+      </Expandable>
+    </ParamField>
+    <ParamField body="frequency" type="object">
+      <Expandable title="properties">
+        <ParamField body="type" type="enum">
+          `DAY`, `WEEK`, `MONTH`, or `YEAR`.
+        </ParamField>
+        <ParamField body="value" type="int" />
+      </Expandable>
+    </ParamField>
+    <ParamField body="start_cycle" type="int" />
+    <ParamField body="end_cycle" type="int" />
+  </Expandable>
 </ParamField>
 
 <ParamField body="amount" type="object">
@@ -82,9 +136,9 @@ This object represents a subscription that can be associated with a customer.
 
   <Expandable title="properties">
     <ParamField body="type" type="enum">
-      The type of interval the subscription will have in time (DAY, WEEK, MONTH). If not set, always MONTH by default.
+      The type of interval the subscription will have in time. If not set, always MONTH by default.
 
-      Possible enum values: `DAY`, `MONTH`, or `YEAR`.
+      Possible enum values: `DAY`, `WEEK`, `MONTH`, or `YEAR`.
     </ParamField>
 
     <ParamField body="value" type="int">
@@ -323,7 +377,7 @@ This object represents a subscription that can be associated with a customer.
   Specifies the payments array.
 
   <Note>
-    This array is currently always empty in webhook payloads. Subscribe to `payment.*` webhooks to track charges.
+    This array is currently always empty in webhook payloads. Subscribe to `payment.*` webhooks to track charges. For the subscription's full charge history (amounts, provider, phase context), use [List Subscription Payments](/reference/subscriptions/list-subscription-payments) instead of this field.
   </Note>
 
   <Expandable title="properties">
