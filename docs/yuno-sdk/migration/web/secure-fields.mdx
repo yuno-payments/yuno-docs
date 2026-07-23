@@ -1,0 +1,109 @@
+---
+title: "Secure Fields"
+description: "Migrate Web Secure Fields (yuno.secureFields) integrations to the unified Transaction API."
+---
+
+Secure Fields collected card data in PCI-compliant iframes — your code never touched the raw PAN. You created each field (`pan`, `expiration`, `cvv`), placed it in your layout, generated a token, POSTed it from your backend, and called `yuno.continuePayment()` to finish.
+
+In the unified API **your field code is nearly unchanged** — same field names, same options, same `onChange`. The one rename: mount a field with `.mount('#sel')` instead of `.render('#sel')`. What changes around it is bigger: the fields come from the `Transaction` (no second argument bag), and the three-step finish — `generateTokenWithInformation` → backend POST → `continuePayment()` — collapses into one repeatable `start()`.
+
+| Before | After |
+|---|---|
+| `yuno.secureFields({ checkoutSession, countryCode, language, ... })` | `sdkPayments.transaction({ checkoutSession, countryCode, language, ... }).secureFields()` |
+| `.create({ name: 'pan' }).render('#sel')` | `.create({ name: 'pan' }).mount('#sel')` — `.render()` renamed to `.mount()` |
+| `.generateTokenWithInformation(...)` + backend POST + `yuno.continuePayment()` | `transaction.start(...)` — tokenize, create, and 3DS in one call |
+| `continuePayment({ paymentResult })` for the outcome | `onStatus` on the transaction config |
+
+## Side-by-side
+
+<CodeGroup>
+
+```typescript Before. Secure Fields
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const secureFields = await yuno.secureFields({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    installmentEnable: true,
+})
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).render('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).render('#exp')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).render('#cvv')
+
+document.getElementById('pay').addEventListener('click', async () => {
+    const ott = await secureFields.generateTokenWithInformation({
+        cardHolderName: 'John Doe',
+    })
+    await myBackend.pay({ oneTimeToken: ott.token, checkoutSession: ott.checkout_session })
+    yuno.continuePayment()
+})
+```
+
+```typescript After. Unified Transaction
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    createPayment: async (token) => {
+        await myBackend.pay({ oneTimeToken: token.token, checkoutSession: token.checkout_session })
+    },
+    onStatus: (result) => showResult(result),
+})
+
+const secureFields = await transaction.secureFields({ installmentEnable: true })
+
+secureFields.create({ name: 'pan', options: { label: 'Card number' } }).mount('#pan')
+secureFields.create({ name: 'expiration', options: { label: 'Expiry' } }).mount('#exp')
+secureFields.create({ name: 'cvv', options: { label: 'CVV' } }).mount('#cvv')
+
+document.getElementById('pay').addEventListener('click', () => {
+    transaction.start({
+        paymentMethod: { type: 'CARD', data: { card: { holderName: 'John Doe' } } },
+    })
+})
+```
+
+</CodeGroup>
+
+The field lines are unchanged except `.render()` is now `.mount()`. Omit `createPayment` to let the SDK create the payment for you (managed); provide it to POST the token from your backend (manual).
+
+## Argument mapping
+
+Every `yuno.secureFields()` argument except one moves to the transaction config — the fields inherit the transaction's context instead of duplicating it.
+
+| Before (`yuno.secureFields({...})`) | After | Notes |
+|---|---|---|
+| `checkoutSession` / `customerSession` | `transaction` config | Payment vs enrollment stays implicit in which session you pass. |
+| `countryCode` | `transaction` config | |
+| `language` | `transaction` config | |
+| `deviceFingerprints` | `transaction` config | |
+| `installmentEnable` | `transaction.secureFields({ installmentEnable })` | The one knob the transaction can't derive. |
+| `enableV2`, `enableMultiplesCard` | *(removed)* | Dead in v1 — declared, never read. |
+
+## Behavior changes
+
+- **Field code is nearly preserved.** Names (`pan`, `expiration`, `cvv`, `cardLoadPreview`, `cardPin`), options, and `onChange` payloads are all unchanged. The one rename: the field's `.render('#sel')` is now `.mount('#sel')`.
+- **Tokenization moved into `start()`.** `holderName` and other non-PCI details travel on `paymentMethod.data` instead of `generateTokenWithInformation` args.
+- **`continuePayment()` is gone.** In v1, forgetting it silently skipped 3DS and the result. `start()` runs the full chain automatically.
+- **The result arrives on `onStatus`.** In v1 you only got a status by remembering `continuePayment({ paymentResult })` — an easy miss. In the unified API `onStatus` is part of the transaction config.
+- **Declined payments are retryable in place.** As in v1, the SDK rotates the checkout session and paints field errors after a decline. New: `onStatus` receives the `DECLINED` result so you know to re-enable your Pay button, and `start()` is **repeatable** — the next call tokenizes against the rotated session. In v1 this loop required re-running your token → POST → `continuePayment` sequence by hand.
+- **Raw tokenization is no longer public.** `generateToken*` / `generateVaultedToken*` are no longer part of the public API — the typed instance exposes only `create`, `getElement`, and `unmountSync`, and all tokenization runs inside `start()`. Session updates go through `transaction.updateCheckoutSession()` instead of the instance. There is also no `continuePayment()`: a payment created outside `start()` could never run 3DS or report a status. If you own the payment POST, use manual mode (`createPayment` + `start()`) — you keep the backend call, the SDK keeps 3DS and the result.
+
+## Checklist
+
+- [ ] Replace `window.Yuno.initialize(...)` with `SdkPayments.initialize(...)`.
+- [ ] Move `yuno.secureFields({...})` args onto `sdkPayments.transaction({...})`; keep only `installmentEnable` on `transaction.secureFields({...})`.
+- [ ] Rename each field's `.render('#sel')` to `.mount('#sel')`; names and options stay as is.
+- [ ] Replace `generateTokenWithInformation` + backend POST + `continuePayment()` with `transaction.start({ paymentMethod: { type: 'CARD', data: { card: { holderName } } } })`.
+- [ ] Provide `createPayment` if you create the payment on your backend (manual); read the session from `token.checkout_session`, never a cached value.
+- [ ] Handle `DECLINED` / `ERROR` in `onStatus` by re-enabling your Pay button — `start()` again to retry.
+- [ ] Re-run your sandbox test suite, including a declined-card retry.
+
+## Related
+
+- [Secure Fields](/docs/yuno-sdk/features/secure-fields). The full feature reference — fields, options, methods, retry.
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Take over payment creation (manual mode).
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). Receive the final result.
+- [`OneTimeToken`](/docs/yuno-sdk/reference/one-time-token). Token payload sent to your backend.

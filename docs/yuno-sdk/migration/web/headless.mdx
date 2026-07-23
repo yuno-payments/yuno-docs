@@ -1,0 +1,128 @@
+---
+hidden: true
+title: "Headless mode"
+description: "Migrate Web Headless integrations (yuno.apiClientPayment) to the unified Transaction API."
+---
+
+Headless was a pure-tokenization client: the merchant collected card data in their own UI, generated a token, and made their own backend call to create the payment.
+
+In the unified API the same scenario maps to **headless** mode: pass the pre-collected data inside `data` within the [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected) object, override [`createPayment`](/docs/yuno-sdk/controllers/create-payment) to POST to your backend, and let the SDK orchestrate tokenization, 3DS, and status polling automatically. If you don't want the SDK to continue the flow after creating the payment, set `autoContinuePayment` to `false` on the [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config) object.
+
+## Side-by-side — Headless API Client
+
+<CodeGroup>
+
+```typescript Before. Headless (apiClientPayment)
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+const apiClientPayment = await yuno.apiClientPayment({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+})
+
+// Merchant collects card data in their own UI, then:
+const oneTimeToken = await apiClientPayment.generateToken({
+    cardHolderName: 'John Doe',
+    cardNumber: '4111111111111111',
+    cvv: '123',
+    expirationMonth: 12,
+    expirationYear: 28,
+})
+
+// Merchant POSTs to their backend
+const paymentId = await myBackend.pay({ oneTimeToken, checkoutSession })
+
+// If 3DS needed, merchant calls SDK again to challenge — bespoke per integration
+```
+
+```typescript After. Unified Transaction (headless)
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+const transaction = sdkPayments.transaction({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    createPayment: async (token) => {
+        await myBackend.pay({ token: token.token })
+    },
+    onStatus: (result) => console.log('done:', result.status),
+})
+
+await transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        data: {
+            card: {
+                holderName: 'John Doe',
+                number: '4111111111111111',
+                securityCode: '123',
+                expirationMonth: 12,
+                expirationYear: 28,
+            },
+        },
+    },
+})
+```
+
+</CodeGroup>
+
+<Note>
+Previously, `generateToken` returned the token directly to your code. Now, that same token is delivered as the argument of your `createPayment` override — there's no separate call to fetch it.
+</Note>
+
+## Migration mapping
+
+| Before (Headless) | After (unified) | Notes |
+|---|---|---|
+| `yuno.apiClientPayment({ checkoutSession, countryCode })` | `sdkPayments.transaction({ checkoutSession, countryCode, createPayment })` | The factory consolidates the API-client + Transaction surface. |
+| `apiClientPayment.generateToken(cardData)` | `transaction.start({ paymentMethod: { type: 'CARD', data: { card } } })` | Card data goes inline on `start()`, nested under `data.card`. |
+| `apiClientPayment.getThreeDSecureChallenge(...)` (rare) | *(removed — automatic)* | SDK orchestrates 3DS internally once `createPayment` resolves. |
+| `yuno.continuePayment()` after backend POST | *(automatic)* | Resolve the `createPayment` Promise and the SDK continues. |
+
+### CardData mapping
+
+The legacy generateToken arg shape:
+
+```typescript
+{
+    cardHolderName: string
+    cardNumber: string
+    cvv: string
+    expirationMonth: number
+    expirationYear: number
+}
+```
+
+becomes the unified `TransactionData` shape, which supports more fields to cover not only cards but also alternative payment methods (APMs) — bank transfers, tickets, wallets, and more. See the full shape in the [`TransactionData` reference](/docs/yuno-sdk/reference/transaction-data).
+
+For vaulted cards, pass `vaultedToken` on `paymentMethod` and only `securityCode` under `data.card`:
+
+```typescript
+await transaction.start({
+    paymentMethod: {
+        type: 'CARD',
+        vaultedToken: 'tok_saved_abc',
+        data: { card: { securityCode: '123' } },
+    },
+})
+```
+
+## Behavior changes
+
+- **3DS is automatic.** Headless used to require bespoke 3DS handling per integration. The unified API does it internally once `createPayment` resolves.
+- **`continuePayment()` is gone.** The Promise contract drives progression.
+- **No separate `apiClientPayment` surface.** One factory: `sdkPayments.transaction(config)`.
+
+## Checklist
+
+- [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
+- [ ] Replace `yuno.apiClientPayment(...)` with `sdkPayments.transaction(...)`.
+- [ ] Provide `createPayment` on `TransactionConfig` to POST to your backend.
+- [ ] If you collected card data in your own UI: pass it via `paymentMethod.data.card` on `start()` (rename the fields per the [`TransactionData` reference](/docs/yuno-sdk/reference/transaction-data)).
+- [ ] Drop manual 3DS challenge calls; drop `yuno.continuePayment()`.
+- [ ] Re-run your sandbox test suite.
+
+## Related
+
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). The mode-flip callback.
+- [`TransactionData`](/docs/yuno-sdk/reference/transaction-data). Per-method headless data shape.
+- [`OneTimeToken`](/docs/yuno-sdk/reference/one-time-token). Token payload sent to your backend.

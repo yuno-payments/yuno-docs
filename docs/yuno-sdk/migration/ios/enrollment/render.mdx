@@ -1,0 +1,142 @@
+---
+hidden: true
+title: "Render enrollment"
+description: "Migrate iOS Render enrollment (Yuno.startEnrollmentRender) to the unified Transaction API."
+---
+
+Render enrollment let you embed the SDK's enrollment form inside your own layout. You got a `YunoEnrollmentRenderFlowProtocol`, asked it for a `formView`, and called `submitForm()` from your own button. It also exposed `needSubmit: Bool` to tell you whether the form required a submit button at all.
+
+In the unified API the same pattern is expressed by overriding [`showView`](/docs/yuno-sdk/controllers/show-view): the SDK delivers the form view together with a `TransactionProcess` you call `onSubmit()` on.
+
+| Before | After |
+|---|---|
+| `Yuno.startEnrollmentRender(with:)` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + override `showView` |
+| `YunoEnrollmentDelegate` | `SdkPayments.TransactionController` |
+| `paymentFlow.formView(...)` | View delivered through `showView(view:process:step:)` |
+| `paymentFlow.submitForm()` | `process.onSubmit()` |
+
+## Side-by-side
+
+<CodeGroup>
+
+```swift Before. Render enrollment
+import SwiftUI
+import YunoSDK
+
+final class EnrollmentModel: YunoEnrollmentDelegate, ObservableObject {
+    var customerSession: String = "session-from-backend"
+    var countryCode: String = "CO"
+    var language: String? = "en"
+    var viewController: UIViewController?
+
+    func yunoEnrollmentResult(_ result: Yuno.Result) { /* ... */ }
+    func onLoading(isLoading: Bool) { /* show your own loader */ }
+}
+
+struct EnrollmentView: View {
+    @StateObject var model = EnrollmentModel()
+    @State var enrollmentFlow: YunoEnrollmentRenderFlowProtocol?
+    @State var formView: some View?
+
+    var body: some View {
+        VStack {
+            formView
+            if enrollmentFlow?.needSubmit == true {
+                Button("Enroll") {
+                    enrollmentFlow?.submitForm()
+                }
+            }
+        }
+        .task {
+            enrollmentFlow = Yuno.startEnrollmentRender(with: model)
+            formView = await enrollmentFlow?.formView(with: model)
+        }
+    }
+}
+```
+
+```swift After. showView override
+import SwiftUI
+import SdkPayments
+
+final class EnrollmentModel: SdkPayments.TransactionController, ObservableObject {
+
+    @Published var formView: AnyView?
+    @Published var process: SdkPayments.TransactionProcess?
+    @Published var isLoading: Bool = false
+
+    func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep) {
+        self.formView = view
+        self.process = process
+    }
+
+    func showLoading(isLoading: Bool) { self.isLoading = isLoading }
+
+    func onStatus(status: SdkPayments.TransactionStatus) { /* ... */ }
+}
+
+struct EnrollmentView: View {
+    @StateObject var model = EnrollmentModel()
+
+    var body: some View {
+        VStack {
+            if model.isLoading { ProgressView() }
+            model.formView
+            Button("Enroll") {
+                model.process?.onSubmit()
+            }
+        }
+        .task {
+            let config = SdkPayments.TransactionConfig(
+                customerSession: "session-from-backend",
+                countryCode: "CO",
+                controller: model
+            )
+
+            let paymentSelected = SdkPayments.PaymentMethodSelected(
+                paymentMethodType: "CARD"
+            )
+
+            SdkPayments.Transaction(config: config)
+                .start(paymentSelected: paymentSelected)
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+<Note>
+The `needSubmit` property has no equivalent in the unified API. The merchant renders its own submit button. If you need to hide it for forms that don't require submission, drive that from your own state (for example, by inspecting the `step` delivered to `showView`).
+</Note>
+
+## Field mapping
+
+| Before | After | Notes |
+|---|---|---|
+| `Yuno.startEnrollmentRender(with:)` → `YunoEnrollmentRenderFlowProtocol` | `SdkPayments.Transaction(config:).start(paymentSelected:)` + override `showView` | Push, not pull. The SDK delivers the view to your handler when ready. |
+| `paymentFlow.formView(with:) async -> some View?` | `showView(view:process:step:)` | View arrives through the controller. |
+| `paymentFlow.submitForm()` | `process.onSubmit()` | Same role; called on the `TransactionProcess` you receive in `showView`. |
+| `YunoLoaderDelegate.onLoading(isLoading:)` | `SdkPayments.TransactionController.showLoading(isLoading:)` | Renamed. Fires only when overridden. |
+
+## Behavior changes
+
+- **`needSubmit` is gone.** Drive submit-button visibility from your own state.
+- **`createPayment` is not invoked** during enrollment.
+
+## Checklist
+
+- [ ] Replace conformance to `YunoEnrollmentDelegate` with `SdkPayments.TransactionController`.
+- [ ] Move `customerSession`, `countryCode`, `language`, `viewController` from delegate properties into `SdkPayments.TransactionConfig`.
+- [ ] Rename `yunoEnrollmentResult(_:)` to `onStatus(status:)`.
+- [ ] Replace `Yuno.startEnrollmentRender(...)` + `formView` / `submitForm` with `showView` override + `process.onSubmit()`.
+- [ ] Rename `onLoading(isLoading:)` to `showLoading(isLoading:)`.
+- [ ] If you used `needSubmit`, drive submit-button visibility from your own state.
+- [ ] Re-run your sandbox enrollment test suite, including 3DS scenarios.
+
+## Related
+
+- [Enrollment feature](/docs/yuno-sdk/features/enrollment). Unified-API enrollment walkthrough.
+- [Lite enrollment](/docs/yuno-sdk/migration/ios/enrollment/lite). SDK-driven, no view embedding.
+- [Headless enrollment](/docs/yuno-sdk/migration/ios/enrollment/headless). Collect data in your own UI.
+- [`showView`](/docs/yuno-sdk/controllers/show-view). The controller you override here.
