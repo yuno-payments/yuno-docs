@@ -41,7 +41,8 @@ Every business model is unique, so we allow merchants to define specific rules t
 | `retry_on_decline` | bool   | Indicates whether to retry a payment after a first decline. Defaults to false. This flag is the only switch that enables retries; there is no dashboard toggle. | TRUE |
 | `amount`           | number | Number of retries the subscription will attempt. The maximum equals your environment's configured retry schedule length — 5 in production. Values above the cap are clamped to it. This cap is set per environment and is not configurable per account via the API. | 4 |
 | `strategy`         | string | The retry strategy. Allowed values: DEFAULT and CUSTOM_SCHEDULE. DEFAULT uses the fixed schedule above (NOT ML-based timing). CUSTOM_SCHEDULE uses the per-attempt schedule you provide. | `CUSTOM_SCHEDULE` |
-| `stop_on_hard_decline` | bool | When true and a hard decline is detected, retries stop for the current cycle only. The subscription stays ACTIVE, billing advances to the next cycle, and no cancel/pause or subscription webhook is emitted. | TRUE |
+| `stop_on_hard_decline` | bool | When true and a hard decline is detected, retries stop for the current cycle only. On its own, the subscription stays ACTIVE, billing advances to the next cycle, and no cancel/pause or subscription webhook is emitted. If `cancel_on_exhausted_retries` is also true, the subscription is canceled instead — see [Canceling a subscription when retries run out](#canceling-a-subscription-when-retries-run-out). | TRUE |
+| `cancel_on_exhausted_retries` | bool | When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of rolling forward to the next cycle. Defaults to false. Can only be set when the subscription is created. See [Canceling a subscription when retries run out](#canceling-a-subscription-when-retries-run-out). | TRUE |
 | `schedule`         | object | Contains attempt and delay\_seconds fields                                                                                               | Attempt: 2, `delay_seconds`: 86400 |
 
 </div>
@@ -53,4 +54,45 @@ The maximum number of retries equals your environment's configured retry schedul
 
 <Note>
 `strategy`: `DEFAULT` applies the fixed schedule above, not ML-based timing. Use `CUSTOM_SCHEDULE` together with the `schedule` array to define custom delays.
+</Note>
+
+### Canceling a subscription when retries run out
+
+By default, when every retry for a billing cycle has been attempted and none succeeded, the subscription stays `ACTIVE` and billing rolls forward to the next cycle. A subscription backed by a permanently dead card therefore keeps generating failed charges indefinitely.
+
+Set `cancel_on_exhausted_retries` to `true` when creating the subscription to change that:
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 3,
+    "cancel_on_exhausted_retries": true
+  }
+}
+```
+
+When retries for a cycle end without a successful payment, Yuno then:
+
+1. Sets the subscription status to `CANCELED`.
+2. Sets `cancellation_source` to `RETRIES_EXHAUSTED`.
+3. Stops all future scheduled billing for the subscription.
+4. Sends one `SUBSCRIPTION.CANCEL` webhook.
+
+This applies whichever way the retries ended — the schedule running to its last attempt, or `stop_on_hard_decline` ending the cycle early after a hard decline. In both cases `cancellation_source` is `RETRIES_EXHAUSTED`.
+
+<Note>
+`cancel_on_exhausted_retries` defaults to `false`. If you omit it, subscriptions behave exactly as they do today. No existing subscription changes behavior.
+</Note>
+
+<Warning>
+**This cancellation is final.** A canceled subscription is no longer billable, so [Retry Subscription](/reference/subscriptions/retry-subscription) is rejected for it. Without this flag you can manually rescue a subscription whose retries were exhausted; with it enabled, that option is gone once the cancellation happens. Enable it only if an exhausted retry schedule should genuinely end the customer's subscription.
+</Warning>
+
+<Note>
+`cancel_on_exhausted_retries` can only be set when the subscription is created. [Update Subscription](/reference/subscriptions/update-subscription) rejects a request that changes it. Sending back the same value the subscription already has is accepted, so a read-modify-write of the full subscription object still works.
+</Note>
+
+<Note>
+This flag applies to renewal cycles. Subscriptions created with `initial_payment_validation: true` already cancel themselves when their first payment fails, and that path reports `cancellation_source` as `SYSTEM` rather than `RETRIES_EXHAUSTED`.
 </Note>
