@@ -51,6 +51,7 @@ const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
     language: 'en',
+    elementSelector: '#root',
     onStatus: (result) => {
         console.log('Final status:', result.status)
     },
@@ -58,7 +59,6 @@ const transaction = sdkPayments.transaction({
 
 await transaction.start({
     paymentMethod: { type: 'PIX' },
-    elementSelector: '#root',
 })
 ```
 
@@ -70,8 +70,8 @@ await transaction.start({
 |---|---|---|
 | `window.Yuno.initialize(...)` | `SdkPayments.initialize(...)` | Global renamed for clarity. |
 | `yuno.startCheckout({ checkoutSession, countryCode, language, … })` | `sdkPayments.transaction({ checkoutSession, countryCode, language, … })` | Same fields, single factory. |
-| `elementSelector` (where to mount the SDK) | `elementSelector` (on `start()`) | Pass it to `start({ paymentMethod, elementSelector })`; the form renders inside that element. Required for form-based payments. |
-| `renderMode: { type: 'modal' \| 'element', elementSelector }` | `elementSelector` (on `start()`) | Modal mode no longer exists. The form renders inside the element you pass to `start()`. |
+| `elementSelector` (where to mount the SDK) | `elementSelector` (on `sdkPayments.transaction(config)`) | Optional field on the transaction config; the form renders inside that element. Used only by form-based flows — headless and other flows ignore it. Not required. |
+| `renderMode: { type: 'modal' \| 'element', elementSelector }` | `elementSelector` (on `sdkPayments.transaction(config)`) | Modal mode no longer exists. The form renders inside the element you pass on the transaction config. |
 | `card: CardConfig` | `card: CardConfig` | Same shape. |
 | `yunoCreatePayment(ott, info)` | `createPayment(token) => Promise<void>` | Promise-based, single argument (full `OneTimeToken`). |
 | `yunoPaymentResult(status, subStatus?)` | `onStatus(result)` | Single `TransactionStatus` object (`status`, `substatus`, `message`). |
@@ -94,7 +94,7 @@ The result shape is now wrapped — `onStatus` receives a `TransactionStatus` ob
 
 - **`continuePayment` is internal.** Lite required calling `yuno.continuePayment()` from inside `yunoCreatePayment` to advance the flow. The unified API orchestrates 3DS and status polling automatically when `createPayment` resolves.
 - **`yunoError` removed.** All terminal outcomes flow through `onStatus`, or a rejected `start()` Promise.
-- **`elementSelector` moved to `start()`.** It's no longer a config field — pass it to `start({ paymentMethod, elementSelector })` for form-based payments. Wallet/list views take their own `elementSelector` on `.mount()` (see [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list)).
+- **`elementSelector` is an optional transaction-config field.** Pass it to `sdkPayments.transaction({ ..., elementSelector })`. It's used only by form-based flows; headless and other flows ignore it (no error), and it's not required. Wallet/list views take their own `elementSelector` on `.mount()` (see [`getPaymentMethodsViews`](/docs/yuno-sdk/features/payment-methods-list)).
 - **Global rename.** `window.Yuno` → `window.SdkPayments`.
 
 ## Checklist
@@ -102,7 +102,7 @@ The result shape is now wrapped — `onStatus` receives a `TransactionStatus` ob
 - [ ] Rename `window.Yuno.initialize(...)` to `SdkPayments.initialize(...)`.
 - [ ] Replace `yuno.startCheckout(...)` + `yuno.mountCheckoutLite(...)` with a single `sdkPayments.transaction(...).start({ paymentMethod })` call.
 - [ ] Move `checkoutSession`, `countryCode`, `language`, `card`, etc. into `TransactionConfig`.
-- [ ] Pass `elementSelector` to `start()` (not the config) for form-based payments.
+- [ ] Set `elementSelector` on the transaction config (`sdkPayments.transaction({ ..., elementSelector })`) for form-based payments — it's optional and ignored by non-form flows.
 - [ ] Replace `yunoPaymentResult` with `onStatus` and read `result.status` / `result.substatus`.
 - [ ] If you implemented `yunoCreatePayment` for manual payment creation, switch to `createPayment` (Promise-based, single argument).
 - [ ] Drop `yuno.continuePayment()` calls — handled internally now.
