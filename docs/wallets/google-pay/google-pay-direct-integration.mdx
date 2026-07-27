@@ -77,7 +77,7 @@ Key details for your Google Pay integration with Yuno:
 Yuno supports both Google Pay API authorization methods:
 
 * **`PAN_ONLY`**: Card credentials stored in the user's Google account. When used, Yuno automatically handles 3D Secure authentication if enabled.
-* **`CRYPTOGRAM_3DS`**: Device-based card credentials with built-in authentication. These credentials include cryptographic authentication and don't require additional 3DS processing.
+* **`CRYPTOGRAM_3DS`**: Device-based card credentials with built-in authentication. These credentials include cryptographic authentication and don't require additional 3DS processing. These credentials decrypt to a device-specific number (DPAN), so see [Card last four digits for device tokens](#card-last-four-digits-for-device-tokens) if you display the card's last four digits to the shopper.
 
 Both methods are supported globally across all countries where Yuno operates. On the frontend, include both `PAN_ONLY` and `CRYPTOGRAM_3DS` in your `allowedAuthMethods` array for maximum payment success rates.
 
@@ -143,6 +143,72 @@ The Google Pay SDK returns the following object structure, which must be passed 
     },
     "type": "GOOGLE_PAY"
   }
+}
+```
+
+## Card last four digits for device tokens
+
+When Google Pay returns a `CRYPTOGRAM_3DS` credential, the encrypted token decrypts to the **DPAN** — a device-specific number, not the card stored by the shopper. Its last four digits are not the ones the shopper recognizes, so `card_data.lfd` in the payment response is empty or shows the DPAN's last four.
+
+The real card's last four digits are available to you in Google's response, outside the encrypted token:
+
+```json
+{
+  "paymentMethodData": {
+    "info": {
+      "cardDetails": "1515",
+      "cardNetwork": "VISA"
+    },
+    "tokenizationData": {
+      "token": "..."
+    }
+  }
+}
+```
+
+Send `paymentMethodData.info.cardDetails` as `payment_method.detail.wallet.card_data.lfd` and Yuno uses it in place of the DPAN-derived value.
+
+```json
+{
+  "payment_method": {
+    "type": "GOOGLE_PAY",
+    "detail": {
+      "wallet": {
+        "payment_token": "{\"protocolVersion\":\"ECv2\", ...}",
+        "card_data": {
+          "lfd": "1515"
+        }
+      }
+    }
+  }
+}
+```
+
+| Field | Type | Required | Description |
+| :---- | :--- | :------- | :---------- |
+| `lfd` | string | No | Last four digits of the shopper's real card, taken from `paymentMethodData.info.cardDetails`. Must be exactly 4 numeric digits. |
+
+The field is optional and backward compatible. If you do not send it, behavior is unchanged.
+
+* Yuno applies the value only when the token is a device token — `auth_method` is `CRYPTOGRAM_3DS`, or `pan_type` is `DPAN` when `auth_method` is absent.
+* `PAN_ONLY` credentials ignore the value. Those decrypt to the real card, so Yuno keeps the decrypted last four.
+* Only `lfd` is accepted. `brand` and the remaining card fields keep their decrypted values, because the DPAN's BIN already identifies the card network correctly.
+* The value is ignored for other wallets, such as Apple Pay.
+
+<Warning>
+  `lfd` is applied on `POST /v1/payments`. It is accepted and validated on `POST /v1/payments/rx` and `POST /v2/payments`, but not applied on those endpoints — the payment succeeds and the last four digits come back empty or DPAN-derived, exactly as before.
+</Warning>
+
+Once applied, the value appears in the create payment response, in the Get payment by ID response, and in payment webhooks, under `payment_method.detail.card.card_data.lfd`. Webhook payloads nest it under `payment_method_detail` instead of `detail`.
+
+If `lfd` is present but is not exactly 4 numeric digits, the request is rejected:
+
+```json
+{
+  "code": "INVALID_REQUEST",
+  "messages": [
+    "Invalid Request. payment_method.detail.wallet.card_data.lfd must be exactly 4 numeric digits."
+  ]
 }
 ```
 
