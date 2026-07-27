@@ -1,0 +1,64 @@
+---
+title: "Plans"
+description: "Define a reusable pricing catalog once, then subscribe customers to it instead of setting amount and frequency per subscription"
+---
+
+A plan is a reusable pricing definition — name, price (optionally per country), billing frequency, and an optional trial phase ladder. Instead of specifying `amount`/`frequency` on every [subscription](/docs/payment-features/subscriptions/index) you create, subscribe the customer to a plan and Yuno resolves the price for their country automatically.
+
+<Note>
+**Plans vs raw subscriptions**
+
+Raw subscriptions (`amount` + `frequency`, no `plan_id`) remain fully supported — plans are additive, not a replacement. A subscription created without a plan simply omits the plan fields (`plan_id`, `billing_phases`, `current_phase`, …) from its responses — they're absent, not `null`.
+</Note>
+
+## Creating and using a plan
+
+Say you're launching a "Streaming Pro" tier that costs \$20/month in the US, but you want to charge R\$99.90 in Brazil instead of a straight currency conversion. Here's the whole flow:
+
+1. **Create the plan once.** Call [Create a Plan](/reference/plans/create-plan) with a name, a `base_amount` (the default price — \$20 USD in our example), a `frequency` (monthly), and, if you need country-specific pricing, a `country_prices` list (`BR` → R\$99.90). This gives you back a `plan_id`.
+2. **Subscribe customers to it, as many as you want.** When you call [Create Subscription](/reference/subscriptions/create-subscription), send that `plan_id` instead of an `amount`. Yuno looks up the subscriber's `country` and charges them the right price automatically — no need to compute or send the amount yourself on every subscription.
+3. **The price resolves per subscriber, in this order:** does the plan have an explicit price for their country? Use that. If not, fall back to `base_amount`. So in our example, a US customer pays \$20, a Brazilian customer pays R\$99.90, and a customer anywhere else also pays \$20 (the `base_amount` fallback covers every country you didn't list explicitly).
+
+<Warning>
+**`plan_id` takes over pricing and cadence — but not all conflicting fields are rejected the same way**
+
+- `amount` is mutually exclusive with `plan_id` — send exactly one of the two.
+- `trial_period` and `billing_date` sent alongside `plan_id` are rejected with `400 BAD_REQUEST` — the plan already defines the trial ladder and cadence, so these would conflict with it.
+- `frequency` sent alongside `plan_id` is **not** rejected — it's silently ignored and overridden by the plan's own frequency. If you send one anyway expecting it to apply, it won't; nothing will tell you that.
+
+Simplest rule: when subscribing with `plan_id`, just omit `amount`, `frequency`, `trial_period`, and `billing_date` entirely — the plan supplies all of them. (Raw subscriptions without a plan still work exactly as before — plans are an addition, not a replacement.)
+</Warning>
+
+## Plans are immutable — here's why that matters
+
+You can't edit a plan's price after creating it — there's no update endpoint. This is deliberate: it means every subscriber keeps the exact price they signed up for, forever, even if you change your pricing later. Nobody gets a surprise price increase because you tweaked the plan.
+
+In practice, this means a "price change" is really "create a new plan": if Streaming Pro goes from \$20 to \$25/month, you create a new plan for \$25 and start pointing new signups at it — your existing \$20 subscribers keep paying \$20 until they cancel. When you're ready to stop offering the old price entirely, see **Canceling a plan** below.
+
+## Trial phases — offering a discounted or free intro period
+
+If you want new subscribers to pay less (or nothing) for a while before the regular price kicks in — a 14-day free trial, or \$9.99/month for the first 3 months before jumping to \$20/month — that's what `phases` on the plan are for.
+
+Think of it as a short ladder the subscriber walks through: one or more `TRIAL` steps (any price you want, including \$0), followed by exactly one `REGULAR` step at the end, which is always priced from the plan's normal `base_amount`/`country_prices`. For example, a 3-month-then-regular plan has two phases: phase 1 is `TRIAL`, 3 months, \$9.99; phase 2 is `REGULAR` with no set duration — it just runs at the plan's normal price from then on.
+
+While a subscriber is inside a `TRIAL` phase, their subscription's `status` reads `TRIALING` (instead of `ACTIVE`) and `current_phase` reads `TRIAL`, so you can tell at a glance that they're still in the discounted period. The moment they reach the `REGULAR` phase, both flip automatically — `status` becomes `ACTIVE`, `current_phase` becomes `REGULAR` — with no action needed on your end.
+
+If you don't need a trial or intro discount at all, just omit `phases` — the plan charges its regular price from the first bill.
+
+See [The Plan Object](/reference/plans/the-plan-object) for every field on a phase, and [The Subscription Object](/reference/subscriptions/the-subscription-object) for how a subscription reports back which phase it's in (`plan_id`, `billing_phases`, `current_phase`). To see what was actually charged for each phase — provider, per-charge amounts, which phase a payment belonged to — use [List Subscription Payments](/reference/subscriptions/list-subscription-payments).
+
+## Canceling a plan
+
+<Danger>
+**This cancels every subscriber on the plan immediately — there is no way to opt out of that.**
+
+Calling [Cancel Plan](/reference/plans/cancel-plan) does two things at once, synchronously, in the same request:
+1. Blocks anyone new from subscribing to this plan.
+2. **Cancels every subscription currently on it, right now.** Not "on their next renewal," not "after a grace period" — immediately, as part of this same API call.
+
+There is no soft-cancel, no grandfathering, and no way to retire a plan for new signups while letting existing subscribers keep paying on it. If that's what you need, don't cancel the plan — just stop pointing new signups at it (step 2 above) and leave it active for as long as its current subscribers should keep billing.
+</Danger>
+
+Before you call this, check the plan's `subscribers_count` (via [List Plans](/reference/plans/list-plans) — this field isn't on the single-plan [Retrieve Plan](/reference/plans/retrieve-plan) response) so you know exactly how many active subscriptions are about to be canceled — the response also echoes back `affected_subscriptions` so you can confirm afterward that the number matches what you expected.
+
+<Note>If you're not sure a previous cancel call fully finished canceling every subscriber, it's safe to call it again — re-canceling an already-canceled plan re-runs the cascade and returns `200`, it does not error.</Note>

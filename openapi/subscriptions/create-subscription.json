@@ -77,7 +77,7 @@
                   },
                   "amount": {
                     "type": "object",
-                    "description": "Specifies the `amount` object, with the value of each subscription payment and the used currency.",
+                    "description": "Specifies the `amount` object, with the value of each subscription payment and the used currency. Mutually exclusive with `plan_id` — send exactly one of the two.",
                     "required": [
                       "currency",
                       "value"
@@ -93,6 +93,10 @@
                         "format": "float"
                       }
                     }
+                  },
+                  "plan_id": {
+                    "type": "string",
+                    "description": "The unique identifier of a [plan](/reference/plans/the-plan-object) to subscribe this customer to. Mutually exclusive with `amount` — send exactly one of the two. Omit `trial_period` and `billing_date` when set: both are inherited from the plan and the request is rejected with `400 BAD_REQUEST` if you send them. Also omit `frequency` — it's inherited from the plan too, but sending it anyway is not rejected: it's silently ignored and overridden by the plan's frequency."
                   },
                   "additional_data": {
                     "type": "object",
@@ -191,11 +195,12 @@
                     "properties": {
                       "type": {
                         "type": "string",
-                        "description": "The type of interval the subscription will have in time (DAY, WEEK, MONTH). If not set, defaults to MONTH.",
+                        "description": "The type of interval the subscription will have in time (DAY, WEEK, MONTH, YEAR). If not set, defaults to MONTH.",
                         "enum": [
                           "DAY",
                           "WEEK",
-                          "MONTH"
+                          "MONTH",
+                          "YEAR"
                         ]
                       },
                       "value": {
@@ -648,6 +653,44 @@
                       }
                     },
                     "metadata": {},
+                    "plan_id": {
+                      "type": "string",
+                      "description": "Only present when the subscription is linked to a plan."
+                    },
+                    "plan_assigned_at": {
+                      "type": "string",
+                      "description": "Only present on plan-linked subscriptions. The moment the plan was attached — at creation from a plan, migration onto a plan, or a plan change."
+                    },
+                    "previous_subscription_id": {
+                      "type": "string",
+                      "description": "Only present when this subscription was created by a plan change (switching an existing subscription to a different plan)."
+                    },
+                    "current_phase": {
+                      "type": "string",
+                      "description": "Only present on plan-linked subscriptions."
+                    },
+                    "billing_phases": {
+                      "type": "array",
+                      "description": "Only present on plan-linked subscriptions whose plan has phases. Contains the leading TRIAL phases only, snapshotted at creation — the terminal REGULAR phase is never included, since its price isn't pinned and instead resolves from the plan at every billing.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "order": { "type": "integer" },
+                          "type": { "type": "string", "description": "Always TRIAL — the terminal REGULAR phase is never in this array." },
+                          "name": { "type": "string" },
+                          "amount": {
+                            "type": "object",
+                            "properties": { "currency": { "type": "string" }, "value": { "type": "number" } }
+                          },
+                          "frequency": {
+                            "type": "object",
+                            "properties": { "type": { "type": "string" }, "value": { "type": "integer" } }
+                          },
+                          "start_cycle": { "type": "integer" },
+                          "end_cycle": { "type": "integer" }
+                        }
+                      }
+                    },
                     "subscription_agreement_id": {
                       "type": "string",
                       "example": "sa_6af2dfcd-44c0-4f16-a331-8bed3ed9c9fa"

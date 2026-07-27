@@ -1,0 +1,65 @@
+---
+title: "Generate Network Token Cryptogram"
+openapi: "/openapi/network-tokens/generate-network-token-cryptogram.json POST /network-tokens/cryptograms"
+description: "Generates a fresh, single-use network token cryptogram for a vaulted card so it can be authorized on an external PSP. PCI-certified merchants only."
+---
+
+This endpoint returns an on-demand **network token cryptogram** for a vaulted card, together with the card's current network token (DPAN). A card's network token alone cannot authorize a payment — card schemes require a single-use cryptogram per transaction, and only Yuno can request it because Yuno holds the Token Requestor ID. Use this endpoint when you want to take a Yuno network token and authorize the transaction on your own PSP.
+
+You identify the card with its `vaulted_token` — the same identifier you use in [Create Payment](/reference/create-payment). Yuno resolves the card's current network token internally and absorbs token rotation, so you always receive a consistent, current `(DPAN, cryptogram, ECI)` set.
+
+<Warning>
+**PCI merchants only**
+
+This endpoint is only available for PCI-certified merchants, because the response contains the full network token (DPAN). To enable it, contact your Key Account Manager (KAM).
+</Warning>
+
+<Warning>
+**Always submit the returned pair.** A cryptogram is bound to a specific network token. Submit the `network_token.number` (DPAN) returned in the **same response** together with its `cryptogram` and `eci`. Never pair a returned cryptogram with a previously stored DPAN — after a token rotation, a stored DPAN will no longer match.
+</Warning>
+
+## How it works
+
+1. Request a cryptogram right before you authorize. Every call generates a **fresh, single-use** cryptogram from the scheme — there is no idempotency, and duplicate calls simply return new cryptograms (no money moves).
+2. Submit `network_token.number` (DPAN), `cryptogram`, and `eci` to your PSP as a network-token transaction.
+3. If the authorization is declined and you retry, request a **new** cryptogram first — a used or stale cryptogram cannot be replayed.
+
+## Requirements
+
+To use this endpoint your organization must:
+
+- Be a **PCI-certified merchant** (the response contains the DPAN).
+- Have the **product enabled** for your organization.
+- Be **onboarded for network tokens** for the card's brand and the requested `country`.
+
+The card referenced by `vaulted_token` must be an **enrolled card** of your organization that already has an **active network token**.
+
+Supported networks: **Visa** and **Mastercard**.
+
+<Note>
+**When you don't need this endpoint.** Recurring merchant-initiated transactions (MIT) authorize with the network token and the stored `network_transaction_id` and do **not** require a cryptogram. This endpoint is for customer-initiated transactions that need a fresh cryptogram.
+</Note>
+
+## Cryptogram lifetime
+
+The cryptogram is single-use — request it immediately before you authorize, and do not cache it.
+
+## Errors
+
+Errors return a `code` and a `messages` array. The exact `messages` value per `code`:
+
+| HTTP | `code` | `messages` |
+| --- | --- | --- |
+| 404 | `PAYMENT_METHOD_NOT_FOUND` | "Payment method not found." |
+| 400 | `INSTRUMENT_NOT_TOKENIZABLE` | "Payment method is not a card." |
+| 400 | `PAYMENT_METHOD_NOT_ENROLLED` | "Payment method is not enrolled." |
+| 400 | `NETWORK_TOKEN_NOT_FOUND` | "Payment method has no network token." |
+| 400 | `TOKEN_NOT_ACTIVE` | "Network token is not active." |
+| 400 | `NETWORK_NOT_SUPPORTED` | "Network token brand is not supported." |
+| 400 | `COUNTRY_NOT_SUPPORTED` | "Country is not supported for this organization." |
+| 400 | `INVALID_REQUEST` | The specific invalid field, e.g. "The field 'vaulted_token' must be a valid uuid v4." |
+| 403 | `PCI_MERCHANT_REQUIRED` | "This endpoint is only available to PCI-certified merchants." |
+| 403 | `PRODUCT_NOT_ENABLED` | "The Network Token Cryptogram API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
+| 502 | `PROVIDER_ERROR` | "The network token cryptogram service is temporarily unavailable, please retry." |
+
+A `vaulted_token` that doesn't exist and one that belongs to another organization both return the same `PAYMENT_METHOD_NOT_FOUND` — no existence leak.

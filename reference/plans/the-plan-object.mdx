@@ -1,0 +1,192 @@
+---
+title: "The Plan Object"
+description: "Documents the plan object's attributes, including per-country pricing, phases, and metadata."
+---
+
+## Attributes
+
+A plan is a reusable pricing catalog entry. Subscribe a customer to a plan instead of setting `amount`/`frequency` directly on the subscription, and every field that defines "how much, how often" is resolved from the plan.
+
+<ParamField body="id" type="string">
+  The unique identifier of the plan (MAX 64; MIN 36).
+
+  Example: 00000000-0000-4000-8000-000000000001
+</ParamField>
+
+<ParamField body="account_id" type="string">
+  The unique identifier of the account the plan belongs to (MAX 64; MIN 36).
+
+  Example: 00000000-0000-4000-8000-000000000002
+</ParamField>
+
+<ParamField body="name" type="string">
+  The plan name (MAX 255; MIN 3).
+
+  Example: Streaming Pro
+</ParamField>
+
+<ParamField body="description" type="string">
+  The plan description. No length limit is currently enforced.
+
+  Example: Access to Pro features, billed monthly
+</ParamField>
+
+<ParamField body="merchant_reference" type="string">
+  Your own identifier for the plan. No length limit is currently enforced.
+
+  Example: streaming-pro-monthly
+</ParamField>
+
+<ParamField body="status" type="enum">
+  Status of the plan.
+
+  Possible values:
+  - `ACTIVE` = The plan can be subscribed to.
+  - `CANCELED` = The plan no longer accepts new subscriptions. Canceling a plan also cancels every subscription currently linked to it.
+</ParamField>
+
+<ParamField body="base_amount" type="object">
+  The default price charged in any country without an explicit entry in `country_prices`.
+
+  <Expandable title="properties">
+    <ParamField body="currency" type="enum">
+      The currency used to make the payment (MAX 3; MIN 3; <a href="/reference/country-reference">ISO 4217</a>).
+    </ParamField>
+
+    <ParamField body="value" type="number">
+      The payment amount (multiple of 0.0001).
+
+      Example: 20.00
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="frequency" type="object">
+  The billing frequency for the plan. Every subscription created from this plan inherits it — do not send `frequency` when subscribing with a `plan_id`.
+
+  <Expandable title="properties">
+    <ParamField body="type" type="enum">
+      Possible enum values: `DAY`, `WEEK`, `MONTH`, or `YEAR`.
+    </ParamField>
+
+    <ParamField body="value" type="int">
+      Example: 1
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="country_prices" type="array of objects">
+  Explicit per-country prices. A country not listed here falls back to `base_amount`.
+
+  <Expandable title="properties">
+    <ParamField body="country" type="string">
+      MAX 2; MIN 2; <a href="/reference/country-reference">ISO 3166-1</a>.
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      <Expandable title="properties">
+        <ParamField body="currency" type="enum" />
+        <ParamField body="value" type="number" />
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="allowed_payment_methods" type="array of strings">
+  Payment method types accepted for subscriptions on this plan.
+
+  Example: `["CARD", "PIX"]`
+</ParamField>
+
+<ParamField body="metadata" type="array of objects">
+  Key-value pairs attached to the plan itself. This is independent of any `metadata` set directly on a subscription — see the [Subscription object](/reference/subscriptions/the-subscription-object) for that.
+
+  <Expandable title="properties">
+    <ParamField body="key" type="string">
+      Example: campaign
+    </ParamField>
+
+    <ParamField body="value" type="string">
+      Example: app_store
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="phases" type="array of objects">
+  An optional leading ladder of phases (for example, a trial) before the plan's regular price applies. Omit for a flat plan with no trial.
+
+  <Expandable title="properties">
+    <ParamField body="order*" type="int">
+      1-indexed position in the ladder. The highest `order` is the terminal, regular-price phase and has no `duration`. Required.
+    </ParamField>
+
+    <ParamField body="name*" type="string">
+      Required, non-empty — every phase must have a name.
+    </ParamField>
+
+    <ParamField body="type*" type="enum">
+      Required. Possible values: `TRIAL` (any leading phase, any price including 0), `REGULAR` (the terminal phase).
+    </ParamField>
+
+    <ParamField body="duration" type="object">
+      Required on every non-terminal phase; omitted on the terminal phase.
+
+      <Expandable title="properties">
+        <ParamField body="type" type="enum">
+          `DAY`, `WEEK`, `MONTH`, or `YEAR`.
+        </ParamField>
+        <ParamField body="value" type="int" />
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="frequency" type="object">
+      Optional. If omitted, the phase bills as a single lump-sum charge covering the whole `duration`. If set, the phase bills every `frequency` interval instead. Not applicable to the terminal phase.
+
+      <Expandable title="properties">
+        <ParamField body="type" type="enum">
+          `DAY`, `WEEK`, `MONTH`, or `YEAR`.
+        </ParamField>
+        <ParamField body="value" type="int" />
+      </Expandable>
+    </ParamField>
+
+    <ParamField body="amount" type="object">
+      The phase's flat price. 0 is allowed (a free trial).
+
+      <Warning>On a **non-terminal** phase, this or `country_prices` is required — one of the two. On the **terminal** REGULAR phase, omit this entirely: sending an `amount` there is rejected with `400 BAD_REQUEST` ("The terminal phase price comes from the plan base_amount/country_prices - remove the phase amount"). The terminal phase's price always comes from the plan's own `base_amount`/`country_prices`, never from a phase-level field.</Warning>
+    </ParamField>
+
+    <ParamField body="country_prices" type="array of objects">
+      Per-country prices for this phase, same shape as the plan-level `country_prices`. On a non-terminal phase, this or `amount` is required. Not applicable to the terminal phase.
+    </ParamField>
+
+    <ParamField body="total_payments" type="int">
+      Server-computed. If `frequency` is omitted, always `1` (one lump-sum charge for the whole phase). If `frequency` is set, `duration / frequency` (both in the same unit) — e.g. a 3-month duration billed monthly (`frequency: {type: MONTH, value: 1}`) produces `3`. `null` on the terminal phase.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="subscribers_count" type="int">
+  The number of live subscriptions (in any non-terminal status) currently on this plan. This is the set a cancel would affect.
+
+  Example: 12
+
+  <Note>Only returned by [List Plans](/reference/plans/list-plans) — not present on [Create Plan](/reference/plans/create-plan) or [Retrieve Plan](/reference/plans/retrieve-plan) responses.</Note>
+</ParamField>
+
+<ParamField body="countries" type="array of strings">
+  Sorted ISO α2 codes — the distinct union of every country this plan explicitly prices, at the plan level or inside any phase. An empty array means the plan applies globally via `base_amount`, not that it has no coverage.
+
+  <Note>Only returned by [List Plans](/reference/plans/list-plans) — not present on [Create Plan](/reference/plans/create-plan) or [Retrieve Plan](/reference/plans/retrieve-plan) responses.</Note>
+</ParamField>
+
+<ParamField body="created_at" type="Timestamp" />
+<ParamField body="updated_at" type="Timestamp" />
+
+## Related
+
+* [Create Plan](/reference/plans/create-plan)
+* [Retrieve Plan](/reference/plans/retrieve-plan)
+* [List Plans](/reference/plans/list-plans)
+* [Cancel Plan](/reference/plans/cancel-plan)
+* [The Subscription Object](/reference/subscriptions/the-subscription-object) — see `plan_id` for how a subscription links back to its plan

@@ -47,6 +47,7 @@ Have the following ready:
       | **Payment Mode** | Optional | **Payment App** (modern) or **Legacy** (redirect). |
       | **Transaction Identification From** | Optional | **Yuno TID** or **Provider TID**. |
       | **Antifraud Providers for Split Orders** | Optional | Comma-separated antifraud providers (`RISKIFIED`, `CYBERSOURCE`, `SIGNIFYD`, `CIELO_CYBERSOURCE_FRAUD`) that receive the shared session for split orders. Defaults to `RISKIFIED` + `CYBERSOURCE` when left empty. |
+      | **Vault Card for Order Modification** | Optional | When set to **Yes** (and **Create Customer** is also **Yes**), the plugin securely stores the card used on each order so that, if the order total later increases, the additional amount can be charged automatically. See [Order modifications](#order-modifications-changed-order-totals). |
     </Accordion>
 
     <Accordion title="Settlement Options">
@@ -146,3 +147,26 @@ When these fields are set, the plugin reads catalog and order data from the main
 When a shopper's cart contains products from **different sellers or franchises**, VTEX splits the purchase into multiple suborders and authorizes each one independently. The Yuno integration detects this and processes **every** suborder — so the entire order is paid, not just the first part — while sharing a single antifraud session across all of them.
 
 This works automatically; no extra setup is required. If you want to control which antifraud providers receive the shared session, use the **Antifraud Providers for Split Orders** field in the provider configuration (see the field reference in Step 1). Valid values are `RISKIFIED`, `CYBERSOURCE`, `SIGNIFYD`, and `CIELO_CYBERSOURCE_FRAUD`; when left empty, it defaults to `RISKIFIED` + `CYBERSOURCE`.
+
+### Order modifications (changed order totals)
+
+VTEX lets you **change an order after checkout**, when the final total turns out to be different from the amount that was authorized — for example if you sell products **by weight**, where the exact total is only known once the order is picked and packed.
+
+*   If the final total is the **same or lower**, VTEX captures only the final amount. No extra setup is required.
+*   If the final total is **higher**, VTEX charges the difference as a **separate, automatic charge**. Since the shopper is no longer present and does not re-enter their card, Yuno charges the difference against the card they already used on the original order.
+
+To enable automatic charges when an order total **increases**, configure the following in your provider settings **before** the orders you expect to modify are placed:
+
+| Field | Value |
+| :--- | :--- |
+| **Vault Card for Order Modification** | **Yes** — stores the card on the original order so it can be charged again for the difference. |
+| **Create Customer** | **Yes** — required, so the card is stored against a Yuno customer. Both fields must be enabled together. |
+| **Automatic Settlement** | **Disabled** — recommended. The original payment is authorized at checkout and captured at invoicing. If the final total is **lower** than the authorized amount, only that lower amount is captured (a partial capture); if it is higher, the difference is charged as a separate additional charge. |
+
+<Note>
+  Order-total **increases** are supported for **credit cards only** (a VTEX restriction). The card is stored at the time of the original payment, so **Vault Card for Order Modification** and **Create Customer** must be enabled **before** the order is placed — turning them on later does not apply to orders that already exist.
+</Note>
+
+<Note>
+  **Franchises / multiple accounts:** enable **Vault Card for Order Modification** and **Create Customer** on **every** affiliation you use (each franchise or sub-account), and set the **Main Account** fields as described under [Multi-account](#multi-account).
+</Note>
