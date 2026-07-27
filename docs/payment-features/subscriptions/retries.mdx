@@ -9,7 +9,7 @@ Yuno's Smart Retries help recover declined recurring credit card payments by ret
 
 Yuno's Smart Retries offer several benefits that enhance payment processes and revenue recovery:
 
-* **Data-driven decision-making**: Uses a proven retry schedule, with machine-learning-based timing available for eligible organizations.
+* **Data-driven decision-making**: Uses a proven retry schedule, with machine-learning-based retry timing available on request through the `SMART` strategy.
 * **Enhanced revenue retrieval**: Increases the chances of successfully collecting payments.
 * **Decreased subscriber turnover**: Minimizes disruptions and involuntary subscriber departures.
 * **Flexible logic**: Allows customization of retry schedules to maximize success opportunities.
@@ -17,7 +17,7 @@ Yuno's Smart Retries offer several benefits that enhance payment processes and r
 
 ### Retry schedule
 
-By default, Yuno applies the fixed retry schedule below. Each delay is measured **from the previous attempt**, not cumulatively from the first attempt. Eligible organizations can also opt into machine-learning-based timing, which adapts the moment of each retry per transaction.
+By default, Yuno applies the fixed retry schedule below. Each delay is measured **from the previous attempt**, not cumulatively from the first attempt. You can also request machine-learning-based retry timing, which adapts the moment of each retry per transaction, by setting `strategy` to `SMART` — see [Machine-learning retry timing](#machine-learning-retry-timing).
 
 | Attempt                    | Delay after the previous attempt | Total time after the first attempt |
 | :------------------------- | :------------------------------- | :--------------------------------- |
@@ -40,7 +40,7 @@ Every business model is unique, so we allow merchants to define specific rules t
 | :----------------- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
 | `retry_on_decline` | bool   | Indicates whether to retry a payment after a first decline. Defaults to false. This flag is the only switch that enables retries; there is no dashboard toggle. | TRUE |
 | `amount`           | number | Number of retries the subscription will attempt. The maximum equals your environment's configured retry schedule length — 5 in production. Values above the cap are clamped to it. This cap is set per environment and is not configurable per account via the API. | 4 |
-| `strategy`         | string | The retry strategy. Allowed values: DEFAULT and CUSTOM_SCHEDULE. DEFAULT uses the fixed schedule above (NOT ML-based timing). CUSTOM_SCHEDULE uses the per-attempt schedule you provide. | `CUSTOM_SCHEDULE` |
+| `strategy`         | string | The retry strategy. Allowed values: DEFAULT, SMART and CUSTOM_SCHEDULE. DEFAULT uses the fixed schedule above. SMART uses machine-learning-based retry timing — see [Machine-learning retry timing](#machine-learning-retry-timing). CUSTOM_SCHEDULE uses the per-attempt schedule you provide. | `CUSTOM_SCHEDULE` |
 | `stop_on_hard_decline` | bool | When true and a hard decline is detected, retries stop for the current cycle only. The subscription stays ACTIVE, billing advances to the next cycle, and no cancel/pause or subscription webhook is emitted. | TRUE |
 | `schedule`         | object | Contains attempt and delay\_seconds fields                                                                                               | Attempt: 2, `delay_seconds`: 86400 |
 
@@ -52,5 +52,33 @@ The maximum number of retries equals your environment's configured retry schedul
 </Note>
 
 <Note>
-`strategy`: `DEFAULT` applies the fixed schedule above, not ML-based timing. Use `CUSTOM_SCHEDULE` together with the `schedule` array to define custom delays.
+`strategy`: `DEFAULT` applies the fixed schedule above. Use `SMART` for machine-learning-based retry timing, or `CUSTOM_SCHEDULE` together with the `schedule` array to define your own delays.
 </Note>
+
+### Machine-learning retry timing
+
+Set `strategy` to `SMART` to have Yuno's machine-learning model choose **when** each retry is attempted, instead of using the fixed schedule. The model weighs signals such as the decline reason, the country, the card issuer and the payment provider to pick the moment most likely to succeed.
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 4,
+    "strategy": "SMART"
+  }
+}
+```
+
+`SMART` changes retry **timing** only. It does not change how many retries you get: `amount` still controls that, and the same per-environment maximum applies. Any `schedule` array sent alongside `strategy: SMART` is ignored.
+
+<Note>
+Machine-learning timing is applied **from the second retry onward**. The first retry always uses the standard delay from the fixed schedule above.
+</Note>
+
+<Note>
+If a timing decision is not available in time, the retry falls back to the fixed schedule above. Retries are never skipped or dropped because of this — only their timing changes.
+</Note>
+
+<Warning>
+`SMART` is enabled per organization. If it is not yet enabled for yours, sending `strategy: SMART` returns a `400 INVALID_PARAMETERS` response. Contact your Yuno representative to request access.
+</Warning>
