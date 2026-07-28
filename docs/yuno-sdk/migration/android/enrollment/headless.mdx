@@ -1,0 +1,145 @@
+---
+title: "Headless enrollment"
+description: "Migrate Android Headless enrollment (Yuno.apiClientEnroll) to the unified Transaction API."
+---
+
+Headless enrollment was a pure-tokenization API: you collected the data in your own UI, called `apiClient.continueEnrollment(collectedData, context)`, and got back a `Map<String, Any?>` with `vaultedToken`, `customerSession`, and `status`.
+
+In the unified API, headless enrollment is no longer a separate client. It's the same `Transaction.start(paymentSelected)` with `transactionData` set on the `PaymentMethodSelected`. The SDK runs the enrollment internally and reports completion through `onStatus`.
+
+| Before | After |
+|---|---|
+| `Yuno.apiClientEnroll(...).continueEnrollment(data, context)` | `Transaction(config).start(paymentSelected = <with transactionData>)` |
+| `EnrollmentCollectedData` / `EnrollmentMethod` / `CardData` / `Detail` | `PaymentMethodSelected` + `TransactionData` + `CardTransactionData` |
+| Result map with `vaultedToken` | `onStatus(status)` (token retrieved from your backend) |
+
+## Side-by-side
+
+<CodeGroup>
+
+```kotlin Before. Headless enrollment
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.ApiClientEnroll
+import com.yuno.sdk.ApiClientEnroll.Companion.continueEnrollment
+import com.yuno.sdk.enrollment.EnrollmentCollectedData
+import com.yuno.sdk.enrollment.EnrollmentMethod
+import com.yuno.sdk.payments.CardData
+import com.yuno.sdk.payments.Detail
+
+class EnrollmentActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    suspend fun enroll() {
+        val apiClient = Yuno.apiClientEnroll(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            context = this,
+        )
+
+        val data = EnrollmentCollectedData(
+            customerSession = "session-from-backend",
+            paymentMethod = EnrollmentMethod(
+                type = "CARD",
+                card = CardData(
+                    detail = Detail(
+                        number = "4111...",
+                        securityCode = "123",
+                        expirationMonth = 12,
+                        expirationYear = 28,
+                        holderName = "John Doe",
+                    ),
+                ),
+            ),
+        )
+
+        val result = apiClient.continueEnrollment(data, context = this)
+        val vaultedToken = result["vaultedToken"]
+        val status = result["status"]
+    }
+}
+```
+
+```kotlin After. Unified Transaction
+import com.yuno.sdk.Yuno
+import com.yuno.sdk.Transaction
+import com.yuno.sdk.TransactionConfig
+import com.yuno.sdk.TransactionController
+import com.yuno.sdk.PaymentMethodSelected
+import com.yuno.sdk.PaymentStatus
+import com.yuno.sdk.TransactionData
+import com.yuno.sdk.CardTransactionData
+
+class EnrollmentActivity : ComponentActivity(), TransactionController {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        SDKPayment.initialize(applicationContext, apiKey = "your-public-api-key")
+    }
+
+    override fun onStatus(status: PaymentStatus) {
+        // On a successful status, retrieve the vaulted token from your
+        // backend's "list customer payment methods" endpoint.
+    }
+
+    fun enroll(card: CardTransactionData) {
+        val paymentSelected = PaymentMethodSelected(
+            paymentMethodType = "CARD",
+            transactionData = TransactionData(card = card),
+        )
+
+        val config = TransactionConfig(
+            customerSession = "session-from-backend",
+            countryCode = "CO",
+            controller = this,
+        )
+
+        Transaction(config = config)
+            .start(paymentSelected = paymentSelected)
+    }
+}
+```
+
+</CodeGroup>
+
+<Warning>
+**The vaulted token is no longer returned to the client.** Headless enrollment's `continueEnrollment(…)` returned a map containing `vaultedToken`. The unified API does not surface the token to the client. Fetch it from your backend's list-customer-payment-methods endpoint after the success status arrives in `onStatus`.
+</Warning>
+
+## Field mapping
+
+| Before (Headless) | After (unified) | Notes |
+|---|---|---|
+| `Yuno.apiClientEnroll(customerSession, countryCode, context)` | `Transaction(config)` | The transaction object replaces the headless client. |
+| `EnrollmentCollectedData.customerSession` | `TransactionConfig.customerSession` | Moves to config. |
+| `EnrollmentMethod.type` | `PaymentMethodSelected.paymentMethodType` | Moves to the parent object. |
+| `EnrollmentMethod.card` (`CardData.detail`) | `TransactionData.card` (`CardTransactionData`) | Flat (no `detail` wrapper), namespaced under `transactionData`. |
+| `continueEnrollment(data, context)` returning `Map<String, Any?>` | `start(paymentSelected)` + `onStatus(status)` | The SDK reports completion through `onStatus`. |
+
+## Behavior changes
+
+- **No `vaultedToken` on the client.** Fetch it from your backend after success.
+- **`onOneTimeToken` is not invoked** during enrollment.
+- **`vaultedToken` on `PaymentMethodSelected` is ignored.** Enrollment exists to produce a vaulted token; there's nothing linked yet to reference.
+- **No `Context` argument on each call.** `SDKPayment.initialize` keeps the application context.
+
+## Checklist
+
+- [ ] Replace `Yuno.apiClientEnroll(...)` with `Transaction(config)`.
+- [ ] Move `customerSession` and `countryCode` into `TransactionConfig`.
+- [ ] Replace `EnrollmentCollectedData` / `EnrollmentMethod` / `CardData` / `Detail` with `PaymentMethodSelected` + `TransactionData` + `CardTransactionData`.
+- [ ] Replace `continueEnrollment(data, context)` with `start(paymentSelected)` passing the data via `transactionData`.
+- [ ] Implement `onStatus(status)` to react to the final outcome.
+- [ ] Move the `vaultedToken` retrieval to your backend.
+- [ ] Re-run your sandbox enrollment test suite, including 3DS scenarios.
+
+## Related
+
+- [Enrollment feature](/docs/yuno-sdk/features/enrollment). Unified-API enrollment walkthrough.
+- [Lite enrollment](/docs/yuno-sdk/migration/android/enrollment/lite). SDK presents the form for you.
+- [Render enrollment](/docs/yuno-sdk/migration/android/enrollment/render). Embed the SDK's form yourself.
+- [Migration / Headless (payment)](/docs/yuno-sdk/migration/android/payment/headless). The payment counterpart for the Headless sub-mode.
+- [`TransactionData`](/docs/yuno-sdk/reference/transaction-data). Shape of the pre-collected data.

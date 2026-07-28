@@ -1,0 +1,71 @@
+---
+title: "showView"
+description: "Invoked when the SDK has a view to present (form or action)."
+---
+
+`showView` is invoked when the SDK has a view ready to be presented. Either a form to collect input from the user, or an action view such as a QR code. Override this controller to embed the view in your own layout instead of letting the SDK present it full-screen.
+
+<Note>
+WebViews: for example, 3DS challenges or redirects required by some payment methods, are always presented by the SDK full-screen. They do not come through `showView`, so overriding it does not change that behavior.
+</Note>
+
+## Behavior
+
+If you do not override this controller, the SDK presents the view full-screen with its own header and submit button.
+
+When you override it, the SDK delivers the view to your handler along with a `TransactionProcess` control object. You place the view wherever you want in your layout, and you call `process.onSubmit()` to tell the SDK the user has triggered submission.
+
+You are responsible for removing the view from your layout once the transaction has moved past that step.
+
+The controller can be invoked more than once per transaction. The `step` parameter indicates which step the view belongs to. For example, `FORM` for the data-capture form and `ACTION` for an action view such as a QR code. Use it to differentiate how you embed each view if needed.
+
+## Signature
+
+<Tabs>
+  <Tab title="iOS">
+
+```swift
+func showView(view: AnyView?, process: SdkPayments.TransactionProcess, step: SdkPayments.TransactionViewStep)
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+fun showView(view: Fragment, process: TransactionProcess, step: TransactionViewStep)
+```
+
+  </Tab>
+</Tabs>
+
+## TransactionProcess
+
+`TransactionProcess` is the control object the SDK passes alongside the view. It exposes a single method:
+
+```
+onSubmit()
+```
+
+Call `process.onSubmit()` when the user triggers submission from your own UI (for example, when they tap your custom submit button). The SDK validates the form and, if valid, continues the transaction.
+
+You don't need to handle success or failure here. The result of submission flows through [`createPayment`](/docs/yuno-sdk/controllers/create-payment) (if overridden) and [`onStatus`](/docs/yuno-sdk/controllers/on-status).
+
+## TransactionViewStep
+
+`TransactionViewStep` indicates which step the view corresponds to.
+
+| Value | Meaning |
+|---|---|
+| `FORM` | Data-capture form (card form, APM data, etc.). |
+| `ACTION` | Additional action view, such as a QR code. |
+
+## Threading
+
+On iOS and Android, `showView` is invoked on the main thread. You can update UI directly from inside this handler.
+
+## Related
+
+- [Transactions](/docs/basic-concepts/transactions). How a payment flows through Yuno.
+- [`createPayment`](/docs/yuno-sdk/controllers/create-payment). Receives the token after submission.
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). Receives the final status.
