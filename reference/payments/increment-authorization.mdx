@@ -1,0 +1,31 @@
+---
+title: "Increment Authorization"
+openapi: "/openapi/payments/increment-authorization.json POST /payments/{payment_id}/transactions/{transaction_id}/increment"
+description: "Raises an existing authorization hold by a delta amount, without creating a new authorization."
+---
+
+This request raises the amount of a previously authorized payment (an incremental authorization). It is designed for open-ended-amount scenarios — EV charging, fuel, hospitality, car rental — where you authorize a small amount first and grow the hold as the final amount becomes known, then capture once with the [capture API](/reference/capture-authorization).
+
+The `amount` you send is a **delta**: how much to add to the current authorized amount. Yuno translates it to each provider's expected semantics.
+
+Each increment creates its own `AUTHORIZE_INCREMENT` transaction with a per-increment result, visible in [Retrieve Payment](/reference/retrieve-payment-by-id-v2) and notified via webhook. A declined increment leaves the previously authorized amount untouched. Multiple increments can be performed on the same authorization.
+
+Note that this request requires an `X-Idempotency-Key`. Check the [Authentication](/reference/authentication#idempotency) page for more information.
+
+<Warning>
+**The original authorization must opt in**
+
+Some providers only allow increments on authorizations created as pre-authorization holds. Set `authorization_type: "PRE_AUTHORIZATION"` (together with `capture: false`) when [creating the payment](/reference/create-payment); see the [Cancel and Capture Flow](/docs/payment-features/Cancel-and-capture-flow#pre-authorization-holds-authorization_type) guide. If the original authorization did not opt in and the provider rejects the increment, the increment transaction is returned with the `AUTHORIZATION_NOT_INCREMENTABLE` response code.
+</Warning>
+
+## Provider support
+
+Support is provider-dependent. If the provider routed for the payment does not support incremental authorizations, the request returns a `422` error.
+
+| Provider | Result | Notes |
+| --- | --- | --- |
+| Stripe | Synchronous | Requires the original authorization created with `authorization_type: "PRE_AUTHORIZATION"` |
+| Adyen | Asynchronous | The transaction is returned as `PENDING`; the final result is delivered via webhook |
+| Checkout.com | Synchronous | |
+| CyberSource | Synchronous | |
+| Revolut | Asynchronous | The transaction is returned as `PENDING`; the final result is delivered via webhook. Increments require the original authorization created with `authorization_type: "PRE_AUTHORIZATION"`, are available on card, Apple Pay, and Google Pay only, can only be tested in Production (not available in sandbox), and are limited to 10 sequential increments with a total of up to 5× the initial amount |

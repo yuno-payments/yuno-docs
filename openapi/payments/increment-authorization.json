@@ -1,0 +1,505 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "payment-api-increment-authorization",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your public-api-key>",
+        "name": "public-api-key"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your private-secret-key>",
+        "name": "private-secret-key"
+      },
+      "sec2": {
+        "type": "apiKey",
+        "in": "header",
+        "x-default": "<Your X-Idempotency-Key>",
+        "name": "X-Idempotency-Key"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": [],
+      "sec2": []
+    }
+  ],
+  "paths": {
+    "/payments/{payment_id}/transactions/{transaction_id}/increment": {
+      "post": {
+        "summary": "Increment Authorization",
+        "description": "Raises an existing authorization hold by a delta amount. Each increment creates its own `AUTHORIZE_INCREMENT` transaction with a per-increment result.",
+        "operationId": "increment-authorization",
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "path",
+            "description": "The unique identifier of the payment (UUID, 36 chars).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "The unique identifier of the original AUTHORIZE transaction to increment (UUID, 36 chars).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "merchant_reference"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "object",
+                    "description": "The amount to ADD to the current authorized amount (a delta, not the new total). The currency must match the original authorization.",
+                    "required": [
+                      "value",
+                      "currency"
+                    ],
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "description": "The delta to add to the current authorized amount.",
+                        "example": 50.0
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "Three-letter ISO 4217 currency code. Must match the original authorization.",
+                        "example": "EUR"
+                      }
+                    }
+                  },
+                  "merchant_reference": {
+                    "type": "string",
+                    "description": "The reference for this increment."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Optional description of the increment."
+                  }
+                }
+              },
+              "examples": {
+                "Increment by 50": {
+                  "value": {
+                    "amount": {
+                      "value": 50.0,
+                      "currency": "EUR"
+                    },
+                    "merchant_reference": "session-8842-inc-2",
+                    "description": "EV charging session top-up"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier of the increment transaction (UUID)."
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Transaction type.",
+                      "example": "AUTHORIZE_INCREMENT"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "SUCCEEDED",
+                        "DECLINED",
+                        "PENDING",
+                        "ERROR"
+                      ],
+                      "description": "Per-increment result. `SUCCEEDED`: the hold was raised. `DECLINED`: the issuer or provider declined this increment; the previous authorized amount stands. `PENDING`: the provider processes increments asynchronously; the final result is delivered via webhook. `ERROR`: the increment could not be processed."
+                    },
+                    "amount": {
+                      "type": "object",
+                      "description": "The delta added by this increment.",
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "example": 50.0
+                        },
+                        "currency": {
+                          "type": "string",
+                          "example": "EUR"
+                        }
+                      }
+                    },
+                    "merchant_reference": {
+                      "type": "string",
+                      "description": "The reference sent in the request."
+                    },
+                    "parent_transaction_id": {
+                      "type": "string",
+                      "description": "The `transaction_id` of the original AUTHORIZE transaction this increment belongs to."
+                    },
+                    "response_code": {
+                      "type": "string",
+                      "description": "Normalized response code for this increment. `AUTHORIZATION_NOT_INCREMENTABLE` indicates the original authorization was not created as `PRE_AUTHORIZATION` and the provider rejected the increment."
+                    },
+                    "response_message": {
+                      "type": "string",
+                      "description": "Human-readable detail of the result."
+                    },
+                    "provider_data": {
+                      "type": "object",
+                      "description": "Raw provider identifiers and status for this increment."
+                    },
+                    "payment": {
+                      "type": "object",
+                      "description": "The parent payment after this increment.",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier of the payment (UUID)."
+                        },
+                        "status": {
+                          "type": "string",
+                          "example": "AUTHORIZED"
+                        },
+                        "amount": {
+                          "type": "object",
+                          "description": "The new total authorized amount after the increment.",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "example": 150.0
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "EUR"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "Approved Increment": {
+                    "value": {
+                      "id": "8f2f4bce-1d2f-4f6e-9a3b-0c1e5d3a7b21",
+                      "type": "AUTHORIZE_INCREMENT",
+                      "status": "SUCCEEDED",
+                      "amount": {
+                        "value": 50.0,
+                        "currency": "EUR"
+                      },
+                      "merchant_reference": "session-8842-inc-2",
+                      "parent_transaction_id": "1a71c7b7-80c2-4ba5-b601-4d34d48c0e18",
+                      "response_code": "00",
+                      "response_message": "Approved",
+                      "provider_data": {
+                        "id": "prov-ref-001",
+                        "status": "..."
+                      },
+                      "payment": {
+                        "id": "d19205be-1a70-4c13-a4e6-8b7a9f3e2c11",
+                        "status": "AUTHORIZED",
+                        "amount": {
+                          "value": 150.0,
+                          "currency": "EUR"
+                        }
+                      }
+                    }
+                  },
+                  "Pending Increment (async provider)": {
+                    "value": {
+                      "id": "8f2f4bce-1d2f-4f6e-9a3b-0c1e5d3a7b21",
+                      "type": "AUTHORIZE_INCREMENT",
+                      "status": "PENDING",
+                      "amount": {
+                        "value": 50.0,
+                        "currency": "EUR"
+                      },
+                      "merchant_reference": "session-8842-inc-2",
+                      "parent_transaction_id": "1a71c7b7-80c2-4ba5-b601-4d34d48c0e18",
+                      "response_message": "Increment in progress; final result delivered via webhook",
+                      "provider_data": {
+                        "id": "prov-ref-001",
+                        "status": "..."
+                      },
+                      "payment": {
+                        "id": "d19205be-1a70-4c13-a4e6-8b7a9f3e2c11",
+                        "status": "AUTHORIZED",
+                        "amount": {
+                          "value": 100.0,
+                          "currency": "EUR"
+                        }
+                      }
+                    }
+                  },
+                  "Declined Increment": {
+                    "value": {
+                      "id": "8f2f4bce-1d2f-4f6e-9a3b-0c1e5d3a7b21",
+                      "type": "AUTHORIZE_INCREMENT",
+                      "status": "DECLINED",
+                      "amount": {
+                        "value": 50.0,
+                        "currency": "EUR"
+                      },
+                      "merchant_reference": "session-8842-inc-2",
+                      "parent_transaction_id": "1a71c7b7-80c2-4ba5-b601-4d34d48c0e18",
+                      "response_code": "51",
+                      "response_message": "Insufficient funds",
+                      "provider_data": {
+                        "id": "prov-ref-001",
+                        "status": "..."
+                      },
+                      "payment": {
+                        "id": "d19205be-1a70-4c13-a4e6-8b7a9f3e2c11",
+                        "status": "AUTHORIZED",
+                        "amount": {
+                          "value": 100.0,
+                          "currency": "EUR"
+                        }
+                      }
+                    }
+                  },
+                  "Not Incrementable": {
+                    "value": {
+                      "id": "8f2f4bce-1d2f-4f6e-9a3b-0c1e5d3a7b21",
+                      "type": "AUTHORIZE_INCREMENT",
+                      "status": "DECLINED",
+                      "amount": {
+                        "value": 50.0,
+                        "currency": "EUR"
+                      },
+                      "merchant_reference": "session-8842-inc-2",
+                      "parent_transaction_id": "1a71c7b7-80c2-4ba5-b601-4d34d48c0e18",
+                      "response_code": "AUTHORIZATION_NOT_INCREMENTABLE",
+                      "response_message": "The original authorization was not created as PRE_AUTHORIZATION",
+                      "provider_data": {
+                        "id": "prov-ref-001",
+                        "status": "..."
+                      },
+                      "payment": {
+                        "id": "d19205be-1a70-4c13-a4e6-8b7a9f3e2c11",
+                        "status": "AUTHORIZED",
+                        "amount": {
+                          "value": 100.0,
+                          "currency": "EUR"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Currency does not match the original authorization"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "UNAUTHORIZED",
+                      "messages": [
+                        "Invalid credentials"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PAYMENT_NOT_FOUND",
+                      "messages": [
+                        "Payment or transaction not found"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "INVALID_TRANSACTION_STATE",
+                      "messages": [
+                        "The target transaction is not an active authorization"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "OPERATION_NOT_SUPPORTED",
+                      "messages": [
+                        "The provider does not support incremental authorizations"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "INVALID_REQUEST"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "Invalid request"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "key": "charset",
+        "value": "utf-8"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  }
+}
