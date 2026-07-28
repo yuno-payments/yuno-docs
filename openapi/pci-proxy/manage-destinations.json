@@ -70,8 +70,16 @@
                 "$ref": "#/components/schemas/DestinationInput"
               },
               "example": {
-                "hostname": "api.example-processor.com",
-                "purpose": "Direct acquiring — Processor X"
+                "hostname": "api.dlocal.com",
+                "purpose": "Direct payins — dLocal",
+                "authentication": [
+                  {
+                    "type": "DLOCAL_HMAC",
+                    "x_login": "sak_live_...",
+                    "x_trans_key": "...",
+                    "secret_key": "..."
+                  }
+                ]
               }
             }
           }
@@ -148,7 +156,7 @@
             }
           },
           "422": {
-            "description": "The hostname is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard).",
+            "description": "The hostname is not a bare public hostname (a URL, a host with a scheme, port, or path, an IP address, or a wildcard), or the `authentication` block is invalid (unknown `type`, missing required field, duplicate `type`).",
             "content": {
               "application/json": {
                 "schema": {
@@ -160,6 +168,14 @@
                       "code": "INVALID_HOSTNAME",
                       "messages": [
                         "hostname must be a bare public FQDN with no scheme, port, path, or wildcard"
+                      ]
+                    }
+                  },
+                  "Invalid authentication": {
+                    "value": {
+                      "code": "INVALID_AUTHENTICATION",
+                      "messages": [
+                        "authentication configuration is invalid"
                       ]
                     }
                   }
@@ -319,6 +335,120 @@
           }
         }
       }
+    },
+    "/pci-proxy/destinations/{id}/authentication": {
+      "put": {
+        "summary": "Set Destination Authentication",
+        "description": "Registers or replaces the authentication the proxy applies when forwarding to this destination. This is a **full replace** — there is no partial update — and also how you rotate keys: send the complete new set. Secrets are write-only; previous secrets cannot be read back. The change is recorded in the append-only audit trail.",
+        "operationId": "setPciProxyDestinationAuthentication",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The `id` (UUID) of the destination, as returned by [List Destinations](/reference/pci-proxy/list-destinations).",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "authentication"
+                ],
+                "properties": {
+                  "authentication": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/AuthenticationMethodInput"
+                    }
+                  }
+                }
+              },
+              "example": {
+                "authentication": [
+                  {
+                    "type": "DLOCAL_HMAC",
+                    "x_login": "sak_live_...",
+                    "x_trans_key": "...",
+                    "secret_key": "..."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The authentication was set; the updated destination object is returned (non-secret material only).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/DestinationNotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/InvalidAuthentication"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove Destination Authentication",
+        "description": "Removes all authentication configuration from the destination. The destination keeps working as a regular allowlist entry with the headers you supply yourself. The change is recorded in the append-only audit trail.",
+        "operationId": "removePciProxyDestinationAuthentication",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The `id` (UUID) of the destination, as returned by [List Destinations](/reference/pci-proxy/list-destinations).",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "d7e8f9a0-1234-4b5c-8d6e-7f8091a2b3c4"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The authentication was removed; the updated destination object is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destination"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidId"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/DestinationNotFound"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -396,6 +526,26 @@
             }
           }
         }
+      },
+      "InvalidAuthentication": {
+        "description": "The `authentication` block is invalid (unknown `type`, missing required field for the type, duplicate `type`).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DestinationError"
+            },
+            "examples": {
+              "Invalid authentication": {
+                "value": {
+                  "code": "INVALID_AUTHENTICATION",
+                  "messages": [
+                    "authentication configuration is invalid"
+                  ]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "schemas": {
@@ -421,6 +571,13 @@
             "nullable": true,
             "description": "Optional. Restrict this destination to a single account (a UUID). Omit (or send `null`) to allow the host for the whole organization.",
             "example": null
+          },
+          "authentication": {
+            "type": "array",
+            "description": "Optional. Authentication the proxy applies when forwarding to this destination — at most one method per `type`. Secrets are write-only and never returned. An invalid block returns `422 INVALID_AUTHENTICATION`.",
+            "items": {
+              "$ref": "#/components/schemas/AuthenticationMethodInput"
+            }
           }
         }
       },
@@ -469,6 +626,13 @@
             "format": "date-time",
             "description": "When the destination was last changed.",
             "example": "2026-07-09T13:05:36Z"
+          },
+          "authentication": {
+            "type": "array",
+            "description": "The destination's configured authentication, non-secret material only. Omitted when the destination has none.",
+            "items": {
+              "$ref": "#/components/schemas/AuthenticationMethod"
+            }
           }
         }
       },
@@ -484,6 +648,7 @@
               "INVALID_REQUEST",
               "INVALID_HOSTNAME",
               "INVALID_ACCOUNT_ID",
+              "INVALID_AUTHENTICATION",
               "DESTINATION_EXISTS",
               "NOT_FOUND",
               "INTERNAL_ERROR"
@@ -494,6 +659,53 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "AuthenticationMethodInput": {
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DLOCAL_HMAC"
+            ],
+            "description": "The signing profile type. `DLOCAL_HMAC` signs each forwarded request the way dLocal requires: the proxy generates `X-Date`, injects `X-Login` / `X-Trans-Key`, and computes the `Authorization` signature over the resolved request body."
+          },
+          "x_login": {
+            "type": "string",
+            "description": "Your dLocal X-Login. Returned in responses.",
+            "example": "sak_live_..."
+          },
+          "x_trans_key": {
+            "type": "string",
+            "writeOnly": true,
+            "description": "Your dLocal X-Trans-Key. Write-only: stored in Yuno's secret store and never returned by any endpoint."
+          },
+          "secret_key": {
+            "type": "string",
+            "writeOnly": true,
+            "description": "Your dLocal secret key, used to compute the HMAC signature. Write-only: stored in Yuno's secret store and never returned by any endpoint."
+          }
+        }
+      },
+      "AuthenticationMethod": {
+        "type": "object",
+        "description": "A configured authentication method, echoing only non-secret material.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DLOCAL_HMAC"
+            ],
+            "example": "DLOCAL_HMAC"
+          },
+          "x_login": {
+            "type": "string",
+            "example": "sak_live_..."
           }
         }
       }

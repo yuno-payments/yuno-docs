@@ -57,6 +57,81 @@ The destination object returns `id`, `hostname`, `purpose`, `account_id`, `statu
 (`ENABLED` / `DISABLED`), `created_at`, and `updated_at`. When you call via the API the actor
 is your API key, so the object does not carry a user email.
 
+## Destination authentication (request signing)
+
+Some destinations require every request to be **signed (HMAC) over the request body**. Because
+the proxy resolves your `{{vaulted_token…}}` expressions inside Yuno's secure environment, the
+signature must be computed there too — over the resolved body you never see. Register a
+**signing profile** on the destination and the proxy signs each forwarded request for you (see
+[Signed destinations](/docs/security-and-compliance/pci-proxy/forward-proxy#signed-destinations-hmac-request-signing)
+for what the proxy sends).
+
+The first supported profile is **dLocal** (`DLOCAL_HMAC`):
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "hostname": "api.dlocal.com",
+    "purpose": "Direct payins — dLocal",
+    "authentication": [
+      {
+        "type": "DLOCAL_HMAC",
+        "x_login": "sak_live_...",
+        "x_trans_key": "...",
+        "secret_key": "..."
+      }
+    ]
+  }'
+```
+
+* **Secrets are write-only.** `x_trans_key` and `secret_key` are never returned: the destination
+  object echoes only `{"type": "DLOCAL_HMAC", "x_login": "..."}`. There is no way to read a
+  secret back through the API.
+* An invalid `authentication` block (an unknown `type`, a missing field, or more than one
+  profile of the same `type`) returns `422 INVALID_AUTHENTICATION`.
+* Authentication changes are recorded in the same append-only [audit trail](#audit-trail) as the
+  rest of the allowlist — registering credentials is as sensitive as registering the host itself.
+
+### Update or remove a signing profile
+
+```sh
+# Replace the destination's authentication (full replace — also how you rotate keys)
+curl -X PUT "https://api.y.uno/v1/pci-proxy/destinations/{id}/authentication" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "authentication": [ { "type": "DLOCAL_HMAC", "x_login": "...", "x_trans_key": "...", "secret_key": "..." } ] }'
+
+# Remove all authentication from the destination
+curl -X DELETE "https://api.y.uno/v1/pci-proxy/destinations/{id}/authentication" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY"
+```
+
+`PUT` replaces the whole configuration — there is no partial update. To rotate your dLocal keys,
+send the new set. `DELETE` removes the authentication entirely; the destination keeps working as
+a regular allowlist entry with the headers you supply yourself. Each returns `200` with the
+updated destination object.
+
+### Multiple credential sets for the same provider
+
+Credentials are selected by **account**. Register the same hostname once per account — each
+registration with its own `authentication` — and choose one at forward time with the
+`yuno-account-id` header. The most specific registration wins: with `yuno-account-id`, the one
+scoped to that account; without it, the organization-wide one.
+
+```sh
+# One registration per entity, same hostname, different credentials
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" ... \
+  -d '{ "hostname": "api.dlocal.com", "account_id": "acc_brasil", "authentication": [ { "type": "DLOCAL_HMAC", "x_login": "sak_live_br_...", "x_trans_key": "...", "secret_key": "..." } ] }'
+
+curl -X POST "https://api.y.uno/v1/pci-proxy/destinations" ... \
+  -d '{ "hostname": "api.dlocal.com", "account_id": "acc_mexico", "authentication": [ { "type": "DLOCAL_HMAC", "x_login": "sak_live_mx_...", "x_trans_key": "...", "secret_key": "..." } ] }'
+```
+
 ## List your destinations
 
 ```sh
