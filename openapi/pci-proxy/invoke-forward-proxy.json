@@ -53,10 +53,32 @@
               "type": "string",
               "example": "acc_123"
             }
+          },
+          {
+            "name": "yuno-proxy-auth",
+            "in": "header",
+            "required": false,
+            "description": "Signing scheme for destinations that require HMAC request signing over the body. The proxy computes the signature over the resolved body (after expression substitution) and injects the destination's auth headers; your signing secret is used in memory and discarded — nothing is stored. Supported: `DLOCAL_HMAC` (the proxy generates `X-Date` and computes `Authorization: V2-HMAC-SHA256, Signature: <hex>` over `X-Login + X-Date + resolved body`; you send `X-Login`, `X-Trans-Key`, and `X-Version` as normal destination headers). An unknown value is rejected with `400 INVALID_REQUEST`.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DLOCAL_HMAC"
+              ],
+              "example": "DLOCAL_HMAC"
+            }
+          },
+          {
+            "name": "yuno-proxy-auth-secret-key",
+            "in": "header",
+            "required": false,
+            "description": "Your signing secret for this request (required when `yuno-proxy-auth` is present). Like every `yuno-*` header it is stripped before forwarding and excluded from logs.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
-          "description": "The body the destination API expects, with vaulted token expressions where card data belongs. The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions anywhere in the raw body, so any content type is supported (JSON, form-encoded, XML). The JSON object below is illustrative. Supported fields: `number`, `expiration_month`, `expiration_year`, `holder_name` (the security code is not stored and cannot be injected). At most 20 distinct tokens per request; maximum body size 1 MB. Expressions are also resolved in header values. All non-expression content is forwarded untouched.",
+          "description": "The body the destination API expects, with vaulted token expressions where card data belongs. The proxy is content-transparent: it forwards your body and `Content-Type` unchanged and resolves `{{vaulted_token.<TOKEN>.<field>}}` expressions anywhere in the raw body, so any content type is supported (JSON, form-encoded, XML). The JSON object below is illustrative. Supported fields: `number`, `expiration_month`, `expiration_year`, `holder_name`, and — when the card has a network token — `network_token_number` (DPAN), `network_token_expiration_month`, `network_token_expiration_year`, `network_transaction_id` (NTID, for merchant-initiated transactions). The security code is not stored and cannot be injected; cryptograms are per-transaction and are not resolved — include the value directly in the body if your destination requires one. At most 20 distinct tokens per request; maximum body size 1 MB. Expressions are also resolved in header values. All non-expression content is forwarded untouched.",
           "content": {
             "application/json": {
               "schema": {
@@ -149,7 +171,7 @@
             }
           },
           "400": {
-            "description": "Proxy-originated request error. The `yuno-proxy-destination-status` header is absent because the destination was not called.",
+            "description": "Proxy-originated request error (invalid destination URL, expression problems, invalid timeout, too many tokens, or an invalid signing setup — unknown `yuno-proxy-auth`, missing `yuno-proxy-auth-secret-key`, or `DLOCAL_HMAC` without an `X-Login` header). The `yuno-proxy-destination-status` header is absent because the destination was not called.",
             "content": {
               "application/json": {
                 "schema": {
