@@ -6,9 +6,6 @@ metadata:
   robots: index
 description: "Integrate Yuno's Flutter SDK for payment and enrollment flows, including styling, customization, and troubleshooting"
 ---
-import GenericOrientation from '/snippets/GenericOrientation.mdx'
-
-<GenericOrientation />
 Integrate Yuno's Flutter SDK Lite payment and enrollment flows by following these steps.
 
 ## Requirements
@@ -245,12 +242,40 @@ Follow these steps to enroll payment methods in your Flutter application.
   </Step>
 
   <Step title="Handle deep links (optional)">
-    For methods using external authentication, pass the redirect URL to the SDK.
+    For methods using external authentication, pass the redirect URL to the SDK. See [Handling the deeplink return](#handling-the-deeplink-return) for how to capture `uri`.
     ```dart
     await Yuno.receiveDeeplink(url: uri);
     ```
   </Step>
 </Steps>
+
+## Handling the deeplink return
+
+Redirect-based methods (some APMs, external 3DS, and enrollment with external authentication) send the user out of your app and bring them back through a deeplink. Capture that returning URL and pass it to `Yuno.receiveDeeplink`. This applies to both the Payment and Enrollment flows.
+
+Listen for incoming links (for example with the [`app_links`](https://pub.dev/packages/app_links) package) and pass the URL to `Yuno.receiveDeeplink`. Handle both the cold-start link (app opened by the deeplink) and links received while the app is already running.
+
+```dart
+late AppLinks _appLinks;
+StreamSubscription<Uri>? _linkSubscription;
+
+Future<void> _initDeepLinks() async {
+  _appLinks = AppLinks();
+
+  // App opened from a deeplink (cold start)
+  final initialLink = await _appLinks.getInitialLink();
+  if (initialLink != null) _handleDeepLink(initialLink);
+
+  // App already running
+  _linkSubscription = _appLinks.uriLinkStream.listen(_handleDeepLink);
+}
+
+void _handleDeepLink(Uri uri) {
+  // Forward the redirect back to the SDK
+  // (optionally gate on your own callback scheme/host)
+  Yuno.receiveDeeplink(url: uri);
+}
+```
 
 ## Parameters
 
@@ -269,8 +294,9 @@ For the full list of parameters and options, see the subsections that follow.
 
 | Parameter             | Description                                                                                                                                                                                                                                                                                                                                   |
 | :-------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lang`                | Defines the language used in the payment forms. Set it to one of the available options: en (English), es (Spanish), pt (Portuguese), ms (Malay), id (Indonesian), th (Thai), ar (Arabic). See [Supported languages](#supported-languages) for more details.                                                                                       |
+| `lang`                | Defines the language used in the payment forms. Set it to one of the available options: en (English), es (Spanish), pt (Portuguese), ms (Malay), id (Indonesian), th (Thai), ar (Arabic), hi (Hindi), bn (Bengali), ml (Malayalam), ur (Urdu). See [Supported languages](#supported-languages) for more details.                                                                                       |
 | `saveCardEnable`      | Enables the Save card checkbox on card flows, allowing users to save their card for future payments. Default: `false`.                                                                                                                                                                                                                    |
+| `keepLoader`          | Keeps the SDK loader visible during the flow so you can hide it manually with `Yuno.hideLoader()`. Default: `false`.                                                                                                                                                                                                                        |
 
 ### `IosConfig`
 
@@ -284,14 +310,14 @@ For the full list of parameters and options, see the subsections that follow.
 | :------------------------------------- | :----------------------------------------------- |
 | `fontFamily`                           | iOS font family name.                            |
 | `accentColor`                          | Accent color for highlights and active elements. |
-| `buttonBackgroundColor`                | Primary button background color.                 |
-| `buttonTitleBackgroundColor`           | Primary button title color.                      |
-| `buttonBorderBackgroundColor`          | Primary button border color.                     |
-| `secondaryButtonBackgroundColor`       | Secondary button background color.               |
-| `secondaryButtonTitleBackgroundColor`  | Secondary button title color.                    |
-| `secondaryButtonBorderBackgroundColor` | Secondary button border color.                   |
-| `disableButtonBackgroundColor`         | Disabled button background color.                |
-| `disableButtonTitleBackgroundColor`    | Disabled button title color.                     |
+| `buttonBackgrounColor`                | Primary button background color.                 |
+| `buttonTitleBackgrounColor`           | Primary button title color.                      |
+| `buttonBorderBackgrounColor`          | Primary button border color.                     |
+| `secondaryButtonBackgrounColor`       | Secondary button background color.               |
+| `secondaryButtonTitleBackgrounColor`  | Secondary button title color.                    |
+| `secondaryButtonBorderBackgrounColor` | Secondary button border color.                   |
+| `disableButtonBackgrounColor`         | Disabled button background color.                |
+| `disableButtonTitleBackgrounColor`    | Disabled button title color.                     |
 | `checkboxColor`                        | Checkbox color.                                  |
 
 ### `StartPayment` (Lite)
@@ -335,14 +361,14 @@ iOS appearance is fully customizable through the `IosConfig.appearance` paramete
 | -------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
 | `fontFamily`                           | String | Custom font family name for all SDK text. Use the font name as registered in your iOS project's Info.plist. |
 | `accentColor`                          | Color  | Primary accent color used for highlights, active states, and interactive elements throughout the SDK.     |
-| `buttonBackgroundColor`                | Color  | Background color for primary action buttons (e.g., "Pay", "Confirm").                                       |
-| `buttonTitleBackgroundColor`           | Color  | Text color for primary button labels.                                                                       |
-| `buttonBorderBackgroundColor`          | Color  | Border color for primary buttons. Set to match background for borderless buttons.                         |
-| `secondaryButtonBackgroundColor`       | Color  | Background color for secondary/cancel buttons.                                                              |
-| `secondaryButtonTitleBackgroundColor`  | Color  | Text color for secondary button labels.                                                                     |
-| `secondaryButtonBorderBackgroundColor` | Color  | Border color for secondary buttons.                                                                         |
-| `disableButtonBackgroundColor`         | Color  | Background color for disabled buttons (when user cannot proceed).                                          |
-| `disableButtonTitleBackgroundColor`    | Color  | Text color for disabled button labels.                                                                      |
+| `buttonBackgrounColor`                | Color  | Background color for primary action buttons (e.g., "Pay", "Confirm").                                       |
+| `buttonTitleBackgrounColor`           | Color  | Text color for primary button labels.                                                                       |
+| `buttonBorderBackgrounColor`          | Color  | Border color for primary buttons. Set to match background for borderless buttons.                         |
+| `secondaryButtonBackgrounColor`       | Color  | Background color for secondary/cancel buttons.                                                              |
+| `secondaryButtonTitleBackgrounColor`  | Color  | Text color for secondary button labels.                                                                     |
+| `secondaryButtonBorderBackgrounColor` | Color  | Border color for secondary buttons.                                                                         |
+| `disableButtonBackgrounColor`         | Color  | Background color for disabled buttons (when user cannot proceed).                                          |
+| `disableButtonTitleBackgrounColor`    | Color  | Text color for disabled button labels.                                                                      |
 | `checkboxColor`                        | Color  | Color for checkboxes like "Save card for future payments".                                                  |
 
 When using `Color(0xFF...)` for iOS appearance customization, add `import 'dart:ui';` at the top of your file.
@@ -365,9 +391,9 @@ Card flow configuration is now handled exclusively through the **CheckoutBuilder
 
 ```dart
 class YunoConfig {
-  bool saveCardEnabled;
+  bool saveCardEnable;
   YunoConfig({
-    this.saveCardEnabled = false,
+    this.saveCardEnable = false,
   });
 }
 ```
@@ -442,7 +468,6 @@ If you also need the key on the Android native side, map `dart-defines` into `Bu
 | Android native initialization fails silently                     | The Android native SDK was not initialized in the `Application` class, or the custom `Application` class was not registered in `AndroidManifest.xml`. | Verify that: 1) `YunoSdkAndroidPlugin.initSdk()` is called in your custom `Application` class `onCreate()`, 2) The custom `Application` class is registered in `AndroidManifest.xml` with `android:name=".MyApp"`, 3) The API key is correct.        |
 | Hot reload causes Android initialization issues                 | Flutter's hot reload does not re-execute native platform initialization code.                                                                        | Perform a full app restart (stop and restart) instead of hot reload when making changes to `Yuno.init()` or Android native configuration.                                                                                                            |
 | Payment status listener not triggered                            | Listener widget is not in the widget tree above the point where payment is initiated, or the listener is recreated during navigation.                 | Ensure `YunoPaymentListener` or `YunoMultiListener` wraps the relevant part of your widget tree and persists across navigation. Place it high in the widget tree (e.g., wrapping `MaterialApp` or a top-level screen).                               |
-| Deep links not working on iOS                                    | URL scheme not configured in `Info.plist` or scheme does not match the `callback_url` in checkout/customer session.                                    | Add URL scheme configuration to `Info.plist` matching the scheme used in your `callback_url`. Ensure the scheme is unique to your app. Call `Yuno.receiveDeeplink(url: uri)` in your deep link handler.                                              |
 | Android build fails with Maven repository error                  | Yuno Maven repository not added or added in wrong location in `build.gradle`.                                                                         | Add `maven { url "https://yunopayments.jfrog.io/artifactory/snapshots-libs-release" }` to the `repositories` block in your project-level `android/build.gradle` (not in the app-level `build.gradle`). Ensure it is inside the `allprojects` section. |
 | `MainActivity` crashes on Android                                | `MainActivity` does not extend `FlutterFragmentActivity` as required by the Yuno SDK.                                                                  | Change your `MainActivity` to extend `FlutterFragmentActivity` instead of `FlutterActivity`: `class MainActivity: FlutterFragmentActivity()`                                                                                                         |
 | Token is empty or null in payment listener                       | Payment form validation failed, or the user canceled before completing the form.                                                                      | Check for validation errors in the payment form. Ensure all required fields are filled correctly. Add null/empty checks in your listener before using the token.                                                                                     |
@@ -457,4 +482,4 @@ If you also need the key on the Android native side, map `dart-defines` into `Bu
 
 The Flutter SDK supports the following `YunoLanguage` values:
 
-`en` (English), `es` (Spanish), `pt` (Portuguese), `ms` (Malay), `id` (Indonesian), `th` (Thai), `ar` (Arabic).
+`en` (English), `es` (Spanish), `pt` (Portuguese), `ms` (Malay), `id` (Indonesian), `th` (Thai), `ar` (Arabic), `hi` (Hindi), `bn` (Bengali), `ml` (Malayalam), `ur` (Urdu).
