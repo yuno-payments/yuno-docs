@@ -110,4 +110,50 @@ Standard Click to Pay card flows use the existing SDK callbacks, but Passkey use
 For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 </Info>
 
-For full implementation details, see [Android Full Checkout](/docs/sdks/full-checkout/android-payments) and [iOS Full Checkout](/docs/sdks/full-checkout/ios-payments).
+### Mobile: handling the response (OTT and deeplink)
+
+The integration flow for Click to Pay Passkey has a specific response handling that differs from the standard payment flow.
+
+When a shopper completes a payment using CTP Passkey, the one-time token (OTT) is **not** delivered through the usual delegate/listener methods. Instead, the transaction result — both success and failure — is communicated to your app through the **deeplink URL**.
+
+<Steps>
+  <Step title="Close the external browser">
+    As soon as your app receives the deeplink callback, immediately call `receiveDeeplink`. This lets the SDK properly close the external web browser used for Passkey authentication.
+    <CodeGroup>
+    ```swift iOS
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+
+        Yuno.receiveDeeplink(url: url)
+
+        // ...
+
+        return true
+    }
+    ```
+
+    ```dart Flutter
+    void _handleDeepLink(Uri uri) {
+
+        Yuno.receiveDeeplink(url: uri);
+
+        // ...
+    }
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Read the transaction result from the deeplink URL">
+    The deeplink URL carries query-string parameters that indicate the transaction state:
+
+    - `has_error` — if this parameter is present, an error occurred during the transaction and you must handle the error scenario.
+    - `one_time_token` — if the transaction was successful, the URL contains this token.
+  </Step>
+
+  <Step title="Create the payment">
+    If a `one_time_token` is present in the URL:
+
+    1. Extract the `one_time_token` value.
+    2. Use this token to create the payment from your backend via the [Create payment](/reference/payments/create-payment) endpoint.
+    3. Once the payment is created, call `continuePayment` in the SDK to finalize the transaction.
+  </Step>
+</Steps>
