@@ -1,0 +1,98 @@
+---
+title: "Change Subscription Plan"
+openapi: "/openapi/subscriptions/change-subscription-plan.json POST /subscriptions/{subscription_id}/plan"
+description: "Moves a subscription onto a plan, effective at its next renewal."
+---
+
+<Note>
+**The change takes effect at the next renewal**
+
+No charge is made when you call this endpoint, and nothing is prorated or refunded. The
+subscription keeps billing on its existing schedule; the new plan's price applies from the
+next renewal date onwards.
+</Note>
+
+## Two behaviors, one endpoint
+
+Which one you get depends on whether the subscription is already on a plan.
+
+| Subscription | What happens | `id` in the response |
+|---|---|---|
+| Not on a plan | Attached to the plan in place | Unchanged |
+| Already on a plan | Canceled and replaced by a new subscription on the target plan | **New** — the old `id` is in `previous_subscription_id` |
+
+In the replacement case the original subscription ends up `CANCELED` with a
+`cancellation_source` of `PLAN_CHANGE`, and the replacement inherits the original's
+remaining billing cycles and its next renewal date.
+
+<Warning>
+**Store the returned `id` after a plan-to-plan change**
+
+The replacement is a different subscription. If you keep the old `id`, subsequent calls will
+act on a canceled subscription.
+</Warning>
+
+## Skipping the target plan's trial
+
+If the target plan defines trial or intro phases, the subscription adopts that whole ladder by
+default — which means a subscriber can change plans mid-trial and receive a fresh trial.
+
+Set `skip_trial` to `true` to prevent that. The replacement bills the target plan's regular
+price from its first charge and its status stays `ACTIVE` rather than becoming `TRIALING`.
+
+```json Change plan without granting a new trial
+{
+  "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+  "skip_trial": true
+}
+```
+
+`skip_trial` defaults to `false`, applies only to plan-to-plan changes, and returns `400` if
+you send it on a subscription that is not on a plan. On a plan with no phases it makes no
+difference.
+
+<Note>
+**`phases` still describes the plan**
+
+With `skip_trial: true` the response still lists the target plan's `phases` — that array
+describes the *plan*, not what this subscription will be billed. The subscription-level
+signals are `current_phase`, which is `null`, and `status`, which stays `ACTIVE`.
+</Note>
+
+## Scheduling the change instead
+
+This endpoint applies the plan change immediately. To schedule one for the next billing cycle
+and keep the same subscription `id`, use the `plan_change` object on
+[Update Subscription](/reference/subscriptions/update-subscription) instead.
+
+The two differ in their trial default, for backwards-compatibility reasons:
+
+| | Default |
+|---|---|
+| This endpoint | Adopts the target plan's phases (`skip_trial: false`) |
+| `plan_change` on Update Subscription | Skips them (`phases_behavior: "START_FROM_REGULAR"`) |
+
+Set `skip_trial` or `phases_behavior` explicitly whenever the trial behavior matters to you.
+
+## Repeated calls
+
+Re-posting the subscription's **current** plan is an idempotent no-op that returns `200` with
+the subscription unchanged — including when you change only `skip_trial`.
+
+Retrying the same plan change with the same `skip_trial` value replays the first outcome
+rather than creating a second replacement. Retrying it with a *different* `skip_trial` value is
+treated as a different operation.
+
+## Requirements
+
+Both cases require the plan to be `ACTIVE` and to belong to the subscription's account, and
+neither is available to subscriptions billed with `frequency.execution: MERCHANT`.
+
+**Attaching a subscription that has no plan** additionally requires that the plan's cadence
+matches the subscription's and that the resolved price is in the subscription's currency. The
+subscription must not be in a trial period, must not already have billing phases, must not use
+a `billing_date`, and must not have a `VARIABLE` amount.
+
+**Changing from one plan to another** additionally requires that the subscription has at least
+one billing cycle left and that its availability window does not end before the next renewal.
+The target plan's cadence and price apply as defined on that plan.
