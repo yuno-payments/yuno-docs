@@ -110,4 +110,75 @@ Standard Click to Pay card flows use the existing SDK callbacks, but Passkey use
 For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 </Info>
 
-For full implementation details, see [Android Full Checkout](/docs/sdks/full-checkout/android-payments) and [iOS Full Checkout](/docs/sdks/full-checkout/ios-payments).
+### Mobile: handling the response (OTT and deeplink)
+
+The integration flow for Click to Pay Passkey has a specific response handling that differs from the standard payment flow.
+
+When a shopper completes a payment using CTP Passkey, the one-time token (OTT) is **not** delivered through the usual delegate/listener methods. Instead, the transaction result — both success and failure — is communicated to your app through the **deeplink URL**.
+
+This is the same on **iOS, Android, and Flutter**: the merchant reads the result from the deeplink URL and acts on it. Only *where* the deeplink arrives changes per platform.
+
+**Read two parameters from the deeplink URL**
+
+- `has_error` — an error occurred or the shopper canceled. Read the `message` parameter and show the error.
+- `one_time_token` — the transaction succeeded and the OTT is contained in the URL.
+
+**Once you have the `one_time_token`**
+
+1. Send it to your backend to create the payment via the [Create payment](/reference/payments/create-payment) endpoint.
+2. Continue the flow in the SDK with `continuePayment` to finalize the transaction.
+
+**Where the deeplink arrives on each platform**
+
+- **iOS** — in `application(_:open:options:)`. Call `Yuno.receiveDeeplink(url)` to close the Passkey browser, then read the parameters from `url`.
+- **Flutter** — in your deeplink handler. `await Yuno.receiveDeeplink(url: uri)` to close the Passkey browser, then read the parameters from `uri`.
+- **Android** — the deeplink relaunches your `Activity` (there is no SDK close call). Read the parameters from `intent.data` in `onCreate`/`onNewIntent`. The receiving activity must declare an `intent-filter` in `AndroidManifest.xml` matching the scheme/host/path of your `callback_url`.
+
+<CodeGroup>
+```swift iOS
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    guard url.scheme == "myapp" else { return false }
+    Yuno.receiveDeeplink(url) // closes the Passkey browser
+
+    let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
+    if items?.contains(where: { $0.name == "has_error" }) == true {
+        // handle error (read the `message` parameter)
+    } else if let ott = items?.first(where: { $0.name == "one_time_token" })?.value {
+        // send `ott` to your backend, then continue the flow in the SDK
+    }
+    return true
+}
+```
+
+```dart Flutter
+Future<void> _handleDeepLink(Uri uri) async {
+    await Yuno.receiveDeeplink(url: uri); // closes the Passkey browser
+
+    if (uri.queryParameters.containsKey('has_error')) {
+        // handle error (read the `message` parameter)
+    } else {
+        final ott = uri.queryParameters['one_time_token'];
+        if (ott != null) {
+            // send `ott` to your backend, then continue the flow in the SDK
+        }
+    }
+}
+```
+
+```kotlin Android
+override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    val uri = intent.data ?: return
+
+    when {
+        uri.getBooleanQueryParameter("has_error", false) ->
+            showError(uri.getQueryParameter("message") ?: "Operation canceled")
+
+        uri.getQueryParameter("one_time_token") != null -> {
+            val ott = uri.getQueryParameter("one_time_token")
+            // send `ott` to your backend, then continue the flow in the SDK
+        }
+    }
+}
+```
+</CodeGroup>
