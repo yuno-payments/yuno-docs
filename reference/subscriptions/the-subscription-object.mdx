@@ -160,17 +160,41 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="current" type="number">
-      Value of the current billing cycle.
+      The **next** billing cycle to be charged — not the cycle currently in progress.
+
+      Subscriptions are billed in advance: the charge for a cycle fires at the start of the period it pays for, and the counter moves on as soon as that charge is dispatched. While the subscriber is inside the period paid for by cycle N, this field therefore already reads `N + 1`. The cycle in progress is `current - 1`.
+
+      A subscription created with a two-cycle trial reads `current: 2` for the whole of the first trial period, and `current: 3` during the second — the trial is still running even though `current` has passed the trial cycle count. Use `current_period_start` and `current_period_end` to tell where the subscription is, rather than comparing `current` against `trial_period.billing_cycles`.
+
+      Because the counter advances when a charge is dispatched rather than when it succeeds, it also moves on after a failed cycle that exhausts its retries.
 
       Example: 2
     </ParamField>
 
     <ParamField body="next_at" type="Timestamp">
-      The date of the next payment for the subscription.
+      The date of the next payment for the subscription. This is the same instant as `current_period_end`.
 
       Example: 2023-02-16T20:00:00.786342Z
     </ParamField>
   </Expandable>
+</ParamField>
+
+<ParamField body="current_period_start" type="Timestamp">
+  The start of the billing period currently in progress — the moment the charge that opened it was dispatched.
+
+  Absent until the first cycle has been charged, and absent on the `GET /v1/subscriptions` list and on webhook payloads. Retrieve a single subscription to read it.
+
+  Example: 2023-01-16T20:00:00.786342Z
+</ParamField>
+
+<ParamField body="current_period_end" type="Timestamp">
+  The end of the billing period currently in progress, which is also when the next charge is scheduled. Always equal to `billing_cycles.next_at`.
+
+  This pair describes the period the subscription is **scheduled** into, not one that is necessarily paid for: if a cycle's charge failed and its retries are still running, the window has already moved to the period that charge was meant to open.
+
+  Absent under the same conditions as `current_period_start`; the two are always present or absent together.
+
+  Example: 2023-02-16T20:00:00.786342Z
 </ParamField>
 
 <ParamField body="billing_date" type="object">
