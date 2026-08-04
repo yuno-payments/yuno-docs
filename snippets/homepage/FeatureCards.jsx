@@ -237,16 +237,10 @@ export const FeatureCards = () => {
                 </CardIcon>
                 <div className="text-xl font-semibold text-white">AI optimization</div>
               </div>
-               <CardCta href="/docs/ai-capabilities/aida-ai-agent" ai>
+               <CardCta href="/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp" ai>
                 Discover AI tools
               </CardCta>
               <ul className="list-none p-0 m-0">
-                <FeatureItem
-                   href="/docs/ai-capabilities/aida-ai-agent"
-                  title="Aida AI Agent"
-                  desc=" - Use AI-powered assistance to streamline payment operations."
-                  ai
-                />
                 <FeatureItem
                    href="/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp"
                   title="LLM & MCP integrations"
