@@ -15,10 +15,11 @@ Do not share `private-secret-key` in public places like GitHub or Bitbucket.
 
 ## Base URLs
 
-| Environment | Base URL                    |
-| ----------- | --------------------------- |
-| Sandbox     | `https://api-sandbox.y.uno` |
-| Production  | `https://api.y.uno`         |
+| Environment           | Base URL                    |
+| --------------------- | --------------------------- |
+| Sandbox               | `https://api-sandbox.y.uno` |
+| Production (US)       | `https://api.y.uno`         |
+| Production (EMEA)     | `https://api.eu.y.uno`      |
 
 Sandbox data is simulated and does not affect live accounting or metrics. See [API environments](/reference/getting-started/api-environments) for full details.
 
