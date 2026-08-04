@@ -21,3 +21,30 @@ If you have existing subscriptions that are failing rebills because of missing c
 
 Use the `plan_change` block to move a subscription to another plan effective at its next billing cycle — no proration, no mid-cycle charge. The subscription must be `ACTIVE` or `TRIALING` and already on a plan; the target plan must be active and only one change can be pending at a time. Send `"plan_change": null` to undo a pending change; omitting the field never touches it. The pending change is returned as `pending_plan_change` on this endpoint and on the subscription object, and the `subscription.plan_change_scheduled`, `subscription.plan_change_canceled` and `subscription.plan_changed` webhooks track its lifecycle.
 </Note>
+
+### Plan change errors
+
+Every plan-change error carries a `current_status` field alongside `code` and `messages`, holding the subscription's status at the moment the request was rejected. The subscription is left untouched.
+
+```json 409 Conflict
+{
+  "code": "PLAN_CHANGE_ALREADY_SCHEDULED",
+  "messages": [
+    "A plan change is already scheduled for this subscription. Undo it first with plan_change: null."
+  ],
+  "current_status": "ACTIVE"
+}
+```
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `409` | `PLAN_CHANGE_ALREADY_SCHEDULED` | A change is already pending. Undo it first with `plan_change: null`. |
+| `409` | `TARGET_PLAN_NOT_ACTIVE` | The target plan is not active. |
+| `409` | `SUBSCRIPTION_NOT_ON_A_PLAN` | The subscription is not on a plan. |
+| `409` | `PLAN_CHANGE_NOT_AVAILABLE` | The subscription is in its final billing cycle, or its availability window ends before the next renewal. |
+| `409` | `INVALID_SUBSCRIPTION_STATUS` | The subscription must be `ACTIVE` or `TRIALING`. |
+| `422` | `SAME_PLAN` | The subscription is already on this plan. |
+
+</div>
