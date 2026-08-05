@@ -14,7 +14,7 @@ Official documentation for [Yuno](https://y.uno) — the payment orchestration p
 | **API Reference** | 90+ | Full OpenAPI 3.1 spec with 58 paths, 45 schemas, interactive playground |
 | **Features** | 25+ | Subscriptions, digital wallets, installments, network tokens, payouts, splits, BaaS |
 | **Security** | 12 | 3DS optimization, PCI compliance, chargeback prevention, incident response |
-| **AI** | 8 | Aida ML engine, MCP integration, agent orchestration, error recovery |
+| **AI** | 8 | MCP integration, agent orchestration, error recovery |
 | **SDKs** | 15 | Web, iOS, Android, Flutter, React components, Vue components |
 | **Reference** | 9 | Country matrix, provider comparison, glossary, response codes |
 
@@ -83,7 +83,7 @@ Changes pushed to `main` are automatically deployed via the Mintlify GitHub app.
 │   └── payment-methods/         # PIX, Boleto, OXXO, cards, BNPL
 ├── features/                    # Subscriptions, wallets, tokens, payouts
 ├── security/                    # 3DS, PCI, chargebacks, incidents
-├── ai/                          # Aida, MCP, agent orchestration
+├── ai/                          # MCP, agent orchestration
 ├── platform/                    # Dashboard guides
 ├── reference/                   # Country matrix, provider coverage, glossary
 ├── troubleshooting/             # Error codes, FAQ
