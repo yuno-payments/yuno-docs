@@ -242,6 +242,12 @@ export const FeatureCards = () => {
               </CardCta>
               <ul className="list-none p-0 m-0">
                 <FeatureItem
+                   href="/docs/ai-capabilities/maia-ai-technical-account-manager"
+                  title="Maia AI Technical Account Manager"
+                  desc=" - Get instant answers about your payments and integration from an AI Technical Account Manager."
+                  ai
+                />
+                <FeatureItem
                    href="/docs/ai-capabilities/building-ai-integrations-with-yunos-llms-and-mcp"
                   title="LLM & MCP integrations"
                   desc=" - Build smarter workflows with language model integrations."
