@@ -1,0 +1,134 @@
+---
+hidden: true
+title: "Payment Methods List"
+description: "Render pre-built views for payment methods, including wallet buttons."
+---
+
+`getPaymentMethodsViews` returns pre-built views for the payment methods you want to show. Use it to display the SDK's full payment methods list, a wallet button (Apple Pay or Google Pay), or any combination available on your platform.
+
+This feature applies to payment flows only. It is not available for enrollment.
+
+## Before you start
+
+Your backend must have created a `checkoutSession` and the `Transaction` must be constructed with that session. See [Get Started](/docs/yuno-sdk/get-started).
+
+## Implementation
+
+Call `getPaymentMethodsViews` with the types you want and a controller. The SDK returns a map of `PaymentMethodType` to view. Embed each view in your layout. When the user picks a method, your controller receives a `PaymentMethodSelected` that you pass to `Transaction.start()`.
+
+<Tabs>
+  <Tab title="Web">
+
+```typescript
+let selectedPaymentMethod: PaymentMethodSelected | null = null
+
+const views = transaction.getPaymentMethodsViews({
+    types: ['applePay', 'googlePay', 'paymentMethodList'],
+    onPaymentSelected: (paymentMethod) => {
+        selectedPaymentMethod = paymentMethod
+    },
+})
+
+views.applePay?.mount({ elementSelector: '#apple-pay', buttonType: 'buy', buttonStyle: 'black' })
+views.googlePay?.mount({ elementSelector: '#google-pay', buttonColor: 'black' })
+views.paymentMethodList?.mount({ elementSelector: '#payment-list' })
+
+// Later, when the user confirms (e.g. your Pay button):
+if (selectedPaymentMethod) {
+    transaction.start({ paymentMethod: selectedPaymentMethod })
+}
+```
+
+Each view in the returned object exposes a `.mount({ elementSelector, ...config })` method. Per-view styling (Apple Pay button type, Google Pay color, etc.) lives on `.mount()`.
+
+  </Tab>
+
+  <Tab title="iOS">
+
+```swift
+var selectedPayment: SdkPayments.PaymentMethodSelected?
+
+let views = transaction.getPaymentMethodsViews(
+    types: [.APPLE_PAY, .PAYMENT_METHOD_LIST],
+    controller: self
+)
+
+// In your SdkPayments.PaymentListController:
+func onPaymentSelected(paymentSelected: SdkPayments.PaymentMethodSelected) {
+    selectedPayment = paymentSelected
+}
+
+// Later, when the user confirms (e.g. your Pay button):
+if let selectedPayment {
+    transaction.start(paymentSelected: selectedPayment)
+}
+```
+
+  </Tab>
+
+  <Tab title="Android">
+
+```kotlin
+var selectedPayment: PaymentMethodSelected? = null
+
+val views = transaction.getPaymentMethodsViews(
+    host = this,
+    types = listOf(PaymentMethodType.GooglePay(), PaymentMethodType.PaymentMethodList),
+    controller = this
+)
+
+// In your PaymentListController:
+override fun onPaymentSelected(paymentSelected: PaymentMethodSelected) {
+    selectedPayment = paymentSelected
+}
+
+// Later, when the user confirms (e.g. your Pay button):
+selectedPayment?.let { transaction.start(paymentSelected = it) }
+```
+
+  </Tab>
+</Tabs>
+
+## PaymentMethodType
+
+| Value | Available on | What you get |
+|---|---|---|
+| `APPLE_PAY` | iOS, Web | The native Apple Pay button, wired to start the payment flow. |
+| `GOOGLE_PAY` | Android, Web | The native Google Pay button, wired to start the payment flow. |
+| `PAYPAL` | Web | The native PayPal button, wired to start the payment flow. |
+| `PAYMENT_METHOD_LIST` | iOS, Android, Web | Full list of payment methods enabled in your Yuno dashboard. |
+
+If a requested type does not apply to the current platform or configuration, the corresponding entry in the returned map is `null`.
+
+<Note>
+On Android, `PaymentMethodType` is a sealed interface rather than a set of string constants: `GOOGLE_PAY` corresponds to `PaymentMethodType.GooglePay(...)` — which also carries the button customization (`cta`, `theme`, `cornerRadius`) — and `PAYMENT_METHOD_LIST` corresponds to `PaymentMethodType.PaymentMethodList`. `APPLE_PAY` does not exist on Android.
+</Note>
+
+### Wallet buttons
+
+`APPLE_PAY` and `GOOGLE_PAY` return the platform's native wallet buttons. You style them through the standard view modifiers of each platform (size, padding, corner radius, etc.). The SDK only adds a loader on top while the payment flow is initializing.
+
+<Note>
+You do not need to call `Transaction.start()` for wallet buttons. Tapping the button is the user's confirmation, so the SDK starts the transaction internally and reports the result through `onStatus`.
+</Note>
+
+## PaymentListController
+
+The controller you pass to `getPaymentMethodsViews`. Only `onPaymentSelected` is required.
+
+| Method | Required | Platforms | Behavior |
+|---|---|---|---|
+| `onPaymentSelected(paymentSelected)` | Yes | iOS, Android, Web | Invoked when the user picks a payment method. Pass the `PaymentMethodSelected` to `Transaction.start()`. |
+| `onHeightChange(newHeight)` | No | iOS, Android | Invoked when the height of a rendered view changes, so you can adjust your layout. |
+| `onUnenroll(success)` | No | iOS, Android | Invoked after the SDK has attempted to remove a saved payment method initiated from the list. Receives a boolean indicating whether the unenroll succeeded. |
+
+## Notes
+
+- `getPaymentMethodsViews` is synchronous.
+- You can request any combination of types available on your platform in a single call.
+- The `PaymentMethodSelected` delivered by `onPaymentSelected` is what you pass to `Transaction.start()`. See [Get Started](/docs/yuno-sdk/get-started).
+
+## Related
+
+- [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected). The object you receive and pass to `start()`.
+- [Get Started](/docs/yuno-sdk/get-started). Full integration walkthrough.

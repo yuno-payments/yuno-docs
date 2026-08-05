@@ -1,0 +1,74 @@
+---
+hidden: true
+title: "Payment status"
+description: "Migrate the Web standalone status screen (yuno.mountStatusPayment) to the unified SDK."
+---
+
+`yuno.mountStatusPayment(...)` rendered a standalone payment result screen for a checkout session — typically shown after the shopper returned from an external redirect. In the unified API this becomes a top-level method on `SdkPayments`: `sdkPayments.transactionStatus(...)`.
+
+It is not part of a `Transaction`. Like `antifraud`, it's a standalone operation, so it lives directly on the `SdkPayments` instance.
+
+| Before | After |
+|---|---|
+| `yuno.mountStatusPayment({...})` | `sdkPayments.transactionStatus({...})` |
+| Rendered into the SDK's default container | `elementSelector` — you choose the mount target (required) |
+| `paymentResult(data)` callback | *(removed)* — the screen renders the outcome; confirm server-side |
+
+## Side-by-side
+
+<CodeGroup>
+
+```typescript Before. mountStatusPayment
+const yuno = await window.Yuno.initialize('your-public-api-key')
+
+yuno.mountStatusPayment({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',
+    language: 'en',
+    paymentResult(data) {
+        console.log('paymentResult', data)
+    },
+})
+```
+
+```typescript After. sdkPayments.transactionStatus
+const sdkPayments = await SdkPayments.initialize('your-public-api-key')
+
+await sdkPayments.transactionStatus({
+    checkoutSession: 'session-from-backend',
+    countryCode: 'CO',           // optional
+    language: 'en',              // optional
+    elementSelector: '#status',  // required
+})
+```
+
+</CodeGroup>
+
+## Field mapping
+
+| Before | After | Notes |
+|---|---|---|
+| `yuno.mountStatusPayment({...})` | `sdkPayments.transactionStatus({...})` | Top-level method on `SdkPayments`, not on `Transaction`. Returns a `Promise<void>`. |
+| `checkoutSession` | `checkoutSession` | Same. Required. |
+| `countryCode` | `countryCode?` | Now optional. |
+| `language` | `language?` | Now optional. |
+| *(default container)* | `elementSelector` | Now required — you pass the CSS selector of the element to render into. |
+| `paymentResult(data)` | *(removed)* | The screen renders the outcome. Confirm the result server-side via [webhooks](/docs/webhooks) or the payments API. |
+
+## Behavior changes
+
+- **`transactionStatus` lives on `SdkPayments`, not on `Transaction`.** It's a standalone operation, not part of a transaction lifecycle.
+- **`elementSelector` is required.** You choose the mount target explicitly instead of relying on a default container.
+- **No result callback.** `paymentResult` is gone; the status screen is display-only. Use webhooks or the payments API as the source of truth for fulfillment — see [`onStatus`](/docs/yuno-sdk/controllers/on-status).
+
+## Checklist
+
+- [ ] Replace `yuno.mountStatusPayment(...)` with `sdkPayments.transactionStatus(...)`.
+- [ ] Pass an `elementSelector` for the mount target.
+- [ ] Move result handling to your server (webhooks / payments API); the `paymentResult` callback is gone.
+- [ ] Re-run your sandbox test suite.
+
+## Related
+
+- [`onStatus`](/docs/yuno-sdk/controllers/on-status). Receives the final status inside a `Transaction`.
+- [Get Started](/docs/yuno-sdk/get-started). Full integration walkthrough.
