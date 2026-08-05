@@ -105,7 +105,7 @@ Parameters for `await yuno.startCheckout()`, `await yuno.mountCheckout()`, and r
 | Parameter                         | Type     | Required | Description                                                                                                                                                                                               |
 | --------------------------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `yunoCreatePayment(oneTimeToken)` | function | Yes      | Callback invoked when the user completes the card/APM step. Receive the one-time token; send it to your backend to create the payment via the API; then `await yuno.continuePayment()` to resume the flow. |
-| `yunoPaymentResult(status, subStatus)` | function | No  | Callback invoked when the payment flow finishes. Receives the [payment status](/reference/getting-started/response-codes) (e.g. `SUCCEEDED`, `DECLINED`, `PENDING`, `REJECTED`, `CANCELED`, `ERROR`) and an optional `subStatus` qualifying it. Use for UI updates or analytics. See [Shopper-cancelled steps](#shopper-cancelled-steps).  |
+| `yunoPaymentResult(status, subStatus)` | function | No  | Callback invoked when the payment flow finishes. Receives the [payment status](/reference/payments/status-and-response-codes/payment) (e.g. `SUCCEEDED`, `DECLINED`, `PENDING`, `REJECTED`, `CANCELED`, `ERROR`) and an optional `subStatus` qualifying it. Use for UI updates or analytics. See [Shopper-cancelled steps](#shopper-cancelled-steps).  |
 | `yunoError(message, data)`        | function | No       | Callback invoked when an error occurs during the flow. Receives an error message and optional data object for debugging.                                                                                  |
 | `onLoading`                       | function | No       | Callback invoked when loading state changes (e.g. SDK fetching config, processing payment). Use to show or hide your own loader.                                                                          |
 
@@ -120,6 +120,10 @@ yunoPaymentResult('PENDING', 'CANCELLED_BY_USER')
 ```
 
 No `yunoError` is emitted for these steps. Dismissing the modal closes the SDK UI, but it does **not** cancel the payment: the payment stays in flight and is resolved by the provider and by Yuno's backend, which remains the source of truth for the final status. A 3DS challenge in particular runs inside the issuer's own iframe, so the SDK cannot determine whether authentication already completed at the moment the shopper closes the modal — reporting a terminal cancellation there could contradict a payment that goes on to be approved.
+
+<Note>
+`CANCELLED_BY_USER` is produced by the SDK to describe the shopper's gesture. It is **not** a payment sub-status and does not appear in the [Payment status reference](/reference/payments/status-and-response-codes/payment). The payment's own `sub_status` at that moment is typically `WAITING_ADDITIONAL_STEP` — query the payment or wait for the webhook to read it.
+</Note>
 
 Branch on `subStatus` to detect this case:
 
