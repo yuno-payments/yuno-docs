@@ -348,7 +348,7 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="amount" type="number">
-      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). Values above the cap are clamped to it. Max: 6
+      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). A value above the cap is rejected with `400` (`Max retries attempts exceeded`). Max: 6
 
       Example: 4
     </ParamField>
@@ -357,7 +357,7 @@ This object represents a subscription that can be associated with a customer.
       How the timing of each retry is decided. One of:
 
       - `DEFAULT` — the fixed retry schedule.
-      - `SMART` — machine-learning-based retry timing, applied from the second retry onward. Available to all accounts.
+      - `SMART` — machine-learning-based retry timing, applied from the second retry onward. Availability is enabled per account — contact your Yuno representative to opt in; requests from accounts that are not enabled are rejected with `400`.
       - `CUSTOM_SCHEDULE` — the per-attempt `schedule` array you provide.
 
       Treat this field as open-ended. New values can be introduced as Yuno adds retry behaviors, so handle an unrecognized value gracefully rather than switching exhaustively over the list above. `SMART` is the most recent addition.
@@ -372,7 +372,7 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="cancel_on_exhausted_retries" type="bool">
-      When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of advancing to the next cycle. `cancellation_source` is set to `RETRIES_EXHAUSTED` and a single `SUBSCRIPTION.CANCEL` webhook is emitted. Defaults to false. Can be set at creation or changed later via [Update Subscription](/reference/subscriptions/update-subscription); the cancellation itself is final — see [Retries](/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
+      When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of advancing to the next cycle. `cancellation_source` is set to `RETRIES_EXHAUSTED` and a single `SUBSCRIPTION.CANCEL` webhook is emitted. Defaults to false. Can only be set at creation — an [Update Subscription](/reference/subscriptions/update-subscription) request that changes it is rejected with `400`; re-sending the current value is accepted. The cancellation itself is final — see [Retries](/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
 
       Example: TRUE
     </ParamField>
@@ -387,6 +387,8 @@ This object represents a subscription that can be associated with a customer.
 
 <ParamField body="pending_plan_change" type="object">
   The plan change scheduled for the next billing cycle, or `null` when none is pending. Schedule one with the `plan_change` block on `PATCH /v1/subscriptions/{id}`; undo it with `"plan_change": null`.
+
+  A scheduled change is applied to this same subscription — no new subscription is created, and neither `previous_subscription_id` nor `cancellation_source: PLAN_CHANGE` is set.
 
   <Expandable title="properties">
     <ParamField body="plan_id" type="string">
@@ -406,14 +408,14 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="phases_behavior" type="string">
-      What happens when the target plan has phases. `START_FROM_REGULAR` (default) enters the regular phase directly; `HONOR_PHASES` enters through the target plan's phase schedule.
+      What happens when the target plan has phases. `START_FROM_REGULAR` (default) enters the regular phase directly; `HONOR_PHASES` enters through the target plan's phase schedule — which sets `status` to `TRIALING`, `current_phase` to `TRIAL`, and repopulates `billing_phases`.
     </ParamField>
 
-    <ParamField body="applies_at" type="string">
+    <ParamField body="applies_at" type="Timestamp">
       The billing event the change will take effect on — the subscription's next billing date.
     </ParamField>
 
-    <ParamField body="requested_at" type="string">
+    <ParamField body="requested_at" type="Timestamp">
       When the change was scheduled.
     </ParamField>
   </Expandable>
@@ -452,13 +454,7 @@ This object represents a subscription that can be associated with a customer.
     This array is currently always empty in webhook payloads. Subscribe to `payment.*` webhooks to track charges. For the subscription's full charge history (amounts, provider, phase context), use [List Subscription Payments](/reference/subscriptions/list-subscription-payments) instead of this field.
   </Note>
 
-  <Expandable title="properties">
-    <ParamField body="id*" type="string">
-      The unique identifier of the payment (MAX 64 ; MIN 36).
-
-      Example: 5104911d-5df9-229e-8468-bd41abea1a4s
-    </ParamField>
-  </Expandable>
+  Example: ["5104911d-5df9-229e-8468-bd41abea1a4s"]
 </ParamField>
 
 <ParamField body="created_at" type="Timestamp">
