@@ -134,7 +134,7 @@
                     "properties": {
                       "total": {
                         "type": "integer",
-                        "description": "The total number of billing cycles for the subscription.",
+                        "description": "The total number of billing cycles for the subscription. On update, must be greater than or equal to the current `billing_cycles.current`; a lower value is rejected with 400.",
                         "format": "int32"
                       }
                     }
@@ -263,7 +263,10 @@
                   "plan_change": {
                     "type": "object",
                     "nullable": true,
-                    "description": "Schedules a move to another plan, effective at the next billing cycle. The subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. Only one change can be pending at a time. Send `\"plan_change\": null` to undo a pending change before it applies.",
+                    "description": "Schedules a move to another plan, effective at the next billing cycle. The subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. Only one change can be pending at a time. Send `\"plan_change\": null` to undo a pending change before it applies. `amount`, `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked subscription — combining any of them with `plan_change` returns 400.",
+                    "required": [
+                      "plan_id"
+                    ],
                     "properties": {
                       "plan_id": {
                         "type": "string",
@@ -470,6 +473,51 @@
                       }
                     },
                     "metadata": {},
+                    "pending_plan_change": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The plan change scheduled for the next billing cycle, or null when none is pending.",
+                      "properties": {
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The identifier of the target plan.",
+                          "example": "1904911d-5df9-429e-8488-ad41abea1a4d"
+                        },
+                        "plan_name": {
+                          "type": "string",
+                          "description": "The name of the target plan.",
+                          "example": "Pro"
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": ["UPGRADE", "DOWNGRADE"],
+                          "description": "Whether the target plan is an upgrade or a downgrade. Informational only.",
+                          "example": "UPGRADE"
+                        },
+                        "effective": {
+                          "type": "string",
+                          "enum": ["NEXT_BILLING_CYCLE"],
+                          "description": "When the change applies.",
+                          "example": "NEXT_BILLING_CYCLE"
+                        },
+                        "phases_behavior": {
+                          "type": "string",
+                          "enum": ["START_FROM_REGULAR", "HONOR_PHASES"],
+                          "description": "What happens when the target plan has phases.",
+                          "example": "START_FROM_REGULAR"
+                        },
+                        "applies_at": {
+                          "type": "string",
+                          "description": "The billing event the change will take effect on — the subscription's next billing date.",
+                          "example": "2024-10-30T12:04:23.265372Z"
+                        },
+                        "requested_at": {
+                          "type": "string",
+                          "description": "When the change was scheduled.",
+                          "example": "2024-09-30T12:04:23.265372Z"
+                        }
+                      }
+                    },
                     "created_at": {
                       "type": "string",
                       "example": "2024-09-30T12:04:23.265372Z"
