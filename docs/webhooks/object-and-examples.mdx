@@ -3,7 +3,7 @@ title: "Object and Examples"
 description: "Documents webhook payload attributes with example JSON for payments, chargebacks, enrollments, payouts, and subscriptions"
 ---
 
-# Webhook attributes
+## Webhook attributes
 
 The JSON attributes for Yuno webhooks are listed below:
 
@@ -27,15 +27,21 @@ The JSON attributes for Yuno webhooks are listed below:
   Specifies the number of retries for that notification.
 </ParamField>
 
-<ParamField body="data" type="string">
+<ParamField body="data" type="object">
   Specifies the [payment](/reference/the-payment-object) (for payment type) or [payment method object](/reference/the-payment-method-object-api) (for enrollment and other objects).
+
+  <Expandable title="properties">
+    <ParamField body="idempotency_key" type="string">
+      Unique identifier for the event. It stays stable across every retry of the same event, so you can use it to identify and skip duplicate deliveries. See [De-duplication](/docs/webhooks#de-duplication) for coverage details.
+    </ParamField>
+  </Expandable>
 </ParamField>
 
 <ParamField body="x-hmac-signature" type="string">
   Optional. The HMAC-SHA256 signature sent in the HTTP header for webhook verification when HMAC authentication is enabled.
 </ParamField>
 
-# Examples
+## Examples
 
 Yuno provides several webhooks related to enrollment and payment notifications. Here you will find some examples of data structures related to each event.
 
@@ -67,7 +73,7 @@ Yuno provides several webhooks related to enrollment and payment notifications. 
 
 ### Payment Webhook V2
 
-The next JSON object presents an example of a data structure related to a payment event from Webhook V2.
+Example payload:
 
 <Info>
   Webhook payloads for events corresponding to a bank transfer payment method include `payment.payment_method.payment_method_detail.bank_transfer.bank_id`. The field mirrors the `bank_id` sent in the original payment request and is omitted when no bank was selected.
@@ -390,7 +396,7 @@ The next JSON object presents an example of a data structure related to a paymen
 
 ### Payment Webhook V1
 
-The next JSON object presents an example of a data structure related to a payment event from Webhook V1.
+Example payload:
 
 ```json JSON
 {
@@ -593,7 +599,7 @@ The next JSON object presents an example of a data structure related to a paymen
 
 ### Chargeback Webhook V2
 
-The next JSON object presents an example of a data structure related to a payment event from Webhook V2.
+Example payload:
 
 ```json
 {
@@ -1123,7 +1129,7 @@ The next JSON object presents an example of a data structure related to a paymen
 
 ### Chargeback Webhook V1
 
-The next JSON object presents an example of a data structure related to a payment event from Webhook V1.
+Example payload:
 
 ```json JSON
 {
@@ -1664,7 +1670,8 @@ Sent when a paused subscription is resumed and transitions back to the `ACTIVE` 
         "amount": 4,
         "strategy": "DEFAULT",
         "schedule": null,
-        "stop_on_hard_decline": null
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
       },
       "metadata": [
         {
@@ -1701,6 +1708,12 @@ Sent when a paused subscription is resumed and transitions back to the `ACTIVE` 
 ### subscription.cancel
 
 Sent when a subscription is canceled. Once canceled, the subscription is terminated and cannot be reactivated.
+
+The subscription object carries a `cancellation_source` field describing what triggered the cancellation — `MERCHANT`, `SYSTEM`, `PLAN_CHANGE`, or `RETRIES_EXHAUSTED`. See [the subscription object](/reference/subscriptions/the-subscription-object) for what each value means.
+
+<Note>
+Treat `cancellation_source` as open-ended. New values can be added as Yuno introduces new cancellation behaviors, so handle an unrecognized value gracefully rather than switching exhaustively over the current list. `RETRIES_EXHAUSTED` is the most recent addition — it is sent when retries for a billing cycle end without a successful payment on a subscription created with `retries.cancel_on_exhausted_retries` set to `true`.
+</Note>
 
 ```json JSON
 {
@@ -1814,7 +1827,8 @@ Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification
         "amount": 4,
         "strategy": "DEFAULT",
         "schedule": null,
-        "stop_on_hard_decline": null
+        "stop_on_hard_decline": null,
+        "cancel_on_exhausted_retries": null
       },
       "metadata": [
         {
@@ -1856,6 +1870,10 @@ There is **no `subscription.error` webhook**. Yuno does not emit a subscription 
 
 <Note>
 The renewal **charge** itself is always signaled by a `payment.purchase` webhook, never by a subscription webhook. The `payments` array inside the subscription object is currently always empty in webhook payloads. `subscription.active` is sent once (at `billing_cycles.current` = 2), not on every renewal.
+</Note>
+
+<Note>
+There is one case where a failed renewal does produce a subscription webhook. If the subscription has `retries.cancel_on_exhausted_retries` set to `true`, then once retries for that cycle end without a successful payment the subscription is canceled and a single [`subscription.cancel`](#subscriptioncancel) is emitted with `cancellation_source` set to `RETRIES_EXHAUSTED`. This is still not a `subscription.error` — the individual failed attempts remain `payment.purchase` webhooks. Only the final cancellation is signaled on the subscription.
 </Note>
 
 ## Onboardings

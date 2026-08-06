@@ -41,7 +41,7 @@ To integrate Google Pay with Yuno, follow these steps:
 
 2. Create a route in Yuno's dashboard using the processor you want for Google Pay payments. See the [Configure dynamic routing](/docs/routing#configuring-the-dynamic-routing) guide for more information.
 
-Customers will be able to select Google Pay and authorize payments using their familiar Google Pay interface. Yuno then securely handles the payment token received from Google, processing the transaction through your configured payment processor. All Google Pay transactions will be visible and manageable within your Yuno dashboard alongside your other payment methods, providing a unified view of your operations.
+Yuno processes the payment token received from Google Pay through your configured payment processor. Google Pay transactions appear in your Yuno dashboard alongside your other payment methods.
 
 ## Enable and test Google Pay with Yuno
 
@@ -77,14 +77,14 @@ Key details for your Google Pay integration with Yuno:
 Yuno supports both Google Pay API authorization methods:
 
 * **`PAN_ONLY`**: Card credentials stored in the user's Google account. When used, Yuno automatically handles 3D Secure authentication if enabled.
-* **`CRYPTOGRAM_3DS`**: Device-based card credentials with built-in authentication. These credentials include cryptographic authentication and don't require additional 3DS processing. These credentials decrypt to a device-specific number (DPAN), so see [Card last four digits for device tokens](#card-last-four-digits-for-device-tokens) if you display the card's last four digits to the shopper.
+* **`CRYPTOGRAM_3DS`**: Device-based card credentials with built-in authentication. These credentials include cryptographic authentication and don't require additional 3DS processing. These credentials decrypt to a device-specific number (DPAN), so see [Card last four digits for device tokens](#card-last-four-digits-for-device-tokens) if you display the card's last four digits to the cardholder.
 
 Both methods are supported globally across all countries where Yuno operates. On the frontend, include both `PAN_ONLY` and `CRYPTOGRAM_3DS` in your `allowedAuthMethods` array for maximum payment success rates.
 
 * **3D Secure (3DS) for`PAN_ONLY` credentials**: If Google Pay returns a `PAN_ONLY` credential (a card stored in the user's Google account), Yuno will automatically handle the 3D Secure authentication flow if 3DS is enabled. On the frontend, make sure your Google Pay API request includes `PAN_ONLY` in the `allowedAuthMethods` array.
 * **Gateway and GatewayMerchantID configuration**: When registering with the [Google Pay Business Console](https://pay.google.com/business/console), ensure that under **Google Pay API** > **Integrate with your website**, the **Integration type** is set to **GATEWAY**. The `Merchant ID` from the Google Pay Business Console is used in the "Merchant ID" field when setting up the Google Pay connection in the Yuno dashboard. Set `gateway` to `yuno` and use your assigned Merchant ID as the `gatewayMerchantId` in your Google Pay API configuration.
 * **Authorization methods**: Yuno supports standard authorization methods (purchase, authorization, capture). Availability depends on the payment processor and acquiring bank for each country and payment.
-* **Billing address requirements**: If your payment processing requires the customer's billing address (e.g., for AVS checks), configure this in your Google Pay API request. Google provides `BillingAddressParameters` to specify the required detail (e.g., MIN or FULL). See [Google's documentation](https://developers.google.com/pay/api/web/reference/request-objects#BillingAddressParameters). Only request billing address details if necessary, as this can increase checkout friction.
+* **Billing address requirements**: If your payment processing requires the customer's billing address (for example, for AVS checks), configure this in your Google Pay API request. Google provides `BillingAddressParameters` to specify the required detail (for example, MIN or FULL). See [Google's documentation](https://developers.google.com/pay/api/web/reference/request-objects#BillingAddressParameters). Only request billing address details if necessary, as this can increase checkout friction.
 * **Transaction data and payment cryptography**: Merchants integrate Yuno's SDKs (Android, iOS, Web) into their applications. When a customer chooses Google Pay, Yuno's SDK interacts with the Google Pay API and securely receives the encrypted payment data (payment token) from Google. This token is passed from your app to your backend server, which then uses Yuno's server-side APIs to submit the token for payment processing. Yuno handles decryption and processing with the payment processor.
 
 ## Pass Google Pay payment token in request
@@ -148,7 +148,7 @@ The Google Pay SDK returns the following object structure, which must be passed 
 
 ## Card last four digits for device tokens
 
-When Google Pay returns a `CRYPTOGRAM_3DS` credential, the encrypted token decrypts to the **DPAN** — a device-specific number, not the card stored by the shopper. Its last four digits are not the ones the shopper recognizes, so `card_data.lfd` in the payment response is empty or shows the DPAN's last four.
+When Google Pay returns a `CRYPTOGRAM_3DS` credential, the encrypted token decrypts to the **DPAN** — a device-specific number, not the card stored by the cardholder. Its last four digits are not the ones the cardholder recognizes, so `card_data.lfd` in the payment response is empty or shows the DPAN's last four.
 
 The real card's last four digits are available to you in Google's response, outside the encrypted token:
 
@@ -186,7 +186,7 @@ Send `paymentMethodData.info.cardDetails` as `payment_method.detail.wallet.card_
 
 | Field | Type | Required | Description |
 | :---- | :--- | :------- | :---------- |
-| `lfd` | string | No | Last four digits of the shopper's real card, taken from `paymentMethodData.info.cardDetails`. Must be exactly 4 numeric digits. |
+| `lfd` | string | No | Last four digits of the cardholder's real card, taken from `paymentMethodData.info.cardDetails`. Must be exactly 4 numeric digits. |
 
 The field is optional and backward compatible. If you do not send it, behavior is unchanged.
 
@@ -194,10 +194,6 @@ The field is optional and backward compatible. If you do not send it, behavior i
 * `PAN_ONLY` credentials ignore the value. Those decrypt to the real card, so Yuno keeps the decrypted last four.
 * Only `lfd` is accepted. `brand` and the remaining card fields keep their decrypted values, because the DPAN's BIN already identifies the card network correctly.
 * The value is ignored for other wallets, such as Apple Pay.
-
-<Warning>
-  `lfd` is applied on `POST /v1/payments`. It is accepted and validated on `POST /v1/payments/rx` and `POST /v2/payments`, but not applied on those endpoints — the payment succeeds and the last four digits come back empty or DPAN-derived, exactly as before.
-</Warning>
 
 Once applied, the value appears in the create payment response, in the Get payment by ID response, and in payment webhooks, under `payment_method.detail.card.card_data.lfd`. Webhook payloads nest it under `payment_method_detail` instead of `detail`.
 
