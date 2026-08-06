@@ -32,7 +32,7 @@ The JSON attributes for Yuno webhooks are listed below:
 
   <Expandable title="properties">
     <ParamField body="idempotency_key" type="string">
-      Unique identifier for the event. It stays stable across every retry of the same event, so you can use it to identify and skip duplicate deliveries. See [De-duplication](/docs/webhooks#de-duplication) for coverage details.
+      Identifier used to skip duplicate deliveries. It stays stable across every retry of the same event. On `subscription.*` events it identifies the subscription rather than the event, so de-duplicate those on `type_event` plus this key. See [De-duplication](/docs/webhooks#de-duplication) for coverage details.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -1862,6 +1862,111 @@ Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification
 }
 ```
 
+### subscription.plan_change_scheduled
+
+Sent when a plan change is scheduled for the next billing cycle. The `plan_change` block describes the pending change; `applies_at` is the next billing date the change will take effect on.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.plan_change_scheduled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "plan_change": {
+      "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+      "plan_name": "Pro",
+      "direction": "UPGRADE",
+      "effective": "NEXT_BILLING_CYCLE",
+      "phases_behavior": "START_FROM_REGULAR",
+      "applies_at": "2026-08-15T00:00:00Z",
+      "requested_at": "2026-07-28T14:02:11Z"
+    }
+  }
+}
+```
+
+### subscription.plan_change_canceled
+
+Sent when a pending plan change is undone or aborted. The `reason` inside `plan_change` is `MERCHANT_UNDO` when the merchant sent `"plan_change": null`, or `TARGET_PLAN_CANCELED` when the target plan was canceled before the change applied — the subscription stays on its current plan in both cases. If the subscription itself is canceled, the pending change is silently discarded and only `subscription.cancel` is sent.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.plan_change_canceled",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 9.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "plan_change": {
+      "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+      "plan_name": "Pro",
+      "reason": "MERCHANT_UNDO"
+    }
+  }
+}
+```
+
+### subscription.plan_changed
+
+Sent when a plan change takes effect. `previous_plan_id` identifies the plan the subscription moved away from; the embedded subscription already reflects the new plan.
+
+A scheduled change is applied at the renewal that first bills the new plan, in place — the embedded subscription keeps the same `code`. `POST /v1/subscriptions/{id}/plan` instead replaces the subscription: the payload carries a new `code` with `previous_subscription_id` set, and a separate `subscription.cancel` (`cancellation_source: PLAN_CHANGE`) fires for the original.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.plan_changed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "status": "ACTIVE",
+      "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+      "amount": {
+        "currency": "USD",
+        "type": "FIXED",
+        "value": 29.99
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      }
+    },
+    "previous_plan_id": "0804911d-5df9-429e-8488-ad41abea1a4c"
+  }
+}
+```
+
 ### Renewal charges and failures (no `subscription.error`)
 
 <Warning>
@@ -2354,6 +2459,7 @@ There is one case where a failed renewal does produce a subscription webhook. If
         "name": null,
         "description": null
       }
+    }
     }
   }
 }
