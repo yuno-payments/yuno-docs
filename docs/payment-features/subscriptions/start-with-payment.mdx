@@ -10,22 +10,35 @@ The `subscription` block on [Create Payment](/reference/payments/create-payment)
 <Note>
 **Which route should you use?**
 
-* **One call** (this page): the customer is signing up and paying right now, and you want the signup to succeed or fail as a single unit. Best for checkout flows, and the only route that can carry a 3DS challenge (see [3DS and the first charge](#3ds-and-the-first-charge)).
-* **[Create Subscription](/reference/subscriptions/create-subscription)**: you already hold a `vaulted_token` for the customer — for example, they enrolled a card earlier, or you're moving them onto a new plan. See the [subscriptions overview](/docs/payment-features/subscriptions/index) for that flow.
+* **One call** (this page): the customer is signing up and paying right now, and you want the signup to succeed or fail as a single unit. Best for checkout flows.
+* **[Create Subscription](/reference/subscriptions/create-subscription)**: you already hold a `vaulted_token` for the customer — for example, they enrolled a card earlier. See the [subscriptions overview](/docs/payment-features/subscriptions/index) for that flow. To move an existing subscriber onto another plan, use [Change Subscription Plan](/reference/subscriptions/change-subscription-plan) — creating a second subscription leaves the first one active and billing.
+* **[Payment links](/reference/payment-links/create-payment-link)**: the `subscription` block is not supported on payment-link create — it is ignored rather than rejected, so the link returns `201` and no subscription is ever created. Take the payment on the link with `vault_on_success`, then call [Create Subscription](/reference/subscriptions/create-subscription) with the resulting `vaulted_token`.
 
-Both produce the same subscription object, and everything downstream — [pause](/reference/subscriptions/pause-subscription), [resume](/reference/subscriptions/resume-subscription), [cancel](/reference/subscriptions/cancel-subscription), [Smart Retries](/docs/payment-features/subscriptions/retries) — behaves identically.
+Both routes produce a subscription you manage with the same endpoints — [pause](/reference/subscriptions/pause-subscription), [resume](/reference/subscriptions/resume-subscription), [cancel](/reference/subscriptions/cancel-subscription), [retrieve](/reference/subscriptions/retrieve-subscription). They are not configured identically: the `subscription` block on Create Payment carries a smaller field set, and cannot set `retries`, `trial_period`, `plan_id`, `metadata`, `soft_descriptor` or a subscription `name`. In particular **[Smart Retries](/docs/payment-features/subscriptions/retries) are off** on a subscription created this way — a declined renewal is not retried until you turn them on with [Update Subscription](/reference/subscriptions/update-subscription).
 </Note>
 
 ## How the one call works
 
 1. **You call [Create Payment](/reference/payments/create-payment)** with the payment you'd send anyway — amount, country, payment method, customer — plus a `subscription` object describing the recurrence.
-2. **Yuno charges the customer.** This is a normal card payment: it routes, it can be 3DS-challenged, it can decline.
+2. **Yuno charges the customer.** This is a normal card payment: it routes, it can decline.
 3. **If the charge completes, Yuno creates the subscription** and records that payment as its first billing cycle. The payment response comes back with `subscription_code` — the `id` of the new subscription.
 4. **Yuno bills every following cycle on its own**, on the cadence you set in `frequency`, until the subscription completes, is canceled, or runs out of billing cycles.
 
-If the charge doesn't complete, no subscription is created — you get a declined payment and that's the whole outcome. The subscription itself is never left half-created: it either exists with its first cycle already paid, or it doesn't exist at all.
+<Warning>
+**Known limitation on the first cycle**
 
-Confirm the outcome from `subscription_code` on the payment response rather than assuming it: a successful payment that came back without one means the subscription was not created. See [Errors](#errors).
+When a payment-first subscription is activated, an additional billing attempt may be generated against the first cycle — the cycle the payment you just made already covers. This is a known limitation on this route and is being tracked. Reconcile the subscription's charges with [List Subscription Payments](/reference/subscriptions/list-subscription-payments) before treating the first cycle as settled.
+</Warning>
+
+If the charge doesn't complete, no subscription is created — you get a declined payment and that's the whole outcome. When the charge does complete, the payment is linked to the new subscription as its first billing cycle; confirm that link from `subscription_code` on the payment response and from [Retrieve Subscription](/reference/subscriptions/retrieve-subscription) rather than assuming it.
+
+Apply that check only once the payment reaches a terminal status. If the payment comes back `PENDING`, the subscription has not been created yet and the response comes back with `subscription_code: null` — wait for the terminal outcome before reconciling. On a payment that is already terminal and successful, `subscription_code: null` means the subscription was not created. See [Errors](#errors).
+
+### Retrying the call
+
+Create Payment requires an `X-idempotency-key` header — the request is rejected before the body is parsed if it is missing.
+
+Retrying with the **same** key returns the original payment and does not create a second subscription. Retrying with a **new** key charges the customer again. So if a payment succeeded without a `subscription_code`, replaying the call is not a fix: the same key gives you the original payment back, and a new key takes a second payment. Reconcile instead — see [Errors](#errors).
 
 <Note>
 **Available payment methods**
@@ -37,19 +50,22 @@ As with every Yuno subscription, only cards can be used. See [Subscriptions](/do
 
 Send `subscription` alongside the normal Create Payment fields. To start a **new** subscription, send `frequency`, `availability`, and `amount`, and leave `id` out.
 
+`checkout.session` is required on Create Payment unless you send `"workflow": "DIRECT"` or `"workflow": "REDIRECT"` — the `subscription` block does not change that. Create a session with [Create checkout session](/reference/checkout-sessions/create-checkout-session) and send its identifier as `checkout.session`.
+
 <div className="nowrap-col1-table dense-table">
 
 | Field                  | Type    | Required                     | Description                                                                                                                                  |
 | :--------------------- | :------ | :--------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
-| `frequency.type`       | string  | Yes                          | Billing cadence unit. `MONTH` is the only value accepted on this route.                                                                       |
-| `frequency.value`      | number  | Yes (checked after the charge) | How many `type` units between charges. `{"type": "MONTH", "value": 1}` bills monthly, `"value": 3` bills quarterly. Always send it — omitting it isn't caught up front, it fails later when the subscription is created. |
+| `frequency.type`       | string  | Yes                          | Billing cadence unit. `MONTH` is the only value accepted on this route — other cadences are available on [Create Subscription](/reference/subscriptions/create-subscription). |
+| `frequency.value`      | integer | Yes (checked after the charge) | How many `type` units between charges. `{"type": "MONTH", "value": 1}` bills monthly, `"value": 3` bills quarterly. Always send it — omitting it isn't caught up front, it fails later when the subscription is created. Whole numbers only — a fractional value is not rejected up front and fails after the charge. |
 | `frequency.execution`  | string  | Yes                          | Who runs the recurrence. Send `YUNO`. See [`execution` decides who bills](#execution-decides-who-bills).                                        |
 | `availability.start_at`| string  | No                           | When the subscription's active window opens, UTC [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601). Must be in the future.                     |
-| `availability.finish_at`| string | No                           | When the window closes, UTC ISO 8601. Must be after `start_at`.                                                                                |
-| `amount.value`         | number  | Yes                          | The amount of each recurring charge.                                                                                                          |
-| `amount.currency`      | string  | Yes                          | ISO 4217 currency code (3 characters). See [Country reference](/reference/country-reference).                                                   |
+| `availability.finish_at`| string | No                           | When the window closes, UTC ISO 8601. Must be after `start_at` — or, if you omit `start_at`, after the moment of the call.                      |
+| `amount.value`         | number  | Yes                          | The amount of each recurring charge. When `amount.type` is `FIXED` it must equal the payment's `amount.value` — a different value is rejected before any charge. |
+| `amount.currency`      | string  | Yes                          | ISO 4217 currency code (3 characters). Must match the payment's `amount.currency` — a different currency is rejected before any charge. See [Country reference](/reference/country-reference). |
 | `amount.type`          | string  | Yes                          | `FIXED` or `VARIABLE`.                                                                                                                        |
 | `billing_cycles.total` | number  | No                           | Total number of cycles to bill before the subscription completes. Must be `1` or greater.                                                     |
+| `billing_cycles.current`| number | No                           | Accepted by the API but **ignored** when a subscription is created — the first cycle is always cycle 1. Do not use it to start a subscription mid-life. |
 | `id`                   | string  | Only for an existing sub     | UUID of an existing subscription. Omit it when creating a new one — see [Charging an existing subscription](#charging-an-existing-subscription). |
 
 </div>
@@ -59,7 +75,7 @@ The `availability` object itself is required when you're creating a new subscrip
 <Warning>
 **`customer_payer` is required for this flow**
 
-A subscription always belongs to a customer, so `customer_payer.id` must be present when you send a `subscription` block. Create the customer first with [Create Customer](/reference/customers/create-customer) if you don't have one.
+A subscription always belongs to a customer, so a `customer_payer` object must be present when you send a `subscription` block. You can identify an existing customer with `customer_payer.id`, or send the customer inline (`email`, `merchant_customer_id`, `document`) and let Yuno create them — `id` is not required. Create the customer up front with [Create Customer](/reference/customers/create-customer) if you prefer to hold the identifier yourself.
 </Warning>
 
 <Warning>
@@ -88,7 +104,7 @@ If you set both, the subscription reaches `COMPLETED` at whichever comes first �
   },
   "payment_method": {
     "type": "CARD",
-    "vaulted_token": "6d3f7b3c-4c1e-4d1b-9a6a-2f6d1a5f7c88"
+    "token": "8a7f2c11-0d94-4b3e-8f2a-1c5b7e9d0a44"
   },
   "subscription": {
     "frequency": {
@@ -111,9 +127,11 @@ If you set both, the subscription reaches `COMPLETED` at whichever comes first �
 }
 ```
 
+`payment_method.token` is the one-time token the checkout session produces for the card the customer just entered — that is the signup instrument on this route. Use `vaulted_token` only when the card is already stored, as in [Charging an existing subscription](#charging-an-existing-subscription).
+
 The response is a normal payment object with one extra field populated:
 
-```json Response (excerpt)
+```json Response (excerpt) — illustrative
 {
   "id": "8f2c1d24-2b0a-4f7e-a1a2-b0a1d2c3e4f5",
   "status": "SUCCEEDED",
@@ -122,14 +140,24 @@ The response is a normal payment object with one extra field populated:
 }
 ```
 
+<Note>
+Illustrative — no merchant-surface capture exists yet for this flow. The field names and nesting are the ones this route adds; the values are placeholders.
+</Note>
+
 Keep `subscription_code` — it is the subscription's `id`, and it's what you pass to [Retrieve](/reference/subscriptions/retrieve-subscription), [Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription), and [Cancel](/reference/subscriptions/cancel-subscription).
 
 ## `execution` decides who bills
 
 `frequency.execution` tells Yuno who is responsible for generating each recurring charge, and it is required — there is no default.
 
-* **`YUNO`** — Yuno's engine owns the schedule. It generates every charge after the first one, applies [Smart Retries](/docs/payment-features/subscriptions/retries) on declines, and emits the per-cycle `payment.purchase` webhooks. **This is what you want for this flow.**
-* **`MERCHANT`** — you own the schedule. Yuno stores the subscription as a record of the arrangement but never charges on it; you send each rebill yourself as a merchant-initiated payment. Smart Retries don't apply, and the lifecycle operations that only make sense against a Yuno-run schedule — [Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription), [Update](/reference/subscriptions/update-subscription), and [Retry](/reference/subscriptions/retry-subscription) — are rejected with `400 BAD_REQUEST`.
+* **`YUNO`** — Yuno's engine owns the schedule. It generates every charge after the first one and emits the per-cycle `payment.purchase` webhooks. **This is what you want for this flow.**
+* **`MERCHANT`** — you own the schedule. Yuno stores the subscription as a record of the arrangement but never charges on it; you send each rebill yourself as a merchant-initiated payment. The lifecycle operations that only make sense against a Yuno-run schedule — [Pause](/reference/subscriptions/pause-subscription), [Resume](/reference/subscriptions/resume-subscription), [Update](/reference/subscriptions/update-subscription), [Retry](/reference/subscriptions/retry-subscription), and [Change plan](/reference/subscriptions/change-subscription-plan) — are rejected with `400 BAD_REQUEST`.
+
+<Note>
+**Retries are the one exception to "same subscription object"**
+
+The `subscription` block on Create Payment has no `retries` object, so a subscription created this way starts with `retry_on_decline: false` — a declined renewal is not retried, on either `execution` value. Turn [Smart Retries](/docs/payment-features/subscriptions/retries) on afterwards with [Update Subscription](/reference/subscriptions/update-subscription).
+</Note>
 
 <Warning>
 **`MERCHANT` subscriptions never bill on their own**
@@ -139,20 +167,20 @@ If you send `"execution": "MERCHANT"` expecting Yuno to charge the customer next
 If you genuinely want to drive the recurrence yourself, you don't need a subscription at all — use [Stored Credentials](/docs/payment-features/stored-credentials) and send each rebill as a payment with `stored_credentials.reason = SUBSCRIPTION`.
 </Warning>
 
-## 3DS and the first charge
+## Authentication on the first charge
 
-This is the one route where a subscription signup can complete a 3DS challenge.
+The first charge is a customer-initiated transaction (CIT) on the payment surface, so it is eligible for 3DS in a way a [Create Subscription](/reference/subscriptions/create-subscription) rebill is not — that endpoint takes a `vaulted_token` and starts a schedule, with no customer session attached and no surface on which to present a challenge.
 
-The reason is ordering. In this flow, the customer is present and the charge is a customer-initiated transaction (CIT) on the payment surface — so it can be challenged, the customer can authenticate, and the payment finishes on the [checkout session](/reference/checkout-sessions/create-checkout-session) like any other. Only after the payment completes does the subscription come into existence. The subscription never has to carry a challenge, because the challenge already happened.
+<Warning>
+**Frictionless only, for now**
 
-[Create Subscription](/reference/subscriptions/create-subscription) can't do this. It takes a `vaulted_token` and starts a schedule; there is no customer session attached to it and no surface on which to present a challenge, so a subscription created that way can never be 3DS-challenged.
-
-To make the one call challenge-capable, run it through the SDK / checkout-session route: create a [checkout session](/reference/checkout-sessions/create-checkout-session), send it as `checkout.session` on the payment, and let the SDK handle the challenge. See [3DS configuration and testing](/docs/direct-integration-use-cases/3ds-configuration-and-testing).
+This route is documented for **frictionless** authentication only. A payment that requires a 3DS challenge completes asynchronously after the customer authenticates, and the one-call + challenge round trip has not been validated end to end — do not build a subscription signup on it yet. Keep the first charge frictionless, or use the two-call flow ([Create Payment](/reference/payments/create-payment), then [Create Subscription](/reference/subscriptions/create-subscription) with the resulting `vaulted_token`) when a challenge is expected. See [3DS configuration and testing](/docs/direct-integration-use-cases/3ds-configuration-and-testing).
+</Warning>
 
 <Warning>
 **Credential usage on the rebills**
 
-The first charge is a CIT. Every charge Yuno generates afterwards is a merchant-initiated transaction against the same stored credential. Yuno sets this up for you on this route — but if you ever build the two-call flow by hand (CIT payment first, then Create Subscription with the resulting token), you must send `store_credentials.usage` yourself or the rebills will be sent as CITs and declined. See [Stored Credentials](/docs/payment-features/stored-credentials).
+The first charge is a CIT. Every charge Yuno generates afterwards is a merchant-initiated transaction against the same stored credential. Yuno sets this up for you on this route — but if you ever build the two-call flow by hand (CIT payment first, then Create Subscription with the resulting token), you must set the credential usage yourself on that CIT payment — `payment_method.detail.card.stored_credentials.usage` — or the rebills will be sent as CITs and declined. See [Stored Credentials](/docs/payment-features/stored-credentials).
 </Warning>
 
 ## Finding the first charge later
@@ -172,7 +200,7 @@ Two ways to follow the link:
 
 ## Charging an existing subscription
 
-The same `subscription` block has a second shape: send `id` with the UUID of a subscription that already exists, and the payment is attached to that subscription instead of creating a new one. In that shape you omit `frequency`, `availability`, and `amount` — the subscription already defines them — and you may send `billing_date` to set which day of the month the subscription bills on.
+The same `subscription` block has a second shape: send `id` with the UUID of a subscription that already exists, and the payment is attached to that subscription instead of creating a new one. In that shape you omit `frequency`, `availability`, and `amount` — the subscription already defines them.
 
 ```json Create Payment for an existing subscription
 {
@@ -187,28 +215,25 @@ The same `subscription` block has a second shape: send `id` with the UUID of a s
   "customer_payer": {
     "id": "a3b3a0f4-1f1e-4a19-9a2a-6f0f2d6bbd11"
   },
+  "checkout": {
+    "session": "0e2a4b0d-59a5-4b0e-8b6a-71a7c0e2f9c3"
+  },
   "payment_method": {
     "type": "CARD",
     "vaulted_token": "6d3f7b3c-4c1e-4d1b-9a6a-2f6d1a5f7c88"
   },
   "subscription": {
-    "id": "1c9f0b2e-7d5a-4c3b-8e1f-9a0b1c2d3e4f",
-    "billing_date": {
-      "type": "FIXED_DAY",
-      "day": 15
-    }
+    "id": "1c9f0b2e-7d5a-4c3b-8e1f-9a0b1c2d3e4f"
   }
 }
 ```
 
 <Warning>
-**`billing_date` applies only to this shape, and is silently ignored on the other one**
+**`billing_date` is silently ignored when you create a subscription**
 
-`billing_date` is meaningful only when you send `id` for a subscription that already exists. If you send it while *creating* a new subscription, it is **not** rejected — it is accepted, dropped, and the new subscription is created without it. You get a `201`, and nothing tells you the billing day you asked for was discarded.
+The payments-surface block accepts a `billing_date` object, but only alongside `id` for a subscription that already exists. If you send it while *creating* a new subscription, it is **not** rejected — it is accepted, dropped, and the new subscription is created without it. You get a `201`, and nothing tells you the billing day you asked for was discarded.
 
-Set the billing day on an existing subscription, or with [Update Subscription](/reference/subscriptions/update-subscription) — not in the block that creates one.
-
-Note that the subscription surface configures the billing day with its own field shape and its own set of `type` values, which differ from the payments-surface example above. Don't copy the `billing_date` object from this page into a subscription call — use the fields documented on [Create Subscription](/reference/subscriptions/create-subscription) and [Update Subscription](/reference/subscriptions/update-subscription) instead.
+Set the billing day on the subscriptions surface with [Create Subscription](/reference/subscriptions/create-subscription) or [Update Subscription](/reference/subscriptions/update-subscription) — not in the payments-side block that creates one. That surface uses its own field shape and its own set of `type` values, which differ from the payments-side object; don't copy a `billing_date` object from a payment into a subscription call.
 </Warning>
 
 ## Errors
@@ -217,13 +242,16 @@ A bad `subscription` block can fail at two different moments, and the difference
 
 ### Rejected before any charge
 
-These are caught when the request is validated, so the call fails with `400 BAD_REQUEST`, no money moves, and no subscription is created:
+These are caught when the request is validated, so the call fails with a `400`, no money moves, and no subscription is created:
 
 * `frequency.execution` missing, or any value other than `YUNO` / `MERCHANT`.
 * `frequency.type` set to anything other than `MONTH`.
 * `amount.type` set to anything other than `FIXED` / `VARIABLE`.
 * `amount.value` or `amount.currency` missing, or a currency that isn't a valid ISO 4217 code.
+* `subscription.amount.currency` different from the payment's `amount.currency`.
+* `subscription.amount.type` = `FIXED` with a `subscription.amount.value` different from the payment's `amount.value`.
 * `frequency`, `availability`, or `amount` missing while creating a new subscription (all three are required unless you send `id`).
+* `customer_payer` missing — a payment always needs a payer, so this is refused before anything is charged.
 
 ### Validated when the subscription is created
 
@@ -231,15 +259,16 @@ These are checked at subscription-creation time, which happens *after* the charg
 
 * `availability.start_at` in the past, or `finish_at` at or before `start_at`.
 * `billing_cycles.total` set to `0` or a negative number.
-* `frequency.value` missing.
-* `customer_payer` missing, or missing its `id`.
+* `frequency.value` missing, or set to a fractional number.
 
 <Warning>
 **By this point the payment may already have succeeded**
 
-If one of these fails, the charge is not rolled back. **The payment stands and the subscription is not created** — you have a successful one-off payment and no recurrence. The payment response will not carry a `subscription_code`.
+If one of these fails, the charge is not rolled back. **The payment stands and the subscription is not created** — you have a successful one-off payment and no recurrence. The payment response comes back with `subscription_code: null`.
 
-Treat a missing `subscription_code` on an otherwise successful payment as a signal to reconcile: either refund the payment, or create the subscription separately with [Create Subscription](/reference/subscriptions/create-subscription). Checking these fields on your side before you send the call narrows the window, so it's worth doing — but always confirm from `subscription_code` rather than assuming the subscription was created.
+Apply this check only once the payment reaches a terminal status. If the payment comes back `PENDING`, the subscription has not been created **yet** and `subscription_code` is `null` because the outcome is still open — wait for the terminal status before doing anything.
+
+On a payment that is terminal and successful, treat `subscription_code: null` as a signal to reconcile: either refund the payment, or create the subscription separately with [Create Subscription](/reference/subscriptions/create-subscription). Do not retry the original call — see [Retrying the call](#retrying-the-call). Checking these fields on your side before you send the call narrows the window, so it's worth doing.
 </Warning>
 
 See [HTTP Response Codes](/reference/getting-started/response-codes) for the full list.
