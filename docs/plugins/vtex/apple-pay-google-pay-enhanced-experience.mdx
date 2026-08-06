@@ -1,6 +1,6 @@
 ---
 title: "Apple Pay & Google Pay enhanced experience"
-description: "Enable a seamless wallet experience on VTEX checkout and unlock Apple Pay installments."
+description: "Enable a direct wallet experience on VTEX checkout and unlock Apple Pay installments."
 ---
 
 The Apple Pay & Google Pay enhanced experience is an optional add-on for stores already using the Yuno VTEX plugin. It improves the checkout experience for shoppers by removing an intermediate screen between the VTEX checkout and the device's native wallet sheet, which is known to reduce conversion on wallet payments.
@@ -81,7 +81,7 @@ Setting up the enhanced experience involves adding a small JavaScript snippet to
     ```
 
     <Note>
-      Replace `YOUR_AFFILIATION_NAME` with the affiliation name from your Yuno provider configuration. In `paymentMethods`, list the wallets you want to enable — `'Apple Pay'`, `'Google Pay'`, or both.
+      Replace `YOUR_AFFILIATION_NAME` with the affiliation name from your Yuno provider configuration. In `paymentMethods`, list the wallets you want to enable: `'Apple Pay'`, `'Google Pay'`, or both.
     </Note>
   </Step>
 
@@ -136,39 +136,65 @@ If the plan includes interest, a **Payment details** panel appears below showing
   <img src="/images/plugins/vtex/image-20260422-175858.png" alt="Financing details" />
 </Frame>
 
-### Eligibility rules
-
-Each installment plan configured in your Yuno dashboard can include optional limits:
-*   **Amount range**: Minimum and maximum order total.
-*   **Availability window**: Start and end date for the plan.
-
-If the order doesn't meet these rules, the selector is hidden and Apple Pay renders as a plain button.
-
 ### How to enable
 
-To turn on Apple Pay installments, add the `appleInstallmentsMerchantReference` field to the snippet's `initialConfiguration` call:
+Apple Pay installments are enabled from the Yuno dashboard, by creating installment plans for the
+Apple Pay payment method. **The snippet doesn't change**: a store running the enhanced experience with
+`'Apple Pay'` in `paymentMethods` already asks Yuno for the available plans on every order.
 
 <Steps>
-  <Step title="Get the Merchant reference">
-    1.  In the **Yuno dashboard**, go to **Installments**.
-    2.  Open the detail panel for the installment plan you want to offer.
-    3.  Copy the **Merchant reference** value.
+  <Step title="Create an Apple Pay installment plan">
+    1.  In the **Yuno dashboard**, go to **Installments** and click **Create installment**.
+    2.  In **Payment method type**, select **Apple Pay**.
+    3.  Set the number of installments, the rate, the amount range, and the availability window.
+
     <Frame>
-      <img src="/images/plugins/vtex/image-20260429-133722.png" alt="Merchant reference" />
+      <img src="/images/plugins/vtex/vtex-installments-plan-apple-pay.png" alt="Create installment with Payment method type set to Apple Pay" />
+    </Frame>
+
+    <Warning>
+      Card plans are not reused. Apple Pay only sees plans created for the Apple Pay payment method, so
+      a store with installment plans already set up for cards still needs its own Apple Pay plans.
+    </Warning>
+  </Step>
+  <Step title="Check the plan in the list">
+    The plan appears with **Apple Pay** in the **Payment method** column. Create one plan per amount
+    band if you want different options for different cart sizes.
+
+    <Frame>
+      <img src="/images/plugins/vtex/vtex-installments-plans-list-apple-pay.png" alt="Installments list showing Apple Pay plans per amount band" />
     </Frame>
   </Step>
-  <Step title="Update the snippet">
-    Update your snippet in `checkout6-custom.js`:
-
-    ```javascript
-    YunoVTEXIO.initialConfiguration({
-      paymentMethods: ['Google Pay', 'Apple Pay'],
-      affiliationName: 'YOUR_AFFILIATION_NAME',
-      appleInstallmentsMerchantReference: 'YOUR_MERCHANT_REFERENCE' 
-    });
-    ```
+  <Step title="Confirm it in your checkout">
+    Open the payment step with a cart inside the plan's amount range and select Apple Pay. The
+    **Installments** selector appears above the button.
   </Step>
 </Steps>
 
-Save the snippet. The installments selector will appear above the Apple Pay button on the next
-checkout.
+You can also create plans with the [Create Installments Plan](/reference/installments/create-installments-plan)
+endpoint, sending `payment_method_type: APPLE_PAY`.
+
+### Eligibility rules
+
+Yuno resolves the plan for each order from the cart total, so the shopper always sees the options that
+apply to what's in their cart. If the cart changes, the options are recalculated.
+
+Each plan you create defines:
+
+*   **Payment method type**: must be Apple Pay.
+*   **Currency and country**: must match the order.
+*   **Amount range**: minimum and maximum order total the plan covers.
+*   **Availability window**: start and end date for the plan.
+
+The selector shows one entry per number of installments. If two plans cover the same order and both
+offer the same count, only one of them is used, so keep the amount ranges apart if you want a
+predictable result.
+
+If no plan covers the order, the selector is hidden and Apple Pay renders as a plain button — the
+payment still goes through, at one installment.
+
+<Warning>
+  Check the minimum amount of your lowest plan against your typical order total. If the plan starts
+  above it, most shoppers never see the selector, and the feature looks broken when it's only out of
+  range.
+</Warning>
