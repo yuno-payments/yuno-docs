@@ -15,7 +15,7 @@ To use Yuno's webhooks, build a public REST API endpoint to receive event notifi
 
 Yuno webhooks expects to receive an **HTTP 200 OK** status as a response to confirm the webhook was successfully received. The merchant system does not need to include any information in the response's body. Only the HTTP 200 status is required.
 
-If no response is received within the specified time, Yuno will retry sending the event notification up to seven times to ensure no information is lost. Refer to the [Receipt Confirmation Process](/docs/webhooks/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.
+If no response is received within the specified time, Yuno will retry sending the event notification up to seven times. Refer to the [Receipt Confirmation Process](/docs/webhooks/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.
 
 ## De-duplication
 
@@ -23,7 +23,7 @@ Because Yuno retries delivery when it doesn't receive a confirmation, your endpo
 
 ### The identifier
 
-Every event payload includes `data.idempotency_key`, a unique identifier for that event. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
+Every event payload includes `data.idempotency_key`. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
 
 ### Coverage
 
@@ -32,6 +32,11 @@ Every event payload includes `data.idempotency_key`, a unique identifier for tha
 - `payment` events
 - `refund` events
 - `chargeback` events
+- `subscription` events
+
+<Warning>
+For `subscription.*` events the key identifies the **subscription**, not the event: it is the `X-Idempotency-Key` sent when the subscription was created, and it is repeated identically on every lifecycle event for that subscription. De-duplicate `subscription.*` events on `type_event` **plus** `data.idempotency_key` — matching on the key alone collapses every event for a subscription into one and silently drops `subscription.active`, `subscription.cancel` and the rest.
+</Warning>
 
 <Note>
 Support for `enrollment` events is planned but not yet available. Until then, enrollment payloads do not include `data.idempotency_key`.
@@ -43,11 +48,13 @@ Each payload also includes a top-level `retry` field with the number of delivery
 
 ### Recommended handling
 
-Store every `data.idempotency_key` you've successfully processed, and check incoming events against that store before acting on them:
+Store every `data.idempotency_key` you've successfully processed together with the event's `type_event`, and check incoming events against that store before acting on them:
 
 ```js
 async function handleWebhookEvent(event) {
-  const key = event.data.idempotency_key;
+  // Scope the key by event type: a subscription's key is the same on every
+  // one of its lifecycle events.
+  const key = `${event.type_event}:${event.data.idempotency_key}`;
 
   if (await store.has(key)) {
     // Already processed, acknowledge and skip.
@@ -91,10 +98,14 @@ Yuno sends event notifications for various activities within the payment ecosyst
 | `subscription.close_to_renewal` | Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification_days`.                             |
 | `subscription.plan_change_scheduled` | Sent when a plan change is scheduled for the next billing cycle via `PATCH /v1/subscriptions/{id}`.             |
 | `subscription.plan_change_canceled` | Sent when a pending plan change is undone by the merchant (`MERCHANT_UNDO`) or aborted because the target plan was canceled (`TARGET_PLAN_CANCELED`). Not sent when the subscription itself is canceled — only `subscription.cancel` fires then. |
-| `subscription.plan_changed`     | Sent when a plan change takes effect: at the renewal that first bills the new plan, or immediately after `POST /v1/subscriptions/{id}/plan`. |
+| `subscription.plan_changed`     | Sent when a plan change takes effect. A scheduled change is applied at the renewal that first bills the new plan and keeps the same subscription `code`. `POST /v1/subscriptions/{id}/plan` instead replaces the subscription: the payload carries a new `code` with `previous_subscription_id` set, and a separate `subscription.cancel` (`cancellation_source: PLAN_CHANGE`) fires for the original. |
 
 <Note>
 Each renewal charge is delivered as a `payment.purchase` webhook tied to the subscription, with the outcome (success or decline) carried in the `status`/`sub_status` fields. `$0`/trial cycles emit no payment webhook, and there is currently no `subscription.error` event.
+</Note>
+
+<Note>
+Treat the plan-change events as notifications, not as the source of truth. Reconcile against `GET /v1/subscriptions/{id}` — `pending_plan_change` for a scheduled change and `plan_id` for an applied one — rather than relying on webhook delivery alone.
 </Note>
 
 ### Enrollment events

@@ -32,7 +32,7 @@ The JSON attributes for Yuno webhooks are listed below:
 
   <Expandable title="properties">
     <ParamField body="idempotency_key" type="string">
-      Unique identifier for the event. It stays stable across every retry of the same event, so you can use it to identify and skip duplicate deliveries. See [De-duplication](/docs/webhooks#de-duplication) for coverage details.
+      Identifier used to skip duplicate deliveries. It stays stable across every retry of the same event. On `subscription.*` events it identifies the subscription rather than the event, so de-duplicate those on `type_event` plus this key. See [De-duplication](/docs/webhooks#de-duplication) for coverage details.
     </ParamField>
   </Expandable>
 </ParamField>
@@ -1936,7 +1936,9 @@ Sent when a pending plan change is undone or aborted. The `reason` inside `plan_
 
 ### subscription.plan_changed
 
-Sent when a plan change takes effect: at the renewal that first bills the new plan for a scheduled change, or immediately for `POST /v1/subscriptions/{id}/plan`. `previous_plan_id` identifies the plan the subscription moved away from; the embedded subscription already reflects the new plan.
+Sent when a plan change takes effect. `previous_plan_id` identifies the plan the subscription moved away from; the embedded subscription already reflects the new plan.
+
+A scheduled change is applied at the renewal that first bills the new plan, in place — the embedded subscription keeps the same `code`. `POST /v1/subscriptions/{id}/plan` instead replaces the subscription: the payload carries a new `code` with `previous_subscription_id` set, and a separate `subscription.cancel` (`cancellation_source: PLAN_CHANGE`) fires for the original.
 
 ```json JSON
 {
@@ -2457,6 +2459,7 @@ There is one case where a failed renewal does produce a subscription webhook. If
         "name": null,
         "description": null
       }
+    }
     }
   }
 }
