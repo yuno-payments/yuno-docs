@@ -42,7 +42,7 @@ Every business model is unique, so we allow merchants to define specific rules t
 | `amount`           | number | Number of retries the subscription will attempt. The maximum equals your environment's configured retry schedule length — 5 in production. Values above the cap are clamped to it. This cap is set per environment and is not configurable per account via the API. | 4 |
 | `strategy`         | string | The retry strategy. Allowed values: DEFAULT, SMART and CUSTOM_SCHEDULE. DEFAULT uses the fixed schedule above. SMART uses machine-learning-based retry timing — see [Machine-learning retry timing](#machine-learning-retry-timing). CUSTOM_SCHEDULE uses the per-attempt schedule you provide. | `CUSTOM_SCHEDULE` |
 | `stop_on_hard_decline` | bool | When true and a hard decline is detected, retries stop for the current cycle only. On its own, the subscription stays ACTIVE, billing advances to the next cycle, and no cancel/pause or subscription webhook is emitted. If `cancel_on_exhausted_retries` is also true, the subscription is canceled instead — see [Canceling a subscription when retries run out](#canceling-a-subscription-when-retries-run-out). | TRUE |
-| `cancel_on_exhausted_retries` | bool | When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of rolling forward to the next cycle. Defaults to false. Can be set at creation or changed later with [Update Subscription](/reference/subscriptions/update-subscription). See [Canceling a subscription when retries run out](#canceling-a-subscription-when-retries-run-out). | TRUE |
+| `cancel_on_exhausted_retries` | bool | When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of rolling forward to the next cycle. Defaults to false. Can only be set at creation — an [Update Subscription](/reference/subscriptions/update-subscription) request that changes it is rejected with `400`; re-sending the current value is accepted. See [Canceling a subscription when retries run out](#canceling-a-subscription-when-retries-run-out). | TRUE |
 | `schedule`         | object | Contains attempt and delay\_seconds fields                                                                                               | Attempt: 2, `delay_seconds`: 86400 |
 
 </div>
@@ -88,7 +88,7 @@ If a timing decision is not available in time, the retry falls back to the fixed
 
 By default, when every retry for a billing cycle has been attempted and none succeeded, the subscription stays `ACTIVE` and billing rolls forward to the next cycle. A subscription backed by a permanently dead card therefore keeps generating failed charges indefinitely.
 
-Set `cancel_on_exhausted_retries` to `true` — at creation or via [Update Subscription](/reference/subscriptions/update-subscription) — to change that:
+Set `cancel_on_exhausted_retries` to `true` at creation to change that:
 
 ```json
 {
