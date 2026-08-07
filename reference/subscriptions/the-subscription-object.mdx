@@ -58,7 +58,21 @@ This object represents a subscription that can be associated with a customer.
   - `TRIALING` = The subscription is inside a plan's leading trial phase (see `plan_id`/`current_phase`). Transitions to `ACTIVE` automatically once the trial ends — this is webhooked like any other status change.
   - `PAUSED` = The subscription has been paused and can be reactivated.
   - `COMPLETED` = The subscription is completed because it reached the end date and time.
-  - `CANCELED` = Subscription canceled.
+  - `CANCELED` = Subscription canceled. See `cancellation_source` for what triggered it.
+</ParamField>
+
+<ParamField body="cancellation_source" type="enum">
+  What caused the subscription to be canceled. Only set once the subscription reaches `CANCELED`; `null` otherwise.
+
+  Possible values:
+  - `MERCHANT` = You canceled the subscription, through [Cancel Subscription](/reference/subscriptions/cancel-subscription) or the dashboard.
+  - `SYSTEM` = Yuno canceled the subscription automatically. This includes a subscription created with `initial_payment_validation: true` whose first payment did not succeed.
+  - `PLAN_CHANGE` = The subscription was replaced as part of a [plan change](/reference/subscriptions/change-subscription-plan). A new subscription continues the customer's billing under the new plan.
+  - `RETRIES_EXHAUSTED` = Retries for a billing cycle ended without a successful payment while the subscription had `retries.cancel_on_exhausted_retries` set to `true`. See [Retries](/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
+
+  <Note>
+  Treat this field as open-ended. New values can be introduced as Yuno adds cancellation behaviors, so handle an unrecognized value gracefully rather than switching exhaustively over the list above. `RETRIES_EXHAUSTED` is the most recent addition.
+  </Note>
 </ParamField>
 
 <ParamField body="plan_id" type="string">
@@ -72,17 +86,19 @@ This object represents a subscription that can be associated with a customer.
 </ParamField>
 
 <ParamField body="previous_subscription_id" type="string">
-  When this subscription was created by a [plan change](/docs/payment-features/subscriptions/plans) (switching an existing subscription to a different plan), this is the `id` of the subscription it replaced. Only present in that case.
+  When this subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) (switching an existing subscription to a different plan), this is the `id` of the subscription it replaced. Only present in that case.
+
+  Scheduled changes made with the `plan_change` object on [Update Subscription](/reference/subscriptions/update-subscription) apply in place and never set this field.
 </ParamField>
 
 <ParamField body="current_phase" type="enum">
-  Which phase of the linked plan's trial ladder the subscription is currently in. Only present on plan-linked subscriptions.
+  Which phase of the linked plan's trial ladder the subscription is currently in. Only present on plan-linked subscriptions. Absent as well when the subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) with `skip_trial: true` — that subscription is plan-linked and its plan has phases, but it never enters the ladder.
 
   Possible values: `TRIAL`, `REGULAR`.
 </ParamField>
 
 <ParamField body="billing_phases" type="array of objects">
-  The plan's leading TRIAL phases, snapshotted for this subscriber's country at creation time. Only present on plan-linked subscriptions whose plan has phases.
+  The plan's leading TRIAL phases, snapshotted for this subscriber's country at creation time. Only present on plan-linked subscriptions whose plan has phases. Absent as well when the subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) with `skip_trial: true` — that subscription is plan-linked and its plan has phases, but it never enters the ladder.
 
   <Warning>**The terminal REGULAR phase is never included here.** Its price isn't pinned at creation — it resolves from the plan at every billing, so plan price edits reach running subscriptions. When `current_phase` is `REGULAR`, the ladder is exhausted and the subscription bills the plan's regular price; there's no corresponding row in this array for that.</Warning>
 
@@ -233,7 +249,7 @@ This object represents a subscription that can be associated with a customer.
   </Expandable>
 </ParamField>
 
-<ParamField body="payment_method" type="array of objects">
+<ParamField body="payment_method" type="object">
   Specifies the payment_method object.
 
   <Expandable title="properties">
@@ -364,9 +380,33 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="amount" type="number">
-      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). Values above the cap are clamped to it. Max: 6
+      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). A value above the cap is rejected with `400` (`Max retries attempts exceeded`). Max: 6
 
       Example: 4
+    </ParamField>
+
+    <ParamField body="strategy" type="string">
+      How the timing of each retry is decided. One of:
+
+      - `DEFAULT` — the fixed retry schedule.
+      - `SMART` — machine-learning-based retry timing, applied from the second retry onward. Available to all accounts.
+      - `CUSTOM_SCHEDULE` — the per-attempt `schedule` array you provide.
+
+      Treat this field as open-ended. New values can be introduced as Yuno adds retry behaviors, so handle an unrecognized value gracefully rather than switching exhaustively over the list above. `SMART` is the most recent addition.
+
+      Example: `SMART`
+    </ParamField>
+
+    <ParamField body="stop_on_hard_decline" type="bool">
+      When true and a hard decline is detected, retries stop for the current billing cycle only. On its own, the subscription stays ACTIVE and billing advances to the next cycle. If `cancel_on_exhausted_retries` is also true, the subscription is canceled instead.
+
+      Example: TRUE
+    </ParamField>
+
+    <ParamField body="cancel_on_exhausted_retries" type="bool">
+      When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of advancing to the next cycle. `cancellation_source` is set to `RETRIES_EXHAUSTED` and a single `SUBSCRIPTION.CANCEL` webhook is emitted. Defaults to false. Can be set at creation or changed later via [Update Subscription](/reference/subscriptions/update-subscription); the cancellation itself is final — see [Retries](/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
+
+      Example: TRUE
     </ParamField>
   </Expandable>
 </ParamField>
@@ -377,8 +417,44 @@ This object represents a subscription that can be associated with a customer.
   Example: false
 </ParamField>
 
-<ParamField body="metadata" type="object">
-  Specifies the metadata object.
+<ParamField body="pending_plan_change" type="object">
+  The plan change scheduled for the next billing cycle, or `null` when none is pending. Schedule one with the `plan_change` block on `PATCH /v1/subscriptions/{id}`; undo it with `"plan_change": null`.
+
+  A scheduled change is applied to this same subscription — no new subscription is created, and neither `previous_subscription_id` nor `cancellation_source: PLAN_CHANGE` is set.
+
+  <Expandable title="properties">
+    <ParamField body="plan_id" type="string">
+      The identifier of the target plan.
+    </ParamField>
+
+    <ParamField body="plan_name" type="string">
+      The name of the target plan.
+    </ParamField>
+
+    <ParamField body="direction" type="string">
+      `UPGRADE` or `DOWNGRADE`. A longer billing frequency is an upgrade; on the same frequency, a higher resolved price is an upgrade. Informational only.
+    </ParamField>
+
+    <ParamField body="effective" type="string">
+      When the change applies. `NEXT_BILLING_CYCLE` is the only supported value: the current cycle bills the current plan's price.
+    </ParamField>
+
+    <ParamField body="phases_behavior" type="string">
+      What happens when the target plan has phases. `START_FROM_REGULAR` (default) enters the regular phase directly; `HONOR_PHASES` enters through the target plan's phase schedule — which sets `status` to `TRIALING`, `current_phase` to `TRIAL`, and repopulates `billing_phases`.
+    </ParamField>
+
+    <ParamField body="applies_at" type="Timestamp">
+      The billing event the change will take effect on — the subscription's next billing date.
+    </ParamField>
+
+    <ParamField body="requested_at" type="Timestamp">
+      When the change was scheduled.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="metadata" type="array of objects">
+  Specifies the metadata array.
 
   <Expandable title="properties">
     <ParamField body="key" type="string">
@@ -410,13 +486,7 @@ This object represents a subscription that can be associated with a customer.
     This array is currently always empty in webhook payloads. Subscribe to `payment.*` webhooks to track charges. For the subscription's full charge history (amounts, provider, phase context), use [List Subscription Payments](/reference/subscriptions/list-subscription-payments) instead of this field.
   </Note>
 
-  <Expandable title="properties">
-    <ParamField body="id*" type="string">
-      The unique identifier of the payment (MAX 64 ; MIN 36).
-
-      Example: 5104911d-5df9-229e-8468-bd41abea1a4s
-    </ParamField>
-  </Expandable>
+  Example: ["5104911d-5df9-229e-8468-bd41abea1a4s"]
 </ParamField>
 
 <ParamField body="created_at" type="Timestamp">
