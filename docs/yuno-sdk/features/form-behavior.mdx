@@ -5,26 +5,43 @@ description: "How the SDK's built-in form handles fields, focus, and autofill."
 
 The SDK's built-in form is a single set of fields shared across platforms, not a collection of separate inputs your app assembles. This page documents how it behaves out of the box — no extra configuration required.
 
+{/* Behavior below verified against yuno-ios master (CardFormViewModel and friends). TODO(verify): confirm Web and Android parity before publishing. */}
+
 ## Unified fields
 
-Card and address inputs render as one form the SDK owns end to end: layout, validation, and formatting are handled internally, so your app doesn't need to build or style individual fields itself. [PLACEHOLDER: confirm which fields are included — card number, expiry, CVV, cardholder name, address?]
+Card and address inputs render as one form the SDK owns end to end: layout, validation, and formatting are handled internally, so your app doesn't need to build or style individual fields itself.
+
+The form always renders the card fields: **card number, expiration date, security code, and cardholder name**. Depending on the country and payment method configuration, it can also collect:
+
+- **Customer details** — first and last name, email, phone number, and document type/number.
+- **Billing and shipping address** — address lines, city, state, postal code, country, and neighborhood where required, with a checkbox to reuse the billing address for shipping.
 
 ## Auto-advance
 
-As the shopper fills in the card number, focus moves to the next field (expiry, then CVV) once the current field is complete, without the shopper needing to tap or click ahead. [PLACEHOLDER: confirm exact trigger — full 16 digits? valid card length via BIN detection? does it apply to expiry → CVV too?]
+Focus moves automatically along the card fields — card number → expiration date → security code → cardholder name — without the shopper needing to tap or click ahead. Each hop has its own trigger:
+
+- **Card number** advances once the number reaches the expected length for the detected brand *and* passes Luhn validation. The expected length is not a fixed 16 digits: it comes from the BIN lookup when available (server-provided lengths per card), falling back to the brand's known range (for example, 15 for Amex).
+- **Expiration date** advances when a valid month/year is entered.
+- **Security code** advances when the code matches the brand's expected length (3 or 4 digits).
+
+The card number is formatted with spacing as the shopper types, and the brand is detected from the first digits — instantly via client-side patterns, refined by a BIN lookup once six or more digits are entered.
 
 <Frame>
   [PLACEHOLDER: short silent GIF/screenshot showing the card form advancing automatically between fields]
 </Frame>
 
-## Address autofill
+## Autofill
 
-Address fields use standard input types and autocomplete attributes, so the browser or OS's native autofill (Chrome, Safari, iOS/Android keyboards) can populate them directly. [PLACEHOLDER: confirm if this is native browser/OS autofill only, or if Yuno adds its own address-lookup/autocomplete service.]
+Card fields are tagged for native autofill (on iOS, `textContentType` values such as `.creditCardNumber`, `.creditCardExpiration`, and `.creditCardSecurityCode`), so cards saved in the OS or browser can populate the form directly.
+
+Address fields work differently: instead of relying on OS autofill, the SDK fills them for the shopper. When a valid postal code is entered, a Yuno lookup service completes the street, city, state, and neighborhood automatically — without overwriting anything the shopper already typed.
+
+{/* TODO(verify): on Web, confirm whether address inputs set autocomplete attributes for browser autofill. */}
 
 ## Notes
 
-- This behavior applies to the SDK's built-in form. [PLACEHOLDER: mention here if it does not apply to headless/custom-UI flows, per the pattern used on the Enrollment page's "Skip the form" section.]
-- [PLACEHOLDER: any platform differences — e.g., does this apply the same way on Web, iOS, and Android?]
+- This behavior applies to the SDK-rendered form — Full and Lite checkouts and SDK-rendered method forms. In headless flows the SDK never renders a form: you build your own UI, so none of this page applies there.
+- {/* TODO(verify): confirm with the universal-SDK branch that the alpha Transaction API reuses this same form (verified against the current iOS SDK on master). */}
 
 ## Related
 
