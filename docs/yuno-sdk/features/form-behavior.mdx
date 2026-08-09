@@ -1,19 +1,19 @@
 ---
 title: "Form behavior"
-description: "How the SDK's built-in form handles fields, focus, and autofill."
+description: "What the SDK's built-in form does for your shoppers, out of the box."
 ---
 
-The SDK's built-in form is a single set of fields shared across platforms, not a collection of separate inputs your app assembles. This page shows what the form looks like and how it behaves out of the box — no extra configuration required.
+The SDK renders one built-in form — card number, expiration date, security code, and cardholder name, plus customer and address fields when the payment method needs them. Everything on this page comes with it out of the box: no configuration, no extra code.
 
-{/* Behavior below verified against yuno-ios master (CardFormViewModel and friends). TODO(verify): confirm Web and Android parity before publishing. */}
+{/* Verified against yuno-ios master. TODO(verify): confirm Web and Android parity before publishing. */}
 
 ## This is what our form looks like
 
-One design, rendered natively on every platform. The SDK owns layout, validation, and formatting end to end, so the form your shoppers see is always consistent — you never assemble or style individual fields yourself.
+One design, rendered natively on every platform.
 
 <Tabs>
   <Tab title="iOS">
-    <Frame caption="The built-in card form on iOS — card fields plus the address section.">
+    <Frame caption="The built-in card form on iOS.">
       ![Built-in card form on iOS](/images/yuno-sdk/form-behavior/form-ios.svg)
     </Frame>
   </Tab>
@@ -29,45 +29,29 @@ One design, rendered natively on every platform. The SDK owns layout, validation
   </Tab>
 </Tabs>
 
-## Unified fields
+## The cursor moves for you
 
-The form always renders the card fields: **card number, expiration date, security code, and cardholder name**. Depending on the country and payment method configuration, it can also collect:
+Shoppers just type. As each field completes, focus jumps to the next one — no tapping between fields. The card number is formatted and the brand detected as they type.
 
-- **Customer details** — first and last name, email, phone number, and document type/number.
-- **Billing and shipping address** — address lines, city, state, postal code, country, and neighborhood where required, with a checkbox to reuse the billing address for shipping.
+{/* Verified: advance triggers on brand-aware length + Luhn (card number), valid MM/YY (expiry), brand CVC length (code). Details in CardFormViewModel+Focusfields.swift. */}
 
-## Auto-advance
-
-Focus moves automatically along the card fields — card number → expiration date → security code → cardholder name — without the shopper needing to tap or click ahead.
-
-<Frame caption="Focus advances on its own as each field completes — the shopper just types.">
+<Frame caption="Focus advances on its own: number → expiry → CVV → name.">
   ![Auto-advance between card fields](/images/yuno-sdk/form-behavior/auto-advance.svg)
 </Frame>
 
-Each hop has its own trigger:
+## Addresses fill themselves
 
-- **Card number** advances once the number reaches the expected length for the detected brand *and* passes Luhn validation. The expected length is not a fixed 16 digits: it comes from the BIN lookup when available (server-provided lengths per card), falling back to the brand's known range (for example, 15 for Amex).
-- **Expiration date** advances when a valid month/year is entered.
-- **Security code** advances when the code matches the brand's expected length (3 or 4 digits).
+Cards saved on the device fill in with a tap. And when the shopper types their postal code, the SDK completes the street, city, and state for them.
 
-The card number is formatted with spacing as the shopper types, and the brand is detected from the first digits — instantly via client-side patterns, refined by a BIN lookup once six or more digits are entered.
+{/* Verified: card fields use native textContentType autofill; address comes from Yuno's postal-code lookup (CustomerViewModel+CEP.swift), never overwriting shopper input. TODO(verify): Web autocomplete attributes. */}
 
-## Autofill
-
-Card fields are tagged for native autofill (on iOS, `textContentType` values such as `.creditCardNumber`, `.creditCardExpiration`, and `.creditCardSecurityCode`), so cards saved in the OS or browser can populate the form directly.
-
-Address fields work differently: instead of relying on OS autofill, the SDK fills them for the shopper. When a valid postal code is entered, a Yuno lookup service completes the street, city, state, and neighborhood automatically — without overwriting anything the shopper already typed.
-
-<Frame caption="Type a postal code and the SDK fills in the rest of the address.">
+<Frame caption="Type a postal code — the SDK fills in the rest.">
   ![Postal-code address autofill](/images/yuno-sdk/form-behavior/address-autofill.svg)
 </Frame>
 
-{/* TODO(verify): on Web, confirm whether address inputs set autocomplete attributes for browser autofill. */}
-
 ## Notes
 
-- This behavior applies to the SDK-rendered form — Full and Lite checkouts and SDK-rendered method forms. In headless flows the SDK never renders a form: you build your own UI, so none of this page applies there.
-- {/* TODO(verify): confirm with the universal-SDK branch that the alpha Transaction API reuses this same form (verified against the current iOS SDK on master). */}
+- These behaviors come with the SDK-rendered form (Full and Lite checkouts). If you build your own UI in headless mode, the form is yours — none of this applies there.
 
 ## Related
 
