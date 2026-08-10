@@ -134,7 +134,7 @@
                     "properties": {
                       "total": {
                         "type": "integer",
-                        "description": "The total number of billing cycles for the subscription.",
+                        "description": "The total number of billing cycles for the subscription. On update, must be greater than or equal to the current `billing_cycles.current`; a lower value is rejected with 400.",
                         "format": "int32"
                       }
                     }
@@ -204,19 +204,13 @@
                               }
                             }
                           },
-                          "store_credentials": {
-                            "type": "object",
-                            "description": "Specifies the credential usage for the card.",
-                            "properties": {
-                              "usage": {
-                                "type": "string",
-                                "description": "Indicates whether this is the first or a subsequent use. Required if a CIT payment was created before the subscription.",
-                                "enum": [
-                                  "FIRST",
-                                  "USED"
-                                ]
-                              }
-                            }
+                          "usage": {
+                            "type": "string",
+                            "description": "Indicates whether this stored credential is being used for the first time (FIRST) or has been used before (USED). Required if a CIT payment was created before the subscription — without it, rebills are treated as CITs and may be declined.",
+                            "enum": [
+                              "FIRST",
+                              "USED"
+                            ]
                           }
                         }
                       },
@@ -260,6 +254,30 @@
                       "cancel_on_exhausted_retries": {
                         "type": "boolean",
                         "description": "When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of remaining ACTIVE and advancing to the next cycle. cancellation_source is set to RETRIES_EXHAUSTED and a single SUBSCRIPTION.CANCEL webhook is emitted. Defaults to false. The cancellation itself is final, so Retry Subscription is rejected afterwards."
+                      }
+                    }
+                  },
+                  "plan_change": {
+                    "type": "object",
+                    "nullable": true,
+                    "description": "Schedules a move to another plan, effective at the next billing cycle. The subscription must be ACTIVE or TRIALING and already on a plan; the target plan must be ACTIVE. Only one change can be pending at a time. Send `\"plan_change\": null` to undo a pending change before it applies. `amount`, `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked subscription — combining any of them with `plan_change` returns 400.",
+                    "required": [
+                      "plan_id"
+                    ],
+                    "properties": {
+                      "plan_id": {
+                        "type": "string",
+                        "description": "The identifier of the target plan. Required. The target plan must be ACTIVE and priced in the subscription's currency."
+                      },
+                      "effective": {
+                        "type": "string",
+                        "enum": ["NEXT_BILLING_CYCLE"],
+                        "description": "When the change applies. NEXT_BILLING_CYCLE is the default and only supported value: the current cycle bills the current plan's price, the next one bills the new plan's."
+                      },
+                      "phases_behavior": {
+                        "type": "string",
+                        "enum": ["START_FROM_REGULAR", "HONOR_PHASES"],
+                        "description": "What happens when the target plan has phases. START_FROM_REGULAR (default) enters the regular phase directly — no re-lived trials. HONOR_PHASES enters through the target plan's phase schedule."
                       }
                     }
                   },
@@ -323,6 +341,15 @@
                         "finish_at": null
                       },
                       "metadata": null,
+                      "pending_plan_change": {
+                        "plan_id": "1904911d-5df9-429e-8488-ad41abea1a4d",
+                        "plan_name": "Pro",
+                        "direction": "UPGRADE",
+                        "effective": "NEXT_BILLING_CYCLE",
+                        "phases_behavior": "START_FROM_REGULAR",
+                        "applies_at": "2024-10-30T12:04:23.265372Z",
+                        "requested_at": "2024-09-30T12:04:23.265372Z"
+                      },
                       "created_at": "2024-09-30T12:04:23.265372Z",
                       "updated_at": "2024-09-30T12:04:23.265372Z"
                     }
@@ -443,6 +470,51 @@
                       }
                     },
                     "metadata": {},
+                    "pending_plan_change": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "The plan change scheduled for the next billing cycle, or null when none is pending.",
+                      "properties": {
+                        "plan_id": {
+                          "type": "string",
+                          "description": "The identifier of the target plan.",
+                          "example": "1904911d-5df9-429e-8488-ad41abea1a4d"
+                        },
+                        "plan_name": {
+                          "type": "string",
+                          "description": "The name of the target plan.",
+                          "example": "Pro"
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": ["UPGRADE", "DOWNGRADE"],
+                          "description": "Whether the target plan is an upgrade or a downgrade. Informational only.",
+                          "example": "UPGRADE"
+                        },
+                        "effective": {
+                          "type": "string",
+                          "enum": ["NEXT_BILLING_CYCLE"],
+                          "description": "When the change applies.",
+                          "example": "NEXT_BILLING_CYCLE"
+                        },
+                        "phases_behavior": {
+                          "type": "string",
+                          "enum": ["START_FROM_REGULAR", "HONOR_PHASES"],
+                          "description": "What happens when the target plan has phases.",
+                          "example": "START_FROM_REGULAR"
+                        },
+                        "applies_at": {
+                          "type": "string",
+                          "description": "The billing event the change will take effect on — the subscription's next billing date.",
+                          "example": "2024-10-30T12:04:23.265372Z"
+                        },
+                        "requested_at": {
+                          "type": "string",
+                          "description": "When the change was scheduled.",
+                          "example": "2024-09-30T12:04:23.265372Z"
+                        }
+                      }
+                    },
                     "created_at": {
                       "type": "string",
                       "example": "2024-09-30T12:04:23.265372Z"
@@ -462,7 +534,12 @@
               "application/json": {
                 "examples": {
                   "Result": {
-                    "value": "{\n Refer to the HTTP Response Codes section for more details: 'https://docs.y.uno/reference/response-codes'\n}"
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "Invalid request."
+                      ]
+                    }
                   }
                 }
               }

@@ -67,7 +67,7 @@ This object represents a subscription that can be associated with a customer.
   Possible values:
   - `MERCHANT` = You canceled the subscription, through [Cancel Subscription](/reference/subscriptions/cancel-subscription) or the dashboard.
   - `SYSTEM` = Yuno canceled the subscription automatically. This includes a subscription created with `initial_payment_validation: true` whose first payment did not succeed.
-  - `PLAN_CHANGE` = The subscription was replaced as part of a [plan change](/docs/payment-features/subscriptions/plans). A new subscription continues the customer's billing under the new plan.
+  - `PLAN_CHANGE` = The subscription was replaced as part of a [plan change](/reference/subscriptions/change-subscription-plan). A new subscription continues the customer's billing under the new plan.
   - `RETRIES_EXHAUSTED` = Retries for a billing cycle ended without a successful payment while the subscription had `retries.cancel_on_exhausted_retries` set to `true`. See [Retries](/docs/payment-features/subscriptions/retries#canceling-a-subscription-when-retries-run-out).
 
   <Note>
@@ -86,17 +86,19 @@ This object represents a subscription that can be associated with a customer.
 </ParamField>
 
 <ParamField body="previous_subscription_id" type="string">
-  When this subscription was created by a [plan change](/docs/payment-features/subscriptions/plans) (switching an existing subscription to a different plan), this is the `id` of the subscription it replaced. Only present in that case.
+  When this subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) (switching an existing subscription to a different plan), this is the `id` of the subscription it replaced. Only present in that case.
+
+  Scheduled changes made with the `plan_change` object on [Update Subscription](/reference/subscriptions/update-subscription) apply in place and never set this field.
 </ParamField>
 
 <ParamField body="current_phase" type="enum">
-  Which phase of the linked plan's trial ladder the subscription is currently in. Only present on plan-linked subscriptions.
+  Which phase of the linked plan's trial ladder the subscription is currently in. Only present on plan-linked subscriptions. Absent as well when the subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) with `skip_trial: true` — that subscription is plan-linked and its plan has phases, but it never enters the ladder.
 
   Possible values: `TRIAL`, `REGULAR`.
 </ParamField>
 
 <ParamField body="billing_phases" type="array of objects">
-  The plan's leading TRIAL phases, snapshotted for this subscriber's country at creation time. Only present on plan-linked subscriptions whose plan has phases.
+  The plan's leading TRIAL phases, snapshotted for this subscriber's country at creation time. Only present on plan-linked subscriptions whose plan has phases. Absent as well when the subscription was created by a [plan change](/reference/subscriptions/change-subscription-plan) with `skip_trial: true` — that subscription is plan-linked and its plan has phases, but it never enters the ladder.
 
   <Warning>**The terminal REGULAR phase is never included here.** Its price isn't pinned at creation — it resolves from the plan at every billing, so plan price edits reach running subscriptions. When `current_phase` is `REGULAR`, the ladder is exhausted and the subscription bills the plan's regular price; there's no corresponding row in this array for that.</Warning>
 
@@ -174,17 +176,47 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="current" type="number">
-      Value of the current billing cycle.
+      The **next** billing cycle to be charged — not the cycle currently in progress.
+
+      Subscriptions are billed in advance: the charge for a cycle fires at the start of the period it pays for, and the counter moves on as soon as that charge is dispatched. While the subscriber is inside the period paid for by cycle N, this field therefore already reads `N + 1`. The cycle in progress is `current - 1`. One exception: the counter stops on the last cycle. Once `current` reaches `billing_cycles.total` — or `availability.finish_at` passes — the subscription is marked `COMPLETED` and `current` is frozen at `total` for the whole of that final period, so there the cycle in progress is `current`, not `current - 1`.
+
+      A subscription created with a two-cycle trial reads `current: 2` for the whole of the first trial period, and `current: 3` during the second — the trial is still running even though `current` has passed the trial cycle count. `current_period_start` and `current_period_end` tell you *when* the current period runs; they do not tell you whether the subscription is still in its trial. To locate the trial, compare the cycle in progress (`current - 1`) against `trial_period.billing_cycles` — legacy `trial_period` subscriptions stay `ACTIVE` and carry no `current_phase` while trialing.
+
+      Because the counter advances when a charge is dispatched rather than when it succeeds, a failed cycle never rolls it back — `current` has already moved on before the first retry runs, and it stays there whether or not the retries eventually collect.
+
+      The first cycle is the other exception: when `initial_payment_validation` is `true`, its counter moves only once that first charge succeeds. While the charge is pending or being retried, `current` stays `1`; if it is never collected the subscription is cancelled with `current` still `1`. From the second cycle onward the dispatch-time rule applies.
 
       Example: 2
     </ParamField>
 
     <ParamField body="next_at" type="Timestamp">
-      The date of the next payment for the subscription.
+      The date of the next payment for the subscription. Always present. When `current_period_end` is returned it is this same instant.
 
       Example: 2023-02-16T20:00:00.786342Z
     </ParamField>
   </Expandable>
+</ParamField>
+
+<ParamField body="current_period_start" type="Timestamp">
+  The start of the billing period currently in progress — the timestamp of that cycle's first (non-retry) payment attempt. Zero-amount cycles, such as a free trial phase, open a period the same way even though no charge is sent.
+
+  Returned only by [Retrieve Subscription](/reference/subscriptions/retrieve-subscription) — `GET /v1/subscriptions/{subscription_id}` — and only once the first cycle has been charged. Every other response omits the pair regardless of how many cycles have been charged: create, update, pause, resume, cancel and retry. It is never populated on subscription list responses or on webhook payloads.
+
+  On REST responses the keys are omitted entirely when unresolved; webhook payloads may carry them as `null`. Treat null and missing as the same thing.
+
+  Example: 2023-01-16T20:00:00.912480Z
+</ParamField>
+
+<ParamField body="current_period_end" type="Timestamp">
+  The end of the billing period currently in progress, which is also when the next charge is scheduled. Always equal to `billing_cycles.next_at`.
+
+  This pair describes the period the subscription is **scheduled** into, not one that is necessarily paid for: if a cycle's charge failed and its retries are still running, the window has already moved to the period that charge was meant to open.
+
+  Absent under the same conditions as `current_period_start`; the two are always present or absent together.
+
+  These values are only meaningful while the subscription is live. A `CANCELED` or `COMPLETED` subscription keeps whatever window it last had; `current_period_end` then refers to a charge that will not be taken, and on a completed fixed-term subscription it can fall before `current_period_start`.
+
+  Example: 2023-02-16T20:00:00.786342Z
 </ParamField>
 
 <ParamField body="billing_date" type="object">
@@ -217,7 +249,7 @@ This object represents a subscription that can be associated with a customer.
   </Expandable>
 </ParamField>
 
-<ParamField body="payment_method" type="array of objects">
+<ParamField body="payment_method" type="object">
   Specifies the payment_method object.
 
   <Expandable title="properties">
@@ -348,7 +380,7 @@ This object represents a subscription that can be associated with a customer.
     </ParamField>
 
     <ParamField body="amount" type="number">
-      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). Values above the cap are clamped to it. Max: 6
+      The number of retries that the subscription plan will have to completion. The maximum equals your environment's configured retry schedule length (6 in production). A value above the cap is rejected with `400` (`Max retries attempts exceeded`). Max: 6
 
       Example: 4
     </ParamField>
@@ -385,8 +417,44 @@ This object represents a subscription that can be associated with a customer.
   Example: false
 </ParamField>
 
-<ParamField body="metadata" type="object">
-  Specifies the metadata object.
+<ParamField body="pending_plan_change" type="object">
+  The plan change scheduled for the next billing cycle, or `null` when none is pending. Schedule one with the `plan_change` block on `PATCH /v1/subscriptions/{id}`; undo it with `"plan_change": null`.
+
+  A scheduled change is applied to this same subscription — no new subscription is created, and neither `previous_subscription_id` nor `cancellation_source: PLAN_CHANGE` is set.
+
+  <Expandable title="properties">
+    <ParamField body="plan_id" type="string">
+      The identifier of the target plan.
+    </ParamField>
+
+    <ParamField body="plan_name" type="string">
+      The name of the target plan.
+    </ParamField>
+
+    <ParamField body="direction" type="string">
+      `UPGRADE` or `DOWNGRADE`. A longer billing frequency is an upgrade; on the same frequency, a higher resolved price is an upgrade. Informational only.
+    </ParamField>
+
+    <ParamField body="effective" type="string">
+      When the change applies. `NEXT_BILLING_CYCLE` is the only supported value: the current cycle bills the current plan's price.
+    </ParamField>
+
+    <ParamField body="phases_behavior" type="string">
+      What happens when the target plan has phases. `START_FROM_REGULAR` (default) enters the regular phase directly; `HONOR_PHASES` enters through the target plan's phase schedule — which sets `status` to `TRIALING`, `current_phase` to `TRIAL`, and repopulates `billing_phases`.
+    </ParamField>
+
+    <ParamField body="applies_at" type="Timestamp">
+      The billing event the change will take effect on — the subscription's next billing date.
+    </ParamField>
+
+    <ParamField body="requested_at" type="Timestamp">
+      When the change was scheduled.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="metadata" type="array of objects">
+  Specifies the metadata array.
 
   <Expandable title="properties">
     <ParamField body="key" type="string">
@@ -418,13 +486,7 @@ This object represents a subscription that can be associated with a customer.
     This array is currently always empty in webhook payloads. Subscribe to `payment.*` webhooks to track charges. For the subscription's full charge history (amounts, provider, phase context), use [List Subscription Payments](/reference/subscriptions/list-subscription-payments) instead of this field.
   </Note>
 
-  <Expandable title="properties">
-    <ParamField body="id*" type="string">
-      The unique identifier of the payment (MAX 64 ; MIN 36).
-
-      Example: 5104911d-5df9-229e-8468-bd41abea1a4s
-    </ParamField>
-  </Expandable>
+  Example: ["5104911d-5df9-229e-8468-bd41abea1a4s"]
 </ParamField>
 
 <ParamField body="created_at" type="Timestamp">
