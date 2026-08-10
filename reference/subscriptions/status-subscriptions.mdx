@@ -36,6 +36,25 @@ Subscriptions can have the status described in the table below.
   Yuno representative to have it enabled.
 </Note>
 
+## Status transition matrix
+
+Each cell shows what moves a subscription from the status in the row to the status in the column. An em dash (—) means the transition does not exist. `COMPLETED` and `CANCELED` are terminal: nothing leaves them.
+
+|  From \ To   | `TRIALING` | `ACTIVE` | `PAST_DUE` | `PAUSED` | `COMPLETED` | `CANCELED` |
+| ------------ | ---------- | -------- | ---------- | -------- | ----------- | ---------- |
+| `CREATED`    | First payment confirmed and the plan starts with a trial phase | First payment confirmed | — | — | — | First payment fails under `initial_payment_validation`, or the subscription is canceled |
+| `TRIALING`   | — | The trial phase ends | A recurring charge fails¹ | The subscription is paused | `billing_cycles.total` is reached or the availability window ends | Canceled by you, by a plan cancellation, or by `retries.cancel_on_exhausted_retries` |
+| `ACTIVE`     | A [plan change](/reference/subscriptions/update-subscription-plan) lands inside a trial phase | — | A recurring charge fails¹ | The subscription is paused | `billing_cycles.total` is reached or the availability window ends | Canceled by you, by a plan cancellation, or by `retries.cancel_on_exhausted_retries` |
+| `PAST_DUE`   | A later charge succeeds while the trial phase is still running | A later charge succeeds | — | — | The availability window ends | Canceled by you, or retries end without a successful payment and `retries.cancel_on_exhausted_retries` is `true` |
+| `PAUSED`     | Resumed while the trial phase is still running | Resumed after the trial phase | — | — | — | The subscription is canceled |
+
+¹ Only where `PAST_DUE` is enabled for the account; otherwise the subscription stays in its current status while the retries run.
+
+<Note>
+  `ERROR` sits outside this flow: it is reserved for processing failures and is not part of the
+  normal lifecycle above.
+</Note>
+
 ## Canceling a subscription
 
 You can cancel a subscription in `CREATED`, `ACTIVE`, `TRIALING`, `PAST_DUE` and `PAUSED`, both
