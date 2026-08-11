@@ -28,7 +28,7 @@ and 3DS in between.
 You need:
 
 - A Yuno account and your **public API key**, available in the [Yuno Dashboard](https://dashboard.y.uno/) under **Developers** > **Credentials**.
-- A backend that can call Yuno's API to create checkout sessions and, optionally, payments.
+- A backend that can call Yuno's API to create checkout sessions.
 
 ## Install
 
@@ -156,15 +156,12 @@ private-secret-key: <your-private-secret-key>
 ````
 
 <Warning>
-For the SDK to create the payment on your behalf (the default behavior shown in this guide), the checkout session must be created with `workflow: "SDK_SEAMLESS"`, a field on the session-create body above, **not** on `TransactionConfig`. If the session uses the default workflow (`SDK_CHECKOUT`), the backend rejects the SDK's payment creation and the transaction ends in `INTERNAL_ERROR`; use `SDK_CHECKOUT` only when you override [`createPayment`](/docs/yuno-sdk/controllers/create-payment). See the [`workflow` field](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
+Create the session with `workflow: "SDK_SEAMLESS"`, a field on the session-create body above, **not** on `TransactionConfig`. It is what lets the SDK create the payment for you. Without it, the transaction ends in `INTERNAL_ERROR`. See the [`workflow` field](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
 </Warning>
 
 ### Put the methods on screen
 
-The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected): only `paymentMethodType` (`type` on Web) is required; `vaultedToken` and `transactionData` are optional. Two ways to get it:
-
-- **Use the SDK's pre-built methods list.** Call `getPaymentMethodsViews` to render a list of methods. When the user picks one, your `onPaymentSelected` controller receives a `PaymentMethodSelected` you can pass to `start()`. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list).
-- **Build your own list.** Fetch the available payment methods from Yuno's API and construct `PaymentMethodSelected` yourself based on the user's choice. See [`GET /v1/checkout/sessions/{checkout_session}/payment-methods`](https://docs.y.uno/reference/checkout-sessions/retrieve-payment-methods-for-checkout#retrieve-payment-methods-for-checkout).
+Call `getPaymentMethodsViews` to render the SDK's methods list. When the shopper picks one, your `onPaymentSelected` controller receives a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected) that you pass to `start()`. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list) for the full walkthrough, with visuals.
 
 ## Take the payment
 
@@ -301,15 +298,15 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 
 | Field | Required | Purpose |
 |---|---|---|
-| `checkoutSession` | Yes | Session ID returned by your backend (use `customerSession` instead for enrollment). |
+| `checkoutSession` | Yes | Session ID returned by your backend. |
 | `countryCode` | Yes | ISO-3166 alpha-2 country code (e.g. `US`, `CO`). |
 | `language` | No | ISO-639 code (e.g. `en`, `es`). Falls back to the device or browser language. |
 | `controller` | Yes (mobile only) | Object implementing `TransactionController`. Not present on Web, where events are wired inline on the config. |
 
-For the full list of fields, including `showStatusScreen`, see [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config).
+For the full list of fields, see [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config).
 
 <Note>
-On Web, `transaction()` takes an optional `elementSelector`, the DOM element the form renders into. It's used only by form-based payments; headless flows ignore it.
+On Web, `transaction()` also takes `elementSelector`: the DOM element the form renders into.
 </Note>
 
 ## Know it went through
@@ -319,29 +316,6 @@ The SDK presents the form, tokenizes the input, creates the payment, handles 3DS
 <Note>
 `onStatus` drives your UI. For fulfillment (shipping goods, granting access), confirm the outcome server-side via webhooks or the payments API; see [Confirm on your server](/docs/yuno-sdk/controllers/on-status#confirm-on-your-server).
 </Note>
-
-### Creating the payment yourself (optional)
-
-By default, the SDK creates the payment for you. You don't need this endpoint.
-
-If you override `createPayment` to take control of payment creation, your backend calls this endpoint with the One-Time Token delivered by the SDK.
-
-- **Endpoint**: `POST /v1/payments`
-- **Required**: One-Time Token, checkout session
-- **Reference**: [`POST /v1/payments`](https://docs.y.uno/reference/payments/create-payment)
-
-````http
-POST https://api-sandbox.y.uno/v1/payments
-public-api-key: <your-public-api-key>
-private-secret-key: <your-private-secret-key>
-
-{
-  "payment_method": { "token": "one-time-token-from-sdk" },
-  "checkout": { "session": "checkout-session-id" }
-}
-````
-
-See [`createPayment`](/docs/yuno-sdk/controllers/create-payment) for the override flow.
 
 ## Test cards
 
