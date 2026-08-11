@@ -1,6 +1,6 @@
 ---
 title: "Subscription Status"
-description: "Explains the subscription lifecycle statuses: active, paused, completed, canceled, and error."
+description: "Explains the subscription lifecycle statuses: created, active, trialing, past due, paused, completed, canceled, and error."
 ---
 
 With Yuno, managing subscriptions becomes seamless – no additional websites or applications are required. Our intuitive subscription management system enables you to create, pause, resume, and cancel subscriptions.
@@ -9,16 +9,55 @@ With Yuno, managing subscriptions becomes seamless – no additional websites or
 
 In the following workflow, you can find the different subscription statuses and how they can be updated.
 
-<Frame>![](/images/reference/status-subscriptions/image1.png)</Frame>
+<Frame>
+  <img src="/images/reference/status-subscriptions/subscription-lifecycle.svg" alt="Subscription lifecycle: CREATED to TRIALING or ACTIVE, with PAUSED, PAST_DUE, COMPLETED and CANCELED, plus a transversal ERROR state" />
+</Frame>
+
+A subscription in the trial phase behaves like an active one: it can be paused, it enters `PAST_DUE` on a failed charge and returns to `TRIALING` when a later charge succeeds. Any non-terminal status can be canceled, and a subscription created with `initial_payment_validation: true` goes straight from `CREATED` to `CANCELED` if the first payment fails.
 
 ## Subscription status
 
 Subscriptions can have the status described in the table below.
 
-| Status      | Description                                                                          |
-| ----------- | ------------------------------------------------------------------------------------ |
-| `ACTIVE`    | The subscription has been created with an associated customer and is already active. |
-| `PAUSED`    | The subscription has been paused and can be reactivated.                             |
-| `COMPLETED` | The subscription is completed because it reached the end date and time.              |
-| `CANCELED`  | Subscription canceled.                                                               |
-| `ERROR`     | An error occurred in the process.                                                    |
+| Status      | Description                                                                                                                                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CREATED`   | Transitory status while the initial payment hasn't been processed yet. Only occurs when the subscription is created with `initial_payment_validation: true`.                                                       |
+| `ACTIVE`    | The subscription has been created with an associated customer and is already active.                                                                                                                               |
+| `TRIALING`  | The subscription is inside a plan's leading trial phase. Transitions to `ACTIVE` automatically once the trial ends.                                                                                                |
+| `PAST_DUE`  | A recurring charge failed and the subscription is awaiting recovery. It keeps billing: the next successful charge returns it to `ACTIVE`, or to `TRIALING` if the trial phase is still running. See [Retries](/docs/payment-features/subscriptions/retries). |
+| `PAUSED`    | The subscription has been paused and can be reactivated.                                                                                                                                                           |
+| `COMPLETED` | The subscription is completed because it reached the end date and time.                                                                                                                                            |
+| `CANCELED`  | Subscription canceled. See `cancellation_source` for what triggered it.                                                                                                                                            |
+| `ERROR`     | An error occurred in the process.                                                                                                                                                                                  |
+
+<Note>
+  If your subscriptions never enter `PAST_DUE`, the status is not enabled for your account yet: a
+  failed recurring charge leaves the subscription in `ACTIVE` while the retries run. Contact your
+  Yuno representative to have it enabled.
+</Note>
+
+## Status transition matrix
+
+Each cell shows what moves a subscription from the status in the row to the status in the column. N/A means the transition does not exist. `COMPLETED` and `CANCELED` are terminal: nothing leaves them.
+
+|  From \ To   | `TRIALING` | `ACTIVE` | `PAST_DUE` | `PAUSED` | `COMPLETED` | `CANCELED` |
+| ------------ | ---------- | -------- | ---------- | -------- | ----------- | ---------- |
+| `CREATED`    | First payment confirmed and the plan starts with a trial phase | First payment confirmed | N/A | N/A | N/A | First payment fails under `initial_payment_validation`, or the subscription is canceled |
+| `TRIALING`   | N/A | The trial phase ends | A recurring charge fails¹ | The subscription is paused | `billing_cycles.total` is reached or the availability window ends | Canceled by you, by a plan cancellation, or by `retries.cancel_on_exhausted_retries` |
+| `ACTIVE`     | A [plan change](/reference/subscriptions/change-subscription-plan) lands inside a trial phase | N/A | A recurring charge fails¹ | The subscription is paused | `billing_cycles.total` is reached or the availability window ends | Canceled by you, by a plan cancellation, or by `retries.cancel_on_exhausted_retries` |
+| `PAST_DUE`   | A later charge succeeds while the trial phase is still running | A later charge succeeds | N/A | N/A | The availability window ends | Canceled by you, or retries end without a successful payment and `retries.cancel_on_exhausted_retries` is `true` |
+| `PAUSED`     | Resumed while the trial phase is still running | Resumed after the trial phase | N/A | N/A | N/A | The subscription is canceled |
+
+¹ Only where `PAST_DUE` is enabled for the account; otherwise the subscription stays in its current status while the retries run.
+
+<Note>
+  `ERROR` sits outside this flow: it is reserved for processing failures and is not part of the
+  normal lifecycle above.
+</Note>
+
+## Canceling a subscription
+
+You can cancel a subscription in `CREATED`, `ACTIVE`, `TRIALING`, `PAST_DUE` and `PAUSED`, both
+through [Cancel Subscription](/reference/subscriptions/cancel-subscription) and from the dashboard.
+`COMPLETED` and `CANCELED` are terminal — canceling from either returns `400 INVALID_STATE`, which
+is also what a repeated cancel on an already-canceled subscription returns.

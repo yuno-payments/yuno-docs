@@ -1583,6 +1583,94 @@ Sent when a subscription transitions from any other valid status into `ACTIVE`. 
 }
 ```
 
+### subscription.trialing
+
+Sent when a subscription enters a plan's trial phase from another status. Entering the trial at creation time is reported as `subscription.create`, and leaving a pause into the trial as `subscription.resume`.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.trialing",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "TRIALING",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "TRIAL",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 2,
+        "next_at": "2025-12-04T00:32:25.485281Z"
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "payments": [],
+      "created_at": "2025-12-04T00:29:25.485281Z",
+      "updated_at": "2025-12-04T00:29:59.216998Z"
+    }
+  }
+}
+```
+
+### subscription.past_due
+
+Sent when a recurring charge fails and the subscription enters `PAST_DUE`. The subscription keeps billing while the retries run and can still be canceled. When a later charge succeeds it returns to `ACTIVE` — or to `TRIALING` if the trial phase is still running — and the corresponding `subscription.active` or `subscription.trialing` event is sent.
+
+This event is only emitted for accounts where the `PAST_DUE` status is enabled. Where it is not, a failed charge leaves the subscription in `ACTIVE` and only the `payment.purchase` webhook reports the decline. See [Subscription Status](/reference/subscriptions/status-subscriptions).
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.past_due",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Subscription",
+      "country": "CO",
+      "account_code": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+      "merchant_reference": "subscription-ref-merchant-002",
+      "status": "PAST_DUE",
+      "amount": {
+        "currency": "COP",
+        "type": "FIXED",
+        "value": 36000
+      },
+      "billing_cycles": {
+        "total": 5,
+        "current": 3,
+        "next_at": "2025-12-04T00:35:25.485281Z"
+      },
+      "customer_payer": {
+        "code": "a9f9140a-1216-481c-8356-1a125078f905"
+      },
+      "retries": {
+        "retry_on_decline": true,
+        "amount": 6
+      },
+      "payments": [],
+      "created_at": "2025-12-04T00:29:25.485281Z",
+      "updated_at": "2025-12-04T00:35:25.485281Z"
+    }
+  }
+}
+```
+
 ### subscription.pause
 
 Sent when a subscription is paused. Use this event to update the status in your system and pause related services.
@@ -1862,6 +1950,112 @@ Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification
 }
 ```
 
+### subscription.cycle_executed
+
+Sent for plan-based subscriptions when a `$0` cycle is executed, either a trial cycle or a fully discounted one. Those cycles produce no `payment.purchase` webhook, so this event is the only receipt for them. `reason` is `TRIAL` or `FULL_DISCOUNT`, `phase` is the phase the cycle belongs to, and `breakdown` carries the same line-item detail as a paid cycle, with a zero total.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.cycle_executed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "TRIALING",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "TRIAL",
+      "billing_cycles": {
+        "total": null,
+        "current": 2,
+        "next_at": "2026-07-14T19:19:31.914Z"
+      },
+      "payments": []
+    },
+    "cycle": 1,
+    "reason": "TRIAL",
+    "phase": "TRIAL",
+    "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+    "phase_payment": 1,
+    "billing_cycle": 1,
+    "breakdown": {
+      "currency": "USD",
+      "subtotal": 0,
+      "total": 0,
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "line_items": [
+        {
+          "type": "PLAN",
+          "label": "Trial",
+          "service_period": {
+            "start": "2026-06-14T19:19:31.914Z",
+            "end": "2026-07-14T19:19:31.914Z"
+          },
+          "amount": {
+            "currency": "USD",
+            "value": 0
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### subscription.phase_completed
+
+Sent for plan-based subscriptions when a billing phase ends, immediately before the `subscription.phase_started` of the phase that replaces it. It is not sent for the first phase, which has no predecessor. `phase` is the phase that just ended.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.phase_completed",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "ACTIVE",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "REGULAR",
+      "payments": []
+    },
+    "phase": "TRIAL"
+  }
+}
+```
+
+### subscription.phase_started
+
+Sent for plan-based subscriptions when a billing phase begins, including the first one. `phase` is the phase that is starting and `previous_phase` is the one it replaces, or `null` for the first phase.
+
+```json JSON
+{
+  "type": "subscription",
+  "type_event": "subscription.phase_started",
+  "account_id": "c24d6c92-99a7-40bb-bc7b-efc40337f9f4",
+  "retry": 0,
+  "version": 2,
+  "data": {
+    "subscription": {
+      "code": "e98ef674-9baa-4f7a-8da4-4c812c4749a4",
+      "name": "Monthly Plan",
+      "status": "ACTIVE",
+      "plan_id": "0b0a2f7a-3d19-4a52-8f0e-3f1a3d5a3f21",
+      "current_phase": "REGULAR",
+      "payments": []
+    },
+    "phase": "REGULAR",
+    "previous_phase": "TRIAL"
+  }
+}
+```
+
 ### subscription.plan_change_scheduled
 
 Sent when a plan change is scheduled for the next billing cycle. The `plan_change` block describes the pending change; `applies_at` is the next billing date the change will take effect on.
@@ -1970,15 +2164,15 @@ A scheduled change is applied at the renewal that first bills the new plan, in p
 ### Renewal charges and failures (no `subscription.error`)
 
 <Warning>
-There is **no `subscription.error` webhook**. Yuno does not emit a subscription event when a renewal charge fails. Renewal-charge outcomes — successful rebills and failed/declined attempts — are delivered as `payment.purchase` webhooks tied to the subscription, with the result carried in the `status`/`sub_status` fields. Subscribe to `payment.purchase` to track renewal results. `$0`/trial cycles emit no payment webhook.
+There is **no `subscription.error` webhook**. Renewal-charge outcomes — successful rebills and failed/declined attempts — are delivered as `payment.purchase` webhooks tied to the subscription, with the result carried in the `status`/`sub_status` fields. Subscribe to `payment.purchase` to track renewal results. `$0`/trial cycles emit no payment webhook; on plan-based subscriptions they are reported as [`subscription.cycle_executed`](#subscription-cycle_executed) instead.
 </Warning>
 
 <Note>
-The renewal **charge** itself is always signaled by a `payment.purchase` webhook, never by a subscription webhook. The `payments` array inside the subscription object is currently always empty in webhook payloads. `subscription.active` is sent once (at `billing_cycles.current` = 2), not on every renewal.
+The renewal **charge** itself is always signaled by a `payment.purchase` webhook, never by a subscription webhook. The `payments` array inside the subscription object is currently always empty in webhook payloads. `subscription.active` is sent when the subscription first becomes active (at `billing_cycles.current` = 2), not on every renewal — it is sent again only when a subscription recovers from `PAST_DUE`.
 </Note>
 
 <Note>
-There is one case where a failed renewal does produce a subscription webhook. If the subscription has `retries.cancel_on_exhausted_retries` set to `true`, then once retries for that cycle end without a successful payment the subscription is canceled and a single [`subscription.cancel`](#subscriptioncancel) is emitted with `cancellation_source` set to `RETRIES_EXHAUSTED`. This is still not a `subscription.error` — the individual failed attempts remain `payment.purchase` webhooks. Only the final cancellation is signaled on the subscription.
+A failed renewal does produce a subscription webhook in two cases. Where the `PAST_DUE` status is enabled for the account, the first failed charge of a cycle moves the subscription to `PAST_DUE` and emits [`subscription.past_due`](#subscription-past_due). And if the subscription has `retries.cancel_on_exhausted_retries` set to `true`, then once retries for that cycle end without a successful payment the subscription is canceled and a single [`subscription.cancel`](#subscription-cancel) is emitted with `cancellation_source` set to `RETRIES_EXHAUSTED`. This is still not a `subscription.error` — the individual failed attempts remain `payment.purchase` webhooks. Only the final cancellation is signaled on the subscription.
 </Note>
 
 ## Onboardings
