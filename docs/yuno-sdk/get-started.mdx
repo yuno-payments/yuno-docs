@@ -1,7 +1,7 @@
 ---
 hidden: true
 title: "Get Started"
-description: "Accept your first payment in sandbox — no real money moves."
+description: "Accept your first payment in sandbox, where no real money moves."
 ---
 
 Four steps: install the SDK, show your shopper their payment methods, take
@@ -16,7 +16,7 @@ and 3DS in between.
     Your backend creates a checkout session; the SDK shows the methods.
   </Step>
   <Step title="Take the payment">
-    Start the transaction — Yuno renders the form and runs 3DS.
+    Start the transaction. Yuno renders the form and runs 3DS.
   </Step>
   <Step title="Know it went through">
     The SDK tells you the outcome; your server confirms it.
@@ -33,7 +33,7 @@ You need:
 ## Install
 
 Add the SDK for your platform, then initialize it once, at app or page
-startup — the constructor only takes your public API key. All
+startup. The constructor only takes your public API key. All
 payment-specific configuration comes later.
 
 <Tabs>
@@ -48,7 +48,7 @@ Load the SDK from the CDN. It exposes a global `SdkPayments` and dispatches a `s
   crossorigin="anonymous"></script>
 ````
 
-Get the `integrity` hash from [`versions-sri.json`](https://sdk-web.y.uno/versions-sri.json) — use `latest.integrity`, or the entry that matches your pinned version under `history`. `crossorigin="anonymous"` lets the browser validate the hash for the cross-origin script. See [Subresource Integrity](/docs/sdks/resources/references/web#subresource-integrity-sri) for details.
+Get the `integrity` hash from [`versions-sri.json`](https://sdk-web.y.uno/versions-sri.json): use `latest.integrity`, or the entry that matches your pinned version under `history`. `crossorigin="anonymous"` lets the browser validate the hash for the cross-origin script. See [Subresource Integrity](/docs/sdks/resources/references/web#subresource-integrity-sri) for details.
 
 Then wait for the `sdk-payments-ready` event and initialize:
 
@@ -124,12 +124,12 @@ class MyApplication : Application() {
 ## Show payment methods
 
 Ask Yuno which methods this shopper can use, and put them on screen. Your
-backend first creates a **checkout session** — the payment's identity — and
+backend first creates a **checkout session** (the payment's identity) and
 hands it to your app.
 
 ### Create the checkout session (backend)
 
-A checkout session is Yuno's record of this one payment — your server asks
+A checkout session is Yuno's record of this one payment: your server asks
 Yuno for it and hands the ID to your app.
 
 - **Endpoint**: `POST /v1/checkout/sessions`
@@ -137,7 +137,7 @@ Yuno for it and hands the ID to your app.
 - **Required**: `account_id`, `merchant_order_id`, `payment_description`, `country`
 - **Optional**: `customer_id` (gives the session access to that customer's enrolled methods), `amount`, `workflow`
 - **Returns**: `checkout_session` (the value you pass as `checkoutSession`)
-- **Reference**: [`POST /v1/checkout/sessions`](https://docs.y.uno/reference/checkout-sessions/create-checkout-session) — full request/response and auth details
+- **Reference**: [`POST /v1/checkout/sessions`](https://docs.y.uno/reference/checkout-sessions/create-checkout-session), with full request/response and auth details
 
 ````http
 POST https://api-sandbox.y.uno/v1/checkout/sessions
@@ -156,12 +156,12 @@ private-secret-key: <your-private-secret-key>
 ````
 
 <Warning>
-For the SDK to create the payment on your behalf (the default behavior shown in this guide), the checkout session must be created with `workflow: "SDK_SEAMLESS"` — a field on the session-create body above, **not** on `TransactionConfig`. If the session uses the default workflow (`SDK_CHECKOUT`), the backend rejects the SDK's payment creation and the transaction ends in `INTERNAL_ERROR`; use `SDK_CHECKOUT` only when you override [`createPayment`](/docs/yuno-sdk/controllers/create-payment). See the [`workflow` field](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
+Create the session with `workflow: "SDK_SEAMLESS"`, a field on the session-create body above, **not** on `TransactionConfig`. It is what lets the SDK create the payment for you. Without it, the transaction ends in `INTERNAL_ERROR`. See the [`workflow` field](https://docs.y.uno/reference/checkout-sessions/create-checkout-session#body-workflow).
 </Warning>
 
 ### Put the methods on screen
 
-The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected) — only `paymentMethodType` (`type` on Web) is required; `vaultedToken` and `transactionData` are optional. Two ways to get it:
+The shopper's choice reaches the SDK as a [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected): only `paymentMethodType` (`type` on Web) is required; `vaultedToken` and `transactionData` are optional. Two ways to get it:
 
 - **Use the SDK's pre-built methods list.** Call `getPaymentMethodsViews` to render a list of methods. When the user picks one, your `onPaymentSelected` controller receives a `PaymentMethodSelected` you can pass to `start()`. See [Payment Methods List](/docs/yuno-sdk/features/payment-methods-list).
 - **Build your own list.** Fetch the available payment methods from Yuno's API and construct `PaymentMethodSelected` yourself based on the user's choice. See [`GET /v1/checkout/sessions/{checkout_session}/payment-methods`](https://docs.y.uno/reference/checkout-sessions/retrieve-payment-methods-for-checkout#retrieve-payment-methods-for-checkout).
@@ -284,23 +284,23 @@ class CheckoutActivity : ComponentActivity(), TransactionController {
 
 | Field | Required | Purpose |
 |---|---|---|
-| `checkoutSession` | Yes | Session ID returned by your backend (use `customerSession` instead for enrollment). |
+| `checkoutSession` | Yes | Session ID returned by your backend. |
 | `countryCode` | Yes | ISO-3166 alpha-2 country code (e.g. `US`, `CO`). |
 | `language` | No | ISO-639 code (e.g. `en`, `es`). Falls back to the device or browser language. |
-| `controller` | Yes (mobile only) | Object implementing `TransactionController`. Not present on Web — events are wired inline on the config. |
+| `controller` | Yes (mobile only) | Object implementing `TransactionController`. Not present on Web, where events are wired inline on the config. |
 
-For the full list of fields, including `showStatusScreen`, see [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config).
+For the full list of fields, see [`TransactionConfig`](/docs/yuno-sdk/reference/transaction-config).
 
 <Note>
-On Web, `transaction()` takes an optional `elementSelector` — the DOM element the form renders into. It's used only by form-based payments; headless flows ignore it.
+On Web, `transaction()` also takes `elementSelector`: the DOM element the form renders into.
 </Note>
 
 ## Know it went through
 
-The SDK presents the form, tokenizes the input, creates the payment, handles 3DS if required, and emits the final status to `onStatus` — use it to show the shopper the receipt.
+The SDK presents the form, tokenizes the input, creates the payment, handles 3DS if required, and emits the final status to `onStatus`. Use it to show the shopper the receipt.
 
 <Note>
-`onStatus` drives your UI. For fulfillment (shipping goods, granting access), confirm the outcome server-side via webhooks or the payments API — see [Confirm on your server](/docs/yuno-sdk/controllers/on-status#confirm-on-your-server).
+`onStatus` drives your UI. For fulfillment (shipping goods, granting access), confirm the outcome server-side via webhooks or the payments API; see [Confirm on your server](/docs/yuno-sdk/controllers/on-status#confirm-on-your-server).
 </Note>
 
 ### Creating the payment yourself (optional)
@@ -342,4 +342,4 @@ Any future expiration date and any CVV are valid for testing.
 
 - [Configuration](/docs/yuno-sdk/reference/transaction-config). Full reference for `TransactionConfig`. See also [`PaymentMethodSelected`](/docs/yuno-sdk/reference/payment-method-selected) and [`TransactionData`](/docs/yuno-sdk/reference/transaction-data).
 - [Controllers](/docs/yuno-sdk/controllers/overview). Override `showLoading`, or `createPayment` to customize rendering, loading, or payment creation.
-- [Features](/docs/yuno-sdk/features). Enrollment, Payment Methods List, Styling, and more.
+- [Guides](/docs/yuno-sdk/features/payment-methods-list). Payment Methods List, Enrollment, Styling, and more.
