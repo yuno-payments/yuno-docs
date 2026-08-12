@@ -1,0 +1,203 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "subscription", "version": "1.0.0" },
+  "servers": [{ "url": "https://api-sandbox.y.uno/v1" }, { "url": "https://api.eu.y.uno/v1" }],
+  "components": {
+    "securitySchemes": {
+      "sec0": { "type": "apiKey", "in": "header", "name": "public-api-key", "x-default": "<Your public-api-key>" },
+      "sec1": { "type": "apiKey", "in": "header", "name": "private-secret-key", "x-default": "<Your private-secret-key>" }
+    }
+  },
+  "security": [{ "sec0": [], "sec1": [] }],
+  "paths": {
+    "/subscriptions": {
+      "get": {
+        "summary": "List Subscriptions",
+        "description": "Returns a paginated list of the account's subscriptions, newest first (`created_at` descending). Filters are combinable and every one of them is optional; with none set, subscriptions in every status are returned. 1-indexed pagination.",
+        "operationId": "list-subscriptions",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "x-account-code",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The `account_id` found in your [Yuno Dashboard](https://dashboard.y.uno/developers) (UUID). Required — the list is always scoped to a single account. Omitting it returns `400 INVALID_PARAMETERS` (\"x-account-code header is required.\")."
+          },
+          {
+            "name": "customer_id",
+            "in": "query",
+            "description": "Filter by the customer that owns the subscription (`customer_payer.id`, UUID). A value that isn't a UUID returns `400 BAD_REQUEST` (\"Invalid customer_id.\").",
+            "schema": { "type": "string", "example": "3t04911d-5df9-429e-8488-ad41abea1a2c" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status. Accepts several values separated by commas, matching any of them — `ACTIVE,PAUSED`. Values must be spelled exactly as in [Subscription statuses](/reference/subscriptions/status-subscriptions); an unknown one returns `400 BAD_REQUEST` (\"Invalid status: FOO.\").",
+            "schema": { "type": "string", "example": "ACTIVE,PAUSED" }
+          },
+          {
+            "name": "plan_id",
+            "in": "query",
+            "description": "Filter by the [plan](/reference/plans/the-plan-object) the subscription is linked to (UUID). A plan with no subscribers — or one that doesn't exist — returns an empty list, not an error. A value that isn't a UUID returns `400 BAD_REQUEST` (\"Invalid plan_id.\").",
+            "schema": { "type": "string", "example": "00000000-0000-4000-8000-000000000001" }
+          },
+          {
+            "name": "created_at_from",
+            "in": "query",
+            "description": "Only return subscriptions created at or after this instant (ISO 8601 with offset, inclusive). A value that doesn't parse returns `400 BAD_REQUEST` (\"Invalid created_at_from.\").",
+            "schema": { "type": "string", "example": "2024-01-01T00:00:00Z" }
+          },
+          {
+            "name": "created_at_to",
+            "in": "query",
+            "description": "Only return subscriptions created at or before this instant (ISO 8601 with offset, inclusive). A value that doesn't parse returns `400 BAD_REQUEST` (\"Invalid created_at_to.\").",
+            "schema": { "type": "string", "example": "2024-12-31T23:59:59Z" }
+          },
+          {
+            "name": "payment_method_type",
+            "in": "query",
+            "description": "Filter by the subscription's payment method type, for example `CARD`.",
+            "schema": { "type": "string", "example": "CARD" }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "1-indexed page number. Must be >= 1, else `400 BAD_REQUEST` (\"The page must be greater than or equal to 1.\").",
+            "schema": { "type": "integer", "default": 1, "minimum": 1 }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size. Must be between 1 and 100 inclusive, else `400 BAD_REQUEST` (\"The size must be greater than or equal to 1.\" if too low, \"The size must be at most 100.\" if too high).",
+            "schema": { "type": "integer", "default": 20, "minimum": 1, "maximum": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "items": [
+                        {
+                          "id": "7304911d-5df9-429e-8488-ad41abea1a4c",
+                          "name": "sub_001",
+                          "status": "ACTIVE",
+                          "merchant_reference": "001_marzo_23",
+                          "account_id": "2404911d-5df9-429e-8488-ad41abea1a4b",
+                          "customer_payer": { "id": "3t04911d-5df9-429e-8488-ad41abea1a2c" },
+                          "amount": { "currency": "USD", "value": 12100.0 },
+                          "frequency": { "type": "MONTH", "value": 1 },
+                          "billing_cycles": { "total": 10, "current": 2, "next_at": "2023-02-16T20:00:00.786342Z" },
+                          "payment_method": { "type": "CARD" },
+                          "plan_id": "00000000-0000-4000-8000-000000000001",
+                          "created_at": "2023-12-16T20:46:54.786342Z"
+                        }
+                      ],
+                      "pagination": { "page": 1, "size": 20, "total": 1, "total_pages": 1 }
+                    },
+                    "summary": "Result"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string", "description": "The unique identifier of the subscription." },
+                          "name": { "type": "string" },
+                          "status": { "type": "string", "description": "See [Subscription statuses](/reference/subscriptions/status-subscriptions)." },
+                          "merchant_reference": { "type": "string" },
+                          "account_id": { "type": "string" },
+                          "customer_payer": {
+                            "type": "object",
+                            "properties": {
+                              "id": { "type": "string", "description": "The unique identifier of the customer." }
+                            }
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "currency": { "type": "string" },
+                              "value": { "type": "number" }
+                            }
+                          },
+                          "frequency": {
+                            "type": "object",
+                            "nullable": true,
+                            "description": "`null` on subscriptions billed with `billing_date` instead of a frequency.",
+                            "properties": {
+                              "type": { "type": "string" },
+                              "value": { "type": "integer" }
+                            }
+                          },
+                          "billing_cycles": {
+                            "type": "object",
+                            "description": "Same semantics as on [The Subscription Object](/reference/subscriptions/the-subscription-object) — `current` is the next cycle to be charged, not the one in progress.",
+                            "properties": {
+                              "total": { "type": "integer", "nullable": true },
+                              "current": { "type": "integer" },
+                              "next_at": { "type": "string" }
+                            }
+                          },
+                          "payment_method": {
+                            "type": "object",
+                            "properties": {
+                              "type": { "type": "string", "description": "The payment method type, for example `CARD`." }
+                            }
+                          },
+                          "plan_id": { "type": "string", "nullable": true, "description": "The plan the subscription is linked to, or `null` for subscriptions created with a raw `amount`/`frequency`." },
+                          "created_at": { "type": "string" }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer", "description": "The page returned — echoes the request." },
+                        "size": { "type": "integer", "description": "The page size returned — echoes the request." },
+                        "total": { "type": "integer", "description": "Total subscriptions matching the filters, across every page." },
+                        "total_pages": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "BAD_REQUEST",
+                      "messages": ["The page must be greater than or equal to 1."]
+                    },
+                    "summary": "Result"
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "BAD_REQUEST" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": { "headers": [{ "value": "utf-8", "key": "charset" }], "explorer-enabled": true, "proxy-enabled": true },
+  "x-readme-fauxas": true
+}

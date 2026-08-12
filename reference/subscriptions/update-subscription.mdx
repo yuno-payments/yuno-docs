@@ -7,11 +7,56 @@ description: "Updates a subscription's fields, including retroactively adding st
 <Warning>
 **Subscription Transition**
 
-The fields `billing_cycles` and `availability.finish_at` have an impact on each other. If both are completed during the subscription creation, it will transition to the `COMPLETED` state upon reaching the nearest event defined in these fields, whether it is the billing cycle or the corresponding `finish_at`.
+The fields `billing_cycles` and `availability.finish_at` have an impact on each other. If both are completed during the subscription creation, it will transition to the `COMPLETED` state upon reaching the nearest event defined in these fields, whether it is the billing cycle or the corresponding `finish_at`. They are independent end conditions: whichever is reached first completes the subscription.
+
+When the `availability` object is included, `finish_at` is applied as sent: omit it or send it as `null` and any previously set end date is removed, so the subscription becomes open-ended and keeps renewing until it is canceled. This means that when you update `availability.start_at`, you must include `finish_at` in the same request if you want to keep the end date. `start_at` does not behave this way: omitting it leaves the current start date unchanged. Omitting the whole `availability` object leaves both dates unchanged.
+
+Note that `availability.start_at` can only be moved earlier on update. Sending a later date returns a 400 error: `The availability start date cannot be greater than the current availability start date`.
 </Warning>
 
 <Note>
 **Retroactive Credential Update**
 
-If you have existing subscriptions that are failing rebills because of missing credential usage (e.g. from an initial CIT payment), you can use this `PATCH` endpoint to add the `store_credentials` object retroactively to fix the issue.
+If you have existing subscriptions that are failing rebills because of missing credential usage (e.g. from an initial CIT payment), you can use this `PATCH` endpoint to set `payment_method.card.usage` retroactively to fix the issue.
 </Note>
+
+<Note>
+**Scheduled Plan Changes**
+
+Use the `plan_change` block to move a subscription to another plan effective at its next billing cycle — no proration, no mid-cycle charge. The subscription must be `ACTIVE` or `TRIALING` and already on a plan; the target plan must be active and only one change can be pending at a time. Send `"plan_change": null` to undo a pending change; omitting the field never touches it. The pending change is returned as `pending_plan_change` on this endpoint and on the subscription object, and the `subscription.plan_change_scheduled`, `subscription.plan_change_canceled` and `subscription.plan_changed` webhooks track its lifecycle.
+
+`amount`, `frequency`, `billing_date` and `country` are managed by the plan and cannot be sent for a plan-linked subscription — combining any of them with `plan_change` returns `400`.
+</Note>
+
+### Plan change errors
+
+Each of the `409` and `422` errors below carries a `current_status` field alongside `code` and `messages`, holding the subscription's status at the moment the request was rejected. The rejected request makes no change.
+
+```json 409 Conflict
+{
+  "code": "PLAN_CHANGE_ALREADY_SCHEDULED",
+  "messages": [
+    "A plan change is already scheduled for this subscription. Undo it first with plan_change: null."
+  ],
+  "current_status": "ACTIVE"
+}
+```
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+|---|---|---|
+| `404` | `PLAN_NOT_FOUND` | The target plan does not exist or is not linked to this account. |
+| `409` | `PLAN_CHANGE_ALREADY_SCHEDULED` | A change is already pending. Undo it first with `plan_change: null`. |
+| `409` | `PLAN_CHANGE_ALREADY_APPLIED` | The `plan_change: null` undo arrived after the pending change had already taken effect at the renewal. |
+| `409` | `TARGET_PLAN_NOT_ACTIVE` | The target plan is not active. |
+| `409` | `SUBSCRIPTION_NOT_ON_A_PLAN` | The subscription is not on a plan. |
+| `409` | `PLAN_CHANGE_NOT_AVAILABLE` | The subscription is in its final billing cycle, or its availability window ends before the next renewal. |
+| `409` | `INVALID_SUBSCRIPTION_STATUS` | The subscription is `PAUSED`, `CREATED` or `ERROR`. |
+| `422` | `SAME_PLAN` | The subscription is already on this plan. |
+
+</div>
+
+A `CANCELED` or `COMPLETED` subscription is rejected earlier with `400 INVALID_STATE`, which does not carry `current_status`.
+
+Validation problems in the block itself — a missing `plan_id`, an unsupported `effective`, a target plan in another currency, or a `HONOR_PHASES` ladder longer than the remaining billing cycles — return `400 BAD_REQUEST` without `current_status`.

@@ -35,15 +35,52 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     }
     ```
 
-    The card fields you can reference are `number`, `expiration_month`, `expiration_year`, and `holder_name` — they resolve to the stored **card (PAN) data**. If the card has a **network token**, you can also reference `network_token_number` (the DPAN), `network_token_expiration_month`, and `network_token_expiration_year`. And `network_transaction_id` resolves to the card's NTID — the scheme's reference for its original transaction, required by many processors for merchant-initiated transactions. All fields can be mixed in the same request — send your processor whatever it needs: PAN, DPAN + NTID, or a combination. Provider tokens are not resolved, and neither are cryptograms — a cryptogram is generated per transaction, so if your destination requires one, obtain it separately and include the value directly in the body.
+    The card fields you can reference are `number`, `expiration_month`, `expiration_year`, and `holder_name` — they resolve to the stored **card (PAN) data**. If the card was enrolled with a security code, you can also reference `security_code`, within a bounded window — see below. If the card has a **network token**, you can also reference `network_token_number` (the DPAN), `network_token_expiration_month`, and `network_token_expiration_year`. And `network_transaction_id` resolves to the card's NTID — the scheme's reference for its original transaction, required by many processors for merchant-initiated transactions. All fields can be mixed in the same request — send your processor whatever it needs: PAN, DPAN + NTID, or a combination. Provider tokens are not resolved, and neither are cryptograms — a cryptogram is generated per transaction, so if your destination requires one, obtain it separately and include the value directly in the body.
 
     Expressions work in the request body and in header values. Everything that is not an expression is forwarded untouched.
 
     <Warning>
-    **No CVV**
+    **The security code expires — by default 3 hours after enrollment**
 
-    Transmitting a raw security code keeps that request in your PCI scope. There is no placeholder for the CVV/CVC: card networks do not allow it to be stored after a payment is authorized, so a stored payment method has none to inject. If your destination requires the CVV, your customer must supply it and you include it directly in the body yourself; the proxy forwards it without storing it.
+    `security_code` is the one field with a lifetime. The security code is never stored: it is held briefly after your customer enters it, and Yuno stops serving it once that window closes. Reference it only for a charge that happens shortly after enrollment.
+
+    When it is unavailable — expired, or never captured — the forward fails with `EXPRESSION_RESOLUTION_FAILED` naming `security_code`, and **no** partial substitution happens. Your PAN expressions are unaffected: an expired security code costs you that field only.
+
+    If your destination requires the CVV outside that window, your customer must supply it and you include it directly in the body yourself; the proxy forwards it without storing it. Transmitting a raw security code keeps that request in your PCI scope.
     </Warning>
+
+    #### Storing a security code
+
+    A card only has a security code to inject if one was supplied when it was enrolled. Send it as `card.security_code` on [Enroll Payment Method](/reference/payment-methods-direct-workflow/enroll-payment-method-api):
+
+    ```json
+    {
+      "customer_id": "...",
+      "card": {
+        "number": "4111111111111111",
+        "expiration_month": 12,
+        "expiration_year": 2030,
+        "holder_name": "JOHN DOE",
+        "security_code": "123"
+      }
+    }
+    ```
+
+    Enroll without it and the card is still usable for every other expression — only `security_code` will be unavailable.
+
+    #### Checking how much of the window is left
+
+    Read `card_data.security_code_expires_in` from [Retrieve Enrolled Payment Method](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api):
+
+    | Value | Meaning |
+    |---|---|
+    | A positive number | Seconds left before the security code stops being available |
+    | `-1` | The window has closed; the security code can no longer be injected |
+    | Field absent | The card was enrolled without a security code, or your organization does not have the proxy enabled |
+
+    <Note>
+    The enrollment response does **not** include `security_code_expires_in`. Read it from the payment method endpoint above when you need to know where you stand before building a forward.
+    </Note>
   </Step>
 
   <Step title="Send it through the proxy">
