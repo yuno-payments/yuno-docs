@@ -36,6 +36,7 @@ Learn more about the status of the subscription on the [Subscription Status](/re
 To start using the subscriptions feature, you need a Yuno account and integration with the Yuno API. The Yuno API provides the following operations to manage your subscriptions:
 
 * **Create**: Use the [Create a Subscription endpoint](/reference/subscriptions/create-subscription) to subscribe a customer.
+* **Create with the first payment**: Send a `subscription` block on [Create Payment](/reference/payments/create-payment) to charge the customer and create the subscription in a single call. See [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment).
 * **Pause**: Pause an active subscription with the [Pause Subscription endpoint](/reference/subscriptions/pause-subscription).
 * **Resume**: Resume a previously paused subscription with the [Resume Subscription endpoint](/reference/subscriptions/resume-subscription).
 * **Cancel**: Cancel an active subscription with the [Cancel Subscription endpoint](/reference/subscriptions/cancel-subscription).
@@ -48,7 +49,7 @@ To start using the subscriptions feature, you need a Yuno account and integratio
 * **Payment methods available**
   * **Enrolled**: Customers can pay with a previously enrolled payment method. Only the vaulted token is needed when creating the subscription to associate it with the charges.
 * **Capabilities**:
-  * **Frequency**: Define the frequency at which subscription charges will occur, whether daily, weekly, or monthly, specifying the amount that needs to be charged for the next billing cycle.
+  * **Frequency**: Define the frequency at which subscription charges will occur — daily, weekly, monthly, or yearly (see [Create Subscription](/reference/subscriptions/create-subscription) for the values each endpoint accepts) — specifying the amount that needs to be charged for the next billing cycle.
   * **Billing cycles**: The number of billing cycles (following the frequency criterion) that will be completed to fulfill the subscription. If neither an `end_date` is sent nor defined, we will continue attempting charges until it is stopped.
   * **Billing date**: By specifying the `billing_date` object, the merchant can define the logic behind the exact date for the billing of the subscription. This is mutually exclusive with the frequency object.
   * **Availability**: The start and end dates of the subscription. If they are not defined, nor the billing cycles, charges will continue until it is stopped.
@@ -68,9 +69,15 @@ To use the subscription solution, normally, you will follow the steps described 
 2. After creating the customer, you will need to [enroll a credit card](/docs/enroll-payment-methods) to generate a `vaulted_token` for use in the subscription creation.
 3. [Create a Subscription](/reference/subscriptions/create-subscription) for your customer and the enrolled card. At this step, you will configure the subscription and define the payment method. When creating the subscription, you can customize:
    * The amount the subscription charges.
-   * The billing frequency (daily, monthly, or yearly).
+   * The billing frequency: daily, weekly, monthly, or yearly (see [Create Subscription](/reference/subscriptions/create-subscription) for the values each endpoint accepts).
    * The total number of billing cycles.
    * The subscription availability to define the start and end date.
+
+<Note>
+**You can also do this in one call**
+
+The steps above take the customer through enrollment and subscription creation separately. If the customer is signing up and paying right now, you can instead send the recurrence instructions on the payment itself — Yuno charges the card and creates the subscription from that same charge, and nothing starts billing if the payment fails. That route is documented for frictionless card payments only. See [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment).
+</Note>
 
 <Note>
 **Available Payment Methods**
@@ -81,10 +88,12 @@ Subscriptions support `CARD` and `PAYPAL_ENROLLMENT` as payment methods, both th
 <Danger>
 **Declined Payments**
 
-If a payment from a subscription is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription. If you want to cancel a subscription, feel free to use the [cancel subscription endpoint](/reference/subscriptions/cancel-subscription).
+If a payment from a subscription created with [Create Subscription](/reference/subscriptions/create-subscription) is declined (including the first payment attempt), the subscription will continue its schedule for future payment attempts, giving the merchant the possibility to charge the client the pending amount through a different process and continue with the ongoing subscription. If you want to cancel a subscription, feel free to use the [cancel subscription endpoint](/reference/subscriptions/cancel-subscription).
+
+On the one-call route a declined first charge creates no subscription at all — see [Start a subscription with the first payment](/docs/payment-features/subscriptions/start-with-payment).
 </Danger>
 
-In the response to the [Create Subscription](/reference/subscriptions/create-subscription) endpoint, you receive an `id` which is used to identify the created subscription. You will use the `id` if you decide to pause, resume, or cancel the subscription.
+In the response to the [Create Subscription](/reference/subscriptions/create-subscription) endpoint, you receive an `id` which is used to identify the created subscription. You will use the `id` if you decide to pause, resume, or cancel the subscription. If you created the subscription with the first payment, the same identifier comes back as `subscription_code` on the payment response.
 
 ## Renewal events
 
