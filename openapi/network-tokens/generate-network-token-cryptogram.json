@@ -38,7 +38,7 @@
     "/network-tokens/cryptograms": {
       "post": {
         "summary": "Generate Network Token Cryptogram",
-        "description": "Generates a fresh, single-use network token cryptogram for a vaulted card, so it can be authorized on an external PSP. Available only to PCI-certified merchants with the product enabled.",
+        "description": "Generates a fresh, single-use network token cryptogram for a vaulted card, so it can be authorized on an external PSP. By default the response also includes the card's current network token (DPAN), which requires PCI certification; with `include_network_token: false` the response is cryptogram-only and does not.",
         "operationId": "generate-network-token-cryptogram",
         "requestBody": {
           "required": true,
@@ -74,6 +74,12 @@
                         "examples": [49.99]
                       }
                     }
+                  },
+                  "include_network_token": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Optional. Whether the response includes the PAN-equivalent parts of the network token: `network_token.number` (the DPAN) and `network_token.token_data`. Defaults to `true`, which requires your organization to be a PCI-certified merchant. Send `false` for a cryptogram-only response with no PAN-equivalent data (the `network_token` object keeps `network`, `status`, `par` and `network_token_id`) — available without PCI certification, designed to pair with the [Forward Proxy](https://docs.y.uno/docs/security-and-compliance/pci-proxy/forward-proxy), which resolves the DPAN at forward time via the `network_token_number` expression. A non-PCI organization that sends `true` or omits the field receives `403 NETWORK_TOKEN_RETURN_NOT_ALLOWED`.",
+                    "examples": [false]
                   }
                 }
               },
@@ -83,6 +89,15 @@
                     "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
                     "country": "US",
                     "amount": { "currency": "USD", "value": 49.99 }
+                  }
+                },
+                "cryptogram_only": {
+                  "summary": "Cryptogram-only (no PCI certification required)",
+                  "value": {
+                    "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                    "country": "US",
+                    "amount": { "currency": "USD", "value": 49.99 },
+                    "include_network_token": false
                   }
                 }
               }
@@ -103,7 +118,7 @@
                     },
                     "network_token": {
                       "type": "object",
-                      "description": "The card's current network token. Same shape returned by the PCI network-token retrieval.",
+                      "description": "The card's current network token. Same shape returned by the PCI network-token retrieval. **When the request sets `include_network_token: false`, the `number` (DPAN) and `token_data` fields are omitted entirely** — the object keeps `network`, `status`, `par` and `network_token_id`.",
                       "properties": {
                         "network": { "type": "string", "description": "Card network.", "examples": ["VISA"] },
                         "number": {
@@ -158,6 +173,21 @@
                       "eci": "05",
                       "created_at": "2026-07-16T14:32:10Z"
                     }
+                  },
+                  "cryptogram_only": {
+                    "summary": "Cryptogram-only (include_network_token: false)",
+                    "value": {
+                      "vaulted_token": "9b2f4b1c-7f3a-4c2e-9b1a-2b3c4d5e6f70",
+                      "network_token": {
+                        "network": "VISA",
+                        "status": "ACTIVE",
+                        "par": "V0010013022280191",
+                        "network_token_id": "DNITHE302344816910968"
+                      },
+                      "cryptogram": "AgAAAAAABk4DWZ4C28yUQAAAAAA=",
+                      "eci": "05",
+                      "created_at": "2026-07-16T14:32:10Z"
+                    }
                   }
                 }
               }
@@ -183,7 +213,7 @@
             }
           },
           "403": {
-            "description": "Forbidden — `PCI_MERCHANT_REQUIRED` (organization is not a PCI-certified merchant) or `PRODUCT_NOT_ENABLED` (product flag is off for the organization).",
+            "description": "Forbidden — `NETWORK_TOKEN_RETURN_NOT_ALLOWED` (organization is not PCI-certified and the request did not set `include_network_token: false`), `PCI_MERCHANT_REQUIRED` (organization is not a PCI-certified merchant), or `PRODUCT_NOT_ENABLED` (product flag is off for the organization).",
             "content": {
               "application/json": {
                 "schema": {
@@ -194,6 +224,9 @@
                   }
                 },
                 "examples": {
+                  "network_token_return_not_allowed": {
+                    "value": { "code": "NETWORK_TOKEN_RETURN_NOT_ALLOWED", "messages": ["Returning the network token requires PCI certification. Send include_network_token: false to receive the cryptogram only, or contact your Key Account Manager (KAM)."] }
+                  },
                   "pci_merchant_required": {
                     "value": { "code": "PCI_MERCHANT_REQUIRED", "messages": ["This endpoint is only available to PCI-certified merchants."] }
                   }
