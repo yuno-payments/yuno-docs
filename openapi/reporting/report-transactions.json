@@ -69,6 +69,7 @@
                         "merchant_order_id",
                         "country",
                         "payment_method_type",
+                        "provider_id",
                         "result",
                         "amount"
                       ],
@@ -124,10 +125,11 @@
                           "properties": {
                             "value": {
                               "type": "number",
-                              "description": "Decimal amount.",
+                              "description": "Decimal amount, greater than or equal to zero — `0` is valid so zero-amount verifies can be reported.",
                               "examples": [
                                 99.0
-                              ]
+                              ],
+                              "minimum": 0
                             },
                             "currency": {
                               "type": "string",
@@ -142,7 +144,7 @@
                         },
                         "provider_id": {
                           "type": "string",
-                          "description": "Optional, recommended. The provider you processed the transaction with — must be one of Yuno's catalog provider ids (e.g. `ADYEN`); unknown providers are rejected. Shown on the payment, enabling provider-level segmentation in the dashboard and analytics.",
+                          "description": "Required. The provider you processed the transaction with — must be one of Yuno's catalog provider ids (e.g. `ADYEN`); unknown providers are rejected. Shown on the payment and used by downstream tooling.",
                           "examples": [
                             "ADYEN"
                           ]
@@ -159,10 +161,11 @@
                           "type": "string",
                           "enum": [
                             "PURCHASE",
-                            "AUTHORIZE"
+                            "AUTHORIZE",
+                            "VERIFY"
                           ],
                           "default": "PURCHASE",
-                          "description": "Optional. The operation you performed at the provider. Defaults to `PURCHASE` when omitted."
+                          "description": "Optional. The operation you performed at the provider. Defaults to `PURCHASE` when omitted. A succeeded `VERIFY` persists as `SUCCEEDED`/`VERIFIED` (a zero-amount account verification)."
                         },
                         "occurred_at": {
                           "type": "string",
@@ -196,7 +199,8 @@
                         "amount": {
                           "currency": "USD",
                           "value": 99.0
-                        }
+                        },
+                        "provider_id": "ADYEN"
                       }
                     ]
                   }
@@ -284,7 +288,7 @@
                           "report_id": "spacex-rpt-000124",
                           "code": "INVALID_EVENT",
                           "messages": [
-                            "The field 'event_type' must be one of: PURCHASE, AUTHORIZE."
+                            "The field 'event_type' must be one of: PURCHASE, AUTHORIZE, VERIFY."
                           ]
                         }
                       ]
@@ -350,6 +354,30 @@
                       "messages": [
                         "The Transaction Reporting API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."
                       ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing credentials (`INVALID_AUTHORIZATION_HEADERS`, `INVALID_CREDENTIALS`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "examples": [
+                        "INVALID_CREDENTIALS"
+                      ]
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     }
                   }
                 }

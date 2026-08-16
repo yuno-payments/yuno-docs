@@ -21,13 +21,13 @@ This API requires activation for your organization. Contact your Key Account Man
 
 1. You process a transaction directly with your provider (e.g. a purchase on your own Adyen account).
 2. You report it here — one event or a batch of up to 500. For latency-sensitive integrations we recommend batches of up to 100 events: the full 500-event batch is processed synchronously and can take several seconds.
-3. Each accepted event creates **one payment** with one transaction, with the status derived from `result` and the event type: a `PURCHASE` with `SUCCEEDED` lands `SUCCEEDED`; an `AUTHORIZE` with `SUCCEEDED` lands `PENDING` with sub-status `AUTHORIZED` (a succeeded authorization is not captured money — it mirrors how Yuno-processed authorizations behave); `DECLINED` → `DECLINED`, `ERROR` → `ERROR`.
+3. Each accepted event creates **one payment** with one transaction, with the status derived from `result` and the event type: a `PURCHASE` with `SUCCEEDED` lands `SUCCEEDED`; an `AUTHORIZE` with `SUCCEEDED` lands `PENDING` with sub-status `AUTHORIZED` (a succeeded authorization is not captured money — it mirrors how Yuno-processed authorizations behave); a `VERIFY` with `SUCCEEDED` lands `SUCCEEDED` with sub-status `VERIFIED`; `DECLINED` → `DECLINED`, `ERROR` → `ERROR`.
 
-In this version the supported operations are `PURCHASE` (default) and `AUTHORIZE`. Lifecycle events (captures, refunds, chargebacks) are on the roadmap.
+In this version the supported operations are `PURCHASE` (default), `AUTHORIZE` and `VERIFY`. Zero-amount events are valid (`amount.value >= 0`), so account verifications can be reported. `provider_id` is required and validated against Yuno's provider catalog, and `payment_method_type` is validated against Yuno's payment-method catalog. Lifecycle events (captures, refunds, chargebacks) are on the roadmap.
 
 ## Retries and deduplication
 
-There is **no idempotency header on this endpoint — and none is needed**. The `report_id` you generate per event is the deduplication key: an event whose `report_id` was already ingested is counted in `duplicates` and never ingested twice, no matter when or in which batch it arrives. Retrying a whole batch after a network failure is always safe.
+There is **no idempotency header on this endpoint — and none is needed**. The `report_id` you generate per event is the deduplication key: an event whose `report_id` was already ingested is counted in `duplicates` and never ingested twice, no matter when or in which batch it arrives — including twice inside the same batch, where only the first occurrence is ingested even if the payloads differ. Retrying a whole batch after a network failure is always safe.
 
 The batch is processed **per event**: one invalid event lands in `rejected[]` with its reason, and the rest of the batch is unaffected.
 
@@ -52,6 +52,7 @@ Errors return a `code` and a `messages` array.
 | HTTP | `code` | When |
 | ---- | ------ | ---- |
 | 400 | `INVALID_REQUEST` | Malformed body, missing required field, or a batch over 500 events. |
+| 401 | `INVALID_AUTHORIZATION_HEADERS` / `INVALID_CREDENTIALS` | Missing or invalid API credentials. |
 | 400 | `INVALID_ACCOUNT_ID` | The `account_id` does not exist or does not belong to your organization. |
 | 403 | `PRODUCT_NOT_ENABLED` | "The Transaction Reporting API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
 | — | `INVALID_EVENT` (per event, in `rejected[]`) | Invalid enum value, wrong field type, unknown field, or `raw_provider_response` over 64 KB. |
