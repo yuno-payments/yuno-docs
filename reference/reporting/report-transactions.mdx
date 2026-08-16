@@ -29,6 +29,8 @@ In this version the supported operations are `PURCHASE` (default) and `AUTHORIZE
 
 There is **no idempotency header on this endpoint — and none is needed**. The `report_id` you generate per event is the deduplication key: an event whose `report_id` was already ingested is counted in `duplicates` and never ingested twice, no matter when or in which batch it arrives. Retrying a whole batch after a network failure is always safe.
 
+Because `report_id` alone decides, an event that reuses an already-ingested `report_id` with a *different* payload is also counted as a duplicate and silently discarded — never reuse a `report_id` across different transactions.
+
 The batch is processed **per event**: one invalid event lands in `rejected[]` with its reason, and the rest of the batch is unaffected.
 
 ## The raw provider response
@@ -53,5 +55,6 @@ Errors return a `code` and a `messages` array.
 | ---- | ------ | ---- |
 | 400 | `INVALID_REQUEST` | Malformed body, missing required field, or a batch over 500 events. |
 | 400 | `INVALID_ACCOUNT_ID` | The `account_id` does not exist or does not belong to your organization. |
+| 401 | `NOT_AUTHENTICATED` / `INVALID_CREDENTIALS` | Missing or invalid `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` headers. |
 | 403 | `PRODUCT_NOT_ENABLED` | "The Transaction Reporting API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
 | — | `INVALID_EVENT` (per event, in `rejected[]`) | Invalid enum value, wrong field type, unknown field, or `raw_provider_response` over 64 KB. |
