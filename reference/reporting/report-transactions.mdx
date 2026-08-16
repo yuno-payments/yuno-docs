@@ -20,14 +20,14 @@ This API requires activation for your organization. Contact your Key Account Man
 ## How it works
 
 1. You process a transaction directly with your provider (e.g. a purchase on your own Adyen account).
-2. You report it here — one event or a batch of up to 500.
-3. Each accepted event creates **one payment** with one transaction, with the status derived from `result`: `APPROVED` → `SUCCEEDED`, `DECLINED` → `DECLINED`, `ERROR` → `ERROR`.
+2. You report it here — one event or a batch of up to 500. For latency-sensitive integrations we recommend batches of up to 100 events: the full 500-event batch is processed synchronously and can take several seconds.
+3. Each accepted event creates **one payment** with one transaction, with the status derived from `result` and the event type: a `PURCHASE` with `APPROVED` lands `SUCCEEDED`; an `AUTHORIZATION` with `APPROVED` lands `PENDING` with sub-status `AUTHORIZED` (an approved authorization is not captured money — it mirrors how Yuno-processed authorizations behave); `DECLINED` → `DECLINED`, `ERROR` → `ERROR`.
 
 In this version the supported operations are `PURCHASE` (default) and `AUTHORIZATION`. Lifecycle events (captures, refunds, chargebacks) are on the roadmap.
 
 ## Retries and deduplication
 
-There is **no idempotency header on this endpoint — and none is needed**. The `report_id` you generate per event is the deduplication key: an event whose `report_id` was already ingested (in the last 30 days) is counted in `duplicates` and never ingested twice, no matter when or in which batch it arrives. Retrying a whole batch after a network failure is always safe.
+There is **no idempotency header on this endpoint — and none is needed**. The `report_id` you generate per event is the deduplication key: an event whose `report_id` was already ingested is counted in `duplicates` and never ingested twice, no matter when or in which batch it arrives. Retrying a whole batch after a network failure is always safe.
 
 The batch is processed **per event**: one invalid event lands in `rejected[]` with its reason, and the rest of the batch is unaffected.
 
@@ -51,6 +51,7 @@ Errors return a `code` and a `messages` array.
 
 | HTTP | `code` | When |
 | ---- | ------ | ---- |
-| 400 | `INVALID_REQUEST` | Malformed body, missing required field, batch over 500 events, or `account_id` not belonging to your organization. |
+| 400 | `INVALID_REQUEST` | Malformed body, missing required field, or a batch over 500 events. |
+| 400 | `INVALID_ACCOUNT_ID` | The `account_id` does not exist or does not belong to your organization. |
 | 403 | `PRODUCT_NOT_ENABLED` | "The Transaction Reporting API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
 | — | `INVALID_EVENT` (per event, in `rejected[]`) | Invalid enum value, wrong field type, unknown field, or `raw_provider_response` over 64 KB. |
