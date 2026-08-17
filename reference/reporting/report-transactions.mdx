@@ -57,4 +57,19 @@ Errors return a `code` and a `messages` array.
 | 400 | `INVALID_ACCOUNT_ID` | The `account_id` does not exist or does not belong to your organization. |
 | 401 | `NOT_AUTHENTICATED` / `INVALID_CREDENTIALS` | Missing or invalid `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` headers. |
 | 403 | `PRODUCT_NOT_ENABLED` | "The Transaction Reporting API is enabled per organization. Contact your Key Account Manager (KAM) to activate it." |
-| 202 | `INVALID_EVENT` (per event, in `rejected[]`) | Not an HTTP error: the batch is accepted (`202`) and invalid events are returned individually inside `rejected[]`. Causes: invalid enum value, wrong field type, unknown field, or `raw_provider_response` over 64 KB. |
+
+### Per-event rejections: `INVALID_EVENT`
+
+`INVALID_EVENT` is not an HTTP error — the batch itself is accepted (`202`), and each invalid event is returned individually inside `rejected[]` with this code and its reason, while the rest of the batch is ingested normally:
+
+```json
+{
+  "accepted": 2,
+  "duplicates": 0,
+  "rejected": [
+    { "report_id": "merchant-rpt-000124", "code": "INVALID_EVENT", "messages": ["The field 'event_type' must be one of: PURCHASE, AUTHORIZE, VERIFY."] }
+  ]
+}
+```
+
+Causes: invalid enum value, wrong field type, unknown field, or `raw_provider_response` over 64 KB.
