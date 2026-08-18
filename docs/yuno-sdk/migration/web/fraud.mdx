@@ -6,10 +6,10 @@ description: "Migrate Web fraud integrations (yuno.mountFraud + yuno.executeFrau
 
 Fraud screening had two legacy entry points on Web:
 
-- `yuno.mountFraud(...)` — UI mode. Rendered a fraud widget AND created the payment via its own `yunoCreatePayment`.
-- `yuno.executeFraudCheck(...)` — Headless. Returned device-fingerprint identifiers; no UI.
+- `yuno.mountFraud(...)`: UI mode. Rendered a fraud widget AND created the payment via its own `yunoCreatePayment`.
+- `yuno.executeFraudCheck(...)`: Headless. Returned device-fingerprint identifiers; no UI.
 
-In the unified API, fraud screening runs **automatically inside `Transaction`** during tokenization (you don't wire anything). The standalone headless check moves to a top-level method on `SdkPayments` (not on `Transaction`, because it's a query, not a transaction). The UI variant is dropped — its responsibilities are absorbed by `Transaction`.
+In the unified API, fraud screening runs **automatically inside `Transaction`** during tokenization (you don't wire anything). The standalone headless check moves to a top-level method on `SdkPayments` (not on `Transaction`, because it's a query, not a transaction). The UI variant is dropped: its responsibilities are absorbed by `Transaction`.
 
 | Before | After |
 |---|---|
@@ -17,7 +17,7 @@ In the unified API, fraud screening runs **automatically inside `Transaction`** 
 | `yuno.executeFraudCheck({...})` (headless) | `sdkPayments.antifraud({...})` |
 | `deviceFingerprints?: ExternalProviderId[]` passed alongside payment data | `deviceFingerprints?: ExternalProviderId[]` on `TransactionConfig` |
 
-## Side-by-side — Headless fraud check
+## Side-by-side: Headless fraud check
 
 <CodeGroup>
 
@@ -58,12 +58,12 @@ if (result.status === 'success') {
 
 </CodeGroup>
 
-## Side-by-side — Fraud UI
+## Side-by-side: Fraud UI
 
 There is no direct replacement for `mountFraud`. The widget's responsibilities are now part of `Transaction`:
 
 - Fraud signals are collected automatically during tokenization
-- Payment creation is `createPayment` (or managed by the SDK) — not bundled with fraud anymore
+- Payment creation is `createPayment` (or managed by the SDK), not bundled with fraud anymore
 
 <CodeGroup>
 
@@ -81,7 +81,7 @@ await yuno.mountFraud({
 })
 ```
 
-```typescript After. Normal Transaction — fraud is automatic
+```typescript After. Normal Transaction, fraud is automatic
 const transaction = sdkPayments.transaction({
     checkoutSession: 'session-from-backend',
     countryCode: 'CO',
@@ -110,7 +110,7 @@ await transaction.start({ paymentMethod: { type: 'CARD' } })
 
 ### Result shape
 
-The result is now a discriminated union — Promise never rejects.
+The result is now a discriminated union: the Promise never rejects.
 
 ```typescript
 type FraudResult =
@@ -118,13 +118,13 @@ type FraudResult =
     | { status: 'error'; error: Error }
 ```
 
-Compared to v1 where `error` was always optional alongside `deviceFingerprints`, the new shape forces you to check `status` before reading either field — TS narrows.
+Compared to v1 where `error` was always optional alongside `deviceFingerprints`, the new shape forces you to check `status` before reading either field (TS narrows).
 
 ## Behavior changes
 
 - **`mountFraud` is gone.** The unified `Transaction` handles fraud screening internally during normal flows. If you need pre-screening before creating a checkout session, use `sdkPayments.antifraud(...)`.
 - **`antifraud` lives on `SdkPayments`, not on `Transaction`.** It's a standalone query, not part of a transaction lifecycle.
-- **Discriminated-union result.** TS narrows on `status` — no more optional fields.
+- **Discriminated-union result.** TS narrows on `status`: no more optional fields.
 
 ## Checklist
 
