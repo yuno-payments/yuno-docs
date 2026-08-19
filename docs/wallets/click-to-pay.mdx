@@ -14,10 +14,10 @@ Click to Pay is an online payment solution designed to streamline and secure onl
 * **Ease of Use**: It enables consumers to make online purchases with a single click, eliminating the need to enter credit card details for each purchase manually.
 * **Enhanced Security**: Utilizes modern authentication standards to minimize fraud risk. This may include methods such as two-factor authentication or payment tokens.
 * **Consistent Across Various Sites**: Offers a similar payment experience across all websites that support this technology, meaning consumers don’t have to learn different processes for each online store.
-* **Integration with Card Brands**: Being backed by major card brands, "Click to Pay" is widely accepted and trusted.
+* **Integration with Card Brands**: Being backed by major card brands, Click to Pay is widely accepted and trusted.
 * **Mobile and Desktop Compatibility**: Designed to work across various devices, it facilitates online shopping on both desktops and mobile devices.
 
-This feature enhances the customer experience and aligns with modern digital payment trends, potentially increasing conversion rates and customer loyalty. By incorporating "Click to Pay," you can offer a seamless checkout experience, reducing friction and addressing security concerns in online transactions.
+This feature enhances the customer experience and aligns with modern digital payment trends, potentially increasing conversion rates and customer loyalty. By incorporating Click to Pay, you can reduce checkout friction and address security concerns in online transactions.
 
 <Info>
 **Network Tokens Requirement**
@@ -32,13 +32,13 @@ To integrate and start offering Click to Pay to your customers, follow these 4 s
 1. Create a [connection](https://dashboard.y.uno/connections) in the Yuno dashboard using your Click to Pay credentials.
 
    <Frame><img src="/images/reference/click-to-pay/image2.png" /></Frame>
-2. Define the payment method route in the [Routing](https://dashboard.y.uno/routing) section in order to be able to enable it in the Checkout Builder.
+2. Define the payment method route in the [Routing](https://dashboard.y.uno/routing) section to enable it in the Checkout Builder.
 
    <Frame><img src="/images/reference/click-to-pay/image3.png" /></Frame>
 3. Enable Click to Pay in the [Checkout builder](https://dashboard.y.uno/checkout-builder).
 
    <Frame><img src="/images/reference/click-to-pay/image4.png" /></Frame>
-4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **'Card' payment method**.
+4. Define the Card route: Taking in consideration that Click to Pay is a wallet that stores credit card information, the **route** where you will need to define the providers for each scenario is the same as the **Card** payment method.
 
 ## Checkout Flows
 
@@ -67,28 +67,28 @@ The golden flow with passkeys in Mobile is currently in certification.
 Follow the steps below based on your desired configuration:
 
 ### Option 1: Click to Pay Only (APM)
-1. Request the **DPA ID** from the card network (e.g., Mastercard).
+1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection** in the Yuno dashboard using the DPA ID.
 3. Add the **card connection** that will process these cards.
 4. Define the payment method route in **Routing** and enable Click to Pay in the **Checkout Builder**.
 
 ### Option 2: Click to Pay + Passkey
 *Supported on web browsers only (not supported in WebView).*
-1. Request the **DPA ID**.
+1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection** using the DPA ID.
 3. Add the **card connection** and configure the **Acquirer BIN**.
 4. Request the Yuno backend team to enable the **Passkey** and **Dual Payload** flags.
 5. Create checkout sessions with a `price` for Passkey to work correctly.
 
 ### Option 3: Click to Pay + Golden Flow
-1. Request the **DPA ID**.
+1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection** using the DPA ID.
 3. Add the **card connection** that will process these cards.
 4. Request the Yuno backend team to enable the **Golden Flow** flag.
 
 ### Option 4: Click to Pay + Golden Flow + Passkey
 *Supported on web browsers only (not supported in WebView).*
-1. Request the **DPA ID**.
+1. Request the **DPA ID** from the card network (for example, Mastercard).
 2. Add the **Click to Pay connection**.
 3. Add the **card connection** and configure the **Acquirer BIN**.
 4. Request the Yuno backend team to enable **Passkey**, **Dual Payload**, and **Golden Flow** flags.
@@ -110,4 +110,75 @@ Standard Click to Pay card flows use the existing SDK callbacks, but Passkey use
 For Passkey transactions, the one-time token (OTT) never reaches the usual SDK callbacks (including `callbackOTT` on Android). Always read it from the deeplink parameters before continuing the flow.
 </Info>
 
-For full implementation details, see [Android Full Checkout](/docs/sdks/full-checkout/android-payments) and [iOS Full Checkout](/docs/sdks/full-checkout/ios-payments).
+### Mobile: handling the response (OTT and deeplink)
+
+The integration flow for Click to Pay Passkey has a specific response handling that differs from the standard payment flow.
+
+When a shopper completes a payment using CTP Passkey, the one-time token (OTT) is **not** delivered through the usual delegate/listener methods. Instead, the transaction result — both success and failure — is communicated to your app through the **deeplink URL**.
+
+This is the same on **iOS, Android, and Flutter**: the merchant reads the result from the deeplink URL and acts on it. Only *where* the deeplink arrives changes per platform.
+
+**Read two parameters from the deeplink URL**
+
+- `has_error` — an error occurred or the shopper canceled. Read the `message` parameter and show the error.
+- `one_time_token` — the transaction succeeded and the OTT is contained in the URL.
+
+**Once you have the `one_time_token`**
+
+1. Send it to your backend to create the payment via the [Create payment](/reference/payments/create-payment) endpoint.
+2. Continue the flow in the SDK with `continuePayment` to finalize the transaction.
+
+**Where the deeplink arrives on each platform**
+
+- **iOS** — in `application(_:open:options:)`. Call `Yuno.receiveDeeplink(url)` to close the Passkey browser, then read the parameters from `url`.
+- **Flutter** — in your deeplink handler. `await Yuno.receiveDeeplink(url: uri)` to close the Passkey browser, then read the parameters from `uri`.
+- **Android** — the deeplink relaunches your `Activity` (there is no SDK close call). Read the parameters from `intent.data` in `onCreate`/`onNewIntent`. The receiving activity must declare an `intent-filter` in `AndroidManifest.xml` matching the scheme/host/path of your `callback_url`.
+
+<CodeGroup>
+```swift iOS
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    guard url.scheme == "myapp" else { return false }
+    Yuno.receiveDeeplink(url) // closes the Passkey browser
+
+    let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
+    if items?.contains(where: { $0.name == "has_error" }) == true {
+        // handle error (read the `message` parameter)
+    } else if let ott = items?.first(where: { $0.name == "one_time_token" })?.value {
+        // send `ott` to your backend, then continue the flow in the SDK
+    }
+    return true
+}
+```
+
+```dart Flutter
+Future<void> _handleDeepLink(Uri uri) async {
+    await Yuno.receiveDeeplink(url: uri); // closes the Passkey browser
+
+    if (uri.queryParameters.containsKey('has_error')) {
+        // handle error (read the `message` parameter)
+    } else {
+        final ott = uri.queryParameters['one_time_token'];
+        if (ott != null) {
+            // send `ott` to your backend, then continue the flow in the SDK
+        }
+    }
+}
+```
+
+```kotlin Android
+override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    val uri = intent.data ?: return
+
+    when {
+        uri.getBooleanQueryParameter("has_error", false) ->
+            showError(uri.getQueryParameter("message") ?: "Operation canceled")
+
+        uri.getQueryParameter("one_time_token") != null -> {
+            val ott = uri.getQueryParameter("one_time_token")
+            // send `ott` to your backend, then continue the flow in the SDK
+        }
+    }
+}
+```
+</CodeGroup>

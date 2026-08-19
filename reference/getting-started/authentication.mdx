@@ -27,7 +27,7 @@ curl --request <Method> \\
 
 ## Idempotency
 
-Idempotency is the ability to make multiple identical requests and always get the same response. This is useful when a request fails due to a connection issue and the outcome is unclear; you can retry using the same `X-Idempotency-Key` and the API will not duplicate the operation.
+Idempotency lets you safely retry a request when its outcome is unclear — a timeout, a connection error, or a `500` response — without the risk of performing the operation twice.
 
 Some requests include a unique identifier sent as the `X-Idempotency-Key` header (e.g., `7bf41af5-70ae-4e79-9b28-a8fa75c3ac53`). This key also serves to identify a specific transaction.
 
@@ -35,14 +35,17 @@ Some requests include a unique identifier sent as the `X-Idempotency-Key` header
   Set the `x-idempotency-key` value to `{$randomUUID}` to generate keys automatically.
 </Note>
 
-Yuno stores the `X-Idempotency-Key` and the transaction status for 24 hours, regardless of the outcome (captured, authorized, or failed). Any subsequent request with the same key within that window returns the original response instead of creating a new transaction.
+Reusing an `X-Idempotency-Key` produces one of the following results:
 
-If two requests are sent simultaneously, the API may receive the second before responding to the first. In that case, the second request returns a `400 Bad Request` with error code `REQUEST_IN_PROCESS`, indicating there is already an open call for that `X-Idempotency-Key`. Retry the request after a few seconds.
+- **The original response.** If the first request with this key created a payment — whatever its status (approved, authorized, or declined) — any later request with the same key returns that original payment instead of creating a new one. The body of the retry is ignored.
+- **`400 REQUEST_IN_PROCESS`.** The first request with this key is still being processed. Retry with the same key after a few seconds.
+- **`400 IDEMPOTENCY_DUPLICATED`.** The first request with this key failed before a payment was created. No payment exists for this key, and the key cannot be reused: correct the request and send it with a new key.
+- **Normal processing.** If the first request was rejected before processing started (for example, a malformed body), the key was not consumed and the retry is processed as a new request.
 
-<Note>
-  If two requests are sent with the same key but different body contents, the API processes only the first one.
-</Note>
+### Recommended retry logic
 
-Keys are not stored when a request fails with a `400` error. This allows you to correct the request and resubmit it with the same key. The same applies to `500` errors.
+1. If a request fails with an unclear outcome — a timeout, a connection error, a `500`, or a response you cannot parse — retry it **with the same key**. The retry either returns the original result, processes normally, or returns `IDEMPOTENCY_DUPLICATED`, which means no payment was created.
+2. Use a **new key** only to start a genuinely new attempt: a new order, or a new attempt after a decline or after `IDEMPOTENCY_DUPLICATED`.
+3. Never retry an unclear failure with a new key. If the original request actually succeeded, retrying it with a new key creates a duplicate operation.
 
 <br />

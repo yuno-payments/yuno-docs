@@ -7,6 +7,9 @@
   "servers": [
     {
       "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
     }
   ],
   "components": {
@@ -2418,7 +2421,7 @@
                               },
                               "acquirer_reference_number": {
                                 "type": "string",
-                                "description": "Unique identifier assigned by the card acquirer to track transactions through the network (MAX; 30)."
+                                "description": "Unique identifier assigned by the card acquirer to track the transaction through the card network. Used for reconciliation and chargebacks."
                               },
                               "stored_credentials": {
                                 "type": "object",
@@ -2612,6 +2615,16 @@
                                     }
                                   }
                                 }
+                              },
+                              "card_data": {
+                                "type": "object",
+                                "description": "Card information provided by the merchant for the wallet payment.",
+                                "properties": {
+                                  "lfd": {
+                                    "type": "string",
+                                    "description": "Last four digits of the cardholder's real card (FPAN), exactly 4 numeric digits. Google Pay server-to-server only: for CRYPTOGRAM_3DS device tokens the encrypted token decrypts to the DPAN, so send the value from paymentMethodData.info.cardDetails in Google's response and Yuno uses it in place of the DPAN-derived last four. Ignored for PAN_ONLY credentials and for other wallets. See [Card last four digits for device tokens](/docs/wallets/google-pay/google-pay-direct-integration#card-last-four-digits-for-device-tokens)."
+                                  }
+                                }
                               }
                             }
                           },
@@ -2619,6 +2632,11 @@
                             "type": "object",
                             "description": "Specifies the bank transfer object.",
                             "properties": {
+                              "pre_debit_notification_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "description": "ID of the pre-debit notification that precedes this recurring debit, as returned by the Create pre-debit notification endpoint. Required for UPI Autopay recurring debits (NPCI compliance). Yuno validates that the notification exists, belongs to your account, and is in SENT status; otherwise the payment is rejected with PRE_DEBIT_NOTIFICATION_NOT_FOUND or PRE_DEBIT_NOTIFICATION_NOT_SENT (422)."
+                              },
                               "soft_descriptor": {
                                 "type": "string",
                                 "description": "Human-readable reference associated with the bank transfer. Commonly used for reconciliation and operational purposes (MAX 255; MIN 1)."
@@ -2762,6 +2780,42 @@
                                     "description": "This object is used to send additional information about recurrence."
                                   }
                                 }
+                              },
+                              "bank_account_mask_number": {
+                                "type": "string",
+                                "description": "Masked bank account number associated with the bank transfer (for example, ****6789). This is account data, not mandate data."
+                              },
+                              "mandate": {
+                                "type": "object",
+                                "description": "Direct debit mandate details, for bank transfer methods that operate with mandates (for example, ACH, SEPA, BACS, PAD).",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "description": "Mandate identifier, as provided by the payment provider."
+                                  },
+                                  "info": {
+                                    "type": "string",
+                                    "description": "Free-text mandate information."
+                                  },
+                                  "received_status": {
+                                    "type": "string",
+                                    "description": "Provider status indicating whether the mandate was received. Forwarded as provided by the payment provider."
+                                  },
+                                  "existing_status": {
+                                    "type": "string",
+                                    "description": "Provider status of the existing mandate. Forwarded as provided by the payment provider."
+                                  },
+                                  "created_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Date and time when the mandate was created (ISO 8601)."
+                                  },
+                                  "updated_at": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "description": "Date and time when the mandate was last updated (ISO 8601)."
+                                  }
+                                }
                               }
                             }
                           },
@@ -2788,6 +2842,10 @@
                       "vault_on_success": {
                         "type": "boolean",
                         "description": "Flag to enroll the card after a successful payment (requires `customer_payer.id`)."
+                      },
+                      "account_updater": {
+                        "type": "boolean",
+                        "description": "Per-card control for Card Account Updater. When set to `false`, the card enrolled or used in this payment is excluded from Card Account Updater and will not receive automatic card-detail updates. When omitted, the card follows your account's Account Updater configuration."
                       },
                       "otp": {
                         "type": "object",
@@ -2826,16 +2884,21 @@
                       "frequency": {
                         "type": "object",
                         "description": "Specifies the frequency object (used when creating a payment along with the subscription).",
+                        "required": [
+                          "type",
+                          "execution"
+                        ],
                         "properties": {
                           "type": {
                             "type": "string",
                             "description": "Frequency of the subscription payment.",
                             "enum": [
-                              "DAY",
-                              "WEEK",
-                              "MONTH",
-                              "YEAR"
+                              "MONTH"
                             ]
+                          },
+                          "value": {
+                            "type": "integer",
+                            "description": "Number of `type` units between charges. Always send it when creating a subscription — omitting it is not rejected up front, the payment is charged and the subscription creation then fails. Whole numbers only."
                           },
                           "execution": {
                             "type": "string",
@@ -2866,15 +2929,20 @@
                       "amount": {
                         "type": "object",
                         "description": "Specifies the amount object (used when creating a payment along with the subscription).",
+                        "required": [
+                          "value",
+                          "currency",
+                          "type"
+                        ],
                         "properties": {
                           "value": {
                             "type": "number",
-                            "description": "The amount of the subscription payment.",
+                            "description": "The amount of each recurring charge. When `type` is `FIXED` this must equal the payment's `amount.value`, otherwise the request is rejected with `400` before any charge.",
                             "format": "float"
                           },
                           "currency": {
                             "type": "string",
-                            "description": "The currency used to make the payment. For a full list of currency codes, see [Country reference](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
+                            "description": "The currency used to make the payment. Must match the payment's `amount.currency`, otherwise the request is rejected with `400` before any charge. For a full list of currency codes, see [Country reference](/reference/country-reference) (MAX 3; MIN 3; ISO 4217)."
                           },
                           "type": {
                             "type": "string",
@@ -2886,24 +2954,33 @@
                           }
                         }
                       },
+                      "billing_cycles": {
+                        "type": "object",
+                        "description": "Specifies the billing cycles object (used when creating a payment along with the subscription).",
+                        "properties": {
+                          "total": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Total number of cycles to bill before the subscription completes. Validated after the charge — a value lower than 1 leaves the payment charged and the subscription not created."
+                          }
+                        }
+                      },
                       "id": {
                         "type": "string",
-                        "description": "Unique identifier of the subscription payment (used when creating a payment for an existing subscription)."
+                        "description": "Identifier of an existing subscription to charge (omit when creating a new one)."
                       },
                       "billing_date": {
                         "type": "object",
-                        "description": "Specifies the billing date object (used when creating a payment for an existing subscription).",
+                        "description": "Specifies the billing date object (used when creating a payment for an existing subscription). Ignored when a new subscription is created.",
                         "properties": {
                           "type": {
                             "type": "string",
-                            "description": "Type of the billing date",
-                            "enum": [
-                              "FIXED_DAY",
-                              "LAST_DAY"
-                            ]
+                            "description": "Type of the billing date"
                           },
                           "day": {
-                            "type": "string",
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 31,
                             "description": "Day of the month when the subscription payment is made"
                           }
                         }
@@ -3228,6 +3305,15 @@
                             "number": "646180142000000006",
                             "digit": "123456",
                             "type": "SAVINGS"
+                          },
+                          "bank_account_mask_number": "****6789",
+                          "mandate": {
+                            "id": "MND-123",
+                            "info": "free text mandate info",
+                            "received_status": "RECEIVED",
+                            "existing_status": "ACTIVE",
+                            "created_at": "2026-07-09T00:00:00Z",
+                            "updated_at": "2026-07-09T00:00:00Z"
                           }
                         }
                       }
@@ -3932,6 +4018,34 @@
                     "merchant_order_id": "TEST01"
                   }
                 },
+                "Wallet - Google Pay with card last four": {
+                  "summary": "Wallet - Google Pay device token with card last four",
+                  "value": {
+                    "description": "Google Pay server-to-server payment with merchant-provided card last four",
+                    "account_id": "<account_id>",
+                    "merchant_order_id": "0000024",
+                    "country": "US",
+                    "amount": {
+                      "currency": "USD",
+                      "value": 5000
+                    },
+                    "customer_payer": {
+                      "email": "johndoe@example.com"
+                    },
+                    "workflow": "DIRECT",
+                    "payment_method": {
+                      "type": "GOOGLE_PAY",
+                      "detail": {
+                        "wallet": {
+                          "payment_token": "{\"signature\":\"...\",\"intermediateSigningKey\":{...},\"protocolVersion\":\"ECv2\",\"signedMessage\":\"...\"}",
+                          "card_data": {
+                            "lfd": "1515"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
                 "Split marketplace": {
                   "value": {
                     "description": "Split marketplace payment",
@@ -4099,6 +4213,7 @@
                           "soft_descriptor": "",
                           "authorization_code": "748912",
                           "retrieval_reference_number": "",
+                          "acquirer_reference_number": "",
                           "voucher": null,
                           "card_data": {
                             "holder_name": "John Doe",
@@ -4214,6 +4329,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "748912",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -4263,6 +4379,13 @@
                         "status_detail": "",
                         "response_message": null,
                         "response_code": null,
+                        "raw_request": {
+                          "amount": {
+                            "currency": "BRL",
+                            "value": 2100
+                          },
+                          "reference": "34343434"
+                        },
                         "raw_response": {
                           "amount": {
                             "currency": "BRL",
@@ -4310,6 +4433,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "748912",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -4399,15 +4523,16 @@
                     "subscription": {
                       "frequency": {
                         "type": "MONTH",
+                        "value": 1,
                         "execution": "YUNO"
                       },
                       "availability": {
-                        "start_at": "2025-05-23T20:17:30.277678Z",
-                        "finish_at": "2027-05-23T20:17:30.277678Z"
+                        "start_at": "2027-05-23T20:17:30.277678Z",
+                        "finish_at": "2029-05-23T20:17:30.277678Z"
                       },
                       "amount": {
-                        "value": 2000,
-                        "currency": "BRL",
+                        "value": 20000,
+                        "currency": "USD",
                         "type": "FIXED"
                       }
                     }
@@ -4453,6 +4578,7 @@
                           "soft_descriptor": "",
                           "authorization_code": "748912",
                           "retrieval_reference_number": "",
+                          "acquirer_reference_number": "",
                           "voucher": null,
                           "card_data": {
                             "holder_name": "John Doe",
@@ -4568,6 +4694,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "748912",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -4664,6 +4791,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "748912",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -4751,11 +4879,7 @@
                     },
                     "simplified_mode": false,
                     "subscription": {
-                      "id": "UUID",
-                      "billing_date": {
-                        "type": "FIXED_DAY",
-                        "day": 15
-                      }
+                      "id": "1c9f0b2e-7d5a-4c3b-8e1f-9a0b1c2d3e4f"
                     }
                   }
                 },
@@ -4921,6 +5045,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "835631",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "Fannie Weissnat",
@@ -5108,6 +5233,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "835631",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "Fannie Weissnat",
@@ -5204,6 +5330,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "835631",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "Fannie Weissnat",
@@ -5338,6 +5465,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "748912",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -5453,6 +5581,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "748912",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -5549,6 +5678,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "748912",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -5677,6 +5807,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "483790",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -5845,6 +5976,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "483790",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -5941,6 +6073,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "483790",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -6069,6 +6202,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "964016",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -6173,6 +6307,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "964016",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -6269,6 +6404,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "964016",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -6398,6 +6534,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "880788",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -6513,6 +6650,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "880788",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -6609,6 +6747,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "880788",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -6737,6 +6876,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "620399",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -6878,6 +7018,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "620399",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -6974,6 +7115,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "620399",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -7102,6 +7244,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "360480",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -7195,6 +7338,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "360480",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -7291,6 +7435,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "360480",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -7419,6 +7564,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "744160",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -7512,6 +7658,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "744160",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -7608,6 +7755,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "744160",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -7736,6 +7884,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "744160",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -7829,6 +7978,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "744160",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -7929,6 +8079,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "744160",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -8061,6 +8212,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "655119",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -8159,6 +8311,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "655119",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -8255,6 +8408,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "655119",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -8383,6 +8537,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "267390",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -8498,6 +8653,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "267390",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -8594,6 +8750,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "267390",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -8722,6 +8879,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "248213",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -8837,6 +8995,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "248213",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -8933,6 +9092,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "248213",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -9019,6 +9179,388 @@
                         }
                       },
                       "simplified_mode": false
+                    }
+                  },
+                  "Card - Create Payment with Subscription": {
+                    "value": {
+                      "id": "821f9afd-f0cb-4fa9-9330-f173b90b0356",
+                      "account_id": "5beead35-0cd5-4e1c-9a13-b8f48f7f8f3a",
+                      "description": "Payment with card details",
+                      "country": "US",
+                      "status": "SUCCEEDED",
+                      "sub_status": "APPROVED",
+                      "merchant_order_id": "000023",
+                      "created_at": "2025-06-18T18:25:01.729174Z",
+                      "updated_at": "2025-06-18T18:25:02.066450Z",
+                      "amount": {
+                        "captured": 0,
+                        "currency": "USD",
+                        "currency_conversion": {
+                          "code": "ccv_01HVK3Z9M2...",
+                          "cardholder_currency": "QAR",
+                          "cardholder_amount": 3640.0,
+                          "cardholder_accepted": true,
+                          "rate": 3.64,
+                          "rate_margin_percentage": 3.75,
+                          "rate_source": "ECB",
+                          "provider": "FEXCO",
+                          "description": "You have chosen to pay in QAR. Amount: 3640.00 QAR. Rate: 3.6400.",
+                          "created_at": "2026-04-24T14:30:00Z",
+                          "expires_at": "2026-04-24T15:30:00Z",
+                          "status": "APPLIED",
+                          "error_reason": null,
+                          "provider_data": {
+                            "acquirer_id": "MPGS_01"
+                          }
+                        },
+                        "refunded": 0,
+                        "value": 20000
+                      },
+                      "checkout": {
+                        "session": "",
+                        "sdk_action_required": false
+                      },
+                      "payment_method": {
+                        "vaulted_token": "",
+                        "type": "CARD",
+                        "vault_on_success": false,
+                        "token": "",
+                        "parent_payment_method_type": null,
+                        "payment_method_detail": {
+                          "card": {
+                            "verify": false,
+                            "capture": true,
+                            "installments": 1,
+                            "installments_plan_id": null,
+                            "first_installment_deferral": 0,
+                            "installments_type": "MERCHANT",
+                            "installment_amount": null,
+                            "soft_descriptor": "",
+                            "authorization_code": "748912",
+                            "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
+                            "voucher": null,
+                            "card_data": {
+                              "holder_name": "John Doe",
+                              "iin": "41111111",
+                              "lfd": "1111",
+                              "number_length": 16,
+                              "security_code_length": 3,
+                              "brand": "VISA",
+                              "issuer_name": "CONOTOXIA SP Z O O",
+                              "issuer_code": null,
+                              "country_code": "PL",
+                              "category": "CLASSIC",
+                              "type": "DEBIT",
+                              "three_d_secure": {
+                                "version": null,
+                                "electronic_commerce_indicator": null,
+                                "cryptogram": null,
+                                "transaction_id": null,
+                                "directory_server_transaction_id": null,
+                                "pares_status": null,
+                                "acs_id": null
+                              },
+                              "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                              "expiration_month": 11,
+                              "expiration_year": 28
+                            },
+                            "stored_credentials": {
+                              "reason": null,
+                              "usage": null,
+                              "subscription_agreement_id": null,
+                              "network_transaction_id": null
+                            }
+                          }
+                        }
+                      },
+                      "customer_payer": {
+                        "id": "33a9e979-6558-4694-b00c-3d0844524681",
+                        "merchant_customer_id": "1749820178",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "F",
+                        "date_of_birth": "1990-02-28",
+                        "email": "johndoe@example.com",
+                        "nationality": "CO",
+                        "ip_address": null,
+                        "device_fingerprint": null,
+                        "device_fingerprints": [],
+                        "browser_info": {
+                          "user_agent": "",
+                          "accept_header": "",
+                          "accept_content": null,
+                          "accept_browser": null,
+                          "color_depth": "",
+                          "screen_height": "",
+                          "screen_width": "",
+                          "javascript_enabled": null,
+                          "java_enabled": null,
+                          "browser_time_difference": null,
+                          "language": "",
+                          "platform": null
+                        },
+                        "document": {
+                          "document_type": "CC",
+                          "document_number": "1010268952"
+                        },
+                        "phone": {
+                          "number": "3132450765",
+                          "country_code": "57"
+                        },
+                        "billing_address": {
+                          "address_line_1": "Calle 34 # 56 - 78",
+                          "address_line_2": "Apartamento 502, Torre I",
+                          "country": "CO",
+                          "state": "Cundinamarca",
+                          "city": "Bogotá",
+                          "zip_code": "111111",
+                          "neighborhood": null
+                        },
+                        "shipping_address": {
+                          "address_line_1": "Calle 34 # 56 - 78",
+                          "address_line_2": "Apartamento 502, Torre I",
+                          "country": "CO",
+                          "state": "Cundinamarca",
+                          "city": "Bogotá",
+                          "zip_code": "111111",
+                          "neighborhood": null
+                        },
+                        "merchant_customer_created_at": null
+                      },
+                      "additional_data": null,
+                      "transactions": {
+                        "id": "953131e6-94d5-420f-a228-28f67c66b723",
+                        "type": "PURCHASE",
+                        "status": "SUCCEEDED",
+                        "category": "CARD",
+                        "amount": 20000,
+                        "provider_id": "YUNO_TEST_PAYMENT_GW",
+                        "payment_method": {
+                          "vaulted_token": "",
+                          "type": "CARD",
+                          "vault_on_success": false,
+                          "token": "",
+                          "parent_payment_method_type": null,
+                          "detail": {
+                            "card": {
+                              "verify": false,
+                              "capture": true,
+                              "installments": 1,
+                              "installments_plan_id": null,
+                              "first_installment_deferral": 0,
+                              "installments_type": "MERCHANT",
+                              "installment_amount": null,
+                              "soft_descriptor": "",
+                              "authorization_code": "748912",
+                              "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
+                              "voucher": null,
+                              "card_data": {
+                                "holder_name": "John Doe",
+                                "iin": "41111111",
+                                "lfd": "1111",
+                                "number_length": 16,
+                                "security_code_length": 3,
+                                "brand": "VISA",
+                                "issuer_name": "CONOTOXIA SP Z O O",
+                                "issuer_code": null,
+                                "country_code": "PL",
+                                "category": "CLASSIC",
+                                "type": "DEBIT",
+                                "three_d_secure": {
+                                  "version": null,
+                                  "electronic_commerce_indicator": null,
+                                  "cryptogram": null,
+                                  "transaction_id": null,
+                                  "directory_server_transaction_id": null,
+                                  "pares_status": null,
+                                  "acs_id": null
+                                },
+                                "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                                "expiration_month": 11,
+                                "expiration_year": 28
+                              },
+                              "stored_credentials": {
+                                "reason": null,
+                                "usage": null,
+                                "subscription_agreement_id": null,
+                                "network_transaction_id": null
+                              }
+                            }
+                          }
+                        },
+                        "response_code": "SUCCEEDED",
+                        "response_message": "Transaction successful",
+                        "reason": null,
+                        "description": "Payment with card details",
+                        "merchant_reference": "000023",
+                        "provider_data": {
+                          "id": "YUNO_TEST_PAYMENT_GW",
+                          "transaction_id": "31c00baa-ced9-4477-ac1c-e963c4838dde",
+                          "account_id": "",
+                          "status": "SUCCEEDED",
+                          "sub_status": "",
+                          "status_detail": "",
+                          "response_message": null,
+                          "response_code": null,
+                          "raw_request": {
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 2100
+                            },
+                            "reference": "34343434"
+                          },
+                          "raw_response": {
+                            "amount": {
+                              "currency": "BRL",
+                              "value": 2100
+                            },
+                            "merchantAccount": "YunoPaymentsECOM",
+                            "reference": "34343434",
+                            "status": "received"
+                          },
+                          "third_party_transaction_id": "",
+                          "third_party_account_id": null,
+                          "iso8583_response_code": null,
+                          "iso8583_response_message": null
+                        },
+                        "connection_data": {
+                          "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+                          "name": null
+                        },
+                        "created_at": "2025-06-18T18:25:01.934784Z",
+                        "updated_at": "2025-06-18T18:25:02.018823Z"
+                      },
+                      "transactions_history": [
+                        {
+                          "id": "953131e6-94d5-420f-a228-28f67c66b723",
+                          "type": "PURCHASE",
+                          "status": "SUCCEEDED",
+                          "category": "CARD",
+                          "amount": 20000,
+                          "provider_id": "YUNO_TEST_PAYMENT_GW",
+                          "payment_method": {
+                            "vaulted_token": "",
+                            "type": "CARD",
+                            "vault_on_success": false,
+                            "token": "",
+                            "parent_payment_method_type": null,
+                            "detail": {
+                              "card": {
+                                "verify": false,
+                                "capture": true,
+                                "installments": 1,
+                                "installments_plan_id": null,
+                                "first_installment_deferral": 0,
+                                "installments_type": "MERCHANT",
+                                "installment_amount": null,
+                                "soft_descriptor": "",
+                                "authorization_code": "748912",
+                                "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
+                                "voucher": null,
+                                "card_data": {
+                                  "holder_name": "John Doe",
+                                  "iin": "41111111",
+                                  "lfd": "1111",
+                                  "number_length": 16,
+                                  "security_code_length": 3,
+                                  "brand": "VISA",
+                                  "issuer_name": "CONOTOXIA SP Z O O",
+                                  "issuer_code": null,
+                                  "country_code": "PL",
+                                  "category": "CLASSIC",
+                                  "type": "DEBIT",
+                                  "three_d_secure": {
+                                    "version": null,
+                                    "electronic_commerce_indicator": null,
+                                    "cryptogram": null,
+                                    "transaction_id": null,
+                                    "directory_server_transaction_id": null,
+                                    "pares_status": null,
+                                    "acs_id": null
+                                  },
+                                  "fingerprint": "a2ede54f-4b2a-4673-ae2c-c0704338ec7d",
+                                  "expiration_month": 11,
+                                  "expiration_year": 28
+                                },
+                                "stored_credentials": {
+                                  "reason": null,
+                                  "usage": null,
+                                  "subscription_agreement_id": null,
+                                  "network_transaction_id": null
+                                }
+                              }
+                            }
+                          },
+                          "response_code": "SUCCEEDED",
+                          "response_message": "Transaction successful",
+                          "reason": null,
+                          "description": "Payment with card details",
+                          "merchant_reference": "000023",
+                          "provider_data": {
+                            "id": "YUNO_TEST_PAYMENT_GW",
+                            "transaction_id": "31c00baa-ced9-4477-ac1c-e963c4838dde",
+                            "account_id": "",
+                            "status": "SUCCEEDED",
+                            "sub_status": "",
+                            "status_detail": "",
+                            "response_message": null,
+                            "response_code": null,
+                            "raw_response": {
+                              "amount": {
+                                "currency": "BRL",
+                                "value": 2100
+                              },
+                              "merchantAccount": "YunoPaymentsECOM",
+                              "reference": "34343434",
+                              "status": "received"
+                            },
+                            "third_party_transaction_id": "",
+                            "third_party_account_id": null,
+                            "iso8583_response_code": null,
+                            "iso8583_response_message": null
+                          },
+                          "connection_data": {
+                            "id": "a2ee2f97-8ba0-4198-a821-3b750bc97872",
+                            "name": null
+                          },
+                          "created_at": "2025-06-18T18:25:01.934784Z",
+                          "updated_at": "2025-06-18T18:25:02.018823Z"
+                        }
+                      ],
+                      "workflow": "DIRECT",
+                      "metadata": [],
+                      "fraud_screening": null,
+                      "payment_link_id": "",
+                      "subscription_code": "1c9f0b2e-7d5a-4c3b-8e1f-9a0b1c2d3e4f",
+                      "routing_rules": {
+                        "smart_routing": false,
+                        "monitors": false,
+                        "condition": {
+                          "id": 192539,
+                          "name": "Card",
+                          "description": ""
+                        }
+                      },
+                      "simplified_mode": false,
+                      "subscription": {
+                        "frequency": {
+                          "type": "MONTH",
+                          "value": 1,
+                          "execution": "YUNO"
+                        },
+                        "availability": {
+                          "start_at": "2025-05-23T20:17:30.277678Z",
+                          "finish_at": "2027-05-23T20:17:30.277678Z"
+                        },
+                        "amount": {
+                          "value": 20000,
+                          "currency": "USD",
+                          "type": "FIXED"
+                        }
+                      }
                     }
                   },
                   "Alternative payment method": {
@@ -9265,6 +9807,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "08bb27be-1256-4067-976f-7f589707e90e",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -9395,6 +9938,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "08bb27be-1256-4067-976f-7f589707e90e",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -9480,6 +10024,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "08bb27be-1256-4067-976f-7f589707e90e",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -9594,6 +10139,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "517862",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "network_token": {
                               "network": "MASTERCARD",
@@ -9690,6 +10236,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "517862",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "network_token": {
                                 "network": "MASTERCARD",
@@ -9789,6 +10336,7 @@
                             "soft_descriptor": "",
                             "authorization_code": "161102",
                             "retrieval_reference_number": "",
+                            "acquirer_reference_number": "",
                             "voucher": null,
                             "card_data": {
                               "holder_name": "John Doe",
@@ -9930,6 +10478,7 @@
                               "soft_descriptor": "",
                               "authorization_code": "161102",
                               "retrieval_reference_number": "",
+                              "acquirer_reference_number": "",
                               "voucher": null,
                               "card_data": {
                                 "holder_name": "John Doe",
@@ -10026,6 +10575,7 @@
                                 "soft_descriptor": "",
                                 "authorization_code": "161102",
                                 "retrieval_reference_number": "",
+                                "acquirer_reference_number": "",
                                 "voucher": null,
                                 "card_data": {
                                   "holder_name": "John Doe",
@@ -10771,6 +11321,10 @@
                                       "type": "string",
                                       "example": ""
                                     },
+                                    "acquirer_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
                                     "voucher": {},
                                     "card_data": {
                                       "type": "object",
@@ -11373,6 +11927,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -11509,6 +12067,10 @@
                                 },
                                 "response_message": {},
                                 "response_code": {},
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -11664,6 +12226,10 @@
                                             "type": "string",
                                             "example": ""
                                           },
+                                          "acquirer_reference_number": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
                                           "voucher": {},
                                           "card_data": {
                                             "type": "object",
@@ -11800,6 +12366,10 @@
                                   },
                                   "response_message": {},
                                   "response_code": {},
+                                  "raw_request": {
+                                    "type": "object",
+                                    "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                  },
                                   "raw_response": {
                                     "type": "object",
                                     "properties": {
@@ -11890,7 +12460,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -12064,6 +12639,10 @@
                                       "example": "cd174cd4-8f05-48e9-9b5b-cfd338074ab5"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -12310,6 +12889,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -12446,6 +13029,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -12586,6 +13173,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -12723,6 +13314,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -12840,6 +13435,10 @@
                                       "score": {
                                         "type": "string"
                                       },
+                                      "raw_request": {
+                                        "type": "object",
+                                        "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                      },
                                       "raw_response": {
                                         "type": "object"
                                       },
@@ -12872,7 +13471,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -13031,6 +13635,10 @@
                                       "example": "d54fffab-0a82-456e-9703-1bf6a8cda3ec"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -13517,6 +14125,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -13653,6 +14265,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -13793,6 +14409,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -13930,6 +14550,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -14047,6 +14671,10 @@
                                       "score": {
                                         "type": "string"
                                       },
+                                      "raw_request": {
+                                        "type": "object",
+                                        "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                      },
                                       "raw_response": {
                                         "type": "object"
                                       },
@@ -14079,7 +14707,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -14238,6 +14871,10 @@
                                       "example": "28d3d22e-21d4-4a3a-a7e1-bac6051650ce"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -14576,6 +15213,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -14712,6 +15353,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -14852,6 +15497,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -14989,6 +15638,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -15106,6 +15759,10 @@
                                       "score": {
                                         "type": "string"
                                       },
+                                      "raw_request": {
+                                        "type": "object",
+                                        "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                      },
                                       "raw_response": {
                                         "type": "object"
                                       },
@@ -15138,7 +15795,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -15297,6 +15959,10 @@
                                       "example": "6a01dff2-2f2b-469f-b5e1-748b4bff74e0"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -15703,6 +16369,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -15839,6 +16509,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -15979,6 +16653,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -16116,6 +16794,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -16182,7 +16864,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -16344,6 +17031,10 @@
                                       "type": "string",
                                       "example": ""
                                     },
+                                    "acquirer_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
                                     "voucher": {},
                                     "card_data": {
                                       "type": "object",
@@ -16679,6 +17370,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -16815,6 +17510,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -16955,6 +17654,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -17092,6 +17795,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -17158,7 +17865,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -17320,6 +18032,10 @@
                                       "type": "string",
                                       "example": ""
                                     },
+                                    "acquirer_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
                                     "voucher": {},
                                     "card_data": {
                                       "type": "object",
@@ -17655,6 +18371,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -17791,6 +18511,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -17931,6 +18655,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -18068,6 +18796,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -18134,7 +18866,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -18296,6 +19033,10 @@
                                       "type": "string",
                                       "example": ""
                                     },
+                                    "acquirer_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
                                     "voucher": {},
                                     "card_data": {
                                       "type": "object",
@@ -18631,6 +19372,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -18783,6 +19528,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -18923,6 +19672,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -19076,6 +19829,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -19142,7 +19899,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -19301,6 +20063,10 @@
                                       "example": "acf8d864-8e87-42b4-8041-59216e3f1a88"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -19636,6 +20402,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -19772,6 +20542,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -19912,6 +20686,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -20049,6 +20827,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -20115,7 +20897,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -20274,6 +21061,10 @@
                                       "example": "67fe53c7-0c94-4880-9599-411bc2373096"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -20616,6 +21407,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -20752,6 +21547,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -20892,6 +21691,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -21029,6 +21832,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -21095,7 +21902,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -21254,6 +22066,10 @@
                                       "example": "e0d334a5-b4d0-4623-bcc3-b9c64b5cc7cb"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -21600,6 +22416,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -21740,6 +22560,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -21880,6 +22704,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -22021,6 +22849,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -22087,7 +22919,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -22451,6 +23288,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -22600,6 +23441,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -22641,7 +23486,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -22800,6 +23650,10 @@
                                       "example": "08bb27be-1256-4067-976f-7f589707e90e"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -23213,6 +24067,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -23349,6 +24207,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -23489,6 +24351,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -23626,6 +24492,10 @@
                                   "type": "string",
                                   "example": "Approved or completed successfully"
                                 },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                },
                                 "raw_response": {
                                   "type": "object",
                                   "properties": {
@@ -23696,7 +24566,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -23850,6 +24725,10 @@
                                       "example": "517862"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -24167,6 +25046,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "network_token": {
                                           "type": "object",
@@ -24295,6 +25178,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -24478,6 +25365,10 @@
                                       "example": "0a3666b1-ea6e-4ebb-937d-5a9f69ef2b77"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": ""
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": ""
                                     },
@@ -24741,6 +25632,10 @@
                                           "type": "string",
                                           "example": ""
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": ""
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -24878,6 +25773,10 @@
                                 "iso8583_response_message": {
                                   "type": "string",
                                   "example": "Approved or completed successfully"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -25020,6 +25919,10 @@
                                             "type": "string",
                                             "example": ""
                                           },
+                                          "acquirer_reference_number": {
+                                            "type": "string",
+                                            "example": ""
+                                          },
                                           "voucher": {},
                                           "card_data": {
                                             "type": "object",
@@ -25158,6 +26061,10 @@
                                     "type": "string",
                                     "example": "Approved or completed successfully"
                                   },
+                                  "raw_request": {
+                                    "type": "object",
+                                    "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
+                                  },
                                   "raw_response": {
                                     "type": "object",
                                     "properties": {
@@ -25225,7 +26132,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {
@@ -25488,6 +26400,10 @@
                                       "example": "847277"
                                     },
                                     "retrieval_reference_number": {
+                                      "type": "string",
+                                      "example": "2206177255"
+                                    },
+                                    "acquirer_reference_number": {
                                       "type": "string",
                                       "example": "2206177255"
                                     },
@@ -25908,6 +26824,10 @@
                                           "type": "string",
                                           "example": "2206177255"
                                         },
+                                        "acquirer_reference_number": {
+                                          "type": "string",
+                                          "example": "2206177255"
+                                        },
                                         "voucher": {},
                                         "card_data": {
                                           "type": "object",
@@ -26053,6 +26973,10 @@
                                 "response_code": {
                                   "type": "string",
                                   "example": "200"
+                                },
+                                "raw_request": {
+                                  "type": "object",
+                                  "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                 },
                                 "raw_response": {
                                   "type": "object",
@@ -26904,6 +27828,10 @@
                                             "type": "string",
                                             "example": "2206177255"
                                           },
+                                          "acquirer_reference_number": {
+                                            "type": "string",
+                                            "example": "2206177255"
+                                          },
                                           "voucher": {},
                                           "card_data": {
                                             "type": "object",
@@ -27041,6 +27969,10 @@
                                   "response_code": {
                                     "type": "string",
                                     "example": "200"
+                                  },
+                                  "raw_request": {
+                                    "type": "object",
+                                    "description": "Obfuscated copy of the request Yuno sent to the provider. Only returned for allowlisted organizations."
                                   },
                                   "raw_response": {
                                     "type": "object",
@@ -27877,7 +28809,12 @@
                           "type": "string",
                           "example": ""
                         },
-                        "subscription_code": {},
+                        "subscription_code": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true,
+                          "description": "Identifier of the subscription created or charged by this payment. Null when the payment carries no subscription."
+                        },
                         "routing_rules": {
                           "type": "object",
                           "properties": {

@@ -21,6 +21,57 @@ Yuno expects an **HTTP 200 OK** response to confirm a notification was received.
 | Sixth try | 48 hours |
 | Seventh try | 96 hours |
 
+## De-duplication
+
+Because Yuno retries delivery when it doesn't receive a confirmation, your endpoint can receive the same event more than once. This is expected behavior, not a bug: your integration should be able to identify and skip duplicates.
+
+### The identifier
+
+Every event payload includes `data.idempotency_key`. It stays stable across every retry of the same event, so you can use it to tell a duplicate delivery apart from a genuinely new event.
+
+### Coverage
+
+`data.idempotency_key` is currently included in:
+
+- `payment` events
+- `refund` events
+- `chargeback` events
+- `subscription` events
+
+<Warning>
+For `subscription.*` events the key identifies the **subscription**, not the event: it is the `X-Idempotency-Key` sent when the subscription was created, and it is repeated identically on every lifecycle event for that subscription. De-duplicate `subscription.*` events on `type_event` **plus** `data.idempotency_key` — matching on the key alone collapses every event for a subscription into one and silently drops `subscription.active`, `subscription.cancel` and the rest.
+</Warning>
+
+<Note>
+Support for `enrollment` events is planned but not yet available. Until then, enrollment payloads do not include `data.idempotency_key`.
+</Note>
+
+### Why you might see the same event twice
+
+Each payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event (same `data.idempotency_key`, incremented `retry`) following the schedule described in [Delivery and retries](#delivery-and-retries) above. Treat any event whose `type_event` and idempotency key you've already processed as a duplicate, regardless of its `retry` value.
+
+### Recommended handling
+
+Store every `data.idempotency_key` you've successfully processed together with the event's `type_event`, and check incoming events against that store before acting on them:
+
+```js
+async function handleWebhookEvent(event) {
+  // Scope the key by event type: a subscription's key is the same on every
+  // one of its lifecycle events.
+  const key = `${event.type_event}:${event.data.idempotency_key}`;
+
+  if (await store.has(key)) {
+    // Already processed, acknowledge and skip.
+    return;
+  }
+
+  await processEvent(event);
+  await store.add(key);
+}
+```
+
+Keep in mind that not every event type carries `data.idempotency_key` yet (see Coverage above). For event types without it, fall back to your own de-duplication key, such as the combination of resource ID and event type.
+
 ## Configure a webhook
 
 Webhooks are configured the same way whether you use the dashboard or the API. Both set the same `url`, triggers, and delivery authentication.

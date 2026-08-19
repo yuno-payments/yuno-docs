@@ -85,6 +85,7 @@ For the full list of parameters and YunoConfig details, see the [Android SDK Com
 | `countryCode`             | ISO country code (e.g. `US`). Required.                                                                      |
 | `callbackPaymentState`    | Callback: payment state (e.g. SUCCEEDED, FAIL, PROCESSING, REJECT).                                          |
 | `merchantSessionId`       | Optional merchant session identifier.                                                                        |
+| `onInstallmentSelected`   | Optional callback fired when the shopper selects an installment option in the card form. See [Installment selection callback](#installment-selection-callback-oninstallmentselected). Available from SDK `2.20.0`. |
 | `YunoConfig` (initialize) | Optional: saveCardEnabled, keepLoader, language, styles. See Common Reference. |
 
 ## full-checkout
@@ -165,7 +166,8 @@ startCheckout(
   checkoutSession: "checkout_session",
   countryCode: "country_code_iso",
   callbackPaymentState: ((String?) -> Unit)?,
-  merchantSessionId: String? = null
+  merchantSessionId: String? = null,
+  onInstallmentSelected: ((InstallmentSelected?) -> Unit)? = null
 )
 ```
 
@@ -190,6 +192,44 @@ Possible states:
 | `REJECT`         | The transaction was rejected due to reasons like insufficient funds or suspected fraudulent activity.                           | Yes. Inform the user of the rejection, provide the reason if possible, and suggest actions.                   |
 | `INTERNAL_ERROR` | An unexpected internal error occurred within the system handling the payment process.                                           | Yes. Requires technical intervention to review the system, fix internal issues, and retry or inform the user. |
 | `CANCELED`       | The user voluntarily canceled the transaction or abandoned the payment process.                                                 | No.                                                                                                           |
+
+#### Installment selection callback (`onInstallmentSelected`)
+
+Available from SDK `2.20.0`. Register the optional `onInstallmentSelected` callback to keep your cart total in sync with the installment plan the shopper picks in the card form:
+
+```kotlin
+startCheckout(
+  checkoutSession = "checkout_session",
+  countryCode = "country_code_iso",
+  callbackPaymentState = { state, subState -> /* ... */ },
+  onInstallmentSelected = { selection ->
+    if (selection != null) {
+      // Update your cart total, e.g. with selection.amount?.totalValue
+    } else {
+      // Installments are no longer available — restore your base total
+    }
+  },
+)
+```
+
+The callback receives an `InstallmentSelected?` payload:
+
+| Field                   | Type                  | Description                                                                                                   |
+| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `installment`           | `Int`                 | Number of installments selected (e.g. `3`).                                                                    |
+| `label`                 | `String`              | The exact installment label rendered in the form, localized (e.g. `3x de R$875.00 - Total R$2,625.00`).        |
+| `amount`                | `InstallmentAmount?`  | `currency`, `value`, and `totalValue` as raw strings, exactly as reported by the installments plan.            |
+| `additionalData`        | `Map<String, Any?>?`  | Reserved for future use. Currently always `null`.                                                              |
+| `isMerchantInstallment` | `Boolean?`            | Reserved for the merchant-installments feature. Currently always `null` on Android.                            |
+
+Firing semantics:
+
+* Fires once when a default installment is pre-selected as the plan renders, so your total is correct from first paint.
+* Fires on every selection the shopper makes.
+* Fires with the recalculated default after the plan changes (for example, a BIN change).
+* Fires once with `null` when installments stop being available after a selection was already reported (for example, the shopper switches to a card without installments) — restore your base total.
+* Does not fire when the card form renders without installments, and registering no callback keeps the SDK behavior unchanged.
+* The callback runs on the main thread. Exceptions thrown inside it are caught by the SDK and never interrupt the payment flow.
 
 #### Payment status validation
 

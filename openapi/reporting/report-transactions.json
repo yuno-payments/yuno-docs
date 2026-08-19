@@ -1,0 +1,380 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno Transaction Reporting API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/reporting/transactions": {
+      "post": {
+        "summary": "Report Off-Yuno Transactions",
+        "description": "Reports transactions processed directly with a provider (outside Yuno). Each accepted event is persisted as a regular Yuno payment with `origin: REPORTED` — visible in the dashboard, listings and analytics, but never routed, retried or charged by Yuno.",
+        "operationId": "report-transactions",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your public API key."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Your private secret key. Never expose it client-side."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "account_id",
+                  "events"
+                ],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID of the Yuno account the reported payments belong to."
+                  },
+                  "events": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 500,
+                    "description": "One event or a batch of up to 500. Events are processed per item: one invalid event never rejects the batch.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "report_id",
+                        "merchant_order_id",
+                        "country",
+                        "payment_method_type",
+                        "result",
+                        "amount",
+                        "provider_id"
+                      ],
+                      "properties": {
+                        "report_id": {
+                          "type": "string",
+                          "maxLength": 255,
+                          "description": "Your unique identifier for this event — the deduplication key. An event with a `report_id` already ingested is counted as a duplicate and never ingested twice, which makes retries safe.",
+                          "examples": [
+                            "merchant-rpt-000123"
+                          ]
+                        },
+                        "merchant_order_id": {
+                          "type": "string",
+                          "maxLength": 255,
+                          "description": "Your order reference — how you find the payment in the dashboard.",
+                          "examples": [
+                            "order_45678"
+                          ]
+                        },
+                        "country": {
+                          "type": "string",
+                          "minLength": 2,
+                          "maxLength": 2,
+                          "description": "Uppercase ISO 3166-1 alpha-2 country code of the transaction (e.g. `US`); lowercase or unknown codes are rejected.",
+                          "examples": [
+                            "US"
+                          ]
+                        },
+                        "payment_method_type": {
+                          "type": "string",
+                          "description": "Payment method type used at the provider — must be one of Yuno's payment-method types (e.g. `CARD`, `PIX`); unknown types are rejected.",
+                          "examples": [
+                            "CARD"
+                          ]
+                        },
+                        "result": {
+                          "type": "string",
+                          "enum": [
+                            "SUCCEEDED",
+                            "DECLINED",
+                            "ERROR"
+                          ],
+                          "description": "The outcome the provider gave you. Maps to the payment status together with the event type: `PURCHASE`+`SUCCEEDED` → payment `SUCCEEDED`; `AUTHORIZE`+`SUCCEEDED` → `PENDING`/`AUTHORIZED` (an approved authorization is not captured money); `DECLINED` → `DECLINED`; `ERROR` → `ERROR`."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "required": [
+                            "value",
+                            "currency"
+                          ],
+                          "description": "Transaction amount. Decimal value — a payment of $99 is `99.00`, not `9900`.",
+                          "properties": {
+                            "value": {
+                              "type": "number",
+                              "minimum": 0,
+                              "description": "Decimal amount, greater than or equal to zero. A `0` amount is typical of `VERIFY` events (zero-dollar verification).",
+                              "examples": [
+                                99.0
+                              ]
+                            },
+                            "currency": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3,
+                              "description": "Uppercase ISO 4217 currency code (e.g. `USD`); lowercase or unknown codes are rejected.",
+                              "examples": [
+                                "USD"
+                              ]
+                            }
+                          }
+                        },
+                        "provider_id": {
+                          "type": "string",
+                          "description": "The provider you processed the transaction with — must be one of Yuno's catalog provider ids (e.g. `ADYEN`); unknown providers are rejected. Shown on the payment, enabling provider-level segmentation in the dashboard and analytics.",
+                          "examples": [
+                            "ADYEN"
+                          ]
+                        },
+                        "latency_ms": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Optional. The provider's response time as observed by you, in milliseconds (round-trip of the authorization call). Feeds latency analytics per provider.",
+                          "examples": [
+                            180
+                          ]
+                        },
+                        "token_type_used": {
+                          "type": "string",
+                          "enum": [
+                            "FPAN",
+                            "DPAN",
+                            "PROVIDER_TOKEN"
+                          ],
+                          "description": "Optional. The credential you sent to the provider for this transaction: `FPAN` — the real card number (funding PAN); `DPAN` — the card's network token; `PROVIDER_TOKEN` — a token issued by that provider for the stored card (e.g. a saved-card or stored-payment-method token on the provider's own vault). Powers approval-rate analysis per token type.",
+                          "examples": [
+                            "DPAN"
+                          ]
+                        },
+                        "event_type": {
+                          "type": "string",
+                          "enum": [
+                            "PURCHASE",
+                            "AUTHORIZE",
+                            "VERIFY"
+                          ],
+                          "default": "PURCHASE",
+                          "description": "Optional. The operation you performed at the provider: `PURCHASE` — a direct charge (authorization and capture in one step; the default when omitted); `AUTHORIZE` — an authorization to be captured later (the payment lands `PENDING` with sub-status `AUTHORIZED`); `VERIFY` — a card verification / zero-dollar authorization (the payment lands `SUCCEEDED` with sub-status `VERIFIED`)."
+                        },
+                        "occurred_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "Optional. When the transaction happened at the provider (RFC 3339, UTC). Defaults to the time Yuno receives the event.",
+                          "examples": [
+                            "2026-08-14T10:41:07Z"
+                          ]
+                        },
+                        "raw_provider_response": {
+                          "type": "object",
+                          "description": "Optional. The provider's response payload, verbatim (JSON, up to 64 KB). Stored with defensive card-data redaction applied; never returned by any API. Archiving it lets Yuno enrich the payment later without asking you for anything new."
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "minimal": {
+                  "summary": "Minimal event (required fields only)",
+                  "value": {
+                    "account_id": "3f2a1b6c-8d4e-4f5a-9b0c-1d2e3f4a5b6c",
+                    "events": [
+                      {
+                        "report_id": "merchant-rpt-000123",
+                        "merchant_order_id": "order_45678",
+                        "country": "US",
+                        "payment_method_type": "CARD",
+                        "result": "SUCCEEDED",
+                        "amount": {
+                          "currency": "USD",
+                          "value": 99.0
+                        },
+                        "provider_id": "ADYEN"
+                      }
+                    ]
+                  }
+                },
+                "full": {
+                  "summary": "Full event (all v1 fields)",
+                  "value": {
+                    "account_id": "3f2a1b6c-8d4e-4f5a-9b0c-1d2e3f4a5b6c",
+                    "events": [
+                      {
+                        "report_id": "merchant-rpt-000125",
+                        "merchant_order_id": "order_45679",
+                        "country": "US",
+                        "payment_method_type": "CARD",
+                        "result": "SUCCEEDED",
+                        "amount": {
+                          "currency": "USD",
+                          "value": 99.0
+                        },
+                        "provider_id": "ADYEN",
+                        "latency_ms": 180,
+                        "token_type_used": "DPAN",
+                        "event_type": "PURCHASE",
+                        "occurred_at": "2026-08-14T10:41:07Z",
+                        "raw_provider_response": {
+                          "pspReference": "8815992887",
+                          "resultCode": "Authorised"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch accepted and processed per event.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "integer",
+                      "description": "Events ingested as payments."
+                    },
+                    "duplicates": {
+                      "type": "integer",
+                      "description": "Events skipped because their `report_id` was already ingested."
+                    },
+                    "rejected": {
+                      "type": "array",
+                      "description": "Events that failed validation, each with its reason. The rest of the batch is unaffected.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "report_id": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string",
+                            "examples": [
+                              "INVALID_EVENT"
+                            ]
+                          },
+                          "messages": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "mixed": {
+                    "value": {
+                      "accepted": 2,
+                      "duplicates": 1,
+                      "rejected": [
+                        {
+                          "report_id": "merchant-rpt-000124",
+                          "code": "INVALID_EVENT",
+                          "messages": [
+                            "The field 'event_type' must be one of: PURCHASE, AUTHORIZE, VERIFY."
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request-level validation failure — malformed body, missing required field, or a batch over 500 events. An `account_id` that does not exist or does not belong to your organization answers `INVALID_ACCOUNT_ID`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "invalid_request": {
+                    "value": {
+                      "code": "INVALID_REQUEST",
+                      "messages": [
+                        "The field 'events' must contain between 1 and 500 events."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — `PRODUCT_NOT_ENABLED` (the product is not enabled for your organization).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "product_not_enabled": {
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "The Transaction Reporting API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

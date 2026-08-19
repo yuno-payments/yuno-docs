@@ -9,7 +9,7 @@ Yuno's Smart Retries help recover declined recurring credit card payments by ret
 
 Yuno's Smart Retries offer several benefits that enhance payment processes and revenue recovery:
 
-* **Data-driven decision-making**: Uses a proven retry schedule, with machine-learning-based timing available for eligible organizations.
+* **Data-driven decision-making**: Uses a proven retry schedule, or machine-learning-based retry timing via the `SMART` strategy.
 * **Enhanced revenue retrieval**: Increases the chances of successfully collecting payments.
 * **Decreased subscriber turnover**: Minimizes disruptions and involuntary subscriber departures.
 * **Flexible logic**: Allows customization of retry schedules to maximize success opportunities.
@@ -17,7 +17,7 @@ Yuno's Smart Retries offer several benefits that enhance payment processes and r
 
 ### Retry schedule
 
-By default, Yuno applies the fixed retry schedule below. Each delay is measured **from the previous attempt**, not cumulatively from the first attempt. Eligible organizations can also opt into machine-learning-based timing, which adapts the moment of each retry per transaction.
+By default, Yuno applies the fixed retry schedule below. Each delay is measured **from the previous attempt**, not cumulatively from the first attempt. You can also switch to machine-learning-based retry timing, which adapts the moment of each retry per transaction, by setting `strategy` to `SMART` — see [Machine-learning retry timing](#machine-learning-retry-timing).
 
 | Attempt                    | Delay after the previous attempt | Total time after the first attempt |
 | :------------------------- | :------------------------------- | :--------------------------------- |
@@ -27,8 +27,9 @@ By default, Yuno applies the fixed retry schedule below. Each delay is measured 
 | Retry 3                    | 24 hours                         | ~41 hours                          |
 | Retry 4                    | 36 hours                         | ~77 hours (~3.2 days)              |
 | Retry 5                    | 48 hours                         | ~125 hours (~5.2 days)             |
+| Retry 6                    | 96 hours                         | ~221 hours (~9.2 days)             |
 
-The last retry is attempted roughly 5.2 days after the initial failed charge.
+The last retry is attempted roughly 9.2 days after the initial failed charge.
 
 ### Customization
 
@@ -39,18 +40,94 @@ Every business model is unique, so we allow merchants to define specific rules t
 | Parameter          | Type   | Description                                                                                                                              | Example                            |
 | :----------------- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------- |
 | `retry_on_decline` | bool   | Indicates whether to retry a payment after a first decline. Defaults to false. This flag is the only switch that enables retries; there is no dashboard toggle. | TRUE |
-| `amount`           | number | Number of retries the subscription will attempt. The maximum equals your environment's configured retry schedule length — 5 in production. Values above the cap are clamped to it. This cap is set per environment and is not configurable per account via the API. | 4 |
-| `strategy`         | string | The retry strategy. Allowed values: DEFAULT and CUSTOM_SCHEDULE. DEFAULT uses the fixed schedule above (NOT ML-based timing). CUSTOM_SCHEDULE uses the per-attempt schedule you provide. | `CUSTOM_SCHEDULE` |
-| `stop_on_hard_decline` | bool | When true and a hard decline is detected, retries stop for the current cycle only. The subscription stays ACTIVE, billing advances to the next cycle, and no cancel/pause or subscription webhook is emitted. | TRUE |
+| `amount`           | number | Number of retries the subscription will attempt. The maximum equals your environment's configured retry schedule length — 6 in production. A value above the cap is rejected with `400` (`Max retries attempts exceeded`). This cap is set per environment and is not configurable per account via the API. | 4 |
+| `strategy`         | string | The retry strategy. Allowed values: DEFAULT, SMART and CUSTOM_SCHEDULE. DEFAULT uses the fixed schedule above. SMART uses machine-learning-based retry timing — see [Machine-learning retry timing](#machine-learning-retry-timing). CUSTOM_SCHEDULE uses the per-attempt schedule you provide. | `CUSTOM_SCHEDULE` |
+| `stop_on_hard_decline` | bool | When true and a hard decline is detected, retries stop for the current cycle only. On its own, the subscription stays ACTIVE, billing advances to the next cycle, and no cancel/pause or subscription webhook is emitted. If `cancel_on_exhausted_retries` is also true, the subscription is canceled instead — see [Canceling a subscription when retries run out](#canceling-a-subscription-when-retries-run-out). | TRUE |
+| `cancel_on_exhausted_retries` | bool | When true, the subscription is canceled once retries for a billing cycle end without a successful payment, instead of rolling forward to the next cycle. Defaults to false. Can be set at creation or changed later with [Update Subscription](/reference/subscriptions/update-subscription). See [Canceling a subscription when retries run out](#canceling-a-subscription-when-retries-run-out). | TRUE |
 | `schedule`         | object | Contains attempt and delay\_seconds fields                                                                                               | Attempt: 2, `delay_seconds`: 86400 |
 
 </div>
 
 
 <Note>
-The maximum number of retries equals your environment's configured retry schedule length: 5 in production. Sandbox is currently limited to 5 and is being aligned to match production.
+The maximum number of retries equals your environment's configured retry schedule length: 6 in production. Sandbox is currently limited to 5 and is being aligned to match production.
 </Note>
 
 <Note>
-`strategy`: `DEFAULT` applies the fixed schedule above, not ML-based timing. Use `CUSTOM_SCHEDULE` together with the `schedule` array to define custom delays.
+`strategy`: `DEFAULT` applies the fixed schedule above. Use `SMART` for machine-learning-based retry timing, or `CUSTOM_SCHEDULE` together with the `schedule` array to define your own delays.
+</Note>
+
+### Machine-learning retry timing
+
+Set `strategy` to `SMART` to have Yuno's machine-learning model choose **when** each retry is attempted, instead of using the fixed schedule. The model weighs signals such as the decline reason, the country, the card issuer and the payment provider to pick the moment most likely to succeed.
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 4,
+    "strategy": "SMART"
+  }
+}
+```
+
+`SMART` changes retry **timing** only. It does not change how many retries you get: `amount` still controls that, and the same per-environment maximum applies. Any `schedule` array sent alongside `strategy: SMART` is ignored.
+
+<Note>
+Machine-learning timing is applied **from the second retry onward**. The first retry always uses the standard delay from the fixed schedule above.
+</Note>
+
+<Note>
+If a timing decision is not available in time, the retry falls back to the fixed schedule above. Retries are never skipped or dropped because of this — only their timing changes.
+</Note>
+
+<Note>
+`SMART` is available to all accounts.
+</Note>
+
+### Subscriptions awaiting recovery
+
+Where the `PAST_DUE` status is enabled for the account, a failed recurring charge moves the subscription from `ACTIVE` — or from `TRIALING` — to [`PAST_DUE`](/reference/subscriptions/status-subscriptions) and emits a `subscription.past_due` webhook. The subscription keeps billing and can still be canceled while it is there; the next successful charge returns it to the status it came from and emits the matching `subscription.active` or `subscription.trialing` event.
+
+Where the status is not enabled, a failed charge leaves the subscription in `ACTIVE` while the retries run, and only the `payment.purchase` webhook reports the decline. Contact your Yuno representative to have `PAST_DUE` enabled.
+
+### Canceling a subscription when retries run out
+
+By default, when every retry for a billing cycle has been attempted and none succeeded, the subscription stays in its current status and billing rolls forward to the next cycle. A subscription backed by a permanently dead card therefore keeps generating failed charges indefinitely.
+
+Set `cancel_on_exhausted_retries` to `true` — at creation or via [Update Subscription](/reference/subscriptions/update-subscription) — to change that:
+
+```json
+{
+  "retries": {
+    "retry_on_decline": true,
+    "amount": 3,
+    "cancel_on_exhausted_retries": true
+  }
+}
+```
+
+When retries for a cycle end without a successful payment, Yuno then:
+
+1. Sets the subscription status to `CANCELED`.
+2. Sets `cancellation_source` to `RETRIES_EXHAUSTED`.
+3. Stops all future scheduled billing for the subscription.
+4. Sends one `SUBSCRIPTION.CANCEL` webhook.
+
+This applies whichever way the retries ended — the schedule running to its last attempt, or `stop_on_hard_decline` ending the cycle early after a hard decline. In both cases `cancellation_source` is `RETRIES_EXHAUSTED`.
+
+<Note>
+`cancel_on_exhausted_retries` defaults to `false`. If you omit it, subscriptions behave exactly as they do today. No existing subscription changes behavior.
+</Note>
+
+<Warning>
+**This cancellation is final.** A canceled subscription is no longer billable, so [Retry Subscription](/reference/subscriptions/retry-subscription) is rejected for it. Without this flag you can manually rescue a subscription whose retries were exhausted; with it enabled, that option is gone once the cancellation happens. Enable it only if an exhausted retry schedule should genuinely end the customer's subscription.
+</Warning>
+
+<Note>
+`cancel_on_exhausted_retries` can be set at creation or changed afterward with [Update Subscription](/reference/subscriptions/update-subscription).
+</Note>
+
+<Note>
+This flag applies to renewal cycles. Subscriptions created with `initial_payment_validation: true` already cancel themselves when their first payment fails, and that path reports `cancellation_source` as `SYSTEM` rather than `RETRIES_EXHAUSTED`.
 </Note>

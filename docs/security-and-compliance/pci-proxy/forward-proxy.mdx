@@ -35,15 +35,52 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     }
     ```
 
-    The four fields you can reference are `number`, `expiration_month`, `expiration_year`, and `holder_name`. They resolve to the stored **card (PAN) data** — this flow is specifically for retrieving card data from a vaulted token, not provider tokens or network tokens.
+    The card fields you can reference are `number`, `expiration_month`, `expiration_year`, and `holder_name` — they resolve to the stored **card (PAN) data**. If the card was enrolled with a security code, you can also reference `security_code`, within a bounded window — see below. If the card has a **network token**, you can also reference `network_token_number` (the DPAN), `network_token_expiration_month`, and `network_token_expiration_year`. And `network_transaction_id` resolves to the card's NTID — the scheme's reference for its original transaction, required by many processors for merchant-initiated transactions. All fields can be mixed in the same request — send your processor whatever it needs: PAN, DPAN + NTID, or a combination. Provider tokens are not resolved, and neither are cryptograms — a cryptogram is generated per transaction, so if your destination requires one, obtain it from [Generate Network Token Cryptogram](/reference/network-tokens/generate-network-token-cryptogram) right before the forward and include the value directly in the body. Request it with `include_network_token: false` if your organization is not PCI-certified: the cryptogram-only response carries no PAN-equivalent data, and the `network_token_number` expression resolves the DPAN for you at forward time.
 
     Expressions work in the request body and in header values. Everything that is not an expression is forwarded untouched.
 
     <Warning>
-    **No CVV**
+    **The security code expires — by default 3 hours after enrollment**
 
-    There is no placeholder for the security code (CVV/CVC). Card networks do not allow it to be stored after a payment is authorized, so a stored payment method has none to inject — the available fields are `number`, `expiration_month`, `expiration_year`, and `holder_name`. If your destination requires the CVV, your customer must supply it and you include it directly in the body yourself (the proxy forwards it without storing it); note that transmitting a raw security code keeps that request in your PCI scope.
+    `security_code` is the one field with a lifetime. The security code is never stored: it is held briefly after your customer enters it, and Yuno stops serving it once that window closes. Reference it only for a charge that happens shortly after enrollment.
+
+    When it is unavailable — expired, or never captured — the forward fails with `EXPRESSION_RESOLUTION_FAILED` naming `security_code`, and **no** partial substitution happens. Your PAN expressions are unaffected: an expired security code costs you that field only.
+
+    If your destination requires the CVV outside that window, your customer must supply it and you include it directly in the body yourself; the proxy forwards it without storing it. Transmitting a raw security code keeps that request in your PCI scope.
     </Warning>
+
+    #### Storing a security code
+
+    A card only has a security code to inject if one was supplied when it was enrolled. Send it as `card.security_code` on [Enroll Payment Method](/reference/payment-methods-direct-workflow/enroll-payment-method-api):
+
+    ```json
+    {
+      "customer_id": "...",
+      "card": {
+        "number": "4111111111111111",
+        "expiration_month": 12,
+        "expiration_year": 2030,
+        "holder_name": "JOHN DOE",
+        "security_code": "123"
+      }
+    }
+    ```
+
+    Enroll without it and the card is still usable for every other expression — only `security_code` will be unavailable.
+
+    #### Checking how much of the window is left
+
+    Read `card_data.security_code_expires_in` from [Retrieve Enrolled Payment Method](/reference/payment-methods-direct-workflow/retrieve-enrolled-payment-method-by-id-api):
+
+    | Value | Meaning |
+    |---|---|
+    | A positive number | Seconds left before the security code stops being available |
+    | `-1` | The window has closed; the security code can no longer be injected |
+    | Field absent | The card was enrolled without a security code, or your organization does not have the proxy enabled |
+
+    <Note>
+    The enrollment response does **not** include `security_code_expires_in`. Read it from the payment method endpoint above when you need to know where you stand before building a forward.
+    </Note>
   </Step>
 
   <Step title="Send it through the proxy">
@@ -93,15 +130,15 @@ Proxy requests detokenize card data and must only be made from your backend. Nev
     ```json
     {
       "code": "EXPRESSION_RESOLUTION_FAILED",
-      "messages": ["a vaulted_token expression could not be resolved"]
+      "messages": ["a vaulted_token expression could not be resolved: network_transaction_id"]
     }
     ```
 
     | HTTP status | Code | Meaning |
     |---|---|---|
     | `401` | `NOT_AUTHENTICATED` / `AuthenticationFail` | Missing or invalid API credentials |
-    | `400` | `INVALID_REQUEST` | Missing or invalid `yuno-proxy-destination-url`, an expression or query string in the URL, an invalid `yuno-proxy-timeout`, or more than 20 distinct tokens in one request |
-    | `400` | `EXPRESSION_RESOLUTION_FAILED` | A `vaulted_token` does not exist, does not belong to your organization, or a referenced field is unavailable |
+    | `400` | `INVALID_REQUEST` | Missing or invalid `yuno-proxy-destination-url`, an expression or query string in the URL, an invalid `yuno-proxy-timeout`, more than 20 distinct tokens in one request, or an invalid signing setup (unknown `yuno-proxy-auth` value, missing `yuno-proxy-auth-secret-key`, or `DLOCAL_HMAC` without the `X-Login` or `X-Trans-Key` headers) |
+    | `400` | `EXPRESSION_RESOLUTION_FAILED` | A `vaulted_token` does not exist, does not belong to your organization, or a referenced field is unavailable (for example, a network-token field on a card with no network token provisioned). The message names the field that could not be resolved — the token value is never echoed |
     | `400` | `INVALID_ACCOUNT_ID` | The `yuno-account-id` header is not a valid account for your organization |
     | `403` | `DESTINATION_NOT_ALLOWED` | The destination is not a public HTTPS hostname (IP addresses, non-443 ports, and internal networks are rejected), or the host is not on your [destination allowlist](/docs/security-and-compliance/pci-proxy/allowlist) |
     | `403` | `PRODUCT_NOT_ENABLED` | The PCI Proxy is not activated for your organization. This gate applies in **production** only — contact your Key Account Manager (KAM) to activate it. The sandbox is open for testing |
@@ -230,14 +267,65 @@ Send whatever authentication header your destination requires — it is **not li
 | Others | `Api-Token: <token>`, `X-Auth-Token: <token>` |
 | Basic auth | `Authorization: Basic base64(user:pass)` |
 
+## Signed destinations (HMAC request signing)
+
+Some destinations require every request to be **signed (HMAC) over the request body**. You cannot pre-compute that signature yourself: it would have to be calculated over the **resolved** body — the one containing the real card number — which only exists inside Yuno's secure environment. Instead, send your signing credentials on the request itself and the proxy signs for you, after resolving your expressions:
+
+| Header | Meaning |
+|---|---|
+| `yuno-proxy-auth` | The signing scheme. Supported: `DLOCAL_HMAC` |
+| `yuno-proxy-auth-secret-key` | Your signing secret for this request. Like every `yuno-*` header it is stripped before forwarding and excluded from logs; the proxy uses it in memory and discards it — nothing is stored |
+
+The destination's other identifiers are plain destination headers you send yourself, forwarded verbatim as always. For **dLocal** (`DLOCAL_HMAC`):
+
+```sh
+curl -X POST "https://api.y.uno/v1/pci-proxy/forward" \
+  -H "public-api-key: $PUBLIC_API_KEY" \
+  -H "private-secret-key: $PRIVATE_SECRET_KEY" \
+  -H "yuno-proxy-destination-url: https://api.dlocal.com/secure_payments" \
+  -H "yuno-proxy-auth: DLOCAL_HMAC" \
+  -H "yuno-proxy-auth-secret-key: $DLOCAL_SECRET_KEY" \
+  -H "X-Login: $DLOCAL_X_LOGIN" \
+  -H "X-Trans-Key: $DLOCAL_X_TRANS_KEY" \
+  -H "X-Version: 2.1" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 100, "currency": "USD", "country": "CO", "payment_method_id": "CARD",
+        "card": { "number": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.number}}",
+                  "holder_name": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.holder_name}}",
+                  "expiration_month": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_month}}",
+                  "expiration_year": "{{vaulted_token.1a2b3c4d-5678-90ab-cdef-111213141516.expiration_year}}",
+                  "cvv": "123" } }'
+```
+
+Each `yuno-proxy-auth` value identifies a complete, fixed signing scheme — what is signed, how, and which headers the proxy produces — matching that destination's official authentication specification. `DLOCAL_HMAC` implements [dLocal's request-signing scheme](https://docs.dlocal.com/reference/payins-security):
+
+| | `DLOCAL_HMAC` |
+|---|---|
+| Algorithm | HMAC-SHA256, output in lowercase hexadecimal |
+| String to sign | `X-Login` value + `X-Date` value + the **resolved** request body, concatenated with no separators (empty body for requests without one) |
+| Secret | Your dLocal secret key, from `yuno-proxy-auth-secret-key` |
+| `X-Login`, `X-Trans-Key` | Sent by you as plain destination headers, forwarded verbatim — both required (`X-Login` is also part of the string to sign; `X-Trans-Key` is not signed, but dLocal rejects requests without it) |
+| `X-Date` | Generated by the proxy at send time, ISO8601 UTC with milliseconds (e.g. `2026-07-29T21:32:48.676Z`) |
+| `Authorization` | `V2-HMAC-SHA256, Signature: <signature>` |
+
+The signature is computed over the exact body bytes the destination receives — after your `{{vaulted_token…}}` expressions are resolved — which is precisely why the proxy must compute it. What the destination receives:
+
+```
+X-Login:       <your value, verbatim>
+X-Trans-Key:   <your value, verbatim>
+X-Version:     2.1                                        <- your value, verbatim
+X-Date:        2026-07-29T21:32:48.676Z                   <- generated by Yuno
+Authorization: V2-HMAC-SHA256, Signature: afcad672f89d…   <- computed by Yuno
+```
+
+Do not send `X-Date` or `Authorization` yourself on a signed destination — the proxy's values replace them (a signature you computed over a body still containing `{{vaulted_token…}}` placeholders would be rejected by the destination anyway). All your other headers pass through untouched.
+
+An unknown `yuno-proxy-auth` value, a missing `yuno-proxy-auth-secret-key`, or a `DLOCAL_HMAC` request without the `X-Login` or `X-Trans-Key` headers is rejected with `400 INVALID_REQUEST` before the destination is contacted. A `401` from the destination itself (wrong credentials) comes back as a destination response, with `yuno-proxy-destination-status: 401`.
+
 <Note>
-**Signed requests and mutual TLS are not yet supported**
+**Mutual TLS is not yet supported**
 
-Because the proxy substitutes the real card number only inside its secure environment, you cannot pre-compute a request signature (HMAC) over a body that contains a `{{vaulted_token…}}` placeholder — the signature would have to be calculated over the resolved body containing the real PAN, which you never see.
-
-Similarly, destinations that require **mutual TLS** (a client certificate) are not supported inline: the certificate is presented by Yuno during the TLS handshake, not sent in your request, so it must be configured with Yuno per destination rather than passed in the body or a header.
-
-Both request signing and mTLS are planned for a later release via managed proxy routes.
+Destinations that require **mutual TLS** (a client certificate) are not supported inline: the certificate is presented by Yuno during the TLS handshake, not sent in your request, so it must be configured with Yuno per destination rather than passed in the body or a header. mTLS is planned for a later release.
 </Note>
 
 ## Timeouts
