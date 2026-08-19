@@ -1,0 +1,53 @@
+---
+title: "Request Routing Recommendations"
+openapi: "/openapi/routing/routing-recommendations.json POST /routing/recommendations"
+description: "Send a payment context and your candidate providers — Yuno returns the best route, ranked by your own transaction history."
+---
+
+This endpoint recommends which of **your own provider accounts** to route a payment to, based on the outcome history you send Yuno through the [Transaction Reporting API](/reference/reporting/report-transactions). You send the payment context and the candidates you can actually use; Yuno returns the recommended candidate, a full ranking with per-candidate metrics, and a `recommendation_id`.
+
+The transaction itself never passes through Yuno. **Yuno recommends; you decide and process.**
+
+<Note>
+**Enabled per organization**
+
+This API requires activation for your organization. Contact your Key Account Manager (KAM) to enable it.
+</Note>
+
+## How it works
+
+1. You report your off-Yuno transaction outcomes through the [Transaction Reporting API](/reference/reporting/report-transactions). Only payments with `origin: REPORTED` feed the statistics — Yuno-processed traffic is a different population and is deliberately kept out.
+2. Before routing a payment, you call this endpoint with the payment context and your candidate providers.
+3. Yuno computes statistics per candidate — approval rate, average provider latency, sample size — over a rolling window of your recent reported payments, segmented by provider, country and payment method (and BIN, when you send it), and returns the ranking ordered by your objective.
+4. You route the payment yourself and report its outcome. If the reported event carries the same `merchant_order_id` you sent here, Yuno attributes the outcome to this recommendation automatically — closing the loop without you storing `recommendation_id`.
+
+## Reading the response
+
+- **`recommended` is always present** — even without enough history. You never need a special branch: `decision_source` tells you how much to trust it.
+- **`decision_source: MERCHANT_HISTORY`** — the ranking is backed by statistics over your reported payments.
+- **`decision_source: INSUFFICIENT_DATA`** — no candidate has accumulated enough recent reported events yet. The full ranking still comes back with `null` metrics, and the recommendation falls back to the best partial data, or request order as a last resort.
+- **`sample_size`** on each candidate tells you how many reported payments back its metrics — the honesty of the recommendation. A high approval rate over 12 events is not the same signal as one over 12,000.
+- **The full `ranking` always comes back**, ordered by your objective. If the recommended candidate declines, take the next entry — cascade retry without a second call.
+
+## Choosing an objective
+
+`optimize_for` orders the ranking: `APPROVAL_RATE` (default), `LATENCY`, or `BALANCED` (a weighted blend of both). There is no cost objective yet — the Reporting API does not collect fees, and Yuno does not rank on data it does not have.
+
+## Candidates are your constraint layer
+
+The recommendation is always one of the `candidates` you send — Yuno never proposes a provider you did not list. Send only the providers this payment is genuinely allowed to use (eligibility, contracts, committed volumes), and the recommendation respects those constraints by construction. `connection_id` is an optional passthrough for your own bookkeeping: it is returned exactly as sent and not validated.
+
+## Retries
+
+There is no idempotency header on this endpoint, and none is needed: each call computes a fresh recommendation with a new `recommendation_id`, and requesting a recommendation changes no state. Retrying after a network failure is always safe.
+
+## Errors
+
+Errors return a `code` and a `messages` array.
+
+| HTTP | `code` | When |
+| ---- | ------ | ---- |
+| 400 | `INVALID_PARAMETERS` | Malformed body, missing required field, fewer than 2 candidates, or an invalid enum value (`optimize_for`, `initiation`). |
+| 400 | `INVALID_ACCOUNT_ID` | The `account_id` does not exist or does not belong to your organization. |
+| 401 | `INVALID_CREDENTIALS` | Missing or invalid `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` headers. |
+| 403 | `PRODUCT_NOT_ENABLED` | The Routing Recommendations API is not enabled for your organization. Contact your KAM. |

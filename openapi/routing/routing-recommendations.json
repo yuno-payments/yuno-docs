@@ -1,0 +1,313 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Yuno Routing Recommendations API",
+    "version": "1.0"
+  },
+  "servers": [
+    { "url": "https://api-sandbox.y.uno/v1" },
+    { "url": "https://api.y.uno/v1" },
+    { "url": "https://api.eu.y.uno/v1" }
+  ],
+  "security": [],
+  "paths": {
+    "/routing/recommendations": {
+      "post": {
+        "summary": "Request Routing Recommendations",
+        "description": "Send a payment context and your candidate providers; Yuno returns the recommended candidate and a full ranking built from your own reported transaction history.",
+        "operationId": "createRoutingRecommendation",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "PUBLIC-API-KEY",
+            "schema": { "type": "string" },
+            "description": "Your public API key."
+          },
+          {
+            "in": "header",
+            "name": "PRIVATE-SECRET-KEY",
+            "schema": { "type": "string" },
+            "description": "Your private secret key. Never expose it client-side."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_id", "payment", "candidates"],
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The Yuno account whose reported transaction history feeds the statistics. Must belong to your organization."
+                  },
+                  "merchant_order_id": {
+                    "type": "string",
+                    "description": "Your own order reference. Echoed in the response. When you later report the payment outcome with the same `merchant_order_id` (same account), Yuno attributes it to the recommendation — you never need to store `recommendation_id`."
+                  },
+                  "payment": {
+                    "type": "object",
+                    "required": ["amount", "country", "payment_method"],
+                    "description": "The payment you are about to route.",
+                    "properties": {
+                      "amount": {
+                        "type": "object",
+                        "required": ["currency", "value"],
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "description": "ISO 4217 currency code.",
+                            "example": "USD"
+                          },
+                          "value": {
+                            "type": "number",
+                            "description": "Decimal amount.",
+                            "example": 99.0
+                          }
+                        }
+                      },
+                      "country": {
+                        "type": "string",
+                        "description": "ISO 3166-1 alpha-2 country code.",
+                        "example": "US"
+                      },
+                      "payment_method": {
+                        "type": "object",
+                        "required": ["type"],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "description": "Payment method type, e.g. `CARD`.",
+                            "example": "CARD"
+                          },
+                          "details": {
+                            "type": "object",
+                            "description": "Optional container keyed by method type, mirroring the create-payment shape. For cards, `card.bin` refines the statistics per issuer.",
+                            "properties": {
+                              "card": {
+                                "type": "object",
+                                "properties": {
+                                  "bin": {
+                                    "type": "string",
+                                    "description": "The card BIN (first 6–8 digits).",
+                                    "example": "457173"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "initiation": {
+                        "type": "string",
+                        "enum": ["CIT", "MIT"],
+                        "description": "Whether the payment is customer-initiated (`CIT`) or merchant-initiated (`MIT`)."
+                      }
+                    }
+                  },
+                  "candidates": {
+                    "type": "array",
+                    "minItems": 2,
+                    "description": "The providers you can actually route this payment to. The recommendation is always one of these — Yuno never proposes a provider you did not list. Minimum 2.",
+                    "items": {
+                      "type": "object",
+                      "required": ["provider_id"],
+                      "properties": {
+                        "provider_id": {
+                          "type": "string",
+                          "description": "Provider identifier — the statistics key. Must match the `provider_id` values you use when reporting transactions.",
+                          "example": "ADYEN"
+                        },
+                        "connection_id": {
+                          "type": "string",
+                          "description": "Optional passthrough identifier for your own connection bookkeeping. Not validated; returned as sent.",
+                          "example": "con_xxx"
+                        }
+                      }
+                    }
+                  },
+                  "optimize_for": {
+                    "type": "string",
+                    "enum": ["APPROVAL_RATE", "LATENCY", "BALANCED"],
+                    "default": "APPROVAL_RATE",
+                    "description": "The objective the ranking is ordered by. Defaults to `APPROVAL_RATE`."
+                  }
+                }
+              },
+              "example": {
+                "account_id": "11111111-2222-3333-4444-555555555555",
+                "merchant_order_id": "order_45678",
+                "payment": {
+                  "amount": { "currency": "USD", "value": 99.0 },
+                  "country": "US",
+                  "payment_method": {
+                    "type": "CARD",
+                    "details": { "card": { "bin": "457173" } }
+                  },
+                  "initiation": "CIT"
+                },
+                "candidates": [
+                  { "provider_id": "ADYEN", "connection_id": "con_xxx" },
+                  { "provider_id": "STRIPE", "connection_id": "con_yyy" },
+                  { "provider_id": "DLOCAL" }
+                ],
+                "optimize_for": "APPROVAL_RATE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The recommendation. `recommended` is always present, and `ranking` always contains every candidate — even when there is not enough history yet (`decision_source: INSUFFICIENT_DATA`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "recommendation_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Unique id of this recommendation. Every call computes a fresh recommendation with a new id."
+                    },
+                    "merchant_order_id": {
+                      "type": ["string", "null"],
+                      "description": "Echo of the request value; `null` when not sent."
+                    },
+                    "optimized_for": {
+                      "type": "string",
+                      "enum": ["APPROVAL_RATE", "LATENCY", "BALANCED"],
+                      "description": "The objective the ranking is ordered by."
+                    },
+                    "recommended": {
+                      "type": "object",
+                      "description": "The candidate Yuno recommends. Always one of your `candidates`, and always present — under `INSUFFICIENT_DATA` it falls back to the best partial data, or request order as a last resort.",
+                      "properties": {
+                        "provider_id": { "type": "string" },
+                        "connection_id": { "type": ["string", "null"] }
+                      }
+                    },
+                    "decision_source": {
+                      "type": "string",
+                      "enum": ["MERCHANT_HISTORY", "INSUFFICIENT_DATA"],
+                      "description": "`MERCHANT_HISTORY`: the ranking is backed by statistics over your reported payments. `INSUFFICIENT_DATA`: no candidate has enough recent history — the ranking is returned with `null` metrics and you decide."
+                    },
+                    "ranking": {
+                      "type": "array",
+                      "description": "Every candidate, ordered by the objective. Use it to cascade: if the recommended candidate declines, take the next entry — no second call needed.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider_id": { "type": "string" },
+                          "connection_id": { "type": ["string", "null"] },
+                          "approval_rate": {
+                            "type": ["number", "null"],
+                            "description": "Approved / (approved + declined) over your reported payments in the statistics window. `null` when there is no data."
+                          },
+                          "avg_latency_ms": {
+                            "type": ["number", "null"],
+                            "description": "Average provider latency in milliseconds over the same window. `null` when there is no data."
+                          },
+                          "sample_size": {
+                            "type": "integer",
+                            "description": "How many reported payments back this candidate's metrics — the honesty of the recommendation."
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "merchant_history": {
+                    "summary": "Ranking backed by your reported history",
+                    "value": {
+                      "recommendation_id": "984b115b-f0b5-4891-a35d-aed995d6d2d1",
+                      "merchant_order_id": "order_45678",
+                      "optimized_for": "APPROVAL_RATE",
+                      "recommended": { "provider_id": "ADYEN", "connection_id": "con_xxx" },
+                      "decision_source": "MERCHANT_HISTORY",
+                      "ranking": [
+                        { "provider_id": "ADYEN", "connection_id": "con_xxx", "approval_rate": 0.94, "avg_latency_ms": 180, "sample_size": 1250 },
+                        { "provider_id": "STRIPE", "connection_id": "con_yyy", "approval_rate": 0.91, "avg_latency_ms": 150, "sample_size": 3400 },
+                        { "provider_id": "DLOCAL", "connection_id": null, "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 }
+                      ]
+                    }
+                  },
+                  "insufficient_data": {
+                    "summary": "Not enough history yet — ranking returned with nulls",
+                    "value": {
+                      "recommendation_id": "32df2552-4c29-4162-b6fa-97ca4fcea6e2",
+                      "merchant_order_id": null,
+                      "optimized_for": "APPROVAL_RATE",
+                      "recommended": { "provider_id": "ADYEN", "connection_id": "con_xxx" },
+                      "decision_source": "INSUFFICIENT_DATA",
+                      "ranking": [
+                        { "provider_id": "ADYEN", "connection_id": "con_xxx", "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 },
+                        { "provider_id": "STRIPE", "connection_id": "con_yyy", "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "examples": {
+                  "invalid_parameters": {
+                    "summary": "A field is missing or has an invalid value",
+                    "value": { "code": "INVALID_PARAMETERS", "messages": ["The field 'payment.country' is required."] }
+                  },
+                  "invalid_account": {
+                    "summary": "account_id does not exist or is not in your organization",
+                    "value": { "code": "INVALID_ACCOUNT_ID", "messages": ["Account id is invalid"] }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "example": { "code": "INVALID_CREDENTIALS", "messages": ["Invalid Credentials"] }
+              }
+            }
+          },
+          "403": {
+            "description": "The Routing Recommendations API is not enabled for your organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string" },
+                    "messages": { "type": "array", "items": { "type": "string" } }
+                  }
+                },
+                "example": { "code": "PRODUCT_NOT_ENABLED", "messages": ["The Routing Recommendations API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
