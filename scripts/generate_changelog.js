@@ -34,18 +34,48 @@ function badge(typeStr) {
   return `<ChangelogBadge type="${typeStr.toLowerCase()}" />`;
 }
 
+const INTERNAL_URL = /atlassian\.net|github\.com\/yuno-payments/i;
+const INTERNAL_KEY = /\b(?:CORECM|YSHUB|MX|VULS)-\d+\b/g;
+const INTERNAL_KEY_SINGLE = /\b(?:CORECM|YSHUB|MX|VULS)-\d+\b/;
+
+function normalizeLink(link) {
+  if (typeof link === 'string') return { label: link, url: link };
+  return link || {};
+}
+
+function isInternalLink(link) {
+  return INTERNAL_URL.test(link.url || '') || INTERNAL_KEY_SINGLE.test(link.label || '');
+}
+
+function scrubInternalRefs(text) {
+  if (!text) return text;
+  return text
+    .replace(/\[([^\]]*)\]\([^)]*atlassian\.net[^)]*\)/gi, '$1')
+    .replace(/\s*\((?:see\s+)?(?:CORECM|YSHUB|MX|VULS)-\d+\)/gi, '')
+    .replace(INTERNAL_KEY, '')
+    .replace(/\(\s*(?:and|,|·|\/)\s+/gi, '(')
+    .replace(/\s+(?:and|,|·|\/)\s*\)/gi, ')')
+    .replace(/(^|\s)\(\s*\)/g, '$1')
+    .replace(/ {2,}(?=\S)/g, ' ')
+    .replace(/\s+([.,;:])/g, '$1')
+    .trim();
+}
+
 function renderEntry(entry) {
   const lines = [];
   const migration = entry.migration_guide;
-  const links = entry.links || [];
+  const links = (entry.links || []).map(normalizeLink).filter(l => !isInternalLink(l));
 
-  lines.push(`- ${badge(entry.type)} **${entry.title}**  `);
+  lines.push(`- ${badge(entry.type)} **${scrubInternalRefs(entry.title)}**  `);
 
-  if (migration) {
-    lines.push(`  ${entry.description}  `);
-    lines.push(`  [Migration guide →](${migration})`);
+  if (migration && /^(https?:\/\/|\/)/i.test(migration.trim())) {
+    lines.push(`  ${scrubInternalRefs(entry.description)}  `);
+    lines.push(`  [Migration guide →](${migration.trim()})`);
+  } else if (migration) {
+    lines.push(`  ${scrubInternalRefs(entry.description)}  `);
+    lines.push(`  *Migration:* ${scrubInternalRefs(migration)}`);
   } else {
-    lines.push(`  ${entry.description}`);
+    lines.push(`  ${scrubInternalRefs(entry.description)}`);
   }
 
   if (links.length > 0) {
