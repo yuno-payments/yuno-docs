@@ -109,7 +109,7 @@ The example builds a "Max" plan at \$200/month that includes 10,000 AI tokens an
   </Step>
 
   <Step title="Report usage as it happens">
-    Send one event per unit of work. `event_id` is your idempotency key; `consumed_value` is required for `SUM` and `LAST` meters and defaults to 1 for `COUNT`. The subscription must be `ACTIVE` or `TRIALING`.
+    Send one event per unit of work. `event_id` is your idempotency key; `consumed_value` is required for `SUM` and `LAST` meters and defaults to 1 for `COUNT`. The subscription must be `ACTIVE`, `TRIALING` or `PAST_DUE`.
 
     ```bash
     curl -X POST https://api-sandbox.y.uno/v1/subscriptions/meters/events \
@@ -216,7 +216,7 @@ Example, on the Max plan (10,000 tokens included, \$0.002 per extra token): a su
 - **Report close to real time**, but you can backdate. `occurred_at` defaults to the receive time (returned as `received_at`) and can be up to **35 days** in the past; older events are rejected with `400`. The `occurred_at` (not the receive time) decides which billing cycle the event lands in.
 - **`X-Idempotency-Key`** is required on every write request of this feature and works as on the rest of the Yuno API (same key + same body → same response). It protects the HTTP call; `event_id` is what protects billing across calls, so send both.
 - **One event per request.** Aggregate on your side if you produce many small events (for example, sum tokens per response rather than per token) — a `SUM` meter is designed for that.
-- **The subscription must be active.** Only `ACTIVE` and `TRIALING` subscriptions accept usage; events for a `PAUSED`, `PAST_DUE`, `CANCELED` or `COMPLETED` subscription are rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted.
+- **The subscription must be active.** `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage (a subscription in payment retries keeps metering); events for a `PAUSED`, `CANCELED` or `COMPLETED` subscription are rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted.
 
 ## Error handling
 
@@ -262,7 +262,7 @@ The full list, with every message, is on [Meter Error Codes](/reference/meters/m
     Yes, per plan. The meter's `default_price` is USD-only, but a metered price on a BRL plan takes `price_per_credit` in BRL (required — nothing is inherited for non-USD plans), and `country_prices` lets you set per-country unit prices in each country's currency.
   </Accordion>
   <Accordion title="What happens if I report usage for a paused or canceled subscription?">
-    The event is rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted — only `ACTIVE` and `TRIALING` subscriptions accept usage. Resume the subscription first ([Resume Subscription](/reference/subscriptions/resume-subscription)), then report the usage; you can backdate `occurred_at` up to 35 days.
+    The event is rejected with `400 SUBSCRIPTION_NOT_ACTIVE` and nothing is counted — only `ACTIVE`, `TRIALING` and `PAST_DUE` subscriptions accept usage. Resume the subscription first ([Resume Subscription](/reference/subscriptions/resume-subscription)), then report the usage; you can backdate `occurred_at` up to 35 days.
   </Accordion>
   <Accordion title="Can I meter usage without a subscription?">
     No. Every event needs a `subscription_id`; usage is billed on that subscription's renewal.
