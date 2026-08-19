@@ -15,6 +15,10 @@ A webhook subscribes to events through trigger fields, one per domain, and needs
 | `ENROLL` | `enrollment.enroll` | Sent when a payment method is successfully enrolled. |
 | `UNENROLL` | `enrollment.unenroll` | Sent when an enrolled payment method is unenrolled. |
 
+<Note>
+`enrollment.expiration` exists but isn't currently offered as an option in the dashboard.
+</Note>
+
 ## Payment
 
 `payment_triggers`
@@ -28,9 +32,14 @@ A webhook subscribes to events through trigger fields, one per domain, and needs
 | `PURCHASE` | `payment.purchase` | Sent when a payment is created or its status changes during a purchase flow. |
 | `REFUND` | `payment.refund` | Sent when a refund is processed for a payment. |
 | `VERIFY` | `payment.verify` | Sent when a payment method verification completes. |
+| `PRECHARGEBACK` | `payment.pre_chargeback` | Sent when a pre-chargeback notice or fraud alert is received for a payment, ahead of a full chargeback. |
 
 <Note>
 **Fraud screening:** when a transaction is declined by fraud screening and doesn't proceed to processing, no transactions are created. Only the `fraud_screening` object is populated, and Yuno sends `payment.fraud_screening`. If the transaction proceeds to processing despite the decline (per your routing configuration), the event sent is `payment.purchase` instead.
+</Note>
+
+<Note>
+`payment.fraud_screening` and `payment.pre_chargeback` are currently sent to any webhook with at least one `payment_triggers` value, regardless of whether `PRECHARGEBACK` is selected. A dedicated trigger gate for `payment.pre_chargeback` is planned (C2-17489).
 </Note>
 
 ## Subscription
@@ -82,12 +91,19 @@ Treat the plan-change events as notifications, not as the source of truth. Recon
 | `EXPIRED` | `onboarding.expired` | Sent when an onboarding expires. |
 | `BLOCKED` | `onboarding.blocked` | Sent when an onboarding is blocked. |
 | `UNBLOCKED` | `onboarding.unblocked` | Sent when a blocked onboarding is unblocked. |
+| `CANCELLED` | `onboarding.cancelled` | Sent when an onboarding is cancelled. |
+| `INACTIVE` | `onboarding.inactive` | Sent when an onboarding becomes inactive. |
+| `TRANSFERRED` | `onboarding.transferred` | Sent when an onboarding is transferred. |
+
+<Note>
+The onboarding `FAILED` and `REJECTED` statuses aren't separate events; both are reported as `onboarding.declined`. Likewise, `PENDING_ADDITIONAL_DOCUMENTATION` and `PENDING_RECIPIENT_ACTION` are both reported as `onboarding.pending`, with the specific status carried in the payload rather than the event name.
+</Note>
 
 ## Report
 
 `report_triggers`
 
-`report_triggers` subscribes to report lifecycle events, `CREATE` when a report is created and `UPDATE` when its status changes (for example, once it's ready to download).
+`report_triggers` subscribes to report lifecycle events: `CREATE` when a report is created, and `UPDATE` when its status changes (for example, once it's ready to download). Only `report.update` is currently emitted by any service; `report.create` can be subscribed to but has no emitter yet.
 
 ## Payout
 
@@ -99,12 +115,16 @@ Payout events don't have a corresponding trigger field.
 
 ## Marketplace Split Transfers
 
-Like payouts, split transfer events don't have a corresponding trigger field.
+Like payouts, split transfer events don't have a corresponding trigger field, and merchants currently cannot opt out of them.
 
 | Event | Description |
 | :---- | :---------- |
 | `succeeded` (type `split_transfer`) | Split transfer completed successfully. |
 | `succeeded` (type `split_transfer_reverse`) | Split transfer reversal completed successfully. |
+
+<Warning>
+Per engineering, the `type_event` actually sent for these events is `transfer.transfer`, not `split_transfer`/`split_transfer_reverse` as shown above and in [Payloads and Examples](/docs/webhooks/object-and-examples#marketplace-split-transfers). The full corrected payload shape hasn't been confirmed yet — flagged for a follow-up update once available.
+</Warning>
 
 ## Banking Connectivity
 
