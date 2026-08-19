@@ -1,0 +1,274 @@
+---
+title: "Usage-Based Billing"
+hidden: true
+description: "Meter any action your product performs, price it on a plan with included credits and a per-unit overage, and let Yuno bill the usage on each subscription's renewal"
+---
+
+<Warning>
+**Early access — preview**
+
+Usage-based billing is in preview and available on request. Everything on this page — objects, endpoints, field names and error codes — may change before general availability. Contact your Yuno representative to enable it on your account, and pin your integration to the behavior described here rather than assuming forward compatibility.
+</Warning>
+
+Subscriptions bill a fixed price on a fixed cadence. Usage-based billing adds a variable part on top: you tell Yuno *what* to count (a **meter**), *how much of it* a plan includes and what extra units cost (a **metered price**), and then report *how much each subscriber consumed* (**usage events**). Yuno aggregates the usage per subscription and billing cycle and bills anything beyond the included allowance together with the subscription's regular renewal charge.
+
+Typical uses: an AI product that includes 10,000 tokens a month and bills the rest per token, an API that includes 1,000 requests and bills per extra call, a storage product billed per gigabyte held.
+
+## How the pieces fit
+
+1. **Meter** — a named, countable action: `tokens_consumed`, `api_request`, `storage_gb`. It defines the `event_name` your systems send and the aggregation (`SUM`, `COUNT` or `LAST`). A meter has no price of its own — at most a `default_price` in USD that plans can inherit. See [The Meter Object](/reference/meters/the-meter-object).
+2. **Metered price** — the meter attached to a [plan](/docs/payment-features/subscriptions/plans): how many units are included per cycle (`credits`) and what each unit beyond that costs (`price_per_credit`, optionally per country). A plan can carry any number of metered prices next to its flat price. See [The Metered Price Object](/reference/meters/the-metered-price-object).
+3. **Subscription** — created on that plan as usual. It inherits every metered price; nothing changes in [Create Subscription](/reference/subscriptions/create-subscription).
+4. **Usage events** — one call per unit of work, carrying the `event_name`, the `subscription_id`, a `value` and your own `event_id` for idempotency. See [Report Usage Event](/reference/meters/report-usage-event).
+5. **Renewal** — at the end of the billing cycle, Yuno computes the billable quantity (`max(0, usage − credits)`) and adds `billable × price_per_credit` to the subscription's renewal charge.
+
+<Note>
+**Meters are generic**
+
+Nothing here is specific to AI. A meter can count deliveries, minutes, messages, seats or gigabytes just as well as tokens — the meter's `unit_label` / `plural_unit_label` are what usage is displayed in.
+</Note>
+
+## Quick start
+
+The example builds a "Copilot Pro" plan at \$200/month that includes 10,000 tokens and bills \$0.002 per token beyond that.
+
+<Steps>
+  <Step title="Create the meter">
+    Choose an `event_name` your systems will send (lowercase, `_` and `.` allowed) and the aggregation. `default_price` is optional and must be USD; it saves you from repeating the unit price on every USD plan.
+
+    ```bash
+    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/meters \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -H 'X-Idempotency-Key: 5f1c2c1e-1a2b-4c3d-9e8f-0a1b2c3d4e5f' \
+      -d '{
+        "name": "Tokens Consumed",
+        "description": "Meters LLM token consumption per billing cycle",
+        "event_name": "tokens_consumed",
+        "aggregation": "SUM",
+        "unit_label": "token",
+        "plural_unit_label": "tokens",
+        "default_price": { "currency": "USD", "value": 0.002 }
+      }'
+    ```
+
+    Keep the `id` from the response — you need it to attach the meter to a plan.
+  </Step>
+
+  <Step title="Attach it to a plan">
+    Either create the plan with the meter inline, or attach it to a plan that already exists. Both take the same metered-price body: `meter_id`, `credits` (included units per cycle), `pricing_strategy` and, unless inherited, `price_per_credit`.
+
+    <CodeGroup>
+    ```bash New plan
+    curl -X POST https://api-sandbox.y.uno/v1/plans \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -H 'X-Idempotency-Key: 8d5c9a3e-4b7f-4a2c-b1d0-2e3f4a5b6c7d' \
+      -d '{
+        "name": "Copilot Pro",
+        "base_amount": { "currency": "USD", "value": 200.0 },
+        "frequency": { "type": "MONTH", "value": 1 },
+        "meters": [
+          {
+            "meter_id": "55555555-5555-5555-5555-555555555555",
+            "credits": 10000,
+            "pricing_strategy": "PER_UNIT"
+          }
+        ]
+      }'
+    ```
+
+    ```bash Existing plan
+    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/plans/00000000-0000-4000-8000-000000000001/meters \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -H 'X-Idempotency-Key: 9e6d0b4f-5c8a-4b3d-a2e1-3f4a5b6c7d8e' \
+      -d '{
+        "meter_id": "55555555-5555-5555-5555-555555555555",
+        "credits": 10000,
+        "pricing_strategy": "PER_UNIT",
+        "price_per_credit": { "currency": "USD", "value": 0.002 }
+      }'
+    ```
+    </CodeGroup>
+
+    In the "New plan" example `price_per_credit` is omitted: the plan is USD and the meter has a `default_price`, so \$0.002 is inherited. [Retrieve Plan](/reference/plans/retrieve-plan) now returns the metered price under `meters[]`.
+
+    <Note>
+    Attaching a meter to a live plan does not change the plan's flat price or any existing subscriber's base amount — it only adds a variable line for usage beyond `credits`. Sending `{ "meters": [ ... ] }` to `PATCH /subscriptions/plans/{plan_id}` does the same for several meters at once and accepts no other plan field.
+    </Note>
+  </Step>
+
+  <Step title="Subscribe customers to the plan">
+    Nothing new here: call [Create Subscription](/reference/subscriptions/create-subscription) with the `plan_id`. The subscription inherits the plan's metered prices. Store the subscription `id` — every usage event references it.
+  </Step>
+
+  <Step title="Report usage as it happens">
+    Send one event per unit of work. `event_id` is your idempotency key; `value` is required for `SUM` and `LAST` meters and defaults to 1 for `COUNT`.
+
+    ```bash
+    curl -X POST https://api-sandbox.y.uno/v1/subscriptions/meters/events \
+      -H 'Content-Type: application/json' \
+      -H 'public-api-key: <Your public-api-key>' \
+      -H 'private-secret-key: <Your private-secret-key>' \
+      -d '{
+        "event_id": "11111111-1111-1111-1111-111111111111",
+        "event_name": "tokens_consumed",
+        "subscription_id": "33333333-3333-3333-3333-333333333333",
+        "value": 42.5,
+        "timestamp": "2026-08-18T09:00:04Z",
+        "metadata": [{ "key": "model", "value": "kimi-k2" }]
+      }'
+    ```
+
+    A `201` confirms the event was validated and stored:
+
+    ```json
+    {
+      "id": "22222222-2222-2222-2222-222222222222",
+      "event_id": "11111111-1111-1111-1111-111111111111",
+      "event_name": "tokens_consumed",
+      "meter_id": "55555555-5555-5555-5555-555555555555",
+      "subscription_id": "33333333-3333-3333-3333-333333333333",
+      "value": 42.5,
+      "received_at": "2026-08-18T09:00:04.000000Z"
+    }
+    ```
+
+    Retrying the same request (same `event_id`) returns this same response and never counts the 42.5 tokens twice.
+  </Step>
+</Steps>
+
+## Choosing an aggregation
+
+The aggregation is fixed when you create the meter and decides what a cycle's quantity means:
+
+<Tabs>
+  <Tab title="SUM — consumption">
+    Adds every event's `value`. Report the amount consumed by each unit of work.
+
+    ```json
+    { "event_id": "resp_8f3k2", "event_name": "tokens_consumed", "subscription_id": "3333…", "value": 1280 }
+    ```
+
+    Three events of 1,280 / 640 / 2,100 tokens → cycle quantity 4,020 tokens. Use for tokens, minutes transcribed, messages sent, deliveries completed.
+  </Tab>
+  <Tab title="COUNT — per call">
+    Counts events; `value` is ignored (each event counts as 1, so you can omit it).
+
+    ```json
+    { "event_id": "req_01J5Y3Q9K8ZC5G6E4Y2W7X8N9M", "event_name": "api_request", "subscription_id": "3333…" }
+    ```
+
+    1,432 events → cycle quantity 1,432 requests. Use for API calls, jobs, exports.
+  </Tab>
+  <Tab title="LAST — gauge">
+    Keeps the most recent `value` in the cycle by `timestamp`. Report the current level, not the delta.
+
+    ```json
+    { "event_id": "storage-2026-08-18T09:00-sub-3333", "event_name": "storage_gb", "subscription_id": "3333…", "value": 128.4, "timestamp": "2026-08-18T09:00:00Z" }
+    ```
+
+    Reports of 96.0 → 110.2 → 128.4 GB → cycle quantity 128.4 GB. Use for storage held, seats in use, active devices.
+  </Tab>
+</Tabs>
+
+## Pricing a meter on a plan
+
+A metered price has three pricing knobs:
+
+- **`credits`** — the units included in the plan each billing cycle. Think "allowance": the first `credits` units are covered by the plan's flat price. `0` bills every unit. `credits` is measured in the meter's unit (tokens, requests, GB) and resets each cycle — it is **not** a prepaid balance or wallet.
+- **`price_per_credit`** — the price of each unit beyond `credits`, in the plan's base currency. On a USD plan you can omit it if the meter has a `default_price`; the default is inherited and echoed back on the metered price. On a non-USD plan, or when the meter has no default, it is required. The currency must always match the plan's `base_amount` currency.
+- **`country_prices`** — optional per-unit prices by subscriber country, same shape as the plan's own `country_prices`. A subscriber whose country is not listed pays `price_per_credit`.
+
+`pricing_strategy` selects how overage is rated. Only **`PER_UNIT`** (billable units × unit price) is priced in this preview. `PACKAGE` (price per bundle of N units) and `TIERED` (graduated rates) are accepted enum values reserved for an upcoming release — their configuration fields and rating are not available yet, so use `PER_UNIT`.
+
+You can change `credits`, `price_per_credit` and `country_prices` on a live plan with [Update Plan Meter](/reference/meters/update-plan-meter); the new values apply to usage rated from the next billing cycle onward. The plan's flat price stays [immutable](/docs/payment-features/subscriptions/plans) as before.
+
+## What happens at renewal
+
+<Note>
+Usage rating and the usage line items on the renewal charge are being rolled out during the preview. The model below is how billing works; the exact shape of usage on the charge and its webhooks will be documented as it lands.
+</Note>
+
+For each subscription and each metered price on its plan, at the end of the billing cycle:
+
+1. **Quantity** — events whose `timestamp` falls in the cycle are aggregated with the meter's `aggregation` (SUM / COUNT / LAST).
+2. **Billable units** — `max(0, quantity − credits)`. Unused credits do not roll over.
+3. **Amount** — `billable × price_per_credit` (or the subscriber's `country_prices` entry).
+4. **Charge** — the amount is added to the subscription's renewal charge alongside the plan's flat price. One charge, one payment, as today. A subscription with usage under its credits pays only the flat price.
+
+Example, on the Copilot Pro plan (10,000 tokens included, \$0.002 per extra token): a subscriber consumes 13,500 tokens in August → 3,500 billable → \$7.00 usage, so the renewal charges \$207.00. Another subscriber consumes 8,000 → \$200.00.
+
+## Idempotency and timestamps
+
+- **`event_id` is required and is your idempotency key.** Make it unique per event — a UUID, or the id of the request/response/job it came from — and reuse it on every retry. Yuno stores the first event under that id and answers every replay with the same response, including the original `value`. Usage is never double counted, however many times you retry.
+- **Report close to real time**, but you can backdate. `timestamp` defaults to the receive time and can be up to **35 days** in the past; older events are rejected with `400`. The `timestamp` (not the receive time) decides which billing cycle the event lands in.
+- **`X-Idempotency-Key`** on the HTTP request works as on the rest of the Yuno API and is a good belt-and-braces for network retries, but `event_id` is what protects billing.
+- **One event per request.** Aggregate on your side if you produce many small events (for example, sum tokens per response rather than per token) — a `SUM` meter is designed for that.
+
+## Error handling
+
+Validation is synchronous: a rejected event returns `400` or `404` immediately and is never counted, so treat non-`201` responses as "not recorded" and retry with the same `event_id` after fixing the request. The codes you will meet most often:
+
+| Situation | Response |
+| --- | --- |
+| `event_name` does not match an `ACTIVE` meter of your account | `404 METER_NOT_FOUND` |
+| `subscription_id` unknown | `404 SUBSCRIPTION_NOT_FOUND` |
+| `value` missing on a `SUM`/`LAST` meter | `400 INVALID_PARAMETERS` — "The value is required for a SUM meter" |
+| `timestamp` older than 35 days | `400 INVALID_PARAMETERS` |
+| Second `ACTIVE` meter with the same `event_name` | `409 METER_EVENT_NAME_CONFLICT` |
+| Same meter attached to a plan twice | `409 PLAN_METER_ALREADY_ASSIGNED` |
+| `price_per_credit` in the wrong currency / missing on a non-USD plan | `400 INVALID_PARAMETERS` |
+
+The full list, with every message, is on [Meter Error Codes](/reference/meters/meter-error-codes).
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Do I need a new plan to add usage pricing to an existing one?">
+    No. Attach the meter to the live plan with [Attach Meter to Plan](/reference/meters/attach-meter-to-plan) (or the attach-only `PATCH /subscriptions/plans/{plan_id}` with `meters[]`). The flat price and existing subscribers' base amount are unchanged; usage beyond `credits` starts being billed on their next renewal.
+  </Accordion>
+  <Accordion title="Can a plan have several meters?">
+    Yes, any number — for example tokens (`SUM`) plus API requests (`COUNT`) plus storage (`LAST`), each with its own `credits` and unit price. Each meter can be attached to a given plan once.
+  </Accordion>
+  <Accordion title="Are credits shared across subscriptions or across meters?">
+    Neither. `credits` apply per subscription, per meter, per billing cycle. Two subscribers on the same plan each get the full allowance; unused credits do not carry over.
+  </Accordion>
+  <Accordion title="What happens if I report usage for a subscription that isn't on a plan with that meter?">
+    In this preview the event is validated against the meter and the subscription only, so it is accepted and stored — but only usage against a metered price on the subscription's plan is rated and billed. Check the plan's `meters[]` if usage isn't showing up on the renewal.
+  </Accordion>
+  <Accordion title="Can I change a meter's event_name or aggregation?">
+    No — both are immutable because your systems and past events depend on them. Create a new meter and archive the old one with [Update Meter](/reference/meters/update-meter) (`status: INACTIVE`). Archiving frees the `event_name` for the new meter, and archived meters reject new events with `404 METER_NOT_FOUND`.
+  </Accordion>
+  <Accordion title="Can I remove a metered price from a plan?">
+    Not in this preview. Archive the meter to stop ingestion, or raise `credits` so no overage is billed.
+  </Accordion>
+  <Accordion title="Can I price the meter in a currency other than USD?">
+    Yes, per plan. The meter's `default_price` is USD-only, but a metered price on a BRL plan takes `price_per_credit` in BRL (required — nothing is inherited for non-USD plans), and `country_prices` lets you set per-country unit prices in each country's currency.
+  </Accordion>
+  <Accordion title="Can I meter usage without a subscription?">
+    Not in this preview. Every event needs a `subscription_id`; usage is billed on that subscription's renewal.
+  </Accordion>
+</AccordionGroup>
+
+## What's next
+
+The preview covers meters, metered prices and per-event ingestion. Coming next, in rough order:
+
+- **Usage visibility** — endpoints and Dashboard views for running usage per subscription and per plan mid-cycle (quantity, included, billable, amount).
+- **Usage on the renewal charge** — usage as its own line items on the charge breakdown and in the renewal webhooks.
+- **Batch ingestion** — many events per request.
+- **`PACKAGE` and `TIERED` pricing** — bundle and graduated rates on top of `PER_UNIT`.
+- **Dashboard** — create and manage meters, attach metered prices to plans, see usage per subscriber.
+
+## Reference
+
+- [The Meter Object](/reference/meters/the-meter-object) · [Create](/reference/meters/create-meter) · [List](/reference/meters/list-meters) · [Retrieve](/reference/meters/retrieve-meter) · [Update](/reference/meters/update-meter)
+- [Report Usage Event](/reference/meters/report-usage-event)
+- [The Metered Price Object](/reference/meters/the-metered-price-object) · [Attach Meter to Plan](/reference/meters/attach-meter-to-plan) · [List Plan Meters](/reference/meters/list-plan-meters) · [Update Plan Meter](/reference/meters/update-plan-meter)
+- [Meter Error Codes](/reference/meters/meter-error-codes)
+- [Plans](/docs/payment-features/subscriptions/plans) · [The Plan Object](/reference/plans/the-plan-object)
