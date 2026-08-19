@@ -2,6 +2,360 @@
   "sdk": "android",
   "releases": [
     {
+      "version": "3.0.0",
+      "release_date": "2026-08-14",
+      "upgrade": {
+        "snippet": "implementation 'com.yuno.payments:android-sdk:3.0.0'",
+        "language": "groovy"
+      },
+      "entries": [
+        {
+          "type": "CHANGED",
+          "title": "[BREAKING] Unified Transaction API replaces the eight v2 integration modes",
+          "description": "v3.0.0 is the Universal SDK major. Every payment and enrollment flow now goes through a single Transaction object configured with a TransactionConfig, instead of the previous ~8 separate modes (Full, Lite, Seamless, Render, Headless, Enrollment). The integration mode is deduced, not declared: seamless vs. non-seamless from whether PaymentMethodSelected.transactionData is supplied, and full vs. headless from whether the merchant implements HeadlessTransactionController. Yuno.initialize(apiKey) now takes only the API key — appearance, session, listeners and the selected method all live on the Transaction / TransactionConfig.",
+          "group": "Universal SDK",
+          "migration_guide": "Replace the per-mode entry points with a single Transaction. Example (seamless UI): `Transaction(TransactionConfig(checkoutSession = \"...\", countryCode = \"CO\", controller = object : TransactionController { override fun onStatus(status: TransactionStatus) { showResult(status) } })).start(paymentSelected)`. Per-mode before/after is in the v2 → v3 migration guide under yuno-sdk-docs/migration/android/ (full, lite, seamless, render, headless, enrollment).",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16245"
+          ]
+        },
+        {
+          "type": "REMOVED",
+          "title": "[BREAKING] Legacy v2 public API surface removed",
+          "description": "The entire v2 public surface is removed: the Activity/Context extension functions (startCheckout, startPayment / startPaymentLite / startPaymentSeamless, startEnrollment, continuePayment, initEnrollment, enrollmentStatus, setupEnrollmentInfo, updateCheckoutSession, updateCustomerSession), the render listeners (YunoPaymentRenderListener, YunoEnrollmentRenderListener), the fragment controllers (YunoPaymentFragmentController, YunoEnrollmentFragmentController), the result constants (PAYMENT_RESULT_*), the legacy state enums (PaymentStates, PaymentSubStates, EnrollmentState, EnrollmentSubStates), the collected-data models (PaymentSelected, TokenCollectedData, EnrollmentCollectedData), the API clients (ApiClientPayment, ApiClientEnroll), SingleLiveEvent, and ThreeDSecureChallengeResponse. Switching from one mode to another in v3 is now overriding one more listener, not rewriting the integration.",
+          "group": "Universal SDK",
+          "migration_guide": "Each removed symbol maps to the unified Transaction API; see the v2 → v3 migration guide under yuno-sdk-docs/migration/android/ for a 1:1 before/after of every old mode.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16258"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "PaymentMethodSelected, TransactionData, TransactionStatus and OneTimeToken public models",
+          "description": "New strongly-typed public models: PaymentMethodSelected (paymentMethodType String + optional vaultedToken / transactionData / metadata), TransactionData (a flat union of card, installment, customer, wallet, bankTransfer, ticket and 3DS data — adding a new payment method does not require an SDK release), and TransactionStatus (value, substatus, errorCode, paymentId). The One-Time Token is delivered to headless merchants as a flat map mirroring the /v1/payments token shape.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "ADDED",
+          "title": "Smart-default listeners: TransactionController, HeadlessTransactionController, EmbeddedTransactionController",
+          "description": "A single TransactionController callback surface (onStatus, showView, showLoading, createPayment) drives behavior by what the merchant overrides. Headless mode (merchant creates the payment) is opted into by implementing HeadlessTransactionController; embedded-view mode (merchant hosts the SDK view) by implementing EmbeddedTransactionController — both marker interfaces, because Kotlin's JVM default-method modes make reflective override detection unreliable. With no overrides the SDK runs the full seamless flow (renders UI, tokenizes, pays, handles 3DS, shows status).",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16248"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "[BREAKING] Full Semantic Versioning across iOS, Android and Web",
+          "description": "Starting with the Universal SDK, Android adopts full MAJOR.MINOR.PATCH semver aligned with iOS and Web, and equivalent features release under the same version on all three platforms. MAJOR means the merchant has to change code; MINOR and PATCH are safe to adopt without touching the integration. v3.0.0 is the first release under this scheme.",
+          "group": "Versioning",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16245"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Support policy: no backports",
+          "description": "Old versions are no longer patched — any fix, feature or improvement ships only in the next version, and a merchant who hits a bug upgrades to the latest version to get the fix. The single exception is a critical security vulnerability, evaluated case by case with the Security team. This keeps a single active development line per platform.",
+          "group": "Versioning",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "SECURITY",
+          "title": "Logs never contain PAN, CVV, OTT token or API key",
+          "description": "A SafeLogger redaction pass masks card numbers (last 4 only), CVV, OTT/token values and the API key before anything reaches a log sink, and OkHttp body logging is disabled (HEADERS-only, with the api-key and Authorization headers redacted) so request/response bodies — including 3DS payloads — are never logged, in any environment.",
+          "group": "Security",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16256"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "[BREAKING] TransactionStatus forwards raw backend status/substatus + adds a structured message",
+          "description": "TransactionStatus is now the canonical merchant payload: `value` is the backend status forwarded verbatim (DECLINED, REJECTED, EXPIRED, CANCELED are no longer collapsed into one value) and `substatus` is the raw backend substatus (AUTHORIZED is no longer dropped), `null` when the backend sent none. A status the SDK doesn't recognize surfaces as `INTERNAL_ERROR` with an `unsupported status` message instead of being silently mapped. The flat `errorCode` field is replaced by a structured `message: StatusMessage?` populated only on error — `source: \"backend\"` (code/reason/raw) for backend error responses, `source: \"sdk\"` (code/reason/context) for SDK/transport failures, `null` on success and user cancellation. Headless and enrollment emit the same payload (no `status` overwriting; single user-cancel spelling).",
+          "group": "Universal SDK",
+          "migration_guide": "Replace `status.errorCode` with `status.message?.code` (and use `status.message?.source` to tell a backend rejection from an SDK failure). Read `status.value` as the raw backend status rather than a collapsed SDK value.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-17275"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "accountType and accountHolderType on BankTransferData (headless support)",
+          "description": "BankTransferData now accepts optional accountType and accountHolderType so merchants collecting bank transfer data in their own form (headless mode) can pass them through TransactionData. The fields are part of the public contract; forwarding them in the bank_transfer object of the payment request is wired separately. Existing bank transfer flows keep working unchanged when the new fields are not provided.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18232"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "autoContinuePayment flag on TransactionConfig",
+          "description": "TransactionConfig now accepts autoContinuePayment (default true). When false, the SDK stops right after the payment is created — via the TransactionController.createPayment override or the SDK's default seamless creation: no status polling, no 3DS/redirect rendering, and no final onStatus; the merchant owns the post-creation flow (e.g. async pre-auth continued from the merchant backend). Transaction.handleDeeplink is not gated, so the merchant can still hand the settle back to the SDK later. Enrollment flows are unaffected. Mirrors the iOS Universal SDK contract.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18284"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "showStatusScreen flag on TransactionConfig — onStatus no longer decides the SDK status screen",
+          "description": "TransactionConfig now accepts showStatusScreen (default false), aligned with the iOS Universal SDK. When true, the SDK shows its own full-screen status screen on every terminal outcome (success, error and enrollment) and invokes TransactionController.onStatus once that screen closes. onStatus is now a pure communication channel: it is always invoked exactly once per terminal outcome and overriding it no longer suppresses (nor triggers) the SDK status screen. Migration: integrations that relied on the previous implicit behavior — not overriding onStatus to get the SDK status screen — must now pass showStatusScreen = true.",
+          "group": "Payments",
+          "migration_guide": "Pass showStatusScreen = true in TransactionConfig to keep showing the SDK status screen; overriding onStatus no longer affects it.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18286"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Appearance customization on TransactionConfig",
+          "description": "TransactionConfig.appearance is now functional, mirroring the iOS Universal SDK contract. Appearance exposes fontFamily (system + dashboard-downloaded fonts) and @ColorInt colors for accent, primary/secondary/disabled buttons and checkbox. Precedence is all-or-nothing per source: a merchant Appearance with any field set wins and dashboard styles (sdk_settings.styles.global) are ignored entirely; dashboard styles apply only when the merchant passed none; SDK defaults otherwise. Any custom appearance forces light mode. The resolved appearance drives the Compose components, the surviving View screens (loader, status screen) and the native 3DS challenge (accent, button and label colors).",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18302"
+          ]
+        },
+        {
+          "type": "REMOVED",
+          "title": "YunoConfig.styles (YunoStyles / YunoButtonStyles)",
+          "description": "The Android-only programmatic styling surface on Yuno.initialize is gone — iOS has no equivalent and TransactionConfig.appearance is now the single public customization surface. Per-button knobs without an iOS counterpart (cornerRadius, elevation, padding, fontSize, fontStyle) are dropped.",
+          "group": "Payments",
+          "migration_guide": "Move button colors and fontFamily from YunoConfig.styles to TransactionConfig.appearance.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18302"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "External app deeplinks no longer require manifest <queries> declarations",
+          "description": "External payment apps (wallets, banks) are now opened by launching their deeplink directly, and the <queries> package allow-list (Mercado Pago, MODO, Nubank, Deuna) was removed from the SDK manifest: any payment app deeplink works on Android 11+ without an SDK update or changes in your app's manifest. When the app cannot be opened on the device, the SDK falls back to the payment method's web or app-not-installed experience, and an unresolvable deeplink can never crash your app.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18394"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Full-screen processing loader redesigned to a minimal spinner",
+          "description": "The SDK's full-screen loader no longer shows animated text lines and an indeterminate progress bar: it is now a single minimal circular spinner centered on a clean surface, visually consistent with the iOS SDK. The loader keeps the same timeout and error-reporting behavior, and merchants who render their own loading UI via the controller are unaffected. The old loading copies were removed from all localizations.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18135"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "OTP codes received by SMS can be filled in automatically",
+          "description": "When a buyer is asked for a one-time password during a payment or enrollment, the SDK can now read the code from the incoming SMS and fill the OTP field for them, matching the experience already offered on iOS. The buyer sees a one-tap system prompt asking for permission before any message is read, so nothing happens without their consent, and a code they have already started typing is never overwritten. The SDK does not request any SMS permissions, works with codes sent from any sender, and silently falls back to manual entry on devices without Google Play services.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18295"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Payment method list adopts the accordion card design",
+          "description": "The payment method list now renders each method as a standalone card — full border per row and consistent spacing between rows — instead of a single joined group, and the per-row selection radio was removed: selection is conveyed by the accordion state itself. The selected method expands its form inline with a Pay button inside the card (validated before submitting), and APMs with a form now also render inline in the accordion (except methods requiring a bank picker, which keep the full-screen form). Combined with the checkout-builder preselection mapping, the list defaults to unfolded + preselected. Visuals match the iOS SDK 1:1. PaymentListController also gains an optional onPaymentDeselected() callback (default no-op) emitted when the selection is cleared without a replacement — entering edit mode, or the selected method disappearing after a refresh — so merchants can discard the held selection and disable their pay CTA.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18287"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "Card installments dropdown shows the per-installment value and total",
+          "description": "When installments are available in the card form, each option in the dropdown now displays the amount per installment and the total to pay (e.g. \"3x $875.00 - Total $2,625.00\"), localized across all supported languages, instead of only the installment count. Shoppers see the real cost of each plan before selecting.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-17537"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Card type toggle in the one-step form",
+          "description": "Fixed the credit/debit card type toggle in the unfolded one-step card form so the selected type is applied consistently when the card supports multiple types.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/YSHUB-5419"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Timestamp formatting no longer crashes on Android API 21-25",
+          "description": "Replaced java.time-based timestamp formatting with an API-21-safe SimpleDateFormat implementation, so the SDK no longer requires core library desugaring and works on devices running Android 5.0 (API 21) through 7.1 (API 25) without crashing.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/YSHUB-6004"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Host app no longer crashes when a Google Pay Pix result arrives after the checkout screen is closed",
+          "description": "Fixed a crash that could occur during Google Pay Pix payments when the payment availability or payment result callback arrived after the user had already left the checkout screen (for example by navigating back while the payment was processing). The SDK now silently ignores results delivered after the screen is gone instead of raising an exception in the host app.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": []
+        },
+        {
+          "type": "CHANGED",
+          "title": "Compact card form fields are taller for easier tapping",
+          "description": "When the compact form style is enabled for the merchant account, every input in the payment form — card number, expiration date, CVV, cardholder name, email, personal details, address fields and dropdown selectors — now renders at a taller height aligned with native Android payment form conventions. This improves tap accuracy and readability without changing the form layout: grouped card fields stay fused with their hairline separator, and text sizes remain the same.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18726"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Native 3DS challenge (Netcetera) in card enrollment",
+          "description": "Card enrollment now supports the native 3DS flow with Netcetera, matching the payment experience. When the native 3DS provider is registered, the SDK performs native device profiling during enrollment and, if the issuer requires a challenge, presents it natively instead of in a WebView; without the native provider, enrollment keeps using the existing WebView-based 3DS flow. No integration changes are required.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-17262"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Native 3DS challenge no longer crashes reinitializing Netcetera",
+          "description": "The native 3DS challenge (Netcetera) could fail with SDKRuntimeException 1071 (\"initialize() must be invoked on a background thread\") because device profiling and the challenge resolved different appearance themes, which forced the Netcetera SDK to reinitialize mid-challenge on the main thread. Device profiling now uses the same appearance theme as the challenge, so no reinitialization happens and the native challenge presents correctly in both payment and enrollment.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-17262"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Order breakdown on the Google Pay payment sheet",
+          "description": "The Google Pay payment sheet can now display an order breakdown — subtotal, shipping, taxes and discounts — provided by the checkout session, instead of a single total. When the checkout session does not include a breakdown, the sheet keeps showing the single total as before. No integration changes are required.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16522"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "WebView calls moved off the JavaScript bridge thread",
+          "description": "The browser-info collector and the CoinFlow fingerprint WebViews invoked WebView methods (stopLoading, destroy, removeJavascriptInterface) from the WebView's JavaScript bridge thread, which aborted the Chromium renderer during card payments. Those calls are now posted to the main thread.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18874"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "3DS challenge now renders with the embedded iframe experience",
+          "description": "Card payments requiring a 3DS challenge configured with the embedded iframe experience closed immediately with INTERNAL_ERROR instead of presenting the challenge. The SDK now recognizes the PROCESSING and VERIFIED payment statuses, and falls back to a WebView-rendered challenge when the native Netcetera 3DS module is not installed — matching the fallback that already existed for device profiling.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18868"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "onStatus reports EXPIRED and CANCELED payments with their real status",
+          "description": "A payment that expired server-side (for example an abandoned 3DS challenge) was delivered through onStatus as DECLINED with a null substatus. Terminal statuses now forward the backend status verbatim — EXPIRED, CANCELED, REJECTED and DECLINED stay distinct — and the server substatus is included, matching iOS.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18963"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Abandoning the payment or enrollment form now delivers CANCELED through onStatus",
+          "description": "When the shopper abandoned the SDK form — closing the SDK-presented screen, or the merchant tearing down an embedded form fragment — the merchant received no callback and the canceled state was unreachable. Abandonment now delivers CANCELED with the CANCELED_BY_USER substatus in every configuration, matching iOS behavior on screen dismissal.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18961"
+          ]
+        },
+        {
+          "type": "FIXED",
+          "title": "Starting a new transaction closes the previous one with CANCELED",
+          "description": "Starting a new transaction while another was in flight silently abandoned the first one with no callback. The superseded transaction now delivers a final CANCELED with the CANCELED_BY_USER substatus through its controller before the new one begins, matching iOS. Resuming a payment via deeplink is unaffected — it continues the same transaction and emits no cancellation.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18962"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "60-second safety timeout on non-interactive operations",
+          "description": "Operations that never resolve — a merchant createPayment callback that never completes, or a network call that hangs — previously left the SDK silent forever. Non-interactive waits now time out after 60 seconds and deliver a terminal INTERNAL_ERROR through onStatus with message code OperationTimeout, matching the iOS safety timeout. Interactive surfaces (an open form, a 3DS challenge in progress, the SDK status screen) never expire.",
+          "group": "Universal SDK",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18982"
+          ]
+        },
+        {
+          "type": "CHANGED",
+          "title": "[BREAKING] TransactionConfig.controller is now required",
+          "description": "controller was optional with a null default; starting a transaction without one charged the shopper while every callback landed nowhere — the merchant never learned the payment succeeded. The parameter is now required and non-null, so the omission becomes a compile-time error. A fully SDK-driven integration passes a controller overriding only onStatus.",
+          "group": "Universal SDK",
+          "migration_guide": "Add a controller to every TransactionConfig: `TransactionConfig(countryCode = \"CO\", checkoutSession = \"...\", controller = object : TransactionController { override fun onStatus(status: TransactionStatus) { handle(status) } })`.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-18983"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Real-time shipping updates on the Google Pay payment sheet",
+          "description": "Your app can now react while the customer picks or changes their shipping address on the Google Pay sheet. Register the new optional shipping-address callback when starting a payment: the SDK notifies you with the redacted address (city, state, postal code and country), and you can respond with updated order totals or an error message for addresses you cannot serve — both rendered live on the sheet. After authorization, the generated one-time token includes the full shipping address. If you do not register the callback, the Google Pay flow behaves exactly as before.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16518"
+          ]
+        },
+        {
+          "type": "ADDED",
+          "title": "Shipping method selector on the Google Pay payment sheet",
+          "description": "When the checkout session provides shipping methods and your app registers the shipping-address callback, the Google Pay sheet now shows a shipping option selector with those methods, preselecting the first one. Picking a different option updates the order total on the sheet instantly, and the selected method travels in the generated one-time token. Without shipping methods in the session, the sheet keeps the existing behavior.",
+          "group": "Payments",
+          "migration_guide": null,
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16520"
+          ]
+        },
+        {
+          "type": "BREAKING",
+          "title": "Minimum Android version raised to 6.0 (API 23) and Google Play services Wallet updated to 20.0.0",
+          "description": "The SDK now requires Android 6.0 (API level 23) or higher and ships with Google Play services Wallet 20.0.0, which powers the new real-time Google Pay shipping callbacks. Devices running Android 5.0 and 5.1 (API 21-22) are no longer supported.",
+          "group": "Payments",
+          "migration_guide": "Set minSdkVersion to 23 or higher in your app's build.gradle. If your app still declares minSdkVersion 21 or 22, the build fails at the manifest merge step with a clear error naming the Yuno SDK; raising minSdkVersion resolves it. If your app pins com.google.android.gms:play-services-wallet to a version below 20.0.0, remove the pin or align it to 20.0.0 or higher. No code changes are required.",
+          "links": [
+            "https://yunopayments.atlassian.net/browse/CORECM-16518"
+          ]
+        }
+      ]
+    },
+    {
       "version": "2.21.1",
       "release_date": "2026-08-10",
       "upgrade": {
