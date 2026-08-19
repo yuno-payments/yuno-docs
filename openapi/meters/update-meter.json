@@ -38,7 +38,7 @@
     "/subscriptions/meters/{meter_id}": {
       "patch": {
         "summary": "Update Meter",
-        "description": "**Early access (preview).** Usage-based billing is available on request and the contract may change before general availability. Updates the descriptive fields, default price or status of a meter. Send at least one field. `event_name` and `aggregation` are immutable: if you send them they are silently ignored (no error) and the response shows the original values. Set `status: INACTIVE` to archive a meter — it stops accepting usage events (`404 METER_NOT_FOUND`), cannot be attached to plans, and its existing metered prices can no longer be edited (`404`); set `status: ACTIVE` to reactivate it. Archiving does not free the `event_name`: it stays reserved by the archived meter.",
+        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Updates the descriptive fields, default price or status of a meter. Send at least one field. `event_name` and `aggregation` are immutable: if you send them they are silently ignored (no error) and the response shows the original values. Set `status: INACTIVE` to archive a meter — it stops accepting usage events (`400 METER_NOT_FOUND`), cannot be attached to plans, and its existing metered prices can no longer be edited (`400 PLAN_METER_NOT_FOUND`); set `status: ACTIVE` to reactivate it. Archiving does not free the `event_name`: it stays reserved by the archived meter.",
         "operationId": "update-meter",
         "parameters": [
           {
@@ -53,11 +53,11 @@
           {
             "in": "header",
             "name": "X-Idempotency-Key",
+            "required": true,
             "schema": {
-              "type": "string",
-              "maxLength": 64
+              "type": "string"
             },
-            "description": "Optional. Free-form string (MAX 64). Re-sending the same key with the same body returns the original response."
+            "description": "Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is retried due to network issues or timeouts. Required on every write request of this feature."
           }
         ],
         "requestBody": {
@@ -234,10 +234,12 @@
                       "example": "ACTIVE"
                     },
                     "created_at": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Set by Yuno on creation."
                     },
                     "updated_at": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Set by Yuno on every update."
                     }
                   }
                 }
@@ -266,6 +268,14 @@
                         "The default_price currency must be USD"
                       ]
                     }
+                  },
+                  "Result": {
+                    "value": {
+                      "code": "METER_NOT_FOUND",
+                      "messages": [
+                        "The meter does not exist or is not linked to this account."
+                      ]
+                    }
                   }
                 },
                 "schema": {
@@ -285,16 +295,17 @@
               }
             }
           },
-          "404": {
-            "description": "404",
+          "403": {
+            "description": "403",
             "content": {
               "application/json": {
                 "examples": {
-                  "Result": {
+                  "Product not enabled": {
+                    "summary": "Product not enabled",
                     "value": {
-                      "code": "METER_NOT_FOUND",
+                      "code": "PRODUCT_NOT_ENABLED",
                       "messages": [
-                        "The meter does not exist or is not linked to this account."
+                        "Usage-based billing is not enabled for this organization"
                       ]
                     }
                   }
@@ -303,7 +314,8 @@
                   "type": "object",
                   "properties": {
                     "code": {
-                      "type": "string"
+                      "type": "string",
+                      "example": "PRODUCT_NOT_ENABLED"
                     },
                     "messages": {
                       "type": "array",

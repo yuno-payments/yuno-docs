@@ -38,7 +38,7 @@
     "/subscriptions/plans/{plan_id}/meters": {
       "post": {
         "summary": "Attach Meter to Plan",
-        "description": "**Early access (preview).** Usage-based billing is available on request and the contract may change before general availability. Attaches a meter to an existing plan as a metered price: how many units are included per cycle (`credits`) and what each unit beyond that costs. Attaching does not change the plan's flat price or any existing subscriber's base amount. You can also attach meters inline with `meters[]` when calling Create Plan.",
+        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Attaches a meter to an existing plan as a metered price: how many units are included per cycle (`credits`) and what each unit beyond that costs. Attaching does not change the plan's flat price or any existing subscriber's base amount. You can also attach meters inline with `meters[]` when calling Create Plan.",
         "operationId": "attach-meter-to-plan",
         "parameters": [
           {
@@ -53,11 +53,11 @@
           {
             "in": "header",
             "name": "X-Idempotency-Key",
+            "required": true,
             "schema": {
-              "type": "string",
-              "maxLength": 64
+              "type": "string"
             },
-            "description": "Optional. Free-form string (MAX 64). Re-sending the same key with the same body returns the original response."
+            "description": "Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is retried due to network issues or timeouts. Required on every write request of this feature."
           }
         ],
         "requestBody": {
@@ -68,7 +68,7 @@
                 "properties": {
                   "meter_id": {
                     "type": "string",
-                    "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be an existing `ACTIVE` meter of the account — an unknown or `INACTIVE` meter is rejected with `404 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
+                    "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be an existing `ACTIVE` meter of the account — an unknown or `INACTIVE` meter is rejected with `400 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
                   },
                   "credits": {
                     "type": "number",
@@ -82,7 +82,7 @@
                       "PACKAGE",
                       "TIERED"
                     ],
-                    "description": "How usage beyond `credits` is priced. Only `PER_UNIT` (billable units × `price_per_credit`) is priced in this preview. `PACKAGE` and `TIERED` are accepted but reserved — their configuration fields and rating are not available yet."
+                    "description": "How usage beyond `credits` is priced. Only `PER_UNIT` (billable units × `price_per_credit`) is priced today. `PACKAGE` and `TIERED` are accepted enum values but are not priced and have no configuration fields."
                   },
                   "price_per_credit": {
                     "type": "object",
@@ -269,10 +269,12 @@
                       }
                     },
                     "created_at": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Set by Yuno on creation."
                     },
                     "updated_at": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Set by Yuno on every update."
                     }
                   }
                 }
@@ -337,30 +339,7 @@
                         "The country_prices must not contain duplicate countries"
                       ]
                     }
-                  }
-                },
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string"
-                    },
-                    "messages": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "404",
-            "content": {
-              "application/json": {
-                "examples": {
+                  },
                   "Unknown or inactive meter": {
                     "summary": "Unknown or inactive meter",
                     "value": {
@@ -385,6 +364,39 @@
                   "properties": {
                     "code": {
                       "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Product not enabled": {
+                    "summary": "Product not enabled",
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "Usage-based billing is not enabled for this organization"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PRODUCT_NOT_ENABLED"
                     },
                     "messages": {
                       "type": "array",

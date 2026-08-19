@@ -38,7 +38,7 @@
     "/subscriptions/plans/{plan_id}/meters/{meter_id}": {
       "patch": {
         "summary": "Update Plan Meter",
-        "description": "**Early access (preview).** Usage-based billing is available on request and the contract may change before general availability. Updates a metered price already attached to a plan: included `credits`, `pricing_strategy`, `price_per_credit` and `country_prices`. Send at least one field. The change applies to usage rated from the subscription's next billing cycle onward. If the meter is `INACTIVE` the metered price is frozen and this call returns `404`. To stop billing a meter on a plan, archive the meter (Update Meter with `status: INACTIVE`) — there is no detach endpoint in this preview.",
+        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Updates a metered price already attached to a plan: included `credits`, `pricing_strategy`, `price_per_credit` and `country_prices`. Send at least one field. The change applies to usage rated from the subscription's next billing cycle onward. If the meter is `INACTIVE` the metered price is frozen and this call returns `400 PLAN_METER_NOT_FOUND`. To stop billing a meter on a plan, archive the meter (Update Meter with `status: INACTIVE`) — there is no detach endpoint.",
         "operationId": "update-plan-meter",
         "parameters": [
           {
@@ -62,11 +62,11 @@
           {
             "in": "header",
             "name": "X-Idempotency-Key",
+            "required": true,
             "schema": {
-              "type": "string",
-              "maxLength": 64
+              "type": "string"
             },
-            "description": "Optional. Free-form string (MAX 64). Re-sending the same key with the same body returns the original response."
+            "description": "Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is retried due to network issues or timeouts. Required on every write request of this feature."
           }
         ],
         "requestBody": {
@@ -87,7 +87,7 @@
                       "PACKAGE",
                       "TIERED"
                     ],
-                    "description": "How usage beyond `credits` is priced. Only `PER_UNIT` (billable units × `price_per_credit`) is priced in this preview. `PACKAGE` and `TIERED` are accepted but reserved — their configuration fields and rating are not available yet."
+                    "description": "How usage beyond `credits` is priced. Only `PER_UNIT` (billable units × `price_per_credit`) is priced today. `PACKAGE` and `TIERED` are accepted enum values but are not priced and have no configuration fields."
                   },
                   "price_per_credit": {
                     "type": "object",
@@ -250,10 +250,12 @@
                       }
                     },
                     "created_at": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Set by Yuno on creation."
                     },
                     "updated_at": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Set by Yuno on every update."
                     }
                   }
                 }
@@ -318,6 +320,33 @@
                         "The country_prices must not contain duplicate countries"
                       ]
                     }
+                  },
+                  "Unknown or inactive meter": {
+                    "summary": "Unknown or inactive meter",
+                    "value": {
+                      "code": "METER_NOT_FOUND",
+                      "messages": [
+                        "The meter does not exist, is inactive or is not linked to this account."
+                      ]
+                    }
+                  },
+                  "Unknown plan": {
+                    "summary": "Unknown plan",
+                    "value": {
+                      "code": "PLAN_NOT_FOUND",
+                      "messages": [
+                        "The plan does not exist or is not linked to this account."
+                      ]
+                    }
+                  },
+                  "Meter not attached to the plan, or inactive": {
+                    "summary": "Meter not attached to the plan, or inactive",
+                    "value": {
+                      "code": "PLAN_METER_NOT_FOUND",
+                      "messages": [
+                        "The meter 66666666-6666-6666-6666-666666666666 is not assigned to this plan"
+                      ]
+                    }
                   }
                 },
                 "schema": {
@@ -337,26 +366,17 @@
               }
             }
           },
-          "404": {
-            "description": "404",
+          "403": {
+            "description": "403",
             "content": {
               "application/json": {
                 "examples": {
-                  "Meter not attached to the plan, or inactive": {
-                    "summary": "Meter not attached to the plan, or inactive",
+                  "Product not enabled": {
+                    "summary": "Product not enabled",
                     "value": {
-                      "code": "PLAN_METER_NOT_FOUND",
+                      "code": "PRODUCT_NOT_ENABLED",
                       "messages": [
-                        "The meter 66666666-6666-6666-6666-666666666666 is not assigned to this plan"
-                      ]
-                    }
-                  },
-                  "Unknown plan": {
-                    "summary": "Unknown plan",
-                    "value": {
-                      "code": "PLAN_NOT_FOUND",
-                      "messages": [
-                        "The plan does not exist or is not linked to this account."
+                        "Usage-based billing is not enabled for this organization"
                       ]
                     }
                   }
@@ -365,7 +385,8 @@
                   "type": "object",
                   "properties": {
                     "code": {
-                      "type": "string"
+                      "type": "string",
+                      "example": "PRODUCT_NOT_ENABLED"
                     },
                     "messages": {
                       "type": "array",

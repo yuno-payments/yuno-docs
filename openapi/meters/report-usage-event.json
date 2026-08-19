@@ -38,17 +38,17 @@
     "/subscriptions/meters/events": {
       "post": {
         "summary": "Report Usage Event",
-        "description": "**Early access (preview).** Usage-based billing is available on request and the contract may change before general availability. Reports one usage event against a subscription. The meter is resolved from `event_name`. Validation is synchronous: a malformed or unresolvable event is rejected in the response (`400`/`404`) and never counted. Replaying the same `event_id` returns the original response — including the original `value`, even if the retry sent a different one — and never double counts. One event per request — there is no batch endpoint in this preview.",
+        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Reports one usage event against a subscription. The meter is resolved from `event_name`. Validation is synchronous: a malformed or unresolvable event is rejected with `400` and never counted. Replaying the same `event_id` returns the original response — including the original `consumed_value`, even if the retry sent a different one — and never double counts. Only `ACTIVE` and `TRIALING` subscriptions accept usage; any other status is rejected with `400 SUBSCRIPTION_NOT_ACTIVE`. One event per request.",
         "operationId": "report-usage-event",
         "parameters": [
           {
             "in": "header",
             "name": "X-Idempotency-Key",
+            "required": true,
             "schema": {
-              "type": "string",
-              "maxLength": 64
+              "type": "string"
             },
-            "description": "Optional. Free-form string (MAX 64). Re-sending the same key with the same body returns the original response."
+            "description": "Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is retried due to network issues or timeouts. Required on every write request of this feature."
           }
         ],
         "requestBody": {
@@ -68,20 +68,20 @@
                   },
                   "event_name": {
                     "type": "string",
-                    "description": "The `event_name` of the meter this event belongs to. Resolves the meter within your account; an unknown or `INACTIVE` meter is rejected with `404 METER_NOT_FOUND`."
+                    "description": "The `event_name` of the meter this event belongs to. Resolves the meter within your account; an unknown or `INACTIVE` meter is rejected with `400 METER_NOT_FOUND`."
                   },
                   "subscription_id": {
                     "type": "string",
-                    "description": "The unique identifier of the subscription the usage is attributed to (MAX 64; MIN 36). Must exist in your account, else `400 SUBSCRIPTION_NOT_FOUND`. Usage is metered per subscription and billed on that subscription's renewal."
+                    "description": "The unique identifier of the subscription the usage is attributed to (MAX 64; MIN 36). Must exist in your account (`400 SUBSCRIPTION_NOT_FOUND`) and be `ACTIVE` or `TRIALING` (`400 SUBSCRIPTION_NOT_ACTIVE`). Usage is metered per subscription and billed on that subscription's renewal."
                   },
-                  "value": {
+                  "consumed_value": {
                     "type": "number",
                     "format": "float",
-                    "description": "The numeric value of the event (decimals allowed). Required for `SUM` and `LAST` meters (\"The value is required for a SUM meter\"). Optional for `COUNT` meters — defaults to 1."
+                    "description": "The numeric value of the event (decimals allowed). Required for `SUM` and `LAST` meters (\"The consumed_value is required for a SUM meter\"). Optional for `COUNT` meters — defaults to 1."
                   },
-                  "timestamp": {
+                  "occurred_at": {
                     "type": "string",
-                    "description": "When the usage happened (ISO 8601 with offset). Defaults to the time the event is received. Backdating is accepted up to 35 days in the past; older timestamps are rejected with `400 INVALID_PARAMETERS`."
+                    "description": "When the usage happened (ISO 8601 with offset). Defaults to the time the event is received. Backdating is accepted up to 35 days in the past; older values are rejected with `400 INVALID_PARAMETERS`. `occurred_at` decides which billing cycle the event lands in."
                   },
                   "metadata": {
                     "type": "array",
@@ -111,8 +111,8 @@
                     "event_id": "11111111-1111-1111-1111-111111111111",
                     "event_name": "ai_tokens",
                     "subscription_id": "33333333-3333-3333-3333-333333333333",
-                    "value": 1500,
-                    "timestamp": "2026-08-18T09:00:04Z",
+                    "consumed_value": 1500,
+                    "occurred_at": "2026-08-18T09:00:04Z",
                     "metadata": [
                       {
                         "key": "model",
@@ -122,7 +122,7 @@
                   }
                 },
                 "Count meter (API request)": {
-                  "summary": "COUNT meter — value omitted, counts as 1",
+                  "summary": "COUNT meter — consumed_value omitted, counts as 1",
                   "value": {
                     "event_id": "req_01J5Y3Q9K8ZC5G6E4Y2W7X8N9M",
                     "event_name": "api_request",
@@ -135,8 +135,8 @@
                     "event_id": "storage-2026-08-18T09:00-sub-3333",
                     "event_name": "storage_gb",
                     "subscription_id": "33333333-3333-3333-3333-333333333333",
-                    "value": 128.4,
-                    "timestamp": "2026-08-18T09:00:00Z"
+                    "consumed_value": 128.4,
+                    "occurred_at": "2026-08-18T09:00:00Z"
                   }
                 }
               }
@@ -156,7 +156,7 @@
                       "event_name": "ai_tokens",
                       "meter_id": "55555555-5555-5555-5555-555555555555",
                       "subscription_id": "33333333-3333-3333-3333-333333333333",
-                      "value": 1500,
+                      "consumed_value": 1500,
                       "received_at": "2026-08-18T09:00:04.000000Z"
                     }
                   }
@@ -180,11 +180,12 @@
                     "subscription_id": {
                       "type": "string"
                     },
-                    "value": {
+                    "consumed_value": {
                       "type": "number"
                     },
                     "received_at": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "When Yuno received the event."
                     }
                   }
                 }
@@ -214,21 +215,30 @@
                       ]
                     }
                   },
-                  "Missing value on SUM meter": {
-                    "summary": "Missing value on SUM meter",
+                  "Missing consumed_value on SUM meter": {
+                    "summary": "Missing consumed_value on SUM meter",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The value is required for a SUM meter"
+                        "The consumed_value is required for a SUM meter"
                       ]
                     }
                   },
-                  "Timestamp too old": {
-                    "summary": "Timestamp too old",
+                  "Subscription not active": {
+                    "summary": "Subscription not active",
+                    "value": {
+                      "code": "SUBSCRIPTION_NOT_ACTIVE",
+                      "messages": [
+                        "The subscription is not active"
+                      ]
+                    }
+                  },
+                  "occurred_at too old": {
+                    "summary": "occurred_at too old",
                     "value": {
                       "code": "INVALID_PARAMETERS",
                       "messages": [
-                        "The timestamp cannot be more than 35 days in the past"
+                        "The occurred_at cannot be more than 35 days in the past"
                       ]
                     }
                   },
@@ -240,6 +250,15 @@
                         "The meter_id does not match the meter resolved from event_name"
                       ]
                     }
+                  },
+                  "Result": {
+                    "value": {
+                      "code": "METER_NOT_FOUND",
+                      "messages": [
+                        "No active meter with event_name ai_tokens exists for this account"
+                      ]
+                    },
+                    "summary": "Unknown or inactive meter"
                   }
                 },
                 "schema": {
@@ -259,26 +278,27 @@
               }
             }
           },
-          "404": {
-            "description": "404",
+          "403": {
+            "description": "403",
             "content": {
               "application/json": {
                 "examples": {
-                  "Result": {
+                  "Product not enabled": {
+                    "summary": "Product not enabled",
                     "value": {
-                      "code": "METER_NOT_FOUND",
+                      "code": "PRODUCT_NOT_ENABLED",
                       "messages": [
-                        "No active meter with event_name ai_tokens exists for this account"
+                        "Usage-based billing is not enabled for this organization"
                       ]
-                    },
-                    "summary": "Unknown or inactive meter"
+                    }
                   }
                 },
                 "schema": {
                   "type": "object",
                   "properties": {
                     "code": {
-                      "type": "string"
+                      "type": "string",
+                      "example": "PRODUCT_NOT_ENABLED"
                     },
                     "messages": {
                       "type": "array",
