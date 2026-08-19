@@ -1,0 +1,335 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "meters",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/subscriptions/meters/{meter_id}": {
+      "patch": {
+        "summary": "Update Meter",
+        "description": "**Early access (preview).** Usage-based billing is available on request and the contract may change before general availability. Updates the descriptive fields, default price or status of a meter. Send at least one field. `event_name` and `aggregation` are immutable — to change how a meter counts, create a new meter and archive this one (`status: INACTIVE`). An `INACTIVE` meter stops accepting usage events (`404 METER_NOT_FOUND` on ingestion) and frees its `event_name` for a new meter.",
+        "operationId": "update-meter",
+        "parameters": [
+          {
+            "name": "meter_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the meter.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "description": "Optional. Free-form string (MAX 64). Re-sending the same key with the same body returns the original response."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The meter display name (MAX 255; MIN 3)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "What the meter counts and how."
+                  },
+                  "unit_label": {
+                    "type": "string",
+                    "description": "Singular unit label."
+                  },
+                  "plural_unit_label": {
+                    "type": "string",
+                    "description": "Plural unit label."
+                  },
+                  "default_price": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "Must be `USD`, else `400 INVALID_PARAMETERS`."
+                      },
+                      "value": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "Default price per unit beyond the included credits (multiple of 0.0001)."
+                      }
+                    }
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ACTIVE",
+                      "INACTIVE"
+                    ],
+                    "description": "Set to `INACTIVE` to archive the meter. There is no delete. Archiving does not detach the meter from plans it is already attached to."
+                  }
+                }
+              },
+              "examples": {
+                "Archive": {
+                  "summary": "Archive the meter",
+                  "value": {
+                    "status": "INACTIVE"
+                  }
+                },
+                "Rename": {
+                  "summary": "Rename and change the default price",
+                  "value": {
+                    "name": "LLM Tokens",
+                    "default_price": {
+                      "currency": "USD",
+                      "value": 0.0025
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "200",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "id": "55555555-5555-5555-5555-555555555555",
+                      "account_id": "00000000-0000-4000-8000-000000000002",
+                      "name": "Tokens Consumed",
+                      "description": "Meters LLM token consumption per billing cycle",
+                      "event_name": "tokens_consumed",
+                      "aggregation": "SUM",
+                      "unit_label": "token",
+                      "plural_unit_label": "tokens",
+                      "default_price": {
+                        "currency": "USD",
+                        "value": 0.002
+                      },
+                      "metadata": [
+                        {
+                          "key": "team",
+                          "value": "platform"
+                        }
+                      ],
+                      "status": "INACTIVE",
+                      "created_at": "2026-08-18T09:00:04.000000Z",
+                      "updated_at": "2026-08-18T12:15:00.000000Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The unique identifier of the meter."
+                    },
+                    "account_id": {
+                      "type": "string",
+                      "description": "The unique identifier of the account that owns the meter."
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "event_name": {
+                      "type": "string"
+                    },
+                    "aggregation": {
+                      "type": "string",
+                      "enum": [
+                        "SUM",
+                        "COUNT",
+                        "LAST"
+                      ]
+                    },
+                    "unit_label": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "plural_unit_label": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "default_price": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "metadata": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ACTIVE",
+                        "INACTIVE"
+                      ],
+                      "example": "ACTIVE"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Empty body": {
+                    "summary": "Empty body",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "At least one field must be provided"
+                      ]
+                    }
+                  },
+                  "Non-USD default_price": {
+                    "summary": "Non-USD default_price",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The default_price currency must be USD"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "METER_NOT_FOUND",
+                      "messages": [
+                        "The meter does not exist or is not linked to this account."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}

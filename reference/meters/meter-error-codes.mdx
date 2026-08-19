@@ -1,0 +1,54 @@
+---
+title: "Meter Error Codes"
+hidden: true
+description: "Error codes and messages returned by the meters, metered prices and usage event endpoints."
+---
+
+<Warning>
+**Early access — preview**
+
+Usage-based billing is in preview and available on request. The contract documented here may change before general availability.
+</Warning>
+
+Every error follows the standard shape used across the Subscriptions API:
+
+```json
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": ["The price_per_credit currency must match the plan base currency"]
+}
+```
+
+For general HTTP status semantics see [HTTP Response Codes](/reference/response-codes).
+
+## Codes
+
+| HTTP | `code` | Returned by | When |
+| --- | --- | --- | --- |
+| 400 | `INVALID_PARAMETERS` | All endpoints | A field failed validation. `messages` carries one human-readable reason per failure — see the list below. |
+| 404 | `METER_NOT_FOUND` | Retrieve / Update Meter, Attach Meter to Plan, Report Usage Event | The `meter_id` does not exist or is not linked to your account — or, on usage events, no `ACTIVE` meter with that `event_name` exists (archived meters count as not found). |
+| 404 | `PLAN_NOT_FOUND` | Attach Meter to Plan, List Plan Meters, Update Plan Meter | The `plan_id` does not exist or is not linked to your account. |
+| 404 | `PLAN_METER_NOT_FOUND` | Update Plan Meter | The meter is not attached to this plan. Attach it first. |
+| 404 | `SUBSCRIPTION_NOT_FOUND` | Report Usage Event | The `subscription_id` does not exist in your organization. |
+| 409 | `METER_EVENT_NAME_CONFLICT` | Create Meter | An `ACTIVE` meter with the same `event_name` already exists in the account. Archive it or choose another name. |
+| 409 | `PLAN_METER_ALREADY_ASSIGNED` | Attach Meter to Plan, Create Plan (`meters[]`), `PATCH /subscriptions/plans/{plan_id}` | The meter is already attached to the plan — including when the same `meter_id` appears twice in one `meters[]` list. Use Update Plan Meter to change it. |
+
+## `INVALID_PARAMETERS` messages
+
+| Message | Endpoint | Fix |
+| --- | --- | --- |
+| The event_name must match ^[a-z0-9_.]+$ | Create Meter | Use lowercase letters, digits, `_` and `.` only (MAX 100). |
+| The default_price currency must be USD | Create / Update Meter | Only `USD` is accepted for `default_price` in this preview. Price non-USD plans explicitly with `price_per_credit`. |
+| The price_per_credit currency must match the plan base currency | Attach Meter to Plan, Update Plan Meter, Create Plan | Send `price_per_credit` in the plan's `base_amount` currency. |
+| A price_per_credit is required when the plan base currency is not USD | Attach Meter to Plan, Create Plan | Inheritance from `default_price` only works for USD plans — send the price. |
+| A price_per_credit is required when the meter has no default_price | Attach Meter to Plan, Create Plan | Send the price, or set a `default_price` on the meter first. |
+| The meter credits must be greater than or equal to 0 | Attach Meter to Plan, Update Plan Meter, Create Plan | `credits` cannot be negative. Use `0` to bill every unit. |
+| The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED | Attach Meter to Plan, Update Plan Meter, Create Plan | Use `PER_UNIT` — the only strategy priced in this preview. |
+| The value is required for a SUM meter (or LAST) | Report Usage Event | `value` is mandatory for `SUM` and `LAST` meters; only `COUNT` defaults to 1. |
+| The timestamp cannot be more than 35 days in the past | Report Usage Event | Report closer to real time, or drop events older than the 35-day window. |
+| The meter_id does not match the meter resolved from event_name | Report Usage Event | Either omit `meter_id` or make sure it belongs to the meter whose `event_name` you send. |
+| At least one field must be provided | Update Meter, Update Plan Meter | Send at least one updatable field in the PATCH body. |
+
+<Note>
+Treat both the code list and the message texts as open-ended: new codes and messages can be added while the feature is in preview. Match on `code` for control flow and log `messages` for diagnostics.
+</Note>
