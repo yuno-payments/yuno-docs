@@ -9,6 +9,10 @@ Click to Pay is an online payment solution designed to streamline and secure onl
 
 *Networks available in Yuno*: [MasterCard](https://www.mastercard.us/en-us/personal/ways-to-pay/click-to-pay.html)
 
+<Note>
+  Passkey support is currently available for **Mastercard** only. Visa passkey support is in development.
+</Note>
+
 ## Key features and benefits
 
 * **Ease of Use**: It enables consumers to make online purchases with a single click, eliminating the need to enter credit card details for each purchase manually.
@@ -43,6 +47,10 @@ To integrate and start offering Click to Pay to your customers, follow these 4 s
 ## Checkout Flows
 
 Merchants can choose how Click to Pay appears at checkout. Both experiences support passkeys across web and mobile platforms.
+
+<Note>
+  **Passkey behavior**: a shopper's first transaction always authenticates with 3DS, since they don't have a passkey yet. Once that transaction completes, a passkey is created and subsequent transactions authenticate with it instead. A passkey is tied to the same device, browser, and card: if any of these changes, a new passkey must be created.
+</Note>
 
 ### 1. Standalone Payment Method (APM Flow)
 Click to Pay appears as a separate payment button alongside cards and other methods.
@@ -182,3 +190,25 @@ override fun onNewIntent(intent: Intent) {
 }
 ```
 </CodeGroup>
+
+## Authentication method
+
+Every Click to Pay transaction returns an `authentication_method` field in the payment response, indicating exactly how the shopper was authenticated: for example, passkey (FIDO2), 3DS, OTP, SMS or email, federated login, and SPC, among others.
+
+This is useful for fraud prevention, routing decisions, and tracking metrics such as approval rate by authentication method.
+
+<Note>
+  This field is backward compatible: transactions that don't use Click to Pay simply return the field without a relevant value.
+</Note>
+
+To read it, call [Get payment](/reference/payments/retrieve-payment-by-id-v2) and look for `authentication_method` in the transaction.
+
+## Card type filter and CVV behavior
+
+**Card type filter**: you can block a debit or credit funding source in Click to Pay transactions. This is useful for combo cards, where the shopper would otherwise be able to choose either type: for example, showing only the credit option when a merchant wants to block debit.
+
+<Note>
+  This isn't self-service yet. Reach out to Yuno's on-call team to configure it for your account. Self-service configuration for all payment methods is in development.
+</Note>
+
+**CVV with network token**: starting from SDK version 1.7, Click to Pay only requests the CVV field when the card does **not** support network token. Before version 1.7, the CVV was always required, even when the card had a network token. There's no merchant opt-in or opt-out, this behavior is automatic once you update to version 1.7. It applies only to the Click to Pay flow (both the standalone APM flow and the Golden Flow), not to the standard card flow.
