@@ -1,19 +1,20 @@
 ---
 title: "HTTP Response Codes"
-description: "Lists HTTP status codes and error codes returned by the Yuno API with their meanings"
+description: "Lists the HTTP status codes and error codes returned by the Yuno API, and how to handle them"
 ---
 
-import { HTMLBlock } from "/snippets/HTMLBlock.jsx";
+{/* TODO: AUTHORIZATION_REQUIRED, CHARGEBACK_IN_PROCESS, EXPIRED_CREDENTIALS, REPORT_EMPTY, REPORT_NOT_FOUND, TOKEN_IN_USE, UNEXPECTED_RESPONSE, UNKNOWN_IP_ADDRESS appear in neither service source nor seven days of production traffic. Confirm with the owning team, then keep or remove. Retained here rather than deleted on a short observation window. */}
+{/* TODO: INTERNAL_SERVER_ERROR is returned with HTTP 400 on 11 of 94 genuine events and 500 on the rest. Status/code mismatch raised separately; the table lists both until it is fixed. */}
+{/* TODO: ERROR_DECRYPT_WALLET and ERROR_GET_CARD_DATA_BY_TOKEN return no readable message in production (the code itself, and a symbolic string with an empty interpolation slot). The descriptions here are written, not the literal API text. */}
+{/* TODO: section placement inferred from the code name for ERROR_DECRYPT_WALLET, ERROR_GET_CARD_DATA_BY_TOKEN, EXTERNAL_ID_EXIST, FRANCHISE_NOT_FOUND, owning service not identified. Confirm grouping. */}
 
-This section outlines the common error codes and resolutions you may encounter while using the Yuno API.
+Yuno uses standard HTTP response codes. A 2xx means the request succeeded, a 4xx means something about
+the request needs to change, and a 5xx means the request failed on Yuno's side.
 
-Yuno uses standard HTTP response codes to indicate the success or failure of API requests.
+When a request fails, the response body carries a machine-readable `code` and one or more human-readable
+`messages`:
 
-Codes in the 2xx range usually indicate success. Codes in the 4xx range indicate an error that occurred based on the information provided (e.g., a missing parameter, etc.), and codes in the 5xx range indicate an internal error.
-
-## Example
-
-```json
+```json Error response
 {
   "code": "INVALID_REQUEST",
   "messages": [
@@ -22,60 +23,244 @@ Codes in the 2xx range usually indicate success. Codes in the 4xx range indicate
 }
 ```
 
-## Response attributes for errors
+## Handle errors correctly
 
-See what codes are returned by Yuno's Rest API.
+<Warning>
+  **Branch on `code`, never on the HTTP status or the message text.** The same code can be returned with
+  different HTTP statuses depending on which internal service handled the request, and message text
+  contains formatted values and changes over time. Only `code` is stable.
+</Warning>
 
-<div className="code-nowrap-table">
+Three things to build for:
 
-| HTTP Status Code          | Code                            | Description                                                                                                                                                                                        |
-| :------------------------ | :------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400 Bad Request           | `INVALID_REQUEST`               | Invalid request.                                                                                                                                                                                   |
-|                           | `INVALID_PARAMETERS`            | Invalid parameters: list - \[parameter\_name].                                                                                                                                                     |
-|                           | `MISSING_PARAMETERS`            | Missing parameters: list - \[parameter\_name].                                                                                                                                                     |
-|                           | `INVALID_STATUS`                | Invalid transaction status.                                                                                                                                                                        |
-|                           | `COUNTRY_NOT_SUPPORTED`         | Country not supported.                                                                                                                                                                             |
-|                           | `CURRENCY_NOT_ALLOWED`          | Currency is not allowed for this country.                                                                                                                                                          |
-|                           | `CUSTOMER_ID_DUPLICATED`        | The customer id for the merchant is duplicated.                                                                                                                                                    |
-|                           | `INVALID_AMOUNT`                | Invalid amount for the payment method.                                                                                                                                                             |
-|                           | `INVALID_ACCOUNT_ID`            | Invalid Yuno's account id                                                                                                                                                                          |
-|                           | `INVALID_TRANSACTION`           | Invalid transaction id                                                                                                                                                                             |
-|                           | `INVALID_API_VERSION`           | Invalid API Version.                                                                                                                                                                               |
-|                           | `INVALID_TRANSACTION_TYPE`      | Invalid transaction type for the request.                                                                                                                                                          |
-|                           | `CHARGEBACK_IN_PROCESS`         | Chargeback in place for this transaction.                                                                                                                                                          |
-|                           | `UNAVAILABLE_PAYMENT_METHOD`    | Unavailable payment method.                                                                                                                                                                        |
-|                           | `NOT_FOUND`                     | Resource not found.                                                                                                                                                                                |
-|                           | `UNEXPECTED_RESPONSE`           | Unexpected service response.                                                                                                                                                                       |
-|                           | `BAD_REQUEST`                   | There was a bad error executing the request.                                                                                                                                                       |
-|                           | `INVALID_REPORT_ID`             | Report id must be UUID.                                                                                                                                                                            |
-|                           | `INVALID_REPORT_TYPE`           | Invalid report type.                                                                                                                                                                               |
-|                           | `INVALID_DATE_FORMAT`           | Start/end date format must be yyyy-MM-dd'T'HH:mm:ss.SSS'Z'.                                                                                                                                        |
-|                           | `REPORT_MAX_RANGE_ERROR`        | Max range date is two months.                                                                                                                                                                      |
-|                           | `REPORT_RANGE_ERROR`            | Start date must be before end date. Start/end date must be after now.                                                                                                                              |
-|                           | `REPORT_STATUS_ERROR`           | Report is not ready yet, status is %s.                                                                                                                                                             |
-|                           | `REPORT_EMPTY`                  | Report requested is empty.                                                                                                                                                                         |
-|                           | `PAYMENT_METHOD_NOT_FOUND`      | \[For Subscriptions] - Payment method associated to the customer not found                                                                                                                         |
-|                           | `PAYMENT_METHOD_STATUS_INVALID` | \[For Subscriptions] - The payment method is a state that does not allow payments to be made.                                                                                                      |
-|                           | `INCORRECT_PAYMENT_METHOD_TYPE` | \[For Subscriptions] - The type of payment method of the request does not correspond to the vaulted\_token.                                                                                        |
-|                           | `SUBSCRIPTION_NOT_FOUND`        | \[For Subscriptions] - Subscription not found.                                                                                                                                                     |
-|                           | `INVALID_STATE`                 | \[For Subscriptions] - The subscription state does not support the action requested.                                                                                                               |
-|                           | `INVALID_DATE`                  | \[For Subscriptions] - The subscription can not be resume due to a conflict with the availability dates. Please update availability dates and try again if you want to keep using the subscription |
-|                           | `INVALID_PARAMETERS`            | \[For Subscriptions] - Invalid parameters: list - \[parameter\_name].                                                                                                                              |
-|                           | `INVALID_CUSTOMER_FOR_TOKEN`    | The token used for this transaction is associated with another customer object.                                                                                                                    |
-|                           | `PAYMENT_NOT_FOUND`             | Payment not found.                                                                                                                                                                                 |
-|                           | `TRANSACTION_NOT_FOUND`         | Transaction of payment not found                                                                                                                                                                   |
-|                           | `CUSTOMER_NOT_FOUND`            | Customer not found                                                                                                                                                                                 |
-|                           | `CHECKOUT_SESSION_NOT_FOUND`    | Checkout session not found or inactive                                                                                                                                                             |
-|                           | `REPORT_NOT_FOUND`              | Report id not found                                                                                                                                                                                |
-|                           | `IDEMPOTENCY_DUPLICATED`        | Idempotency is duplicated.                                                                                                                                                                         |
-| 401 Unauthorized          | `INVALID_CREDENTIALS`           | Invalid Credentials.                                                                                                                                                                               |
-|                           | `EXPIRED_CREDENTIALS`           | Expired Credentials.                                                                                                                                                                               |
-|                           | `UNKNOWN_IP_ADDRESS`            | Unregistered IP address.                                                                                                                                                                           |
-|                           | `INVALID_TOKEN`                 | Invalid Token.                                                                                                                                                                                     |
-|                           | `TOKEN_IN_USE`                  | The token provided is currently being used in another request.                                                                                                                                     |
-| 403 Forbidden             | `AUTHORIZATION_REQUIRED`        | The merchant has no authorization to use this API.                                                                                                                                                 |
-| 405 Method not allowed    | `UNSUPPORTED_METHOD`            | Method not supported.                                                                                                                                                                              |
-| 500 Internal Server Error | `INTERNAL_ERROR`                | Internal error.                                                                                                                                                                                    |
-| 504 Gateway Timeout       | `REQUEST_TIMEOUT`               | Request Timeout.                                                                                                                                                                                   |
+<Steps>
+  <Step title="Map the codes you handle, and default the rest">
+    Treat the list below as the codes in use today, not as a closed set. Yuno services are added and
+    updated continuously, so route any code you do not recognize to a single fallback path rather than
+    failing on it.
+  </Step>
+  <Step title="Expect status-derived codes">
+    When an internal service returns a response that is not in Yuno's error format, the API derives the
+    code from the HTTP status instead: `BAD_REQUEST`, `NOT_FOUND`, `REQUEST_TIMEOUT`,
+    `SERVICE_UNAVAILABLE`, `INTERNAL_SERVER_ERROR` and `GATEWAY_TIMEOUT` all reach you this way. They
+    carry no product-specific meaning beyond the status itself.
+  </Step>
+  <Step title="Handle responses with no error body">
+    A request to a URL that does not exist returns a plain `404` with no `code` field at all. Your
+    parser must tolerate a missing error body rather than assuming every failure is a Yuno envelope.
+  </Step>
+</Steps>
+
+<Note>
+  The codes on this page are returned when a request fails. They are different from the response codes
+  on a transaction that was processed and declined, which arrive inside a successful `200` response.
+  For those, see [Transaction Status and Response Codes](/reference/payments/status-and-response-codes/transaction)
+  and [Merchant Advice Codes](/reference/payments/status-and-response-codes/merchant-advice-codes-mac).
+</Note>
+
+## Error codes
+
+
+### Authentication and access
+
+Returned before the request reaches any product endpoint.
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400, 401 | `INVALID_CREDENTIALS` | Invalid Credentials |
+| 401 | `NOT_AUTHENTICATED` | Not authenticated |
+| 403 | `AUTHORIZATION_REQUIRED` | The merchant has no authorization to use this API |
+| 400 | `EXPIRED_CREDENTIALS` | Expired Credentials. |
+| 400 | `UNKNOWN_IP_ADDRESS` | Unregistered IP address. |
+| 400 | `TOKEN_IN_USE` | The token provided is currently being used in another request. |
+| 403 | `ACCESS_DENIED` | Access denied. Please contact the account's KAM. |
+| 400 | `INVALID_ACCOUNT_ID` | Account id is invalid |
 
 </div>
+
+
+### Request validation
+
+Returned by the shared validation layer, so they can appear on any endpoint.
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400 | `INVALID_REQUEST` | Failed to get issuers |
+| 400 | `INVALID_PARAMETERS` | (validation messages) |
+| 400 | `MISSING_PARAMETERS` | Missing parameters: %s. |
+| 400 | `VALIDATION_ERROR` | national_entity is required |
+| 400 | `ILLEGAL_ARGUMENT` | Illegal Argument |
+| 400 | `BAD_REQUEST` | Bad request |
+| 404 | `NOT_FOUND` | Not found |
+| 400 | `MISSING_HEADER` | Required request header '&lt;name&gt;' is not present. |
+| 400 | `NULL_HEADER` | header is null |
+| 400 | `INVALID_API_VERSION` | INVALID_API_VERSION |
+| 400 | `INVALID_DATE_FORMAT` | Start/end date format must be yyyy-MM-dd'T'HH:mm:ss.SSS'Z'. |
+| 405 | `UNSUPPORTED_METHOD` | Method not supported. |
+
+</div>
+
+
+### Payments, refunds, captures and cancels
+
+The same codes apply to the equivalent payout operations.
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400, 404 | `PAYMENT_NOT_FOUND` | Payment not found. |
+| 400, 404 | `TRANSACTION_NOT_FOUND` | Transaction of a payment not found. |
+| 400 | `INVALID_TRANSACTION` | Invalid transaction id |
+| 400 | `INVALID_TRANSACTION_TYPE` | Invalid transaction type for the request. |
+| 400 | `INVALID_STATUS` | Invalid transaction status. |
+| 400 | `INVALID_STATUS_WITH_FORMAT` | Invalid status: %s. |
+| 400 | `INVALID_AMOUNT` | Invalid amount for verify payment. \[%s\] |
+| 400 | `IDEMPOTENCY_DUPLICATED` | Idempotency is duplicated. |
+| 400 | `REQUEST_IN_PROCESS` | Request with the same idempotency is already in process. Try again in a few seconds. |
+| 400 | `OPERATION_IN_PROCESS` | Operation over the same payment is already in process. Try again in a few seconds. |
+| 400 | `INVALID_CHECKOUT_SESSION` | The checkout_session has been already used. Please try again with a new one. |
+| 400, 404 | `CHECKOUT_SESSION_NOT_FOUND` | Checkout session not found or inactive. |
+| 400 | `CHECKOUT_SESSION_EXISTS` | There is a payment with that checkout session. |
+| 400 | `INVALID_ACCOUNT_CODE` | The account_code of the checkout_session does not match the account_code provided for the payment. Please verify that both values are the same. |
+| 400 | `UNAVAILABLE_PAYMENT_METHOD` | Unavailable payment method. |
+| 400 | `PAYMENT_METHOD_NOT_AVAILABLE` | Payment method is not available to effectuate payments. |
+| 400 | `NO_INSTALLMENT_PLAN_AVAILABLE` | no installment plan available |
+| 400 | `NO_ROUTING_PROVIDERS_AVAILABLE` | no routing providers available |
+| 400 | `SECURITY_CODE_REQUIRED` | The security code is required |
+| 400 | `REQUESTS_LIMIT_REACHED` | Daily transaction request limit reached for the payment. Please try again tomorrow. |
+| 400 | `PENDING_REFUND_EXISTS` | A refund is already in pending status for this transaction. Please wait until it reaches a final status before requesting a new refund. |
+| 400 | `CHARGEBACK_IN_PROCESS` | Chargeback in place for this transaction. |
+
+</div>
+
+
+### Checkout sessions and tokens
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400, 534 | `CHECKOUT_SESSION_EXPIRED_TIME` | checkout-session-ms:src/main/kotlin/com/yuno/checkoutsessionms/constants/ErrorCodes.kt:15 |
+| 400 | `EXPIRED_TIME_CHECKOUT_SESSION` | The checkout_session has expired. Please try again with a new one. |
+| 400, 795 | `CHECKOUT_SESSION_NOT_EXISTS` | checkout-session-ms:.../constants/ErrorCodes.kt:4 |
+| 400, 807 | `TOKEN_NOT_EXISTS` | checkout-session-ms:.../constants/ErrorCodes.kt:5 |
+| 400 | `ERROR_CREATE_TOKEN` | checkout-session-ms:.../constants/ErrorCodes.kt:6 |
+| 400 | `ERROR_DECRYPT_WALLET` | The wallet payload could not be decrypted. |
+| 400 | `ERROR_GET_CARD_DATA_BY_TOKEN` | The card data for the supplied token could not be retrieved. |
+| 400, 686 | `GET_PAYMENT_METHODS_ERROR` | checkout-orc:src/main/kotlin/com/yuno/checkoutorc/constants/ErrorCodes.kt:4 |
+| 400 | `SETUP_THREE_D_SECURE_FAILED` | An error occurred while trying to configure 3ds: %s |
+| 400 | `NOT_SUPPORTED_PLATFORM` | checkout-orc:.../constants/ErrorCodes.kt:10 |
+| 400, 375 | `NON_EXISTENT` | checkout-orc:.../constants/ErrorCodes.kt:9 |
+| 404 | `FRANCHISE_NOT_FOUND` | Franchise mapping not found. |
+
+</div>
+
+
+### Customers, payment methods and the vault
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400, 404 | `CUSTOMER_NOT_FOUND` | Customer not found. |
+| 400 | `CUSTOMER_ID_DUPLICATED` | The customer id for the merchant is duplicated. |
+| 400, 404 | `CUSTOMER_SESSION_NOT_FOUND` | Customer session not found or inactive. |
+| 400 | `EXTERNAL_ID_EXIST` | External id of recipient already exists. |
+| 400 | `EXTERNAL_TOKEN_NOT_FOUND` | the external token doesn't exist |
+| 400 | `INVALID_TOKEN` | Invalid Token. |
+| 400 | `INVALID_CUSTOMER_FOR_TOKEN` | Invalid customer for token. |
+| 400 | `INVALID_CUSTOMER_FOR_THE_VAULTED_TOKEN` | Invalid customer for the vaulted token. |
+| 400, 404 | `PAYMENT_METHOD_NOT_FOUND` | Payment method not found. |
+| 400 | `PAYMENT_METHOD_IS_MISSING_INFO` | Payment Method is missing info. |
+| 400 | `IDEMPOTENCY_DUPLICATE` | Idempotency duplicate. |
+
+</div>
+
+
+### Subscriptions and plans
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400, 404 | `SUBSCRIPTION_NOT_FOUND` | Subscription not found. |
+| 400 | `INVALID_STATE` | The subscription state does not support the action requested. |
+| 400 | `INVALID_DATE` | The subscription can not be resume due to a conflict with the availability dates. Please update availability dates and try again if you want to keep using the subscription |
+| 400 | `PAYMENT_METHOD_STATUS_INVALID` | The payment method is a state that does not allow payments to be made. |
+| 400 | `INCORRECT_PAYMENT_METHOD_TYPE` | The type of payment method of the request does not correspond to the vaulted_token. |
+
+</div>
+
+
+### Marketplace recipients and transfers
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400, 404 | `RECIPIENT_NOT_FOUND` | Recipient not found. |
+| 400, 404 | `ONBOARDING_NOT_FOUND` | Onboarding not found. |
+| 400 | `ONBOARDING_ALREADY_EXISTS` | Onboarding already exists for this recipient. |
+| 400 | `REQUEST_CANNOT_BE_PROCESSED` | The onboarding request cannot be processed at this time. |
+
+</div>
+
+
+### Reports
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 400 | `INVALID_REPORT_ID` | Report id must be UUID. |
+| 400 | `INVALID_REPORT_TYPE` | Invalid report type. |
+| 400 | `REPORT_STATUS_ERROR` | Report is not ready yet, status is %s. |
+| 400 | `REPORT_RANGE_ERROR` | Start date must be before end date. Start/end date must be after now. |
+| 400 | `REPORT_MAX_RANGE_ERROR` | Max range date is two months. |
+| 400 | `REPORT_GENERATION_ERROR` | Please contact your account manager for more information on how to generate reports via API |
+| 400 | `REPORT_EMPTY` | Report requested is empty. |
+| 400 | `REPORT_NOT_FOUND` | Report id not found |
+
+</div>
+
+
+### Webhooks
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 404, ? | `WEBHOOK_NOT_FOUND` | The webhook does not exist for this account. |
+| 400, ? | `WEBHOOK_INVALID_REQUEST` | account_id is required. |
+
+</div>
+
+
+### Service and infrastructure
+
+These indicate a problem on Yuno's side or in transit rather than with your request.
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP status | Code | Description |
+| :---------- | :--- | :---------- |
+| 500 | `INTERNAL_ERROR` | Internal error. |
+| 400, 500 | `INTERNAL_SERVER_ERROR` | Internal Server Error |
+| 503 | `SERVICE_UNAVAILABLE` | Service unavailable |
+| 408 | `REQUEST_TIMEOUT` | Request Timeout. |
+| 504 | `GATEWAY_TIMEOUT` | Gateway Timeout |
+| 400 | `UNEXPECTED_RESPONSE` | Unexpected service response. |
+
+</div>
+
+
+## Product-specific error codes
+
+Endpoints for webhooks, transfers, marketplace onboarding, the PCI proxy, network token cryptograms,
+Custom Checkouts and banking connectivity return additional codes specific to those products. Each one
+is listed with its example response in that endpoint's page in the API reference.
