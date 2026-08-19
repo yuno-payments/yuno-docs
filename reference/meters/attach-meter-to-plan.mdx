@@ -1,0 +1,29 @@
+---
+title: "Attach Meter to Plan"
+openapi: "/openapi/meters/attach-meter-to-plan.json POST /subscriptions/plans/{plan_id}/meters"
+hidden: true
+description: "Attaches a meter to an existing plan as a metered price: included credits per cycle plus the price per unit beyond them."
+---
+
+<Note>
+**Enabled per organization**
+
+Usage-based billing must be enabled for your organization before these endpoints accept requests. Contact your Yuno account manager to enable it. Requests from an organization where it is not enabled return `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+`X-Idempotency-Key` is required. The plan's flat price and existing subscribers' base amount never change when you attach a meter. Every subscription on the plan inherits the metered price and can start reporting usage right away.
+
+<Note>
+**Two ways to attach**
+
+- **On creation:** pass `meters[]` (same shape as this request body) to [Create Plan](/reference/plans/create-plan). Duplicated `meter_id` entries are rejected with `409`.
+- **On a live plan:** call this endpoint once per meter, or send `{ "meters": [ ... ] }` to `PATCH /subscriptions/plans/{plan_id}` — that PATCH is attach-only and atomic: if any entry in the list is invalid (already attached, unknown or inactive meter, bad price) nothing is attached. Any other plan field in that body (`name`, `base_amount`, …) is silently ignored — plans stay immutable outside `meters[]`.
+</Note>
+
+<Note>
+**Price inheritance**
+
+If the plan's base currency is `USD` and the meter has a `default_price`, you can omit `price_per_credit`: the meter's default applies and the metered price is returned with `price_per_credit: null`. In any other case (`price_per_credit` currency must always equal the plan's base currency) send it explicitly. Only `ACTIVE` meters can be attached; an archived meter is rejected with `400 METER_NOT_FOUND`.
+</Note>
+
+See [The Metered Price Object](/reference/meters/the-metered-price-object) for every field. Refer to [Meter Error Codes](/reference/meters/meter-error-codes) for the possible error outcomes.

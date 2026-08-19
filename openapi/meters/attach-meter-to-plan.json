@@ -1,0 +1,459 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "meters",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-sandbox.y.uno/v1"
+    },
+    {
+      "url": "https://api.eu.y.uno/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sec0": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "public-api-key",
+        "x-default": "<Your public-api-key>"
+      },
+      "sec1": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "private-secret-key",
+        "x-default": "<Your private-secret-key>"
+      }
+    }
+  },
+  "security": [
+    {
+      "sec0": [],
+      "sec1": []
+    }
+  ],
+  "paths": {
+    "/subscriptions/plans/{plan_id}/meters": {
+      "post": {
+        "summary": "Attach Meter to Plan",
+        "description": "Usage-based billing must be enabled for your organization before this endpoint accepts requests (otherwise `403 PRODUCT_NOT_ENABLED`). Attaches a meter to an existing plan as a metered price: how many units are included per cycle (`credits`) and what each unit beyond that costs. Attaching does not change the plan's flat price or any existing subscriber's base amount. You can also attach meters inline with `meters[]` when calling Create Plan.",
+        "operationId": "attach-meter-to-plan",
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the plan.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique identifier used in HTTP headers to ensure that a request is processed only once, even if it is retried due to network issues or timeouts. Required on every write request of this feature."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "meter_id": {
+                    "type": "string",
+                    "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be an existing `ACTIVE` meter of the account — an unknown or `INACTIVE` meter is rejected with `400 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
+                  },
+                  "credits": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Units included in the plan per billing cycle — the allowance a subscriber can consume before any usage is billed. Must be >= 0. `0` means every unit is billed."
+                  },
+                  "pricing_strategy": {
+                    "type": "string",
+                    "enum": [
+                      "PER_UNIT",
+                      "PACKAGE",
+                      "TIERED"
+                    ],
+                    "description": "How usage beyond `credits` is priced: `PER_UNIT` (billable units × `price_per_credit`), `PACKAGE` (bundles of N units, partial bundle counts as a full one) or `TIERED` (graduated tiers, each band at its own rate)."
+                  },
+                  "price_per_credit": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "value"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "type": "string",
+                        "description": "MAX 3; MIN 3. Must equal the plan's `base_amount` currency, else `400 INVALID_PARAMETERS`."
+                      },
+                      "value": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "Price per unit beyond the included credits (multiple of 0.0001). Optional only when the plan's base currency is `USD` and the meter has a `default_price` — the meter's default then applies and the metered price is returned with `price_per_credit: null`. Required otherwise."
+                      }
+                    }
+                  },
+                  "country_prices": {
+                    "type": "array",
+                    "description": "Optional explicit per-country price per unit. One entry per country — a repeated country is rejected with `400 INVALID_PARAMETERS`. A country not listed falls back to `price_per_credit`.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "country",
+                        "amount"
+                      ],
+                      "properties": {
+                        "country": {
+                          "type": "string",
+                          "description": "MAX 2; MIN 2; [ISO 3166-1](/reference/country-reference)."
+                        },
+                        "amount": {
+                          "type": "object",
+                          "required": [
+                            "currency",
+                            "value"
+                          ],
+                          "properties": {
+                            "currency": {
+                              "type": "string",
+                              "description": "MAX 3; MIN 3; [ISO 4217](/reference/country-reference)."
+                            },
+                            "value": {
+                              "type": "number",
+                              "format": "float",
+                              "description": "Multiple of 0.0001."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "meter_id",
+                  "credits",
+                  "pricing_strategy"
+                ]
+              },
+              "examples": {
+                "Metered price": {
+                  "value": {
+                    "meter_id": "66666666-6666-6666-6666-666666666666",
+                    "credits": 100.5,
+                    "pricing_strategy": "PER_UNIT",
+                    "price_per_credit": {
+                      "currency": "USD",
+                      "value": 0.05
+                    },
+                    "country_prices": [
+                      {
+                        "country": "US",
+                        "amount": {
+                          "currency": "USD",
+                          "value": 0.06
+                        }
+                      }
+                    ]
+                  }
+                },
+                "Inherit meter default_price (USD plan)": {
+                  "summary": "USD plan — price inherited from the meter's default_price (returned as null)",
+                  "value": {
+                    "meter_id": "55555555-5555-5555-5555-555555555555",
+                    "credits": 10000,
+                    "pricing_strategy": "PER_UNIT"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "201",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "id": "77777777-7777-7777-7777-777777777777",
+                      "plan_id": "00000000-0000-4000-8000-000000000001",
+                      "meter_id": "66666666-6666-6666-6666-666666666666",
+                      "credits": 100.5,
+                      "pricing_strategy": "PER_UNIT",
+                      "price_per_credit": {
+                        "currency": "USD",
+                        "value": 0.05
+                      },
+                      "country_prices": [
+                        {
+                          "country": "US",
+                          "amount": {
+                            "currency": "USD",
+                            "value": 0.06
+                          }
+                        }
+                      ],
+                      "created_at": "2026-08-18T09:00:04.000000Z",
+                      "updated_at": "2026-08-18T09:00:04.000000Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The unique identifier of the metered price (the plan-meter relation)."
+                    },
+                    "plan_id": {
+                      "type": "string"
+                    },
+                    "meter_id": {
+                      "type": "string"
+                    },
+                    "credits": {
+                      "type": "number",
+                      "description": "Units included in the plan per billing cycle."
+                    },
+                    "pricing_strategy": {
+                      "type": "string",
+                      "enum": [
+                        "PER_UNIT",
+                        "PACKAGE",
+                        "TIERED"
+                      ]
+                    },
+                    "price_per_credit": {
+                      "type": "object",
+                      "nullable": true,
+                      "description": "`null` when inherited from the meter's `default_price` (USD plans).",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "country_prices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "country": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "object",
+                            "properties": {
+                              "currency": {
+                                "type": "string"
+                              },
+                              "value": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "description": "Set by Yuno on creation."
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "description": "Set by Yuno on every update."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Currency mismatch": {
+                    "summary": "Currency mismatch",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The price_per_credit currency must match the plan base currency"
+                      ]
+                    }
+                  },
+                  "Missing price on non-USD plan": {
+                    "summary": "Missing price on non-USD plan",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "A price_per_credit is required when the plan base currency is not USD"
+                      ]
+                    }
+                  },
+                  "Missing price and no default": {
+                    "summary": "Missing price and no default",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "A price_per_credit is required when the meter has no default_price"
+                      ]
+                    }
+                  },
+                  "Negative credits": {
+                    "summary": "Negative credits",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The meter credits must be greater than or equal to 0"
+                      ]
+                    }
+                  },
+                  "Invalid strategy": {
+                    "summary": "Invalid strategy",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED"
+                      ]
+                    }
+                  },
+                  "Duplicate country": {
+                    "summary": "Duplicate country",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The country_prices must not contain duplicate countries"
+                      ]
+                    }
+                  },
+                  "Unknown or inactive meter": {
+                    "summary": "Unknown or inactive meter",
+                    "value": {
+                      "code": "METER_NOT_FOUND",
+                      "messages": [
+                        "The meter does not exist, is inactive or is not linked to this account."
+                      ]
+                    }
+                  },
+                  "Unknown plan": {
+                    "summary": "Unknown plan",
+                    "value": {
+                      "code": "PLAN_NOT_FOUND",
+                      "messages": [
+                        "The plan does not exist or is not linked to this account."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Product not enabled": {
+                    "summary": "Product not enabled",
+                    "value": {
+                      "code": "PRODUCT_NOT_ENABLED",
+                      "messages": [
+                        "Usage-based billing is not enabled for this organization"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "example": "PRODUCT_NOT_ENABLED"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Result": {
+                    "value": {
+                      "code": "PLAN_METER_ALREADY_ASSIGNED",
+                      "messages": [
+                        "The meter 66666666-6666-6666-6666-666666666666 is already assigned to this plan"
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "x-readme": {
+    "headers": [
+      {
+        "value": "utf-8",
+        "key": "charset"
+      }
+    ],
+    "explorer-enabled": true,
+    "proxy-enabled": true
+  },
+  "x-readme-fauxas": true
+}
