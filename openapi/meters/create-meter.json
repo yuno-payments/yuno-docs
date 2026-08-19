@@ -57,11 +57,16 @@
               "schema": {
                 "type": "object",
                 "required": [
+                  "account_id",
                   "name",
                   "event_name",
                   "aggregation"
                 ],
                 "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "description": "The unique identifier of the account the meter belongs to (UUID, 36 chars)."
+                  },
                   "name": {
                     "type": "string",
                     "description": "The meter display name (MAX 255; MIN 3). Leading and trailing spaces are trimmed."
@@ -72,7 +77,7 @@
                   },
                   "event_name": {
                     "type": "string",
-                    "description": "The key your systems send on every usage event to reference this meter (MAX 100; lowercase letters, digits, `_` and `.` only — `^[a-z0-9_.]+$`). Must be unique among the account's `ACTIVE` meters, else `409 METER_EVENT_NAME_CONFLICT`. Immutable after creation."
+                    "description": "The key your systems send on every usage event to reference this meter (MAX 100; lowercase letters, digits, `_` and `.` only — `^[a-z0-9_.]+$`). Must be unique across all meters of the account, `ACTIVE` or `INACTIVE`, else `409 METER_EVENT_NAME_CONFLICT`. Immutable after creation."
                   },
                   "aggregation": {
                     "type": "string",
@@ -129,15 +134,24 @@
                         }
                       }
                     }
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ACTIVE",
+                      "INACTIVE"
+                    ],
+                    "description": "Ignored on creation — a new meter is always `ACTIVE`. Use Update Meter to archive it."
                   }
                 }
               },
               "examples": {
                 "Meter": {
                   "value": {
-                    "name": "Tokens Consumed",
-                    "description": "Meters LLM token consumption per billing cycle",
-                    "event_name": "tokens_consumed",
+                    "account_id": "00000000-0000-4000-8000-000000000002",
+                    "name": "AI tokens",
+                    "description": "LLM tokens consumed by model responses, reported once per response",
+                    "event_name": "ai_tokens",
                     "aggregation": "SUM",
                     "unit_label": "token",
                     "plural_unit_label": "tokens",
@@ -167,9 +181,9 @@
                     "value": {
                       "id": "55555555-5555-5555-5555-555555555555",
                       "account_id": "00000000-0000-4000-8000-000000000002",
-                      "name": "Tokens Consumed",
-                      "description": "Meters LLM token consumption per billing cycle",
-                      "event_name": "tokens_consumed",
+                      "name": "AI tokens",
+                      "description": "LLM tokens consumed by model responses, reported once per response",
+                      "event_name": "ai_tokens",
                       "aggregation": "SUM",
                       "unit_label": "token",
                       "plural_unit_label": "tokens",
@@ -284,6 +298,15 @@
                       ]
                     }
                   },
+                  "Missing account_id": {
+                    "summary": "Missing account_id",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The account_id is required"
+                      ]
+                    }
+                  },
                   "Non-USD default_price": {
                     "summary": "Non-USD default_price",
                     "value": {
@@ -329,7 +352,7 @@
                     "value": {
                       "code": "METER_EVENT_NAME_CONFLICT",
                       "messages": [
-                        "An active meter with event_name tokens_consumed already exists for this account"
+                        "A meter with event_name ai_tokens already exists for this account"
                       ]
                     }
                   }

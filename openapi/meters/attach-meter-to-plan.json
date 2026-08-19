@@ -68,7 +68,7 @@
                 "properties": {
                   "meter_id": {
                     "type": "string",
-                    "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be an existing meter of the account, else `404 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
+                    "description": "The unique identifier of the meter to attach (MAX 64; MIN 36). Must be an existing `ACTIVE` meter of the account — an unknown or `INACTIVE` meter is rejected with `404 METER_NOT_FOUND`. A meter can be attached to a plan only once, else `409 PLAN_METER_ALREADY_ASSIGNED`."
                   },
                   "credits": {
                     "type": "number",
@@ -98,13 +98,13 @@
                       "value": {
                         "type": "number",
                         "format": "float",
-                        "description": "Price per unit beyond the included credits (multiple of 0.0001). Optional only when the plan's base currency is `USD` and the meter has a `default_price` — it is then inherited from the meter. Required otherwise."
+                        "description": "Price per unit beyond the included credits (multiple of 0.0001). Optional only when the plan's base currency is `USD` and the meter has a `default_price` — the meter's default then applies and the metered price is returned with `price_per_credit: null`. Required otherwise."
                       }
                     }
                   },
                   "country_prices": {
                     "type": "array",
-                    "description": "Optional explicit per-country price per unit (one entry per country). A country not listed falls back to `price_per_credit`.",
+                    "description": "Optional explicit per-country price per unit. One entry per country — a repeated country is rejected with `400 INVALID_PARAMETERS`. A country not listed falls back to `price_per_credit`.",
                     "items": {
                       "type": "object",
                       "required": [
@@ -166,7 +166,7 @@
                   }
                 },
                 "Inherit meter default_price (USD plan)": {
-                  "summary": "USD plan — price inherited from the meter's default_price",
+                  "summary": "USD plan — price inherited from the meter's default_price (returned as null)",
                   "value": {
                     "meter_id": "55555555-5555-5555-5555-555555555555",
                     "credits": 10000,
@@ -235,6 +235,8 @@
                     },
                     "price_per_credit": {
                       "type": "object",
+                      "nullable": true,
+                      "description": "`null` when inherited from the meter's `default_price` (USD plans).",
                       "properties": {
                         "currency": {
                           "type": "string"
@@ -326,6 +328,15 @@
                         "The meter pricing_strategy must be one of PER_UNIT, PACKAGE, TIERED"
                       ]
                     }
+                  },
+                  "Duplicate country": {
+                    "summary": "Duplicate country",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The country_prices must not contain duplicate countries"
+                      ]
+                    }
                   }
                 },
                 "schema": {
@@ -350,12 +361,12 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "Unknown meter": {
-                    "summary": "Unknown meter",
+                  "Unknown or inactive meter": {
+                    "summary": "Unknown or inactive meter",
                     "value": {
                       "code": "METER_NOT_FOUND",
                       "messages": [
-                        "The meter does not exist or is not linked to this account."
+                        "The meter does not exist, is inactive or is not linked to this account."
                       ]
                     }
                   },

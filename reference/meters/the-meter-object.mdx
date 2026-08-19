@@ -29,23 +29,23 @@ A meter is a named, countable action your product performs — tokens generated,
 <ParamField body="name" type="string">
   The meter display name (MAX 255; MIN 3). Leading and trailing spaces are trimmed.
 
-  Example: Tokens Consumed
+  Example: AI tokens
 </ParamField>
 
 <ParamField body="description" type="string">
   What the meter counts and how it is reported. Optional; `null` when not set.
 
-  Example: Meters LLM token consumption per billing cycle
+  Example: LLM tokens consumed by model responses, reported once per response
 </ParamField>
 
 <ParamField body="event_name" type="string">
-  The key your systems send on every usage event to reference this meter (MAX 100). Lowercase letters, digits, `_` and `.` only (`^[a-z0-9_.]+$`). Unique among the account's `ACTIVE` meters — creating a second active meter with the same `event_name` is rejected with `409 METER_EVENT_NAME_CONFLICT`. Immutable after creation.
+  The key your systems send on every usage event to reference this meter (MAX 100). Lowercase letters, digits, `_` and `.` only (`^[a-z0-9_.]+$`). Unique per account across all meters, `ACTIVE` or `INACTIVE` — creating another meter with the same `event_name` is rejected with `409 METER_EVENT_NAME_CONFLICT`, even if the existing one is archived. Immutable after creation; a PATCH that includes it is silently ignored.
 
-  Example: tokens_consumed
+  Example: ai_tokens
 </ParamField>
 
 <ParamField body="aggregation" type="enum">
-  How reported events roll up into the cycle quantity. Immutable after creation.
+  How reported events roll up into the cycle quantity. Immutable after creation; a PATCH that includes it is silently ignored.
 
   Possible values:
   - `SUM` = Adds the `value` of every event in the cycle. Use for consumption: tokens, minutes, messages, deliveries.
@@ -100,11 +100,11 @@ A meter is a named, countable action your product performs — tokens generated,
 </ParamField>
 
 <ParamField body="status" type="enum">
-  Status of the meter. Defaults to `ACTIVE` on creation.
+  Status of the meter. Always `ACTIVE` on creation — a `status` sent to Create Meter is ignored.
 
   Possible values:
   - `ACTIVE` = The meter accepts usage events and can be attached to plans.
-  - `INACTIVE` = Archived. Usage events for its `event_name` are rejected with `404 METER_NOT_FOUND`, and the `event_name` becomes available for a new meter. Set through [Update Meter](/reference/meters/update-meter); there is no delete.
+  - `INACTIVE` = Archived. Usage events for its `event_name` are rejected with `404 METER_NOT_FOUND`, it cannot be attached to plans, and its existing metered prices are frozen. The `event_name` stays reserved. Set through [Update Meter](/reference/meters/update-meter) and reversible (`status: ACTIVE`); there is no delete.
 </ParamField>
 
 <ParamField body="created_at" type="Timestamp" />

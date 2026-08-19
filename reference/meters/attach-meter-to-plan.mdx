@@ -17,13 +17,13 @@ The plan's flat price and existing subscribers' base amount never change when yo
 **Two ways to attach**
 
 - **On creation:** pass `meters[]` (same shape as this request body) to [Create Plan](/reference/plans/create-plan). Duplicated `meter_id` entries are rejected with `409`.
-- **On a live plan:** call this endpoint once per meter, or send `{ "meters": [ ... ] }` to `PATCH /subscriptions/plans/{plan_id}` — that PATCH is attach-only and accepts no other plan field.
+- **On a live plan:** call this endpoint once per meter, or send `{ "meters": [ ... ] }` to `PATCH /subscriptions/plans/{plan_id}` — that PATCH is attach-only and atomic: if any entry in the list is invalid (already attached, unknown or inactive meter, bad price) nothing is attached. Any other plan field in that body (`name`, `base_amount`, …) is silently ignored — plans stay immutable outside `meters[]`.
 </Note>
 
 <Note>
 **Price inheritance**
 
-If the plan's base currency is `USD` and the meter has a `default_price`, you can omit `price_per_credit` and the meter's default is used. In any other case (`price_per_credit` currency must always equal the plan's base currency) send it explicitly.
+If the plan's base currency is `USD` and the meter has a `default_price`, you can omit `price_per_credit`: the meter's default applies and the metered price is returned with `price_per_credit: null`. In any other case (`price_per_credit` currency must always equal the plan's base currency) send it explicitly. Only `ACTIVE` meters can be attached; an archived meter is rejected with `404 METER_NOT_FOUND`.
 </Note>
 
 See [The Metered Price Object](/reference/meters/the-metered-price-object) for every field. Refer to [Meter Error Codes](/reference/meters/meter-error-codes) for the possible error outcomes.

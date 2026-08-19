@@ -38,7 +38,7 @@
     "/subscriptions/meters/events": {
       "post": {
         "summary": "Report Usage Event",
-        "description": "**Early access (preview).** Usage-based billing is available on request and the contract may change before general availability. Reports one usage event against a subscription. The meter is resolved from `event_name`. Validation is synchronous: a malformed or unresolvable event is rejected in the response (`400`/`404`) and never counted. Replaying the same `event_id` returns the original response and never double counts. One event per request — there is no batch endpoint in this preview.",
+        "description": "**Early access (preview).** Usage-based billing is available on request and the contract may change before general availability. Reports one usage event against a subscription. The meter is resolved from `event_name`. Validation is synchronous: a malformed or unresolvable event is rejected in the response (`400`/`404`) and never counted. Replaying the same `event_id` returns the original response — including the original `value`, even if the retry sent a different one — and never double counts. One event per request — there is no batch endpoint in this preview.",
         "operationId": "report-usage-event",
         "parameters": [
           {
@@ -72,7 +72,7 @@
                   },
                   "subscription_id": {
                     "type": "string",
-                    "description": "The unique identifier of the subscription the usage is attributed to (MAX 64; MIN 36). Must exist in your organization. Usage is metered per subscription and billed on that subscription's renewal."
+                    "description": "The unique identifier of the subscription the usage is attributed to (MAX 64; MIN 36). Must exist in your account, else `400 SUBSCRIPTION_NOT_FOUND`. Usage is metered per subscription and billed on that subscription's renewal."
                   },
                   "value": {
                     "type": "number",
@@ -109,17 +109,16 @@
                   "summary": "SUM meter — tokens consumed",
                   "value": {
                     "event_id": "11111111-1111-1111-1111-111111111111",
-                    "event_name": "tokens_consumed",
+                    "event_name": "ai_tokens",
                     "subscription_id": "33333333-3333-3333-3333-333333333333",
-                    "value": 42.5,
+                    "value": 1500,
                     "timestamp": "2026-08-18T09:00:04Z",
                     "metadata": [
                       {
-                        "key": "team",
-                        "value": "platform"
+                        "key": "model",
+                        "value": "llm-large"
                       }
-                    ],
-                    "meter_id": "55555555-5555-5555-5555-555555555555"
+                    ]
                   }
                 },
                 "Count meter (API request)": {
@@ -154,10 +153,10 @@
                     "value": {
                       "id": "22222222-2222-2222-2222-222222222222",
                       "event_id": "11111111-1111-1111-1111-111111111111",
-                      "event_name": "tokens_consumed",
+                      "event_name": "ai_tokens",
                       "meter_id": "55555555-5555-5555-5555-555555555555",
                       "subscription_id": "33333333-3333-3333-3333-333333333333",
-                      "value": 42.5,
+                      "value": 1500,
                       "received_at": "2026-08-18T09:00:04.000000Z"
                     }
                   }
@@ -197,6 +196,24 @@
             "content": {
               "application/json": {
                 "examples": {
+                  "Missing event_id": {
+                    "summary": "Missing event_id",
+                    "value": {
+                      "code": "INVALID_PARAMETERS",
+                      "messages": [
+                        "The event_id is required"
+                      ]
+                    }
+                  },
+                  "Unknown subscription": {
+                    "summary": "Unknown subscription",
+                    "value": {
+                      "code": "SUBSCRIPTION_NOT_FOUND",
+                      "messages": [
+                        "The subscription does not exist or is not linked to this account."
+                      ]
+                    }
+                  },
                   "Missing value on SUM meter": {
                     "summary": "Missing value on SUM meter",
                     "value": {
@@ -247,23 +264,14 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "Unknown or inactive meter": {
-                    "summary": "Unknown or inactive meter",
+                  "Result": {
                     "value": {
                       "code": "METER_NOT_FOUND",
                       "messages": [
-                        "No active meter with event_name tokens_consumed exists for this account"
+                        "No active meter with event_name ai_tokens exists for this account"
                       ]
-                    }
-                  },
-                  "Unknown subscription": {
-                    "summary": "Unknown subscription",
-                    "value": {
-                      "code": "SUBSCRIPTION_NOT_FOUND",
-                      "messages": [
-                        "The subscription does not exist or is not linked to this organization."
-                      ]
-                    }
+                    },
+                    "summary": "Unknown or inactive meter"
                   }
                 },
                 "schema": {
