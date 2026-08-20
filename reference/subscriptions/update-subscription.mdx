@@ -33,10 +33,12 @@ Use the `plan_change` block to move a subscription to another plan effective at 
 
 Send `"effective": "IMMEDIATE"` inside `plan_change` to apply the move in this call instead of scheduling it: the subscription keeps its `id`, the new plan's price bills from the next charge, and — unlike a scheduled change — this works even in the final billing cycle. An immediate change while another change is pending returns `409 PLAN_CHANGE_ALREADY_SCHEDULED`; undo the pending one first with `"plan_change": null`.
 
-`billing_cycle_behavior` decides what happens to the billing anchor and is only valid with `IMMEDIATE`:
+`billing_cycle_behavior` decides what happens to the billing anchor when the plan changes in place:
 
-- `KEEP` (default) — the next charge date is untouched; only the price changes.
-- `RESTART` — the next charge re-anchors to the moment of the change plus the new plan's frequency. **Only the anchor resets**: billing cycle counters, retry state and dunning progress all survive.
+- `KEEP` (default — omitting the field behaves identically) — the next charge date is untouched; only the price changes.
+- `RESTART` — the next charge re-anchors to the moment of the change plus the new plan's frequency. **Only the anchor resets**: billing cycle counters, the retry configuration and the subscription's status all survive. `RESTART` requires `effective: IMMEDIATE` and returns `400` with a scheduled change; `KEEP` alongside a scheduled change is accepted and simply schedules the change as usual — a scheduled change never moves the anchor anyway.
+
+An immediate change emits the `subscription.plan_changed` webhook at the moment of the call — `subscription.plan_change_scheduled` never fires for it, and `pending_plan_change` stays `null` throughout.
 
 `billing_cycle_behavior` is **write-only** — it is accepted on the request and never echoed in any response.
 </Note>
@@ -46,7 +48,7 @@ Send `"effective": "IMMEDIATE"` inside `plan_change` to apply the move in this c
 
 For a subscription that is *not* linked to a plan, `billing_cycle_behavior` is available as a top-level field on this endpoint, typically combined with a `frequency` change in the same call — for example, moving a subscriber from monthly to yearly and restarting the cycle from today. The same `KEEP`/`RESTART` semantics apply, and on a subscription that has not started yet the re-anchored date clamps to its `availability.start_at`.
 
-Placement rules: on a plan-linked subscription the top-level field returns `400` (the anchor is managed through `plan_change`), and combining the top-level field with a `plan_change` block returns `400` — use `plan_change.billing_cycle_behavior` instead. A `PAUSED` subscription returns `409 INVALID_SUBSCRIPTION_STATUS`: the billing cycle can only restart while the subscription is billable or awaiting its start.
+Placement rules: on a plan-linked subscription the top-level field returns `400` (the anchor is managed through `plan_change`), and combining the top-level field with a `plan_change` block returns `400` — use `plan_change.billing_cycle_behavior` instead. A `PAUSED` subscription returns `409 INVALID_SUBSCRIPTION_STATUS`: a restart is accepted while the subscription is `ACTIVE`, `TRIALING` or `PAST_DUE` — or while it is still `CREATED`, where (unlike `plan_change`) the request is allowed and the re-anchored date clamps to `availability.start_at`. A top-level restart emits no webhook — read the new anchor from the subscription object.
 </Note>
 
 ### Plan change errors
@@ -80,6 +82,6 @@ Each of the `409` and `422` errors below carries a `current_status` field alongs
 
 A `CANCELED` or `COMPLETED` subscription is rejected earlier with `400 INVALID_STATE`, which does not carry `current_status`.
 
-Validation problems in the block itself — a missing `plan_id`, an unsupported `effective`, a target plan in another currency, or a `HONOR_PHASES` ladder longer than the remaining billing cycles — return `400 BAD_REQUEST` without `current_status`. The same applies to `billing_cycle_behavior` placement mistakes: `RESTART` without `effective: IMMEDIATE`, the top-level field combined with `plan_change`, or the top-level field on a plan-linked subscription each return `400 BAD_REQUEST` with a message naming the correct placement. An invalid `billing_cycle_behavior` value is rejected at the API edge as `400 INVALID_PARAMETERS` (`"The field 'billing_cycle_behavior' has an invalid value."`); a valid-shape request refused deeper in returns `400 BAD_REQUEST` — treat both codes as validation failures.
+Validation problems in the block itself — a missing `plan_id`, an unsupported `effective`, a target plan in another currency, or a `HONOR_PHASES` ladder longer than the remaining billing cycles — return `400 BAD_REQUEST` without `current_status`. The same applies to `billing_cycle_behavior` placement mistakes: `RESTART` without `effective: IMMEDIATE`, the top-level field combined with `plan_change`, or the top-level field on a plan-linked subscription each return `400 BAD_REQUEST` with a message naming the fix. Where an invalid `billing_cycle_behavior` **value** is caught depends on its position: the top-level field is rejected at the API edge as `400 INVALID_PARAMETERS` (`"The field 'billing_cycle_behavior' has an invalid value."`), while a bad value nested inside `plan_change` reaches the engine and returns `400 BAD_REQUEST` (e.g. `"RESET is invalid for plan_change.billing_cycle_behavior field"`) — treat both codes as validation failures.
 
 One exception to the plan-change error table above: `PLAN_CHANGE_NOT_AVAILABLE` applies to *scheduled* changes only. An `IMMEDIATE` change does not need an upcoming cycle, so it is accepted in the final billing cycle.
