@@ -1,0 +1,193 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Routing API - Recommendations", "version": "1.0.0" },
+  "servers": [ { "url": "https://api-sandbox.y.uno/v1" }, { "url": "https://api.y.uno/v1" }, { "url": "https://api.eu.y.uno/v1" } ],
+  "components": {
+    "securitySchemes": {
+      "sec0": { "type": "apiKey", "in": "header", "name": "PUBLIC-API-KEY", "x-default": "<Your PUBLIC-API-KEY>" },
+      "sec1": { "type": "apiKey", "in": "header", "name": "PRIVATE-SECRET-KEY", "x-default": "<Your PRIVATE-SECRET-KEY>" }
+    }
+  },
+  "security": [ { "sec0": [], "sec1": [] } ],
+  "paths": {
+    "/routing/recommendations": {
+      "post": {
+        "summary": "Get a Routing Recommendation",
+        "operationId": "get-routing-recommendations",
+        "description": "Ranks the candidate providers using the account's own reported off-Yuno payment history and returns the recommended candidate plus the full ranking. Enabled per organization.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["account_id", "payment", "candidates"],
+                "properties": {
+                  "account_id": { "type": "string", "format": "uuid", "example": "7825fc5e-e50a-4248-9ae8-5d3786afb0be" },
+                  "merchant_order_id": { "type": "string", "maxLength": 255, "example": "order_45678" },
+                  "payment": {
+                    "type": "object",
+                    "required": ["amount", "country", "payment_method"],
+                    "properties": {
+                      "amount": {
+                        "type": "object",
+                        "required": ["currency", "value"],
+                        "properties": {
+                          "currency": { "type": "string", "example": "USD", "description": "ISO 4217 currency code." },
+                          "value": { "type": "number", "minimum": 0, "example": 99.00 }
+                        }
+                      },
+                      "country": { "type": "string", "example": "US", "description": "ISO 3166-1 alpha-2 country code." },
+                      "payment_method": {
+                        "type": "object",
+                        "required": ["type"],
+                        "properties": {
+                          "type": { "type": "string", "example": "CARD" },
+                          "details": {
+                            "type": "object",
+                            "properties": {
+                              "card": {
+                                "type": "object",
+                                "properties": {
+                                  "bin": { "type": "string", "example": "457173" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "initiation": { "type": "string", "enum": ["CIT", "MIT"], "example": "CIT" }
+                    }
+                  },
+                  "candidates": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "object",
+                      "required": ["provider_id"],
+                      "properties": {
+                        "provider_id": { "type": "string", "example": "ADYEN" },
+                        "merchant_connection_id": { "type": "string", "example": "acct-adyen-us-1" }
+                      }
+                    }
+                  },
+                  "optimize_for": { "type": "string", "enum": ["APPROVAL_RATE", "LATENCY", "BALANCED"], "default": "APPROVAL_RATE", "example": "APPROVAL_RATE" }
+                }
+              },
+              "example": {
+                "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+                "merchant_order_id": "order_45678",
+                "payment": {
+                  "amount": { "currency": "USD", "value": 99.00 },
+                  "country": "US",
+                  "payment_method": { "type": "CARD" }
+                },
+                "candidates": [
+                  { "provider_id": "ADYEN", "merchant_connection_id": "acct-adyen-us-1" },
+                  { "provider_id": "STRIPE" },
+                  { "provider_id": "DLOCAL" }
+                ],
+                "optimize_for": "APPROVAL_RATE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "recommendation_id": { "type": "string", "format": "uuid", "example": "3e37f0c9-e9cd-4d85-9e1a-ec5f09af296d" },
+                    "merchant_order_id": { "type": "string", "nullable": true, "example": "order_45678" },
+                    "optimized_for": { "type": "string", "enum": ["APPROVAL_RATE", "LATENCY", "BALANCED"], "example": "APPROVAL_RATE" },
+                    "decision_source": { "type": "string", "enum": ["MERCHANT_HISTORY", "INSUFFICIENT_DATA"], "example": "MERCHANT_HISTORY" },
+                    "recommended": {
+                      "type": "object",
+                      "properties": {
+                        "provider_id": { "type": "string", "example": "ADYEN" },
+                        "merchant_connection_id": { "type": "string", "nullable": true, "example": "acct-adyen-us-1" }
+                      }
+                    },
+                    "ranking": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider_id": { "type": "string", "example": "ADYEN" },
+                          "merchant_connection_id": { "type": "string", "nullable": true, "example": "acct-adyen-us-1" },
+                          "approval_rate": { "type": "number", "nullable": true, "example": 0.9987 },
+                          "avg_latency_ms": { "type": "integer", "nullable": true, "example": 180 },
+                          "sample_size": { "type": "integer", "example": 767 }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "INVALID_PARAMETERS" },
+                    "messages": { "type": "array", "items": { "type": "string" }, "example": ["The field 'candidates' has a value less than allowed."] }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "INVALID_CREDENTIALS" },
+                    "messages": { "type": "array", "items": { "type": "string" }, "example": ["Invalid Credentials"] }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "PRODUCT_NOT_ENABLED" },
+                    "messages": { "type": "array", "items": { "type": "string" }, "example": ["The Routing Recommendations API is enabled per organization. Contact your Key Account Manager (KAM) to activate it."] }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": { "type": "string", "example": "ROUTING_UPSTREAM_ERROR" },
+                    "messages": { "type": "array", "items": { "type": "string" }, "example": ["routing service unavailable."] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

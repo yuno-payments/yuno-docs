@@ -1,0 +1,210 @@
+---
+title: "Get a Routing Recommendation"
+description: "Send a payment context and your candidate providers — Yuno returns the recommended route, ranked by your own reported transaction history."
+openapi: "/openapi/organizations/routing/get-routing-recommendations.json POST /routing/recommendations"
+---
+
+This endpoint recommends which of **your own provider accounts** to route a payment to, based on the outcome history you send Yuno through the [Transaction Reporting API](/reference/reporting/report-transactions). You send the payment context and the candidates you can actually use; Yuno returns the recommended candidate, a full ranking with per-candidate metrics, and a `recommendation_id`.
+
+The transaction itself never passes through Yuno. **Yuno recommends; you decide and process.**
+
+<Note>
+**Enabled per organization** — this API requires activation for your organization. Contact your Key Account Manager (KAM) to enable it. Until then every call returns `403 PRODUCT_NOT_ENABLED`.
+</Note>
+
+## How it works
+
+1. You report your off-Yuno transaction outcomes through the [Transaction Reporting API](/reference/reporting/report-transactions). Only payments with `origin: REPORTED` feed the statistics — Yuno-processed traffic is a different population and is deliberately kept out.
+2. Before routing a payment, you call this endpoint with the payment context and your candidate providers.
+3. Yuno computes statistics per candidate — approval rate, average provider latency, sample size — over a rolling **30-day** window of your reported payments, segmented by provider, country and payment method (and BIN, when you send it), and returns the ranking ordered by your objective.
+4. You route the payment yourself and report its outcome. If the reported event carries the same `merchant_order_id` you sent here, Yuno attributes the outcome to this recommendation automatically — closing the loop without you storing `recommendation_id`.
+
+Only reported payments in a terminal status feed the approval rate: `SUCCEEDED` counts as approved and `SUCCEEDED + DECLINED` as decided. Payments in any other status (e.g. `ERROR`, pending) are ignored for the rate and latency, though they still count toward `sample_size`.
+
+## Request body
+
+<ParamField body="account_id" type="string (UUID)" required>
+  The merchant account the recommendation is issued for. Travels in the body; Yuno promotes it to the account header internally. Must belong to the organization of the API credentials.
+</ParamField>
+
+<ParamField body="merchant_order_id" type="string">
+  Optional merchant-supplied order reference (max 255). Stored with the issued recommendation as the correlation key for closed-loop attribution.
+</ParamField>
+
+<ParamField body="payment" type="object" required>
+  The payment context the recommendation is scored against.
+  <Expandable title="properties">
+    <ParamField body="amount" type="object" required>
+      <Expandable title="properties">
+        <ParamField body="currency" type="string" required>
+          ISO 4217 currency code, e.g. `USD`.
+        </ParamField>
+        <ParamField body="value" type="number" required>
+          Transaction amount. Must be `≥ 0`.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="country" type="string" required>
+      ISO 3166-1 alpha-2 country code, e.g. `US`. Selects the statistics segment.
+    </ParamField>
+    <ParamField body="payment_method" type="object" required>
+      <Expandable title="properties">
+        <ParamField body="type" type="string" required>
+          E.g. `CARD`, `PIX`, `WALLET`. Selects the statistics segment.
+        </ParamField>
+        <ParamField body="details" type="object">
+          Optional. `card.bin` (numeric) refines the context when available.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="initiation" type="enum">
+      Optional. `CIT` (customer-initiated) or `MIT` (merchant-initiated).
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="candidates" type="object[]" required>
+  The providers to rank. Between **2 and 20** items — a recommendation over a single candidate is meaningless.
+  <Expandable title="item">
+    <ParamField body="provider_id" type="string" required>
+      Provider code, e.g. `ADYEN`, `STRIPE`, `DLOCAL`.
+    </ParamField>
+    <ParamField body="merchant_connection_id" type="string">
+      Optional passthrough for your own bookkeeping — returned exactly as sent, not validated.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="optimize_for" type="enum" default="APPROVAL_RATE">
+  The objective the ranking optimizes. `APPROVAL_RATE` (default), `LATENCY`, or `BALANCED`.
+</ParamField>
+
+## Response
+
+<ResponseField name="recommendation_id" type="string">
+  Unique identifier of the issued recommendation. A fresh id is generated on every call.
+</ResponseField>
+<ResponseField name="merchant_order_id" type="string">
+  Echo of the request field, when supplied; `null` otherwise.
+</ResponseField>
+<ResponseField name="optimized_for" type="enum">
+  The objective applied to the ranking.
+</ResponseField>
+<ResponseField name="decision_source" type="enum">
+  How the ranking was decided — `MERCHANT_HISTORY` or `INSUFFICIENT_DATA` (see below).
+</ResponseField>
+<ResponseField name="recommended" type="object">
+  The top of the ranking. Always present.
+  <Expandable title="properties">
+    <ResponseField name="provider_id" type="string">The recommended provider code.</ResponseField>
+    <ResponseField name="merchant_connection_id" type="string">The candidate's `merchant_connection_id`, when it was supplied.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="ranking" type="object[]">
+  Every candidate, ordered by the objective.
+  <Expandable title="item">
+    <ResponseField name="provider_id" type="string">Provider code.</ResponseField>
+    <ResponseField name="merchant_connection_id" type="string">The candidate's `merchant_connection_id`, when it was supplied.</ResponseField>
+    <ResponseField name="approval_rate" type="number">`SUCCEEDED / (SUCCEEDED + DECLINED)` over the reported history, `0`–`1`. `null` when there is no data.</ResponseField>
+    <ResponseField name="avg_latency_ms" type="integer">Average authorization latency in milliseconds over `SUCCEEDED + DECLINED`. `null` when there is no data.</ResponseField>
+    <ResponseField name="sample_size" type="integer">Total reported payments in the segment over the window, across all statuses — how much history backs this candidate's metrics.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Reading the response
+
+- **`recommended` is always present** — even without enough history. You never need a special branch: `decision_source` tells you how much to trust it.
+- **`decision_source: MERCHANT_HISTORY`** — at least one candidate reached the minimum sample; the ranking reflects real statistics over your reported payments.
+- **`decision_source: INSUFFICIENT_DATA`** — no candidate reached the minimum sample of recent reported events. The full ranking still comes back, and the recommendation falls back to the best available data, or to request order as a last resort. Read each candidate's `sample_size` to see how much history backs it before relying on the order.
+- **`sample_size`** is the honesty of the recommendation. A high approval rate over 12 events is not the same signal as one over 12,000.
+- **The full `ranking` always comes back**, ordered by your objective. If the recommended candidate declines, take the next entry — cascade retry without a second call.
+
+## Choosing an objective
+
+`optimize_for` orders the ranking: `APPROVAL_RATE` (default), `LATENCY`, or `BALANCED` (a weighted blend of both). There is no cost objective yet — the Reporting API does not collect fees, and Yuno does not rank on data it does not have.
+
+## Candidates are your constraint layer
+
+The recommendation is always one of the `candidates` you send — Yuno never proposes a provider you did not list. Send only the providers this payment is genuinely allowed to use (eligibility, contracts, committed volumes), and the recommendation respects those constraints by construction.
+
+## Retries
+
+There is no idempotency header on this endpoint, and none is needed: each call computes a fresh recommendation with a new `recommendation_id`, and requesting a recommendation changes no state. Retrying after a network failure is always safe.
+
+## Examples
+
+<CodeGroup>
+```bash cURL
+curl -X POST 'https://api-sandbox.y.uno/v1/routing/recommendations' \
+  -H 'public-api-key: <YOUR_PUBLIC_KEY>' \
+  -H 'private-secret-key: <YOUR_SECRET_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "account_id": "7825fc5e-e50a-4248-9ae8-5d3786afb0be",
+    "merchant_order_id": "order_45678",
+    "payment": {
+      "amount": { "currency": "USD", "value": 99.00 },
+      "country": "US",
+      "payment_method": { "type": "CARD" }
+    },
+    "candidates": [
+      { "provider_id": "ADYEN", "merchant_connection_id": "acct-adyen-us-1" },
+      { "provider_id": "STRIPE" },
+      { "provider_id": "DLOCAL" }
+    ],
+    "optimize_for": "APPROVAL_RATE"
+  }'
+```
+
+```json 200 — MERCHANT_HISTORY
+{
+  "recommendation_id": "3e37f0c9-e9cd-4d85-9e1a-ec5f09af296d",
+  "merchant_order_id": "order_45678",
+  "optimized_for": "APPROVAL_RATE",
+  "decision_source": "MERCHANT_HISTORY",
+  "recommended": { "provider_id": "ADYEN", "merchant_connection_id": "acct-adyen-us-1" },
+  "ranking": [
+    { "provider_id": "ADYEN",  "merchant_connection_id": "acct-adyen-us-1", "approval_rate": 0.9987, "avg_latency_ms": 180, "sample_size": 767 },
+    { "provider_id": "STRIPE", "merchant_connection_id": null, "approval_rate": 0.9167, "avg_latency_ms": 150, "sample_size": 60 },
+    { "provider_id": "DLOCAL", "merchant_connection_id": null, "approval_rate": 0.8000, "avg_latency_ms": 210, "sample_size": 60 }
+  ]
+}
+```
+
+```json 200 — INSUFFICIENT_DATA
+{
+  "recommendation_id": "7249c858-1f0f-4654-93e7-ebe34bc5048f",
+  "merchant_order_id": "order_45678",
+  "optimized_for": "APPROVAL_RATE",
+  "decision_source": "INSUFFICIENT_DATA",
+  "recommended": { "provider_id": "ADYEN", "merchant_connection_id": null },
+  "ranking": [
+    { "provider_id": "ADYEN",  "merchant_connection_id": null, "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 },
+    { "provider_id": "STRIPE", "merchant_connection_id": null, "approval_rate": null, "avg_latency_ms": null, "sample_size": 0 }
+  ]
+}
+```
+
+```json 400 — Too Few Candidates
+{
+  "code": "INVALID_PARAMETERS",
+  "messages": ["The field 'candidates' has a value less than allowed."]
+}
+```
+</CodeGroup>
+
+## Errors
+
+Errors return a `code` and a `messages` array.
+
+<div className="code-nowrap-table dense-table">
+
+| HTTP | `code` | When |
+| --- | --- | --- |
+| `400` | `INVALID_PARAMETERS` | Malformed body, a missing required field, fewer than 2 or more than 20 candidates, a non-ISO `country`/`currency`, or an invalid enum (`optimize_for`, `initiation`). |
+| `400` | `INVALID_ACCOUNT_ID` | `account_id` is malformed or does not belong to your organization. |
+| `401` | `INVALID_CREDENTIALS` | Missing or invalid `PUBLIC-API-KEY` / `PRIVATE-SECRET-KEY` headers. |
+| `403` | `PRODUCT_NOT_ENABLED` | The Routing Recommendations API is not enabled for your organization. Contact your KAM. |
+| `502` | `ROUTING_UPSTREAM_ERROR` | The routing service could not be reached. |
+
+</div>
