@@ -1,21 +1,25 @@
 ---
 title: "Webhooks Overview"
-description: "Summarizes webhook delivery, retry schedule, and event types across payments, subscriptions, payouts, and banking connectivity"
+description: "Explains what a Yuno webhook is, how delivery and retries work, and where to configure one"
 ---
 
-## What is a webhook
+A webhook is how Yuno tells your system about events, like a payment authorized, a subscription renewed, or a payout completed, without you having to poll for them. You configure a destination `url`, the events you want (triggers), and how Yuno authenticates to your endpoint. Yuno then delivers each event as an HTTP `POST` as soon as it happens.
 
-Webhooks let your system receive real-time event notifications from Yuno through an HTTP POST, instead of polling for updates. After you configure your webhook endpoint, Yuno sends a notification every time a relevant event happens in the payment flow.
+To receive webhooks, your endpoint must be a public HTTPS URL that accepts an unauthenticated `POST` request. This is safe because the URL you configure is only ever called by Yuno, and you can verify every delivery is genuine with one of the [authentication methods](/reference/webhooks#delivery-authentication) below.
 
-## Requirements
+## Delivery and retries
 
-To use Yuno's webhooks, build a public REST API endpoint to receive event notifications (POST requests). This endpoint should not require authentication or access restrictions through a header. Despite being public, the endpoint stays secure: Yuno's event notifications aren't discoverable by the public and are sent to a unique URL known only to your system.
+Yuno expects an **HTTP 200 OK** response to confirm a notification was received. No response body is required. If it doesn't get one in time, Yuno retries up to seven times on the schedule below, so a brief outage on your end doesn't lose an event.
 
-## Webhooks delivery and response requirements
-
-Yuno webhooks expects to receive an **HTTP 200 OK** status as a response to confirm the webhook was successfully received. The merchant system does not need to include any information in the response's body. Only the HTTP 200 status is required.
-
-If no response is received within the specified time, Yuno will retry sending the event notification up to seven times. Refer to the [Receipt Confirmation Process](/docs/webhooks/configure-webhooks#receipt-confirmation-process) section for details on the notification schedule and confirmation waiting times for each retry.
+| Attempt | Deadline after the first try |
+| :------ | :---------------------------- |
+| First try | N/A |
+| Second try | 5 minutes |
+| Third try | 50 minutes |
+| Fourth try | 6 hours |
+| Fifth try | 24 hours |
+| Sixth try | 48 hours |
+| Seventh try | 96 hours |
 
 ## De-duplication
 
@@ -44,7 +48,7 @@ Support for `enrollment` events is planned but not yet available. Until then, en
 
 ### Why you might see the same event twice
 
-Each payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event (same `data.idempotency_key`, incremented `retry`) following the schedule described in [Webhooks delivery and response requirements](#webhooks-delivery-and-response-requirements) above. Treat any event whose `type_event` and idempotency key you've already processed as a duplicate, regardless of its `retry` value.
+Each payload also includes a top-level `retry` field with the number of delivery attempts made for that event (`0` on the first attempt). If your endpoint doesn't return an HTTP 200 OK in time, Yuno resends the same event (same `data.idempotency_key`, incremented `retry`) following the schedule described in [Delivery and retries](#delivery-and-retries) above. Treat any event whose `type_event` and idempotency key you've already processed as a duplicate, regardless of its `retry` value.
 
 ### Recommended handling
 
@@ -68,122 +72,27 @@ async function handleWebhookEvent(event) {
 
 Keep in mind that not every event type carries `data.idempotency_key` yet (see Coverage above). For event types without it, fall back to your own de-duplication key, such as the combination of resource ID and event type.
 
-## Common Webhook Events
+## Configure a webhook
 
-Yuno sends event notifications for various activities within the payment ecosystem. Below are the available event categories and their corresponding events.
+Webhooks are configured the same way whether you use the dashboard or the API. Both set the same `url`, triggers, and delivery authentication.
 
-### Payment events
+<Card title="Configure a Webhook" icon="gear" href="/docs/webhooks/configure-webhooks">
+  Set up a webhook's endpoint, triggers, and delivery authentication, from the dashboard or the API.
+</Card>
 
-| Event                | Description                                                                 |
-| -------------------- | --------------------------------------------------------------------------- |
-| `payment.purchase`   | Occurs when a payment is created or its status changes during a purchase flow. |
-| `payment.chargeback` | Occurs when a chargeback or inquiry is received for a payment.              |
+## What's next
 
-### Refund events
-
-| Event            | Description                                   |
-| ---------------- | --------------------------------------------- |
-| `payment.refund` | Occurs when a refund is processed for a payment. |
-
-### Subscription events
-
-| Event                           | Description                                                                                                            |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `subscription.create`           | Sent when a subscription is first created.                                                                            |
-| `subscription.active`           | Sent when the subscription first becomes active (at `billing_cycles.current` = 2). Not re-sent on subsequent renewal cycles, but it is sent again when a subscription recovers from `PAST_DUE` back to `ACTIVE`. |
-| `subscription.trialing`         | Sent when the subscription enters a plan's trial phase from another status, and when it recovers from `PAST_DUE` while the trial is still running. Entering the trial on creation is reported as `subscription.create`, and leaving a pause as `subscription.resume`. |
-| `subscription.past_due`         | Sent when a recurring charge fails and the subscription enters `PAST_DUE`. Only emitted for accounts where the status is enabled. See [Subscription Status](/reference/subscriptions/status-subscriptions). |
-| `subscription.pause`            | Sent when a subscription is paused.                                                                                  |
-| `subscription.resume`           | Sent when a paused subscription is resumed.                                                                          |
-| `subscription.cancel`           | Sent when a subscription is canceled. Once canceled it is terminated and cannot be reactivated.                      |
-| `subscription.complete`         | Sent when a subscription reaches its end date or total billing cycles and transitions to `COMPLETED`.               |
-| `subscription.close_to_renewal` | Sent ahead of an upcoming renewal. Timing is controlled by `renewal_notification_days`.                             |
-| `subscription.cycle_executed`   | Sent for plan-based subscriptions when a `$0` cycle is executed — a trial cycle or a fully discounted one. These cycles produce no `payment.purchase` webhook, so this event is the receipt for them. Carries `cycle`, `reason` (`TRIAL` or `FULL_DISCOUNT`), `phase` and a `breakdown`. |
-| `subscription.phase_started`    | Sent for plan-based subscriptions when a new billing phase begins, including the first one. Carries `phase` and `previous_phase`.                     |
-| `subscription.phase_completed`  | Sent for plan-based subscriptions when the previous billing phase ends, immediately before `subscription.phase_started` for the new one. Not sent for the first phase, which has no predecessor. |
-| `subscription.plan_change_scheduled` | Sent when a plan change is scheduled for the next billing cycle via `PATCH /v1/subscriptions/{id}`.             |
-| `subscription.plan_change_canceled` | Sent when a pending plan change is undone by the merchant (`MERCHANT_UNDO`) or aborted because the target plan was canceled (`TARGET_PLAN_CANCELED`). Not sent when the subscription itself is canceled — only `subscription.cancel` fires then. |
-| `subscription.plan_changed`     | Sent when a plan change takes effect. A scheduled change is applied at the renewal that first bills the new plan and keeps the same subscription `code`. `POST /v1/subscriptions/{id}/plan` instead replaces the subscription: the payload carries a new `code` with `previous_subscription_id` set, and a separate `subscription.cancel` (`cancellation_source: PLAN_CHANGE`) fires for the original. |
-
-<Note>
-Each renewal charge is delivered as a `payment.purchase` webhook tied to the subscription, with the outcome (success or decline) carried in the `status`/`sub_status` fields. `$0`/trial cycles emit no payment webhook — for plan-based subscriptions they are reported as `subscription.cycle_executed` instead. There is no `subscription.error` event: a failed renewal is signaled by `subscription.past_due` where that status is enabled, and by the `payment.purchase` webhook everywhere.
-</Note>
-
-<Note>
-Treat the plan-change events as notifications, not as the source of truth. Reconcile against `GET /v1/subscriptions/{id}` — `pending_plan_change` for a scheduled change and `plan_id` for an applied one — rather than relying on webhook delivery alone.
-</Note>
-
-### Enrollment events
-
-| Event               | Description                                                                 |
-| ------------------- | --------------------------------------------------------------------------- |
-| `enrollment.enroll` | Sent when a payment method is successfully enrolled.                        |
-| `enrollment.update` | Sent when enrolled card details are updated (e.g., via Card Account Updater). |
-
-### Payout events
-
-| Event           | Description                          |
-| --------------- | ------------------------------------ |
-| `payout.payout` | Sent when a payout event occurs.      |
-
-### Marketplace Split Transfer events
-
-| Event                            | Description                                   |
-| -------------------------------- | --------------------------------------------- |
-| `succeeded` (Type: `split_transfer`) | Split transfer completed successfully         |
-| `succeeded` (Type: `split_transfer_reverse`) | Split transfer reversal completed successfully |
-
-## Banking Connectivity webhook events
-
-Banking Connectivity (Banking as a Service) webhook notifications follow the same delivery and retry behavior described above. Yuno sends these events to your configured webhook endpoint when the status of a Banking Connectivity resource changes.
-
-For incoming transfer payload structure, see [Webhook Notifications (Banking Connectivity)](/reference/banking-connectivity/webhooks/webhook-notifications-banking). Incoming transfer notifications are sent to your endpoint at `{merchant_base_URL}/v1/banking/transfers`.
-
-### Entity events
-
-| Event                    | Description    |
-| ------------------------ | -------------- |
-| `banking.entity.created` | Entity created |
-| `banking.entity.updated` | Entity updated |
-| `banking.entity.deleted` | Entity deleted |
-
-### Onboarding events
-
-| Event                                                 | Description                |
-| ----------------------------------------------------- | -------------------------- |
-| `banking.onboarding.created`                          | Onboarding created         |
-| `banking.onboarding.pending`                          | Submitted, awaiting review |
-| `banking.onboarding.pending_additional_documentation` | More documents required    |
-| `banking.onboarding.succeeded`                        | Onboarding approved        |
-| `banking.onboarding.failed`                           | Onboarding failed          |
-| `banking.onboarding.declined`                         | Provider declined          |
-| `banking.onboarding.cancelled`                        | Merchant cancelled         |
-| `banking.onboarding.expired`                          | Onboarding expired         |
-
-### Account events
-
-| Event                       | Description       |
-| --------------------------- | ----------------- |
-| `banking.account.created`   | Account created   |
-| `banking.account.updated`   | Account updated   |
-| `banking.account.activated` | Account activated |
-| `banking.account.closed`    | Account closed    |
-
-### Transfer events (outgoing)
-
-| Event                         | Description         |
-| ----------------------------- | ------------------- |
-| `banking.transfer.pending`    | Transfer pending    |
-| `banking.transfer.processing` | Transfer processing |
-| `banking.transfer.completed`  | Transfer completed  |
-| `banking.transfer.failed`     | Transfer failed     |
-| `banking.transfer.cancelled`  | Transfer cancelled  |
-| `banking.transfer.reversed`   | Transfer reversed   |
-
-### Transfer events (incoming)
-
-| Event                                 | Description                          |
-| ------------------------------------- | ------------------------------------ |
-| `banking.transfer.incoming.pending`   | Incoming transfer pending settlement |
-| `banking.transfer.incoming.completed` | Incoming transfer settled            |
-
+<CardGroup cols={2}>
+  <Card title="Events and Triggers" icon="bolt" href="/docs/webhooks/events">
+    The full catalog of events you can subscribe to, by domain.
+  </Card>
+  <Card title="Payloads and Examples" icon="brackets-curly" href="/docs/webhooks/object-and-examples">
+    Example JSON payloads for each event.
+  </Card>
+  <Card title="Verify Webhook Signatures (HMAC)" icon="shield-check" href="/docs/webhooks/verify-webhook-signatures-hmac">
+    Confirm a notification genuinely came from Yuno and wasn't tampered with.
+  </Card>
+  <Card title="Webhooks API Reference" icon="code" href="/reference/webhooks">
+    Every field, endpoint, and error response for managing webhooks programmatically.
+  </Card>
+</CardGroup>
