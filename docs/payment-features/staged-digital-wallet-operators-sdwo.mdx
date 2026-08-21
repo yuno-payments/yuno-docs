@@ -1,0 +1,204 @@
+---
+title: "Staged Digital Wallet Operators (SDWO)"
+description: "Flag wallet cash-in and wallet-funded purchase transactions as staged digital wallet operator traffic through the Payments API"
+---
+
+## Introduction
+
+A **staged digital wallet** is a wallet where the customer first loads a balance and then spends it, in two separate card transactions. Both transactions are charged by the **wallet operator**, the company that runs the wallet, and not by the store the customer finally buys from. Because of that, the card networks require each transaction to be flagged as **SDWO (Staged Digital Wallet Operators)** traffic. Flagging it correctly is what gives the transaction the right interchange, the right compliance treatment and a clean approval rate.
+
+SDWO is not a new payment method. In both transactions the payment method is still the customer's card, and you send the same [Create payment](/reference/create-payment) request you already send. What changes is the data you attach to it, which Yuno translates into whatever wallet structure the provider expects.
+
+## The two operations
+
+| Operation | What it is | How you signal it |
+| --- | --- | --- |
+| **Cash-in** | The customer loads their own wallet balance with their card. | Send the `additional_data.order.account_funding` object. |
+| **Purchase** | The wallet pays a submerchant with the balance the customer loaded. | Do not send `account_funding`. Send the submerchant in `additional_data.seller_details`. |
+
+**The presence of the `account_funding` object is the only field that differentiates the two operations.** You do not send an operation type, a processing code or a wallet ID: Yuno derives the provider-specific values from the object you send and from your connection configuration.
+
+<Note>
+This is the same `account_funding` object described in [Account Funding Transactions (AFTs)](/docs/payment-features/account-funding-transactions-afts). SDWO is the staged-wallet case of an AFT: the cash-in *is* an account funding transaction, and the purchase is the second transaction that only staged wallets have.
+</Note>
+
+## Supported providers
+
+| Provider | Country | Cash-in | Purchase |
+| --- | --- | --- | --- |
+| Rede (e.Rede) | Brazil | Yes | Yes |
+
+Rede is the only provider with SDWO support today. The `account_funding` object is the same one every Yuno account funding integration reads, so enabling another provider later does not change your integration.
+
+## Creating a cash-in
+
+Send a normal card payment plus the `account_funding` object identifying who funds the operation and who receives the balance, and `seller_details` identifying the wallet operator.
+
+```json Cash-in request
+{
+  "account_id": "d2b7e0f2-1c3a-4f6b-9f2a-8e1d4c5b6a70",
+  "merchant_order_id": "ORDER-91827",
+  "description": "Wallet cash-in",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 100.00
+  },
+  "customer_payer": {
+    "merchant_customer_id": "CUSTOMER-5521",
+    "first_name": "Marina",
+    "last_name": "Ribeiro",
+    "document": {
+      "document_type": "CPF",
+      "document_number": "06202173165"
+    }
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "50bae77e-c65c-11ec-9d64-0242ac120002",
+    "detail": {
+      "card": {
+        "soft_descriptor": "MYWALLET*CASHIN",
+        "stored_credentials": {
+          "reason": "UNSCHEDULED_CARD_ON_FILE",
+          "network_transaction_id": "016153570198200"
+        }
+      }
+    }
+  },
+  "additional_data": {
+    "order": {
+      "account_funding": {
+        "sender": {
+          "first_name": "Marina",
+          "last_name": "Ribeiro",
+          "country": "BR",
+          "document": {
+            "document_type": "CPF",
+            "document_number": "06202173165"
+          },
+          "address": {
+            "address_line_1": "Rua Sebastiana Muller Pimentel",
+            "building_number_1": "260",
+            "city": "Sorriso",
+            "country": "BRA"
+          }
+        },
+        "beneficiary": {
+          "first_name": "Marina",
+          "last_name": "Ribeiro",
+          "country": "BR",
+          "document": {
+            "document_type": "CPF",
+            "document_number": "06202173165"
+          },
+          "account_number": "1111111"
+        }
+      }
+    },
+    "seller_details": {
+      "name": "My Wallet",
+      "merchant_category_code": "6051",
+      "document": {
+        "document_type": "CNPJ",
+        "document_number": "16577631000299"
+      },
+      "address": {
+        "address_line_1": "Rua Funchal 418",
+        "city": "Sao Paulo",
+        "state": "SP",
+        "country": "BRA",
+        "zip_code": "04551-060"
+      }
+    }
+  }
+}
+```
+
+### Cash-in fields
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `additional_data.order.account_funding.beneficiary` | Required | The wallet account holder receiving the balance. Its presence is what makes the payment a cash-in. |
+| `account_funding.beneficiary.first_name`, `last_name` | Optional | Name of the account holder, as registered in your wallet. |
+| `account_funding.beneficiary.country` | Required | ISO country code of the account holder. |
+| `account_funding.beneficiary.document.document_number` | Required | Tax ID of the account holder (CPF or CNPJ in Brazil). Providers reject the cash-in without it. |
+| `account_funding.beneficiary.account_number` | Required | The customer's account identifier **inside your wallet**. This is not the tax ID: it is the wallet account the balance lands in, and the card networks require it on the cash-in. Maximum 255 characters. |
+| `account_funding.sender.country` | Required | ISO country code of the person funding the operation. |
+| `account_funding.sender.document.document_number` | Required | Tax ID of the person funding the operation. |
+| `account_funding.sender.first_name`, `last_name`, `address` | Optional | Identification of the person funding the operation. Sent to Visa, Elo and American Express. Mastercard does not carry the sender data, and Yuno drops it for you. |
+| `additional_data.seller_details.merchant_category_code` | Required | MCC of the wallet operation. Cash-in normally uses `6051`; use the MCC agreed with your provider for your business. |
+| `additional_data.seller_details.document.document_number` | Required | CNPJ of the wallet operator. |
+| `additional_data.seller_details.name`, `address` | Optional | Identification of the wallet operator. Some card networks require the full address. |
+| `payment_method.detail.card.soft_descriptor` | Optional | What the customer sees on the card statement. SDWO caps it at 18 characters, in the format `WalletName*Recipient`. |
+| `payment_method.detail.card.stored_credentials` | Conditional | Required when the cash-in is an automatic recurring charge on a stored card. See [Stored credentials](/docs/payment-features/stored-credentials). |
+
+## Creating a purchase
+
+The purchase is a standard card payment with the submerchant in `seller_details` and **no** `account_funding` object.
+
+```json Purchase request
+{
+  "account_id": "d2b7e0f2-1c3a-4f6b-9f2a-8e1d4c5b6a70",
+  "merchant_order_id": "ORDER-91828",
+  "description": "Purchase paid with wallet balance",
+  "country": "BR",
+  "amount": {
+    "currency": "BRL",
+    "value": 59.90
+  },
+  "payment_method": {
+    "type": "CARD",
+    "vaulted_token": "50bae77e-c65c-11ec-9d64-0242ac120002",
+    "detail": {
+      "card": {
+        "soft_descriptor": "MYWALLET*STORE"
+      }
+    }
+  },
+  "additional_data": {
+    "seller_details": {
+      "name": "Store Name",
+      "merchant_category_code": "5814",
+      "document": {
+        "document_type": "CNPJ",
+        "document_number": "16577631000299"
+      },
+      "address": {
+        "address_line_1": "Rua Funchal 418",
+        "city": "Sao Paulo",
+        "state": "SP",
+        "country": "BRA",
+        "zip_code": "04551-060"
+      }
+    }
+  }
+}
+```
+
+Here `seller_details` describes the **submerchant being paid**, not the wallet operator.
+
+## Response
+
+SDWO does not add fields to the response. You receive the standard [payment object](/reference/the-payment-object), and you follow the payment status exactly as you do for any card payment. The wallet data you sent is used to build the provider request; it is not returned on the payment or on subsequent `GET` calls, so keep your own record of the wallet account each payment funded.
+
+## What Yuno handles for you
+
+You never send provider-specific wallet values. Yuno derives them from your connection and from the card network:
+
+* **The operation code.** For Rede, the `processingType` that marks the transaction as `01` purchase or `02` cash-in.
+* **The wallet ID.** Registered with each card network and stored on your connection, with a different format for each one.
+* **The payment destination.** The code that tells the provider what kind of cash-in it is. It is set on your connection, not on each request. See the limitation below.
+* **The rules of each card network.** Which data each one carries: Mastercard does not take the sender data, Elo requires the full submerchant address, the soft descriptor is truncated to 18 characters.
+
+## Before you go live
+
+1. **Register your wallet ID with each card network you will process.** Your provider requests it for Mastercard and Visa; Elo is requested by you directly with the network. Without a registered wallet ID the provider rejects the wallet transaction.
+2. **Ask your provider to enable the wallet scope on your merchant account.** Wallet operations are enabled per merchant account, and an account without them returns a parameter-not-allowed error even when the request is correct.
+3. **Use a dedicated connection for SDWO traffic.** SDWO is enabled at connection level, so a connection with SDWO on flags every card payment routed through it. Keep your regular card sales on a separate connection.
+
+## Limitations
+
+* **One cash-in variant per connection.** The payment destination is configured on your connection in the Yuno dashboard, not sent on each request, so a single connection always produces the same kind of cash-in. If your business needs more than one variant, ask your Yuno contact for one connection per variant.
+* **Consumer Bill Payment Service (CBPS) is not supported.** Paying a bill or a boleto with wallet balance as a card network bill-payment program is not available today.
+* **The `funding_type` field is not used.** `account_funding.funding_type` is accepted by the API but no provider integration reads it yet, so it does not change how the operation is processed.
