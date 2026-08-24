@@ -1,0 +1,32 @@
+---
+title: "Terminate Onboarding"
+openapi: "/openapi/recipients-for-marketplace/terminate-onboarding.json POST /recipients/{recipient_id}/onboardings/{onboarding_id}/terminate"
+description: "Permanently terminate a recipient's onboarding and close the account at the provider"
+---
+
+Permanently terminates a recipient's onboarding. Unlike [Block Onboarding](/reference/recipients-for-marketplace/block-recipient), termination is **irreversible**: the onboarding moves to `TERMINATED` and cannot be reactivated. Use it when a recipient must be removed for good — for example after a fraud finding or a terms-of-service violation.
+
+<Warning>
+Termination is permanent. To pause a recipient temporarily, use [Block Onboarding](/reference/recipients-for-marketplace/block-recipient) instead.
+</Warning>
+
+## What termination does
+
+* The onboarding status becomes `TERMINATED` and the recipient is excluded from split resolution: split-carrying refund or cancel operations that reference them fail with `INVALID_PARAMETERS`.
+* The account is closed at the provider. For Adyen, Yuno closes the onboarding's balance account and then the account holder (permanent). For Stripe, Yuno rejects the connected account with the reason you provide.
+* If you subscribed to it, the [`onboarding.terminated`](/docs/webhooks/object-and-examples#onboardings) webhook event is sent (add `TERMINATED` to the webhook's `onboarding_triggers`).
+
+## When termination is allowed
+
+Termination is allowed from the `SUCCEEDED` and `BLOCKED` statuses. The request is refused with `INVALID_STATE` when the onboarding is in any other status, while a transfer of this onboarding is in flight, or while a downstream transfer destination is still active.
+
+## Provider preconditions
+
+Some providers require action on your side before the account can be closed. In that case the request fails with `409 PROVIDER_PRECONDITION_FAILED`, and `messages[0]` carries a machine-readable token telling you what to do:
+
+| Token | Meaning | What to do |
+| :---- | :------ | :--------- |
+| `NON_ZERO_BALANCE` | The account still holds funds. | Withdraw or transfer the remaining funds, then retry. |
+| `OPEN_BALANCE_ACCOUNTS` | The provider still has open balance accounts for this recipient. | Close the provider-side balance accounts, then retry. |
+
+If another lifecycle operation is running for the same onboarding, the request fails with `409 LIFECYCLE_OPERATION_IN_PROGRESS` — retry shortly.
