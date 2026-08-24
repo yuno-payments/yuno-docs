@@ -1,0 +1,251 @@
+---
+title: "Stripe Proxy"
+description: "Use your same Stripe integration with Yuno. Send the exact requests you already send to Stripe's Checkout Sessions API, and receive Stripe-shaped responses and webhooks."
+---
+
+<Note>
+  The Stripe Proxy is enabled per organization. Contact your Key Account Manager (KAM) to activate it for your account.
+</Note>
+
+## Overview
+
+The **Stripe Proxy** lets you use your existing Stripe integration with Yuno
+without rewriting it. You keep sending the **same request bodies** you send to
+Stripe's [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/create)
+API — same parameters, same form-urlencoded format, same `{CHECKOUT_SESSION_ID}`
+placeholder — and Yuno:
+
+1. Accepts the Stripe request as is.
+2. Creates a Yuno hosted checkout page from it.
+3. Responds with a Stripe-shaped `checkout.session` object, where `url` is the
+   Yuno hosted checkout your customer pays on.
+4. Sends you the same Stripe webhook events you already handle
+   (`checkout.session.completed`, `checkout.session.expired`), signed with
+   `Stripe-Signature`.
+
+To migrate, you only change **two things** in your integration:
+
+| | Stripe | Yuno Stripe Proxy |
+| --- | --- | --- |
+| Host + path | `https://api.stripe.com/v1/checkout/sessions` | `{baseUrl}/v1/stripe-proxy/hosted-page` |
+| Authentication | `Authorization: Bearer sk_...` (or `-u sk_...:`) | Yuno headers (`PUBLIC-API-KEY`, `PRIVATE-SECRET-KEY`, `X-account-code`) |
+| Request body | Stripe Checkout Session body | **Unchanged** |
+| Response | `checkout.session` object | **Unchanged** (Stripe-shaped) |
+| Webhooks | `checkout.session.*` signed with `Stripe-Signature` | **Unchanged** |
+
+Everything else — your success page, your webhook handler, your error handling —
+keeps working as it does with Stripe today.
+
+## Base URL
+
+| Environment | Base URL |
+| --- | --- |
+| Production (US) | `https://api.y.uno` |
+| Production (EMEA) | `https://api.eu.y.uno` |
+| Sandbox | `https://api-sandbox.y.uno` |
+
+```
+POST {baseUrl}/v1/stripe-proxy/hosted-page
+```
+
+All examples on this page use the production (US) base URL; substitute the host
+for your region.
+
+## Authentication
+
+This is the one part of the request that changes. Instead of your Stripe secret
+key, authenticate with your **Yuno credentials**. You do **not** send a Stripe
+`Authorization` header — if your setup requires Stripe credentials (for example
+to resolve existing `price_...` ids), they are configured once for your
+organization and resolved server-side.
+
+<ParamField header="PUBLIC-API-KEY" type="string" required>
+  Your Yuno public API key.
+</ParamField>
+
+<ParamField header="PRIVATE-SECRET-KEY" type="string" required>
+  Your Yuno private secret key.
+</ParamField>
+
+<ParamField header="X-account-code" type="string" required>
+  The Yuno account the hosted checkout is created under.
+</ParamField>
+
+<ParamField header="X-Idempotency-Key" type="string" required>
+  A unique key so retries create the checkout only once. This is the equivalent
+  of Stripe's `Idempotency-Key` header.
+</ParamField>
+
+<ParamField header="X-Subscription-Plan-Id" type="string">
+  Optional. The Yuno plan id used for `mode=subscription`. When present it is
+  propagated to the hosted checkout; when absent, a subscription session is still
+  accepted.
+</ParamField>
+
+## Creating a session
+
+Send the **same Stripe Checkout Session body** you send today
+(form-urlencoded or JSON). The only differences are the host and the auth
+headers. Line items may arrive as a Stripe **`price`** (resolved against your
+Stripe catalog) or as inline **`price_data`** (no Stripe lookup).
+
+<CodeGroup>
+
+```bash What you send to Stripe today
+curl https://api.stripe.com/v1/checkout/sessions \
+  -u "sk_test_XXXX:" \
+  -H "Idempotency-Key: <unique-key>" \
+  -d mode=payment \
+  -d "line_items[0][price_data][currency]=usd" \
+  -d "line_items[0][price_data][unit_amount]=2000" \
+  --data-urlencode "line_items[0][price_data][product_data][name]=Credits \$20" \
+  -d "line_items[0][quantity]=1" \
+  --data-urlencode "success_url=https://merchant.com/pay/success?session_id={CHECKOUT_SESSION_ID}" \
+  --data-urlencode "cancel_url=https://merchant.com/pay" \
+  --data-urlencode "customer_email=ana@example.com" \
+  -d client_reference_id=user_8812 \
+  -d "metadata[user_id]=8812"
+```
+
+```bash Same request through the Yuno Stripe Proxy
+curl https://api.y.uno/v1/stripe-proxy/hosted-page \
+  -H "PUBLIC-API-KEY: <your-public-key>" \
+  -H "PRIVATE-SECRET-KEY: <your-private-secret>" \
+  -H "X-account-code: <your-account-code>" \
+  -H "X-Idempotency-Key: <unique-key>" \
+  -d mode=payment \
+  -d "line_items[0][price_data][currency]=usd" \
+  -d "line_items[0][price_data][unit_amount]=2000" \
+  --data-urlencode "line_items[0][price_data][product_data][name]=Credits \$20" \
+  -d "line_items[0][quantity]=1" \
+  --data-urlencode "success_url=https://merchant.com/pay/success?session_id={CHECKOUT_SESSION_ID}" \
+  --data-urlencode "cancel_url=https://merchant.com/pay" \
+  --data-urlencode "customer_email=ana@example.com" \
+  -d client_reference_id=user_8812 \
+  -d "metadata[user_id]=8812"
+```
+
+```bash Existing Stripe price
+curl https://api.y.uno/v1/stripe-proxy/hosted-page \
+  -H "PUBLIC-API-KEY: <your-public-key>" \
+  -H "PRIVATE-SECRET-KEY: <your-private-secret>" \
+  -H "X-account-code: <your-account-code>" \
+  -H "X-Idempotency-Key: <unique-key>" \
+  -d mode=payment \
+  -d "line_items[0][price]=price_123" \
+  -d "line_items[0][quantity]=1" \
+  --data-urlencode "success_url=https://merchant.com/pay/success?session_id={CHECKOUT_SESSION_ID}" \
+  --data-urlencode "cancel_url=https://merchant.com/pay"
+```
+
+</CodeGroup>
+
+The response is the same Stripe **`checkout.session`** object you handle today.
+While the session is open, `url` is the Yuno hosted checkout page the customer
+pays on — redirect them there exactly as you would with Stripe's `url`:
+
+```json
+{
+  "id": "cs_test_8e5af02ee6174cb5a6f10abf797f96ec",
+  "object": "checkout.session",
+  "mode": "payment",
+  "status": "open",
+  "payment_status": "unpaid",
+  "amount_subtotal": 2000,
+  "amount_total": 2000,
+  "currency": "usd",
+  "customer_email": "ana@example.com",
+  "client_reference_id": "user_8812",
+  "metadata": { "user_id": "8812" },
+  "success_url": "https://merchant.com/pay/success?session_id={CHECKOUT_SESSION_ID}",
+  "cancel_url": "https://merchant.com/pay",
+  "url": "https://checkout.y.uno/payment?session=4582bdac-d25e-4f61-88c3-7c05a6b0f775"
+}
+```
+
+<Note>
+  The `cs_...` id works exactly like Stripe's: it replaces the
+  `{CHECKOUT_SESSION_ID}` placeholder in your `success_url` on redirect, and it
+  is the `data.object.id` of the webhook events. Under the hood it is a
+  reversible encoding of the Yuno hosted checkout code — no extra storage is
+  involved. `GET`/expire behave like Stripe: `url` is present only while the
+  session is `open`.
+</Note>
+
+## Subscriptions
+
+Send `mode=subscription` with a **recurring** price — again, the same body you
+send to Stripe. Yuno creates the subscription and stores its id on the hosted
+checkout, so the paid webhook carries `subscription` like Stripe does.
+
+```bash
+curl https://api.y.uno/v1/stripe-proxy/hosted-page \
+  -H "PUBLIC-API-KEY: <your-public-key>" \
+  -H "PRIVATE-SECRET-KEY: <your-private-secret>" \
+  -H "X-account-code: <your-account-code>" \
+  -H "X-Idempotency-Key: <unique-key>" \
+  -d mode=subscription \
+  -d "line_items[0][price]=price_XXXX_ProYearly" \
+  -d "line_items[0][quantity]=1" \
+  --data-urlencode "success_url=https://merchant.com/billing/success?session_id={CHECKOUT_SESSION_ID}" \
+  --data-urlencode "cancel_url=https://merchant.com/billing" \
+  --data-urlencode "customer_email=ana@example.com" \
+  -d client_reference_id=user_8812 \
+  -d "subscription_data[metadata][user_id]=8812"
+```
+
+<ParamField body="mode" type="string">
+  Use `subscription` when a line item's price is recurring. `X-Subscription-Plan-Id`
+  is optional.
+</ParamField>
+
+## Webhooks
+
+When the hosted checkout is paid, Yuno relays the event to your configured
+webhook URL as a signed Stripe event — the same events your Stripe webhook
+handler already processes:
+
+- `checkout.session.completed` when the payment succeeds — including
+  `subscription` for `mode=subscription`.
+- `checkout.session.expired` when the checkout expires or is canceled.
+
+The event is signed with the standard Stripe **`Stripe-Signature`** header
+(`t=<timestamp>,v1=<HMAC-SHA256>`), so your existing Stripe signature
+verification works unchanged.
+
+```json
+{
+  "id": "evt_...",
+  "object": "event",
+  "api_version": "2024-04-10",
+  "type": "checkout.session.completed",
+  "data": {
+    "object": {
+      "id": "cs_test_8e5af02ee6174cb5a6f10abf797f96ec",
+      "object": "checkout.session",
+      "status": "complete",
+      "payment_status": "paid",
+      "subscription": "sub_1U84RZ..."
+    }
+  }
+}
+```
+
+## Errors
+
+Errors are returned in Stripe's shape so your existing error handling keeps
+working:
+
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "code": "parameter_missing",
+    "message": "Missing required param: success_url.",
+    "param": "success_url"
+  }
+}
+```
+
+An organization that is not enabled for the Stripe Proxy receives
+`403` with `product_not_enabled`.
