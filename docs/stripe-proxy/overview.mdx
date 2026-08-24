@@ -1,6 +1,6 @@
 ---
 title: "Stripe Proxy"
-description: "Use your same Stripe integration with Yuno. Send the exact requests you already send to Stripe's Checkout Sessions API, and receive Stripe-shaped responses and webhooks."
+description: "Use your same Stripe integration with Yuno. Send the exact requests you already send to Stripe Hosted Page, and receive Stripe-shaped responses and webhooks."
 ---
 
 <Note>
@@ -11,8 +11,8 @@ description: "Use your same Stripe integration with Yuno. Send the exact request
 
 The **Stripe Proxy** lets you use your existing Stripe integration with Yuno
 without rewriting it. You keep sending the **same request bodies** you send to
-Stripe's [Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/create)
-API — same parameters, same form-urlencoded format, same webhooks format — and Yuno:
+Stripe [Hosted Page](https://docs.stripe.com/api/checkout/sessions/create)
+— same parameters, same form-urlencoded format, same webhooks format — and Yuno:
 
 1. Accepts the Stripe request as is.
 2. Creates a Yuno hosted page from it.
@@ -28,7 +28,7 @@ To migrate, you only change **two things** in your integration:
 | --- | --- | --- |
 | Host + path | `https://api.stripe.com/v1/checkout/sessions` | `{baseUrl}/v1/stripe-proxy/hosted-page` |
 | Authentication | `Authorization: Bearer sk_...` (or `-u sk_...:`) | Yuno headers (`PUBLIC-API-KEY`, `PRIVATE-SECRET-KEY`, `X-account-code`) |
-| Request body | Stripe Checkout Session body | **Unchanged** |
+| Request body | Stripe Hosted Page body | **Unchanged** |
 | Response | `checkout.session` object | **Unchanged** (Stripe-shaped) |
 | Webhooks | `checkout.session.*` signed with `Stripe-Signature` | **Unchanged** |
 
@@ -67,7 +67,7 @@ curl -X POST '{baseUrl}/v1/onboarding' \
 </ParamField>
 
 <ParamField body="stripe_restricted_key" type="string" required>
-  A Stripe **restricted key** (`rk_...`) with access to Checkout Sessions,
+  A Stripe **restricted key** (`rk_...`) with access to Hosted Page (Checkout Sessions),
   Prices, Customers and Subscriptions. It is never logged and only stored
   encrypted.
 </ParamField>
@@ -142,20 +142,20 @@ organization and resolved server-side.
 </ParamField>
 
 <ParamField header="BILLING" type="string">
-  Only for `mode=subscription`. Which engine runs the subscription: `STRIPE`
-  (Stripe Billing, requires the credentials step above) or `YUNO` (Yuno
-  subscriptions, requires `X-Subscription-Plan-Id`). Values are **uppercase**.
-  See [Subscriptions](#subscriptions).
+  Only for `mode=subscription`. Which engine runs the subscription. Values are
+  **uppercase**: `STRIPE` (Stripe Billing, requires the credentials step above)
+  or `YUNO` (**coming soon** — Yuno subscriptions, requires
+  `X-Subscription-Plan-Id`). See [Subscriptions](#subscriptions).
 </ParamField>
 
 <ParamField header="X-Subscription-Plan-Id" type="string">
-  Required when `BILLING: YUNO`. The Yuno plan id the subscription is created
-  from. Ignored for `BILLING: STRIPE`.
+  **Coming soon.** Required when `BILLING: YUNO`. The Yuno plan id the
+  subscription is created from. Ignored for `BILLING: STRIPE`.
 </ParamField>
 
 ## Creating a session
 
-Send the **same Stripe Checkout Session body** you send today
+Send the **same Stripe Hosted Page body** you send today
 (form-urlencoded or JSON). The only differences are the host and the auth
 headers. Line items may arrive as a Stripe **`price`** (resolved against your
 Stripe catalog) or as inline **`price_data`** (no Stripe lookup).
@@ -253,9 +253,15 @@ both cases.
 | `BILLING` | What Yuno does | Requires |
 | --- | --- | --- |
 | `STRIPE` | Calls Stripe and creates the subscription in **Stripe Billing** (customer + subscription). Stripe keeps deciding *when and how much* to charge; Yuno executes the charges. | Stripe credentials registered ([step above](#before-you-start-register-your-stripe-credentials)) |
-| `YUNO` | Creates a **Yuno subscription** from the plan in `X-Subscription-Plan-Id`. No call to Stripe is made. | `X-Subscription-Plan-Id` with a Yuno plan id |
+| `YUNO` — **coming soon** | Creates a **Yuno subscription** from the plan in `X-Subscription-Plan-Id`. No call to Stripe is made. | `X-Subscription-Plan-Id` with a Yuno plan id |
 
 In both cases the paid webhook carries `subscription` like Stripe does.
+
+<Info>
+  **`BILLING: YUNO` is coming soon.** Today `mode=subscription` runs on Stripe
+  Billing (`BILLING: STRIPE`). Sending `BILLING: YUNO` returns
+  `invalid_request_error` until Yuno subscriptions are available for the proxy.
+</Info>
 
 <CodeGroup>
 
@@ -276,7 +282,7 @@ curl https://api.y.uno/v1/stripe-proxy/hosted-page \
   -d "subscription_data[metadata][user_id]=8812"
 ```
 
-```bash Yuno subscriptions (BILLING: YUNO)
+```bash Yuno subscriptions (BILLING: YUNO) — coming soon
 curl https://api.y.uno/v1/stripe-proxy/hosted-page \
   -H "PUBLIC-API-KEY: <your-public-key>" \
   -H "PRIVATE-SECRET-KEY: <your-private-secret>" \
